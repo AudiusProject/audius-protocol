@@ -137,7 +137,7 @@ export const main = async () => {
   Object.entries(values).forEach(([k, v]) => {
     message[k] = message[k] || v
   })
-  console.table(Object.entries(message).map(([k, v]) => ({ key: k, val: v })));
+  console.table(Object.entries(message).map(([k, v]) => ({ key: k, val: v })))
 
   if (values.type.includes('android')) {
     console.log('sending android notification')

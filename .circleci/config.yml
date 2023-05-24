@@ -7,46 +7,168 @@ setup: true
 
 orbs:
   continuation: circleci/continuation@0.3.1
+  path-filtering: circleci/path-filtering@0.1.1
 
 parameters:
   workflow:
     type: string
-    default: 'main'
+    default: "main"
 
   # release-audius-sdk params
   sdk-release-commit:
     type: string
-    default: ''
+    default: ""
   sdk-release-version:
     type: string
-    default: ''
+    default: ""
   sdk-release-preid:
     type: string
-    default: ''
+    default: ""
 
 jobs:
-  circleci-setup:
-    executor: continuation/default
-    resource_class: small
+  # Generate the CircleCI continue_config.yml from .circleci/src
+  generate-config:
+    docker:
+      - image: cimg/base:2021.04
     steps:
-      - checkout
-      # CircleCI cli distributed in continuation/default is outdated so we download
-      # manually
+      # The circleci cli exposed in the image doesn't support config packing
+      # so we install a version that does
       - run:
-          name: Download circleci cli
-          command: |
-            curl -SfL 'https://github.com/CircleCI-Public/circleci-cli/releases/download/v0.1.22924/circleci-cli_0.1.22924_linux_amd64.tar.gz' \
-              | tar xzf - -C .circleci --no-anchored --strip-components 1 circleci
+          name: Install cli
+          command: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | DESTDIR=~/cli bash
+      - checkout
       - run:
           name: Generate config
+          command: ~/cli config pack .circleci/src > .circleci/continue_config.yml
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - .circleci/continue_config.yml
+
+  generate-release:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb" # github.com
+      - run:
+          name: Set git config
           command: |
-            cd .circleci
-            rm config.yml
-            ./circleci config pack . | tee generated_config.yml
-      - continuation/continue:
-          configuration_path: .circleci/generated_config.yml
+            git config --global user.email "audius-infra@audius.co"
+            git config --global user.name "audius-infra"
+      - run:
+          name: Create branch
+          command: |
+            OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
+            NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+
+            git checkout main
+
+            jq --arg version "$NEW_VERSION" '.version=$version' creator-node/.version.json > /tmp/.version.json
+            mv /tmp/.version.json creator-node/.version.json
+            git add creator-node/.version.json
+
+            jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
+            mv /tmp/.version.json discovery-provider/.version.json
+            git add discovery-provider/.version.json
+
+            git commit -m "Bump version to $NEW_VERSION"
+
+            git branch "release-v$NEW_VERSION"
+            git checkout "release-v$NEW_VERSION"
+
+            git push --set-upstream origin main "release-v$NEW_VERSION"
 
 workflows:
-  circleci-setup:
+  setup:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
-      - circleci-setup
+      - generate-config
+      - path-filtering/filter:
+          name: trigger-relevant-workflows
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^release.*$/
+          base-revision: main
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            discovery-provider/.* run-discovery-workflow true
+            comms/.* run-discovery-workflow true
+            creator-node/.* run-creator-workflow true
+            mediorum/.* run-creator-workflow true
+            identity-service/.* run-identity-workflow true
+            libs/.* run-creator-workflow true
+            libs/.* run-identity-workflow true
+            libs/.* run-sdk-workflow true
+            eth-contracts/.* run-eth-contracts-workflow true
+            contracts/.* run-contracts-workflow true
+            .circleci/.* run-discovery-workflow true
+            .circleci/.* run-creator-workflow true
+            .circleci/.* run-identity-workflow true
+            .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-contracts-workflow true
+            .circleci/.* run-sdk-workflow true
+            .* run-release-workflow false
+            .* run-gcp-workflow true
+            .* run-integration-workflow true
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
+      - path-filtering/filter:
+          name: trigger-main-workflows
+          filters:
+            branches:
+              only: /^main$/
+          base-revision: main~1
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            .* run-gcp-workflow true
+            .* run-integration-workflow true
+            .* run-discovery-workflow true
+            .* run-creator-workflow true
+            .* run-identity-workflow true
+            .* run-eth-contracts-workflow true
+            .* run-contracts-workflow true
+            .* run-release-workflow false
+            libs/.* run-sdk-workflow true
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
+      - path-filtering/filter:
+          name: trigger-release-workflows
+          filters:
+            branches:
+              only: /^release.*$/
+          base-revision: main
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            .* run-gcp-workflow true
+            .* run-integration-workflow true
+            .* run-discovery-workflow true
+            .* run-creator-workflow true
+            .* run-identity-workflow true
+            .* run-eth-contracts-workflow true
+            .* run-contracts-workflow true
+            .* run-release-workflow true
+            .* run-sdk-workflow true
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
+  generate-release:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["generate-release", << pipeline.schedule.name >>]
+    jobs:
+      - generate-release

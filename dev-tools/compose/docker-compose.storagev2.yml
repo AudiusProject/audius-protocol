@@ -30,3 +30,13 @@ services:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail http://localhost:1991/status || exit 1",
+        ]
+      interval: 10s
+      start_period: 30s
+      timeout: 5s
+      retries: 20

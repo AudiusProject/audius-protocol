@@ -1,10 +1,10 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.18",
+  "version": "2.0.3-beta.22",
   "audius": {
-    "releaseSHA": "5bbbf7e295fd68a46040a836411386607945d1cb"
+    "releaseSHA": "8eed0295bf67ee204d4dcde34266593b49e7ee09"
   },
-  "description": "",
+  "description": "Audius SDK",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,6 @@
     "test:sdk": "./node_modules/.bin/jest",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
-    "test-circle-ci": "./scripts/circleci-test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",
     "test:integration": "ts-mocha tests/index.js",
@@ -59,6 +58,7 @@
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
+    "@noble/hashes": "^1.3.0",
     "@noble/secp256k1": "1.7.0",
     "@project-serum/anchor": "0.24.1",
     "@scure/base": "1.1.1",
@@ -70,6 +70,7 @@
     "axios": "0.19.2",
     "bn.js": "5.2.1",
     "borsh": "0.4.0",
+    "browser-or-node": "^2.1.1",
     "bs58": "4.0.1",
     "cipher-base": "1.0.4",
     "crc-32": "1.2.2",

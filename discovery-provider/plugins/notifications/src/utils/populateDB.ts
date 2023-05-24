@@ -113,6 +113,7 @@ export const dropTestDB = async (
 
 export const resetTests = async (processor) => {
   jest.clearAllMocks()
+  await processor?.stop()
   await processor?.close()
   const testName = expect
     .getState()
@@ -478,11 +479,6 @@ export const setUserEmailAndSettings = async (
   return user
 }
 
-// Generate random Id betweeen 0 and 999
-export function randId() {
-  return Math.floor(Math.random() * 1000)
-}
-
 export async function clearAllTables(db: Knex) {
   await db.raw(
     `
@@ -606,7 +602,7 @@ export async function insertMobileDevices(
   await db
     .insert(
       mobileDevices.map((device, idx) => ({
-        deviceToken: randId().toString(),
+        deviceToken: device.userId.toString(),
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
         deviceType: 'ios',
@@ -688,9 +684,9 @@ export async function setupTwoUsersWithDevices(
   discoveryDB: Knex,
   identityDB: Knex
 ): Promise<{ user1: UserWithDevice; user2: UserWithDevice }> {
-  const user1 = randId()
+  const user1 = 1
   const user1Name = 'user 1'
-  const user2 = randId()
+  const user2 = 2
   const user2Name = 'user 2'
   await createUsers(discoveryDB, [
     { user_id: user1, name: user1Name, is_current: true },

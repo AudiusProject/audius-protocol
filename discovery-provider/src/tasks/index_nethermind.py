@@ -46,7 +46,7 @@ from src.tasks.metadata import (
 )
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
-from src.utils.cid_metadata_client import get_metadata_from_json
+from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -272,7 +272,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     # TODO remove legacy CN path after CID metadata migration.
                     if len(cid) > 0 and cid[0] == "{" and cid[-1] == "}":
                         try:
-                            data = json.loads(cid)
+                            data = sanitize_json(json.loads(cid))
 
                             # If metadata blob does not contain the required keys, skip
                             if "cid" not in data.keys() or "data" not in data.keys():

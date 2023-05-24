@@ -12,7 +12,6 @@ program.command("create-user")
   .option("-e, --email <email>", "The email for the new user (chosen randomly if not specified)")
   .action(async (handle, { password, email }) => {
     const audiusLibs = await initializeAudiusLibs();
-    await audiusLibs.Account.logout();
 
     const rand = randomBytes(2).toString("hex").padStart(4, "0").toUpperCase();
 
@@ -33,7 +32,7 @@ program.command("create-user")
     };
 
     try {
-      const response = await audiusLibs.Account.signUp(
+      const response = await audiusLibs.Account.signUpV2(
         email,
         password,
         metadata,
@@ -41,8 +40,7 @@ program.command("create-user")
         /* coverPhotoFile */ null,
         /* hasWallet */ false,
         /* host */ null,
-        /* generateRecoveryLink */ true,
-        /* writeMetadataThroughChain */ true
+        /* generateRecoveryLink */ true
       );
 
       if (response.error) {
