@@ -43,18 +43,14 @@ export const getUsersCanNotify = async (
   startOffset: moment.Moment,
   onPage: (emailUsers: EmailUsers) => Promise<void>,
 ) => {
-  // const validLastEmailOffset = startOffset.subtract(2, 'hours')
-  let lastUser: number = Number.MAX_SAFE_INTEGER; // query uses DESC, start at max
-  const pageCount = 1000;
-  const date = new Date()
-  const time = date.getTime()
+  let lastUser: number = 0;
+  const time = Date.now()
   const twelveHours = 43200000
   const timeout = time + twelveHours
   while (true) {
-    const currentDate = new Date()
-    const now = currentDate.getTime()
+    const now = Date.now()
     if (now > timeout) break
-    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
+    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, lastUser)
     if (userRows.length === 0) break // once we've reached the end of users for this query
     lastUser = userRows[userRows.length - 1].blockchainUserId
     const emailUsers = userRows.reduce((acc, user) => {
@@ -65,7 +61,7 @@ export const getUsersCanNotify = async (
   }
 }
 
-const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
+const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, lastUser: number) => 
   await identityDb
       .with(
         'lastEmailSentAt',
@@ -119,8 +115,9 @@ const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Mome
           )
         }
       })
-      .where('user_id', '<', lastUser)
-      .limit(pageCount)
+      .where('user_id', '>', lastUser)
+      .limit(1000)
+      .orderBy('user_id')
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
@@ -455,12 +452,6 @@ const processGroupOfEmails = async (dnDb: Knex, identityDb : Knex, users: EmailU
     {
       job: processEmailNotifications
     },
-    `processEmailNotifications | finished looping over users to send notification emails`
-  )
-  logger.info(
-    {
-      job: processEmailNotifications
-    },
-    `processEmailNotifications | sent ${numEmailsSent} ${frequency} emails`
+    `processEmailNotifications | finished looping over users to send notification emails, sent ${numEmailsSent} ${frequency} emails`
   )
 }
