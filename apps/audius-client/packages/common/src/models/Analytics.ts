@@ -642,7 +642,8 @@ export enum CreatePlaylistSource {
   NAV = 'nav',
   CREATE_PAGE = 'create page',
   FROM_TRACK = 'from track',
-  FAVORITES_PAGE = 'favorites page'
+  FAVORITES_PAGE = 'favorites page',
+  PROFILE_PAGE = 'profile page'
 }
 
 type PlaylistAdd = {
