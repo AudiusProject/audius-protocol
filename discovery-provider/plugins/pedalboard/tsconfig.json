@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "outDir": "./build"
+    },
+    "references": [
+        { "path": "./storage" },
+        { "path": "./pedal" },
+        { "path": "./trending-challenge-reward" }
+    ],
+}
