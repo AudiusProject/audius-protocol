@@ -1,17 +1,16 @@
 import {
   Kind,
   PlaylistIdentifier,
-  PlaylistLibrary,
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier,
-  User,
   makeKindId,
   accountSelectors,
   AccountCollection,
   cacheActions,
   waitForValue,
   playlistLibraryHelpers,
-  playlistLibraryActions
+  playlistLibraryActions,
+  PlaylistLibraryID
 } from '@audius/common'
 import {
   all,
@@ -21,7 +20,7 @@ import {
   select,
   takeEvery,
   takeLatest
-} from 'redux-saga/effects'
+} from 'typed-redux-saga'
 
 import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
@@ -36,7 +35,8 @@ const {
   extractTempPlaylistsFromLibrary,
   getPlaylistsNotInLibrary,
   removePlaylistLibraryDuplicates,
-  replaceTempWithResolvedPlaylists
+  replaceTempWithResolvedPlaylists,
+  removeFromPlaylistLibrary
 } = playlistLibraryHelpers
 
 const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
@@ -53,7 +53,7 @@ function* resolveTempPlaylists(
   playlist: PlaylistLibraryIdentifier | PlaylistLibraryFolder
 ) {
   if (playlist.type === 'temp_playlist') {
-    const { playlist_id } = yield call(
+    const { playlist_id } = yield* call(
       waitForValue,
       getResult,
       {
@@ -72,16 +72,18 @@ function* resolveTempPlaylists(
 }
 
 function* watchUpdatePlaylistLibrary() {
-  yield takeEvery(
+  yield* takeEvery(
     update.type,
     function* updatePlaylistLibrary(action: ReturnType<typeof update>) {
       yield* waitForWrite()
       const { playlistLibrary } = action.payload
 
-      const account: User = yield select(getAccountUser)
+      const account = yield* select(getAccountUser)
+      if (!account) return
+
       account.playlist_library =
         removePlaylistLibraryDuplicates(playlistLibrary)
-      yield put(
+      yield* put(
         cacheActions.update(Kind.USERS, [
           {
             id: account.user_id,
@@ -95,13 +97,13 @@ function* watchUpdatePlaylistLibrary() {
         // Deal with temp playlists
         // If there's a temp playlist, write to the cache, but dispatch
         // to a helper to watch for the update.
-        yield put({
+        yield* put({
           type: TEMP_PLAYLIST_UPDATE_HELPER,
           payload: { playlistLibrary }
         })
       } else {
         // Otherwise, just write the profile update
-        yield fork(updateProfileAsync, { metadata: account })
+        yield* fork(updateProfileAsync, { metadata: account })
       }
     }
   )
@@ -113,7 +115,7 @@ function* watchUpdatePlaylistLibrary() {
  * backend once we've resolved the temp playlist ids to actual ids
  */
 function* watchUpdatePlaylistLibraryWithTempPlaylist() {
-  yield takeLatest(
+  yield* takeLatest(
     TEMP_PLAYLIST_UPDATE_HELPER,
     function* makeUpdate(action: ReturnType<typeof update>) {
       yield* waitForWrite()
@@ -121,15 +123,16 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
       const playlistLibrary =
         removePlaylistLibraryDuplicates(rawPlaylistLibrary)
 
-      const account: User = yield select(getAccountUser)
+      const account = yield* select(getAccountUser)
+      if (!account) return
 
       // Map over playlist library contents and resolve each temp id playlist
       // to one with an actual id. Once we have the actual id, we can proceed
       // with writing the library to the user metadata (profile update)
       const tempPlaylists = extractTempPlaylistsFromLibrary(playlistLibrary)
-      const resolvedPlaylists: PlaylistLibraryIdentifier[] = yield all(
+      const resolvedPlaylists = (yield* all(
         tempPlaylists.map((playlist) => call(resolveTempPlaylists, playlist))
-      )
+      )) as PlaylistLibraryIdentifier[]
       const tempPlaylistIdToResolvedPlaylist = tempPlaylists.reduce(
         (result, nextTempPlaylist, index) => ({
           ...result,
@@ -144,7 +147,7 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
       ).contents
       account.playlist_library = playlistLibrary
       // Update playlist library on chain via an account profile update
-      yield call(updateProfileAsync, { metadata: account })
+      yield* call(updateProfileAsync, { metadata: account })
     }
   )
 }
@@ -154,9 +157,9 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
  * not in the user's set playlist library
  */
 export function* addPlaylistsNotInLibrary() {
-  let library: PlaylistLibrary = yield select(getPlaylistLibrary)
+  let library = yield* select(getPlaylistLibrary)
   if (!library) library = { contents: [] }
-  const playlists: { [id: number]: AccountCollection } = yield select(
+  const playlists: { [id: number]: AccountCollection } = yield* select(
     getAccountNavigationPlaylists
   )
   const notInLibrary = getPlaylistsNotInLibrary(library, playlists)
@@ -169,10 +172,17 @@ export function* addPlaylistsNotInLibrary() {
         } as PlaylistIdentifier)
     )
     const newContents = [...newEntries, ...library.contents]
-    yield put(
+    yield* put(
       update({ playlistLibrary: { ...library, contents: newContents } })
     )
   }
+}
+
+export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
+  const library = yield* select(getPlaylistLibrary)
+  if (!library) return
+  const { library: updatedLibrary } = removeFromPlaylistLibrary(library, id)
+  yield* put(update({ playlistLibrary: updatedLibrary }))
 }
 
 export default function sagas() {

@@ -404,7 +404,7 @@ export const removePlaylistLibraryDuplicates = (
 export const reorderPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
   draggingId: PlaylistLibraryID,
-  droppingId: ID | SmartCollectionVariant | string,
+  droppingId: PlaylistLibraryID,
   draggingKind = 'library-playlist',
   reorderBeforeTarget = false
 ) => {

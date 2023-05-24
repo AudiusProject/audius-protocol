@@ -1,6 +1,6 @@
 .root {
   position: absolute;
-  left: calc(var(--unit-8) - var(--unit-3));
+  left: calc(var(--unit-3) * -1);
 }
 
 .tooltip :global(.ant-tooltip-arrow) {

@@ -33,6 +33,10 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  addPlaylistsNotInLibrary,
+  removePlaylistFromLibrary
+} from 'common/store/playlist-library/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { createPlaylistSaga } from './createPlaylistSaga'
@@ -909,6 +913,8 @@ function* confirmDeletePlaylist(userId, playlistId) {
           )
         ])
 
+        yield call(removePlaylistFromLibrary, playlistId)
+
         const { blockHash, blockNumber, error } = yield call(
           audiusBackendInstance.deletePlaylist,
           playlistId
@@ -951,6 +957,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
             })
           )
         ])
+        yield call(addPlaylistsNotInLibrary)
         yield put(
           collectionActions.deletePlaylistFailed(
             message,

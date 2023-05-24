@@ -26,6 +26,10 @@ import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import {
+  addPlaylistsNotInLibrary,
+  removePlaylistFromLibrary
+} from 'common/store/playlist-library/sagas'
 import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -377,6 +381,9 @@ export function* saveCollectionAsync(
       user: { id: user.user_id, handle: user.handle }
     })
   )
+
+  yield* call(addPlaylistsNotInLibrary)
+
   yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
@@ -500,6 +507,8 @@ export function* unsaveCollectionAsync(
   yield* put(
     accountActions.removeAccountPlaylist({ collectionId: action.collectionId })
   )
+
+  yield* call(removePlaylistFromLibrary, action.collectionId)
   yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
