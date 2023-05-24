@@ -35,6 +35,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   link: {
     color: palette.secondary
+  },
+  empty: {
+    height: spacing(10.5)
   }
 }))
 
@@ -116,15 +119,16 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
           </Text>
         </>
       ),
-      [ChatPermissionAction.WAIT]: () => null
+      [ChatPermissionAction.WAIT]: () => <View style={styles.empty} />
     }
   }, [
-    handleLearnMorePress,
-    handleUnblockPress,
-    navigation,
-    styles.link,
     styles.unavailableText,
-    otherUser
+    styles.link,
+    styles.empty,
+    otherUser,
+    handleLearnMorePress,
+    navigation,
+    handleUnblockPress
   ])
 
   return (

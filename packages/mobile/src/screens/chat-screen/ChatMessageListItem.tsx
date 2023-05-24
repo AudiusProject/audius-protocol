@@ -2,6 +2,7 @@ import { memo, useCallback } from 'react'
 
 import type { ReactionTypes, ChatMessageWithExtras } from '@audius/common'
 import {
+  Status,
   accountSelectors,
   chatSelectors,
   decodeHashId,
@@ -21,6 +22,7 @@ import { useThemePalette } from 'app/utils/theme'
 import { reactionMap } from '../notifications-screen/Reaction'
 
 import { LinkPreview } from './LinkPreview'
+import { ResendMessageButton } from './ResendMessageButton'
 import { REACTION_LONGPRESS_DELAY } from './constants'
 
 const { getUserId } = accountSelectors
@@ -162,8 +164,10 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     ) && !isPopup
 
   const handleLongPress = useCallback(() => {
-    onLongPress?.(message.message_id)
-  }, [message.message_id, onLongPress])
+    if (message.status !== Status.ERROR) {
+      onLongPress?.(message.message_id)
+    }
+  }, [message.message_id, message.status, onLongPress])
 
   const links = find(message.message)
   const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
@@ -260,6 +264,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
             </View>
           </Pressable>
         </View>
+        {isAuthor && message.status === Status.ERROR ? (
+          <ResendMessageButton messageId={message.message_id} chatId={chatId} />
+        ) : null}
         {message.hasTail ? (
           <>
             {!isPopup ? (

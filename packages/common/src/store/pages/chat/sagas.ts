@@ -261,8 +261,8 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
 }
 
 function* doSendMessage(action: ReturnType<typeof sendMessage>) {
-  const { chatId, message } = action.payload
-  const messageId = ulid()
+  const { chatId, message, resendMessageId } = action.payload
+  const messageIdToUse = resendMessageId ?? ulid()
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
@@ -278,7 +278,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
         chatId,
         message: {
           sender_user_id: currentUserId,
-          message_id: messageId,
+          message_id: messageIdToUse,
           message,
           reactions: [],
           created_at: dayjs().toISOString()
@@ -290,12 +290,12 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
 
     yield* call([sdk.chats, sdk.chats.message], {
       chatId,
-      messageId,
+      messageId: messageIdToUse,
       message
     })
   } catch (e) {
     console.error('sendMessageFailed', e)
-    yield* put(sendMessageFailed({ chatId, messageId }))
+    yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
   }
 }
 
