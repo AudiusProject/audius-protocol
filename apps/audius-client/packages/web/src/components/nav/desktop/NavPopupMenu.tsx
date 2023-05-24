@@ -1,4 +1,9 @@
-import { removeNullable, accountSelectors, FeatureFlags } from '@audius/common'
+import {
+  removeNullable,
+  accountSelectors,
+  FeatureFlags,
+  chatSelectors
+} from '@audius/common'
 import {
   IconCrown,
   IconDashboard,
@@ -11,6 +16,8 @@ import {
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
+import { Icon } from 'components/Icon'
+import { NotificationDot } from 'components/notification-dot'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
@@ -39,12 +46,22 @@ const useAccountHasTracks = () => {
 const NavPopupMenu = () => {
   const navigate = useNavigateToPage()
   const hasTracks = useAccountHasTracks()
+  const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+
+  const messagesItemText = hasUnreadMessages ? (
+    <div className={styles.popupItemText}>
+      {messages.messages}
+      <NotificationDot variant='large' />
+    </div>
+  ) : (
+    messages.messages
+  )
 
   const menuItems: PopupMenuItem[] = [
     isChatEnabled
       ? {
-          text: messages.messages,
+          text: messagesItemText,
           onClick: () => navigate(CHATS_PAGE),
           icon: <IconMessage />,
           iconClassName: styles.menuItemIcon
@@ -81,7 +98,14 @@ const NavPopupMenu = () => {
         renderTrigger={(anchorRef, triggerPopup) => {
           return (
             <div className={styles.icon} ref={anchorRef} onClick={triggerPopup}>
-              <IconKebabHorizontal />
+              <Icon
+                icon={IconKebabHorizontal}
+                decorator={
+                  hasUnreadMessages ? (
+                    <NotificationDot variant='large' />
+                  ) : undefined
+                }
+              />
             </div>
           )
         }}
