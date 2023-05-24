@@ -19,7 +19,8 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
     [Property in keyof EndpointDefinitions as `use${Capitalize<
       string & Property
     >}`]: (
-      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0]
+      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+      options?: QueryHookOptions
     ) => QueryHookResults<
       Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
     >
