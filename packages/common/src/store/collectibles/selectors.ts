@@ -54,7 +54,8 @@ export const getSupportedUserCollections = createSelector(
 
     // Ethereum collections
     const ethCollectionMap: EthCollectionMap = {}
-    collectibles[Chain.Eth].forEach((collectible) => {
+    const userEthCollectibles = collectibles[Chain.Eth] ?? []
+    userEthCollectibles.forEach((collectible) => {
       const {
         collectionSlug,
         collectionName,
