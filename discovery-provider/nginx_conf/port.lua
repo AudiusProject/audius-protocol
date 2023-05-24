@@ -5,7 +5,7 @@ local socket = require "socket"
 
 local _M = {}
 
-function M.get_public_ip()
+function _M.get_public_ip()
     local httpc = http.new()
     local res, err = httpc:request_uri("https://api.ipify.org")
 
@@ -15,16 +15,17 @@ function M.get_public_ip()
     return res.body
 end
 
-function M.get_is_port_exposed(ip, port) {
-    local tcp = assert(socket.tcp())
+function _M.get_is_port_exposed(ip, port)
+    local tcp = socket.tcp()
     tcp:settimeout(10)
     local res, err = tcp:connect(ip, port)
-    local can_connect = false
-    if res then
-        can_connect = true
-    end
     tcp:close()
-    return can_connect
-}
+    if not res then
+        ngx.log(ngx.ERR, "Could not connect: ", err)
+        return false
+    else
+        return true
+    end
+end
 
 return _M
