@@ -1,6 +1,7 @@
 import {
   FeatureFlags,
   ID,
+  accountSelectors,
   playerSelectors,
   playbackPositionSelectors,
   CommonState
@@ -13,6 +14,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './GiantTrackTile.module.css'
 
+const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -43,9 +45,9 @@ export const PlayPauseButton = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-
+  const currentUserId = useSelector(getUserId)
   const trackPlaybackInfo = useSelector((state: CommonState) =>
-    getTrackPosition(state, { trackId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
   const isCurrentTrack = useSelector(
     (state: CommonState) => trackId === getTrackId(state)

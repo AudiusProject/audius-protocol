@@ -1,5 +1,6 @@
 import type { SearchTrack, Track } from '@audius/common'
 import {
+  accountSelectors,
   formatLineupTileDuration,
   playbackPositionSelectors
 } from '@audius/common'
@@ -13,6 +14,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { ProgressBar } from '../progress-bar'
 
+const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
@@ -64,8 +66,9 @@ export const DetailsProgressInfo = ({ track }: DetailsProgressInfoProps) => {
   const { duration } = track
   const { neutralLight4 } = useThemeColors()
   const styles = useStyles()
+  const currentUserId = useSelector(getUserId)
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track.track_id })
+    getTrackPosition(state, { trackId: track.track_id, userId: currentUserId })
   )
 
   const progressText = playbackPositionInfo

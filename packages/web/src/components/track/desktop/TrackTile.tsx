@@ -2,6 +2,7 @@ import { memo, MouseEvent, useCallback } from 'react'
 
 import {
   formatCount,
+  accountSelectors,
   playbackPositionSelectors,
   pluralize,
   FeatureFlags,
@@ -28,6 +29,7 @@ import {
 import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
 
+const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
@@ -117,8 +119,9 @@ const TrackTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const currentUserId = useSelector(getUserId)
   const trackPositionInfo = useSelector((state: CommonState) =>
-    getTrackPosition(state, { trackId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
 
   const hasOrdering = order !== undefined

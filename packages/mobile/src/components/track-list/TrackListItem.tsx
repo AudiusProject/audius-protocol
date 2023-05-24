@@ -10,6 +10,7 @@ import {
   OverflowAction,
   OverflowSource,
   mobileOverflowMenuUIActions,
+  accountSelectors,
   cacheUsersSelectors,
   cacheTracksSelectors,
   playerSelectors
@@ -36,6 +37,7 @@ import { TablePlayButton } from './TablePlayButton'
 import { TrackArtwork } from './TrackArtwork'
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 
+const { getUserId } = accountSelectors
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getPlaying, getUid } = playerSelectors
@@ -260,10 +262,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
+  const currentUserId = useSelector(getUserId)
+
   const isLongFormContent =
     track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track_id })
+    getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
 
   const handleOpenOverflowMenu = useCallback(() => {

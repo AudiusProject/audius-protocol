@@ -142,7 +142,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   }, [dispatch, track])
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track?.track_id })
+    getTrackPosition(state, {
+      trackId: track?.track_id,
+      userId: accountUser?.user_id
+    })
   )
   const onPressOverflow = useCallback(() => {
     if (track) {

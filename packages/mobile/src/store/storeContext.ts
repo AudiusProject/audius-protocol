@@ -24,6 +24,7 @@ import share from 'app/utils/share'
 export const storeContext: CommonStoreContext = {
   getLocalStorageItem: async (key) => AsyncStorage.getItem(key),
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
+  removeLocalStorageItem: async (key) => AsyncStorage.removeItem(key),
   getFeatureEnabled,
   analytics,
   remoteConfigInstance,

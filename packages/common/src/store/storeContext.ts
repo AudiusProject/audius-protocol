@@ -19,6 +19,7 @@ import { CommonState } from './reducers'
 export type CommonStoreContext = {
   getLocalStorageItem: (key: string) => Promise<string | null>
   setLocalStorageItem: (key: string, value: string) => Promise<void>
+  removeLocalStorageItem: (key: string) => Promise<void>
   getFeatureEnabled: (
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags

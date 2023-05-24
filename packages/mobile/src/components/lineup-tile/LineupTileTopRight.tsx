@@ -1,6 +1,7 @@
 import type { PremiumConditions, Nullable } from '@audius/common'
 import {
   FeatureFlags,
+  accountSelectors,
   playbackPositionSelectors,
   formatLineupTileDuration
 } from '@audius/common'
@@ -25,6 +26,7 @@ import { ProgressBar } from '../progress-bar'
 
 import { useStyles as useTrackTileStyles } from './styles'
 
+const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
@@ -139,8 +141,9 @@ export const LineupTileTopRight = ({
   const { neutralLight4, secondary } = useThemeColors()
   const accentBlue = useColor('accentBlue')
   const trackTileStyles = useTrackTileStyles()
+  const currentUserId = useSelector(getUserId)
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
 
   const isInProgress =

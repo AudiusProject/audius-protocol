@@ -350,7 +350,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track_id })
+    getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
   const handlePressOverflow = () => {
     const isLongFormContent =

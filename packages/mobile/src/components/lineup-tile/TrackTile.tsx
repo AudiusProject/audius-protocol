@@ -130,7 +130,7 @@ export const TrackTileComponent = ({
   }, [navigation, track_id])
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId: track_id })
+    getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
   const handlePressOverflow = useCallback(() => {
     if (track_id === undefined) {

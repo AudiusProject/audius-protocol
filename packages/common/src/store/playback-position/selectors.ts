@@ -7,15 +7,22 @@ import { PlaybackPositionInfo } from './types'
 export const getPlaybackPositions = (state: CommonState) =>
   state.playbackPosition
 
-export const getTrackPositions = (state: CommonState) =>
-  state.playbackPosition.trackPositions
+export const getUserTrackPositions = (
+  state: CommonState,
+  props: { userId?: ID | null }
+) => {
+  const { userId } = props
+  if (!userId) return null
+
+  return state.playbackPosition[userId]?.trackPositions ?? null
+}
 
 export const getTrackPosition = (
   state: CommonState,
-  props: { trackId?: ID | null }
+  props: { userId?: ID | null; trackId?: ID | null }
 ): PlaybackPositionInfo | null => {
-  const { trackId } = props
-  if (!trackId) return null
+  const { userId, trackId } = props
+  if (!trackId || !userId) return null
 
-  return state.playbackPosition.trackPositions[trackId] ?? null
+  return state.playbackPosition[userId]?.trackPositions[trackId] ?? null
 }

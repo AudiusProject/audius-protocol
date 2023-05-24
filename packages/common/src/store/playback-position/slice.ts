@@ -10,16 +10,16 @@ type InitializePlaybackPositionStatePayload = {
 
 type SetTrackPositionPayload = {
   trackId: ID
+  userId?: ID | null
   positionInfo: PlaybackPositionInfo
 }
 
 type ClearTrackPositionPayload = {
   trackId: ID
+  userId?: ID | null
 }
 
-const initialState: PlaybackPositionState = {
-  trackPositions: {}
-}
+const initialState: PlaybackPositionState = {}
 
 const slice = createSlice({
   name: 'playback-position',
@@ -31,22 +31,29 @@ const slice = createSlice({
       action: PayloadAction<InitializePlaybackPositionStatePayload>
     ) => {
       const { playbackPositionState } = action.payload
-      state.trackPositions =
-        playbackPositionState.trackPositions ?? state.trackPositions
+      const userIds = Object.keys(playbackPositionState)
+      userIds.forEach((userId) => {
+        state[userId] = playbackPositionState[userId]
+      })
     },
     setTrackPosition: (
       state,
       action: PayloadAction<SetTrackPositionPayload>
     ) => {
-      const { trackId, positionInfo } = action.payload
-      state.trackPositions[trackId] = positionInfo
+      const { userId, trackId, positionInfo } = action.payload
+      if (!userId) return
+
+      const userState = state[userId] ?? { trackPositions: {} }
+      userState.trackPositions[trackId] = positionInfo
+      state[userId] = userState
     },
     clearTrackPosition: (
       state,
       action: PayloadAction<ClearTrackPositionPayload>
     ) => {
-      const { trackId } = action.payload
-      delete state.trackPositions[trackId]
+      const { userId, trackId } = action.payload
+      if (!userId) return
+      delete state[userId]?.trackPositions[trackId]
     }
   }
 })

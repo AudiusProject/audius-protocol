@@ -1,10 +1,17 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type { ID, Nullable, QueryParams, Track } from '@audius/common'
+import type {
+  CommonState,
+  ID,
+  Nullable,
+  QueryParams,
+  Track
+} from '@audius/common'
 import {
   getQueryParams,
   removeNullable,
   playbackRateValueMap,
+  accountSelectors,
   cacheUsersSelectors,
   cacheTracksSelectors,
   playerSelectors,
@@ -59,12 +66,13 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
+const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter, getPlaybackRate } =
   playerSelectors
 const { setTrackPosition } = playbackPositionActions
-const { getTrackPositions } = playbackPositionSelectors
+const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
 const {
   getIndex,
@@ -153,7 +161,10 @@ export const Audio = () => {
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
-  const trackPositions = useSelector(getTrackPositions)
+  const currentUserId = useSelector(getUserId)
+  const trackPositions = useSelector((state: CommonState) =>
+    getUserTrackPositions(state, { userId: currentUserId })
+  )
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
@@ -386,7 +397,7 @@ export const Audio = () => {
             const isLongFormContent =
               track?.genre === Genre.PODCASTS ||
               track?.genre === Genre.AUDIOBOOKS
-            const trackPosition = trackPositions[track.track_id]
+            const trackPosition = trackPositions?.[track.track_id]
             if (trackPosition?.status === 'IN_PROGRESS') {
               dispatch(
                 playerActions.seek({ seconds: trackPosition.playbackPosition })
@@ -394,6 +405,7 @@ export const Audio = () => {
             } else if (isNewPodcastControlsEnabled && isLongFormContent) {
               dispatch(
                 setTrackPosition({
+                  userId: currentUserId,
                   trackId: track.track_id,
                   positionInfo: {
                     status: 'IN_PROGRESS',
@@ -435,6 +447,7 @@ export const Audio = () => {
         if (isLongFormContent && isAtEndOfTrack) {
           dispatch(
             setTrackPosition({
+              userId: currentUserId,
               trackId: track.track_id,
               positionInfo: {
                 status: 'COMPLETED',
