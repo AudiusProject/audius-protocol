@@ -78,7 +78,6 @@ def create_new_challenges(session, allowed_challenge_types=None):
             for challenge in new_challenges
             if challenge.get("type") in allowed_challenge_types
         ]
-    logger.info(f"Adding challenges: {new_challenges}")
 
     # Add all the new challenges
     for challenge_dict in new_challenges:
