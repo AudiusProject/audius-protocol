@@ -10,7 +10,8 @@ import {
   useProxySelector,
   formatMessageDate,
   isAudiusUrl,
-  getPathFromAudiusUrl
+  getPathFromAudiusUrl,
+  useCanSendMessage
 } from '@audius/common'
 import type { ChatMessage } from '@audius/sdk'
 import { IconPlus, PopupPosition } from '@audius/stems'
@@ -99,13 +100,56 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     [dispatch]
   )
 
+  // Only render reactions if user has message permissions
+  const { canSendMessage } = useCanSendMessage(chatId)
+  const renderReactions = () => {
+    if (!canSendMessage) return null
+
+    return (
+      <div
+        ref={reactionButtonRef}
+        className={cn(styles.reactionsButton, {
+          [styles.isOpened]: isReactionPopupVisible,
+          [styles.hasReaction]:
+            message.reactions && message.reactions.length > 0
+        })}
+        onClick={handleOpenReactionPopupButtonClicked}
+      >
+        {message.reactions?.length > 0 ? (
+          message.reactions.map((reaction) => {
+            if (!reaction.reaction || !(reaction.reaction in reactionMap)) {
+              return null
+            }
+            const Reaction = reactionMap[reaction.reaction as ReactionTypes]
+            return (
+              <Reaction
+                className={styles.reactionEmoji}
+                key={reaction.user_id}
+                width={48}
+                height={48}
+                title={reactionUsers[decodeHashId(reaction.user_id)!]?.name}
+                disableClickAnimation
+              />
+            )
+          })
+        ) : (
+          <IconPlus className={styles.addReactionIcon} />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(styles.root, {
         [styles.isAuthor]: isAuthor
       })}
     >
-      <div className={styles.bubble}>
+      <div
+        className={cn(styles.bubble, {
+          [styles.nonInteractive]: !canSendMessage
+        })}
+      >
         {links
           .filter((link) => link.type === 'url' && link.isLink)
           .slice(0, 1)
@@ -131,7 +175,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                   }
                 }
               },
-              target: (href, type, tokens) => {
+              target: (href) => {
                 return isAudiusUrl(href) ? '' : '_blank'
               }
             }}
@@ -139,50 +183,24 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             {message.message}
           </Linkify>
         </div>
-        <div
-          ref={reactionButtonRef}
-          className={cn(styles.reactionsButton, {
-            [styles.isOpened]: isReactionPopupVisible,
-            [styles.hasReaction]:
-              message.reactions && message.reactions.length > 0
-          })}
-          onClick={handleOpenReactionPopupButtonClicked}
-        >
-          {message.reactions?.length > 0 ? (
-            message.reactions.map((reaction) => {
-              if (!reaction.reaction || !(reaction.reaction in reactionMap)) {
-                return null
-              }
-              const Reaction = reactionMap[reaction.reaction as ReactionTypes]
-              return (
-                <Reaction
-                  className={styles.reactionEmoji}
-                  key={reaction.user_id}
-                  width={48}
-                  height={48}
-                  title={reactionUsers[decodeHashId(reaction.user_id)!]?.name}
-                />
-              )
-            })
-          ) : (
-            <IconPlus className={styles.addReactionIcon} />
-          )}
-        </div>
+        {renderReactions()}
         {hasTail ? (
           <div className={styles.tail}>
             <ChatTail />
           </div>
         ) : null}
       </div>
-      <ReactionPopupMenu
-        anchorRef={reactionButtonRef}
-        isVisible={isReactionPopupVisible}
-        onClose={handleCloseReactionPopup}
-        position={
-          isAuthor ? PopupPosition.BOTTOM_RIGHT : PopupPosition.BOTTOM_LEFT
-        }
-        onSelected={handleReactionSelected}
-      />
+      {canSendMessage ? (
+        <ReactionPopupMenu
+          anchorRef={reactionButtonRef}
+          isVisible={isReactionPopupVisible}
+          onClose={handleCloseReactionPopup}
+          position={
+            isAuthor ? PopupPosition.BOTTOM_RIGHT : PopupPosition.BOTTOM_LEFT
+          }
+          onSelected={handleReactionSelected}
+        />
+      ) : null}
       {hasTail ? (
         <div className={styles.date}>
           {formatMessageDate(message.created_at)}

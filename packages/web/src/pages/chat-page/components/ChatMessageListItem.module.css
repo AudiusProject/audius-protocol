@@ -19,6 +19,7 @@
   filter: var(--drop-shadow-near);
   color: var(--netural);
   background-color: var(--bubble-color);
+  transition: background-color var(--quick), filter var(--quick);
 }
 
 .text a {
@@ -26,7 +27,7 @@
   text-decoration: underline !important;
 }
 
-.bubble:hover {
+.bubble:not(.nonInteractive):hover {
   --bubble-color: var(--neutral-light-10);
   filter: var(--drop-shadow-far);
 }
@@ -68,7 +69,9 @@
   position: absolute;
   cursor: pointer;
   bottom: -24px;
-  transition: opacity var(--quick);
+  /* transform looks better if it only eases-out */
+  transition: opacity var(--quick), transform 0.07s ease-out;
+  transform: scale(0.5);
 }
 
 .reactionsButton:not(.hasReaction) {
@@ -99,6 +102,7 @@
 .bubble:hover .reactionsButton,
 .reactionsButton.isOpened,
 .reactionsButton.hasReaction {
+  transform: scale(1, 1);
   opacity: 1;
 }
 
@@ -111,6 +115,10 @@
 
 .reactionsButton:not(.hasReaction):hover path {
   fill: var(--primary);
+}
+
+.reactionsButton:not(.hasReaction):active {
+  transform: scale(0.6);
 }
 
 .reactionEmoji {
@@ -126,6 +134,7 @@
 
 .tail svg * {
   fill: var(--bubble-color);
+  transition: fill var(--quick);
 }
 
 .root:not(.isAuthor) .tail {

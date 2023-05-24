@@ -1,15 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
-import { chatSelectors, ChatPermissionAction } from '@audius/common'
+import { ChatPermissionAction, useCanSendMessage } from '@audius/common'
 import { View, Text } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
-
-const { getCanSendMessage, getOtherChatUsers } = chatSelectors
 
 const messages = {
   noAction: 'You can no longer send messages to ',
@@ -49,10 +47,8 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const [otherUser] = useSelector((state) => getOtherChatUsers(state, chatId))
-  const { callToAction } = useSelector((state) =>
-    getCanSendMessage(state, { userId: otherUser.user_id, chatId })
-  )
+
+  const { firstOtherUser: otherUser, callToAction } = useCanSendMessage(chatId)
 
   // TODO: link to blog
   const handleLearnMorePress = useCallback(() => {}, [])

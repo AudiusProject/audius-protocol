@@ -20,6 +20,7 @@ export type ReactionProps = {
   width?: number
   height?: number
   title?: string
+  disableClickAnimation?: boolean
 }
 
 export const Reaction = (props: ReactionProps) => {
@@ -31,7 +32,8 @@ export const Reaction = (props: ReactionProps) => {
     onClick,
     width = 86,
     height = 86,
-    title
+    title,
+    disableClickAnimation = false
   } = props
   const [isInteracting, setInteracting] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
@@ -79,7 +81,7 @@ export const Reaction = (props: ReactionProps) => {
         [styles.active]: isActive === true,
         [styles.inactive]: isActive === false,
         [styles.responsive]: isResponsive,
-        [styles.clicked]: isClicked
+        [styles.clicked]: !disableClickAnimation && isClicked
       })}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}

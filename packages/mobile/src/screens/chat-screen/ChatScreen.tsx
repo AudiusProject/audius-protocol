@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 
 import type { ChatMessageWithExtras } from '@audius/common'
 import {
+  useCanSendMessage,
   chatCanFetchMoreMessages,
   chatActions,
   accountSelectors,
@@ -47,12 +48,10 @@ import { ReactionPopup } from './ReactionPopup'
 
 const {
   getChatMessages,
-  getOtherChatUsers,
   getChat,
   getChatMessageById,
   getChatMessageByIndex,
-  getReactionsPopupMessageId,
-  getCanSendMessage
+  getReactionsPopupMessageId
 } = chatSelectors
 const {
   fetchMoreMessages,
@@ -208,7 +207,6 @@ export const ChatScreen = () => {
   const userId = useSelector(getUserId)
   const userIdEncoded = encodeHashId(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
-  const [otherUser] = useSelector((state) => getOtherChatUsers(state, chatId))
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
@@ -220,9 +218,8 @@ export const ChatScreen = () => {
   const popupMessage = useSelector((state) =>
     getChatMessageById(state, chatId ?? '', popupMessageId ?? '')
   )
-  const { canSendMessage } = useSelector((state) =>
-    getCanSendMessage(state, { userId: otherUser.user_id, chatId })
-  )
+  const { canSendMessage, firstOtherUser: otherUser } =
+    useCanSendMessage(chatId)
 
   // A ref so that the unread separator doesn't disappear immediately when the chat is marked as read
   // Using a ref instead of state here to prevent unwanted flickers.
