@@ -241,7 +241,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   private async select() {
     if (this.reselectLock) {
-      const prevNode = (' ' + this.selectedNode).slice(1) // Force make a copy of the string
+      const prevNode = this.selectedNode
       await new Promise<void>((resolve) => {
         this.eventEmitter.once('reselectAttemptComplete', () => {
           resolve()
