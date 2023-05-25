@@ -34,7 +34,7 @@ const theme = {
   '--darkmode-static-white': 'var(--white)',
 
   '--accent-red': '#D0021B',
-  '--accent-red-dark-1': '#AA0115',
+  '--accent-red-dark-1': '#BB0218',
   '--accent-red-light-1': '#D51B32',
 
   '--accent-green': '#0BA400',

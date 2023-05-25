@@ -10,7 +10,8 @@ export enum Type {
   DISABLED = 'disabled',
   GLASS = 'glass',
   WHITE = 'white',
-  TEXT = 'text'
+  TEXT = 'text',
+  DESTRUCTIVE = 'destructive'
 }
 
 export enum Size {

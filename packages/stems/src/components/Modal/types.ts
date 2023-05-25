@@ -1,5 +1,4 @@
 import { HTMLAttributes, ReactNode } from 'react'
-import * as React from 'react'
 
 import { ScrollbarProps } from 'components/Scrollbar'
 
@@ -44,7 +43,7 @@ export type ModalProps = {
   /**
    * @deprecated in favor of composability - use ModalHeader sub-component instead.
    */
-  title?: React.ReactNode
+  title?: ReactNode
   /**
    * @deprecated in favor of composability - use ModalHeader sub-component instead.
    */
@@ -128,16 +127,16 @@ export type ModalHeaderProps = HTMLAttributes<HTMLDivElement> & {
   dismissButtonClassName?: string
   showDismissButton?: boolean
   onClose?: () => void
-  children: React.ReactNode
+  children: ReactNode
 }
 
-export type ModalTitleProps = HTMLAttributes<HTMLDivElement> & {
+export type ModalTitleProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
   subtitleClassName?: string
-  icon?: React.ReactNode
+  icon?: ReactNode
   iconClassName?: string
-  title: React.ReactNode
+  title: ReactNode
   titleClassName?: string
-  subtitle?: React.ReactNode
+  subtitle?: ReactNode
   titleId?: string
   subtitleId?: string
 }
