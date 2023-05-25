@@ -285,22 +285,22 @@ export class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.validateUserSchema(metadata)
-
-      const requestObj: AxiosRequestConfig = {
-        url: '/audius_users/metadata',
-        method: 'post',
-        data: {
-          metadata,
-          blockNumber
-        }
-      }
-
-      const { data: body } = await this._makeRequest(requestObj)
-      return body
     } catch (e) {
       console.error('Error validating creator metadata', e)
       throw e
     }
+
+    const requestObj: AxiosRequestConfig = {
+      url: '/audius_users/metadata',
+      method: 'post',
+      data: {
+        metadata,
+        blockNumber
+      }
+    }
+
+    const { data: body } = await this._makeRequest(requestObj)
+    return body
   }
 
   /**
@@ -529,23 +529,23 @@ export class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.validateTrackSchema(metadata)
-
-      const { data: body } = await this._makeRequest(
-        {
-          url: '/tracks/metadata',
-          method: 'post',
-          data: {
-            metadata,
-            sourceFile
-          }
-        },
-        true
-      )
-      return body
-    } catch (e) {
+    } catch(e) {
       console.error('Error validating track metadata', e)
       throw e
     }
+
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/tracks/metadata',
+        method: 'post',
+        data: {
+          metadata,
+          sourceFile
+        }
+      },
+      true
+    )
+    return body
   }
 
   /**
@@ -557,22 +557,22 @@ export class CreatorNode {
     // Validate object before sending
     try {
       this.validatePlaylistSchema(metadata)
-
-      const { data: body } = await this._makeRequest(
-        {
-          url: '/playlists/metadata',
-          method: 'post',
-          data: {
-            metadata
-          }
-        },
-        true
-      )
-      return body
     } catch (e) {
       console.error('Error validating playlist metadata', e)
       throw e
     }
+
+    const { data: body } = await this._makeRequest(
+      {
+        url: '/playlists/metadata',
+        method: 'post',
+        data: {
+          metadata
+        }
+      },
+      true
+    )
+    return body
   }
 
   /**
