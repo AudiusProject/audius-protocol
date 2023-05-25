@@ -161,8 +161,9 @@ func (s *ChatServer) mutate(c echo.Context) error {
 }
 
 func (s *ChatServer) getHealthStatus() schema.Health {
+	errors := s.proc.SweeperErrors()
 	return schema.Health{
-		IsHealthy: true,
+		IsHealthy: s.websocketError == nil && len(errors) == 0,
 	}
 }
 
