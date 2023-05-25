@@ -453,3 +453,44 @@
 .textButton:hover .icon path {
   fill: var(--secondary);
 }
+
+/** Destructive buttons **/
+.destructive {
+  background: transparent;
+  border: 1px solid var(--accent-red);
+  border-radius: var(--unit-1);
+}
+
+.destructive .textLabel {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  color: var(--accent-red);
+}
+
+.destructive .icon path {
+  fill: var(--accent-red);
+}
+
+/** destructive hover **/
+.destructive.includeHoverAnimations:hover:enabled {
+  transform: var(--grow);
+  background-color: var(--accent-red);
+}
+
+.destructive.includeHoverAnimations:active:enabled {
+  transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
+  background-color: var(--accent-red-dark-1);
+}
+
+.destructive.includeHoverAnimations:hover:enabled .textLabel {
+  color: white;
+}
+
+.destructive.includeHoverAnimations:hover:enabled .icon path {
+  fill: var(--static-white);
+}
+
+/** destructive disabled **/
+.destructive:disabled {
+  opacity: 0.45;
+}

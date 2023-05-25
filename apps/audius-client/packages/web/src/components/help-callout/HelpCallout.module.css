@@ -8,7 +8,8 @@
   border-radius: var(--unit-2);
 }
 
-.icon {
+.icon,
+.icon svg {
   width: var(--unit-6);
   height: var(--unit-6);
 }
