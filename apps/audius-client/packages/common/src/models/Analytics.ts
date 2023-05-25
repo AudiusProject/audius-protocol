@@ -981,8 +981,8 @@ export enum PlaybackSource {
   FAVORITES_PAGE = 'favorites page',
   PASSIVE = 'passive',
   EMBED_PLAYER = 'embed player',
-  DM_TRACK = 'dm_track',
-  DM_PLAYLIST_TRACK = 'dm_playlist_track'
+  CHAT_TRACK = 'chat_track',
+  CHAT_PLAYLIST_TRACK = 'chat_playlist_track'
 }
 
 type PlaybackPlay = {

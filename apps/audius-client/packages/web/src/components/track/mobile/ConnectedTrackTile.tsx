@@ -52,7 +52,28 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const getUserId = accountSelectors.getUserId
 
-type ConnectedTrackTileProps = TrackTileProps &
+type OwnProps = Omit<
+  TrackTileProps,
+  | 'id'
+  | 'title'
+  | 'userId'
+  | 'genre'
+  | 'duration'
+  | 'artistName'
+  | 'artistHandle'
+  | 'repostCount'
+  | 'saveCount'
+  | 'coverArtSizes'
+  | 'followeeReposts'
+  | 'followeeSaves'
+  | 'hasCurrentUserReposted'
+  | 'hasCurrentUserSaved'
+  | 'artistIsVerified'
+  | 'isPlaying'
+  | 'goToRoute'
+>
+
+type ConnectedTrackTileProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
@@ -84,7 +105,9 @@ const ConnectedTrackTile = ({
   darkMode,
   isTrending,
   showRankIcon,
-  isFeed = false
+  isActive,
+  isFeed = false,
+  isChat = false
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -242,9 +265,10 @@ const ConnectedTrackTile = ({
       // Playback
       permalink={permalink}
       togglePlay={togglePlay}
-      isActive={uid === playingUid}
+      isActive={uid === playingUid || isActive}
       isLoading={loading}
       isPlaying={uid === playingUid && isPlaying}
+      isBuffering={isBuffering}
       goToArtistPage={goToArtistPage}
       goToTrackPage={goToTrackPage}
       toggleSave={toggleSave}
@@ -263,11 +287,12 @@ const ConnectedTrackTile = ({
       premiumConditions={premiumConditions}
       doesUserHaveAccess={doesUserHaveAccess}
       showRankIcon={showRankIcon}
+      isChat={isChat}
     />
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: TrackTileProps) {
+function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
     track: getTrack(state, { uid: ownProps.uid }),
     user: getUserFromTrack(state, { uid: ownProps.uid }),

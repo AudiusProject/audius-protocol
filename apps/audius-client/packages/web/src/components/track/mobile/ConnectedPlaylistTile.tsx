@@ -58,7 +58,35 @@ const {
 const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
-type ConnectedPlaylistTileProps = PlaylistTileProps &
+type OwnProps = Omit<
+  PlaylistTileProps,
+  | 'id'
+  | 'userId'
+  | 'duration'
+  | 'artistName'
+  | 'genre'
+  | 'artistHandle'
+  | 'isPublic'
+  | 'repostCount'
+  | 'saveCount'
+  | 'trackCount'
+  | 'ownerId'
+  | 'coverArtSizes'
+  | 'isActive'
+  | 'isPlaying'
+  | 'contentTitle'
+  | 'activeTrackUid'
+  | 'followeeReposts'
+  | 'followeeSaves'
+  | 'hasCurrentUserReposted'
+  | 'hasCurrentUserSaved'
+  | 'isAlbum'
+  | 'playlistTitle'
+  | 'artistIsVerified'
+  | 'goToRoute'
+>
+
+type ConnectedPlaylistTileProps = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
@@ -92,7 +120,8 @@ const ConnectedPlaylistTile = ({
   darkMode,
   showRankIcon,
   isTrending,
-  isFeed = false
+  isFeed = false,
+  isChat = false
 }: ConnectedPlaylistTileProps) => {
   const collection = getCollectionWithFallback(nullableCollection)
   const user = getUserWithFallback(nullableUser)
@@ -175,13 +204,18 @@ const ConnectedPlaylistTile = ({
 
   const togglePlay = useCallback(() => {
     if (uploading) return
+
+    const source = isChat
+      ? PlaybackSource.CHAT_PLAYLIST_TRACK
+      : PlaybackSource.PLAYLIST_TILE_TRACK
+
     if (!isPlaying || !isActive) {
       if (isActive) {
         playTrack(playingUid!)
         record(
           make(Name.PLAYBACK_PLAY, {
             id: `${playingTrackId}`,
-            source: PlaybackSource.PLAYLIST_TILE_TRACK
+            source
           })
         )
       } else {
@@ -192,7 +226,7 @@ const ConnectedPlaylistTile = ({
         record(
           make(Name.PLAYBACK_PLAY, {
             id: `${trackId}`,
-            source: PlaybackSource.PLAYLIST_TILE_TRACK
+            source
           })
         )
       }
@@ -201,11 +235,12 @@ const ConnectedPlaylistTile = ({
       record(
         make(Name.PLAYBACK_PAUSE, {
           id: `${playingTrackId}`,
-          source: PlaybackSource.PLAYLIST_TILE_TRACK
+          source
         })
       )
     }
   }, [
+    isChat,
     isPlaying,
     tracks,
     playTrack,
@@ -287,15 +322,18 @@ const ConnectedPlaylistTile = ({
       isMatrix={isMatrix()}
       isTrending={isTrending}
       showRankIcon={showRankIcon}
+      isChat={isChat}
     />
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: PlaylistTileProps) {
+function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
-    collection: getCollection(state, { uid: ownProps.uid }),
+    collection:
+      ownProps.collection ?? getCollection(state, { uid: ownProps.uid }),
+    tracks:
+      ownProps.tracks ?? getTracksFromCollection(state, { uid: ownProps.uid }),
     user: getUserFromCollection(state, { uid: ownProps.uid }),
-    tracks: getTracksFromCollection(state, { uid: ownProps.uid }),
     playingUid: getUid(state),
     isBuffering: getBuffering(state),
     isPlaying: getPlaying(state),

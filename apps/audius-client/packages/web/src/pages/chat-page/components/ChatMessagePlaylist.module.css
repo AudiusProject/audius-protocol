@@ -1,0 +1,7 @@
+.container.isAuthor {
+  border-bottom: 1px solid var(--secondary-dark-1);
+}
+
+.container:not(.isAuthor) {
+  border-bottom: 1px solid var(--neutral-light-7);
+}

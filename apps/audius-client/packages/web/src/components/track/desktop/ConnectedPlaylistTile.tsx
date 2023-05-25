@@ -38,7 +38,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'
 import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
-import { CollectionArtwork } from 'components/track/desktop/Artwork'
+import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import {

@@ -11,6 +11,8 @@ import {
   formatMessageDate,
   isAudiusUrl,
   getPathFromAudiusUrl,
+  isTrackUrl,
+  isPlaylistUrl,
   ChatMessageWithExtras,
   Status,
   useCanSendMessage
@@ -28,6 +30,8 @@ import { reactionMap } from 'components/notification/Notification/components/Rea
 import { ReactComponent as ChatTail } from '../../../assets/img/ChatTail.svg'
 
 import styles from './ChatMessageListItem.module.css'
+import { ChatMessagePlaylist } from './ChatMessagePlaylist'
+import { ChatMessageTrack } from './ChatMessageTrack'
 import { LinkPreview } from './LinkPreview'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
@@ -98,6 +102,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     },
     [dispatch, handleCloseReactionPopup, userId, chatId, message]
   )
+
   const onClickInternalLink = useCallback(
     (url: string) => {
       dispatch(pushRoute(url))
@@ -168,14 +173,35 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
         {links
           .filter((link) => link.type === 'url' && link.isLink)
           .slice(0, 1)
-          .map((link) => (
-            <LinkPreview
-              key={`${link.value}-${link.start}-${link.end}`}
-              href={link.href}
-              chatId={chatId}
-              messageId={message.message_id}
-            />
-          ))}
+          .map((link) => {
+            if (isPlaylistUrl(link.value)) {
+              return (
+                <ChatMessagePlaylist
+                  key={`${link.value}-${link.start}-${link.end}`}
+                  link={link.value}
+                  isAuthor={isAuthor}
+                />
+              )
+            }
+            if (isTrackUrl(link.value)) {
+              return (
+                <ChatMessageTrack
+                  key={`${link.value}-${link.start}-${link.end}`}
+                  link={link.value}
+                  isAuthor={isAuthor}
+                />
+              )
+            }
+            return (
+              <LinkPreview
+                key={`${link.value}-${link.start}-${link.end}`}
+                href={link.href}
+                chatId={chatId}
+                messageId={message.message_id}
+                className={styles.linkPreview}
+              />
+            )
+          })}
         <div className={styles.text}>
           <Linkify
             options={{

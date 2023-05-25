@@ -56,18 +56,18 @@
   fill: rgba(0, 0, 0, 0);
 }
 
-.artworkWrapper .loadingAnimation {
-  pointer-events: none;
-}
-
 .artworkWrapper :global(.ant-skeleton) {
   position: absolute;
   top: 0;
   left: 0;
 }
 
-.artworkWrapper.large .loadingArtImageSkeleton {
-  margin: 0px;
-  height: 100%;
-  width: 100%;
+.spinner {
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+}
+
+.spinner g path {
+  stroke: var(--static-white);
 }

@@ -16,6 +16,33 @@
   margin: 0px auto 12px;
 }
 
+.container.chat {
+  min-width: 448px;
+  min-height: unset;
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.container.chat:hover {
+  transform: scale3d(1.005, 1.005, 1.005);
+}
+
+.container .artworkIcon,
+.container .artworkIcon circle {
+  opacity: 0;
+}
+
+.container:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.container .artworkIcon path {
+  fill: var(--static-white);
+}
+
 .container:active {
   box-shadow: 0 0 1px 0 var(--tile-shadow-1),
     0 2px 3px -2px var(--tile-shadow-3);
@@ -75,6 +102,11 @@
 
 .disabledStatItem {
   opacity: 0.5;
+}
+
+.chat .statItem:active {
+  color: unset;
+  transform: scale(1);
 }
 
 .listenCount {
@@ -171,7 +203,8 @@
 }
 
 .title:hover {
-  color: inherit;
+  color: var(--primary);
+  text-decoration: underline !important;
 }
 
 .title:active {
@@ -198,8 +231,8 @@
 }
 
 .artist:hover {
-  color: inherit;
-  text-decoration: none;
+  color: var(--primary);
+  text-decoration: underline !important;
 }
 
 .artist:active {
@@ -328,10 +361,18 @@
   fill: var(--neutral-light-4);
 }
 
+.chat .favoriteButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
+}
+
 .favoriteButton {
   height: 14px;
   width: 14px;
   margin-left: 4px;
+}
+
+.chat .repostButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
 }
 
 .repostButton {

@@ -54,6 +54,14 @@
   user-select: text;
 }
 
+:not(.isAuthor) .linkPreview {
+  border-bottom: 1px solid var(--neutral-light-7);
+}
+
+.isAuthor .linkPreview {
+  border-bottom: 1px solid var(--secondary-dark-1);
+}
+
 .meta {
   font-size: var(--font-xs);
   color: var(--neutral-light-2);

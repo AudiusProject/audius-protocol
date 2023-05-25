@@ -35,7 +35,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
-import { TrackArtwork } from 'components/track/desktop/Artwork'
+import { TrackArtwork } from 'components/track/Artwork'
 import UserBadges from 'components/user-badges/UserBadges'
 import {
   setUsers,

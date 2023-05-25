@@ -95,14 +95,14 @@ const TrackList = ({
           track={track}
         />
       ))}
-      {trackCount && trackCount > 5 && (
+      {trackCount && trackCount > DISPLAY_TRACK_COUNT ? (
         <>
           <div className={styles.trackItemDivider}></div>
           <div className={cn(styles.trackItem, styles.trackItemMore)}>
-            {`+${trackCount - tracks.length} more tracks`}
+            {`+${trackCount - DISPLAY_TRACK_COUNT} more tracks`}
           </div>
         </>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -134,7 +134,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     numLoadingSkeletonRows,
     isTrending,
     showRankIcon,
-    trackCount
+    trackCount,
+    isChat
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -150,7 +151,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={cn(styles.container, { [styles.chat]: isChat })}>
       <div className={styles.mainContent} onClick={props.togglePlay}>
         <div className={cn(styles.duration, styles.statText, fadeIn)}>
           {formatLineupTileDuration(props.duration)}
@@ -163,6 +164,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             callback={() => setArtworkLoaded(true)}
             coverArtSizes={props.coverArtSizes}
             className={styles.albumArtContainer}
+            isPlaying={props.isPlaying}
+            isBuffering={props.isLoading}
+            artworkIconClassName={styles.artworkIcon}
           />
           <div
             className={cn(styles.titles, {
@@ -213,7 +217,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   [styles.disabledStatItem]: !props.saveCount
                 })}
                 onClick={
-                  props.saveCount
+                  props.saveCount && !isChat
                     ? props.makeGoToFavoritesPage(props.id)
                     : undefined
                 }
@@ -224,6 +228,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   isDarkMode={props.darkMode}
                   isMatrixMode={props.isMatrix}
                   className={styles.favoriteButton}
+                  wrapperClassName={styles.favoriteButtonWrapper}
                 />
               </div>
               <div
@@ -231,7 +236,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   [styles.disabledStatItem]: !props.repostCount
                 })}
                 onClick={
-                  props.repostCount
+                  props.repostCount && !isChat
                     ? props.makeGoToRepostsPage(props.id)
                     : undefined
                 }
@@ -242,6 +247,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   isDarkMode={props.darkMode}
                   isMatrixMode={props.isMatrix}
                   className={styles.repostButton}
+                  wrapperClassName={styles.repostButtonWrapper}
                 />
               </div>
             </>
@@ -255,19 +261,21 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
           numLoadingSkeletonRows={numLoadingSkeletonRows}
           trackCount={trackCount}
         />
-        <div className={cn(fadeIn)}>
-          <BottomButtons
-            hasSaved={props.hasCurrentUserSaved}
-            hasReposted={props.hasCurrentUserReposted}
-            toggleSave={props.toggleSave}
-            toggleRepost={props.toggleRepost}
-            onShare={props.onShare}
-            onClickOverflow={props.onClickOverflow}
-            isOwner={props.isOwner}
-            isDarkMode={props.darkMode}
-            isMatrixMode={props.isMatrix}
-          />
-        </div>
+        {!isChat ? (
+          <div className={cn(fadeIn)}>
+            <BottomButtons
+              hasSaved={props.hasCurrentUserSaved}
+              hasReposted={props.hasCurrentUserReposted}
+              toggleSave={props.toggleSave}
+              toggleRepost={props.toggleRepost}
+              onShare={props.onShare}
+              onClickOverflow={props.onClickOverflow}
+              isOwner={props.isOwner}
+              isDarkMode={props.darkMode}
+              isMatrixMode={props.isMatrix}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   )
