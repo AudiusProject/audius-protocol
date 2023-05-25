@@ -1,10 +1,9 @@
 {
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "rootDir": "src",
-        "outDir": "build"
-    },
-    "references": [
-        { "path": "../storage" }
-    ]
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "build",
+    "baseUrl": "./src"
+  },
+  "references": [{ "path": "../storage" }]
 }

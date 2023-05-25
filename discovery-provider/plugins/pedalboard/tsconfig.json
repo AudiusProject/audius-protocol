@@ -1,6 +1,5 @@
 {
-    "compilerOptions": {
-        "baseUrl": "./",
-        "composite": true
-    }
+  "compilerOptions": {
+    "composite": true
+  }
 }
