@@ -8,6 +8,7 @@ import (
 	"mediorum/server/signature"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -97,6 +98,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
+	if os.Getenv("identityService") == "" ||
+		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
+		c.QueryParam("skip_play_count") == "true" {
+		// todo: skip count for trusted notifier requests should be inferred
+		// by the requesting entity and not some query param
+		return
+	}
+
 	httpClient := http.Client{
 		Timeout: 2 * time.Second,
 	}
@@ -104,7 +113,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	sig, _ := signature.ParseFromQueryString(c.QueryParam("signature"))
 	trackId := sig.Data.TrackId
 
-	endpoint := fmt.Sprintf("http://audius-protocol-identity-service-1/tracks/%d/listen", trackId)
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), trackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
 		ss.logger.Error("logTrackListen: unable to build request", err)
@@ -112,7 +121,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 
 	body := map[string]interface{}{
-		// "no-record-play": true, 	 		   // tbd: omit TN
 		"userId":       ss.Config.Self.Wallet, // as per CN `userId: req.userId ?? delegateOwnerWallet`
 		"solanaListen": false,
 		"timestamp":    signatureData.Timestamp,

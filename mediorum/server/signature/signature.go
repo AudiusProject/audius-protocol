@@ -82,7 +82,7 @@ func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) 
 }
 
 func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenTSSignature, error) {
-	// intended to resemble: creator-node/src/apiSigning.ts:generateListenTimestampAndSignature
+	// based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/apiSigning.ts
 	// '{"data":"listen","timestamp":"2023-05-24T15:37:57.051Z"}'
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	data := fmt.Sprintf("{\"data\":\"listen\",\"timestamp\":\"%s\"}", timestamp)
