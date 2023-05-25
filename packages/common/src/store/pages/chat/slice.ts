@@ -359,7 +359,7 @@ const slice = createSlice({
       action: PayloadAction<{
         chatId: string
         message: string
-        resendMessageId?: string // Required if resend = true
+        resendMessageId?: string
       }>
     ) => {
       // triggers saga which will add a message optimistically and replace it after success

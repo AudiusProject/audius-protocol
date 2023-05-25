@@ -11,10 +11,11 @@ import {
   formatMessageDate,
   isAudiusUrl,
   getPathFromAudiusUrl,
+  ChatMessageWithExtras,
+  Status,
   useCanSendMessage
 } from '@audius/common'
-import type { ChatMessage } from '@audius/sdk'
-import { IconPlus, PopupPosition } from '@audius/stems'
+import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import Linkify from 'linkify-react'
@@ -30,13 +31,17 @@ import styles from './ChatMessageListItem.module.css'
 import { LinkPreview } from './LinkPreview'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
-const { setMessageReaction } = chatActions
+const { setMessageReaction, sendMessage } = chatActions
 const { getUserId } = accountSelectors
 
 type ChatMessageListItemProps = {
   chatId: string
-  message: ChatMessage
+  message: ChatMessageWithExtras
   hasTail: boolean
+}
+
+const messages = {
+  error: 'Message Failed to Send. Click to Retry.'
 }
 
 export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
@@ -99,6 +104,16 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     },
     [dispatch]
   )
+
+  const handleResendClicked = useCallback(() => {
+    dispatch(
+      sendMessage({
+        chatId,
+        message: message.message,
+        resendMessageId: message.message_id
+      })
+    )
+  }, [dispatch, chatId, message.message, message.message_id])
 
   // Only render reactions if user has message permissions
   const { canSendMessage } = useCanSendMessage(chatId)
@@ -201,7 +216,14 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           onSelected={handleReactionSelected}
         />
       ) : null}
-      {hasTail ? (
+      {message.status === Status.ERROR ? (
+        <div
+          className={cn(styles.meta, styles.error)}
+          onClick={handleResendClicked}
+        >
+          <IconError /> {messages.error}
+        </div>
+      ) : hasTail ? (
         <div className={styles.date}>
           {formatMessageDate(message.created_at)}
         </div>
