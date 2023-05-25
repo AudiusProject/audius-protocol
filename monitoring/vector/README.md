@@ -14,3 +14,11 @@ docker buildx build \
   --push \
   .
 ```
+
+NOTE: if you get the following error:
+
+```
+ERROR: failed to solve: DeadlineExceeded: DeadlineExceeded: DeadlineExceeded: timberio/vector:0.28.1-alpine: failed to do request: Head "https://registry-1.docker.io/v2/timberio/vector/manifests/0.28.1-alpine": dial tcp 44.205.64.79:443: i/o timeout
+```
+
+Make sure you are logged in (using `docker login`) and on the latest version of docker.
