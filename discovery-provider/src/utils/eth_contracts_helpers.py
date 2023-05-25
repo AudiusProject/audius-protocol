@@ -71,7 +71,7 @@ def fetch_all_registered_content_nodes(
 
                 valid_endpoint = is_fqdn(eth_sp_endpoint)
                 # Only valid FQDN strings are worth validating
-                if valid_endpoint and isCNodeHealthy(eth_sp_endpoint):
+                if valid_endpoint:
                     if include_spID:
                         eth_cn_endpoints_set.add((eth_sp_endpoint, cn_spID))
                     else:
