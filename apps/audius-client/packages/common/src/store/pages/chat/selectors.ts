@@ -22,12 +22,6 @@ const {
   selectIds: getChatMessageIds
 } = chatMessagesAdapter.getSelectors()
 
-/**
- * Gets a single chat (without optimistic read status)
- */
-export const getChat = selectChatById
-
-// Selectors for UserChat (all chats for a user)
 export const getChatsStatus = (state: CommonState) =>
   state.pages.chat.chats.status
 
@@ -45,6 +39,24 @@ export const getBlockees = (state: CommonState) => state.pages.chat.blockees
 export const getBlockers = (state: CommonState) => state.pages.chat.blockers
 
 const getChatPermissions = (state: CommonState) => state.pages.chat.permissions
+
+// Gets a chat and its optimistic read status
+export const getChat = createSelector(
+  [
+    selectChatById,
+    getOptimisticReads,
+    (_: CommonState, chatId: string) => chatId
+  ],
+  (chat, optimisticReads, chatId) => {
+    if (!chat) return undefined
+    return {
+      ...chat,
+      ...optimisticReads[chatId]
+    }
+  }
+)
+
+export const getNonOptimisticChat = selectChatById
 
 /**
  * Gets all chats and their optimistic read status
