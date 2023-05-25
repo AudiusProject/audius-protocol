@@ -1,3 +1,1 @@
-import * as Models from "models";
-
-export default Models;
+export * as models from "models";

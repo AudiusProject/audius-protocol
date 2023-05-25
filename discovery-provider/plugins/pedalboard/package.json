@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build": "npx tsc --build tsconfig.build.json",
-    "pretty": "prettier --write ."
+    "pretty": "prettier --write .",
+    "link": "npm i ./packages/$1 -w ./packages/$2"
   },
   "workspaces": [
     "packages/*"
