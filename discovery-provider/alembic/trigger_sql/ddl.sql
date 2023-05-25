@@ -237,5 +237,6 @@ COMMIT;
 
 -- 5/25/23 fix indexing stall
 BEGIN;
+  delete from users where txhash='0xa25516594adc42562e498b2c9f4e4365c9cbfea223a4e55624ae0ac316708a62' and not is_current;
   delete from users where txhash='0x7bc1e2c100a04061098db053957072b7eb0db75ab8f5c35873b56f6b6b817d9e';
 COMMIT;
