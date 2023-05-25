@@ -21,6 +21,8 @@ type PeerClient struct {
 	outbox chan []byte
 	proc   *RPCProcessor
 	logger *slog.Logger
+
+	err error
 }
 
 func NewPeerClient(host string, proc *RPCProcessor) *PeerClient {
@@ -83,9 +85,9 @@ func (p *PeerClient) startSender() {
 // sweeper goroutine will pull messages on interval
 func (c *PeerClient) startSweeper() {
 	for i := 0; ; i++ {
-		err := c.doSweep(i)
-		if err != nil {
-			c.logger.Error("sweep error", err, "host")
+		c.err = c.doSweep(i)
+		if c.err != nil {
+			c.logger.Error("sweep error", c.err, "host")
 		}
 		time.Sleep(time.Minute)
 	}
@@ -146,7 +148,7 @@ func (c *PeerClient) doSweep(i int) error {
 		// if apply fails during sweep
 		// it could be because discovery indexer is behind
 		// retry locally and only advance cursor on success
-		err := retry.Do(
+		err = retry.Do(
 			func() error {
 				return c.proc.Apply(op)
 			},
@@ -170,5 +172,5 @@ func (c *PeerClient) doSweep(i int) error {
 		return err
 	}
 
-	return nil
+	return err
 }
