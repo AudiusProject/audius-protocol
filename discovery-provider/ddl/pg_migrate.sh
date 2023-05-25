@@ -6,6 +6,8 @@
 set -e
 [[ -f .env ]] && source .env
 
+echo " ... starting pg_migrate "
+
 MIGRATIONS_DIR="migrations"
 MIGRATIONS_TABLE="schema_version"
 
@@ -14,7 +16,7 @@ POSTGRES_HOST=${POSTGRES_HOST:-127.0.0.1}
 POSTGRES_PORT=${POSTGRES_PORT:-5432}
 export PGPASSWORD="$POSTGRES_PASSWORD"
 
-# setting POSTGRES_URL will override any individual settings from above
+# setting DB_URL will override any individual settings from above
 DB_URL=${DB_URL:-postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB}
 
 # remove +psycopg2 from DB_URL
@@ -69,6 +71,11 @@ migrate() {
 
     migrate_dir $MIGRATIONS_DIR
     migrate_dir "functions"
+
+    # run non_test files if PG_MIGRATE_TEST_MODE is unset
+    if [[ $PG_MIGRATE_TEST_MODE != "true" ]]; then
+        migrate_dir "non_test"
+    fi
 }
 
 test_idempotency() {

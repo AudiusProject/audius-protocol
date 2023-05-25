@@ -24,6 +24,7 @@ DB_URL = os.getenv(
 
 # set DB_URL in environ for sake of pg_migrate.sh
 os.environ["DB_URL"] = DB_URL
+os.environ["PG_MIGRATE_TEST_MODE"] = "true"
 
 TEST_BROKER_URL = os.getenv("audius_redis_url", "redis://localhost:5379/0")
 ENGINE_ARGS_LITERAL = '{ \
