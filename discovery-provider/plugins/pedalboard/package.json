@@ -1,12 +1,11 @@
 {
     "name": "pedalboard",
+    "private": true,
     "scripts": {
-        "create": "npm init -w $1"
+        "build": "npx tsc --build tsconfig.build.json"
     },
     "workspaces": [
-        "storage",
-        "pedal",
-        "trending-challenge-reward"
+        "packages/*"
     ],
     "dependencies": {
         "dayjs": "^1.11.7",
@@ -15,6 +14,7 @@
         "set-interval-async": "^3.0.3"
     },
     "devDependencies": {
-        "@types/node": "^20.2.3"
+        "@types/node": "^20.2.3",
+        "typescript": "^5.0.4"
     }
 }
