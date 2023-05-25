@@ -1,0 +1,4 @@
+when: << pipeline.parameters.run-gcp-workflow >>
+jobs:
+  - build-gcp-image:
+      context: GCP

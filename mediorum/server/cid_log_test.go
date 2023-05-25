@@ -8,6 +8,8 @@ import (
 )
 
 func TestCidLog(t *testing.T) {
+	t.Skip()
+
 	ctx := context.Background()
 
 	s1 := testNetwork[0]

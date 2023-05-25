@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
+	"github.com/storyicon/sigverify"
 )
 
 func parsePrivateKey(pk string) (*ecdsa.PrivateKey, error) {
@@ -18,6 +20,12 @@ func parsePrivateKey(pk string) (*ecdsa.PrivateKey, error) {
 		return nil, err
 	}
 	return crypto.ToECDSA(privateBytes)
+}
+
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
+func recover(input string, signature []byte) (common.Address, error) {
+	hash := crypto.Keccak256Hash([]byte(input))
+	return sigverify.EcRecoverEx(hash.Bytes(), signature)
 }
 
 func (ss *MediorumServer) checkBasicAuth(user, pass string, c echo.Context) (bool, error) {
@@ -36,25 +44,22 @@ func (ss *MediorumServer) checkBasicAuth(user, pass string, c echo.Context) (boo
 	}
 
 	// recover
-	sig, err := hex.DecodeString(pass)
+	sig, err := hex.DecodeString(pass[2:]) // remove "0x"
 	if err != nil {
 		return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: signature not hex", err)
 	}
-
-	hash := crypto.Keccak256Hash([]byte(user))
-	pubkey, err := crypto.SigToPub(hash[:], sig)
+	wallet, err := recover(user, sig)
 	if err != nil {
 		return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: invalid signature", err)
 	}
-	wallet := crypto.PubkeyToAddress(*pubkey).Hex()
 
 	// check peer list for wallet
 	for _, peer := range ss.Config.Peers {
-		if strings.EqualFold(peer.Wallet, wallet) {
+		if strings.EqualFold(peer.Wallet, wallet.Hex()) {
 			return true, nil
 		}
 	}
 
-	return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: wallet not in peer list "+wallet)
+	return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: wallet not in peer list "+wallet.Hex())
 
 }

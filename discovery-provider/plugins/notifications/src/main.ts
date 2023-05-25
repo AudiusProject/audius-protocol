@@ -17,6 +17,7 @@ import {
 } from './remoteConfig'
 import { Server } from './server'
 import { configureWebPush } from './web'
+import { configureAnnouncement } from './processNotifications/mappers/announcement'
 
 export class Processor {
   discoveryDB: Knex
@@ -53,6 +54,9 @@ export class Processor {
 
     // setup browser push
     configureWebPush()
+
+    // setup announcements
+    configureAnnouncement()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
@@ -140,6 +144,7 @@ export class Processor {
   }
 
   close = async () => {
+    this.remoteConfig.close()
     await this.listener?.close()
     await this.discoveryDB?.destroy()
     await this.identityDB?.destroy()

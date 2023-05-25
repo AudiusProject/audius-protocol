@@ -1,5 +1,0 @@
-version: 2.1
-
-orbs:
-  gh: circleci/github-cli@2.2.0
-  slack: circleci/slack@4.12.0

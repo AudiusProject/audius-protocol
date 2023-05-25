@@ -18,20 +18,22 @@ import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Announcement Notification', () => {
   let processor: Processor
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
+    process.env.ANNOUNCEMENTS_DRY_RUN = "false"
+    process.env.ANNOUNCEMENTS_EMAIL_ENABLED = "true"
     const setup = await setupTest()
     processor = setup.processor
   })
 
   afterEach(async () => {
     await resetTests(processor)
+    process.env.ANNOUNCEMENTS_DRY_RUN = "true"
+    process.env.ANNOUNCEMENTS_EMAIL_ENABLED = "false"
   })
 
   test('Process push notification for announcement', async () => {

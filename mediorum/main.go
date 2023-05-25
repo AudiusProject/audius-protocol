@@ -60,6 +60,10 @@ func startStagingOrProd(isProd bool) {
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
 	privateKey := mustGetenv("delegatePrivateKey")
+	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
+	if err != nil {
+		slog.Warn("failed to parse trustedNotifierID", "err", err)
+	}
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
@@ -75,6 +79,7 @@ func startStagingOrProd(isProd bool) {
 		PostgresDSN:       os.Getenv("dbUrl"),
 		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
 		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
+		TrustedNotifierID: trustedNotifierID,
 	}
 
 	ss, err := server.New(config)
@@ -128,6 +133,21 @@ func startDevCluster() {
 	devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 
 	network := devNetwork(hostNameTemplate, devNetworkCount)
+	signers := []server.Peer{
+		{
+			Host:   "audius-protocol-discovery-provider-1",
+			Wallet: "0x73EB6d82CFB20bA669e9c178b718d770C49BB52f",
+		},
+		{
+			Host:   "audius-protocol-discovery-provider-2",
+			Wallet: "0x9D8E5fAc117b15DaCED7C326Ae009dFE857621f1",
+		},
+		{
+			Host:   "audius-protocol-discovery-provider-3",
+			Wallet: "0x982a8CbE734cb8c29A6a7E02a3B0e4512148F6F9",
+		},
+	}
+
 	wg := sync.WaitGroup{}
 
 	for idx, peer := range network {
@@ -135,6 +155,7 @@ func startDevCluster() {
 		config := server.MediorumConfig{
 			Self:              peer,
 			Peers:             network,
+			Signers:           signers,
 			ReplicationFactor: 3,
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),

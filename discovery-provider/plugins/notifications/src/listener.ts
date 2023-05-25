@@ -64,6 +64,6 @@ const getNotification = async (client: Client, notificationId: number): Promise<
     return res.rows[0]
   } catch (e) {
     logger.error(`could not get notification ${notificationId} ${e}`)
-    return null;
+    return null
   }
 }

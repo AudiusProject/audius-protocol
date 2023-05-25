@@ -23,8 +23,7 @@
         },
         "playlist_image_sizes_multihash": {
           "type": ["string", "null"],
-          "default": null,
-          "$ref": "#/definitions/CID"
+          "default": null
         },
         "description": {
           "type": ["string", "null"],

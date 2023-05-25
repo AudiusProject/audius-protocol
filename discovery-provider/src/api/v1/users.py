@@ -409,6 +409,8 @@ class HandleFullTrackList(Resource):
         current_user_id = get_current_user_id(args)
 
         sort = args.get("sort", None)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
         offset = format_offset(args)
         limit = format_limit(args)
         filter_tracks = args.get("filter_tracks", "all")
@@ -420,6 +422,8 @@ class HandleFullTrackList(Resource):
             "with_users": True,
             "filter_deleted": True,
             "sort": sort,
+            "sort_method": sort_method,
+            "sort_direction": sort_direction,
             "limit": limit,
             "offset": offset,
             "filter_tracks": filter_tracks,
@@ -473,6 +477,8 @@ class HandleFullAITrackList(Resource):
         current_user_id = get_current_user_id(args)
 
         sort = args.get("sort", None)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
         offset = format_offset(args)
         limit = format_limit(args)
         filter_tracks = args.get("filter_tracks", "all")
@@ -484,6 +490,8 @@ class HandleFullAITrackList(Resource):
             "with_users": True,
             "filter_deleted": True,
             "sort": sort,
+            "sort_method": sort_method,
+            "sort_direction": sort_direction,
             "limit": limit,
             "offset": offset,
             "filter_tracks": filter_tracks,

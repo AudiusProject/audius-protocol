@@ -686,7 +686,8 @@ export class Users extends Base {
   }
 
   /**
-   * Updates a creator (updates their data on the creator node)
+   * Updates a creator (updates their data on the creator node).
+   * DO NOT CALL FOR A STORAGEV2 USER (use updateMetadataV2 instead)
    */
   async updateCreator(
     userId: number,

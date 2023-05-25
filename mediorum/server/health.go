@@ -22,7 +22,7 @@ func (ss *MediorumServer) startHealthBroadcaster() {
 			ss.crud.Patch(ss.healthReport())
 			count++
 			if count > 10 {
-				delay = time.Second * 5
+				delay = time.Second * 60
 			}
 		}
 	}
