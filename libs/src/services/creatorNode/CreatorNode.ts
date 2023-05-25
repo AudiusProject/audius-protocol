@@ -205,12 +205,19 @@ export class CreatorNode {
     }
   }
 
+  // Throws an error upon validation failure
   validatePlaylistSchema(metadata: PlaylistMetadata) {
     this.schemas?.[playlistSchemaType].validate?.(metadata)
   }
 
+  // Throws an error upon validation failure
   validateUserSchema(metadata: UserMetadata) {
     this.schemas?.[userSchemaType].validate?.(metadata)
+  }
+
+  // Throws an error upon validation failure
+  validateTrackSchema(metadata: TrackMetadata) {
+    this.schemas?.[trackSchemaType].validate?.(metadata)
   }
 
   /** Establishes a connection to a content node endpoint */
@@ -521,23 +528,24 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas?.[trackSchemaType].validate?.(metadata)
+      this.validateTrackSchema(metadata)
+
+      const { data: body } = await this._makeRequest(
+        {
+          url: '/tracks/metadata',
+          method: 'post',
+          data: {
+            metadata,
+            sourceFile
+          }
+        },
+        true
+      )
+      return body
     } catch (e) {
       console.error('Error validating track metadata', e)
+      throw e
     }
-
-    const { data: body } = await this._makeRequest(
-      {
-        url: '/tracks/metadata',
-        method: 'post',
-        data: {
-          metadata,
-          sourceFile
-        }
-      },
-      true
-    )
-    return body
   }
 
   /**

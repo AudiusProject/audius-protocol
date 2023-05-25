@@ -1149,6 +1149,7 @@ export class Users extends Base {
     )
   }
 
+  // Throws an error upon validation failure
   _validateUserMetadata(metadata: UserMetadata) {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
     this.creatorNode.validateUserSchema(metadata)
