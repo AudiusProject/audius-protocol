@@ -13,8 +13,8 @@ import (
 
 type MockedDelistResponse struct {
 	Result struct {
-		Tracks []TrackDelistStatus `json:"tracks"`
-		Users  []UserDelistStatus  `json:"users"`
+		Tracks []jsonTrackDelistStatus `json:"tracks"`
+		Users  []jsonUserDelistStatus  `json:"users"`
 	} `json:"result"`
 	Timestamp string `json:"timestamp"`
 	Signature string `json:"signature"`
@@ -28,61 +28,75 @@ func TestPollDelistStatuses(t *testing.T) {
 
 	mockResponse := MockedDelistResponse{
 		Result: struct {
-			Tracks []TrackDelistStatus `json:"tracks"`
-			Users  []UserDelistStatus  `json:"users"`
+			Tracks []jsonTrackDelistStatus `json:"tracks"`
+			Users  []jsonUserDelistStatus  `json:"users"`
 		}{
-			Tracks: []TrackDelistStatus{
+			Tracks: []jsonTrackDelistStatus{
 				{
-					CreatedAt: time.Now(),
-					TrackID:   1,
-					OwnerID:   100,
-					TrackCID:  "trackCid1",
-					Delisted:  true,
-					Reason:    "ACR",
+					CreatedAt: time.Now().Format(TimeFormat),
+					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+						TrackID:  1,
+						OwnerID:  100,
+						TrackCID: "trackCid1",
+						Delisted: true,
+						Reason:   "ACR",
+					},
 				},
 				{
-					CreatedAt: time.Now(),
-					TrackID:   2,
-					OwnerID:   100,
-					TrackCID:  "trackCid2",
-					Delisted:  true,
-					Reason:    "DMCA",
+					CreatedAt: time.Now().Format(TimeFormat),
+					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+						TrackID:  2,
+						OwnerID:  100,
+						TrackCID: "trackCid2",
+						Delisted: true,
+						Reason:   "DMCA",
+					},
 				},
 				{
-					CreatedAt: time.Now().Add(time.Hour + time.Minute),
-					TrackID:   1,
-					OwnerID:   100,
-					TrackCID:  "trackCid1",
-					Delisted:  false,
-					Reason:    "MANUAL",
+					CreatedAt: time.Now().Add(time.Hour + time.Minute).Format(TimeFormat),
+					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+						TrackID:  1,
+						OwnerID:  100,
+						TrackCID: "trackCid1",
+						Delisted: false,
+						Reason:   "MANUAL",
+					},
 				},
 				{
-					CreatedAt: time.Now(),
-					TrackID:   3,
-					OwnerID:   200,
-					TrackCID:  "trackCid3",
-					Delisted:  true,
-					Reason:    "DMCA",
+					CreatedAt: time.Now().Format(TimeFormat),
+					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+						TrackID:  3,
+						OwnerID:  200,
+						TrackCID: "trackCid3",
+						Delisted: true,
+						Reason:   "DMCA",
+					},
 				},
 			},
-			Users: []UserDelistStatus{
+			Users: []jsonUserDelistStatus{
 				{
-					CreatedAt: time.Now(),
-					UserID:    100,
-					Delisted:  true,
-					Reason:    "STRIKE_THRESHOLD",
+					CreatedAt: time.Now().Format(TimeFormat),
+					aliasUserDelistStatus: &aliasUserDelistStatus{
+						UserID:   100,
+						Delisted: true,
+						Reason:   "STRIKE_THRESHOLD",
+					},
 				},
 				{
-					CreatedAt: time.Now().Add(time.Hour + time.Minute),
-					UserID:    100,
-					Delisted:  false,
-					Reason:    "COPYRIGHT_SCHOOL",
+					CreatedAt: time.Now().Add(time.Hour + time.Minute).Format(TimeFormat),
+					aliasUserDelistStatus: &aliasUserDelistStatus{
+						UserID:   100,
+						Delisted: false,
+						Reason:   "COPYRIGHT_SCHOOL",
+					},
 				},
 				{
-					CreatedAt: time.Now(),
-					UserID:    300,
-					Delisted:  true,
-					Reason:    "STRIKE_THRESHOLD",
+					CreatedAt: time.Now().Format(TimeFormat),
+					aliasUserDelistStatus: &aliasUserDelistStatus{
+						UserID:   300,
+						Delisted: true,
+						Reason:   "STRIKE_THRESHOLD",
+					},
 				},
 			},
 		},
