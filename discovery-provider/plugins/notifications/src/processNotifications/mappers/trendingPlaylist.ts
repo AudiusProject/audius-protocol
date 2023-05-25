@@ -44,7 +44,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -93,7 +93,13 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     const body = `${playlists[this.playlistId]?.playlist_name} is the #${
       this.rank
     } trending playlist on Audius right now!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (

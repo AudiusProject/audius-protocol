@@ -41,7 +41,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -88,10 +88,21 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     const remixUserName = users[this.remixUserId]?.name
     const remixTitle = tracks[this.trackId]?.title
 
-    const title =  'New Remix Of Your Track ♻️'
+    const title = 'New Remix Of Your Track ♻️'
     const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
-    if (userNotificationSettings.isNotificationTypeEnabled(this.parentTrackUserId, 'remixes')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.parentTrackUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.parentTrackUserId,
+        'remixes'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.parentTrackUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed

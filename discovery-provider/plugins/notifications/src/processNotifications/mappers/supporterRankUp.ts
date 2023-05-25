@@ -39,7 +39,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -71,11 +71,17 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
 
     const sendingUserName = users[this.senderUserId]?.name
 
-    const title =  `#${this.rank} Top Supporter`
+    const title = `#${this.rank} Top Supporter`
     const body = `${capitalize(sendingUserName)} became your #${
       this.rank
     } Top Supporter!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (

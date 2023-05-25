@@ -23,7 +23,7 @@ export class Message extends BaseNotification<DMNotification> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -56,8 +56,19 @@ export class Message extends BaseNotification<DMNotification> {
     const title = 'Message'
     const body = `New message from ${users[this.senderUserId].name}`
 
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'messages')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'messages'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed

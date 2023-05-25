@@ -64,7 +64,7 @@ const defaultMappingVariable = {
   [MappingVariable.PushReaction]: false
 }
 
-export const BrowserPushPlugin = "browser_push_plugin"
+export const BrowserPushPlugin = 'browser_push_plugin'
 export const BrowserPluginMappings = {
   Enabled: 'enabled'
 }

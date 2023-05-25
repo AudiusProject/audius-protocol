@@ -42,7 +42,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -112,7 +112,13 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your repost of ${entityName}`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
