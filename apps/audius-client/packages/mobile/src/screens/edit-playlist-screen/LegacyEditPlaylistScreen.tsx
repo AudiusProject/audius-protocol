@@ -19,9 +19,9 @@ import { TrackList } from 'app/components/track-list'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { makeStyles } from 'app/styles'
 
-import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
-import { PlaylistImageInput } from './PlaylistImageInput'
-import { PlaylistNameInput } from './PlaylistNameInput'
+import { PlaylistDescriptionInput } from './LegacyPlaylistDescriptionInput'
+import { PlaylistImageInput } from './LegacyPlaylistImageInput'
+import { PlaylistNameInput } from './LegacyPlaylistNameInput'
 const { getMetadata, getTracks } = createPlaylistModalUISelectors
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions

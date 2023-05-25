@@ -10,9 +10,9 @@ import { useDispatch } from 'react-redux'
 import { FormScreen } from 'app/components/form-screen'
 import { useToast } from 'app/hooks/useToast'
 
-import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
-import { PlaylistImageInput } from './PlaylistImageInput'
-import { PlaylistNameInput } from './PlaylistNameInput'
+import { PlaylistDescriptionInput } from './LegacyPlaylistDescriptionInput'
+import { PlaylistImageInput } from './LegacyPlaylistImageInput'
+import { PlaylistNameInput } from './LegacyPlaylistNameInput'
 const { createPlaylist } = cacheCollectionsActions
 
 const messages = {
