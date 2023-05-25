@@ -1345,7 +1345,7 @@ export const audiusBackend = ({
         metadata: updatedMetadata,
 
         // We don't need these properties, but the confirmer expects them.
-        // TODO: Remove after v2 is fully rolled out and v1 is removed
+        // TODO (theo): Remove after v2 is fully rolled out and v1 is removed
         transcodedTrackCID: updatedMetadata.track_cid,
         metadataMultihash: '',
         metadataFileUUID: '',
@@ -1558,7 +1558,6 @@ export const audiusBackend = ({
     return null
   }
 
-  // TODO (theo): don't call uploadImage if storage v2 signup is enabled
   async function updateCreator(metadata: User, _id: ID) {
     let newMetadata = { ...metadata }
     const associatedWallets = await fetchUserAssociatedWallets(metadata)
@@ -1571,25 +1570,42 @@ export const audiusBackend = ({
     const writeMetadataThroughChainEnabled =
       (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
       false
+    const storageV2UploadEnabled = await getFeatureEnabled(
+      FeatureFlags.STORAGE_V2_TRACK_UPLOAD
+    )
     try {
       if (newMetadata.updatedProfilePicture) {
-        const resp = await audiusLibs.File.uploadImage(
-          newMetadata.updatedProfilePicture.file,
-          undefined,
-          null,
-          writeMetadataThroughChainEnabled
-        )
-        newMetadata.profile_picture_sizes = resp.dirCID
+        if (storageV2UploadEnabled) {
+          const resp = await audiusLibs.creatorNode.uploadProfilePictureV2(
+            newMetadata.updatedProfilePicture.file
+          )
+          newMetadata.profile_picture_sizes = resp.id
+        } else {
+          const resp = await audiusLibs.File.uploadImage(
+            newMetadata.updatedProfilePicture.file,
+            undefined,
+            null,
+            writeMetadataThroughChainEnabled
+          )
+          newMetadata.profile_picture_sizes = resp.dirCID
+        }
       }
 
       if (newMetadata.updatedCoverPhoto) {
-        const resp = await audiusLibs.File.uploadImage(
-          newMetadata.updatedCoverPhoto.file,
-          false,
-          null,
-          writeMetadataThroughChainEnabled
-        )
-        newMetadata.cover_photo_sizes = resp.dirCID
+        if (storageV2UploadEnabled) {
+          const resp = await audiusLibs.creatorNode.uploadCoverPhotoV2(
+            newMetadata.updatedCoverPhoto.file
+          )
+          newMetadata.cover_photo_sizes = resp.id
+        } else {
+          const resp = await audiusLibs.File.uploadImage(
+            newMetadata.updatedCoverPhoto.file,
+            false,
+            null,
+            writeMetadataThroughChainEnabled
+          )
+          newMetadata.cover_photo_sizes = resp.dirCID
+        }
       }
 
       if (
@@ -1618,74 +1634,20 @@ export const audiusBackend = ({
       }
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
-      const { blockHash, blockNumber, userId } =
-        await audiusLibs.User.updateCreator(
-          newMetadata.user_id,
-          newMetadata,
-          writeMetadataThroughChainEnabled
-        )
-      return { blockHash, blockNumber, userId }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return false
-    }
-  }
-
-  // TODO (theo): don't call uploadImage if storage v2 signup is enabled
-  async function updateUser(metadata: User, id: ID) {
-    let newMetadata = { ...metadata }
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
-    try {
-      if (newMetadata.updatedProfilePicture) {
-        const resp = await audiusLibs.File.uploadImage(
-          newMetadata.updatedProfilePicture.file,
-          undefined,
-          null,
-          writeMetadataThroughChainEnabled
-        )
-        newMetadata.profile_picture_sizes = resp.dirCID
+      if (storageV2UploadEnabled) {
+        const userId = newMetadata.user_id
+        const { blockHash, blockNumber } =
+          await audiusLibs.User.updateMetadataV2({ newMetadata, userId })
+        return { blockHash, blockNumber, userId }
+      } else {
+        const { blockHash, blockNumber, userId } =
+          await audiusLibs.User.updateCreator(
+            newMetadata.user_id,
+            newMetadata,
+            writeMetadataThroughChainEnabled
+          )
+        return { blockHash, blockNumber, userId }
       }
-
-      if (newMetadata.updatedCoverPhoto) {
-        const resp = await audiusLibs.File.uploadImage(
-          newMetadata.updatedCoverPhoto.file,
-          false,
-          null,
-          writeMetadataThroughChainEnabled
-        )
-        newMetadata.cover_photo_sizes = resp.dirCID
-      }
-      if (
-        typeof newMetadata.twitter_handle === 'string' ||
-        typeof newMetadata.instagram_handle === 'string' ||
-        typeof newMetadata.tiktok_handle === 'string' ||
-        typeof newMetadata.website === 'string' ||
-        typeof newMetadata.donation === 'string'
-      ) {
-        await fetch(`${identityServiceUrl}/social_handles`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            handle: newMetadata.handle,
-            twitterHandle: newMetadata.twitter_handle,
-            instagramHandle: newMetadata.instagram_handle,
-            website: newMetadata.website,
-            donation: newMetadata.donation
-          })
-        })
-      }
-
-      newMetadata = schemas.newUserMetadata(newMetadata, true)
-
-      const { blockHash, blockNumber } = await audiusLibs.User.updateUser(
-        id,
-        newMetadata
-      )
-      return { blockHash, blockNumber }
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -3901,7 +3863,6 @@ export const audiusBackend = ({
     updatePlaylistLastViewedAt,
     updatePushNotificationSettings,
     updateTrack,
-    updateUser,
     updateUserEvent,
     updateUserLocationTimezone,
     subscribeToUser,
