@@ -439,9 +439,11 @@ export function* updateProfileAsync(action) {
   )
 
   // Get existing metadata and combine with it
-  const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-    metadata.creator_node_endpoint
-  )
+  const gateways = metadata.is_storage_v2
+    ? []
+    : audiusBackendInstance.getCreatorNodeIPFSGateways(
+        metadata.creator_node_endpoint
+      )
   const cid = metadata.metadata_multihash ?? null
   if (cid) {
     try {
@@ -508,20 +510,11 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        let response
-        if (metadata.creator_node_endpoint) {
-          response = yield call(
-            audiusBackendInstance.updateCreator,
-            metadata,
-            userId
-          )
-        } else {
-          response = yield call(
-            audiusBackendInstance.updateUser,
-            metadata,
-            userId
-          )
-        }
+        const response = yield call(
+          audiusBackendInstance.updateCreator,
+          metadata,
+          userId
+        )
         const { blockHash, blockNumber } = response
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
