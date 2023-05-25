@@ -104,6 +104,7 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 	}, nil
 }
 
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
 func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	// hash the input
 	hash := crypto.Keccak256Hash([]byte(input))
@@ -118,6 +119,7 @@ func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	return signature, nil
 }
 
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
 func recover(input string, signature []byte) (common.Address, error) {
 	hash := crypto.Keccak256Hash([]byte(input))
 	return sigverify.EcRecoverEx(hash.Bytes(), signature)
