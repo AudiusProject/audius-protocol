@@ -6,7 +6,7 @@ local _M = {}
 
 function _M.get_public_ip()
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://icanhazip.com")
+    local res, err = httpc:request_uri("http://ipv4.icanhazip.com")
 
     if not res then
         ngx.log(ngx.ERR, "error: ", err)
