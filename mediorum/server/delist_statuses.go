@@ -18,9 +18,12 @@ import (
 )
 
 // Constants
-const DelistStatusPollingInterval = 20 * time.Second
-const HTTPTimeout = 5 * time.Minute
-const DelistBatchSize = 5000
+const (
+	DelistStatusPollingInterval = 20 * time.Second
+	HTTPTimeout                 = 5 * time.Minute
+	DelistBatchSize             = 5000
+	TimeFormat                  = "2006-01-02 15:04:05.999999-07"
+)
 
 type (
 	TrackDelistStatus struct {
@@ -62,7 +65,7 @@ func (t *TrackDelistStatus) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	var err error
-	t.CreatedAt, err = time.Parse("2006-01-02 15:04:05.999999-07", temp.CreatedAt)
+	t.CreatedAt, err = time.Parse(TimeFormat, temp.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -77,7 +80,7 @@ func (u *UserDelistStatus) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	var err error
-	u.CreatedAt, err = time.Parse("2006-01-02 15:04:05.999999-07", temp.CreatedAt)
+	u.CreatedAt, err = time.Parse(TimeFormat, temp.CreatedAt)
 	if err != nil {
 		return err
 	}
