@@ -29,8 +29,6 @@ type UserEmailNotification = {
   notifications: EmailNotification[]
 }
 
-const DEFAULT_TIMEZONE = 'America/Los_Angeles'
-
 const Results = Object.freeze({
   USER_TURNED_OFF: 'USER_TURNED_OFF',
   USER_BLOCKED: 'USER_BLOCKED',

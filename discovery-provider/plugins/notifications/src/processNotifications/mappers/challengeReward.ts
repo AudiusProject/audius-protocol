@@ -194,8 +194,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     }
   }
 
-  formatEmailProps(resources: Resources) {
-    const receiverUser = resources.users[this.receiverUserId]
+  formatEmailProps(_resources: Resources) {
     return {
       type: this.notification.type,
       challengeId: this.challengeId,

@@ -45,11 +45,9 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   async pushNotification({
-    isLiveEmailEnabled,
-    isBrowserPushEnabled
+    isLiveEmailEnabled
   }: {
     isLiveEmailEnabled: boolean
-    isBrowserPushEnabled: boolean
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
     const totalUsers = await this.dnDB('users')
@@ -115,7 +113,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     return {}
   }
 
-  formatEmailProps(resources: Resources) {
+  formatEmailProps(_resources: Resources) {
     return {
       type: this.notification.type,
       title: this.notification.data.title,

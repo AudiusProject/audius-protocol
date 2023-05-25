@@ -30,7 +30,7 @@ export abstract class BaseNotification<Type> {
       })
   }
 
-  async pushNotification(params: {
+  async pushNotification(_params: {
     isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
@@ -49,8 +49,8 @@ export abstract class BaseNotification<Type> {
   }
 
   formatEmailProps(
-    resources: Resources,
-    additionalNotifications?: BaseNotification<Type>[]
+    _resources: Resources,
+    _additionalNotifications?: BaseNotification<Type>[]
   ) {
     return {}
   }

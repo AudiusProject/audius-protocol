@@ -19,13 +19,6 @@ import {
   User
 } from '../../types'
 
-const getRankSuffix = (num) => {
-  if (num === 1) return 'st'
-  else if (num === 2) return 'nd'
-  else if (num === 3) return 'rd'
-  return 'th'
-}
-
 const challengeRewardsConfig: {
   [key in ChallengeId]: { title: string; icon: React.Component }
 } = {
@@ -472,7 +465,7 @@ export const getTrackLink = (track) => {
 const getTwitter = (notification) => {
   switch (notification.type) {
     case 'remix': {
-      const { parentTrack, parentTrackUser, remixUser, remixTrack } =
+      const { parentTrack, parentTrackUser, remixTrack } =
         notification
       const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`

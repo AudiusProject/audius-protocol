@@ -1,4 +1,4 @@
-import pino, { stdTimeFunctions, levels } from 'pino'
+import pino, { stdTimeFunctions } from 'pino'
 
 export const logger = pino({
   name: `notifications`,
