@@ -11,6 +11,7 @@ import { View, Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { usePopupAnimation } from 'app/hooks/usePopupAnimation'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { zIndex } from 'app/utils/zIndex'
@@ -26,6 +27,10 @@ import {
 
 const { getUserId } = accountSelectors
 const { setMessageReaction } = chatActions
+
+const messages = {
+  messageCopied: 'Message copied to clipboard'
+}
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   dimBackground: {
@@ -118,6 +123,8 @@ export const ReactionPopup = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const userId = useSelector(getUserId)
+  const { toast } = useToast()
+
   const userIdEncoded = encodeHashId(userId)
   const selectedReaction = message.reactions?.find(
     (r) => r.user_id === userIdEncoded
@@ -151,15 +158,26 @@ export const ReactionPopup = ({
     [userId, handleClosePopup, dispatch, chatId, userIdEncoded]
   )
 
-  const handleCopyPress = useCallback(
-    (message: string) => {
-      Clipboard.setString(message)
-      handleClosePopup()
+  const handleCopyPress = useCallback(() => {
+    Clipboard.setString(message.message)
+    handleClosePopup()
+    toast({ content: messages.messageCopied, type: 'info' })
+  }, [message.message, handleClosePopup, toast])
+
+  const handleReactionChanged = useCallback(
+    (reaction) => {
+      if (reaction) {
+        handleReactionSelected(message, reaction)
+      }
     },
-    [handleClosePopup]
+    [message, handleReactionSelected]
   )
 
-  return shouldShowPopup ? (
+  if (!shouldShowPopup) {
+    return null
+  }
+
+  return (
     <>
       <Animated.View
         style={[
@@ -203,7 +221,7 @@ export const ReactionPopup = ({
           messageTop={messageTop}
           containerTop={containerTop}
           messageHeight={messageHeight}
-          onPress={() => handleCopyPress(message.message)}
+          onPress={handleCopyPress}
         />
         <Animated.View
           style={[
@@ -226,11 +244,7 @@ export const ReactionPopup = ({
         >
           <ReactionList
             selectedReaction={selectedReaction as ReactionTypes}
-            onChange={(reaction) => {
-              if (reaction) {
-                handleReactionSelected(message, reaction)
-              }
-            }}
+            onChange={handleReactionChanged}
             isVisible={shouldShowPopup}
             scale={1.6}
             style={{
@@ -240,5 +254,5 @@ export const ReactionPopup = ({
         </Animated.View>
       </View>
     </>
-  ) : null
+  )
 }
