@@ -78,14 +78,6 @@ func dbMigrate(crud *crudr.Crudr) {
 		panic(err)
 	}
 
-	// bonus migrations
-	// must be idempotent
-	slog.Info("db: running misc migrations that should be merged with ddl migrate")
-	crud.DB.Exec(`
-		alter table uploads drop column if exists orig_file_c_id;
-		delete from uploads where orig_file_cid is null;
-	`)
-
 	// register any models to be managed by crudr
 	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
 
