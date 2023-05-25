@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { FormImageInput } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-import { RandomImageInput } from './RandomImageButton'
+import { RandomImageInput } from './LegacyRandomImageButton'
 
 const name = 'artwork'
 

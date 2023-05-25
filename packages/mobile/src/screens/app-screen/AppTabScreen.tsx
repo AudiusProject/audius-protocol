@@ -41,7 +41,7 @@ import {
 import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
-import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
+import { EditPlaylistScreen } from '../edit-playlist-screen/LegacyEditPlaylistScreen'
 import { EditProfileScreen } from '../edit-profile-screen'
 import {
   AboutScreen,
