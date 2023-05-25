@@ -507,6 +507,9 @@ export const ChatScreen = () => {
                   maintainVisibleContentPosition={
                     maintainVisibleContentPosition
                   }
+                  ListHeaderComponent={
+                    canSendMessage ? null : <ChatUnavailable chatId={chatId} />
+                  }
                 />
               </View>
             )}
@@ -521,9 +524,7 @@ export const ChatScreen = () => {
                 <View style={styles.whiteBackground} />
                 <ChatTextInput chatId={chatId} />
               </View>
-            ) : (
-              <ChatUnavailable chatId={chatId} />
-            )}
+            ) : null}
           </KeyboardAvoidingView>
         </View>
       </ScreenContent>

@@ -127,6 +127,8 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
     handleUnblockPress
   ])
 
+  if (!callToAction) return null
+
   return (
     <View style={styles.root}>
       {mapChatPermissionActionToContent[callToAction]()}
