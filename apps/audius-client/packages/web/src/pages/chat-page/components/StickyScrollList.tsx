@@ -30,6 +30,10 @@ type StickyScrollListProps = ComponentPropsWithoutRef<'div'> & {
    * the scroll area will jump to the bottom most item
    */
   stickToBottom?: boolean
+  /**
+   * Threshold for how close to the bottom the user must be before we stick to the bottom.
+   */
+  scrollBottomThreshold?: number
 }
 
 type MeasuresBefore = {
@@ -53,6 +57,7 @@ export const StickyScrollList = forwardRef<
     resetKey,
     stickToTop = false,
     stickToBottom = false,
+    scrollBottomThreshold = 0,
     ...other
   } = props
   const ref = useRef<HTMLDivElement>(null)
@@ -90,7 +95,7 @@ export const StickyScrollList = forwardRef<
         const wasAtBottomBeforeRender =
           measuresBefore.current.clientHeight +
             measuresBefore.current.scrollTop >=
-          measuresBefore.current.scrollHeight
+          measuresBefore.current.scrollHeight - scrollBottomThreshold
         const wasAtTopBeforeRender = measuresBefore.current.scrollTop === 0
         if (wasAtBottomBeforeRender && stickToBottom) {
           // Stick to the bottom

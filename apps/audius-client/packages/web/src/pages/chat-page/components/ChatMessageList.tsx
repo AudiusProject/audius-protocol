@@ -194,6 +194,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         resetKey={chatId}
         updateKey={chatMessages}
         stickToBottom
+        scrollBottomThreshold={SCROLL_BOTTOM_THRESHOLD}
         {...other}
       >
         <div className={styles.listRoot}>
