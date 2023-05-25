@@ -32,6 +32,7 @@ const {
 const {
   generateDataForSignatureRecovery
 } = require('../../services/sync/secondarySyncFromPrimaryUtils')
+const primarySyncFromSecondary = require('../../services/sync/primarySyncFromSecondary')
 const { tracing, instrumentTracing } = require('../../tracer')
 
 const router = express.Router()
@@ -217,6 +218,11 @@ const syncRouteController = instrumentTracing({
  */
 const mergePrimaryAndSecondaryController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
+  if (_.isEmpty(serviceRegistry?.recurringSyncQueue)) {
+    return errorResponseServerError(
+      'Recurring Sync Queue is not up and running yet'
+    )
+  }
   const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
 
   const selfEndpoint = config.get('creatorNodeEndpoint')
@@ -353,6 +359,30 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
   }
 }
 
+const mergePrimaryFromSecondaryController = async (req, _res) => {
+  const wallet = req.query.wallet
+  const secondary = req.query.secondary
+
+  if (!wallet || !secondary) {
+    return errorResponseBadRequest(
+      'Missing queryparams for wallet and secondary'
+    )
+  }
+
+  const response = await primarySyncFromSecondary({ wallet, secondary })
+  if (response) {
+    const { error, abort, result } = response
+    if (error) {
+      return { result, error: `${error}` }
+    }
+    if (abort) {
+      return { result, abort: `${abort}` }
+    }
+  }
+
+  return successResponse()
+}
+
 // Routes
 
 router.get(
@@ -381,6 +411,12 @@ router.post(
 router.post(
   '/manually_update_replica_set',
   handleResponse(manuallyUpdateReplicaSetController)
+)
+
+// TODO: Remove after fixing figment
+router.post(
+  '/sync_primary_from_secondary',
+  handleResponse(mergePrimaryFromSecondaryController)
 )
 
 module.exports = router
