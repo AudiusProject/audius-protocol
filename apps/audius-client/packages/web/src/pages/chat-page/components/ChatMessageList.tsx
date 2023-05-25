@@ -19,7 +19,8 @@ import {
   Status,
   hasTail,
   isEarliestUnread,
-  chatCanFetchMoreMessages
+  chatCanFetchMoreMessages,
+  useCanSendMessage
 } from '@audius/common'
 import cn from 'classnames'
 import { throttle } from 'lodash'
@@ -31,6 +32,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
+import { InboxUnavailableMessage } from './InboxUnavailableMessage'
 import { SendMessagePrompt } from './SendMessagePrompt'
 import { StickyScrollList } from './StickyScrollList'
 
@@ -67,6 +69,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     const chatMessages = useSelector((state) =>
       getChatMessages(state, chatId ?? '')
     )
+    const { firstOtherUser, canSendMessage, callToAction } =
+      useCanSendMessage(chatId)
     const chat = useSelector((state) => getChat(state, chatId ?? ''))
     const userId = useSelector(accountSelectors.getUserId)
     const currentUserId = userId ? encodeHashId(userId) : null
@@ -198,6 +202,12 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         {...other}
       >
         <div className={styles.listRoot}>
+          {!canSendMessage && firstOtherUser ? (
+            <InboxUnavailableMessage
+              user={firstOtherUser}
+              action={callToAction}
+            />
+          ) : null}
           {chat?.messagesStatus === Status.SUCCESS &&
           chatMessages?.length === 0 ? (
             <SendMessagePrompt />

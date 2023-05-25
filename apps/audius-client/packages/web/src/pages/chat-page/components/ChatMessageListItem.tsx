@@ -224,7 +224,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           <IconError /> {messages.error}
         </div>
       ) : hasTail ? (
-        <div className={styles.date}>
+        <div className={styles.meta}>
           {formatMessageDate(message.created_at)}
         </div>
       ) : null}

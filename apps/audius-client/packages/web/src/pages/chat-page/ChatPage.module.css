@@ -40,20 +40,6 @@
   flex-direction: column;
 }
 
-.inboxUnavailableMessage {
-  line-height: 130%;
-  padding: var(--unit-2);
-  font-weight: var(--font-medium);
-}
-
-.inboxUnavailableMessage a {
-  color: var(--secondary);
-}
-
-.inboxUnavailableMessage a:hover {
-  color: var(--primary);
-}
-
 @media (max-width: 1080px) {
   .chatList {
     width: 96px;

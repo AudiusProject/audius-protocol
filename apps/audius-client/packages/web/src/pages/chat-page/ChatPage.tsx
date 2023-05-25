@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import {
-  chatActions,
-  ChatPermissionAction,
-  FeatureFlags,
-  useCanSendMessage,
-  User
-} from '@audius/common'
+import { chatActions, FeatureFlags, useCanSendMessage } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -14,7 +8,6 @@ import { RouteComponentProps } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 
 import Page from 'components/page/Page'
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { chatPage } from 'utils/route'
 
@@ -31,48 +24,11 @@ const messages = {
   messages: 'Messages'
 }
 
-const InboxUnavailableMessage = ({
-  user,
-  action
-}: {
-  user: User
-  action: ChatPermissionAction
-}) => {
-  switch (action) {
-    case ChatPermissionAction.TIP:
-      return (
-        <div className={styles.inboxUnavailableMessage}>
-          You must send <UserNameAndBadges user={user} /> a tip before you can
-          send them messages.
-        </div>
-      )
-    case ChatPermissionAction.UNBLOCK:
-      return (
-        <div className={styles.inboxUnavailableMessage}>
-          You cannot send messages to users you have blocked.{' '}
-          <a href='#' target='_blank'>
-            Learn More.
-          </a>
-        </div>
-      )
-    default:
-      return (
-        <div className={styles.inboxUnavailableMessage}>
-          You can no longer send messages to <UserNameAndBadges user={user} />{' '}
-          <a href='#' target='_blank'>
-            Learn More.
-          </a>
-        </div>
-      )
-  }
-}
-
 export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
   const currentChatId = match.params.id
   const dispatch = useDispatch()
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
-  const { firstOtherUser, canSendMessage, callToAction } =
-    useCanSendMessage(currentChatId)
+  const { firstOtherUser, canSendMessage } = useCanSendMessage(currentChatId)
 
   // Get the height of the header so we can slide the messages list underneath it for the blur effect
   const [headerRef, headerBounds] = useMeasure({
@@ -144,14 +100,7 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
                 className={styles.messageList}
                 chatId={currentChatId}
               />
-              {canSendMessage ? (
-                <ChatComposer chatId={currentChatId} />
-              ) : firstOtherUser ? (
-                <InboxUnavailableMessage
-                  user={firstOtherUser}
-                  action={callToAction}
-                />
-              ) : null}
+              {canSendMessage ? <ChatComposer chatId={currentChatId} /> : null}
             </>
           ) : (
             <CreateChatPrompt />
