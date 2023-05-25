@@ -98,5 +98,8 @@ func DiscoveryMain() {
 		port = "8925"
 	}
 	e := server.NewServer(discoveryConfig, proc)
+
+	go e.StartWebsocketTester()
+
 	e.Logger.Fatal(e.Start(":" + port))
 }
