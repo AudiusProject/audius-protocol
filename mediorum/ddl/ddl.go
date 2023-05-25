@@ -32,16 +32,15 @@ func Migrate(db *sql.DB) {
 func runMigration(db *sql.DB, ddl string) {
 	h := md5string(ddl)
 
-	q := `select count(*) = 1 from mediorum_migrations where hash = $1`
 	var alreadyRan bool
-	db.QueryRow(q, h).Scan(&alreadyRan)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
 	if alreadyRan {
 		fmt.Printf("hash %s exists skipping ddl \n", h)
 		return
 	}
 
 	mustExec(db, ddl)
-	mustExec(db, `insert into mediorum_migrations values ($1, now())`, h)
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
 }
 
 func mustExec(db *sql.DB, ddl string, va ...interface{}) {
