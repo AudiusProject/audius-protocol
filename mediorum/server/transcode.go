@@ -234,7 +234,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			}
 			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			variantName := fmt.Sprintf("%x.jpg", targetWidth)
+			variantName := fmt.Sprintf("%dx.jpg", targetWidth)
 			upload.TranscodeResults[variantName] = resultHash
 		}
 

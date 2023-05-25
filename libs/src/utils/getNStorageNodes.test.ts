@@ -10,7 +10,7 @@ const sampleNodes: StorageNode[] = [
     spID: 1,
     type: 'content-node',
     blockNumber: 1,
-    delegateOwnerWallet: 'wallet1',
+    delegateOwnerWallet: 'wallet1'
   },
   {
     owner: 'owner2',
@@ -18,7 +18,7 @@ const sampleNodes: StorageNode[] = [
     spID: 2,
     type: 'content-node',
     blockNumber: 2,
-    delegateOwnerWallet: 'wallet2',
+    delegateOwnerWallet: 'wallet2'
   },
   {
     owner: 'owner3',
@@ -26,8 +26,8 @@ const sampleNodes: StorageNode[] = [
     spID: 3,
     type: 'content-node',
     blockNumber: 3,
-    delegateOwnerWallet: 'wallet3',
-  },
+    delegateOwnerWallet: 'wallet3'
+  }
 ]
 
 describe('isNodeHealthy', () => {
@@ -71,16 +71,20 @@ describe('getNStorageNodes', () => {
     assert.deepEqual(result, ['http://node3.com'])
   })
 
-  it('should return all healthy nodes when no numNodes is not specified', async () => {
+  it('should return all healthy nodes when no numNodes is not specified and all nodes are healthy', async () => {
     nock('http://node1.com').get('/status').reply(200)
     nock('http://node2.com').get('/status').reply(200)
     nock('http://node3.com').get('/status').reply(200)
 
     const result = await getNStorageNodes(sampleNodes)
-    assert.deepEqual(result, ['http://node1.com', 'http://node2.com', 'http://node3.com'])
+    assert.deepEqual(result, [
+      'http://node1.com',
+      'http://node2.com',
+      'http://node3.com'
+    ])
   })
 
-  it('should return all healthy nodes when no numNodes is not specified', async () => {
+  it('should return all healthy nodes when no numNodes is not specified and 1 node is unhealthy', async () => {
     nock('http://node1.com').get('/status').reply(200)
     nock('http://node2.com').get('/status').reply(200)
     nock('http://node3.com').get('/status').reply(500)
@@ -95,7 +99,11 @@ describe('getNStorageNodes', () => {
     nock('http://node3.com').get('/status').reply(200)
 
     const result = await getNStorageNodes(sampleNodes, 3, 'test-rendezvous-key')
-    assert.deepEqual(result, ['http://node2.com', 'http://node1.com', 'http://node3.com'])
+    assert.deepEqual(result, [
+      'http://node2.com',
+      'http://node1.com',
+      'http://node3.com'
+    ])
   })
 
   it('should return only the healthy nodes sorted by rendezvous score when a rendezvousKey is provided', async () => {

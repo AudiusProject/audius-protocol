@@ -461,10 +461,9 @@ export class CreatorNode {
     onProgress: ProgressCB,
     template: 'audio' | 'img_square' | 'img_backdrop'
   ) {
-    const { headers, formData } = this.createFormDataAndUploadHeadersV2(
-      file,
-      { template }
-    )
+    const { headers, formData } = this.createFormDataAndUploadHeadersV2(file, {
+      template
+    })
     const response = await this._makeRequestV2({
       method: 'post',
       url: '/uploads',
