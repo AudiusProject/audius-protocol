@@ -1,9 +1,7 @@
 import webpush from 'web-push'
 import { logger } from './logger'
 import {
-  Browser,
   UserNotificationSettings,
-  WebPush
 } from './processNotifications/mappers/userNotificationSettings'
 
 export const configureWebPush = () => {

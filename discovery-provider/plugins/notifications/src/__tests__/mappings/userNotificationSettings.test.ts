@@ -1,6 +1,5 @@
-import { expect, jest, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 import { Processor } from '../../main'
-import * as sns from '../../sns'
 
 import {
   createUsers,

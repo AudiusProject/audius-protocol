@@ -2,7 +2,6 @@ import React from 'react'
 
 import Footer from './Footer'
 import Notification from './notifications/Notification'
-import { getNumberSuffix } from './utils'
 import { DMEntityType, EntityType } from '../types'
 
 const AudiusImage = () => {
@@ -131,7 +130,7 @@ const snippetMap = {
     )
     return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
   },
-  ['challenge_reward'](notification) {
+  ['challenge_reward'](_notification) {
     return `You've earned $AUDIO for completing challenges`
   },
   ['add_track_to_playlist'](notification) {

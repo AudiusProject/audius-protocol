@@ -58,7 +58,7 @@ export const setupTest = async (setupConfig?: SetupTestConfig) => {
   })
   jest
     .spyOn(processor.remoteConfig, 'getFeatureVariableEnabled')
-    .mockImplementation((name: string, field: string) => true)
+    .mockImplementation((_name: string, _field: string) => true)
 
   // Mock current date for test result consistency
   if (mockTime) {
@@ -601,7 +601,7 @@ export async function insertMobileDevices(
   const currentTimestamp = new Date(Date.now()).toISOString()
   await db
     .insert(
-      mobileDevices.map((device, idx) => ({
+      mobileDevices.map((device, _idx) => ({
         deviceToken: device.userId.toString(),
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
