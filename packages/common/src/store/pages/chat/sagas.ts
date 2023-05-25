@@ -64,7 +64,8 @@ const {
   deleteChat,
   deleteChatSucceeded
 } = chatActions
-const { getChatsSummary, getChat, getUnfurlMetadata } = chatSelectors
+const { getChatsSummary, getChat, getUnfurlMetadata, getNonOptimisticChat } =
+  chatSelectors
 
 /**
  * Helper to dispatch actions for fetching chat users
@@ -245,7 +246,9 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const chat = yield* select((state) => getChat(state, chatId))
+    // Use non-optimistic chat here so that the calculation of whether to mark
+    // the chat as read or not are consistent with values in backend
+    const chat = yield* select((state) => getNonOptimisticChat(state, chatId))
     if (!chat || dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
       yield* put(markChatAsReadSucceeded({ chatId }))
