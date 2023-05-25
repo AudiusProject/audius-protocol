@@ -6,7 +6,7 @@ import { Table } from "storage/src/models";
 
 dayjs.extend(duration);
 
-export default class App<AppData> {
+export class App<AppData> {
   // database connections
   private discoveryDb: Knex;
   private identityDb?: Knex;
@@ -28,7 +28,7 @@ export default class App<AppData> {
 
   private appData: AppData;
 
-  constructor(appData: AppData) {
+  constructor(appData?: AppData) {
     this.discoveryDb = knex({
       client: "pg",
       connection: {

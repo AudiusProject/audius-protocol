@@ -2,8 +2,11 @@
   "name": "trending-rewards",
   "version": "0.1.0",
   "description": "plugin for automatically sending trending rewards",
-  "main": "src/index.ts",
+  "main": "src/main.ts",
   "scripts": {},
   "author": "alec@audius.co",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "app": "file:../app"
+  }
 }
