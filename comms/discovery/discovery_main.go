@@ -52,9 +52,9 @@ func DiscoveryMain() {
 				}
 			}
 
-			// update any relayed_by records that have (incorrect) trailing slash
+			// fix any relayed_by records that have (incorrect) trailing slash
 			{
-				r, err := db.Conn.Exec(`update rpc_log set relayed_by = substr(relayed_by, 1, length(relayed_by)-1) from rpc_log where relayed_by like '%/';`)
+				r, err := db.Conn.Exec(`update rpc_log set relayed_by = substr(relayed_by, 1, length(relayed_by)-1) where relayed_by like '%/';`)
 				if err != nil {
 					slog.Error("fix rpc_log relayed_by failed", err)
 				} else {

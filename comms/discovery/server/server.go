@@ -98,11 +98,14 @@ type ChatServer struct {
 }
 
 func (s *ChatServer) getStatus(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"commit": vcsRevision,
-		"built":  vcsBuildTime,
-		"booted": bootTime,
-		"wip":    vcsDirty,
+	errors := s.proc.SweeperErrors()
+	return c.JSON(http.StatusOK, map[string]any{
+		"commit":  vcsRevision,
+		"built":   vcsBuildTime,
+		"booted":  bootTime,
+		"wip":     vcsDirty,
+		"healthy": len(errors) == 0,
+		"errors":  errors,
 	})
 }
 
