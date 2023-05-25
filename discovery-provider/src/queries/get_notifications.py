@@ -139,6 +139,7 @@ class NotificationType(str, Enum):
     SUPPORTING_RANK_UP = "supporting_rank_up"
     MILESTONE = "milestone"
     TRACK_MILESTONE = "track_milestone"
+    TRACK_ADDED_TO_PLAYLIST = "track_added_to_playlist"
     PLAYLIST_MILSTONE = "playlist_milestone"
     TIER_CHANGE = "tier_change"
     TRENDING = "trending"
@@ -167,6 +168,7 @@ default_valid_types = [
     NotificationType.SUPPORTER_DETRONED,
     NotificationType.ANNOUNCEMENT,
     NotificationType.REACTION,
+    NotificationType.TRACK_ADDED_TO_PLAYLIST,
 ]
 
 
@@ -344,6 +346,11 @@ class TierChangeNotification(TypedDict):
     current_value: str
 
 
+class TrackAddedToPlaylistNotification(TypedDict):
+    track_id: int
+    playlist_id: int
+
+
 class TrendingNotification(TypedDict):
     rank: int
     genre: str
@@ -385,6 +392,7 @@ NotificationData = Union[
     TastemakerNotification,
     TipReceiveNotification,
     TipSendNotification,
+    TrackAddedToPlaylistNotification,
     ChallengeRewardNotification,
     ReactionNotification,
     SupporterRankUpNotification,
