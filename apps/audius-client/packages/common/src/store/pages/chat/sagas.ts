@@ -263,10 +263,10 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
 function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { chatId, message, resendMessageId } = action.payload
   const messageIdToUse = resendMessageId ?? ulid()
+  const userId = yield* select(getUserId)
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const userId = yield* select(getUserId)
     const currentUserId = encodeHashId(userId)
     if (!currentUserId) {
       return
@@ -296,6 +296,13 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   } catch (e) {
     console.error('sendMessageFailed', e)
     yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
+
+    // Refetch permissions and blocking on failed message send
+    yield* put(fetchBlockees())
+    yield* put(fetchBlockers())
+    if (userId) {
+      yield* put(fetchPermissions({ userIds: [userId] }))
+    }
   }
 }
 

@@ -54,7 +54,7 @@
   user-select: text;
 }
 
-.date {
+.meta {
   font-size: var(--font-xs);
   color: var(--neutral-light-2);
   margin-bottom: var(--unit-4);
@@ -144,4 +144,25 @@
 
 .root.isAuthor .tail {
   right: -12px;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+
+  color: var(--accent-red);
+}
+
+.error:hover {
+  cursor: pointer;
+}
+
+.error svg {
+  width: var(--unit-3);
+  height: var(--unit-3);
+}
+
+.error svg path {
+  fill: var(--accent-red);
 }
