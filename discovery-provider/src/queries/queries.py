@@ -82,6 +82,7 @@ def parse_id_array_param(list):
 
 # ####### ROUTES ####### #
 
+
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by wallet or user ids
 @bp.route("/users", methods=("GET",))
@@ -101,7 +102,9 @@ def get_users_route():
     users = get_users(args)
 
     def validate_hidden_fields(user, current_user_id):
-        if "playlist_library" in user and (not current_user_id or current_user_id != user["user_id"]):
+        if "playlist_library" in user and (
+            not current_user_id or current_user_id != user["user_id"]
+        ):
             del user["playlist_library"]
         return user
 
@@ -130,9 +133,6 @@ def get_tracks_route():
     args["skip_unlisted_filter"] = True
     args["skip_stem_of_filter"] = True
     tracks = get_tracks(args)
-    # Remove track_cid from tracks response
-    for track in tracks:
-        track.pop("track_cid", None)
     return api_helpers.success_response(tracks)
 
 
