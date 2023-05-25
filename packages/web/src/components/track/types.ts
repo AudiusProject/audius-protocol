@@ -12,7 +12,8 @@ import {
   Remix,
   PremiumConditions,
   Nullable,
-  Genre
+  Genre,
+  Collection
 } from '@audius/common'
 
 export enum TrackTileSize {
@@ -62,6 +63,9 @@ export type TrackTileProps = TileProps & {
   artistHandle: string
   artistIsVerified: boolean
   isFeed?: boolean
+  isChat?: boolean
+  isPlaying?: boolean
+  isBuffering?: boolean
   ordered?: boolean
   uploading?: boolean
   uploadPercent?: number
@@ -87,6 +91,7 @@ export type PlaylistTileProps = TileProps & {
   saveCount: number
   tracks: LineupTrack[]
   trackCount: number
+  collection?: Nullable<Collection>
   showArtworkIcon?: boolean
   showSkeleton?: boolean
   pauseTrack: () => void
@@ -94,6 +99,7 @@ export type PlaylistTileProps = TileProps & {
   disableActions?: boolean
   ordered?: boolean
   isFeed?: boolean
+  isChat?: boolean
   uploading?: boolean
   uploadPercent?: number
   ownerId: ID

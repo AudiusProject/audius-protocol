@@ -13,23 +13,16 @@ import {
   IconLock
 } from '@audius/stems'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './Artwork.module.css'
-
-enum PlayStatus {
-  Buffering = 'Buffering',
-  Playing = 'Playing',
-  Paused = 'Paused'
-}
 
 type TileArtworkProps = {
   id: ID
@@ -49,13 +42,15 @@ type TileArtworkProps = {
   doesUserHaveAccess?: boolean
 }
 
-const ArtworkIcon = ({
-  playStatus,
+export const ArtworkIcon = ({
+  isBuffering,
+  isPlaying,
   artworkIconClassName,
   doesUserHaveAccess,
   isTrack
 }: {
-  playStatus: PlayStatus
+  isBuffering: boolean
+  isPlaying: boolean
   artworkIconClassName?: string
   doesUserHaveAccess?: boolean
   isTrack?: boolean
@@ -66,20 +61,10 @@ const ArtworkIcon = ({
 
   let artworkIcon
   if (isGatedContentEnabled && isTrack && !doesUserHaveAccess) {
-    artworkIcon = <IconLock />
-  } else if (playStatus === PlayStatus.Buffering) {
-    artworkIcon = (
-      <div className={styles.loadingAnimation}>
-        <Lottie
-          options={{
-            loop: true,
-            autoplay: true,
-            animationData: loadingSpinner
-          }}
-        />
-      </div>
-    )
-  } else if (playStatus === PlayStatus.Playing) {
+    artworkIcon = <IconLock width={36} height={36} />
+  } else if (isBuffering) {
+    artworkIcon = <LoadingSpinner className={styles.spinner} />
+  } else if (isPlaying) {
     artworkIcon = <IconPause />
   } else {
     artworkIcon = <IconPlay />
@@ -115,11 +100,6 @@ const Artwork = memo(
     doesUserHaveAccess,
     isTrack
   }: ArtworkProps) => {
-    const playStatus = isBuffering
-      ? PlayStatus.Buffering
-      : isPlaying
-      ? PlayStatus.Playing
-      : PlayStatus.Paused
     const imageElement = (
       <DynamicImage
         wrapperClassName={cn(styles.artworkWrapper, {
@@ -133,7 +113,8 @@ const Artwork = memo(
       >
         {showArtworkIcon && (
           <ArtworkIcon
-            playStatus={playStatus}
+            isBuffering={isBuffering}
+            isPlaying={isPlaying}
             artworkIconClassName={artworkIconClassName}
             doesUserHaveAccess={doesUserHaveAccess}
             isTrack={isTrack}

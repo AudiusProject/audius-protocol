@@ -130,7 +130,10 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     permalink,
     artistHandle,
     duration,
-    genre
+    genre,
+    isPlaying,
+    isBuffering,
+    isChat
   } = props
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
@@ -209,7 +212,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   ])
 
   return (
-    <div className={styles.container}>
+    <div className={cn(styles.container, { [styles.chat]: isChat })}>
       {showPremiumCornerTag && cornerTagIconType ? (
         <TrackBannerIcon
           type={cornerTagIconType}
@@ -264,13 +267,16 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
         <div className={styles.metadata}>
           <TrackTileArt
             id={props.id}
-            isTrack={true}
+            isTrack
+            isPlaying={isPlaying}
+            isBuffering={isBuffering}
             callback={() => setArtworkLoaded(true)}
             showSkeleton={showSkeleton}
             coverArtSizes={props.coverArtSizes}
             coSign={coSign}
             className={styles.albumArtContainer}
             label={`${props.title} by ${props.artistName}`}
+            artworkIconClassName={styles.artworkIcon}
           />
           <div
             className={cn(styles.titles, {
@@ -284,7 +290,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               onClick={props.goToTrackPage}
             >
               <div className={cn(fadeIn)}>{props.title}</div>
-              {props.isPlaying && <IconVolume />}
+              {isPlaying ? <IconVolume /> : null}
               {(!artworkLoaded || showSkeleton) && (
                 <Skeleton
                   className={styles.skeleton}
@@ -319,7 +325,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             <div className={styles.coSignLabel}>{messages.coSign}</div>
           )}
         </div>
-        {coSign && (
+        {coSign && !isChat ? (
           <div className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
@@ -334,7 +340,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               hasFavorited: coSign.has_remix_author_saved
             })}
           </div>
-        )}
+        ) : null}
         <div className={cn(styles.stats, styles.statText)}>
           <RankIcon
             showCrown={showRankIcon}
@@ -350,7 +356,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
-                  props.repostCount ? props.makeGoToRepostsPage(id) : undefined
+                  props.repostCount && !isChat
+                    ? props.makeGoToRepostsPage(id)
+                    : undefined
                 }
               >
                 {formatCount(props.repostCount)}
@@ -359,6 +367,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   isMatrixMode={isMatrix}
                   isDarkMode={darkMode}
                   className={styles.repostButton}
+                  wrapperClassName={styles.repostButtonWrapper}
                 />
               </div>
               <div
@@ -367,7 +376,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
-                  props.saveCount ? props.makeGoToFavoritesPage(id) : undefined
+                  props.saveCount && !isChat
+                    ? props.makeGoToFavoritesPage(id)
+                    : undefined
                 }
               >
                 {formatCount(props.saveCount)}
@@ -376,6 +387,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   isDarkMode={darkMode}
                   isMatrixMode={isMatrix}
                   className={styles.favoriteButton}
+                  wrapperClassName={styles.favoriteButtonWrapper}
                 />
               </div>
             </>
@@ -388,22 +400,24 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             {formatListenCount(props.listenCount)}
           </div>
         </div>
-        <BottomButtons
-          hasSaved={props.hasCurrentUserSaved}
-          hasReposted={props.hasCurrentUserReposted}
-          toggleRepost={onToggleRepost}
-          toggleSave={onToggleSave}
-          onShare={onClickShare}
-          onClickOverflow={onClickOverflowMenu}
-          isOwner={isOwner}
-          isUnlisted={isUnlisted}
-          doesUserHaveAccess={doesUserHaveAccess}
-          premiumTrackStatus={premiumTrackStatus}
-          isShareHidden={hideShare}
-          isDarkMode={darkMode}
-          isMatrixMode={isMatrix}
-          isTrack
-        />
+        {!isChat ? (
+          <BottomButtons
+            hasSaved={props.hasCurrentUserSaved}
+            hasReposted={props.hasCurrentUserReposted}
+            toggleRepost={onToggleRepost}
+            toggleSave={onToggleSave}
+            onShare={onClickShare}
+            onClickOverflow={onClickOverflowMenu}
+            isOwner={isOwner}
+            isUnlisted={isUnlisted}
+            doesUserHaveAccess={doesUserHaveAccess}
+            premiumTrackStatus={premiumTrackStatus}
+            isShareHidden={hideShare}
+            isDarkMode={darkMode}
+            isMatrixMode={isMatrix}
+            isTrack
+          />
+        ) : null}
       </div>
     </div>
   )

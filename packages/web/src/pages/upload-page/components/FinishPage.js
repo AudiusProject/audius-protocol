@@ -12,10 +12,7 @@ import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
 import Toast from 'components/toast/Toast'
-import {
-  TrackArtwork,
-  CollectionArtwork
-} from 'components/track/desktop/Artwork'
+import { TrackArtwork, CollectionArtwork } from 'components/track/Artwork'
 import PlaylistTile from 'components/track/desktop/PlaylistTile'
 import TrackListItem from 'components/track/desktop/TrackListItem'
 import TrackTile from 'components/track/desktop/TrackTile'

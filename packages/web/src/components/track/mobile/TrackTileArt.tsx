@@ -15,6 +15,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
+import { ArtworkIcon } from '../Artwork'
+
 import styles from './TrackTileArt.module.css'
 
 type TrackTileArtProps = {
@@ -25,6 +27,9 @@ type TrackTileArtProps = {
   showSkeleton?: boolean
   coSign?: Remix | null
   label?: string
+  isPlaying?: boolean
+  isBuffering?: boolean
+  artworkIconClassName?: string
   // Called when the image is done loading
   callback: () => void
 }
@@ -37,12 +42,33 @@ const TrackTileArt = ({
   showSkeleton,
   coSign,
   label,
+  isBuffering,
+  isPlaying,
+  artworkIconClassName,
   callback
 }: TrackTileArtProps) => {
   const useImage = isTrack ? useTrackCoverArt : useCollectionCoverArt
   const image = useImage(id, coverArtSizes, SquareSizes.SIZE_150_BY_150)
 
   useLoadImageWithTimeout(image, callback)
+
+  const imageProps = {
+    image: showSkeleton ? '' : image,
+    wrapperClassName: coSign
+      ? styles.imageWrapper
+      : cn(styles.container, styles.imageWrapper, className),
+    'aria-label': label
+  }
+
+  const renderImage = () => (
+    <DynamicImage {...imageProps}>
+      <ArtworkIcon
+        isBuffering={!!isBuffering}
+        isPlaying={!!isPlaying}
+        artworkIconClassName={artworkIconClassName}
+      />
+    </DynamicImage>
+  )
 
   return coSign ? (
     <CoSign
@@ -53,18 +79,10 @@ const TrackTileArt = ({
       coSignName={coSign.user.name}
       userId={coSign.user.user_id}
     >
-      <DynamicImage
-        image={showSkeleton ? '' : image}
-        wrapperClassName={styles.imageWrapper}
-        aria-label={label}
-      />
+      {renderImage()}
     </CoSign>
   ) : (
-    <DynamicImage
-      image={showSkeleton ? '' : image}
-      wrapperClassName={cn(styles.container, styles.imageWrapper, className)}
-      aria-label={label}
-    />
+    renderImage()
   )
 }
 
