@@ -94,10 +94,6 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 	}
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 
-	// verify
-	// address, _ := recover(data, signature)
-	// fmt.Println("address:", address, )
-
 	return &ListenTSSignature{
 		Signature: signatureHex,
 		Timestamp: timestamp,

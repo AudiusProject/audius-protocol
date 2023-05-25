@@ -157,11 +157,13 @@ func startDevCluster() {
 			Peers:             network,
 			Signers:           signers,
 			ReplicationFactor: 3,
-			PrivateKey:        getenvWithDefault(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1), "devkey"),
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 			ListenPort:        fmt.Sprintf("199%d", idx+1),
 			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
+		}
+		if privateKey, found := os.LookupEnv(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)); found {
+			config.PrivateKey = privateKey
 		}
 
 		wg.Add(1)
