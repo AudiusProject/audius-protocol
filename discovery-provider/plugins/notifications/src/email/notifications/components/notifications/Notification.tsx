@@ -465,8 +465,7 @@ export const getTrackLink = (track) => {
 const getTwitter = (notification) => {
   switch (notification.type) {
     case 'remix': {
-      const { parentTrack, parentTrackUser, remixTrack } =
-        notification
+      const { parentTrack, parentTrackUser, remixTrack } = notification
       const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
         : parentTrackUser.name

@@ -28,7 +28,6 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     notification: SupportingRankUpNotificationRow
   ) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
     this.rank = this.notification.data.rank
     this.receiverUserId = this.notification.data.receiver_user_id
     this.senderUserId = this.notification.data.sender_user_id

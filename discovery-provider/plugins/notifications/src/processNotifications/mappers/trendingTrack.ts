@@ -159,8 +159,6 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   }
 
   getResourcesForEmail(): ResourceIds {
-    const tracks = new Set<number>()
-
     return {
       users: new Set([this.receiverUserId]),
       tracks: new Set([this.trackId])

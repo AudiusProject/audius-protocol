@@ -2,7 +2,6 @@ import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { TierChangeNotification } from '../../types/notifications'
 import { BaseNotification } from './base'
-import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type TierChangeNotificationRow = Omit<NotificationRow, 'data'> & {
@@ -23,13 +22,7 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
     this.receiverUserId = userIds[0]
   }
 
-  async pushNotification({
-    isLiveEmailEnabled,
-    isBrowserPushEnabled
-  }: {
-    isLiveEmailEnabled: boolean
-    isBrowserPushEnabled: boolean
-  }) {
+  async pushNotification() {
     // NOTE: there is no current tier change push notification
     return
   }

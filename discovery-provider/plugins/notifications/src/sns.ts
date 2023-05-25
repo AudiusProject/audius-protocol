@@ -5,7 +5,6 @@ import {
   PublishBatchCommandInput,
   PublishCommandInput
 } from '@aws-sdk/client-sns'
-import { logger } from './logger'
 import { DeviceType } from './processNotifications/mappers/userNotificationSettings'
 
 const region = process.env.AWS_REGION

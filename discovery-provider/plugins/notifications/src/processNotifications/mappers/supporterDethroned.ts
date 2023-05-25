@@ -1,14 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import {
-  AppEmailNotification,
-  SupporterDethronedNotification
-} from '../../types/notifications'
+import { SupporterDethronedNotification } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
-import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -29,17 +25,14 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     notification: SupporterDethronedNotificationRow
   ) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
     this.tipReceiverUserId = this.notification.data.receiver_user_id
     this.tipSenderUserId = this.notification.data.sender_user_id
     this.receiverUserId = this.notification.data.dethroned_user_id
   }
 
   async pushNotification({
-    isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{

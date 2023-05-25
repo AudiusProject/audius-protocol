@@ -2,8 +2,7 @@ import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import {
   AppEmailNotification,
-  RemixNotification,
-  RepostNotification
+  RemixNotification
 } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'

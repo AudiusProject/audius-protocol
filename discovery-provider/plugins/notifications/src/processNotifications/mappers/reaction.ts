@@ -34,7 +34,6 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     notification: ReactionNotificationRow
   ) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
     this.reactedTo = this.notification.data.reacted_to
     this.reactionType = this.notification.data.reaction_type
     this.reactionValue = this.notification.data.reaction_value

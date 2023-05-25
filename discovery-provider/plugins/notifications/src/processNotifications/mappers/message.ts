@@ -3,10 +3,7 @@ import { BaseNotification } from './base'
 import { UserRow } from '../../types/dn'
 import { DMNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
-import {
-  buildUserNotificationSettings,
-  Device
-} from './userNotificationSettings'
+import { buildUserNotificationSettings } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 
 export class Message extends BaseNotification<DMNotification> {

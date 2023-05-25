@@ -1,5 +1,4 @@
 import { Knex } from 'knex'
-import { logger } from '../../logger'
 import moment from 'moment'
 
 export type DeviceType = 'ios' | 'android'
