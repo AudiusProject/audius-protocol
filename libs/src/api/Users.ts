@@ -323,10 +323,7 @@ export class Users extends Base {
    * Assigns a replica set to the user's metadata and adds new metadata to chain.
    * This creates a record for that user on the connected creator node.
    */
-  async assignReplicaSet(
-    { userId }: { userId: number },
-    writeMetadataThroughChain = false
-  ) {
+  async assignReplicaSet({ userId }: { userId: number }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
@@ -392,8 +389,7 @@ export class Users extends Base {
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
       await this.updateAndUploadMetadata({
         newMetadata,
-        userId,
-        writeMetadataThroughChain
+        userId
       })
       console.log(
         `${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${
@@ -427,8 +423,7 @@ export class Users extends Base {
   async uploadProfileImages(
     profilePictureFile: File,
     coverPhotoFile: File,
-    metadata: UserMetadata,
-    writeMetadataThroughChain = false
+    metadata: UserMetadata
   ) {
     let didMetadataUpdate = false
     if (profilePictureFile) {
@@ -445,8 +440,7 @@ export class Users extends Base {
     if (didMetadataUpdate) {
       await this.updateAndUploadMetadata({
         newMetadata: metadata,
-        userId: metadata.user_id,
-        writeMetadataThroughChain
+        userId: metadata.user_id
       })
     }
 
@@ -482,10 +476,7 @@ export class Users extends Base {
     return metadata
   }
 
-  async createEntityManagerUser(
-    { metadata }: { metadata: UserMetadata },
-    writeMetadataThroughChain = false
-  ) {
+  async createEntityManagerUser({ metadata }: { metadata: UserMetadata }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
@@ -578,8 +569,7 @@ export class Users extends Base {
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
       const { blockHash, blockNumber } = await this.updateAndUploadMetadata({
         newMetadata,
-        userId,
-        writeMetadataThroughChain
+        userId
       })
       console.log(
         `${logPrefix} [phase: ${phase}] updateAndUploadMetadata() completed in ${
@@ -689,11 +679,7 @@ export class Users extends Base {
    * Updates a creator (updates their data on the creator node).
    * DO NOT CALL FOR A STORAGEV2 USER (use updateMetadataV2 instead)
    */
-  async updateCreator(
-    userId: number,
-    metadata: UserMetadata,
-    writeMetadataThroughChain = false
-  ) {
+  async updateCreator(userId: number, metadata: UserMetadata) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
@@ -750,9 +736,10 @@ export class Users extends Base {
         updateEndpointTxBlockNumber
       )
 
-    const entityManagerMetadata = writeMetadataThroughChain
-      ? JSON.stringify({ cid: metadataMultihash, data: newMetadata })
-      : metadataMultihash
+    const entityManagerMetadata = JSON.stringify({
+      cid: metadataMultihash,
+      data: newMetadata
+    })
     const response = await this.contracts.EntityManagerClient!.manageEntity(
       userId,
       EntityManagerClient.EntityType.USER,
@@ -851,12 +838,10 @@ export class Users extends Base {
    */
   async updateAndUploadMetadata({
     newMetadata,
-    userId,
-    writeMetadataThroughChain = false
+    userId
   }: {
     newMetadata: UserMetadata
     userId: number
-    writeMetadataThroughChain?: boolean
   }) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(newMetadata)
@@ -925,11 +910,12 @@ export class Users extends Base {
       )
       startMs = Date.now()
 
-      // Write metadata multihash to chain
+      // Write metadata to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
-      const entityManagerMetadata = writeMetadataThroughChain
-        ? JSON.stringify({ cid: metadataMultihash, data: newMetadata })
-        : metadataMultihash
+      const entityManagerMetadata = JSON.stringify({
+        cid: metadataMultihash,
+        data: newMetadata
+      })
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         userId,
         EntityManagerClient.EntityType.USER,
@@ -1033,7 +1019,7 @@ export class Users extends Base {
    * If a user's creator_node_endpoint is null, assign a replica set.
    * Used during the sanity check and in uploadImage() in files.js
    */
-  async assignReplicaSetIfNecessary(writeMetadataThroughChain = false) {
+  async assignReplicaSetIfNecessary() {
     const user = this.userStateManager.getCurrentUser()
 
     // If no user is logged in, or a creator node endpoint is already assigned,
@@ -1042,10 +1028,7 @@ export class Users extends Base {
 
     // Generate a replica set and assign to user
     try {
-      await this.assignReplicaSet(
-        { userId: user.user_id },
-        writeMetadataThroughChain
-      )
+      await this.assignReplicaSet({ userId: user.user_id })
     } catch (e) {
       const errorMsg = `assignReplicaSetIfNecessary error - ${e}`
       if (e instanceof Error) {
@@ -1168,6 +1151,7 @@ export class Users extends Base {
 
   _validateUserMetadata(metadata: UserMetadata) {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
+    this.creatorNode.validateUserSchema(metadata)
   }
 
   /**

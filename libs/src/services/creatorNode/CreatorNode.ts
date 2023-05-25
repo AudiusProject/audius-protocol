@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
-import { Nullable, TrackMetadata, Utils, uuid } from '../../utils'
+import { Nullable, TrackMetadata, UserMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
@@ -209,6 +209,10 @@ export class CreatorNode {
     this.schemas?.[playlistSchemaType].validate?.(metadata)
   }
 
+  validateUserSchema(metadata: UserMetadata) {
+    this.schemas?.[userSchemaType].validate?.(metadata)
+  }
+
   /** Establishes a connection to a content node endpoint */
   async connect() {
     if (this.isStorageV2Only) return
@@ -269,11 +273,11 @@ export class CreatorNode {
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
    */
-  async uploadCreatorContent(metadata: TrackMetadata, blockNumber = null) {
+  async uploadCreatorContent(metadata: UserMetadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas?.[userSchemaType].validate?.(metadata)
+      this.validateUserSchema(metadata)
 
       const requestObj: AxiosRequestConfig = {
         url: '/audius_users/metadata',
@@ -288,6 +292,7 @@ export class CreatorNode {
       return body
     } catch (e) {
       console.error('Error validating creator metadata', e)
+      throw e
     }
   }
 
@@ -544,22 +549,22 @@ export class CreatorNode {
     // Validate object before sending
     try {
       this.validatePlaylistSchema(metadata)
+
+      const { data: body } = await this._makeRequest(
+        {
+          url: '/playlists/metadata',
+          method: 'post',
+          data: {
+            metadata
+          }
+        },
+        true
+      )
+      return body
     } catch (e) {
       console.error('Error validating playlist metadata', e)
       throw e
     }
-
-    const { data: body } = await this._makeRequest(
-      {
-        url: '/playlists/metadata',
-        method: 'post',
-        data: {
-          metadata
-        }
-      },
-      true
-    )
-    return body
   }
 
   /**
