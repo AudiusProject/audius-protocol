@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Set, Tuple, TypedDict, Union
+from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.grants.developer_app import DeveloperApp
@@ -24,8 +24,7 @@ from src.utils import helpers
 from src.utils.eth_manager import EthManager
 from web3 import Web3
 from web3.datastructures import AttributeDict
-from src.utils.structured_logger import StructuredLogger, log_duration
-from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
+from src.utils.structured_logger import StructuredLogger
 from src.tasks.metadata import (
     playlist_metadata_format,
     track_metadata_format,
@@ -254,6 +253,7 @@ def expect_metadata_json(metadata, action, entity_type):
     ):
         return False
     return True
+
 
 # Returns metadata_type, metadata_format
 def get_metadata_type_and_format(entity_type):

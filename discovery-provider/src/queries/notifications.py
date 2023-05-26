@@ -391,7 +391,6 @@ def notifications():
 
         #
         # Query relevant favorite information
-        #
         favorites_query = session.query(Save)
         favorites_query = favorites_query.filter(
             Save.is_current == True,
@@ -472,7 +471,6 @@ def notifications():
 
         #
         # Query relevant tier change information
-        #
         balance_change_query = session.query(UserBalanceChange)
 
         # Impose min block number restriction
@@ -514,7 +512,6 @@ def notifications():
 
         #
         # Query relevant repost information
-        #
         repost_query = session.query(Repost)
         repost_query = repost_query.filter(
             Repost.is_current == True,
@@ -601,7 +598,6 @@ def notifications():
 
         #
         # Query relevant created tracks for remix information
-        #
         remix_created_notifications = []
 
         # Aggregate track notifs

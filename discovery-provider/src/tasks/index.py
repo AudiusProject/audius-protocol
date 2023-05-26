@@ -1,14 +1,9 @@
 # pylint: disable=C0302
-import asyncio
 import concurrent.futures
-import json
 import logging
 import time
-from datetime import datetime
 from operator import itemgetter, or_
-from typing import Any, Dict, Tuple
 
-from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
@@ -36,18 +31,11 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import Action, EntityType
-from src.tasks.metadata import (
-    playlist_metadata_format,
-    track_metadata_format,
-    user_metadata_format,
-)
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
-    record_fetch_metadata_ms,
     record_index_blocks_ms,
     sweep_old_add_indexed_block_to_db_ms,
     sweep_old_fetch_metadata_ms,
@@ -66,7 +54,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
-from src.utils.user_event_constants import entity_manager_event_types_arr
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
