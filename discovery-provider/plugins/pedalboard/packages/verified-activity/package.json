@@ -1,9 +1,0 @@
-{
-  "name": "verified-activity",
-  "version": "0.1.0",
-  "description": "plugin broadcasting notifications related to verified user activity",
-  "main": "src/index.ts",
-  "scripts": {},
-  "author": "alec@audius.co",
-  "license": "ISC"
-}

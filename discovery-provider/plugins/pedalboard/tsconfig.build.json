@@ -1,9 +1,0 @@
-{
-  "files": [],
-  "references": [
-    { "path": "packages/trending-rewards" },
-    { "path": "packages/verified-activity" },
-    { "path": "packages/app" },
-    { "path": "packages/storage" }
-  ]
-}
