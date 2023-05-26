@@ -53,9 +53,6 @@ export type EntityMap = {
       }
     | undefined
 }
-export type StrippedEntityMap = {
-  [x: string]: string[] | undefined
-}
 
 type FetchBaseAction = {
   fetchArgs: any
@@ -69,7 +66,6 @@ export type FetchErrorAction = PayloadAction<
 export type FetchSucceededAction = PayloadAction<
   FetchBaseAction & {
     nonNormalizedData: any
-    strippedEntityMap: StrippedEntityMap
   }
 >
 
@@ -82,7 +78,6 @@ export type PerEndpointState<NormalizedData> = {
 export type PerKeyState<NormalizedData> = {
   status: Status
   nonNormalizedData?: NormalizedData
-  strippedEntityMap?: StrippedEntityMap
   errorMessage?: string
 }
 
