@@ -130,7 +130,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
 
 
 def create_developer_app(params: ManageEntityParameters):
-    metadata = get_developer_app_metadata_from_raw(params.metadata_cid)
+    metadata = get_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception("Invalid Developer App Transaction, unable to parse metadata")
     validate_developer_app_tx(params, metadata)
@@ -160,7 +160,7 @@ def create_developer_app(params: ManageEntityParameters):
 
 
 def delete_developer_app(params: ManageEntityParameters):
-    metadata = get_developer_app_metadata_from_raw(params.metadata_cid)
+    metadata = get_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception(
             "Invalid Revoke Developer App Transaction, unable to parse metadata"

@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict, Union
+from typing import Any, Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.grants.developer_app import DeveloperApp
@@ -24,6 +24,15 @@ from src.utils import helpers
 from src.utils.eth_manager import EthManager
 from web3 import Web3
 from web3.datastructures import AttributeDict
+from src.utils.structured_logger import StructuredLogger, log_duration
+from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
+from src.tasks.metadata import (
+    playlist_metadata_format,
+    track_metadata_format,
+    user_metadata_format,
+)
+from sqlalchemy.orm.session import Session
+logger = StructuredLogger(__name__)
 
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
@@ -123,7 +132,6 @@ class ManageEntityParameters:
         existing_records: ExistingRecordDict,
         pending_track_routes: List[TrackRoute],
         pending_playlist_routes: List[PlaylistRoute],
-        metadata: Dict[str, Dict[str, Dict]],
         eth_manager: EthManager,
         web3: Web3,
         block_timestamp: int,
@@ -135,12 +143,6 @@ class ManageEntityParameters:
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
         self.entity_type = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
-        # Check if metadata blob was passed directly.
-        try:
-            data = json.loads(helpers.get_tx_arg(event, "_metadata"))
-            self.metadata_cid = data["cid"]
-        except Exception:
-            self.metadata_cid = helpers.get_tx_arg(event, "_metadata")
         self.signer = helpers.get_tx_arg(event, "_signer")
         self.block_datetime = datetime.utcfromtimestamp(block_timestamp)
         self.block_integer_time = int(block_timestamp)
@@ -154,7 +156,11 @@ class ManageEntityParameters:
         self.pending_playlist_routes = pending_playlist_routes
 
         self.event = event
-        self.metadata = metadata
+        self.metadata, self.metadata_cid = parse_metadata(
+            helpers.get_tx_arg(event, "_metadata"),
+            self.action,
+            self.entity_type
+        )
         self.block_number = block_number
         self.event_blockhash = event_blockhash
         self.txhash = txhash
@@ -220,6 +226,117 @@ class ManageEntityParameters:
             self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
             self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
         # If key exists, do nothing
+
+
+# Whether to expect valid metadata json based on the action and entity type
+def expect_metadata_json(metadata, action, entity_type):
+    if action == Action.CREATE and entity_type == EntityType.USER:
+        return False
+    if (
+        action == Action.CREATE
+        and entity_type == EntityType.NOTIFICATION
+    ):
+        return False
+    if (
+        not metadata
+        or entity_type == EntityType.USER_REPLICA_SET
+        or action
+        in [
+            Action.REPOST,
+            Action.UNREPOST,
+            Action.SAVE,
+            Action.UNSAVE,
+            Action.FOLLOW,
+            Action.UNFOLLOW,
+            Action.SUBSCRIBE,
+            Action.UNSUBSCRIBE,
+        ]
+    ):
+        return False
+    return True
+
+# Returns metadata_type, metadata_format
+def get_metadata_type_and_format(entity_type):
+    if entity_type == EntityType.PLAYLIST:
+        metadata_type = "playlist_data"
+        metadata_format = playlist_metadata_format
+    elif entity_type == EntityType.TRACK:
+        metadata_type = "track"
+        metadata_format = track_metadata_format
+    elif entity_type == EntityType.USER:
+        metadata_type = "user"
+        metadata_format = user_metadata_format
+    else:
+        raise Exception(f"Unknown metadata type ${entity_type}")
+    return metadata_type, metadata_format
+
+
+def get_metadata_from_json(default_metadata_fields, resp_json):
+    metadata = {}
+    for parameter, value in default_metadata_fields.items():
+        metadata[parameter] = (
+            resp_json.get(parameter) if resp_json.get(parameter) is not None else value
+        )
+    return metadata
+
+
+def sanitize_json(json_resp):
+    sanitized_data = (
+        json.dumps(json_resp, ensure_ascii=False)
+        .encode("utf-8", "ignore")
+        .decode("utf-8", "ignore")
+    )
+    return json.loads(sanitized_data)
+
+
+# Returns metadata, cid
+def parse_metadata(metadata, action, entity_type):
+    if not expect_metadata_json(metadata, action, entity_type):
+        return metadata, None
+
+    try:
+        data = sanitize_json(json.loads(metadata))
+
+        if "cid" not in data.keys() or "data" not in data.keys():
+            raise Exception("required keys missing in metadata")
+
+        cid = data["cid"]
+        metadata_json = data["data"]
+        _, metadata_format = get_metadata_type_and_format(entity_type)
+        formatted_json = get_metadata_from_json(
+            metadata_format, metadata_json
+        )
+
+        # Only index valid changes
+        if formatted_json == metadata_format:
+            raise Exception("no valid metadata changes detected")
+
+        return formatted_json, cid
+    except Exception as e:
+        logger.info(
+            f"index_nethermind.py | error deserializing metadata {metadata}: {e}"
+        )
+        raise e
+
+
+UPSERT_CID_METADATA_QUERY = """
+    INSERT INTO cid_data (cid, type, data)
+    VALUES (:cid, :type, :data)
+    ON CONFLICT DO NOTHING;
+"""
+
+
+def save_cid_metadata(
+    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
+):
+    if not cid_metadata:
+        return
+
+    vals = []
+    for cid, val in cid_metadata.items():
+        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
+
+    session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):

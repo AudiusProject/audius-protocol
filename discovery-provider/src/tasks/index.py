@@ -44,7 +44,6 @@ from src.tasks.metadata import (
 )
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers
-from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -195,169 +194,6 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
-def fetch_cid_metadata(db, entity_manager_txs):
-    start_time = datetime.now()
-    entity_manager_contract = update_task.entity_manager_contract
-
-    cids_txhash_set: Tuple[str, Any] = set()
-    cid_type: Dict[str, str] = {}  # cid -> entity type track / user
-
-    # cid -> user_id lookup to make fetching replica set more efficient
-    cid_to_user_id: Dict[str, int] = {}
-    cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
-
-    # metadata blobs sent through chain
-    # merged with cid_metadata and cid_type before returning
-    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
-    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
-
-    # fetch transactions
-    with db.scoped_session() as session:
-        for tx_receipt in entity_manager_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in entity_manager_event_types_arr:
-                entity_manager_events_tx = getattr(
-                    entity_manager_contract.events, event_type
-                )().processReceipt(tx_receipt)
-                for entry in entity_manager_events_tx:
-                    event_args = entry["args"]
-                    user_id = event_args._userId
-                    cid = event_args._metadata
-                    event_type = event_args._entityType
-                    action = event_args._action
-                    if (
-                        not cid
-                        or event_type == EntityType.USER_REPLICA_SET
-                        or action
-                        in [
-                            Action.REPOST,
-                            Action.UNREPOST,
-                            Action.SAVE,
-                            Action.UNSAVE,
-                            Action.FOLLOW,
-                            Action.UNFOLLOW,
-                            Action.SUBSCRIBE,
-                            Action.UNSUBSCRIBE,
-                        ]
-                    ):
-                        continue
-                    if action == Action.CREATE and event_type == EntityType.USER:
-                        continue
-                    if (
-                        action == Action.CREATE
-                        and event_type == EntityType.NOTIFICATION
-                    ):
-                        continue
-
-                    # Check if metadata blob was passed directly.
-                    # If so, add to cid_metadata_from_chain and cid_type_from_chain
-                    # dicts and do not query CNs for these CIDs.
-                    # TODO remove legacy CN path after CID metadata migration.
-                    if len(cid) > 0 and cid[0] == "{" and cid[-1] == "}":
-                        try:
-                            data = sanitize_json(json.loads(cid))
-
-                            # If metadata blob does not contain the required keys, skip
-                            if "cid" not in data.keys() or "data" not in data.keys():
-                                logger.info(
-                                    f"index.py | required keys missing in metadata {cid}"
-                                )
-                                continue
-                            cid = data["cid"]
-                            metadata_json = data["data"]
-
-                            metadata_format: Any = None
-                            metadata_type = None
-                            if event_type == EntityType.PLAYLIST:
-                                metadata_type = "playlist_data"
-                                metadata_format = playlist_metadata_format
-                            elif event_type == EntityType.TRACK:
-                                metadata_type = "track"
-                                metadata_format = track_metadata_format
-                            elif event_type == EntityType.USER:
-                                metadata_type = "user"
-                                metadata_format = user_metadata_format
-
-                            formatted_json = get_metadata_from_json(
-                                metadata_format, metadata_json
-                            )
-                            # Only index valid changes
-                            if formatted_json != metadata_format:
-                                # Do not add to cid_metadata or cid_type yet to avoid
-                                # interfering with the retry conditions
-                                cid_type_from_chain[cid] = metadata_type
-                                cid_metadata_from_chain[cid] = formatted_json
-                        except Exception as e:
-                            logger.info(
-                                f"index.py | error deserializing metadata {cid}: {e}"
-                            )
-                        continue
-
-                    logger.info(
-                        f"index.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}"
-                    )
-
-                    cids_txhash_set.add((cid, txhash))
-                    cid_to_user_id[cid] = user_id
-                    if event_type == EntityType.PLAYLIST:
-                        cid_type[cid] = "playlist_data"
-                    elif event_type == EntityType.TRACK:
-                        cid_type[cid] = "track"
-                    elif event_type == EntityType.USER:
-                        cid_type[cid] = "user"
-
-        # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
-        user_to_replica_set = dict(
-            session.query(User.user_id, User.creator_node_endpoint)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(cid_to_user_id.values()),
-            )
-            .group_by(User.user_id, User.creator_node_endpoint)
-            .all()
-        )
-
-    # first attempt - fetch all CIDs from replica set
-    try:
-        cid_metadata.update(
-            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-                cid_metadata.keys(),
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set=True,
-            )
-        )
-    except asyncio.TimeoutError:
-        # swallow exception on first attempt fetching from replica set
-        pass
-
-    # second attempt - fetch missing CIDs from other cnodes
-    if len(cid_metadata) != len(cids_txhash_set):
-        cid_metadata.update(
-            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-                cid_metadata.keys(),
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set=False,
-            )
-        )
-
-    if cid_type and len(cid_metadata) != len(cid_type.keys()):
-        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
-        raise Exception(missing_cids_msg)
-
-    logger.debug(
-        f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
-    )
-    cid_metadata.update(cid_metadata_from_chain)
-    cid_type.update(cid_type_from_chain)
-    return cid_metadata, cid_type
-
-
 def get_tx_hash_to_skip(session, redis):
     """Fetch if there is a tx_hash to be skipped because of continuous errors"""
     indexing_error = get_indexing_error(redis)
@@ -429,7 +265,6 @@ def add_indexed_block_to_redis(block, redis):
 def process_state_changes(
     main_indexing_task,
     session,
-    cid_metadata,
     tx_type_to_grouped_lists_map,
     block,
 ):
@@ -447,7 +282,6 @@ def process_state_changes(
             block_number,
             block_timestamp,
             block_hash,
-            cid_metadata,
         ]
 
         (
@@ -459,27 +293,6 @@ def process_state_changes(
             f"index.py | {bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
-
-
-cid_types = ["track", "user", "playlist_data"]
-UPSERT_CID_METADATA_QUERY = """
-    INSERT INTO cid_data (cid, type, data)
-    VALUES (:cid, :type, :data)
-    ON CONFLICT DO NOTHING;
-"""
-
-
-def save_cid_metadata(
-    session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
-):
-    if not cid_metadata:
-        return
-
-    vals = []
-    for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
-
-    session.execute(UPSERT_CID_METADATA_QUERY, vals)
 
 
 def create_and_raise_indexing_error(err, redis):
@@ -595,29 +408,6 @@ def index_blocks(self, db, blocks_list):
                     )
 
                     """
-                    Fetch JSON metadata
-                    """
-                    fetch_metadata_start_time = time.time()
-                    # pre-fetch cids asynchronously to not have it block in user_state_update
-                    # and track_state_update
-                    cid_metadata, cid_type = fetch_cid_metadata(
-                        db,
-                        txs_grouped_by_type[ENTITY_MANAGER],
-                    )
-                    # Record the time this took in redis
-                    duration_ms = round(
-                        (time.time() - fetch_metadata_start_time) * 1000
-                    )
-                    record_fetch_metadata_ms(redis, duration_ms)
-                    metric.save_time(
-                        {"scope": "fetch_metadata"},
-                        start_time=fetch_metadata_start_time,
-                    )
-                    logger.debug(
-                        f"index.py | index_blocks - fetch_metadata in {duration_ms}ms"
-                    )
-
-                    """
                     Add block to db
                     """
                     add_indexed_block_to_db_start_time = time.time()
@@ -645,7 +435,6 @@ def index_blocks(self, db, blocks_list):
                     process_state_changes(
                         self,
                         session,
-                        cid_metadata,
                         txs_grouped_by_type,
                         block,
                     )
@@ -656,25 +445,6 @@ def index_blocks(self, db, blocks_list):
                     logger.debug(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
-                    is_save_cid_enabled = (
-                        shared_config["discprov"]["enable_save_cid"] == "true"
-                    )
-                    if is_save_cid_enabled:
-                        """
-                        Add CID Metadata to db (cid -> json blob, etc.)
-                        """
-                        save_cid_metadata_time = time.time()
-                        # bulk process operations once all tx's for block have been parsed
-                        # and get changed entity IDs for cache clearing
-                        # after session commit
-                        save_cid_metadata(session, cid_metadata, cid_type)
-                        metric.save_time(
-                            {"scope": "save_cid_metadata"},
-                            start_time=save_cid_metadata_time,
-                        )
-                        logger.debug(
-                            f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
-                        )
 
                 except Exception as e:
                     blockhash = update_task.web3.toHex(block_hash)
