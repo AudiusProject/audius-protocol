@@ -753,6 +753,7 @@ const ProfilePage = ({
             canCreateChat={canCreateChat}
             onMessage={onMessage}
             isBlocked={isBlocked}
+            accountUserId={accountUserId}
             onBlock={onBlock}
             onUnblock={onUnblock}
           />
