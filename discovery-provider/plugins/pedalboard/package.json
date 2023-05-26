@@ -14,6 +14,7 @@
     "app-template": "^0.0.0",
     "basekit": "^0.0.0",
     "knex": "^2.4.2",
+    "moment": "^2.29.4",
     "storage": "^0.0.0",
     "verified-events": "^0.0.0"
   },

@@ -16,7 +16,7 @@ export default class App<AppData> {
     // table scans
     private scans: Map<string, ((self: App<AppData>, msg: any) => Promise<void>)[]>
     // functions that execute on an interval
-    private repeaters: ([number, (self: App<AppData>) => Promise<void>])[]
+    private tickers: ([number, (self: App<AppData>) => Promise<void>])[]
     // async operations that are evaluated immediately
     private tasks: ((self: App<AppData>) => Promise<void>)[]
 
@@ -29,7 +29,7 @@ export default class App<AppData> {
         })
         this.listeners = new Map()
         this.scans = new Map()
-        this.repeaters = []
+        this.tickers = []
         this.tasks = []
         this.appData = appData
     }
@@ -48,17 +48,10 @@ export default class App<AppData> {
     }
 
     scan<T>(table: Table, callback: (self: App<AppData>, row: T) => Promise<void>): App<AppData> {
-        const scanner = this.scans.get(table)
-        if (scanner === undefined) this.scans.set(table, [callback])
-        else {
-            // push then re-insert
-            scanner.push(callback)
-            this.scans.set(table, scanner)
-        }
-        return this;
+        throw new Error("Scan not implemented yet.")
     }
 
-    cron(interval: Partial<{
+    tick(interval: Partial<{
         milliseconds: number;
         seconds: number;
         minutes: number;
@@ -69,8 +62,16 @@ export default class App<AppData> {
         weeks: number;
     }>, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
         const intervalMs = dayjs.duration(interval).asMilliseconds()
-        this.repeaters.push([intervalMs, callback])
+        this.tickers.push([intervalMs, callback])
         return this;
+    }
+
+    cron(condition: (self: App<AppData>) => boolean, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
+        const job = async (self: App<AppData>): Promise<void> => {
+            if (!condition(self)) return
+            return callback(self)
+        }
+        return this.tick({ milliseconds: 1000 }, job)
     }
 
     task(func: (self: App<AppData>) => Promise<void>): App<AppData> {
@@ -81,7 +82,7 @@ export default class App<AppData> {
     async run(): Promise<void> {
         // setup all handlers
         const listeners = await this.initListenHandlers()
-        const repeaters = this.initRepeatHandlers()
+        const repeaters = this.initTickerHandlers()
         const spawned = this.initTaskHandlers()
         // const scanners = this.initScanHandlers()
 
@@ -113,6 +114,13 @@ export default class App<AppData> {
         return this.appData
     }
 
+    // spawns a synchronous task in a non blocking fashion
+    // good for long running CPU bound operations
+    async spawn<T>(task: () => T): Promise<T> {
+        throw new Error("Spawn not implemented yet")
+        return task() // unreachable
+    }
+
     /* Internal Builder Methods */
 
     private async initListenHandlers(): Promise<(() => Promise<void>)[]> {
@@ -132,17 +140,17 @@ export default class App<AppData> {
         return [func]
     }
 
-    private initRepeatHandlers(): (() => Promise<void>)[] {
-        const repeaters = []
-        for (const [interval, callback] of this.repeaters) {
+    private initTickerHandlers(): (() => Promise<void>)[] {
+        const tickers = []
+        for (const [interval, callback] of this.tickers) {
             const func = async () => {
                 setIntervalAsync(async () => {
                     await callback(this).catch(console.error)
                 }, interval)
             }
-            repeaters.push(func)
+            tickers.push(func)
         }
-        return repeaters
+        return tickers
     }
 
     private initTaskHandlers(): (() => Promise<void>)[] {

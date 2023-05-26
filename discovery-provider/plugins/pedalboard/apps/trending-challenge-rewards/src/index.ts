@@ -1,13 +1,11 @@
 import { log } from "logger";
 import App from "basekit/src/app"
-import { Tracks } from "storage";
-
-type SharedData = {}
+import { SharedData, condition } from "./config";
 
 const main = async () => {
   await new App<SharedData>({})
-    .listen<Tracks>("tracks", async (app, msg) => {
-      log(`received msg: ${JSON.stringify(msg)}`)
+    .cron(condition, async (app) => {
+      log('executed!')
     })
     .run()
 }
