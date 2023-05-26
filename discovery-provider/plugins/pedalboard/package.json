@@ -5,7 +5,7 @@
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --concurrency 12",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "test": "turbo run test"
@@ -13,7 +13,8 @@
   "dependencies": {
     "basekit": "^0.0.0",
     "knex": "^2.4.2",
-    "storage": "^0.0.0"
+    "storage": "^0.0.0",
+    "verified-events": "^0.0.0"
   },
   "devDependencies": {
     "eslint-config-custom": "*",
