@@ -147,11 +147,11 @@
 
 .root:not(.isAuthor) .tail {
   transform: scaleX(-1);
-  left: -12px;
+  left: -7px;
 }
 
 .root.isAuthor .tail {
-  right: -12px;
+  right: -7px;
 }
 
 .error {
