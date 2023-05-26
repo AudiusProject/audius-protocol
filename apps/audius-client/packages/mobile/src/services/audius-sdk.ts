@@ -21,7 +21,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector:
         await discoveryNodeSelectorInstance.getDiscoveryNodeSelector(),
-      walletApi: {
+      auth: {
         sign: async (data: string) => {
           await waitForLibsInit()
           return await secp.sign(
@@ -33,6 +33,9 @@ const initSdk = async () => {
             }
           )
         },
+        signTransaction: async () => {
+          return 'Not implemented'
+        },
         getSharedSecret: async (publicKey: string | Uint8Array) => {
           await waitForLibsInit()
           return secp.getSharedSecret(
@@ -43,9 +46,7 @@ const initSdk = async () => {
         },
         getAddress: async () => {
           await waitForLibsInit()
-          return (
-            audiusLibs?.hedgehog?.getWallet()?.getAddress().toString() ?? ''
-          )
+          return audiusLibs?.hedgehog?.wallet?.getAddressString() ?? ''
         }
       }
     }
