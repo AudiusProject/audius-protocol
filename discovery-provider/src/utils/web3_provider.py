@@ -21,6 +21,10 @@ LOCAL_RPC = "http://chain:8545"
 def get_web3(web3endpoint=None):
     # pylint: disable=W0603
     global web3
+
+    if web3:
+        return web3
+
     if not web3endpoint:
         # attempt local rpc, check if healthy
         try:
