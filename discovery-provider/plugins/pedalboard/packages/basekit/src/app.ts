@@ -58,7 +58,6 @@ export default class App<AppData> {
         return this;
     }
 
-    // Maybe rename to "cron"?
     cron(interval: Partial<{
         milliseconds: number;
         seconds: number;
@@ -74,7 +73,6 @@ export default class App<AppData> {
         return this;
     }
 
-    // Maybe rename to "task"?
     task(func: (self: App<AppData>) => Promise<void>): App<AppData> {
         this.tasks.push(func)
         return this;
