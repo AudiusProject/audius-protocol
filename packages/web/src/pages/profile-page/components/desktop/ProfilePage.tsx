@@ -37,6 +37,8 @@ import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
+import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
 import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import {
@@ -92,6 +94,8 @@ export type ProfilePageProps = {
   isBlocked: boolean
   canCreateChat: boolean
   showInboxUnavailableModal: boolean
+  showBlockUserConfirmationModal: boolean
+  showUnblockUserConfirmationModal: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -153,6 +157,8 @@ export type ProfilePageProps = {
   onBlock: () => void
   onUnblock: () => void
   onCloseInboxUnavailableModal: () => void
+  onCloseBlockUserConfirmationModal: () => void
+  onCloseUnblockUserConfirmationModal: () => void
 }
 
 const ProfilePage = ({
@@ -211,8 +217,13 @@ const ProfilePage = ({
   onUnblock,
   isBlocked,
 
+  // Chat modals
   showInboxUnavailableModal,
   onCloseInboxUnavailableModal,
+  showBlockUserConfirmationModal,
+  onCloseBlockUserConfirmationModal,
+  showUnblockUserConfirmationModal,
+  onCloseUnblockUserConfirmationModal,
 
   accountUserId,
   userId,
@@ -780,11 +791,23 @@ const ProfilePage = ({
         </Mask>
       </div>
       {profile ? (
-        <InboxUnavailableModal
-          user={profile}
-          isVisible={showInboxUnavailableModal}
-          onClose={onCloseInboxUnavailableModal}
-        />
+        <>
+          <InboxUnavailableModal
+            user={profile}
+            isVisible={showInboxUnavailableModal}
+            onClose={onCloseInboxUnavailableModal}
+          />
+          <BlockUserConfirmationModal
+            user={profile}
+            isVisible={showBlockUserConfirmationModal}
+            onClose={onCloseBlockUserConfirmationModal}
+          />
+          <UnblockUserConfirmationModal
+            user={profile}
+            isVisible={showUnblockUserConfirmationModal}
+            onClose={onCloseUnblockUserConfirmationModal}
+          />
+        </>
       ) : null}
     </Page>
   )
