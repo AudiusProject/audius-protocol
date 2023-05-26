@@ -61,7 +61,7 @@ mobile-init:
 mobile-comment-native-code-change:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:14.18
+    - image: cimg/node:14.18
   steps:
     - checkout
     - mobile-halt-if-no-native-changes
