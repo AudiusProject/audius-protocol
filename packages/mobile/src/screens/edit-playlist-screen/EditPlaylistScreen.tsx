@@ -56,6 +56,7 @@ export const EditPlaylistScreen = () => {
   if (!playlist) return null
 
   const initialValues: EditPlaylistValues = {
+    ...playlist,
     playlist_name: playlist.playlist_name,
     description: playlist.description,
     artwork: {
