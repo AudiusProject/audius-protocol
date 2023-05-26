@@ -150,7 +150,9 @@ export const authenticatedRoutes = [
   HISTORY_PAGE,
   UPLOAD_PAGE,
   SETTINGS_PAGE,
-  DEACTIVATE_PAGE
+  DEACTIVATE_PAGE,
+  CHATS_PAGE,
+  CHAT_PAGE
 ]
 
 export const publicSiteRoutes = [

@@ -388,6 +388,10 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
 
 function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
   try {
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
+      return
+    }
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const { data } = yield* call([sdk.chats, sdk.chats.getPermissions], {
