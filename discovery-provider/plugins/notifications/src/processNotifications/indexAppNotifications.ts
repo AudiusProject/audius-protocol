@@ -116,11 +116,13 @@ export class AppNotificationsProcessor {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
     const timer = new Timer('process app push notifications')
+    const blocknumber = notifications[0].blocknumber
     const status = {
       total: notifications.length,
       processed: 0,
       errored: 0,
-      skipped: 0
+      skipped: 0,
+      blocknumber
     }
     const mappedNotifications = mapNotifications(
       notifications,
