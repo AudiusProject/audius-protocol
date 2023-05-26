@@ -509,6 +509,7 @@ export const ChatScreen = () => {
                   ListHeaderComponent={
                     canSendMessage ? null : <ChatUnavailable chatId={chatId} />
                   }
+                  scrollEnabled={!shouldShowPopup}
                 />
               </View>
             )}
