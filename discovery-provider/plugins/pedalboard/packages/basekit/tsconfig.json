@@ -3,7 +3,8 @@
     "lib": ["es2020"],
     "module": "CommonJS",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": "./src"
   },
   "exclude": ["node_modules"],
   "extends": "tsconfig/base.json",

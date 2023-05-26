@@ -10,7 +10,11 @@
     "lint": "turbo run lint",
     "test": "turbo run test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "basekit": "^0.0.0",
+    "knex": "^2.4.2",
+    "storage": "^0.0.0"
+  },
   "devDependencies": {
     "eslint-config-custom": "*",
     "prettier": "^2.8.8",
