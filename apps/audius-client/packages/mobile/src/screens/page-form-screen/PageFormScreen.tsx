@@ -77,7 +77,6 @@ export const FormScreen = (props: FormScreenProps) => {
   }, [navigation, onReset])
 
   const handleSubmit = useCallback(() => {
-    console.log({ onSubmit })
     onSubmit?.()
     if (goBackOnSubmit) {
       navigation.goBack()
