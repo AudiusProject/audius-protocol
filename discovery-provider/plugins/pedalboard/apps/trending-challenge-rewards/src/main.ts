@@ -1,24 +1,19 @@
 import { log } from "logger";
 import App from "basekit/src/app";
-import { SharedData, condition } from "./config";
-import {
-  getChallengesDisbursementsUserbanks,
-  getChallengesDisbursementsUserbanksFriendly,
-  getStartBlock,
-} from "queries";
+import { SharedData, condition, initAudiusLibs } from "./config";
+import { onDisburse } from "app";
+import { sdk } from "@audius/sdk";
 
 export const main = async () => {
-  await new App<SharedData>({})
-    .cron(condition, async (app) => {
-      const startBlock = await getStartBlock(app.getDnDb());
-      const challengesDisbursementsUserbanks =
-        await getChallengesDisbursementsUserbanks(app.getDnDb());
-      log(`Not Friendly: ${JSON.stringify(challengesDisbursementsUserbanks)}`);
-      const challengesDisbursementsUserbanksFriendly =
-        await getChallengesDisbursementsUserbanksFriendly(app.getDnDb());
-      log(
-        `Friendly: ${JSON.stringify(challengesDisbursementsUserbanksFriendly)}`
-      );
-    })
+  const audiusSdk = sdk({ appName: "trending-challenge-rewards-plugin" })
+  const libs = await initAudiusLibs()
+  await new App<SharedData>({
+    oracleEthAddress: "",
+    AAOEndpoint: "",
+    feePayerOverride: "",
+    libs,
+    sdk: audiusSdk
+  })
+    .cron(condition, onDisburse)
     .run();
 };

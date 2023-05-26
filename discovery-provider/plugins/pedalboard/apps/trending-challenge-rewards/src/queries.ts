@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 import { Table, UserChallenges } from "storage";
 
-type ChallengeDisbursementUserbank = {
+export type ChallengeDisbursementUserbank = {
   challenge_id: string;
   completed_blocknumber: number;
   handle: string;
@@ -11,7 +11,7 @@ type ChallengeDisbursementUserbank = {
   slot: null | string;
 };
 
-type ChallengeDisbursementUserbankFriendly = {
+export type ChallengeDisbursementUserbankFriendly = {
   challenge_id: string;
   handle: string;
   user_id: number;

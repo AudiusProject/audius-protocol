@@ -11,12 +11,16 @@
     "test": "turbo run test"
   },
   "dependencies": {
+    "@audius/libs": "^1.2.118",
+    "@audius/sdk": "^2.0.3-beta.20",
     "app-template": "^0.0.0",
     "basekit": "^0.0.0",
     "knex": "^2.4.2",
     "moment": "^2.29.4",
+    "node-fetch": "^3.3.1",
     "storage": "^0.0.0",
-    "verified-events": "^0.0.0"
+    "verified-events": "^0.0.0",
+    "web3": "^1.10.0"
   },
   "devDependencies": {
     "eslint-config-custom": "*",

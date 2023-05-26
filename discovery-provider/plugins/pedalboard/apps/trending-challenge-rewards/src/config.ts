@@ -1,14 +1,25 @@
+import { AudiusLibs, AudiusSdk } from "@audius/sdk";
 import App from "basekit/src/app";
 import moment from "moment";
 
-export type SharedData = {};
+export type SharedData = {
+  oracleEthAddress: string,
+  AAOEndpoint: string,
+  feePayerOverride: string,
+  libs?: AudiusLibs,
+  sdk: AudiusSdk
+};
 
 export const condition = (_app: App<SharedData>): boolean => {
   // check on Fridays at 11am PST
   // TODO: pull this in from configuration
-  const date = Date.parse("Fri May 26 2023 09:27:00 GMT-0600");
+  const date = Date.parse("Fri May 26 2023 09:43:00 GMT-0600");
   const timeToDisburse = moment(date);
   const now = moment();
   if (now.isSame(timeToDisburse, "seconds")) return true;
   return false;
 };
+
+export const initAudiusLibs = async (): Promise<AudiusLibs | undefined> => {
+  return
+}
