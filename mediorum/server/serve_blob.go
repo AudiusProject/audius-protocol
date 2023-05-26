@@ -52,7 +52,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// v1 feature parity
-	go ss.logTrackListen(c)
+	// go ss.logTrackListen(c)
 
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
