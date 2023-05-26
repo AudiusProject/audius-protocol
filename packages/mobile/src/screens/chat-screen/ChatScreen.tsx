@@ -16,7 +16,7 @@ import {
   playerSelectors
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
-import { Keyboard, View, Text, Pressable, FlatList } from 'react-native'
+import { Keyboard, View, Text, FlatList, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -426,7 +426,7 @@ export const ChatScreen = () => {
       headerTitle={
         otherUser
           ? () => (
-              <Pressable
+              <TouchableOpacity
                 onPress={() =>
                   navigation.push('Profile', { id: otherUser.user_id })
                 }
@@ -440,7 +440,7 @@ export const ChatScreen = () => {
                   user={otherUser}
                   nameStyle={styles.userBadgeTitle}
                 />
-              </Pressable>
+              </TouchableOpacity>
             )
           : messages.title
       }
