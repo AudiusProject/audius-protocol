@@ -1,11 +1,9 @@
-import { mapValues, zipObject } from 'lodash'
-
 import { Kind } from 'models/Kind'
 import { CommonState } from 'store/reducers'
 
 import * as cacheSelectors from '../store/cache/selectors'
 
-import { EntityMap, StrippedEntityMap } from './types'
+import { EntityMap } from './types'
 
 export function capitalize(str: string) {
   return str.replace(str[0], str[0].toUpperCase())
@@ -15,39 +13,20 @@ export const getKeyFromFetchArgs = (fetchArgs: any) => {
   return JSON.stringify(fetchArgs)
 }
 
-export const stripEntityMap = (entities: EntityMap): StrippedEntityMap => {
-  return mapValues(
-    entities,
-    (entityType) => entityType && Object.keys(entityType)
-  )
-}
-
-export const selectRehydrateEntityMap = (
+export const selectCommonEntityMap = (
   state: CommonState,
-  strippedEntityMap: StrippedEntityMap
+  kind?: Kind
 ): EntityMap | null => {
-  try {
-    return mapValues(
-      strippedEntityMap,
-      (entityIds, kind) =>
-        entityIds &&
-        zipObject(
-          entityIds,
-          entityIds.map((entityId) => {
-            const cachedEntity = cacheSelectors.getEntry(state, {
-              kind: Kind[kind as keyof typeof Kind],
-              id: parseInt(entityId)
-            })
-            // Reject and return null if not all entities are populated
-            if (!cachedEntity) throw new Error('missing entity')
-            return cachedEntity
-          })
-        )
-    )
-  } catch (e) {
-    if ((e as Error).message !== 'missing entity') {
-      throw e
-    }
-    return null
+  const entityMap: EntityMap = {
+    [Kind.USERS]: cacheSelectors.getAllEntries(state, { kind: Kind.USERS })
   }
+  if (kind === Kind.USERS) return entityMap
+  entityMap[Kind.TRACKS] = cacheSelectors.getAllEntries(state, {
+    kind: Kind.TRACKS
+  })
+  if (kind === Kind.TRACKS) return entityMap
+  entityMap[Kind.COLLECTIONS] = cacheSelectors.getAllEntries(state, {
+    kind: Kind.COLLECTIONS
+  })
+  return entityMap
 }
