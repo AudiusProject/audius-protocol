@@ -127,6 +127,13 @@
     )
     ```
 
+### Hook options
+
+Hooks accept an options object as the optional second argument
+
+- `disabled` - prevents calling the remote fetch function while disabled is false. This is useful if some arguments may not be loaded yet
+- `shallow` - skips pulling subentities out of the cache. (e.g. get a track but not the full user inside `track.user`). Omitted subentities will be replaced by id references.
+
 ## Cacheing
 
 ### Endpoint response cacheing

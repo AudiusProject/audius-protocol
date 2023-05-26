@@ -207,7 +207,13 @@ const buildEndpointHooks = <
     // Rehydrate local nonNormalizedData using entities from global normalized cache
     let cachedData: Data = useProxySelector(
       (state: CommonState) => {
-        const entityMap = selectCommonEntityMap(state, endpoint.options.kind)
+        if (hookOptions?.shallow && !endpoint.options.kind)
+          return nonNormalizedData
+        const entityMap = selectCommonEntityMap(
+          state,
+          endpoint.options.kind,
+          hookOptions?.shallow
+        )
         return denormalize(nonNormalizedData, apiResponseSchema, entityMap)
       },
       [nonNormalizedData, apiResponseSchema, endpoint.options.kind]
@@ -269,7 +275,6 @@ const buildEndpointHooks = <
       fetchWrapped()
     }, [
       fetchArgs,
-      cachedData,
       dispatch,
       status,
       isInitialValue,
