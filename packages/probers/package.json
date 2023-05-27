@@ -1,6 +1,6 @@
 {
   "name": "probers",
-  "version": "1.5.21",
+  "version": "1.5.26",
   "description": "Automated client tests",
   "scripts": {
     "cypress:open": "cypress open",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "eslint": "8.19.0",
-    "eslint-config-audius": "1.5.21",
+    "eslint-config-audius": "1.5.26",
     "eslint-plugin-cypress": "2.12.1"
   }
 }
