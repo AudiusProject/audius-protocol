@@ -16,6 +16,7 @@
     "solidity:lint": "solium -d contracts",
     "js:lint": "eslint .",
     "lint": "npm run js:lint && npm run solidity:lint",
+    "lint:fix": "npm run js:lint -- --fix && npm run solidity:lint -- --fix",
     "analysis": "slither ."
   },
   "dependencies": {

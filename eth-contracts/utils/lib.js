@@ -91,7 +91,8 @@ export const assertThrows = async (
   // assert.fail() for some reason does not have its error string printed 🤷
   assert(
     false,
-    `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''
+    `Expected "${expectedErrorCode}"${
+      expectedReason ? ` (with reason: "${expectedReason}")` : ''
     } but it did not fail`
   )
 }

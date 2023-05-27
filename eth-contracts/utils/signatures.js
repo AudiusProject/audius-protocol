@@ -1,6 +1,11 @@
 // adapted from https://github.com/albertocuestacanada/ERC20Permit/blob/master/utils/signatures.ts to not use typescript
 
-import { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } from 'ethers-latest/lib/utils'
+import {
+  keccak256,
+  defaultAbiCoder,
+  toUtf8Bytes,
+  solidityPack
+} from 'ethers-latest/lib/utils'
 import { ecsign } from 'ethereumjs-util'
 
 export const sign = (digest, privateKey) => {
@@ -8,11 +13,15 @@ export const sign = (digest, privateKey) => {
 }
 
 export const PERMIT_TYPEHASH = keccak256(
-  toUtf8Bytes('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
+  toUtf8Bytes(
+    'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
+  )
 )
 
 export const TRANSFER_TOKENS_TYPEHASH = keccak256(
-  toUtf8Bytes('TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)')
+  toUtf8Bytes(
+    'TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)'
+  )
 )
 
 // Returns the EIP712 hash which should be signed by the user
@@ -36,9 +45,16 @@ export function getPermitDigest(
         keccak256(
           defaultAbiCoder.encode(
             ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
-            [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce, deadline]
+            [
+              PERMIT_TYPEHASH,
+              approve.owner,
+              approve.spender,
+              approve.value,
+              nonce,
+              deadline
+            ]
           )
-        ),
+        )
       ]
     )
   )
@@ -66,7 +82,7 @@ export function getTransferTokensDigest(
         keccak256(
           defaultAbiCoder.encode(
             [
-              'bytes32', 
+              'bytes32',
               'address',
               'uint256',
               'uint16',
@@ -78,15 +94,15 @@ export function getTransferTokensDigest(
             [
               TRANSFER_TOKENS_TYPEHASH,
               transferTokens.from,
-            	transferTokens.amount,
+              transferTokens.amount,
               transferTokens.recipientChain,
-            	transferTokens.recipient,
-            	transferTokens.arbiterFee,
-            	nonce,
+              transferTokens.recipient,
+              transferTokens.arbiterFee,
+              nonce,
               deadline
             ]
           )
-        ),
+        )
       ]
     )
   )
@@ -98,11 +114,15 @@ export function getDomainSeparator(name, contractAddress, chainId) {
     defaultAbiCoder.encode(
       ['bytes32', 'bytes32', 'bytes32', 'uint256', 'address'],
       [
-        keccak256(toUtf8Bytes('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)')),
+        keccak256(
+          toUtf8Bytes(
+            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+          )
+        ),
         keccak256(toUtf8Bytes(name)),
         keccak256(toUtf8Bytes('1')),
         chainId,
-        contractAddress,
+        contractAddress
       ]
     )
   )

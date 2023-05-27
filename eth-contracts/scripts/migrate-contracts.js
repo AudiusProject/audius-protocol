@@ -47,7 +47,7 @@ const copyBuildDirectory = async (outputDirPath) => {
 }
 
 /** Creates directory if path does not exist */
-async function createDir (dir) {
+async function createDir(dir) {
   try {
     await fs.ensureDir(dir)
   } catch (err) {
@@ -61,7 +61,11 @@ async function createDir (dir) {
  */
 const outputJsonConfigFile = async (outputFilePath) => {
   try {
-    let migrationOutputPath = path.join(getDirectoryRoot(AudiusEthContracts), 'migrations', 'migration-output.json')
+    let migrationOutputPath = path.join(
+      getDirectoryRoot(AudiusEthContracts),
+      'migrations',
+      'migration-output.json'
+    )
     if (!fs.existsSync(migrationOutputPath)) {
       console.log('Failed to find migration output')
       throw new Error('Failed to find migration output')
@@ -85,11 +89,15 @@ const outputJsonConfigFile = async (outputFilePath) => {
 /**
  * output all relevant contract addresses to file for external consumption
  */
- const outputFlaskConfigFile = async (outputPath) => {
+const outputFlaskConfigFile = async (outputPath) => {
   try {
     // Pull registry address from config because artifacts will require the updated
     // version after a migration resuses the registry
-    let migrationOutputPath = path.join(getDirectoryRoot(AudiusEthContracts), 'migrations', 'migration-output.json')
+    let migrationOutputPath = path.join(
+      getDirectoryRoot(AudiusEthContracts),
+      'migrations',
+      'migration-output.json'
+    )
     if (!fs.existsSync(migrationOutputPath)) {
       console.log('Failed to find migration output')
       throw new Error('Failed to find migration output')
@@ -105,7 +113,7 @@ const outputJsonConfigFile = async (outputFilePath) => {
     console.log(`Target Output Flask Config File: ${outputFlaskConfigFile}`)
     console.log(`Contents: \n ${configFileContents}`)
 
-    fs.writeFile(outputFlaskConfigFile, configFileContents, err => {
+    fs.writeFile(outputFlaskConfigFile, configFileContents, (err) => {
       // throws an error, you could also catch it here
       if (err) throw err
 
@@ -118,12 +126,12 @@ const outputJsonConfigFile = async (outputFilePath) => {
 }
 
 /** Replace eth-contracts artifacts in libs with new ABIs and config */
-module.exports = async callback => {
+module.exports = async (callback) => {
   // output to Libs
   try {
     const libsDirRoot = path.join(getDirectoryRoot(Libs), 'src/eth-contracts')
     fs.removeSync(libsDirRoot)
-  
+
     await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
     await outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
   } catch (e) {
@@ -132,21 +140,35 @@ module.exports = async callback => {
 
   // output to Identity Service
   try {
-    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusIdentityService), '/eth-contract-config.json'))
+    await outputJsonConfigFile(
+      path.join(
+        getDirectoryRoot(AudiusIdentityService),
+        '/eth-contract-config.json'
+      )
+    )
   } catch (e) {
     console.log("Identity service doesn't exist", e)
   }
 
   // output to Content Node
   try {
-    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
+    await outputJsonConfigFile(
+      path.join(
+        getDirectoryRoot(AudiusCreatorNode),
+        '/eth-contract-config.json'
+      )
+    )
   } catch (e) {
     console.log("Creator node doesn't exist", e)
   }
 
   // output to Discovery Node
   try {
-    const discProvOutputPath = path.join(getDirectoryRoot(AudiusDiscoveryNode), 'build', 'eth-contracts')
+    const discProvOutputPath = path.join(
+      getDirectoryRoot(AudiusDiscoveryNode),
+      'build',
+      'eth-contracts'
+    )
 
     // Copy build directory
     await copyBuildDirectory(discProvOutputPath)
