@@ -2,7 +2,8 @@ import {
   accountSelectors,
   chatSelectors,
   useAccountHasClaimableRewards,
-  StringKeys
+  StringKeys,
+  FeatureFlags
 } from '@audius/common'
 import { useDrawerProgress } from '@react-navigation/drawer'
 import { View } from 'react-native'
@@ -12,7 +13,7 @@ import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import { ProfilePicture } from 'app/components/user'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar, useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 const { getAccountUser } = accountSelectors
@@ -53,8 +54,10 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const accountUser = useSelector(getAccountUser)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
   const hasUnreadMessages = useSelector(getHasUnreadMessages)
-  const showNotificationBubble = hasClaimableRewards || hasUnreadMessages
+  const showNotificationBubble =
+    hasClaimableRewards || (hasUnreadMessages && isChatEnabled)
 
   const opacity = Animated.interpolateNode(
     drawerProgress as Adaptable<number>,
