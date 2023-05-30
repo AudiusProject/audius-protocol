@@ -16,7 +16,7 @@ import {
   CollectiblesPlaylistTableColumn,
   CollectiblesPlaylistTable
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
-import CollectionHeader from 'components/collection/desktop/CollectionHeader'
+import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/page/Page'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
@@ -26,7 +26,7 @@ import styles from './CollectionPage.module.css'
 const messages = {
   emptyPage: {
     owner:
-      'Find a track you want to add and click the ••• button to add it to your playlist',
+      'This playlist is empty. Start adding tracks to share it or make it public.',
     visitor: 'This Playlist is Empty...'
   },
   type: {
@@ -42,7 +42,7 @@ const EmptyPage = (props: { text?: string | null; isOwner: boolean }) => {
     (props.isOwner ? messages.emptyPage.owner : messages.emptyPage.visitor)
   return (
     <div className={styles.emptyWrapper}>
-      <div>{text}</div>
+      <p className={styles.emptyText}>{text}</p>
     </div>
   )
 }

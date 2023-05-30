@@ -34,7 +34,7 @@ export const EditActions = ({
       <div>
         <Button
           text={deleteText}
-          type={disabled ? ButtonType.DISABLED : ButtonType.SECONDARY}
+          type={disabled ? ButtonType.DISABLED : ButtonType.DESTRUCTIVE}
           disabled={disabled}
           onClick={onDelete}
           className={styles.deleteButton}
@@ -42,14 +42,12 @@ export const EditActions = ({
           buttonType='button'
         />
       </div>
-      <div>
+      <div className={styles.buttonsRight}>
         <Button
           text={cancelText}
-          type={disabled ? ButtonType.DISABLED : ButtonType.SECONDARY}
+          type={disabled ? ButtonType.DISABLED : ButtonType.COMMON_ALT}
           disabled={disabled}
           onClick={onCancel}
-          className={styles.cancelButton}
-          textClassName={styles.cancelButtonText}
           buttonType='button'
         />
         <Button
@@ -57,7 +55,6 @@ export const EditActions = ({
           type={disabled ? ButtonType.DISABLED : ButtonType.PRIMARY}
           disabled={disabled}
           onClick={onSave}
-          className={styles.saveChangesButton}
           buttonType={isForm ? 'submit' : 'button'}
         />
       </div>

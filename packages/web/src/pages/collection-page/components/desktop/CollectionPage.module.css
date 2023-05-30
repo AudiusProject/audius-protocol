@@ -19,7 +19,7 @@
 
 /* Empty Page Section Wrapper */
 .emptyWrapper {
-  height: 136px;
+  padding: var(--unit-10);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -28,6 +28,11 @@
   color: var(--neutral);
   font-size: var(--font-m);
   font-weight: var(--font-medium);
+}
+
+.emptyText {
+  font-size: var(--font-l);
+  font-weight: var(--font-normal);
 }
 
 /* Top Header Section Wrapper */

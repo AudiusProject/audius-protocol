@@ -9,6 +9,7 @@ import {
 } from 'react'
 
 import cn from 'classnames'
+import { capitalize } from 'lodash'
 import uniqueId from 'lodash/uniqueId'
 import ReactDOM from 'react-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -118,7 +119,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     showTitleHeader = false,
     dismissOnClickOutside = true,
     showDismissButton = false,
-    zIndex
+    zIndex,
+    size
   },
   ref
 ) {
@@ -269,6 +271,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const bodyClassNames = cn(styles.body, {
     [styles.noScroll!]: !allowScroll,
+    [styles[`size${capitalize(size)}`]]: size,
     [bodyClassName!]: !!bodyClassName
   })
 
