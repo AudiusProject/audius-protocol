@@ -579,7 +579,9 @@ export const Audio = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
-    const queryParamsMap = await handleGatedQueryParams(newQueueTracks)
+    const queryParamsMap = isReachable
+      ? await handleGatedQueryParams(newQueueTracks)
+      : null
 
     const newTrackData = newQueueTracks.map((track) => {
       if (!track) {
@@ -596,7 +598,7 @@ export const Audio = () => {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
       } else {
-        const queryParams = queryParamsMap[track.track_id]
+        const queryParams = queryParamsMap?.[track.track_id]
         if (queryParams) {
           url = apiClient.makeUrl(
             `/tracks/${encodeHashId(track.track_id)}/stream`,
