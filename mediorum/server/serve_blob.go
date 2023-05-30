@@ -52,7 +52,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// v1 feature parity
-	// go ss.logTrackListen(c)
+	go ss.logTrackListen(c)
 
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
@@ -110,13 +110,16 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		Timeout: 2 * time.Second,
 	}
 
-	sig, _ := signature.ParseFromQueryString(c.QueryParam("signature"))
-	trackId := sig.Data.TrackId
+	sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+	if err != nil {
+		ss.logger.Warn("unable to parse signature for request", c.QueryParam("signature"))
+		return
+	}
 
-	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), trackId)
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
-		ss.logger.Error("logTrackListen: unable to build request", err)
+		ss.logger.Error("unable to build request", err)
 		return
 	}
 
@@ -129,13 +132,13 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		ss.logger.Error("logTrackListen: unable to build request", err)
+		ss.logger.Error("unable to build request", err)
 		return
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
 	if err != nil {
-		ss.logger.Error("logTrackListen: unable to build request", err)
+		ss.logger.Error("unable to build request", err)
 		return
 	}
 	req.Header.Set("content-type", "application/json")
@@ -143,14 +146,14 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		ss.logger.Error("logTrackListen: unable to POST to identity service", err)
+		ss.logger.Error("unable to POST to identity service", err)
 		return
 	}
 
 	if res.StatusCode != 200 {
 		defer res.Body.Close()
 		resBody, _ := io.ReadAll(res.Body)
-		ss.logger.Warn(fmt.Sprintf("logTrackListen: unsuccessful POST [%d] %s", res.StatusCode, resBody))
+		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
 	}
 
 	return
