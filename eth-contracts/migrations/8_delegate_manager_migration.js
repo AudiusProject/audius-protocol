@@ -4,7 +4,9 @@ const _lib = require('../utils/lib')
 const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 const DelegateManager = artifacts.require('DelegateManager')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const Staking = artifacts.require('Staking')
 const Governance = artifacts.require('Governance')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
@@ -32,14 +34,17 @@ module.exports = (deployer, network, accounts) => {
     const stakingAddress = process.env.stakingAddress
     const governanceAddress = process.env.governanceAddress
     const claimsManagerAddress = process.env.claimsManagerAddress
-    const serviceProviderFactoryAddress = process.env.serviceProviderFactoryAddress
+    const serviceProviderFactoryAddress =
+      process.env.serviceProviderFactoryAddress
 
     const token = await AudiusToken.at(tokenAddress)
     const registry = await Registry.at(registryAddress)
     const governance = await Governance.at(governanceAddress)
 
     // Deploy DelegateManager logic and proxy contracts + register proxy
-    const delegateManager0 = await deployer.deploy(DelegateManager, { from: proxyDeployerAddress })
+    const delegateManager0 = await deployer.deploy(DelegateManager, {
+      from: proxyDeployerAddress
+    })
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'uint256'],
@@ -53,8 +58,15 @@ module.exports = (deployer, network, accounts) => {
       { from: proxyDeployerAddress }
     )
 
-    await _lib.registerContract(governance, delegateManagerKey, delegateManagerProxy.address, guardianAddress)
-    const delegateManager = await DelegateManager.at(delegateManagerProxy.address)
+    await _lib.registerContract(
+      governance,
+      delegateManagerKey,
+      delegateManagerProxy.address,
+      guardianAddress
+    )
+    const delegateManager = await DelegateManager.at(
+      delegateManagerProxy.address
+    )
 
     // Set environment variable
     process.env.delegateManagerAddress = delegateManagerProxy.address
@@ -67,11 +79,13 @@ module.exports = (deployer, network, accounts) => {
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
       { from: guardianAddress }
     )
-    
+
     console.log(`DelegateManagerProxy Address: ${delegateManagerProxy.address}`)
     const staking = await Staking.at(stakingAddress)
     let delManAddrFromStaking = await staking.getDelegateManagerAddress()
-    console.log(`DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`)
+    console.log(
+      `DelegateManagerProxy Address from Staking.sol: ${delManAddrFromStaking}`
+    )
 
     // Set delegate manager address in ServiceProviderFactory.sol through governance
     await governance.guardianExecuteTransaction(
@@ -79,11 +93,20 @@ module.exports = (deployer, network, accounts) => {
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
-      { from: guardianAddress })
-    const SPFactory = await ServiceProviderFactory.at(process.env.serviceProviderFactoryAddress)
+      { from: guardianAddress }
+    )
+    const SPFactory = await ServiceProviderFactory.at(
+      process.env.serviceProviderFactoryAddress
+    )
     let delManAddrFromSPFactory = await SPFactory.getDelegateManagerAddress()
-    console.log(`DelegateManagerProxy Address from ServiceProviderFactory.sol: ${delManAddrFromSPFactory}`)
-    assert.strict.equal(delegateManager.address, delManAddrFromStaking, 'Failed to set staking address')
+    console.log(
+      `DelegateManagerProxy Address from ServiceProviderFactory.sol: ${delManAddrFromSPFactory}`
+    )
+    assert.strict.equal(
+      delegateManager.address,
+      delManAddrFromStaking,
+      'Failed to set staking address'
+    )
 
     // Set delegate manager address in ClaimsManager.sol through governance
     const claimsManager = await ClaimsManager.at(claimsManagerAddress)
@@ -92,10 +115,18 @@ module.exports = (deployer, network, accounts) => {
       _lib.toBN(0),
       'setDelegateManagerAddress(address)',
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
-      { from: guardianAddress })
-      const delManAddrFromClaimsManager = await claimsManager.getDelegateManagerAddress()
-      console.log(`DelegateManagerProxy Address from ClaimsManager.sol: ${delManAddrFromSPFactory}`)
-      assert.strict.equal(delegateManagerProxy.address, delManAddrFromClaimsManager, 'Failed to set delegate manager address in claims manager')
+      { from: guardianAddress }
+    )
+    const delManAddrFromClaimsManager =
+      await claimsManager.getDelegateManagerAddress()
+    console.log(
+      `DelegateManagerProxy Address from ClaimsManager.sol: ${delManAddrFromSPFactory}`
+    )
+    assert.strict.equal(
+      delegateManagerProxy.address,
+      delManAddrFromClaimsManager,
+      'Failed to set delegate manager address in claims manager'
+    )
 
     // Configure addresses in DelegateManager.sol through governance
     await governance.guardianExecuteTransaction(
@@ -105,7 +136,11 @@ module.exports = (deployer, network, accounts) => {
       _lib.abiEncode(['address'], [stakingAddress]),
       { from: guardianAddress }
     )
-    assert.strict.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Failed to set staking address')
+    assert.strict.equal(
+      stakingAddress,
+      await delegateManager.getStakingAddress(),
+      'Failed to set staking address'
+    )
 
     await governance.guardianExecuteTransaction(
       delegateManagerKey,
@@ -139,6 +174,9 @@ module.exports = (deployer, network, accounts) => {
       _lib.abiEncode(['address'], [delegateManagerProxy.address]),
       { from: guardianAddress }
     )
-    assert.equal(await governance.getDelegateManagerAddress.call(), delegateManagerProxy.address)
+    assert.equal(
+      await governance.getDelegateManagerAddress.call(),
+      delegateManagerProxy.address
+    )
   })
 }

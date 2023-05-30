@@ -8,7 +8,7 @@ import (
 )
 
 func TestCidLog(t *testing.T) {
-	t.Skip()
+	// t.Skip()
 
 	ctx := context.Background()
 
@@ -19,18 +19,20 @@ func TestCidLog(t *testing.T) {
 	// let's just double tripple check we're in test mode:
 	assert.Equal(t, "test", s1.Config.Env)
 
-	s1.pgPool.Exec(ctx, `
-	truncate "Files";
+	_, err := s1.pgPool.Exec(ctx, `
 	truncate cid_log;
 
+	-- this uses the fake "Files" from .initdb
 	insert into "Files"
-		(multihash, "storagePath", "createdAt", "updatedAt", "fileUUID", "clock", "skipped")
+		(multihash, "type", "createdAt", "updatedAt")
 	values
-		('cid1', '/files/cid1', now(), now(), gen_random_uuid(), 1, false),
-		('cid2', '/files/cid2', now(), now(), gen_random_uuid(), 1, false)
+		('cid1', 'image', now(), now()),
+		('cid2', 'copy320', now(), now()),
+		('cid3', 'track', now(), now())
 	`)
+	assert.NoError(t, err)
 
-	_, err := s2.pgPool.Exec(ctx, `truncate cid_lookup; truncate cid_cursor`)
+	_, err = s2.pgPool.Exec(ctx, `truncate cid_lookup; truncate cid_cursor`)
 	assert.NoError(t, err)
 
 	r1, err := s2.beamFromPeer(s1.Config.Self)

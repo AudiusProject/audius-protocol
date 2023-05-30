@@ -1,7 +1,9 @@
 package ddl
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"log"
 
@@ -14,45 +16,42 @@ var cidLookupDDL string
 //go:embed delist_statuses.sql
 var delistStatusesDDL string
 
-func Migrate(db *sql.DB) {
-	mustExec(db, cidLookupDDL, true)
-	mustExec(db, delistStatusesDDL, false)
+var mediorumMigrationTable = `
+	create table if not exists mediorum_migrations (
+		"hash" text primary key,
+		"ts" timestamp
+	);
+`
 
-	// flare-178: disable cid beam
-	// clear out existing data
-	log.Println("truncate cid tables... ")
-	_, err := db.Exec(`
-	drop trigger if exists handle_cid_change on "Files";
-	truncate table cid_cursor cascade;
-	truncate table cid_log cascade;
-	truncate table cid_lookup cascade;
-	drop table if exists cid_temp;
-	`)
-	if err != nil {
-		log.Fatal("truncate cid failed", err)
-	} else {
-		log.Println("truncate cid ok")
-	}
+func Migrate(db *sql.DB) {
+	mustExec(db, mediorumMigrationTable)
+	runMigration(db, cidLookupDDL)
+	runMigration(db, delistStatusesDDL)
 }
 
-func mustExec(db *sql.DB, ddl string, skipIfExists bool) {
+func runMigration(db *sql.DB, ddl string) {
+	h := md5string(ddl)
 
-	// this is a hack to skip running ddl if the index exists...
-	// since ddl can block for several minutes
-	// pg_migrate.sh soon
-	if skipIfExists {
-		q := `select count(*) = 1 from pg_indexes where indexname = 'idx_cid_log_updated_at'`
-		var indexExists bool
-		db.QueryRow(q).Scan(&indexExists)
-		if indexExists {
-			fmt.Println("indexExists... skipping ddl")
-			return
-		}
+	var alreadyRan bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
+	if alreadyRan {
+		fmt.Printf("hash %s exists skipping ddl \n", h)
+		return
 	}
 
-	_, err := db.Exec(ddl)
+	mustExec(db, ddl)
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
+}
+
+func mustExec(db *sql.DB, ddl string, va ...interface{}) {
+	_, err := db.Exec(ddl, va...)
 	if err != nil {
 		fmt.Println(ddl)
 		log.Fatal(err)
 	}
+}
+
+func md5string(s string) string {
+	hash := md5.Sum([]byte(s))
+	return hex.EncodeToString(hash[:])
 }
