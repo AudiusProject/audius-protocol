@@ -13,6 +13,7 @@ import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { FocusableFields } from 'store/application/ui/editPlaylistModal/slice'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { CreateActions, EditActions } from './FormActions'
@@ -65,6 +66,7 @@ type PlaylistFormProps = {
   /** Only applies to edit mode */
   onCancel?: () => void
   onSave: (formFields: PlaylistFormFields) => void
+  initialFocusedField?: Nullable<FocusableFields>
 }
 
 const PlaylistForm = ({
@@ -75,7 +77,8 @@ const PlaylistForm = ({
   onDelete,
   onOpenArtworkPopup,
   onCloseArtworkPopup,
-  isEditMode = false
+  isEditMode = false,
+  initialFocusedField
 }: PlaylistFormProps) => {
   const [formFields, setFormFields] = useState<PlaylistFormFields>({
     artwork: {},
@@ -165,6 +168,7 @@ const PlaylistForm = ({
     <div>
       <div className={styles.playlistForm}>
         <UploadArtwork
+          defaultPopupOpen={initialFocusedField === 'artwork'}
           artworkUrl={formFields.artwork.url || coverArt}
           onDropArtwork={onDropArtwork}
           error={errors.artwork}
@@ -174,6 +178,7 @@ const PlaylistForm = ({
         />
         <div className={styles.form}>
           <Input
+            autoFocus={initialFocusedField === 'name'}
             variant='elevatedPlaceholder'
             placeholder={`${isAlbum ? 'Album' : 'Playlist'} Name`}
             defaultValue={formFields.playlist_name || ''}

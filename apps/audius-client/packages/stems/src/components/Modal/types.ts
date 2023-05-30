@@ -119,6 +119,11 @@ export type ModalProps = {
    * If not provided, it is auto-generated.
    */
   'aria-labelledby'?: string
+  /**
+   * If provided, conform to standard modal widths
+   * (only small currently implemented)
+   */
+  size?: 'small' | 'medium' | 'large'
 }
 
 export type ModalContentProps = ScrollbarProps

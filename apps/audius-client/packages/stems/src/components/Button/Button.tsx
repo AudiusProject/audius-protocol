@@ -49,6 +49,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       iconClassName,
       textClassName,
       'aria-label': ariaLabelProp,
+      fullWidth,
       ...other
     },
     ref
@@ -104,7 +105,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {
             [styles.noIcon]: !leftIcon && !rightIcon,
             [styles.disabled]: disabled,
-            [styles.includeHoverAnimations]: includeHoverAnimations
+            [styles.includeHoverAnimations]: includeHoverAnimations,
+            [styles.fullWidth]: fullWidth
           },
           className
         )}

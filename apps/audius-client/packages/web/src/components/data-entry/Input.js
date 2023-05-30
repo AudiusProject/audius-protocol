@@ -63,11 +63,14 @@ class Input extends Component {
       error,
       type,
       inputRef,
-      value: valueOverride
+      value: valueOverride,
+      ...other
     } = this.props
+
     let { placeholder } = this.props
 
     const { focused, warning } = this.state
+
     let value = this.state.value
     if (valueOverride !== null && valueOverride !== undefined)
       value = valueOverride
@@ -99,7 +102,8 @@ class Input extends Component {
       autoComplete,
       disabled,
       value,
-      ref: inputRef
+      ref: inputRef,
+      ...other
     }
 
     if (!focused && variant !== 'elevatedPlaceholder') {

@@ -352,6 +352,7 @@
   cursor: default;
   transform: none;
   border: none;
+  pointer-events: none;
 }
 
 .disabled .textLabel {
@@ -493,4 +494,8 @@
 /** destructive disabled **/
 .destructive:disabled {
   opacity: 0.45;
+}
+
+.fullWidth {
+  width: 100%;
 }

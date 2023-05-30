@@ -80,6 +80,11 @@ export type ButtonProps = {
   minWidth?: number
 
   /**
+   * If provided, allow button to take up full width of container
+   */
+  fullWidth?: boolean
+
+  /**
    * Class name to apply to the icon
    */
   iconClassName?: string
