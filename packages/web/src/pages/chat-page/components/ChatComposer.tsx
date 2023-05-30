@@ -28,6 +28,8 @@ export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
 }
 
+const MAX_MESSAGE_LENGTH = 10000
+
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId } = props
   const dispatch = useDispatch()
@@ -74,7 +76,8 @@ export const ChatComposer = (props: ChatComposerProps) => {
           onChange={handleChange}
           value={value}
           maxVisibleRows={10}
-          maxLength={10000}
+          maxLength={MAX_MESSAGE_LENGTH}
+          showMaxLength={!!value && value.length > MAX_MESSAGE_LENGTH * 0.85}
           grows
           resize
         >
