@@ -107,7 +107,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 
 	httpClient := http.Client{
-		Timeout: 2 * time.Second,
+		Timeout: 5 * time.Second, // identity svc slow
 	}
 
 	sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
