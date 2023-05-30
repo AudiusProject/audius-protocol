@@ -1,5 +1,5 @@
 import { log } from "logger";
-import { main } from "main";
+import { main } from "./main";
 
 (async () => {
   await main().catch(log);

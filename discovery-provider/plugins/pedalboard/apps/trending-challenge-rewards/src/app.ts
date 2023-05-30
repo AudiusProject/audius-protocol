@@ -1,6 +1,5 @@
-import { AudiusLibs } from "@audius/sdk";
 import App from "basekit/src/app";
-import { SharedData } from "config";
+import { SharedData } from "./config";
 import { log } from "logger";
 import {
     ChallengeDisbursementUserbank,
@@ -8,7 +7,7 @@ import {
     getChallengesDisbursementsUserbanks,
     getChallengesDisbursementsUserbanksFriendly,
     getStartBlock,
-  } from "queries";
+  } from "./queries";
 
 export const onDisburse = async (app: App<SharedData>) => {
     const db = app.getDnDb()

@@ -1,6 +1,6 @@
 import App from "basekit/src/app";
 import { SharedData, condition, initAudiusLibs } from "./config";
-import { onDisburse } from "app";
+import { onDisburse } from "./app";
 import { sdk } from "@audius/sdk";
 
 export const main = async () => {

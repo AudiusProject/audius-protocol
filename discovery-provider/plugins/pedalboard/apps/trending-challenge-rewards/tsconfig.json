@@ -4,7 +4,6 @@
     "module": "CommonJS",
     "outDir": "./dist",
     "rootDir": "./src",
-    "baseUrl": "./src"
   },
   "exclude": ["node_modules"],
   "extends": "tsconfig/base.json",
