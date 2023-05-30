@@ -64,7 +64,7 @@ class Input extends Component {
       type,
       inputRef,
       value: valueOverride,
-      ...other
+      autoFocus
     } = this.props
 
     let { placeholder } = this.props
@@ -103,7 +103,7 @@ class Input extends Component {
       disabled,
       value,
       ref: inputRef,
-      ...other
+      autoFocus
     }
 
     if (!focused && variant !== 'elevatedPlaceholder') {
