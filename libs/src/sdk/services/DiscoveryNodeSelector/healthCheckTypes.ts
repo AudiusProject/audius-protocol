@@ -18,6 +18,15 @@ export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean
   block_difference: number
   challenge_last_event_age_sec: number
+  comms: {
+    healthy: boolean
+    errors: unknown
+    websocket_error: unknown
+    commit: string
+    booted: string
+    built: string
+    wip: boolean
+  }
   database_connections: number
   database_is_localhost: boolean
   database_size: number

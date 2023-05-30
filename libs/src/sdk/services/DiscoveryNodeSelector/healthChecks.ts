@@ -61,6 +61,10 @@ const isApiSolanaIndexerHealthy = ({
   data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
+const isCommsHealthy = ({ data }: { data: HealthCheckResponseData }) => {
+  return data.comms?.healthy
+}
+
 export const parseApiHealthStatusReason = ({
   data,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
@@ -133,6 +137,13 @@ export const parseHealthStatusReason = ({
     }
   }
 
+  if (!isCommsHealthy({ data })) {
+    return {
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: 'comms'
+    }
+  }
+
   if (minVersion) {
     if (!data.version) {
       return {
@@ -145,6 +156,7 @@ export const parseHealthStatusReason = ({
       return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
+
   if (!isIndexerHealthy({ data, maxBlockDiff })) {
     return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }
