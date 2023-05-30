@@ -19,6 +19,8 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 WORKDIR /app
 
+RUN ls
+
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .

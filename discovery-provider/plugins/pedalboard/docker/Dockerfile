@@ -14,5 +14,33 @@ RUN apk update
 
 WORKDIR /app
 RUN yarn global add turbo
-COPY "../apps/${APP_NAME}" .
+
+COPY . .
 RUN turbo prune "--scope=${APP_NAME}" --docker
+
+# I should be able to just use base and copy exactly what I need here
+# Copying files doesn't work as expected though so just composing the build
+# for now
+FROM builder AS installer
+
+RUN apk add --no-cache libc6-compat git
+RUN apk update
+RUN apk add --no-cache python3 py3-pip make g++
+WORKDIR /app
+
+# # First install dependencies (as they change less often)
+RUN yarn install
+
+# # Build the project and its dependencies
+# COPY --from=builder /app/out/full/ .
+# COPY turbo.json turbo.json
+
+RUN echo "installing deps for ${APP_NAME}"
+RUN yarn turbo run build "--filter=${APP_NAME}"...
+
+FROM base AS runner
+WORKDIR /app
+
+COPY --from=installer /app .
+
+CMD node "apps/${APP_NAME}/dist/index.js"

@@ -1,4 +1,3 @@
-import { log } from "logger";
 import App from "basekit/src/app";
 import { SharedData, condition, initAudiusLibs } from "./config";
 import { onDisburse } from "app";
