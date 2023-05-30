@@ -3,7 +3,8 @@ import sampleSize from 'lodash/sampleSize'
 import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
   parseApiHealthStatusReason,
-  getDiscoveryNodeHealthCheck
+  getDiscoveryNodeHealthCheck,
+  isFullFlaskResponse
 } from './healthChecks'
 import { promiseAny } from '../../utils/promiseAny'
 import { defaultDiscoveryNodeSelectorConfig } from './constants'
@@ -197,15 +198,19 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             data,
             healthCheckThresholds: this.config.healthCheckThresholds
           })
+          const blockDiff = isFullFlaskResponse(data)
+            ? (data.latest_chain_block ?? 0) - (data.latest_indexed_block ?? 0)
+            : 0
+          const version = isFullFlaskResponse(data)
+            ? data.version?.version ?? ''
+            : ''
           await this.reselectIfNecessary({
             endpoint,
             health,
             reason,
             data: {
-              block_difference:
-                (data.latest_chain_block ?? 0) -
-                (data.latest_indexed_block ?? 0),
-              version: data.version?.version ?? ''
+              block_difference: blockDiff,
+              version
             }
           })
         } else {
