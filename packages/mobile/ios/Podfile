@@ -1,5 +1,5 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/react-native/node_modules/@react-native-community/cli-platform-ios/native_modules'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 platform :ios, '14.0'
 prepare_react_native_project!
@@ -58,7 +58,6 @@ target 'AudiusReactNative' do
       :mac_catalyst_enabled => false
     )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
-    __apply_Xcode_14_3_RC_post_install_workaround(installer)
 
 
     installer.pods_project.build_configurations.each do |config|
@@ -71,23 +70,6 @@ target 'AudiusReactNative' do
         target.build_configurations.each do |config|
             config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         end
-      end
-    end
-  end
-end
-
-# https://github.com/facebook/react-native/commit/cb88e75cf1f82af94e35f1647f6b6d0b0dbbe60f
-# https://github.com/travis-mark/lrn/commit/015854716feadd61a904d5a603b027426472f863
-# Force pods to match minimum iOS version for React Native
-# Fixes build issue on Xcode Cloud where some pods
-# Use iOS 12 calls despite being set as iOS 11
-def __apply_Xcode_14_3_RC_post_install_workaround(installer)
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      current_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
-      minimum_target = min_ios_version_supported
-      if current_target.to_f < minimum_target.to_f
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = minimum_target
       end
     end
   end
