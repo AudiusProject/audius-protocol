@@ -11,8 +11,13 @@ function* watchGoToChat() {
       payload: { chatId }
     } = action
     if (navigationRef.isReady()) {
-      // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
-      navigationRef.navigate('Chat', { chatId })
+      if (!chatId) {
+        // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
+        navigationRef.navigate('ChatList')
+      } else {
+        // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
+        navigationRef.navigate('Chat', { chatId })
+      }
     }
   })
 }

@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -18,7 +20,8 @@ const CHAT_ACTIONS_MODAL_NAME = 'ChatActions'
 const messages = {
   visitProfile: 'Visit Profile',
   blockMessages: 'Block Messages',
-  unblockMessages: 'Unblock Messages'
+  unblockMessages: 'Unblock Messages',
+  deleteConversation: 'Delete Conversation'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -33,6 +36,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     color: palette.secondary,
     paddingVertical: spacing(3)
   },
+  deleteText: {
+    color: palette.accentRed
+  },
   row: {
     alignItems: 'center',
     width: '100%',
@@ -45,30 +51,29 @@ export const ChatActionsDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { userId } = useSelector((state: AppState) =>
+  const { userId, chatId } = useSelector((state: AppState) =>
     getData<'ChatActions'>(state)
   )
   const doesBlockUser = useSelector((state: AppState) =>
     getDoesBlockUser(state, userId)
   )
 
-  const handleVisitProfilePress = () => {
+  const closeDrawer = useCallback(() => {
     dispatch(
       setVisibility({
         drawer: 'ChatActions',
         visible: false
       })
     )
-    navigation.navigate('Profile', { id: userId })
-  }
+  }, [dispatch])
 
-  const handleBlockMessagesPress = () => {
-    dispatch(
-      setVisibility({
-        drawer: 'ChatActions',
-        visible: false
-      })
-    )
+  const handleVisitProfilePress = useCallback(() => {
+    closeDrawer()
+    navigation.navigate('Profile', { id: userId })
+  }, [closeDrawer, navigation, userId])
+
+  const handleBlockMessagesPress = useCallback(() => {
+    closeDrawer()
     dispatch(
       setVisibility({
         drawer: 'BlockMessages',
@@ -76,7 +81,18 @@ export const ChatActionsDrawer = () => {
         data: { userId }
       })
     )
-  }
+  }, [closeDrawer, dispatch, userId])
+
+  const handleDeletePress = useCallback(() => {
+    closeDrawer()
+    dispatch(
+      setVisibility({
+        drawer: 'DeleteChat',
+        visible: true,
+        data: { chatId }
+      })
+    )
+  }, [chatId, closeDrawer, dispatch])
 
   return (
     <NativeDrawer drawerName={CHAT_ACTIONS_MODAL_NAME}>
@@ -92,6 +108,13 @@ export const ChatActionsDrawer = () => {
               {doesBlockUser
                 ? messages.unblockMessages
                 : messages.blockMessages}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity onPress={handleDeletePress}>
+            <Text style={[styles.text, styles.deleteText]}>
+              {messages.deleteConversation}
             </Text>
           </TouchableOpacity>
         </View>

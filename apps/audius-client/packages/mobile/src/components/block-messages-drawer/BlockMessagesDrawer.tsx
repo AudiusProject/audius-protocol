@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { cacheUsersSelectors, chatActions, chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -111,7 +113,7 @@ export const BlockMessagesDrawer = () => {
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
 
-  const handleConfirmPress = () => {
+  const handleConfirmPress = useCallback(() => {
     if (doesBlockUser) {
       dispatch(unblockUser({ userId }))
     } else {
@@ -123,16 +125,16 @@ export const BlockMessagesDrawer = () => {
         visible: false
       })
     )
-  }
+  }, [dispatch, doesBlockUser, userId])
 
-  const handleCancelPress = () => {
+  const handleCancelPress = useCallback(() => {
     dispatch(
       setVisibility({
         drawer: 'BlockMessages',
         visible: false
       })
     )
-  }
+  }, [dispatch])
 
   return (
     <NativeDrawer drawerName={BLOCK_MESSAGES_MODAL_NAME}>
