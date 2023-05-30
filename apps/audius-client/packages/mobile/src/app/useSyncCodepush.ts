@@ -15,8 +15,12 @@ export const useSyncCodepush = () => {
     codePush.sync(
       {
         installMode: codePush.InstallMode.ON_NEXT_RESTART,
-        mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART
+        mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
         // ^ We'll manually show the mandatory update UI and prompt the user to restart the app.
+        rollbackRetryOptions: {
+          delayInHours: 0.5,
+          maxRetryAttempts: 5
+        }
       },
       (newStatus) => {
         console.log('New CodePush Status: ', newStatus)
