@@ -7,7 +7,7 @@ import { enum_NotificationEmails_emailFrequency } from '../types/identity'
 import { config } from '../config'
 import { getDB } from '../conn'
 import * as sendEmail from '../email/notifications/sendEmail'
-import { EmailUsers, getUsersCanNotify, processEmailNotifications } from '../email/notifications/index'
+import { processEmailNotifications } from '../email/notifications/index'
 import {
   createTestDB,
   dropTestDB,
