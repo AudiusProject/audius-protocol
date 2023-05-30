@@ -58,5 +58,4 @@ def get_unclaimed_id(type):
                 ).first()
 
             if not is_claimed:
-                logger.info(f"unclaimed_id | no unclaimed {type} ID found")
                 return encode_int_id(random_id)

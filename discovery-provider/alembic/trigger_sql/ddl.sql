@@ -232,3 +232,8 @@ BEGIN;
   END IF;
   END $$;
 COMMIT;
+
+-- 5/25/23 fix indexing stall
+BEGIN;
+  delete from users where txhash='0xa25516594adc42562e498b2c9f4e4365c9cbfea223a4e55624ae0ac316708a62' and not is_current;
+COMMIT;

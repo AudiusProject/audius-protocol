@@ -355,8 +355,6 @@ def notifications():
     # Cache owner info for network entities and pass in w/results
     owner_info = {const.tracks: {}, const.albums: {}, const.playlists: {}}
 
-    start_time = datetime.now()
-    logger.info(f"notifications.py | start_time ${start_time}")
 
     # List of notifications generated from current protocol state
     notifications_unsorted = []
@@ -392,7 +390,6 @@ def notifications():
 
         notifications_unsorted.extend(follow_notifications)
 
-        logger.info(f"notifications.py | followers at {datetime.now() - start_time}")
 
         #
         # Query relevant favorite information
@@ -475,7 +472,6 @@ def notifications():
             )
             notifications_unsorted.extend(favorite_remix_notifications)
 
-        logger.info(f"notifications.py | favorites at {datetime.now() - start_time}")
 
         #
         # Query relevant tier change information
@@ -519,9 +515,6 @@ def notifications():
 
         notifications_unsorted.extend(tier_change_notifications)
 
-        logger.info(
-            f"notifications.py | balance change at {datetime.now() - start_time}"
-        )
 
         #
         # Query relevant repost information
@@ -610,7 +603,6 @@ def notifications():
         # Query relevant created entity notification - tracks/albums/playlists
         created_notifications = []
 
-        logger.info(f"notifications.py | reposts at {datetime.now() - start_time}")
 
         #
         # Query relevant created tracks for remix information
@@ -680,8 +672,6 @@ def notifications():
                     }
                     remix_created_notifications.append(remix_notif)
 
-        logger.info(f"notifications.py | remixes at {datetime.now() - start_time}")
-
         # Handle track update notifications
         # TODO: Consider switching blocknumber for updated at?
         updated_tracks_query = session.query(Track)
@@ -698,15 +688,9 @@ def notifications():
 
         for prev_entry in prev_tracks:
             entry = next(t for t in updated_tracks if t.track_id == prev_entry.track_id)
-            logger.info(
-                f"notifications.py | single track update {entry.track_id} {entry.blocknumber} {datetime.now() - start_time}"
-            )
 
             # Tracks that were unlisted and turned to public
             if prev_entry.is_unlisted == True:
-                logger.info(
-                    f"notifications.py | single track update to public {datetime.now() - start_time}"
-                )
                 track_notif = {
                     const.notification_type: const.notification_type_create,
                     const.notification_blocknumber: entry.blocknumber,
@@ -737,9 +721,6 @@ def notifications():
                     )
                     .all()
                 )
-                logger.info(
-                    f"notifications.py | single track update parents {remix_track_parents} {datetime.now() - start_time}"
-                )
                 for remix_track_parent in remix_track_parents:
                     [
                         remix_track_parent_owner,
@@ -762,10 +743,6 @@ def notifications():
                     remix_created_notifications.append(remix_notif)
 
         notifications_unsorted.extend(remix_created_notifications)
-
-        logger.info(
-            f"notifications.py | track updates at {datetime.now() - start_time}"
-        )
 
         # Aggregate playlist/album notifs
         collection_query = session.query(Playlist)
@@ -925,8 +902,6 @@ def notifications():
 
         notifications_unsorted.extend(created_notifications)
 
-        logger.info(f"notifications.py | playlists at {datetime.now() - start_time}")
-
         # Get additional owner info as requested for listen counts
         tracks_owner_query = session.query(Track).filter(
             Track.is_current == True, Track.track_id.in_(track_ids_to_owner)
@@ -936,10 +911,6 @@ def notifications():
             owner = entry.owner_id
             track_id = entry.track_id
             owner_info[const.tracks][track_id] = owner
-
-        logger.info(
-            f"notifications.py | owner info at {datetime.now() - start_time}, owners {len(track_owner_results)}"
-        )
 
         # Get playlist updates
         today = date.today()
@@ -957,10 +928,6 @@ def notifications():
         )
 
         playlist_update_results = playlist_update_query.all()
-
-        logger.info(
-            f"notifications.py | get playlist updates at {datetime.now() - start_time}, playlist updates {len(playlist_update_results)}"
-        )
 
         # Represents all playlist update notifications
         playlist_update_notifications = []
@@ -990,10 +957,6 @@ def notifications():
         )
         playlist_favorites_results = playlist_favorites_query.all()
 
-        logger.info(
-            f"notifications.py | get playlist favorites {datetime.now() - start_time}, playlist favorites {len(playlist_favorites_results)}"
-        )
-
         # dictionary of playlist id => users that favorited said playlist
         # e.g. { playlist1: [user1, user2, ...], ... }
         # we need this dictionary to know which users need to be notified of a playlist update
@@ -1007,10 +970,6 @@ def notifications():
                 users_that_favorited_playlists_dict[result.save_item_id] = [
                     result.user_id
                 ]
-
-        logger.info(
-            f"notifications.py | computed users that favorited dict {datetime.now() - start_time}"
-        )
 
         for playlist_id in users_that_favorited_playlists_dict:
             # TODO: We probably do not need this check because we are filtering
@@ -1029,10 +988,6 @@ def notifications():
 
         notifications_unsorted.extend(playlist_update_notifications)
 
-        logger.info(
-            f"notifications.py | all playlist updates at {datetime.now() - start_time}"
-        )
-
         milestone_info = get_milestone_info(session, min_block_number, max_block_number)
 
     # Final sort - TODO: can we sort by timestamp?
@@ -1040,10 +995,6 @@ def notifications():
         notifications_unsorted,
         key=lambda i: i[const.notification_blocknumber],
         reverse=False,
-    )
-
-    logger.info(
-        f"notifications.py | sorted notifications {datetime.now() - start_time}"
     )
 
     return api_helpers.success_response(
@@ -1075,9 +1026,7 @@ def get_max_slot(redis: Redis):
             [listen_milestone_slot, rewards_manager_slot, supporter_rank_up_slot],
         )
     )
-    logger.info(
-        f"notifications.py | get_max_slot() | listen_milestone_slot:{listen_milestone_slot} rewards_manager_slot:{rewards_manager_slot} supporter_rank_up_slot:{supporter_rank_up_slot}"
-    )
+
     if len(all_slots) == 0:
         return 0
     return min(all_slots)

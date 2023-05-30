@@ -105,7 +105,13 @@ func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]s
 
 func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
 	blacklisted := false
-	sql := `select count(*) = 1 from "ContentBlacklists" where "value" = $1 and "type" = 'CID'`
+	sql := `SELECT COALESCE(
+	                (SELECT "delisted"
+	                 FROM "track_delist_statuses"
+	                 WHERE "trackCid" = $1
+	                 ORDER BY "createdAt" DESC
+	                 LIMIT 1), 
+	            false)`
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
 	if err != nil {
 		log.Println("isCidBlacklisted err", err)

@@ -83,7 +83,7 @@ def get_current_user_id(required=True):
     return uid
 
 
-def parse_sort_param(base_query, model, whitelist_sort_params):
+def parse_sort_param(base_query, model, whitelist_sort_params, tiebreak_field):
     sort = request.args.get("sort")
     if not sort:
         return base_query
@@ -105,6 +105,8 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
         else:
             attr = attr.asc()
         order_bys.append(attr)
+    if tiebreak_field not in params.keys():
+        order_bys.append(getattr(model, tiebreak_field))
 
     return base_query.order_by(*order_bys)
 

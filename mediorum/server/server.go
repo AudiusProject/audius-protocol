@@ -44,8 +44,9 @@ type MediorumConfig struct {
 	PostgresDSN       string `json:"-"`
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
-	ListenPort        string `envconfig:"PORT"`
+	ListenPort        string
 	UpstreamCN        string
+	TrustedNotifierID int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -185,6 +186,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
+	routes.GET("/contact", ss.serveContact)
 
 	// status + debug:
 	routes.GET("/status", ss.getStatus)
@@ -250,6 +252,8 @@ func (ss *MediorumServer) MustStart() {
 
 	// flare-178: disable cid beam
 	// ss.startBeamClients()
+
+	go ss.startPollingDelistStatuses()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

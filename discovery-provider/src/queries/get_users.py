@@ -87,7 +87,6 @@ def get_users(args):
                 UserBankAccount.ethereum_address.in_(user["wallet"] for user in users)
             )
             banks: List[UserBankAccount] = secondary_query.all()
-            logger.info(banks)
             users_by_wallet = {user["wallet"]: user for user in users}
             for bank in banks:
                 users_by_wallet[bank.ethereum_address]["has_solana_bank"] = True

@@ -56,8 +56,9 @@ from src.queries.get_users_account import get_users_account
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_metrics import record_metrics
+from src.utils.structured_logger import StructuredLogger, log_duration
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 bp = Blueprint("queries", __name__)
 
 
@@ -190,6 +191,7 @@ def get_playlists_route():
 #   - Combine unsorted playlist and track arrays
 #   - Sort combined results by 'timestamp' field and return
 @bp.route("/feed", methods=("GET",))
+@log_duration(logger)
 @record_metrics
 def get_feed_route():
     args = to_dict(request.args)
