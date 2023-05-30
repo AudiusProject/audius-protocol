@@ -6,11 +6,12 @@ import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
-import { BlockMessagesDrawer } from 'app/components/block-messages'
+import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
+import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
@@ -119,6 +120,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   GatedContentUploadPrompt: GatedContentUploadPromptDrawer,
   ChatActions: ChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
+  DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
   InboxUnavailable: InboxUnavailableDrawer
 }

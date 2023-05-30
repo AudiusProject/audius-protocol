@@ -325,7 +325,7 @@ export const ChatScreen = () => {
       setVisibility({
         drawer: 'ChatActions',
         visible: true,
-        data: { userId: otherUser.user_id }
+        data: { userId: otherUser.user_id, chatId }
       })
     )
   }
@@ -442,7 +442,7 @@ export const ChatScreen = () => {
                 />
               </TouchableOpacity>
             )
-          : messages.title
+          : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
       }
       icon={otherUser ? undefined : IconMessage}
       topbarRight={topBarRight}
