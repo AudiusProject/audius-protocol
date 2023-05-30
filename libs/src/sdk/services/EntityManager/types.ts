@@ -29,7 +29,9 @@ export enum EntityType {
   TRACK = 'Track',
   USER = 'User',
   USER_REPLICA_SET = 'UserReplicaSet',
-  NOTIFICATION = 'Notification'
+  NOTIFICATION = 'Notification',
+  DELEGATE = 'Delegate',
+  DELEGATION = 'Delegation'
 }
 
 export type EntityManagerService = {
