@@ -4,9 +4,9 @@ import type {
   CrossPlatformFile as File
 } from '../../types/File'
 import { Genre } from '../../types/Genre'
+import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
-import { decodeHashId } from '../../utils/hashId'
 
 export const PremiumConditionsEthNFTCollection = z.object({
   chain: z.literal('eth'),
@@ -97,14 +97,6 @@ export const createUploadTrackMetadataSchema = () =>
 export type TrackMetadataType = z.infer<
   ReturnType<typeof createUploadTrackMetadataSchema>
 >
-
-const HashId = z.string().transform<number>((data: string) => {
-  const id = decodeHashId(data)
-  if (id === null) {
-    throw new Error('id is not valid')
-  }
-  return id
-})
 
 export const createUploadTrackSchema = () =>
   z
