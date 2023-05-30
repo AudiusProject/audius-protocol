@@ -88,6 +88,7 @@ export const ChatTextInput = ({ chatId }: ChatTextInputProps) => {
       inputAccessoryViewID='none'
       multiline
       value={inputMessage}
+      maxLength={10000}
     />
   )
 }
