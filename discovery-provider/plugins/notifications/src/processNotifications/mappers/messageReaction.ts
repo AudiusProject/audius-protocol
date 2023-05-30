@@ -22,7 +22,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     this.senderUserId = this.notification.sender_user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

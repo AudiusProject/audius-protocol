@@ -39,7 +39,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

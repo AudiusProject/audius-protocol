@@ -24,7 +24,7 @@ export class TipSend extends BaseNotification<TipSendNotificationRow> {
     this.senderUserId = this.notification.data.receiver_user_id
   }
 
-  async pushNotification() {
+  async processNotification() {
     // There is no current push notification for tip send
   }
 
