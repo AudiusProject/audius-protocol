@@ -41,10 +41,10 @@ export const ChatMessageTrack = ({ link, isAuthor }: ChatMessageTrackProps) => {
 
   const { data: track, status } = useGetTrackByPermalink(
     {
-      permalink,
-      currentUserId
+      permalink: permalink!,
+      currentUserId: currentUserId!
     },
-    { disabled: !permalink }
+    { disabled: !permalink || !currentUserId }
   )
 
   const uid = useMemo(() => {

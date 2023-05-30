@@ -1,11 +1,14 @@
-import { Kind } from 'models'
+import { ID, Kind } from 'models'
 import { createApi } from 'src/audius-query/createApi'
 
 const collectionApi = createApi({
   reducerPath: 'collectionApi',
   endpoints: {
     getPlaylistById: {
-      fetch: async ({ playlistId, currentUserId }, { apiClient }) => {
+      fetch: async (
+        { playlistId, currentUserId }: { playlistId: ID; currentUserId: ID },
+        { apiClient }
+      ) => {
         return (
           await apiClient.getPlaylist({
             playlistId,
@@ -21,7 +24,10 @@ const collectionApi = createApi({
     },
     // Note: Please do not use this endpoint yet as it depends on further changes on the DN side.
     getPlaylistByPermalink: {
-      fetch: async ({ permalink, currentUserId }, { apiClient }) => {
+      fetch: async (
+        { permalink, currentUserId }: { permalink: string; currentUserId: ID },
+        { apiClient }
+      ) => {
         return (
           await apiClient.getPlaylistByPermalink({
             permalink,
