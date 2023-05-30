@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { chatActions, chatSelectors } from '@audius/common'
+import { chatActions, accountSelectors, chatSelectors } from '@audius/common'
 import type { User } from '@audius/common'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { Text, View, TouchableOpacity } from 'react-native'
@@ -14,6 +14,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 const { createChat } = chatActions
 const { getCanCreateChat } = chatSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   followsYou: 'Follows You',
@@ -107,6 +108,7 @@ export const ChatUserListItem = ({ user }: ChatUserListItemProps) => {
   const styles = useStyles()
   const palette = useThemeColors()
   const dispatch = useDispatch()
+  const currentUserId = useSelector(getUserId)
   const { canCreateChat } = useSelector((state) =>
     getCanCreateChat(state, { userId: user.user_id })
   )
@@ -117,6 +119,10 @@ export const ChatUserListItem = ({ user }: ChatUserListItemProps) => {
     },
     [dispatch]
   )
+
+  if (currentUserId === user.user_id) {
+    return null
+  }
 
   return (
     <TouchableOpacity
