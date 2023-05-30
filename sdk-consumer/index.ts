@@ -27,6 +27,7 @@ const audiusSdk = sdk({
 app.listen(port, () => {
   console.log(`sdk-consumer listening on port ${port}`);
 });
+console.log("test");
 
 const trackUpload = upload.fields([
   { name: "coverArtFile", maxCount: 1 },
@@ -48,13 +49,18 @@ app.post<UploadTrackRequest>(
       const trackFile = (req.files as MulterFiles)?.["trackFile"][0];
 
       if (coverArtFile && trackFile) {
+        const inputMetadata = JSON.parse(req.body.metadata);
+        inputMetadata.releaseDate = inputMetadata.releaseDate
+          ? new Date(inputMetadata.releaseDate)
+          : inputMetadata.releaseDate;
+
         const uploadTrackRequest: UploadTrackRequest = {
-          artistId: req.body.artistId,
+          userId: req.body.userId,
           coverArtFile: {
             buffer: coverArtFile?.buffer,
             name: coverArtFile.originalname,
           },
-          metadata: JSON.parse(req.body.metadata),
+          metadata: inputMetadata,
           onProgress: (progress) => console.log("Progress:", progress),
           trackFile: {
             buffer: trackFile?.buffer,
