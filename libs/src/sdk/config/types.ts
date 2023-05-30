@@ -1,4 +1,4 @@
-export type BootstrapConfig = {
+export type ServicesConfig = {
   minVersion: string
   discoveryNodes: string[]
   entityManagerContractAddress: string

@@ -39,7 +39,7 @@
     "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
-    "sdk:bootstrap": "ts-node ./src/sdk/scripts/generateBootstrapConfig.ts",
+    "sdk:config": "ts-node ./src/sdk/scripts/generateServicesConfig.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",
