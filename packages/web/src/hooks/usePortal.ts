@@ -20,9 +20,9 @@ import { createPortal } from 'react-dom'
  *
  * @param container
  */
-export const usePortal = ({ container }: { container?: HTMLDivElement }) => {
+export const usePortal = ({ container }: { container?: HTMLElement }) => {
   const [portalContainer, setPortalContainer] = useState<
-    HTMLDivElement | undefined
+    HTMLElement | undefined
   >(container)
 
   // Initialize the portal container if necessary

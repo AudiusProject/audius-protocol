@@ -8,7 +8,6 @@
   flex-direction: column-reverse;
   gap: 8px;
   padding: 32px;
-  background-color: var(--background);
 }
 
 .separator {

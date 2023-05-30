@@ -1,0 +1,10 @@
+.gutter {
+  right: 0px;
+  position: fixed;
+  box-shadow: rgba(133, 129, 153, 0.18) 1px 2px 5px -2px;
+  z-index: -1;
+}
+
+.bannerMargin {
+  margin-top: var(--banner-margin);
+}
