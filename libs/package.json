@@ -100,7 +100,7 @@
     "safe-buffer": "5.2.1",
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
-    "snakecase-keys": "^5.4.5",
+    "snakecase-keys": "5.4.5",
     "stream-browserify": "3.0.0",
     "ulid": "2.3.0",
     "web3": "1.7.1",
