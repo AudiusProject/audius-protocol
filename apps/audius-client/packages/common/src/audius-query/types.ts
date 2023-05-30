@@ -36,6 +36,7 @@ export type SliceConfig = CreateSliceOptions<any, any, any>
 
 type EndpointOptions = {
   idArgKey?: string
+  idListArgKey?: string
   permalinkArgKey?: string
   schemaKey: string
   kind?: Kind

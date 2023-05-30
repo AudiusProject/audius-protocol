@@ -1,4 +1,4 @@
-import { Kind } from 'models'
+import { ID, Kind } from 'models'
 import { createApi } from 'src/audius-query/createApi'
 import { parseTrackRouteFromPermalink } from 'utils/stringUtils'
 
@@ -6,7 +6,7 @@ const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
     getTrackById: {
-      fetch: async ({ id }, { apiClient }) => {
+      fetch: async ({ id }: { id: ID }, { apiClient }) => {
         return await apiClient.getTrack({ id })
       },
       options: {
@@ -16,7 +16,10 @@ const trackApi = createApi({
       }
     },
     getTrackByPermalink: {
-      fetch: async ({ permalink, currentUserId }, { apiClient }) => {
+      fetch: async (
+        { permalink, currentUserId }: { permalink: string; currentUserId: ID },
+        { apiClient }
+      ) => {
         const { handle, slug } = parseTrackRouteFromPermalink(permalink)
         return await apiClient.getTrackByHandleAndSlug({
           handle,
@@ -31,11 +34,14 @@ const trackApi = createApi({
       }
     },
     getTracksByIds: {
-      fetch: async ({ ids, currentUserId }, { apiClient }) => {
+      fetch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId: ID },
+        { apiClient }
+      ) => {
         return await apiClient.getTracks({ ids, currentUserId })
       },
       options: {
-        idArgKey: 'ids',
+        idListArgKey: 'ids',
         kind: Kind.TRACKS,
         schemaKey: 'tracks'
       }

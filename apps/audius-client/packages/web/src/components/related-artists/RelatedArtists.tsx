@@ -38,7 +38,10 @@ export const RelatedArtists = () => {
 
   const artistId = profile?.user_id
 
-  const { data: relatedArtists } = useGetRelatedArtists({ artistId })
+  const { data: relatedArtists } = useGetRelatedArtists(
+    { artistId: artistId! },
+    { disabled: !artistId }
+  )
 
   const handleClick = useCallback(() => {
     if (profile) {

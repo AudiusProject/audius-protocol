@@ -44,9 +44,9 @@ export const ChatMessagePlaylist = ({
   const { data: playlist, status } = useGetPlaylistById(
     {
       playlistId,
-      currentUserId
+      currentUserId: currentUserId!
     },
-    { disabled: !playlistId }
+    { disabled: !playlistId || !currentUserId }
   )
   const collection = playlist
     ? {
@@ -62,9 +62,9 @@ export const ChatMessagePlaylist = ({
   const { data: tracks } = useGetTracksByIds(
     {
       ids: trackIds,
-      currentUserId
+      currentUserId: currentUserId!
     },
-    { disabled: !trackIds.length }
+    { disabled: !trackIds.length || !currentUserId }
   )
   const playlistTracks = tracks ?? []
 

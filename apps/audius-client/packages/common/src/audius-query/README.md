@@ -74,6 +74,7 @@
     - **`kind`** - in combination with either `idArgKey` or `permalinkArgKey`, allows local cache hits for single entities. If an entity with the matching `kind` and the `id` or `permalink` exists in cache, we will return that instead of calling the fetch function. See [enable single entity cache hits](#enable-single-entity-cache-hits) below
       - **`idArgKey`** - `fetchArgs[idArgKey]` must contain the id of the entity
       - **`permalinkArgKey`** - `fetchArgs[permalinkArgKey]` must contain the permalink of the entity
+      - **`idListArgKey`** - works like `idArgKey` but for endpoints that return a list entities
 
 1.  Export hooks
 

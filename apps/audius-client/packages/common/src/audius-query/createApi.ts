@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react'
 
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
-import { isEqual } from 'lodash'
+import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -12,6 +12,7 @@ import { getCollection } from 'store/cache/collections/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { CommonState } from 'store/reducers'
 import { getErrorMessage } from 'utils/error'
+import { removeNullable } from 'utils/typeUtils'
 
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
@@ -145,45 +146,59 @@ const buildEndpointHooks = <
       // Retrieve data from cache if lookup args provided
       if (!endpointState[key]) {
         if (
-          !(endpoint.options?.idArgKey || endpoint.options?.permalinkArgKey) ||
+          !(
+            endpoint.options?.idArgKey ||
+            endpoint.options?.idListArgKey ||
+            endpoint.options?.permalinkArgKey
+          ) ||
           !endpoint.options?.kind ||
           !endpoint.options?.schemaKey
         )
           return null
-        const { kind, idArgKey, permalinkArgKey, schemaKey } = endpoint.options
-        if (idArgKey && !fetchArgs[idArgKey]) return null
-        if (permalinkArgKey && !fetchArgs[permalinkArgKey]) return null
+        const { kind, idArgKey, idListArgKey, permalinkArgKey, schemaKey } =
+          endpoint.options
 
-        const idAsNumber = idArgKey
-          ? typeof fetchArgs[idArgKey] === 'number'
-            ? parseInt(fetchArgs[idArgKey])
-            : fetchArgs[idArgKey]
-          : null
-        const idCachedEntity = idAsNumber
-          ? cacheSelectors.getEntry(state, {
-              kind,
-              id: idAsNumber
+        let cachedData = null
+        if (idArgKey && fetchArgs[idArgKey]) {
+          const idAsNumber =
+            typeof fetchArgs[idArgKey] === 'number'
+              ? fetchArgs[idArgKey]
+              : parseInt(fetchArgs[idArgKey])
+          cachedData = cacheSelectors.getEntry(state, {
+            kind,
+            id: idAsNumber
+          })
+        } else if (permalinkArgKey && fetchArgs[permalinkArgKey]) {
+          if (kind === Kind.TRACKS) {
+            cachedData = getTrack(state, {
+              permalink: fetchArgs[permalinkArgKey]
             })
-          : null
-
-        let permalinkCachedEntity = null
-        if (kind === Kind.TRACKS && permalinkArgKey) {
-          permalinkCachedEntity = getTrack(state, {
-            permalink: fetchArgs[permalinkArgKey]
-          })
+          } else if (kind === Kind.COLLECTIONS) {
+            cachedData = getCollection(state, {
+              permalink: fetchArgs[permalinkArgKey]
+            })
+          }
+        } else if (idListArgKey && fetchArgs[idListArgKey]) {
+          const idsAsNumbers: number[] = fetchArgs[idListArgKey].map(
+            (id: string | number) =>
+              typeof id === 'number' ? id : parseInt(id)
+          )
+          const allEntities = mapValues(
+            cacheSelectors.getCache(state, { kind }).entries,
+            'metadata'
+          )
+          const entityHits = idsAsNumbers
+            .map((id) => allEntities[id])
+            .filter(removeNullable)
+          if (entityHits.length === idsAsNumbers.length) {
+            cachedData = entityHits
+          }
         }
-        if (kind === Kind.COLLECTIONS && permalinkArgKey) {
-          permalinkCachedEntity = getCollection(state, {
-            permalink: fetchArgs[permalinkArgKey]
-          })
-        }
-
-        const cachedEntity = idCachedEntity || permalinkCachedEntity
 
         // cache hit
-        if (cachedEntity) {
+        if (cachedData) {
           const { result } = normalize(
-            { [schemaKey]: cachedEntity },
+            { [schemaKey]: cachedData },
             apiResponseSchema
           )
           return {
