@@ -161,7 +161,9 @@ def create_playlist(params: ManageEntityParameters):
         is_album=params.metadata.get("is_album", False),
         description=params.metadata["description"],
         playlist_image_multihash=params.metadata["playlist_image_sizes_multihash"],
-        playlist_image_sizes_multihash=params.metadata["playlist_image_sizes_multihash"],
+        playlist_image_sizes_multihash=params.metadata[
+            "playlist_image_sizes_multihash"
+        ],
         playlist_name=params.metadata["playlist_name"],
         is_private=params.metadata.get("is_private", False),
         playlist_contents={"track_ids": tracks_with_index_time},

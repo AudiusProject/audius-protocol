@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
@@ -20,17 +21,17 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.utils import helpers
-from src.utils.eth_manager import EthManager
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from src.utils.structured_logger import StructuredLogger
 from src.tasks.metadata import (
     playlist_metadata_format,
     track_metadata_format,
     user_metadata_format,
 )
-from sqlalchemy.orm.session import Session
+from src.utils import helpers
+from src.utils.eth_manager import EthManager
+from src.utils.structured_logger import StructuredLogger
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 logger = StructuredLogger(__name__)
 
 PLAYLIST_ID_OFFSET = 400_000
@@ -156,9 +157,7 @@ class ManageEntityParameters:
 
         self.event = event
         self.metadata, self.metadata_cid = parse_metadata(
-            helpers.get_tx_arg(event, "_metadata"),
-            self.action,
-            self.entity_type
+            helpers.get_tx_arg(event, "_metadata"), self.action, self.entity_type
         )
         self.block_number = block_number
         self.event_blockhash = event_blockhash
@@ -231,10 +230,7 @@ class ManageEntityParameters:
 def expect_metadata_json(metadata, action, entity_type):
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
-    if (
-        action == Action.CREATE
-        and entity_type == EntityType.NOTIFICATION
-    ):
+    if action == Action.CREATE and entity_type == EntityType.NOTIFICATION:
         return False
     if (
         not metadata
@@ -303,9 +299,7 @@ def parse_metadata(metadata, action, entity_type):
         cid = data["cid"]
         metadata_json = data["data"]
         _, metadata_format = get_metadata_type_and_format(entity_type)
-        formatted_json = get_metadata_from_json(
-            metadata_format, metadata_json
-        )
+        formatted_json = get_metadata_from_json(metadata_format, metadata_json)
 
         # Only index valid changes
         if formatted_json == metadata_format:

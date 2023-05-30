@@ -53,10 +53,10 @@ from src.tasks.entity_manager.utils import (
     ExistingRecordDict,
     ManageEntityParameters,
     RecordDict,
-    get_record_key,
     expect_metadata_json,
+    get_metadata_type_and_format,
+    get_record_key,
     save_cid_metadata,
-    get_metadata_type_and_format
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
@@ -102,9 +102,7 @@ def entity_manager_update(
         )
 
         # collect events by entity type and action
-        entities_to_fetch = collect_entities_to_fetch(
-            update_task, entity_manager_txs
-        )
+        entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
         # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
@@ -149,8 +147,12 @@ def entity_manager_update(
                     )
                     # add processed metadata to cid_metadata dicts to batch save to cid_data table
                     # later
-                    if expect_metadata_json(params.metadata, params.action, params.entity_type):
-                        metadata_type, _ = get_metadata_type_and_format(params.entity_type)
+                    if expect_metadata_json(
+                        params.metadata, params.action, params.entity_type
+                    ):
+                        metadata_type, _ = get_metadata_type_and_format(
+                            params.entity_type
+                        )
                         cid_type[params.metadata_cid] = metadata_type
                         cid_metadata[params.metadata_cid] = params.metadata
 
