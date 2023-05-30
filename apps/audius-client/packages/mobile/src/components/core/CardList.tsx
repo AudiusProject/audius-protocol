@@ -14,11 +14,12 @@ import { makeStyles } from 'app/styles'
 import type { FlatListT } from './FlatList'
 import { FlatList } from './FlatList'
 
-export type CardListProps<ItemT> = FlatListProps<ItemT> & {
-  isLoading?: boolean
-  LoadingCardComponent?: ComponentType
+export type CardListProps<ItemT> = Omit<FlatListProps<ItemT>, 'data'> & {
+  data: ItemT[] | null | undefined
   disableTopTabScroll?: boolean
   FlatListComponent?: ComponentType<FlatListProps<ItemT | LoadingCard>>
+  isLoading?: boolean
+  LoadingCardComponent?: ComponentType
   // If total count is known, use this to aid in rendering the right number
   // of skeletons
   totalCount?: number
