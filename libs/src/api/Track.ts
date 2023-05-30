@@ -53,7 +53,6 @@ export class Track extends Base {
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
     this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
     this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
-    this.checkIfDownloadAvailable = this.checkIfDownloadAvailable.bind(this)
     this.uploadTrack = this.uploadTrack.bind(this)
     this.uploadTrackContentToCreatorNode =
       this.uploadTrackContentToCreatorNode.bind(this)
@@ -366,19 +365,6 @@ export class Track extends Base {
     )
   }
 
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   */
-  async checkIfDownloadAvailable(
-    creatorNodeEndpoints: string,
-    trackId: number
-  ) {
-    return await CreatorNode.checkIfDownloadAvailable(
-      creatorNodeEndpoints,
-      trackId
-    )
-  }
-
   /* ------- SETTERS ------- */
 
   /**
@@ -537,9 +523,9 @@ export class Track extends Base {
       const trackId = await this._generateTrackId()
       const entityManagerMetadata = writeMetadataThroughChain
         ? JSON.stringify({
-            cid: metadataMultihash,
-            data: metadata
-          })
+          cid: metadataMultihash,
+          data: metadata
+        })
         : metadataMultihash
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,

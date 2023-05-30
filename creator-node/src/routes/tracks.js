@@ -679,58 +679,6 @@ router.post(
   })
 )
 
-/** Returns download status of track and 320kbps CID if ready + downloadable. */
-router.get(
-  '/tracks/download_status/:blockchainId',
-  handleResponse(async (req, _res) => {
-    const blockchainId = req.params.blockchainId
-    if (!blockchainId) {
-      return errorResponseBadRequest('Please provide blockchainId.')
-    }
-
-    const track = await models.Track.findOne({
-      where: { blockchainId },
-      order: [['clock', 'DESC']]
-    })
-    if (!track) {
-      return errorResponseBadRequest(
-        `No track found for blockchainId ${blockchainId}`
-      )
-    }
-
-    // Case: track is not marked as downloadable
-    if (
-      !track.metadataJSON ||
-      !track.metadataJSON.download ||
-      !track.metadataJSON.download.is_downloadable
-    ) {
-      return successResponse({ isDownloadable: false, cid: null })
-    }
-
-    // Case: track is marked as downloadable
-    // - Check if downloadable file exists. Since copyFile may or may not have trackBlockchainId association,
-    //    fetch a segmentFile for trackBlockchainId, and find copyFile for segmentFile's sourceFile.
-    const segmentFile = await models.File.findOne({
-      where: {
-        type: 'track',
-        trackBlockchainId: track.blockchainId
-      }
-    })
-    const copyFile = await models.File.findOne({
-      where: {
-        type: 'copy320',
-        sourceFile: segmentFile.sourceFile
-      }
-    })
-
-    // Serve from file system
-    return successResponse({
-      isDownloadable: true,
-      cid: copyFile ? copyFile.multihash : null
-    })
-  })
-)
-
 /**
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.

@@ -144,26 +144,6 @@ export class CreatorNode {
     }
   }
 
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   * @param endpoints creator node endpoints
-   * @param trackId
-   */
-  static async checkIfDownloadAvailable(endpoints: string, trackId: number) {
-    const primary = CreatorNode.getPrimary(endpoints)
-    if (primary) {
-      const req: AxiosRequestConfig = {
-        baseURL: primary,
-        url: `/tracks/download_status/${trackId}`,
-        method: 'get'
-      }
-      const { data: body } = await axios(req)
-      if (body.data.cid) return body.data.cid
-    }
-    // Download is not available, clients should display "processing"
-    return null
-  }
-
   /* -------------- */
 
   web3Manager: Nullable<Web3Manager>
@@ -1166,7 +1146,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => {},
+    onProgress: ProgressCB = () => { },
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1276,9 +1256,8 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
-        e.response.data.error
-      }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
+        }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)
@@ -1325,7 +1304,7 @@ export class CreatorNode {
   /**
    * Calls fn and then retries once after 500ms, again after 1500ms, and again after 4000ms
    */
-  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => {}) {
+  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => { }) {
     return await retry(fn, {
       minTimeout: 500,
       maxTimeout: 4000,
