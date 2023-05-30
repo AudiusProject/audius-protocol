@@ -1,4 +1,4 @@
-import { lazy, createRef, Component, Suspense } from 'react'
+import { lazy, Component, Suspense } from 'react'
 
 import {
   Client,
@@ -34,7 +34,7 @@ import UpdateAppBanner from 'components/banner/UpdateAppBanner'
 import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
-import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/header/desktop/Header'
+import { DesktopHeaderContext } from 'components/header/desktop/HeaderGutter'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
 import Navigator from 'components/nav/Navigator'
@@ -221,8 +221,6 @@ class App extends Component {
   }
 
   ipc = null
-
-  headerGutterRef = createRef()
 
   scrollToTop = () => {
     this.props.mainContentRef.current &&
@@ -467,515 +465,521 @@ class App extends Component {
         />
       )
 
-    const showBanner =
-      showCTABanner || showWeb3ErrorBanner || showWebUpdateBanner
-    if (this.headerGutterRef.current) {
-      if (showBanner) {
-        this.headerGutterRef.current.classList.add(styles.bannerMargin)
-      } else {
-        this.headerGutterRef.current.classList.remove(styles.bannerMargin)
-      }
-    } else {
-      this.headerGutterRef.current = document.getElementById(
-        HEADER_BACKGROUND_GUTTER_ID
-      )
-    }
+    const showBanner = !!(
+      showCTABanner ||
+      showWeb3ErrorBanner ||
+      showWebUpdateBanner
+    )
 
     const SwitchComponent = isMobile() ? AnimatedSwitch : Switch
     const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
 
     return (
-      <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
-        {showCTABanner ? (
-          <MobileDesktopBanner
-            onClose={this.dismissCTABanner}
-            onAccept={this.showDownloadAppModal}
+      <DesktopHeaderContext.Provider value={{ offsetForBanner: showBanner }}>
+        <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
+          {showCTABanner ? (
+            <MobileDesktopBanner
+              onClose={this.dismissCTABanner}
+              onAccept={this.showDownloadAppModal}
+            />
+          ) : null}
+          {showWeb3ErrorBanner ? (
+            <Web3ErrorBanner
+              alert
+              isElectron={client === Client.ELECTRON}
+              onClose={this.dismissWeb3ErrorBanner}
+            />
+          ) : null}
+          {showWebUpdateBanner ? (
+            <UpdateAppBanner
+              onAccept={this.acceptWebUpdate}
+              onClose={this.dismissUpdateWebAppBanner}
+            />
+          ) : null}
+          {this.props.showCookieBanner ? <CookieBanner /> : null}
+          <Notice shouldPadTop={showBanner} />
+          <Navigator
+            className={cn({
+              [styles.bannerMargin]: showBanner && client !== Client.ELECTRON
+            })}
           />
-        ) : null}
-        {showWeb3ErrorBanner ? (
-          <Web3ErrorBanner
-            alert
-            isElectron={client === Client.ELECTRON}
-            onClose={this.dismissWeb3ErrorBanner}
-          />
-        ) : null}
-        {showWebUpdateBanner ? (
-          <UpdateAppBanner
-            onAccept={this.acceptWebUpdate}
-            onClose={this.dismissUpdateWebAppBanner}
-          />
-        ) : null}
-        {this.props.showCookieBanner ? <CookieBanner /> : null}
-        <Notice shouldPadTop={showBanner} />
-        <Navigator
-          className={cn({
-            [styles.bannerMargin]: showBanner && client !== Client.ELECTRON
-          })}
-        />
-        <div className={styles.draggableArea} />
-        <div
-          ref={this.props.mainContentRef}
-          id={MAIN_CONTENT_ID}
-          role='main'
-          className={cn(styles.mainContentWrapper, {
-            [styles.bannerMargin]: showBanner,
-            [styles.mainContentWrapperMobile]: isMobileClient,
-            [styles.noScroll]: noScroll
-          })}
-        >
-          {isMobileClient && <TopLevelPage />}
-          {isMobileClient && <HeaderContextConsumer />}
+          <div className={styles.draggableArea} />
+          <div
+            ref={this.props.mainContentRef}
+            id={MAIN_CONTENT_ID}
+            role='main'
+            className={cn(styles.mainContentWrapper, {
+              [styles.bannerMargin]: showBanner,
+              [styles.mainContentWrapperMobile]: isMobileClient,
+              [styles.noScroll]: noScroll
+            })}
+          >
+            {isMobileClient && <TopLevelPage />}
+            {isMobileClient && <HeaderContextConsumer />}
 
-          <Suspense fallback={null}>
-            <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
-              {publicSiteRoutes.map((route) => (
-                // Redirect all public site routes to the corresponding pathname.
-                // This is necessary first because otherwise pathnames like
-                // legal/privacy-policy will match the track route.
-                <Redirect
-                  key={route}
-                  from={route}
-                  to={{ pathname: getPathname() }}
+            <Suspense fallback={null}>
+              <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
+                {publicSiteRoutes.map((route) => (
+                  // Redirect all public site routes to the corresponding pathname.
+                  // This is necessary first because otherwise pathnames like
+                  // legal/privacy-policy will match the track route.
+                  <Redirect
+                    key={route}
+                    from={route}
+                    to={{ pathname: getPathname() }}
+                  />
+                ))}
+
+                <Route
+                  exact
+                  path={SIGN_IN_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <SignOn signIn initialPage={initialPage} />}
                 />
-              ))}
+                <Route
+                  exact
+                  path={SIGN_UP_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => (
+                    <SignOn signIn={false} initialPage={initialPage} />
+                  )}
+                />
+                <Route
+                  exact
+                  path={FEED_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => (
+                    <FeedPage
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={NOTIFICATION_USERS_PAGE}
+                  isMobile={isMobileClient}
+                  component={NotificationUsersPage}
+                />
+                <Route
+                  exact
+                  path={ANNOUNCEMENT_PAGE}
+                  isMobile={isMobileClient}
+                  component={AnnouncementPage}
+                />
+                <Route
+                  exact
+                  path={NOTIFICATION_PAGE}
+                  isMobile={isMobileClient}
+                  component={NotificationPage}
+                />
+                <MobileRoute
+                  exact
+                  path={TRENDING_GENRES}
+                  isMobile={isMobileClient}
+                  component={TrendingGenreSelectionPage}
+                />
+                <Route
+                  exact
+                  path={TRENDING_PAGE}
+                  render={() => (
+                    <TrendingPage
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Redirect
+                  from={TRENDING_PLAYLISTS_PAGE_LEGACY}
+                  to={TRENDING_PLAYLISTS_PAGE}
+                />
+                <Route
+                  exact
+                  path={TRENDING_PLAYLISTS_PAGE}
+                  render={() => (
+                    <TrendingPlaylistsPage
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={TRENDING_UNDERGROUND_PAGE}
+                  render={() => (
+                    <TrendingUndergroundPage
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_REMIXABLES_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.REMIXABLES}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_PAGE}
+                  render={() => <ExplorePage />}
+                />
+                <Route
+                  exact
+                  path={AUDIO_NFT_PLAYLIST_PAGE}
+                  render={() => <CollectiblesPlaylistPage />}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_HEAVY_ROTATION_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.HEAVY_ROTATION}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_LET_THEM_DJ_PAGE}
+                  render={() => (
+                    <ExploreCollectionsPage
+                      variant={ExploreCollectionsVariant.LET_THEM_DJ}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_BEST_NEW_RELEASES_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.BEST_NEW_RELEASES}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_UNDER_THE_RADAR_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.UNDER_THE_RADAR}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_TOP_ALBUMS_PAGE}
+                  render={() => (
+                    <ExploreCollectionsPage
+                      variant={ExploreCollectionsVariant.TOP_ALBUMS}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_MOST_LOVED_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.MOST_LOVED}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_FEELING_LUCKY_PAGE}
+                  render={() => (
+                    <SmartCollectionPage
+                      variant={SmartCollectionVariant.FEELING_LUCKY}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_MOOD_PLAYLISTS_PAGE}
+                  render={() => (
+                    <ExploreCollectionsPage
+                      variant={ExploreCollectionsVariant.MOOD}
+                    />
+                  )}
+                />
 
-              <Route
-                exact
-                path={SIGN_IN_PAGE}
-                isMobile={isMobileClient}
-                render={() => <SignOn signIn initialPage={initialPage} />}
-              />
-              <Route
-                exact
-                path={SIGN_UP_PAGE}
-                isMobile={isMobileClient}
-                render={() => (
-                  <SignOn signIn={false} initialPage={initialPage} />
-                )}
-              />
-              <Route
-                exact
-                path={FEED_PAGE}
-                isMobile={isMobileClient}
-                render={() => (
-                  <FeedPage containerRef={this.props.mainContentRef.current} />
-                )}
-              />
-              <Route
-                exact
-                path={NOTIFICATION_USERS_PAGE}
-                isMobile={isMobileClient}
-                component={NotificationUsersPage}
-              />
-              <Route
-                exact
-                path={ANNOUNCEMENT_PAGE}
-                isMobile={isMobileClient}
-                component={AnnouncementPage}
-              />
-              <Route
-                exact
-                path={NOTIFICATION_PAGE}
-                isMobile={isMobileClient}
-                component={NotificationPage}
-              />
-              <MobileRoute
-                exact
-                path={TRENDING_GENRES}
-                isMobile={isMobileClient}
-                component={TrendingGenreSelectionPage}
-              />
-              <Route
-                exact
-                path={TRENDING_PAGE}
-                render={() => (
-                  <TrendingPage
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Redirect
-                from={TRENDING_PLAYLISTS_PAGE_LEGACY}
-                to={TRENDING_PLAYLISTS_PAGE}
-              />
-              <Route
-                exact
-                path={TRENDING_PLAYLISTS_PAGE}
-                render={() => (
-                  <TrendingPlaylistsPage
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={TRENDING_UNDERGROUND_PAGE}
-                render={() => (
-                  <TrendingUndergroundPage
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_REMIXABLES_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.REMIXABLES}
-                  />
-                )}
-              />
-              <Route exact path={EXPLORE_PAGE} render={() => <ExplorePage />} />
-              <Route
-                exact
-                path={AUDIO_NFT_PLAYLIST_PAGE}
-                render={() => <CollectiblesPlaylistPage />}
-              />
-              <Route
-                exact
-                path={EXPLORE_HEAVY_ROTATION_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.HEAVY_ROTATION}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_LET_THEM_DJ_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.LET_THEM_DJ}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_BEST_NEW_RELEASES_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.BEST_NEW_RELEASES}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_UNDER_THE_RADAR_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.UNDER_THE_RADAR}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_TOP_ALBUMS_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.TOP_ALBUMS}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_MOST_LOVED_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.MOST_LOVED}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_FEELING_LUCKY_PAGE}
-                render={() => (
-                  <SmartCollectionPage
-                    variant={SmartCollectionVariant.FEELING_LUCKY}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={EXPLORE_MOOD_PLAYLISTS_PAGE}
-                render={() => (
-                  <ExploreCollectionsPage
-                    variant={ExploreCollectionsVariant.MOOD}
-                  />
-                )}
-              />
+                <Route
+                  path={SEARCH_CATEGORY_PAGE}
+                  render={(props) => (
+                    <SearchPage
+                      {...props}
+                      scrollToTop={this.scrollToTop}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route
+                  path={SEARCH_PAGE}
+                  render={(props) => (
+                    <SearchPage
+                      {...props}
+                      scrollToTop={this.scrollToTop}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
 
-              <Route
-                path={SEARCH_CATEGORY_PAGE}
-                render={(props) => (
-                  <SearchPage
-                    {...props}
-                    scrollToTop={this.scrollToTop}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Route
-                path={SEARCH_PAGE}
-                render={(props) => (
-                  <SearchPage
-                    {...props}
-                    scrollToTop={this.scrollToTop}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
+                <DesktopRoute
+                  path={UPLOAD_ALBUM_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <UploadPage uploadType={UploadType.ALBUM} />}
+                />
+                <DesktopRoute
+                  path={UPLOAD_PLAYLIST_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <UploadPage uploadType={UploadType.PLAYLIST} />}
+                />
+                <DesktopRoute
+                  path={UPLOAD_PAGE}
+                  isMobile={isMobileClient}
+                  component={UploadPage}
+                />
 
-              <DesktopRoute
-                path={UPLOAD_ALBUM_PAGE}
-                isMobile={isMobileClient}
-                render={() => <UploadPage uploadType={UploadType.ALBUM} />}
-              />
-              <DesktopRoute
-                path={UPLOAD_PLAYLIST_PAGE}
-                isMobile={isMobileClient}
-                render={() => <UploadPage uploadType={UploadType.PLAYLIST} />}
-              />
-              <DesktopRoute
-                path={UPLOAD_PAGE}
-                isMobile={isMobileClient}
-                component={UploadPage}
-              />
+                <Route exact path={SAVED_PAGE} component={SavedPage} />
+                <Route exact path={HISTORY_PAGE} component={HistoryPage} />
+                <DesktopRoute
+                  exact
+                  path={DASHBOARD_PAGE}
+                  isMobile={isMobileClient}
+                  component={ArtistDashboardPage}
+                />
+                <Route
+                  exact
+                  path={AUDIO_PAGE}
+                  isMobile={isMobileClient}
+                  component={AudioRewardsPage}
+                />
+                <Route
+                  exact
+                  path={AUDIO_TRANSACTIONS_PAGE}
+                  isMobile={isMobileClient}
+                  component={AudioTransactionsPage}
+                />
+                <Route
+                  exact
+                  path={CHAT_PAGE}
+                  isMobile={isMobileClient}
+                  component={ChatPage}
+                />
+                <Route
+                  exact
+                  path={DEACTIVATE_PAGE}
+                  isMobile={isMobileClient}
+                  component={DeactivateAccountPage}
+                />
+                <Route
+                  exact
+                  path={SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  component={SettingsPage}
+                />
+                <Route exact path={CHECK_PAGE} component={CheckPage} />
+                <MobileRoute
+                  exact
+                  path={ACCOUNT_SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <SettingsPage subPage={SubPage.ACCOUNT} />}
+                />
+                <MobileRoute
+                  exact
+                  path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
+                />
+                <MobileRoute
+                  exact
+                  path={CHANGE_PASSWORD_SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => (
+                    <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
+                  )}
+                />
+                <MobileRoute
+                  exact
+                  path={NOTIFICATION_SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => (
+                    <SettingsPage subPage={SubPage.NOTIFICATIONS} />
+                  )}
+                />
+                <MobileRoute
+                  exact
+                  path={ABOUT_SETTINGS_PAGE}
+                  isMobile={isMobileClient}
+                  render={() => <SettingsPage subPage={SubPage.ABOUT} />}
+                />
 
-              <Route exact path={SAVED_PAGE} component={SavedPage} />
-              <Route exact path={HISTORY_PAGE} component={HistoryPage} />
-              <DesktopRoute
-                exact
-                path={DASHBOARD_PAGE}
-                isMobile={isMobileClient}
-                component={ArtistDashboardPage}
-              />
-              <Route
-                exact
-                path={AUDIO_PAGE}
-                isMobile={isMobileClient}
-                component={AudioRewardsPage}
-              />
-              <Route
-                exact
-                path={AUDIO_TRANSACTIONS_PAGE}
-                isMobile={isMobileClient}
-                component={AudioTransactionsPage}
-              />
-              <Route
-                exact
-                path={CHAT_PAGE}
-                isMobile={isMobileClient}
-                component={ChatPage}
-              />
-              <Route
-                exact
-                path={DEACTIVATE_PAGE}
-                isMobile={isMobileClient}
-                component={DeactivateAccountPage}
-              />
-              <Route
-                exact
-                path={SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                component={SettingsPage}
-              />
-              <Route exact path={CHECK_PAGE} component={CheckPage} />
-              <MobileRoute
-                exact
-                path={ACCOUNT_SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                render={() => <SettingsPage subPage={SubPage.ACCOUNT} />}
-              />
-              <MobileRoute
-                exact
-                path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
-              />
-              <MobileRoute
-                exact
-                path={CHANGE_PASSWORD_SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                render={() => (
-                  <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
-                )}
-              />
-              <MobileRoute
-                exact
-                path={NOTIFICATION_SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                render={() => <SettingsPage subPage={SubPage.NOTIFICATIONS} />}
-              />
-              <MobileRoute
-                exact
-                path={ABOUT_SETTINGS_PAGE}
-                isMobile={isMobileClient}
-                render={() => <SettingsPage subPage={SubPage.ABOUT} />}
-              />
+                <Route path={APP_REDIRECT} component={AppRedirectListener} />
+                <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
 
-              <Route path={APP_REDIRECT} component={AppRedirectListener} />
-              <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
+                <Route
+                  exact
+                  path={PLAYLIST_PAGE}
+                  render={() => <CollectionPage type='playlist' />}
+                />
+                <Route
+                  exact
+                  path={ALBUM_PAGE}
+                  render={() => <CollectionPage type='album' />}
+                />
 
-              <Route
-                exact
-                path={PLAYLIST_PAGE}
-                render={() => <CollectionPage type='playlist' />}
-              />
-              <Route
-                exact
-                path={ALBUM_PAGE}
-                render={() => <CollectionPage type='album' />}
-              />
+                {/* Hash id routes */}
+                <Route
+                  exact
+                  path={USER_ID_PAGE}
+                  render={(props) => (
+                    <ProfilePage
+                      {...props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
+                <Route
+                  exact
+                  path={PLAYLIST_ID_PAGE}
+                  component={CollectionPage}
+                />
 
-              {/* Hash id routes */}
-              <Route
-                exact
-                path={USER_ID_PAGE}
-                render={(props) => (
-                  <ProfilePage
-                    {...props}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Route exact path={TRACK_ID_PAGE} component={TrackPage} />
-              <Route exact path={PLAYLIST_ID_PAGE} component={CollectionPage} />
-
-              {/*
+                {/*
                 Define profile page sub-routes before profile page itself.
                 The rules for sub-routes would lose in a precedence fight with
                 the rule for track page if defined below.
                */}
-              <Route
-                exact
-                path={[
-                  PROFILE_PAGE_TRACKS,
-                  PROFILE_PAGE_ALBUMS,
-                  PROFILE_PAGE_PLAYLISTS,
-                  PROFILE_PAGE_REPOSTS,
-                  PROFILE_PAGE_COLLECTIBLE_DETAILS,
-                  PROFILE_PAGE_COLLECTIBLES
-                ]}
-                render={(props) => (
-                  <ProfilePage
-                    {...props}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
-                component={AiAttributedTracksPage}
-              />
+                <Route
+                  exact
+                  path={[
+                    PROFILE_PAGE_TRACKS,
+                    PROFILE_PAGE_ALBUMS,
+                    PROFILE_PAGE_PLAYLISTS,
+                    PROFILE_PAGE_REPOSTS,
+                    PROFILE_PAGE_COLLECTIBLE_DETAILS,
+                    PROFILE_PAGE_COLLECTIBLES
+                  ]}
+                  render={(props) => (
+                    <ProfilePage
+                      {...props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
+                  component={AiAttributedTracksPage}
+                />
 
-              <Route exact path={TRACK_PAGE} component={TrackPage} />
+                <Route exact path={TRACK_PAGE} component={TrackPage} />
 
-              <Route
-                exact
-                path={TRACK_REMIXES_PAGE}
-                render={(props) => (
-                  <RemixesPage
-                    {...props}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
+                <Route
+                  exact
+                  path={TRACK_REMIXES_PAGE}
+                  render={(props) => (
+                    <RemixesPage
+                      {...props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
 
-              <MobileRoute
-                exact
-                path={REPOSTING_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={RepostsPage}
-              />
-              <MobileRoute
-                exact
-                path={FAVORITING_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={FavoritesPage}
-              />
-              <MobileRoute
-                exact
-                path={FOLLOWING_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={FollowingPage}
-              />
-              <MobileRoute
-                exact
-                path={FOLLOWERS_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={FollowersPage}
-              />
-              <MobileRoute
-                exact
-                path={SUPPORTING_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={SupportingPage}
-              />
-              <MobileRoute
-                exact
-                path={TOP_SUPPORTERS_USERS_ROUTE}
-                isMobile={isMobileClient}
-                component={TopSupportersPage}
-              />
-              <MobileRoute
-                exact
-                path={EMPTY_PAGE}
-                isMobile={isMobileClient}
-                component={EmptyPage}
-              />
-              <Route
-                exact
-                path={PROFILE_PAGE}
-                render={(props) => (
-                  <ProfilePage
-                    {...props}
-                    containerRef={this.props.mainContentRef.current}
-                  />
-                )}
-              />
+                <MobileRoute
+                  exact
+                  path={REPOSTING_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={RepostsPage}
+                />
+                <MobileRoute
+                  exact
+                  path={FAVORITING_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={FavoritesPage}
+                />
+                <MobileRoute
+                  exact
+                  path={FOLLOWING_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={FollowingPage}
+                />
+                <MobileRoute
+                  exact
+                  path={FOLLOWERS_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={FollowersPage}
+                />
+                <MobileRoute
+                  exact
+                  path={SUPPORTING_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={SupportingPage}
+                />
+                <MobileRoute
+                  exact
+                  path={TOP_SUPPORTERS_USERS_ROUTE}
+                  isMobile={isMobileClient}
+                  component={TopSupportersPage}
+                />
+                <MobileRoute
+                  exact
+                  path={EMPTY_PAGE}
+                  isMobile={isMobileClient}
+                  component={EmptyPage}
+                />
+                <Route
+                  exact
+                  path={PROFILE_PAGE}
+                  render={(props) => (
+                    <ProfilePage
+                      {...props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
+                />
 
-              <Redirect
-                from={HOME_PAGE}
-                to={{
-                  // If we navigated into the dapp from the public site, which has
-                  // no access to the ConnectedReactRouter history,
-                  // the redirect will actually fire even though the current
-                  // pathname is not HOME_PAGE. Double check that it is and if not,
-                  // just trigger a react router push to the current pathname
-                  pathname:
-                    getPathname() === HOME_PAGE ? FEED_PAGE : getPathname(),
-                  search: includeSearch(this.props.location.search)
-                    ? this.props.location.search
-                    : ''
-                }}
-              />
-            </SwitchComponent>
+                <Redirect
+                  from={HOME_PAGE}
+                  to={{
+                    // If we navigated into the dapp from the public site, which has
+                    // no access to the ConnectedReactRouter history,
+                    // the redirect will actually fire even though the current
+                    // pathname is not HOME_PAGE. Double check that it is and if not,
+                    // just trigger a react router push to the current pathname
+                    pathname:
+                      getPathname() === HOME_PAGE ? FEED_PAGE : getPathname(),
+                    search: includeSearch(this.props.location.search)
+                      ? this.props.location.search
+                      : ''
+                  }}
+                />
+              </SwitchComponent>
+            </Suspense>
+          </div>
+          <PlayBarProvider />
+          <Suspense fallback={null}>
+            <Modals />
           </Suspense>
+          <Suspense fallback={null}>
+            <ConnectedMusicConfetti />
+          </Suspense>
+          <Suspense fallback={null}>
+            <RewardClaimedToast />
+          </Suspense>
+          {/* Non-mobile */}
+          {!isMobileClient ? <Konami /> : null}
+          {!isMobileClient ? <Visualizer /> : null}
+          {!isMobileClient ? <PinnedTrackConfirmation /> : null}
+          {!isMobileClient ? <DevModeMananger /> : null}
+          {/* Mobile-only */}
+          {isMobileClient ? (
+            <AppRedirectPopover
+              incrementScroll={incrementScroll}
+              decrementScroll={decrementScroll}
+            />
+          ) : null}
         </div>
-        <PlayBarProvider />
-        <Suspense fallback={null}>
-          <Modals />
-        </Suspense>
-        <Suspense fallback={null}>
-          <ConnectedMusicConfetti />
-        </Suspense>
-        <Suspense fallback={null}>
-          <RewardClaimedToast />
-        </Suspense>
-        {/* Non-mobile */}
-        {!isMobileClient ? <Konami /> : null}
-        {!isMobileClient ? <Visualizer /> : null}
-        {!isMobileClient ? <PinnedTrackConfirmation /> : null}
-        {!isMobileClient ? <DevModeMananger /> : null}
-        {/* Mobile-only */}
-        {isMobileClient ? (
-          <AppRedirectPopover
-            incrementScroll={incrementScroll}
-            decrementScroll={decrementScroll}
-          />
-        ) : null}
-      </div>
+      </DesktopHeaderContext.Provider>
     )
   }
 }

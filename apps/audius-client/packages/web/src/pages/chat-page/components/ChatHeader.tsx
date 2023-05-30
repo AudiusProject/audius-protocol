@@ -16,6 +16,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 import { profilePage } from 'utils/route'
 
 import { BlockUserConfirmationModal } from './BlockUserConfirmationModal'
@@ -37,10 +38,18 @@ const messages = {
 
 const { getOtherChatUsers, getBlockees } = chatSelectors
 
-type ChatHeaderProps = { currentChatId?: string }
+type ChatHeaderProps = {
+  currentChatId?: string
+  isChromeOrSafari?: boolean
+  scrollBarWidth?: number
+  headerContainerRef?: React.RefObject<HTMLDivElement>
+}
 
 export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
-  ({ currentChatId }, ref) => {
+  (
+    { currentChatId, isChromeOrSafari, scrollBarWidth, headerContainerRef },
+    ref
+  ) => {
     const dispatch = useDispatch()
     const [, setCreateChatVisible] = useModalState('CreateChat')
     const [, setInboxSettingsVisible] = useModalState('InboxSettings')
@@ -107,58 +116,66 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
     ]
 
     return (
-      <div ref={ref} className={styles.root}>
-        <div className={styles.left}>
-          <h1 className={styles.header}>{messages.header}</h1>
-          <div className={styles.options}>
-            <IconButton
-              aria-label={messages.settings}
-              icon={<IconSettings className={styles.icon} />}
-              onClick={handleSettingsClicked}
-            />
-            <IconButton
-              aria-label={messages.compose}
-              icon={<IconCompose className={styles.icon} />}
-              onClick={handleComposeClicked}
-            />
-          </div>
-        </div>
-        <div className={styles.right}>
-          {user ? <ChatUser user={user} key={user.user_id} /> : null}
-          {user ? (
-            <div className={styles.overflow}>
-              <PopupMenu
-                items={overflowItems}
-                transformOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                renderTrigger={(ref, trigger) => (
-                  <IconButton
-                    ref={ref}
-                    aria-label={messages.chatSettings}
-                    icon={<IconKebabHorizontal />}
-                    onClick={trigger}
-                  />
-                )}
+      <>
+        <HeaderGutter
+          headerContainerRef={headerContainerRef}
+          isChromeOrSafari={isChromeOrSafari}
+          scrollBarWidth={scrollBarWidth}
+          className={styles.gutterOverride}
+        />
+        <div ref={ref} className={styles.root}>
+          <div className={styles.left}>
+            <h1 className={styles.header}>{messages.header}</h1>
+            <div className={styles.options}>
+              <IconButton
+                aria-label={messages.settings}
+                icon={<IconSettings className={styles.icon} />}
+                onClick={handleSettingsClicked}
               />
-              <UnblockUserConfirmationModal
-                user={user}
-                isVisible={isUnblockUserModalVisible}
-                onClose={() => setIsUnblockUserModalVisible(false)}
-              />
-              <BlockUserConfirmationModal
-                user={user}
-                isVisible={isBlockUserModalVisible}
-                onClose={() => setIsBlockUserModalVisible(false)}
-              />
-              <DeleteChatConfirmationModal
-                chatId={currentChatId}
-                isVisible={isDeleteChatModalVisible}
-                onClose={() => setIsDeleteChatModalVisible(false)}
+              <IconButton
+                aria-label={messages.compose}
+                icon={<IconCompose className={styles.icon} />}
+                onClick={handleComposeClicked}
               />
             </div>
-          ) : null}
+          </div>
+          <div className={styles.right}>
+            {user ? <ChatUser user={user} key={user.user_id} /> : null}
+            {user ? (
+              <div className={styles.overflow}>
+                <PopupMenu
+                  items={overflowItems}
+                  transformOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  renderTrigger={(ref, trigger) => (
+                    <IconButton
+                      ref={ref}
+                      aria-label={messages.chatSettings}
+                      icon={<IconKebabHorizontal />}
+                      onClick={trigger}
+                    />
+                  )}
+                />
+                <UnblockUserConfirmationModal
+                  user={user}
+                  isVisible={isUnblockUserModalVisible}
+                  onClose={() => setIsUnblockUserModalVisible(false)}
+                />
+                <BlockUserConfirmationModal
+                  user={user}
+                  isVisible={isBlockUserModalVisible}
+                  onClose={() => setIsBlockUserModalVisible(false)}
+                />
+                <DeleteChatConfirmationModal
+                  chatId={currentChatId}
+                  isVisible={isDeleteChatModalVisible}
+                  onClose={() => setIsDeleteChatModalVisible(false)}
+                />
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 )

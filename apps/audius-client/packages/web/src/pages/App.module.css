@@ -6,7 +6,7 @@ body {
 }
 
 .bannerMargin {
-  margin-top: 40px;
+  margin-top: var(--banner-margin);
 }
 
 .modalRoot {

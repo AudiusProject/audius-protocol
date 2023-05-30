@@ -1,5 +1,5 @@
 .banner {
-  height: 40px;
+  height: var(--banner-margin);
   background: var(--page-header-gradient);
   position: fixed;
   top: 0;
