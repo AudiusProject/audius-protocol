@@ -362,12 +362,9 @@ export async function sweepSubdirectoriesInFiles(
           )[0]
 
         genericLogger.debug(
-          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${
-            subdirectories.length
-          }. subdirectory: ${subdirectory}. got ${
-            Object.keys(cidsToFilePathMap).length
-          } files in folder and ${
-            queryResults.length
+          `diskManager#sweepSubdirectoriesInFiles - iteration ${i} out of ${subdirectories.length
+          }. subdirectory: ${subdirectory}. got ${Object.keys(cidsToFilePathMap).length
+          } files in folder and ${queryResults.length
           } results from db. files: ${Object.keys(
             cidsToFilePathMap
           ).toString()}. db records: ${JSON.stringify(queryResults)}`
@@ -410,7 +407,7 @@ export async function sweepSubdirectoriesInFiles(
             await execShellCommand(
               `rm ${cidsToDelete
                 .map((cid) => cidsToFilePathMap[cid])
-                .join(' ')}`
+                .join(' '), true}`
             )
           }
         }
@@ -485,9 +482,9 @@ async function _copyLegacyFiles(
       // Ensure new path's parent exists
       nonLegacyPath = await (nonLegacyPathInfo.isDir
         ? computeFilePathInDirAndEnsureItExists(
-            nonLegacyPathInfo.outer,
-            nonLegacyPathInfo.inner!
-          )
+          nonLegacyPathInfo.outer,
+          nonLegacyPathInfo.inner!
+        )
         : computeFilePathAndEnsureItExists(nonLegacyPathInfo.outer))
 
       // Copy to new path, overwriting if it already exists
@@ -530,7 +527,7 @@ async function _copyLegacyFiles(
                 `_copyLegacyFiles() could not remove 'touch'ed file at storageLocation=${nonLegacyPath}`
               )
             }
-            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
+            ; ({ success, error } = await _migrateFileByFetchingFromNetwork(
               fileRecord,
               logger
             ))
@@ -744,7 +741,7 @@ const _migrateFilesWithCustomStoragePaths = async (
         for (const fileRecord of results) {
           let success, error
           try {
-            ;({ success, error } = await _migrateFileByFetchingFromNetwork(
+            ; ({ success, error } = await _migrateFileByFetchingFromNetwork(
               fileRecord,
               logger
             ))
