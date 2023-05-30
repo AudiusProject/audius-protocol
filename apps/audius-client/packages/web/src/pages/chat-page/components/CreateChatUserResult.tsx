@@ -131,6 +131,10 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
     dispatch(fetchPermissions({ userIds: [user.user_id] }))
   }, [dispatch, user])
 
+  if (currentUserId === user.user_id) {
+    return null
+  }
+
   return (
     <div
       className={cn(styles.root, {
