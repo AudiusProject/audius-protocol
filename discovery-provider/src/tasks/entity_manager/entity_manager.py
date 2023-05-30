@@ -117,7 +117,9 @@ def entity_manager_update(
         pending_track_routes: List[TrackRoute] = []
         pending_playlist_routes: List[PlaylistRoute] = []
 
+        # cid -> metadata type
         cid_type: Dict[str, str] = {}
+        # cid -> metadata
         cid_metadata: Dict[str, Dict] = {}
 
         # process in tx order and populate records_to_save
