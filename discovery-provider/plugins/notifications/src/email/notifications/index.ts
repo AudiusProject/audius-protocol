@@ -45,20 +45,36 @@ export const getUsersCanNotify = async (
   onPage: (emailUsers: EmailUsers) => Promise<void>,
 ) => {
   let lastUser: number = 0;
+  const maxUser = await identityDb('NotificationEmails').max('userId').where('emailFrequency', '=', frequency)
+  const totalCurrentUsers = parseInt(maxUser[0].max as string)
+
   const time = Date.now()
-  const twelveHours = 43200000
-  const timeout = time + twelveHours
-  while (true) {
+  const timeoutMillis = 14400000
+  const timeout = time + timeoutMillis
+
+  let offset = 0
+  const maxUserId = totalCurrentUsers + pageCount
+  while (offset < maxUserId) {
     const now = Date.now()
     if (now > timeout) break
     const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
+    offset = offset + pageCount
     if (userRows.length === 0) break // once we've reached the end of users for this query
     lastUser = userRows[userRows.length - 1].blockchainUserId
+    if (lastUser === undefined) {
+      logger.info("no last user found")
+      break
+    }
     const emailUsers = userRows.reduce((acc, user) => {
       acc[user.blockchainUserId] = user.email
       return acc
     }, {} as EmailUsers)
     await onPage(emailUsers)
+    const userIds = userRows.map((user) => user.blockchainUserId)
+    if (userIds.includes(maxUserId)) {
+      logger.info(`reached highest user id ${maxUserId}`)
+      break
+    }
   }
 }
 
@@ -116,9 +132,9 @@ export const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: mome
           )
         }
       })
-      .where('user_id', '>', lastUser)
+      .where('Users.blockchainUserId', '>', lastUser)
       .limit(pageCount)
-      .orderBy('user_id')
+      .orderBy('Users.blockchainUserId')
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (

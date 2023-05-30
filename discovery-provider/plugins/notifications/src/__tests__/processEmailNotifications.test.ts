@@ -603,18 +603,4 @@ describe('Email Notifications', () => {
     )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
-
-  test('Paginate through different scheduled emails', async () => {
-    // populate db here with specific info
-
-    // query using actual internal query func
-    const pages: EmailUsers[] = []
-
-    const startOffset = moment().startOf('hour'); // hour ago
-    // collect pages
-    await getUsersCanNotify(identityDB, "live", startOffset, 10, async (users) => {pages.push(users)})
-
-
-    // assert responses are expected
-  })
 })
