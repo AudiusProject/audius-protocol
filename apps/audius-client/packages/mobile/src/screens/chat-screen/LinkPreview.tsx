@@ -17,6 +17,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootIsLinkPreviewOnly: {
     borderRadius: spacing(3)
   },
+  pressed: {
+    backgroundColor: palette.neutralLight10
+  },
   thumbnail: {
     display: 'flex',
     alignItems: 'center',
@@ -68,7 +71,10 @@ type LinkPreviewProps = {
   messageId: string
   href: string
   isLinkPreviewOnly: boolean
+  isPressed: boolean
   onLongPress: (event: GestureResponderEvent) => void
+  onPressIn: (event: GestureResponderEvent) => void
+  onPressOut: (event: GestureResponderEvent) => void
 }
 
 export const LinkPreview = ({
@@ -76,7 +82,10 @@ export const LinkPreview = ({
   messageId,
   href,
   isLinkPreviewOnly,
-  onLongPress
+  isPressed = false,
+  onLongPress,
+  onPressIn,
+  onPressOut
 }: LinkPreviewProps) => {
   const styles = useStyles()
   const metadata = useLinkUnfurlMetadata(chatId, messageId, href)
@@ -91,10 +100,13 @@ export const LinkPreview = ({
       url={href}
       delayLongPress={REACTION_LONGPRESS_DELAY}
       onLongPress={onLongPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
     >
       <View
         style={[
           styles.root,
+          isPressed ? styles.pressed : null,
           isLinkPreviewOnly ? styles.rootIsLinkPreviewOnly : null
         ]}
       >
@@ -109,10 +121,17 @@ export const LinkPreview = ({
                 />
               </View>
             ) : null}
-            <View style={styles.domainContainer}>
+            <View
+              style={[
+                styles.domainContainer,
+                isPressed ? styles.pressed : null
+              ]}
+            >
               <Text style={styles.domain}>{domain}</Text>
             </View>
-            <View style={styles.textContainer}>
+            <View
+              style={[styles.textContainer, isPressed ? styles.pressed : null]}
+            >
               {metadata.title ? (
                 <Text style={styles.title}>{metadata.title}</Text>
               ) : null}

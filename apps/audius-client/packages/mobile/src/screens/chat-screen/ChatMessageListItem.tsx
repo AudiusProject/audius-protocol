@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 
 import type { ReactionTypes, ChatMessageWithExtras } from '@audius/common'
 import {
@@ -11,13 +11,12 @@ import {
 import type { ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { Pressable, View } from 'react-native'
+import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import ChatTail from 'app/assets/images/ChatTail.svg'
-import { Hyperlink, Text } from 'app/components/core'
+import { Pressable, Hyperlink, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
-import { useThemePalette } from 'app/utils/theme'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
@@ -45,7 +44,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderRadius: spacing(3)
   },
   isAuthor: {
-    backgroundColor: palette.secondary
+    backgroundColor: palette.secondaryLight2
+  },
+  pressed: {
+    backgroundColor: palette.neutralLight10
+  },
+  pressedIsAuthor: {
+    backgroundColor: palette.secondaryLight1
   },
   message: {
     marginHorizontal: spacing(4),
@@ -116,6 +121,20 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginBottom: spacing(2)
   }
 }))
+const useGetTailColor = (
+  isAuthor: boolean,
+  isPressed: boolean,
+  isLinkPreviewOnly
+) => {
+  const styles = useStyles()
+  return isPressed
+    ? isAuthor && !isLinkPreviewOnly
+      ? styles.pressedIsAuthor.backgroundColor
+      : styles.pressed.backgroundColor
+    : isAuthor && !isLinkPreviewOnly
+    ? styles.isAuthor.backgroundColor
+    : styles.bubble.backgroundColor
+}
 
 type ChatReactionProps = {
   reaction: ChatMessageReaction
@@ -152,25 +171,32 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     itemsRef
   } = props
   const styles = useStyles()
-  const palette = useThemePalette()
-
   const userId = useSelector(getUserId)
   const senderUserId = decodeHashId(message.sender_user_id)
   const isAuthor = senderUserId === userId
+  const [isPressed, setIsPressed] = useState(false)
+  const links = find(message.message)
+  const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
+  const isLinkPreviewOnly = link && link.value === message.message
+  const tailColor = useGetTailColor(isAuthor, isPressed, isLinkPreviewOnly)
   const isUnderneathPopup =
     useSelector((state) =>
       isIdEqualToReactionsPopupMessageId(state, message.message_id)
     ) && !isPopup
+
+  const handlePressIn = useCallback(() => {
+    setIsPressed(true)
+  }, [setIsPressed])
+
+  const handlePressOut = useCallback(() => {
+    setIsPressed(false)
+  }, [setIsPressed])
 
   const handleLongPress = useCallback(() => {
     if (message.status !== Status.ERROR) {
       onLongPress?.(message.message_id)
     }
   }, [message.message_id, message.status, onLongPress])
-
-  const links = find(message.message)
-  const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
-  const isLinkPreviewOnly = link && link.value === message.message
 
   return (
     <>
@@ -187,10 +213,20 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
           <Pressable
             onLongPress={handleLongPress}
             delayLongPress={REACTION_LONGPRESS_DELAY}
+            onPressIn={handlePressIn}
+            onPressOut={handlePressOut}
           >
             <View style={styles.shadow}>
               <View
-                style={[styles.bubble, isAuthor && styles.isAuthor]}
+                style={[
+                  styles.bubble,
+                  isAuthor ? styles.isAuthor : null,
+                  isPressed
+                    ? isAuthor
+                      ? styles.pressedIsAuthor
+                      : styles.pressed
+                    : null
+                ]}
                 ref={
                   itemsRef
                     ? (el) => (itemsRef.current[message.message_id] = el)
@@ -205,6 +241,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     href={link.href}
                     isLinkPreviewOnly={isLinkPreviewOnly}
                     onLongPress={handleLongPress}
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    isPressed={isPressed}
                   />
                 ) : null}
                 {!isLinkPreviewOnly ? (
@@ -226,11 +265,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
               </View>
               {message.hasTail ? (
                 <ChatTail
-                  fill={
-                    isAuthor && !isLinkPreviewOnly
-                      ? palette.secondary
-                      : palette.white
-                  }
+                  fill={tailColor}
                   style={[
                     styles.tail,
                     isAuthor ? styles.tailIsAuthor : styles.tailOtherUser
