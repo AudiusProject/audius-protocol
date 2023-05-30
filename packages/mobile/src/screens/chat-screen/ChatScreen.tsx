@@ -41,10 +41,12 @@ import { useThemePalette } from 'app/utils/theme'
 import type { AppTabScreenParamList } from '../app-screen'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
+import { ChatMessageSeparator } from './ChatMessageSeparator'
 import { ChatTextInput } from './ChatTextInput'
 import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
 import { ReactionPopup } from './ReactionPopup'
+import { END_REACHED_OFFSET } from './constants'
 
 const {
   getChatMessages,
@@ -68,7 +70,8 @@ export const REACTION_CONTAINER_HEIGHT = 70
 
 const messages = {
   title: 'Messages',
-  newMessage: 'New Message'
+  newMessage: ' New Message',
+  endReached: 'You’ve reached the end\nof the message history'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -134,29 +137,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(6),
     marginRight: spacing(2)
   },
-  unreadTagContainer: {
-    marginVertical: spacing(6),
-    flexGrow: 1,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  unreadSeparator: {
-    height: 1,
-    backgroundColor: palette.neutralLight5,
-    flexGrow: 1
-  },
-  unreadTag: {
-    color: palette.white,
-    fontSize: typography.fontSize.xxs,
-    fontFamily: typography.fontByWeight.bold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    backgroundColor: palette.neutralLight5,
-    paddingHorizontal: spacing(2),
-    paddingVertical: spacing(1),
-    borderRadius: spacing(0.5)
-  },
   loadingSpinnerContainer: {
     display: 'flex',
     flexGrow: 1,
@@ -201,6 +181,7 @@ export const ChatScreen = () => {
   const messageHeight = useRef(0)
   const chatContainerTop = useRef(0)
   const chatContainerBottom = useRef(0)
+  const flatListInnerHeight = useRef(0)
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
   const userId = useSelector(getUserId)
@@ -212,6 +193,15 @@ export const ChatScreen = () => {
   const isLoading =
     (chat?.messagesStatus ?? Status.LOADING) === Status.LOADING &&
     chatMessages?.length === 0
+  // Only show the end reached indicator if there are no previous messages and
+  // flatlist is scrollable. Add an offset to the screen height because flatListInnerHeight
+  // starts at screen height due to height: 100% css property.
+  const shouldShowEndReachedIndicator =
+    !(chat?.messagesSummary?.prev_count ?? true) &&
+    flatListInnerHeight.current - chatContainerTop.current >
+      chatContainerBottom.current -
+        chatContainerTop.current +
+        END_REACHED_OFFSET
   const popupMessageId = useSelector(getReactionsPopupMessageId)
   const popupMessage = useSelector((state) =>
     getChatMessageById(state, chatId ?? '', popupMessageId ?? '')
@@ -383,28 +373,19 @@ export const ChatScreen = () => {
         />
         {item.message_id === earliestUnreadMessageId &&
         chatFrozenRef.current?.unread_message_count ? (
-          <View style={styles.unreadTagContainer}>
-            <View style={styles.unreadSeparator} />
-            <Text style={styles.unreadTag}>
-              {chatFrozenRef.current?.unread_message_count}{' '}
-              {pluralize(
+          <ChatMessageSeparator
+            content={
+              chatFrozenRef.current?.unread_message_count +
+              pluralize(
                 messages.newMessage,
                 chatFrozenRef.current?.unread_message_count > 1
-              )}
-            </Text>
-            <View style={styles.unreadSeparator} />
-          </View>
+              )
+            }
+          />
         ) : null}
       </>
     ),
-    [
-      earliestUnreadMessageId,
-      handleMessagePress,
-      chatId,
-      styles.unreadSeparator,
-      styles.unreadTag,
-      styles.unreadTagContainer
-    ]
+    [earliestUnreadMessageId, handleMessagePress, chatId]
   )
 
   const maintainVisibleContentPosition = useMemo(
@@ -419,6 +400,13 @@ export const ChatScreen = () => {
   const measureChatContainerBottom = useCallback(() => {
     measureView(composeRef, chatContainerBottom)
   }, [])
+
+  const handleOnContentSizeChanged = useCallback(
+    (_contentWidth, contentHeight) => {
+      flatListInnerHeight.current = contentHeight
+    },
+    []
+  )
 
   return (
     <Screen
@@ -496,6 +484,7 @@ export const ChatScreen = () => {
                   contentContainerStyle={styles.listContentContainer}
                   data={chatMessages}
                   keyExtractor={(message) => message.message_id}
+                  onContentSizeChange={handleOnContentSizeChanged}
                   renderItem={renderItem}
                   onEndReached={handleScrollToTop}
                   inverted
@@ -508,6 +497,11 @@ export const ChatScreen = () => {
                   }
                   ListHeaderComponent={
                     canSendMessage ? null : <ChatUnavailable chatId={chatId} />
+                  }
+                  ListFooterComponent={
+                    shouldShowEndReachedIndicator ? (
+                      <ChatMessageSeparator content={messages.endReached} />
+                    ) : null
                   }
                   scrollEnabled={!shouldShowPopup}
                 />
