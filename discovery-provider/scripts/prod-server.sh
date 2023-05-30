@@ -26,7 +26,6 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 
 if [[ "$audius_openresty_enable" == true ]]; then
   openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
-  tail -f /usr/local/openresty/logs/access.log | python3 scripts/openresty_log_convertor.py DEBUG &
   tail -f /usr/local/openresty/logs/error.log | python3 scripts/openresty_log_convertor.py ERROR &
 
   # If a worker class is specified, use that. Otherwise, use sync workers.

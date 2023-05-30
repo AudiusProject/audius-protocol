@@ -17,7 +17,7 @@ body {
   border: 1px solid #ccc;
   padding: 4px;
 }
-.table tr:hover td {
+.table tbody tr:hover td {
   background: lightyellow;
 }
 
@@ -26,6 +26,22 @@ body {
 }
 table tr:hover td.is-behind {
   background: rgba(255, 129, 130, 0.4);
+}
+
+table .spun span {
+  -ms-writing-mode: tb-rl;
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+td.matrix-cell {
+  text-align: right;
+  font-family: monospace;
+}
+td.matrix-cell:hover {
+  background: yellow !important;
+  cursor: pointer;
 }
 
 a,

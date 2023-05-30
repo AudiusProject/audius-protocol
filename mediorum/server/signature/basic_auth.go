@@ -8,8 +8,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // between mediorum servers, authenticate requests a basic auth
@@ -20,15 +18,25 @@ func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {
 	}
 
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
-	hash := crypto.Keccak256Hash([]byte(ts))
-	signature, err := crypto.Sign(hash.Bytes(), privateKey)
+	signature, err := sign(ts, privateKey)
 	if err != nil {
 		panic(err)
 	}
+	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 
-	basic := ts + ":" + hex.EncodeToString(signature)
-	basic2 := "Basic " + base64.StdEncoding.EncodeToString([]byte(basic))
-	return basic2
+	basic := ts + ":" + signatureHex
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(basic))
+}
+
+func SignedGet(endpoint string, privateKey *ecdsa.PrivateKey) (*http.Request, error) {
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", basicAuthNonce(privateKey))
+
+	return req, nil
 }
 
 func SignedPost(endpoint string, contentType string, r io.Reader, privateKey *ecdsa.PrivateKey) *http.Request {

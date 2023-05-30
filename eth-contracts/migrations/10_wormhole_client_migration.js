@@ -1,6 +1,8 @@
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const WormholeClient = artifacts.require('WormholeClient')
 const Governance = artifacts.require('Governance')
 const MockWormhole = artifacts.require('MockWormhole')
@@ -20,12 +22,16 @@ module.exports = (deployer, network, accounts) => {
     const governance = await Governance.at(governanceAddress)
 
     if (wormholeAddress === null) {
-      const mockWormhole = await deployer.deploy(MockWormhole, { from: proxyDeployerAddress })
+      const mockWormhole = await deployer.deploy(MockWormhole, {
+        from: proxyDeployerAddress
+      })
       wormholeAddress = mockWormhole.address
     }
 
     // Deploy WormholeClient logic and proxy contracts + register proxy
-    const wormholeClient0 = await deployer.deploy(WormholeClient, { from: proxyDeployerAddress })
+    const wormholeClient0 = await deployer.deploy(WormholeClient, {
+      from: proxyDeployerAddress
+    })
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
@@ -41,7 +47,12 @@ module.exports = (deployer, network, accounts) => {
     )
 
     const wormholeClient = await WormholeClient.at(wormholeClientProxy.address)
-    _lib.registerContract(governance, wormholeClientProxyKey, wormholeClientProxy.address, guardianAddress)
+    _lib.registerContract(
+      governance,
+      wormholeClientProxyKey,
+      wormholeClientProxy.address,
+      guardianAddress
+    )
 
     // Set environment variable
     process.env.wormholeClientAddress = wormholeClientProxy.address

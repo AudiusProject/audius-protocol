@@ -744,6 +744,12 @@ router.get(
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId
+
+    req.logger.warn(`The route /tracks/stream/:encodedId is being used with id ${encodedId}.`)
+    /**
+     * DEPRECATE THIS ENDPOINT ONCE WE'RE CONFIDENT NOONE IS USING IT
+     */
+
     if (!encodedId) {
       return sendResponse(
         req,
@@ -971,6 +977,7 @@ router.get(
 
     const trackId = req.trackId
     const CID = req.params.CID
+    const skipPlayCount = req.query.skip_play_count
 
     if (!trackId) {
       return sendResponse(
@@ -981,7 +988,7 @@ router.get(
     }
 
     const isFirstByte = isFirstByteRequest(req)
-    if (libs.identityService && isFirstByte) {
+    if (libs.identityService && isFirstByte && !skipPlayCount) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
       )

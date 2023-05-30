@@ -24,12 +24,16 @@ describe('Announcement Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
+    process.env.ANNOUNCEMENTS_DRY_RUN = "false"
+    process.env.ANNOUNCEMENTS_EMAIL_ENABLED = "true"
     const setup = await setupTest()
     processor = setup.processor
   })
 
   afterEach(async () => {
     await resetTests(processor)
+    process.env.ANNOUNCEMENTS_DRY_RUN = "true"
+    process.env.ANNOUNCEMENTS_EMAIL_ENABLED = "false"
   })
 
   test('Process push notification for announcement', async () => {

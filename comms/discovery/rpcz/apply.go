@@ -64,6 +64,16 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error
 	return proc, nil
 }
 
+func (proc *RPCProcessor) SweeperErrors() []error {
+	var errors []error
+	for _, p := range proc.peerClients {
+		if p.err != nil {
+			errors = append(errors, fmt.Errorf("%s: %s", p.Host, p.err))
+		}
+	}
+	return errors
+}
+
 func (proc *RPCProcessor) StartPeerClients() {
 	for _, p := range proc.peerClients {
 		p.Start()

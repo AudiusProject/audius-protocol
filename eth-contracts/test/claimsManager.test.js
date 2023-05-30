@@ -4,7 +4,9 @@ const { time, expectEvent } = require('@openzeppelin/test-helpers')
 const MockDelegateManager = artifacts.require('MockDelegateManager')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 const Staking = artifacts.require('Staking')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const ClaimsManager = artifacts.require('ClaimsManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -21,13 +23,21 @@ const VOTING_QUORUM_PERCENT = 10
 
 const callValue0 = _lib.toBN(0)
 
-
 contract('ClaimsManager', async (accounts) => {
-  let token, registry, governance, staking0, stakingProxy, staking, claimsManager0, claimsManagerProxy, claimsManager
+  let token,
+    registry,
+    governance,
+    staking0,
+    stakingProxy,
+    staking,
+    claimsManager0,
+    claimsManagerProxy,
+    claimsManager
   let mockDelegateManager, mockStakingCaller
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] =
+    accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -37,14 +47,16 @@ contract('ClaimsManager', async (accounts) => {
     // Allow Staking app to move owner tokens
     await token.approve(staking.address, amount, { from: staker })
     // Stake tokens
-    await mockStakingCaller.stakeFor(
-      staker,
-      amount)
+    await mockStakingCaller.stakeFor(staker, amount)
   }
 
   beforeEach(async () => {
     // Deploy registry
-    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress
+    )
 
     // Deploy + register governance
     governance = await _lib.deployGovernance(
@@ -57,7 +69,9 @@ contract('ClaimsManager', async (accounts) => {
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )
-    await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+    await registry.addContract(governanceKey, governance.address, {
+      from: proxyDeployerAddress
+    })
 
     // Deploy + register token
     token = await _lib.deployToken(
@@ -67,7 +81,9 @@ contract('ClaimsManager', async (accounts) => {
       tokenOwnerAddress,
       governance.address
     )
-    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+    await registry.addContract(tokenRegKey, token.address, {
+      from: proxyDeployerAddress
+    })
 
     // Deploy and register staking
     staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -82,13 +98,19 @@ contract('ClaimsManager', async (accounts) => {
       stakingInitializeData,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(stakingProxyKey, stakingProxy.address, {
+      from: proxyDeployerAddress
+    })
     staking = await Staking.at(stakingProxy.address)
 
     // Mock SP for test
     mockStakingCaller = await MockStakingCaller.new()
     await mockStakingCaller.initialize(stakingProxy.address, token.address)
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      serviceProviderFactoryKey,
+      mockStakingCaller.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Deploy claimsManagerProxy
     claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
@@ -106,12 +128,20 @@ contract('ClaimsManager', async (accounts) => {
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
 
     // Register claimsManagerProxy
-    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      claimsManagerProxyKey,
+      claimsManagerProxy.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
     await mockDelegateManager.initialize(claimsManagerProxy.address)
-    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      delegateManagerKey,
+      mockDelegateManager.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Register new contract as a minter, from the same address that deployed the contract
     await governance.guardianExecuteTransaction(
@@ -150,15 +180,42 @@ contract('ClaimsManager', async (accounts) => {
       mockStakingCaller.address,
       mockDelegateManager.address
     )
-    await expectEvent.inTransaction(txs.stakingAddressTx.tx, ClaimsManager, 'StakingAddressUpdated', { _newStakingAddress: stakingProxy.address })
-    await expectEvent.inTransaction(txs.govAddressTx.tx, ClaimsManager, 'GovernanceAddressUpdated', { _newGovernanceAddress: governance.address })
-    await expectEvent.inTransaction(txs.spAddressTx.tx, ClaimsManager, 'ServiceProviderFactoryAddressUpdated', { _newServiceProviderFactoryAddress: mockStakingCaller.address })
-    await expectEvent.inTransaction(txs.delManAddressTx.tx, ClaimsManager, 'DelegateManagerAddressUpdated', { _newDelegateManagerAddress: mockDelegateManager.address })
+    await expectEvent.inTransaction(
+      txs.stakingAddressTx.tx,
+      ClaimsManager,
+      'StakingAddressUpdated',
+      { _newStakingAddress: stakingProxy.address }
+    )
+    await expectEvent.inTransaction(
+      txs.govAddressTx.tx,
+      ClaimsManager,
+      'GovernanceAddressUpdated',
+      { _newGovernanceAddress: governance.address }
+    )
+    await expectEvent.inTransaction(
+      txs.spAddressTx.tx,
+      ClaimsManager,
+      'ServiceProviderFactoryAddressUpdated',
+      { _newServiceProviderFactoryAddress: mockStakingCaller.address }
+    )
+    await expectEvent.inTransaction(
+      txs.delManAddressTx.tx,
+      ClaimsManager,
+      'DelegateManagerAddressUpdated',
+      { _newDelegateManagerAddress: mockDelegateManager.address }
+    )
 
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    let communityFundingAmount = await claimsManager.getRecurringCommunityFundingAmount()
-    assert.isTrue(_lib.addressZero === communityPoolAddress, "Expect zero adddress")
-    assert.isTrue(communityFundingAmount.eq(_lib.toBN(0)), "Expect zero percent")
+    let communityFundingAmount =
+      await claimsManager.getRecurringCommunityFundingAmount()
+    assert.isTrue(
+      _lib.addressZero === communityPoolAddress,
+      'Expect zero adddress'
+    )
+    assert.isTrue(
+      communityFundingAmount.eq(_lib.toBN(0)),
+      'Expect zero percent'
+    )
   })
 
   it('Initiate a claim', async () => {
@@ -176,10 +233,17 @@ contract('ClaimsManager', async (accounts) => {
     let fundsPerRound = await claimsManager.getFundsPerRound()
 
     // Confirm no claim pending initially
-    assert.isFalse((await claimsManager.claimPending(staker)), 'Expect no pending claim')
+    assert.isFalse(
+      await claimsManager.claimPending(staker),
+      'Expect no pending claim'
+    )
 
     // Successfully initiate round via governance guardian address
-    let initiateTx = await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    let initiateTx = await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress
+    )
     await expectEvent.inTransaction(
       initiateTx.tx,
       ClaimsManager,
@@ -188,12 +252,16 @@ contract('ClaimsManager', async (accounts) => {
     )
 
     // Confirm a claim is pending
-    assert.isTrue((await claimsManager.claimPending(staker)), 'Expect pending claim')
+    assert.isTrue(
+      await claimsManager.claimPending(staker),
+      'Expect pending claim'
+    )
 
     // Try and directly initiate claim
     await _lib.assertRevert(
       claimsManager.processClaim(staker, 0),
-      'ProcessClaim only accessible to DelegateManager')
+      'ProcessClaim only accessible to DelegateManager'
+    )
 
     await mockDelegateManager.testProcessClaim(staker, 0)
 
@@ -206,12 +274,17 @@ contract('ClaimsManager', async (accounts) => {
 
     assert.isTrue(
       (await claimsManager.getTotalClaimedInRound()).eq(fundsPerRound),
-      'All funds expected to be claimed')
+      'All funds expected to be claimed'
+    )
 
     // Confirm another funding round cannot be immediately started
     await _lib.assertRevert(
-      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance: Transaction failed."
+      _lib.initiateFundingRound(
+        governance,
+        claimsManagerProxyKey,
+        guardianAddress
+      ),
+      'Governance: Transaction failed.'
     )
 
     // Confirm another claim cannot be immediately funded
@@ -249,24 +322,38 @@ contract('ClaimsManager', async (accounts) => {
     let fundsPerClaim = await claimsManager.getFundsPerRound()
 
     // Initiate round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress
+    )
     let claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
     await expectEvent.inTransaction(
       claimTx.tx,
       ClaimsManager,
       'ClaimProcessed',
-      { _claimer: staker, _rewards: fundsPerClaim, _oldTotal: DEFAULT_AMOUNT, _newTotal: DEFAULT_AMOUNT.add(fundsPerClaim) }
+      {
+        _claimer: staker,
+        _rewards: fundsPerClaim,
+        _oldTotal: DEFAULT_AMOUNT,
+        _newTotal: DEFAULT_AMOUNT.add(fundsPerClaim)
+      }
     )
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
       totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
-      'Expect single round of funding + initial stake at this time')
+      'Expect single round of funding + initial stake at this time'
+    )
 
     // Confirm another round cannot be immediately funded
     await _lib.assertRevert(
-      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance: Transaction failed."
+      _lib.initiateFundingRound(
+        governance,
+        claimsManagerProxyKey,
+        guardianAddress
+      ),
+      'Governance: Transaction failed.'
     )
 
     let lastClaimBlock = await claimsManager.getLastFundedBlock()
@@ -280,24 +367,38 @@ contract('ClaimsManager', async (accounts) => {
     totalStaked = await staking.totalStaked()
     assert.isTrue(
       totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
-      'Expect single round of funding + initial stake at this time')
+      'Expect single round of funding + initial stake at this time'
+    )
 
     let accountStakeBeforeSecondClaim = await staking.totalStakedFor(staker)
     let expectedFinalValue = accountStakeBeforeSecondClaim.add(fundsPerClaim)
 
     // Initiate another round
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress
+    )
     claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
     await expectEvent.inTransaction(
-      claimTx.tx, ClaimsManager,
+      claimTx.tx,
+      ClaimsManager,
       'ClaimProcessed',
-      { _claimer: staker, _rewards: fundsPerClaim, _oldTotal: accountStakeBeforeSecondClaim, _newTotal: expectedFinalValue }
+      {
+        _claimer: staker,
+        _rewards: fundsPerClaim,
+        _oldTotal: accountStakeBeforeSecondClaim,
+        _newTotal: expectedFinalValue
+      }
     )
 
     totalStaked = await staking.totalStaked()
     let finalAcctStake = await staking.totalStakedFor(staker)
 
-    assert.isTrue(finalAcctStake.eq(expectedFinalValue), 'Expect additional increase in stake after 2nd claim')
+    assert.isTrue(
+      finalAcctStake.eq(expectedFinalValue),
+      'Expect additional increase in stake after 2nd claim'
+    )
   })
 
   it('Initiate single claim after 2x claim block diff', async () => {
@@ -307,13 +408,18 @@ contract('ClaimsManager', async (accounts) => {
     let totalStaked = await staking.totalStaked()
     assert.isTrue(
       totalStaked.isZero(),
-      'Expect zero stake prior to claim funding')
+      'Expect zero stake prior to claim funding'
+    )
 
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
 
     // Initiate 1st claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress
+    )
 
     let lastClaimBlock = await claimsManager.getLastFundedBlock()
     let claimDiff = await claimsManager.getFundingRoundBlockDiff()
@@ -324,18 +430,27 @@ contract('ClaimsManager', async (accounts) => {
     await time.advanceBlockTo(nextClaimBlockTwiceDiff)
 
     // Initiate claim
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress)
+    await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress
+    )
     await mockDelegateManager.testProcessClaim(staker, 0)
     totalStaked = await staking.totalStaked()
 
     assert.isTrue(
       totalStaked.eq(fundsPerClaim.add(DEFAULT_AMOUNT)),
-      'Expect single round of funding + initial stake at this time')
+      'Expect single round of funding + initial stake at this time'
+    )
 
     // Confirm another round cannot be immediately funded, despite 2x block diff
     await _lib.assertRevert(
-      _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress),
-      "Governance: Transaction failed."
+      _lib.initiateFundingRound(
+        governance,
+        claimsManagerProxyKey,
+        guardianAddress
+      ),
+      'Governance: Transaction failed.'
     )
   })
 
@@ -344,7 +459,10 @@ contract('ClaimsManager', async (accounts) => {
     const newAmountVal = _lib.audToWei(1000)
     let newAmount = _lib.toBN(newAmountVal)
 
-    assert.isTrue(!newAmount.eq(currentFunding), 'Expect change in funding value')
+    assert.isTrue(
+      !newAmount.eq(currentFunding),
+      'Expect change in funding value'
+    )
 
     await _lib.assertRevert(
       claimsManager.updateFundingAmount(newAmount, { from: accounts[7] }),
@@ -358,10 +476,18 @@ contract('ClaimsManager', async (accounts) => {
       _lib.abiEncode(['uint256'], [newAmountVal]),
       { from: guardianAddress }
     )
-    await expectEvent.inTransaction(govTx.tx, ClaimsManager, 'FundingAmountUpdated', { _amount: newAmountVal })
+    await expectEvent.inTransaction(
+      govTx.tx,
+      ClaimsManager,
+      'FundingAmountUpdated',
+      { _amount: newAmountVal }
+    )
 
     let updatedFundingAmount = await claimsManager.getFundsPerRound()
-    assert.isTrue(newAmount.eq(updatedFundingAmount), 'Expect updated funding amount')
+    assert.isTrue(
+      newAmount.eq(updatedFundingAmount),
+      'Expect updated funding amount'
+    )
   })
 
   it('Updates fundRoundBlockDiff', async () => {
@@ -369,7 +495,9 @@ contract('ClaimsManager', async (accounts) => {
     const proposedBlockDiff = curBlockDiff.mul(_lib.toBN(2))
 
     await _lib.assertRevert(
-      claimsManager.updateFundingRoundBlockDiff(proposedBlockDiff, { from: accounts[7] }),
+      claimsManager.updateFundingRoundBlockDiff(proposedBlockDiff, {
+        from: accounts[7]
+      }),
       'Only callable by Governance contract'
     )
 
@@ -388,7 +516,10 @@ contract('ClaimsManager', async (accounts) => {
     )
 
     const newBlockDiff = await claimsManager.getFundingRoundBlockDiff.call()
-    assert.isTrue(newBlockDiff.eq(proposedBlockDiff), 'Expected updated block diff')
+    assert.isTrue(
+      newBlockDiff.eq(proposedBlockDiff),
+      'Expected updated block diff'
+    )
   })
 
   it('Bound violation during claim processing,', async () => {
@@ -397,13 +528,26 @@ contract('ClaimsManager', async (accounts) => {
     await mockStakingCaller.updateBounds(false)
     // Stake default amount
     await approveTransferAndStake(invalidAmount, staker)
-    await _lib.initiateFundingRound(governance, claimsManagerProxyKey, guardianAddress, true)
+    await _lib.initiateFundingRound(
+      governance,
+      claimsManagerProxyKey,
+      guardianAddress,
+      true
+    )
     let accountStake = await staking.totalStakedFor(staker)
     let claimTx = await mockDelegateManager.testProcessClaim(staker, 0)
     // Confirm event emitted even if no reward
-    await expectEvent.inTransaction(claimTx.tx, ClaimsManager, 'ClaimProcessed', { _claimer: staker, _rewards: '0' })
+    await expectEvent.inTransaction(
+      claimTx.tx,
+      ClaimsManager,
+      'ClaimProcessed',
+      { _claimer: staker, _rewards: '0' }
+    )
     let accountStakeAfterClaim = await staking.totalStakedFor(staker)
-    assert.isTrue(accountStake.eq(accountStakeAfterClaim), 'Expect NO reward due to bound violation')
+    assert.isTrue(
+      accountStake.eq(accountStakeAfterClaim),
+      'Expect NO reward due to bound violation'
+    )
   })
 
   it('Fail to update configs calling directly to ClaimsManager contract', async () => {
@@ -456,8 +600,12 @@ contract('ClaimsManager', async (accounts) => {
       'RecurringCommunityFundingAmountUpdated',
       { _amount: _lib.toBN(newCommunityFundingAmt) }
     )
-    let communityFundingAmount = await claimsManager.getRecurringCommunityFundingAmount()
-    assert.isTrue(communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmt)), "Expect zero percent")
+    let communityFundingAmount =
+      await claimsManager.getRecurringCommunityFundingAmount()
+    assert.isTrue(
+      communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmt)),
+      'Expect zero percent'
+    )
     let newCommunityPoolAddr = accounts[10]
     let poolAddrTx = await governance.guardianExecuteTransaction(
       claimsManagerProxyKey,
@@ -473,7 +621,10 @@ contract('ClaimsManager', async (accounts) => {
       { _newCommunityPoolAddress: newCommunityPoolAddr }
     )
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    assert.isTrue(newCommunityPoolAddr === communityPoolAddress, "Expect updated adddress")
+    assert.isTrue(
+      newCommunityPoolAddr === communityPoolAddress,
+      'Expect updated adddress'
+    )
   })
 
   it('Initiate a claim with community rewards enabled', async () => {
@@ -485,8 +636,12 @@ contract('ClaimsManager', async (accounts) => {
       _lib.abiEncode(['uint256'], [newCommunityFundingAmount]),
       { from: guardianAddress }
     )
-    let communityFundingAmount = await claimsManager.getRecurringCommunityFundingAmount()
-    assert.isTrue(communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmount)), "Expect updated percent")
+    let communityFundingAmount =
+      await claimsManager.getRecurringCommunityFundingAmount()
+    assert.isTrue(
+      communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmount)),
+      'Expect updated percent'
+    )
 
     let newCommunityPoolAddr = accounts[10]
     await governance.guardianExecuteTransaction(
@@ -497,7 +652,10 @@ contract('ClaimsManager', async (accounts) => {
       { from: guardianAddress }
     )
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    assert.isTrue(newCommunityPoolAddr === communityPoolAddress, "Expect updated adddress")
+    assert.isTrue(
+      newCommunityPoolAddr === communityPoolAddress,
+      'Expect updated adddress'
+    )
 
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
@@ -508,19 +666,25 @@ contract('ClaimsManager', async (accounts) => {
     let tokenSupplyAfterRoundInitiated = await token.totalSupply()
 
     assert.isTrue(
-      (tokenSupplyAfterRoundInitiated).eq(initialTokenSupply.add(communityFundingAmount)),
-      "Expect increase in amount"
+      tokenSupplyAfterRoundInitiated.eq(
+        initialTokenSupply.add(communityFundingAmount)
+      ),
+      'Expect increase in amount'
     )
 
     let communityPoolBal = await token.balanceOf(communityPoolAddress)
-    assert.isTrue(communityPoolBal.eq(communityFundingAmount), "Expect transfer to community pool after 1 round")
+    assert.isTrue(
+      communityPoolBal.eq(communityFundingAmount),
+      'Expect transfer to community pool after 1 round'
+    )
 
     // Confirm events
     await expectEvent.inTransaction(
       initiateTx.tx,
       ClaimsManager,
       'CommunityRewardsTransferred',
-      { _transferAddress: newCommunityPoolAddr,
+      {
+        _transferAddress: newCommunityPoolAddr,
         _amount: _lib.toBN(newCommunityFundingAmount)
       }
     )
@@ -536,7 +700,10 @@ contract('ClaimsManager', async (accounts) => {
       { from: guardianAddress }
     )
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    assert.isTrue(newAddress === communityPoolAddress, "Expect updated adddress")
+    assert.isTrue(
+      newAddress === communityPoolAddress,
+      'Expect updated adddress'
+    )
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
     let initialTokenSupply = await token.totalSupply()
@@ -544,14 +711,14 @@ contract('ClaimsManager', async (accounts) => {
     let tokenSupplyAfterRoundInitiated = await token.totalSupply()
 
     assert.isTrue(
-      (tokenSupplyAfterRoundInitiated).eq(initialTokenSupply),
-      "Expect NO increase in amount"
+      tokenSupplyAfterRoundInitiated.eq(initialTokenSupply),
+      'Expect NO increase in amount'
     )
 
     let communityPoolBal = await token.balanceOf(communityPoolAddress)
     assert.isTrue(
       communityPoolBal.eq(_lib.toBN(0)),
-      "Expect no transfer to community pool after 1 round if funding amount is 0"
+      'Expect no transfer to community pool after 1 round if funding amount is 0'
     )
   })
 
@@ -564,23 +731,30 @@ contract('ClaimsManager', async (accounts) => {
       _lib.abiEncode(['uint256'], [newCommunityFundingAmount]),
       { from: guardianAddress }
     )
-    let communityFundingAmount = await claimsManager.getRecurringCommunityFundingAmount()
-    assert.isTrue(communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmount)), "Expect updated percent")
+    let communityFundingAmount =
+      await claimsManager.getRecurringCommunityFundingAmount()
+    assert.isTrue(
+      communityFundingAmount.eq(_lib.toBN(newCommunityFundingAmount)),
+      'Expect updated percent'
+    )
     // Stake default amount
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
     let initialTokenSupply = await token.totalSupply()
     await claimsManager.initiateRound({ from: staker })
     let tokenSupplyAfterRoundInitiated = await token.totalSupply()
     assert.isTrue(
-      (tokenSupplyAfterRoundInitiated).eq(initialTokenSupply),
-      "Expect NO increase in amount"
+      tokenSupplyAfterRoundInitiated.eq(initialTokenSupply),
+      'Expect NO increase in amount'
     )
     let communityPoolAddress = await claimsManager.getCommunityPoolAddress()
-    assert.isTrue(communityPoolAddress === _lib.addressZero, "Confirm no address has been set")
+    assert.isTrue(
+      communityPoolAddress === _lib.addressZero,
+      'Confirm no address has been set'
+    )
     let communityPoolBal = await token.balanceOf(communityPoolAddress)
     assert.isTrue(
       communityPoolBal.eq(_lib.toBN(0)),
-      "Expect no transfer to community pool after 1 round if funding amount is 0"
+      'Expect no transfer to community pool after 1 round if funding amount is 0'
     )
   })
 
@@ -588,7 +762,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.equal(
       governance.address,
       await claimsManager.getGovernanceAddress(),
-      "expected governance address before changing"
+      'expected governance address before changing'
     )
 
     // fail to set a non governance address
@@ -600,7 +774,7 @@ contract('ClaimsManager', async (accounts) => {
         _lib.abiEncode(['address'], [accounts[9]]),
         { from: guardianAddress }
       ),
-      "Governance: Transaction failed."
+      'Governance: Transaction failed.'
     )
 
     await governance.guardianExecuteTransaction(
@@ -622,7 +796,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.equal(
       staking.address,
       await claimsManager.getStakingAddress(),
-      "expected Staking address before changing"  
+      'expected Staking address before changing'
     )
 
     await governance.guardianExecuteTransaction(
@@ -644,7 +818,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.equal(
       mockStakingCaller.address,
       await claimsManager.getServiceProviderFactoryAddress(),
-      "expected ServiceProvider address before changing"  
+      'expected ServiceProvider address before changing'
     )
 
     await governance.guardianExecuteTransaction(
@@ -666,7 +840,7 @@ contract('ClaimsManager', async (accounts) => {
     assert.equal(
       mockDelegateManager.address,
       await claimsManager.getDelegateManagerAddress(),
-      "expected DelegateManager address before changing"  
+      'expected DelegateManager address before changing'
     )
 
     await governance.guardianExecuteTransaction(

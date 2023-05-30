@@ -1,9 +1,14 @@
 package signature
 
 import (
+	"crypto/ecdsa"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gowebpki/jcs"
 	"github.com/storyicon/sigverify"
@@ -24,6 +29,11 @@ type SignatureData struct {
 type RecoveredSignature struct {
 	Data         SignatureData
 	SignerWallet string
+}
+
+type ListenTSSignature struct {
+	Signature string
+	Timestamp string
 }
 
 func (r *RecoveredSignature) String() string {
@@ -69,4 +79,44 @@ func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) 
 	}
 
 	return recovered, nil
+}
+
+func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenTSSignature, error) {
+	// based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/apiSigning.ts
+	// '{"data":"listen","timestamp":"2023-05-24T15:37:57.051Z"}'
+	timestamp := time.Now().UTC().Format(time.RFC3339)
+	data := fmt.Sprintf("{\"data\":\"listen\",\"timestamp\":\"%s\"}", timestamp)
+
+	signature, err := sign(data, privateKey)
+	if err != nil {
+		fmt.Println("Error signing message:", err)
+		return nil, err
+	}
+	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
+
+	return &ListenTSSignature{
+		Signature: signatureHex,
+		Timestamp: timestamp,
+	}, nil
+}
+
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
+func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	// hash the input
+	hash := crypto.Keccak256Hash([]byte(input))
+	// TextHash will prepend Ethereum signed message prefix to the hash
+	// and hash that again
+	hash2 := accounts.TextHash(hash.Bytes())
+
+	signature, err := crypto.Sign(hash2, privateKey)
+	if err != nil {
+		return nil, err
+	}
+	return signature, nil
+}
+
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
+func recover(input string, signature []byte) (common.Address, error) {
+	hash := crypto.Keccak256Hash([]byte(input))
+	return sigverify.EcRecoverEx(hash.Bytes(), signature)
 }

@@ -27,6 +27,7 @@ from src.queries.get_notifications import (
     TierChangeNotification,
     TipReceiveNotification,
     TipSendNotification,
+    TrackAddedToPlaylistNotification,
     TrackMilestoneNotification,
     TrendingNotification,
     TrendingPlaylistNotification,
@@ -391,6 +392,22 @@ def extend_tier_change(action: NotificationAction):
     return notification
 
 
+def extend_track_added_to_playlist(action: NotificationAction):
+    data: TrackAddedToPlaylistNotification = action["data"]
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "track_id": encode_int_id(data["track_id"]),
+            "playlist_id": encode_int_id(data["playlist_id"]),
+        },
+    }
+    return notification
+
+
 def extend_trending(action: NotificationAction):
     data: TrendingNotification = action["data"]  # type: ignore
     notification = {
@@ -477,6 +494,7 @@ notification_action_handler = {
     "reaction": extend_reaction,
     "tastemaker": extend_tastemaker,
     "tier_change": extend_tier_change,
+    "track_added_to_playlist": extend_track_added_to_playlist,
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
     "trending_underground": extend_trending_underground,

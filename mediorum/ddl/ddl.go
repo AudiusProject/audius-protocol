@@ -1,7 +1,9 @@
 package ddl
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"log"
 
@@ -11,27 +13,45 @@ import (
 //go:embed cid_lookup.sql
 var cidLookupDDL string
 
+//go:embed delist_statuses.sql
+var delistStatusesDDL string
+
+var mediorumMigrationTable = `
+	create table if not exists mediorum_migrations (
+		"hash" text primary key,
+		"ts" timestamp
+	);
+`
+
 func Migrate(db *sql.DB) {
-	mustExec(db, cidLookupDDL)
+	mustExec(db, mediorumMigrationTable)
+	runMigration(db, cidLookupDDL)
+	runMigration(db, delistStatusesDDL)
 }
 
-func mustExec(db *sql.DB, ddl string) {
+func runMigration(db *sql.DB, ddl string) {
+	h := md5string(ddl)
 
-	// this is a hack to skip running ddl if the index exists...
-	// since ddl can block for several minutes
-	// pg_migrate.sh soon
-	q := `select count(*) = 1 from pg_indexes where indexname = 'idx_cid_log_updated_at'`
-	var indexExists bool
-	db.QueryRow(q).Scan(&indexExists)
-	if indexExists {
-		fmt.Println("indexExists... skipping ddl")
+	var alreadyRan bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
+	if alreadyRan {
+		fmt.Printf("hash %s exists skipping ddl \n", h)
 		return
 	}
 
-	_, err := db.Exec(ddl)
+	mustExec(db, ddl)
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
+}
+
+func mustExec(db *sql.DB, ddl string, va ...interface{}) {
+	_, err := db.Exec(ddl, va...)
 	if err != nil {
 		fmt.Println(ddl)
 		log.Fatal(err)
 	}
-	// fmt.Println("OK", ddl)
+}
+
+func md5string(s string) string {
+	hash := md5.Sum([]byte(s))
+	return hex.EncodeToString(hash[:])
 }

@@ -112,7 +112,9 @@ def _get_tracks(session, args):
     if args.get("user_id"):
         user_id = args.get("user_id")
         if args.get("ai_attributed_only"):
-            base_query = base_query.filter(TrackWithAggregates.ai_attribution_user_id == args.get("user_id"))
+            base_query = base_query.filter(
+                TrackWithAggregates.ai_attribution_user_id == args.get("user_id")
+            )
         else:
             base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
 
@@ -156,11 +158,17 @@ def _get_tracks(session, args):
         sort_direction = args.get("sort_direction")
         sort_fn = desc if sort_direction == SortDirection.desc else asc
         if sort_method == SortMethod.title:
-            base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
+            base_query = base_query.order_by(
+                sort_fn(TrackWithAggregates.title),
+                TrackWithAggregates.track_id
+            )
         elif sort_method == SortMethod.artist_name:
             base_query = base_query.join(
                 TrackWithAggregates.user, aliased=True
-            ).order_by(sort_fn(User.name))
+            ).order_by(
+                sort_fn(User.name),
+                TrackWithAggregates.track_id
+            )
         elif sort_method == SortMethod.release_date:
             base_query = base_query.order_by(
                 sort_fn(
@@ -169,21 +177,25 @@ def _get_tracks(session, args):
                             TrackWithAggregates.release_date,
                             "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
                         ),
-                        TrackWithAggregates.created_at,
+                        TrackWithAggregates.created_at
                     )
-                )
+                ),
+                TrackWithAggregates.track_id
             )
         elif sort_method == SortMethod.plays:
             base_query = base_query.join(TrackWithAggregates.aggregate_play).order_by(
-                sort_fn(AggregatePlay.count)
+                sort_fn(AggregatePlay.count),
+                TrackWithAggregates.track_id
             )
         elif sort_method == SortMethod.reposts:
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-                sort_fn(AggregateTrack.repost_count)
+                sort_fn(AggregateTrack.repost_count),
+                TrackWithAggregates.track_id
             )
         elif sort_method == SortMethod.saves:
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-                sort_fn(AggregateTrack.save_count)
+                sort_fn(AggregateTrack.save_count),
+                TrackWithAggregates.track_id
             )
     else:
         # Return the user's pinned track first if there is no specified sort_method
@@ -212,13 +224,17 @@ def _get_tracks(session, args):
                         "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
                     ),
                     TrackWithAggregates.created_at,
-                ).desc()
+                ).desc(),
+                TrackWithAggregates.track_id
             )
         elif args["sort"] == "plays":
             base_query = base_query.join(
                 AggregatePlay,
                 AggregatePlay.play_item_id == TrackWithAggregates.track_id,
-            ).order_by(AggregatePlay.count.desc())
+            ).order_by(
+                AggregatePlay.count.desc(),
+                TrackWithAggregates.track_id
+            )
         else:
             whitelist_params = [
                 "created_at",
@@ -228,7 +244,7 @@ def _get_tracks(session, args):
                 "track_id",
             ]
             base_query = parse_sort_param(
-                base_query, TrackWithAggregates, whitelist_params
+                base_query, TrackWithAggregates, whitelist_params, "track_id"
             )
 
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])

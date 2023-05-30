@@ -30,7 +30,8 @@ export const getNStorageNodes = async (
       const hash = new RendezvousHash(...nodeOwnerWallets)
       const orderedOwnerWallets = hash.getN(numNodes, rendezvousKey)
       endpoints = orderedOwnerWallets.map((ownerWallet) => {
-        return allNodes.find((n) => n.delegateOwnerWallet === ownerWallet)!.endpoint
+        return allNodes.find((n) => n.delegateOwnerWallet === ownerWallet)!
+          .endpoint
       })
     } else {
       endpoints = allNodes.map((n) => n.endpoint)
@@ -40,7 +41,9 @@ export const getNStorageNodes = async (
     const healthyEndpoints: string[] = []
     for (let i = 0; i < endpoints.length; i += numNodes) {
       const batch = endpoints.slice(i, i + numNodes)
-      const healthCheckPromises = batch.map((endpoint) => isNodeHealthy(endpoint, logger))
+      const healthCheckPromises = batch.map(
+        async (endpoint) => await isNodeHealthy(endpoint, logger)
+      )
       const healthCheckResults = await Promise.all(healthCheckPromises)
 
       for (let j = 0; j < healthCheckResults.length; j++) {
@@ -63,7 +66,10 @@ export const getNStorageNodes = async (
   }
 }
 
-export const isNodeHealthy = async (endpoint: string, logger: Logger = console) => {
+export const isNodeHealthy = async (
+  endpoint: string,
+  logger: Logger = console
+) => {
   try {
     const resp = await axios({
       baseURL: endpoint,
@@ -73,7 +79,9 @@ export const isNodeHealthy = async (endpoint: string, logger: Logger = console) 
     })
     if (resp.status === 200) return true
     else {
-      logger.warn(`isNodeHealthy: ${endpoint} returned non-200 status ${resp.status}`)
+      logger.warn(
+        `isNodeHealthy: ${endpoint} returned non-200 status ${resp.status}`
+      )
       return false
     }
   } catch (e) {

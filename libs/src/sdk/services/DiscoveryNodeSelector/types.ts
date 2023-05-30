@@ -81,6 +81,7 @@ export type DiscoveryNodeSelectorServiceConfig =
 
 export type ServiceSelectionEvents = {
   change: (endpoint: string) => void
+  reselectAttemptComplete: () => void
 }
 
 export type DiscoveryNodeSelectorService =

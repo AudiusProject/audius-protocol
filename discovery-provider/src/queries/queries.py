@@ -56,8 +56,9 @@ from src.queries.get_users_account import get_users_account
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_metrics import record_metrics
+from src.utils.structured_logger import StructuredLogger, log_duration
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 bp = Blueprint("queries", __name__)
 
 
@@ -81,6 +82,7 @@ def parse_id_array_param(list):
 
 # ####### ROUTES ####### #
 
+
 # Returns all users (paginated) with each user's follow count
 # Optionally filters by wallet or user ids
 @bp.route("/users", methods=("GET",))
@@ -100,7 +102,9 @@ def get_users_route():
     users = get_users(args)
 
     def validate_hidden_fields(user, current_user_id):
-        if "playlist_library" in user and (not current_user_id or current_user_id != user["user_id"]):
+        if "playlist_library" in user and (
+            not current_user_id or current_user_id != user["user_id"]
+        ):
             del user["playlist_library"]
         return user
 
@@ -129,9 +133,6 @@ def get_tracks_route():
     args["skip_unlisted_filter"] = True
     args["skip_stem_of_filter"] = True
     tracks = get_tracks(args)
-    # Remove track_cid from tracks response
-    for track in tracks:
-        track.pop("track_cid", None)
     return api_helpers.success_response(tracks)
 
 
@@ -190,6 +191,7 @@ def get_playlists_route():
 #   - Combine unsorted playlist and track arrays
 #   - Sort combined results by 'timestamp' field and return
 @bp.route("/feed", methods=("GET",))
+@log_duration(logger)
 @record_metrics
 def get_feed_route():
     args = to_dict(request.args)
