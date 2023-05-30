@@ -115,7 +115,7 @@ export class AppNotificationsProcessor {
   async process(notifications: NotificationRow[]) {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
-    const timer = new Timer('process app push notifications')
+    const timer = new Timer('Processing notifications duration')
     const blocknumber = notifications[0].blocknumber
     const blockhash = this.dnDB
       .select('blockhash')
