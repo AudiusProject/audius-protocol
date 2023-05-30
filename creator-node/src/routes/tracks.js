@@ -562,7 +562,7 @@ router.post(
         }
 
         // Associate all segment file db records with trackUUID
-        const trackFiles = await models.File.findAll({
+        await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
@@ -572,14 +572,7 @@ router.post(
           },
           transaction
         })
-
-        if (trackFiles.length !== trackSegmentCIDs.length) {
-          req.logger.error(
-            `Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`
-          )
-          throw new Error('Did not find files for every track segment CID.')
-        }
-        const segmentsAssociateNumAffectedRows = await models.File.update(
+        await models.File.update(
           { trackBlockchainId: track.blockchainId },
           {
             where: {
@@ -592,17 +585,6 @@ router.post(
             transaction
           }
         )
-        if (
-          parseInt(segmentsAssociateNumAffectedRows, 10) !==
-          trackSegmentCIDs.length
-        ) {
-          req.logger.error(
-            `Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${segmentsAssociateNumAffectedRows} ${trackSegmentCIDs.length}`
-          )
-          throw new Error(
-            'Failed to associate files for every track segment CID.'
-          )
-        }
       } /** updateTrack scenario */ else {
         /**
          * If track updated, ensure files exist with trackBlockchainId
@@ -627,7 +609,7 @@ router.post(
         }
 
         // Ensure segment file db records exist for all CIDs
-        const trackFiles = await models.File.findAll({
+        await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
@@ -636,11 +618,6 @@ router.post(
           },
           transaction
         })
-        if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error(
-            'Did not find files for every track segment CID with trackBlockchainId.'
-          )
-        }
       }
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.

@@ -523,9 +523,9 @@ export class Track extends Base {
       const trackId = await this._generateTrackId()
       const entityManagerMetadata = writeMetadataThroughChain
         ? JSON.stringify({
-          cid: metadataMultihash,
-          data: metadata
-        })
+            cid: metadataMultihash,
+            data: metadata
+          })
         : metadataMultihash
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
