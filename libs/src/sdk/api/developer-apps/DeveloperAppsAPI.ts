@@ -16,8 +16,8 @@ import type {
   DeleteDeveloperAppRequest
 } from './types'
 
-// Note (nkang): Eventually this will extend the generated DeveloperAppsAPI
-export class DeveloperAppsAPI {
+// Note (nkang): Eventually this will extend the generated DeveloperAppsApi
+export class DeveloperAppsApi {
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,
@@ -29,6 +29,7 @@ export class DeveloperAppsAPI {
    */
   async createDeveloperApp(requestParameters: CreateDeveloperAppRequest) {
     const { name, userId, isPersonalAccess } = requestParameters
+    // TODO (nkang + seabass): Use Zod for validation
     const metadataMissingValues = objectMissingValues(
       requestParameters,
       CREATE_DEVELOPER_APP_REQUIRED_VALUES
@@ -65,8 +66,7 @@ export class DeveloperAppsAPI {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
       apiKey,
-      apiSecret,
-      error: false
+      apiSecret
     }
   }
 
@@ -104,8 +104,7 @@ export class DeveloperAppsAPI {
 
     return {
       blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      error: false
+      blockNumber: txReceipt.blockNumber
     }
   }
 }

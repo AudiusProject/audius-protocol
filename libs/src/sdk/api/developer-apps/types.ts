@@ -1,8 +1,8 @@
 export type CreateDeveloperAppRequest = {
   userId: string
   name: string
-  // description: string
-  /** True if the user only needs an API Key + Secret for personal use on their own account only */
+  description?: string
+  /** Set this to true if you're only using the API key for personal use on your own Audius account */
   isPersonalAccess?: boolean
 }
 

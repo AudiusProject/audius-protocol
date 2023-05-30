@@ -1,7 +1,7 @@
 import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
 import { GrantsAPI } from './api/grants/GrantsAPI'
-import { DeveloperAppsAPI } from './api/developer-apps/DeveloperAppsAPI'
+import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
@@ -166,7 +166,7 @@ const initializeApis = ({
     services.auth
   )
 
-  const developerApps = new DeveloperAppsAPI(
+  const developerApps = new DeveloperAppsApi(
     generatedApiClientConfig,
     services.entityManager,
     services.auth
