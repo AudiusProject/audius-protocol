@@ -69,15 +69,17 @@ create or replace function handle_cid_change() returns trigger as $$
 declare
 begin
 
-    if new."type" = 'track' or old."type" = 'track' then
-      return null;
-    end if;
-
     case tg_op
     when 'DELETE' then
+        if old."type" = 'track' then
+          return null;
+        end if;
         update cid_log set is_deleted = true, updated_at = now() where multihash = old.multihash;
         update cid_log set is_deleted = true, updated_at = now() where multihash = old."dirMultihash";
     else
+        if new."type" = 'track' then
+          return null;
+        end if;
         insert into cid_log (multihash, updated_at) values (new.multihash, new."createdAt")
           on conflict do nothing;
         if new."dirMultihash" is not null then
