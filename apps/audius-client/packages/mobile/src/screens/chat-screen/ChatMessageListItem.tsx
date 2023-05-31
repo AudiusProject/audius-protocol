@@ -121,6 +121,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginBottom: spacing(2)
   }
 }))
+
 const useGetTailColor = (
   isAuthor: boolean,
   isPressed: boolean,
