@@ -27,7 +27,6 @@ const audiusSdk = sdk({
 app.listen(port, () => {
   console.log(`sdk-consumer listening on port ${port}`);
 });
-console.log("test");
 
 const trackUpload = upload.fields([
   { name: "coverArtFile", maxCount: 1 },

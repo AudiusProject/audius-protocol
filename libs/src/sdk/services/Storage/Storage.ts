@@ -61,7 +61,7 @@ export class Storage implements StorageService {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
       },
       onUploadProgress: (progressEvent) =>
-        onProgress && onProgress(progressEvent.loaded, progressEvent.total)
+        onProgress?.(progressEvent.loaded, progressEvent.total)
     })
 
     return await this.pollProcessingStatus(

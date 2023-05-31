@@ -14,6 +14,7 @@ import type { EntityManagerService, AuthService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -65,17 +66,16 @@ export class TracksApi extends TracksApiWithoutStream {
    */
   async uploadTrack(requestParameters: UploadTrackRequest) {
     // Parse inputs
-    const result = createUploadTrackSchema().safeParse(requestParameters)
-    if (!result.success) {
-      throw new Error(`uploadTrack arguments not valid: ${result.error}`)
-    }
     const {
       userId,
       trackFile,
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = result.data
+    } = parseRequestParameters(
+      'uploadTrack',
+      createUploadTrackSchema()
+    )(requestParameters)
 
     // Transform metadata
     const metadata = {
