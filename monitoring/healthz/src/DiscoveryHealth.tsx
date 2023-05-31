@@ -96,8 +96,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   }
   const chainDescription: string = health.chain_health?.entries["node-health"].description
 
-  console.log(JSON.stringify(data?.signer))
-
   return (
     <tr>
       <td>
