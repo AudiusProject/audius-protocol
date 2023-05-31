@@ -18,9 +18,11 @@ import styles from './DeleteChatConfirmationModal.module.css'
 const { deleteChat } = chatActions
 
 const messages = {
-  title: 'Are you sure?',
-  content: 'Are you sure you want to delete this chat?',
-  confirm: 'Confirm',
+  title: 'Delete Thread',
+  content: `Are you sure you want to delete this thread?
+
+  Other people in the conversation will still be able to see it.  This can’t be undone.`,
+  confirm: 'Delete Thread',
   cancel: 'Cancel'
 }
 
@@ -55,13 +57,14 @@ export const DeleteChatConfirmationModal = ({
       <ModalFooter className={styles.footer}>
         <Button
           className={styles.button}
+          textClassName={styles.buttonText}
           type={ButtonType.COMMON_ALT}
           text={messages.cancel}
           onClick={onClose}
         />
         <Button
           className={styles.button}
-          type={ButtonType.PRIMARY_ALT}
+          type={ButtonType.DESTRUCTIVE}
           text={messages.confirm}
           onClick={handleConfirmClicked}
         />
