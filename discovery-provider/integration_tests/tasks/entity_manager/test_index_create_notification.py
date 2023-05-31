@@ -31,7 +31,7 @@ def test_index_create_notification(app, mocker):
         db = get_db()
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(None, web3, challenge_event_bus)
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     tx_receipts = {
         "CreateNotification1Tx": [

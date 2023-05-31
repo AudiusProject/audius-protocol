@@ -17,7 +17,7 @@ def test_index_notification_view(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     tx_receipts = {
         "NotificationRead1Tx": [

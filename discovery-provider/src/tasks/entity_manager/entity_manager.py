@@ -82,6 +82,7 @@ def entity_manager_update(
     block_hash: str,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
+        update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
@@ -297,7 +298,10 @@ def entity_manager_update(
         num_total_changes += len(records_to_save)
 
         # update metrics
-        metric_latency.save_time()
+        metric_latency.save_time(
+            {"scope": "entity_manager_update"},
+            start_time=update_start_time,
+        )
         metric_num_changed.save(
             len(new_records["playlists"]), {"entity_type": EntityType.PLAYLIST.value}
         )
@@ -311,6 +315,7 @@ def entity_manager_update(
 
         # bulk save to metadata to cid_data
         if cid_metadata:
+            print(f"saving cid_metadata: {cid_metadata}")
             save_cid_metadata_time = time.time()
             save_cid_metadata(session, cid_metadata, cid_type)
             metric_latency.save_time(

@@ -32,7 +32,7 @@ def test_index_valid_social_features(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -361,7 +361,7 @@ def test_index_invalid_social_features(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     tx_receipts = {
         "UserDoesNotExistTx1": [
@@ -531,7 +531,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -659,7 +659,7 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -738,7 +738,7 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({

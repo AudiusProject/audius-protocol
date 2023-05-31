@@ -31,7 +31,7 @@ def test_index_valid_track(app, mocker):
         db = get_db()
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(None, web3, challenge_event_bus)
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     test_metadata = {
         "QmCreateTrack1": {
@@ -486,7 +486,7 @@ def test_index_invalid_tracks(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
     test_metadata = {"QmAIDisabled": {"ai_attribution_user_id": 2}}
     tx_receipts = {
         # invalid create

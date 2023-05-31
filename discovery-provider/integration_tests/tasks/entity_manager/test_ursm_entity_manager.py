@@ -70,7 +70,7 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         eth_manager = EthManager(None, None, None)
-        update_task = UpdateTask(None, web3, challenge_event_bus, None, eth_manager)
+        update_task = UpdateTask(web3, challenge_event_bus, None, eth_manager)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -139,7 +139,7 @@ def test_index_update_user_replica_set(app, mocker):
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         eth_manager = EthManager(None, None, None)
-        update_task = UpdateTask(None, web3, challenge_event_bus, None, eth_manager)
+        update_task = UpdateTask(web3, challenge_event_bus, None, eth_manager)
 
     tx_receipts = {
         "UpdateUserReplicaSet1Tx": [
