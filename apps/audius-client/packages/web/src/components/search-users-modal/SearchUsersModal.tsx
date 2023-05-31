@@ -55,6 +55,7 @@ type SearchUsersModalProps = {
     loading: boolean
     hasMore: boolean
   }
+  renderEmpty?: () => ReactNode
   renderUser: (user: User, closeModal: () => void) => ReactNode
 }
 
@@ -69,7 +70,8 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
       loadMore: () => {},
       hasMore: false
     },
-    renderUser
+    renderUser,
+    renderEmpty = () => null
   } = props
   const dispatch = useDispatch()
   const [isVisible, setIsVisible] = useModalState(modalName)
@@ -155,7 +157,11 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
             loader={<LoadingSpinner className={styles.spinner} />}
             threshold={48}
           >
-            {users.map((user) => renderUser(user, handleClose))}
+            {!hasQuery &&
+            !defaultUserList.loading &&
+            defaultUserList.userIds.length === 0
+              ? renderEmpty()
+              : users.map((user) => renderUser(user, handleClose))}
           </InfiniteScroll>
         </Scrollbar>
       </div>

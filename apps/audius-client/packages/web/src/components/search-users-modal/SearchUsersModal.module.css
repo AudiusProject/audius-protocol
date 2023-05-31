@@ -3,10 +3,10 @@
   flex-direction: column;
   overflow: hidden;
   height: 690px;
+  width: 488px;
 }
 
 .search {
-  width: 488px;
   max-width: 100%;
   padding: var(--unit-6);
   border-bottom: 1px solid var(--neutral-light-8);
