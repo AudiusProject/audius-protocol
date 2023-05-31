@@ -194,6 +194,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/debug/uploads", ss.dumpUploads)
 	routes.GET("/debug/ls", ss.getLs)
 	routes.GET("/debug/peers", ss.debugPeers)
+	routes.GET("/debug/cid", ss.debugCid)
 
 	// legacy:
 	routes.GET("/cid/:cid", ss.serveLegacyCid)
