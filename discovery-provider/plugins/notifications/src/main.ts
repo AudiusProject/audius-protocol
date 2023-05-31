@@ -11,6 +11,8 @@ import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 import {
+  BrowserPluginMappings,
+  BrowserPushPlugin,
   EmailPluginMappings,
   NotificationsEmailPlugin,
   RemoteConfig
@@ -93,6 +95,14 @@ export class Processor {
     return Boolean(isEnabled)
   }
 
+  getIsBrowserPushEnabled(): boolean {
+    const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
+      BrowserPushPlugin,
+      BrowserPluginMappings.Enabled
+    )
+    return Boolean(isEnabled)
+  }
+
   /**
    * Starts the app push notifications
    */
@@ -102,7 +112,7 @@ export class Processor {
     this.isRunning = true
     while (this.isRunning) {
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
-      await sendDMNotifications(this.discoveryDB, this.identityDB)
+      await sendDMNotifications(this.discoveryDB, this.identityDB, this.getIsBrowserPushEnabled())
 
       if (
         this.getIsScheduledEmailEnabled() &&
