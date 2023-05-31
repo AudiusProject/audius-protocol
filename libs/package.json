@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.25",
+  "version": "2.0.3-beta.29",
   "audius": {
-    "releaseSHA": "febcdf96c3c45f2efdd6a5f757dbf1792edd4bda"
+    "releaseSHA": "a82c17cdbfecf64bfad43feea3ec1df2a48af1f8"
   },
   "description": "Audius SDK",
   "main": "dist/index.cjs.js",
@@ -39,7 +39,7 @@
     "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
-    "sdk:bootstrap": "ts-node ./src/sdk/scripts/generateBootstrapConfig.ts",
+    "sdk:config": "ts-node ./src/sdk/scripts/generateServicesConfig.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",

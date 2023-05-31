@@ -744,6 +744,12 @@ router.get(
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId
+
+    req.logger.warn(`The route /tracks/stream/:encodedId is being used with id ${encodedId}.`)
+    /**
+     * DEPRECATE THIS ENDPOINT ONCE WE'RE CONFIDENT NOONE IS USING IT
+     */
+
     if (!encodedId) {
       return sendResponse(
         req,

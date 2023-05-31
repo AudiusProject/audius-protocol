@@ -60,6 +60,9 @@ const handlers = [
       service: 'discovery-node',
       version: '1.2.3',
       block_difference: 0,
+      comms: {
+        healthy: true
+      },
       network: {
         discovery_nodes: NETWORK_DISCOVERY_NODES
       }
@@ -78,7 +81,10 @@ const handlers = [
           data: {
             service: 'discovery-node',
             version: '1.2.3',
-            block_difference: 0
+            block_difference: 0,
+            comms: {
+              healthy: true
+            }
           }
         })
       )
@@ -89,7 +95,10 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
-      block_difference: 50
+      block_difference: 50,
+      comms: {
+        healthy: true
+      }
     }
     return res(ctx.status(200), ctx.json({ data }))
   }),
@@ -98,7 +107,10 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
-      block_difference: 200
+      block_difference: 200,
+      comms: {
+        healthy: true
+      }
     }
     return res(ctx.status(200), ctx.json({ data }))
   }),
@@ -107,7 +119,10 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.2',
-      block_difference: 0
+      block_difference: 0,
+      comms: {
+        healthy: true
+      }
     }
     return res(ctx.status(200), ctx.json({ data }))
   }),
@@ -118,7 +133,10 @@ const handlers = [
       const data: HealthCheckResponseData = {
         service: 'discovery-node',
         version: '1.2.2',
-        block_difference: 0
+        block_difference: 0,
+        comms: {
+          healthy: true
+        }
       }
       return res(ctx.status(200), ctx.json({ data }))
     }
@@ -128,7 +146,10 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.1.0',
-      block_difference: 0
+      block_difference: 0,
+      comms: {
+        healthy: true
+      }
     }
     return res(ctx.status(200), ctx.json({ data }))
   }),

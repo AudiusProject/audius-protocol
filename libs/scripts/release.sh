@@ -37,6 +37,7 @@ function git-changelog () {
 function commit-message () {
     echo "${STUB}: ${VERSION}
 
+[skip ci]
 ## Changelog
 
 ${CHANGE_LOG}"
@@ -89,7 +90,7 @@ function bump-version () {
         # Commit to a new branch
         git checkout -b ${STUB}-${VERSION}
         git add .
-        git commit -m "$(commit-message)" -m "[skip ci]"
+        git commit -m "$(commit-message)"
 
         # Push branch to remote
         git push -u origin ${STUB}-${VERSION}
@@ -106,7 +107,7 @@ function merge-bump () {
 
         # squash branch commit
         git merge --squash ${STUB}-${VERSION} || exit 1
-        git commit -m "$(commit-message)" -m "[skip ci]" || exit 1
+        git commit -m "$(commit-message)" || exit 1
 
         # tag release
         git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)" || exit 1

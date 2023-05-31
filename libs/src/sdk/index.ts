@@ -11,5 +11,7 @@ export {
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
 export * from './api/tracks/types'
+export * from './api/developer-apps/types'
+export * from './api/grants/types'
 export * from './services'
 export * from './config'
