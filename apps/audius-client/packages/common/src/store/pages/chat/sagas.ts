@@ -18,6 +18,7 @@ import { ulid } from 'ulid'
 import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import { getAccountUser, getUserId } from 'store/account/selectors'
+import { toastActions } from 'store/index'
 import { setVisibility } from 'store/ui/modals/slice'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
@@ -66,6 +67,7 @@ const {
 } = chatActions
 const { getChatsSummary, getChat, getUnfurlMetadata, getNonOptimisticChat } =
   chatSelectors
+const { toast } = toastActions
 
 /**
  * Helper to dispatch actions for fetching chat users
@@ -238,6 +240,12 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
     }
   } catch (e) {
     console.error('createChatFailed', e)
+    yield* put(
+      toast({
+        type: 'error',
+        content: 'Something went wrong. Failed to create chat.'
+      })
+    )
   }
 }
 
