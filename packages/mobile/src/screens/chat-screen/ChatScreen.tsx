@@ -86,7 +86,8 @@ const NEW_MESSAGE_TOAST_SCROLL_THRESHOLD = 100
 const messages = {
   title: 'Messages',
   endReached: 'End of Message History',
-  newMessage: 'New Message',
+  newMessage: (numMessages: number) =>
+    `${numMessages} New Message${numMessages > 1 ? 's' : ''}`,
   newMessageReceived: 'New Message!'
 }
 
@@ -164,9 +165,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(10)
   }
 }))
-
-const pluralize = (message: string, shouldPluralize: boolean) =>
-  message + (shouldPluralize ? 's' : '')
 
 const measureView = (
   viewRef: RefObject<View>,
@@ -448,13 +446,9 @@ export const ChatScreen = () => {
         {item.message_id === earliestUnreadMessageId &&
         chatFrozenRef.current?.unread_message_count ? (
           <ChatMessageSeparator
-            content={
-              chatFrozenRef.current?.unread_message_count +
-              pluralize(
-                messages.newMessage,
-                chatFrozenRef.current?.unread_message_count > 1
-              )
-            }
+            content={messages.newMessage(
+              chatFrozenRef.current?.unread_message_count
+            )}
           />
         ) : null}
       </>
@@ -478,7 +472,7 @@ export const ChatScreen = () => {
   }, [])
 
   const handleOnContentSizeChanged = useCallback(
-    (_contentWidth, contentHeight) => {
+    (contentWidth, contentHeight) => {
       flatListInnerHeight.current = contentHeight
     },
     []
