@@ -157,7 +157,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
 		return nil
 	}
-	logger = logger.With("wallet", wallet, "userId", userId)
+	logger = logger.With("wallet", wallet, "userId", userId, "relayed_by", rpcLog.RelayedBy, "relayed_at", rpcLog.RelayedAt, "sig", rpcLog.Sig)
 	logger.Debug("got user", "took", takeSplit())
 
 	// parse raw rpc
@@ -171,7 +171,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	// call any validator
 	err = proc.validator.Validate(userId, rawRpc)
 	if err != nil {
-		logger.Info(err.Error())
+		logger.Info("validation failed", "err", err.Error())
 		return nil
 	}
 	logger.Debug("did validation", "took", takeSplit())
