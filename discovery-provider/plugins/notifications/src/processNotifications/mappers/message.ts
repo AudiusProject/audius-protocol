@@ -60,7 +60,8 @@ export class Message extends BaseNotification<DMNotification> {
       userNotificationSettings.isNotificationTypeBrowserEnabled(
         this.receiverUserId,
         'messages'
-      )) {
+      )
+    ) {
       await sendBrowserNotification(
         isBrowserPushEnabled,
         userNotificationSettings,
@@ -81,7 +82,9 @@ export class Message extends BaseNotification<DMNotification> {
         'messages'
       )
     ) {
-      const devices = userNotificationSettings.getDevices(this.receiverUserId)
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(

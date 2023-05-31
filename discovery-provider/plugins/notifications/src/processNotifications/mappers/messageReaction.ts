@@ -27,7 +27,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -58,13 +58,16 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     )
 
     const title = 'Reaction'
-    const body = `${users[this.senderUserId].name} reacted ${this.notification.reaction} to your message`
+    const body = `${users[this.senderUserId].name} reacted ${
+      this.notification.reaction
+    } to your message`
 
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(
         this.receiverUserId,
         'messages'
-      )) {
+      )
+    ) {
       await sendBrowserNotification(
         isBrowserPushEnabled,
         userNotificationSettings,
