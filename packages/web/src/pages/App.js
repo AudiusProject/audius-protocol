@@ -11,7 +11,8 @@ import {
   ExploreCollectionsVariant,
   themeSelectors,
   themeActions,
-  UploadType
+  UploadType,
+  FeatureFlags
 } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
@@ -157,8 +158,10 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
+import { ChatListener } from '../components/chat-listener/ChatListener'
 import TopLevelPage from '../components/nav/mobile/TopLevelPage'
 import Notice from '../components/notice/Notice'
+import { getFeatureEnabled } from '../services/remote-config/featureFlagHelpers'
 
 import styles from './App.module.css'
 import { ChatPage } from './chat-page'
@@ -478,6 +481,7 @@ class App extends Component {
 
     return (
       <DesktopHeaderContext.Provider value={{ offsetForBanner: showBanner }}>
+        {this.props.isChatEnabled ? <ChatListener /> : null}
         <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {showCTABanner ? (
             <MobileDesktopBanner
@@ -996,7 +1000,8 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   web3Error: getWeb3Error(state),
   theme: getTheme(state),
-  showCookieBanner: getShowCookieBanner(state)
+  showCookieBanner: getShowCookieBanner(state),
+  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
 })
 
 const mapDispatchToProps = (dispatch) => ({
