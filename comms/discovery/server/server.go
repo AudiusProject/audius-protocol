@@ -212,14 +212,8 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 
 func (s *ChatServer) debugCursors(c echo.Context) error {
 	var since time.Time
-	if c.QueryParam("since") != "" {
-		parsedTime, err := time.Parse(time.RFC3339Nano, c.QueryParam("since"))
-		if err != nil {
-			return err
-		}
-		since = parsedTime
-	} else {
-		since = time.Time{}
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("since")); err == nil {
+		since = t
 	}
 	var cursors []struct {
 		Host      string    `db:"relayed_by" json:"relayed_by"`
@@ -229,10 +223,11 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 	q := `
 	select
 		relayed_by,
-		relayed_at,
-		(select count(*) from rpc_log where relayed_by = c.relayed_by) as count
-	from rpc_cursor c
-	where relayed_at > $1;
+		max(relayed_at) as relayed_at,
+		count(*) as count
+	from rpc_log
+	where relayed_at > $1
+	group by 1;
 	`
 	err := db.Conn.Select(&cursors, q, since)
 	if err != nil {
