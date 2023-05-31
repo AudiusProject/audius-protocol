@@ -22,10 +22,12 @@ import {
   chatCanFetchMoreMessages,
   useCanSendMessage
 } from '@audius/common'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { throttle } from 'lodash'
 import { mergeRefs } from 'react-merge-refs'
 import { useDispatch } from 'react-redux'
+import useMeasure from 'react-use-measure'
 
 import { useSelector } from 'common/hooks/useSelector'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -42,7 +44,8 @@ const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
 const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
-  newMessages: (count: number) => `${count} New Message${count > 1 ? 's' : ''}`
+  newMessages: (count: number) => `${count} New Message${count > 1 ? 's' : ''}`,
+  endOfMessages: 'End of Message History'
 }
 
 type ChatMessageListProps = ComponentPropsWithoutRef<'div'> & {
@@ -79,6 +82,12 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     const [, setLastScrolledChatId] = useState<string>()
 
     const ref = useRef<HTMLDivElement>(null)
+
+    const [messageListRef, { height: messageListHeight }] = useMeasure({
+      polyfill: ResizeObserver
+    })
+
+    const isScrollable = messageListHeight > (ref.current?.clientHeight ?? 0)
 
     // On first load, mark chat as read
     useEffect(() => {
@@ -201,7 +210,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         scrollBottomThreshold={SCROLL_BOTTOM_THRESHOLD}
         {...other}
       >
-        <div className={styles.listRoot}>
+        <div className={styles.listRoot} ref={messageListRef}>
           {!canSendMessage && firstOtherUser ? (
             <InboxUnavailableMessage
               user={firstOtherUser}
@@ -241,6 +250,10 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
             ))}
           {!chat?.messagesSummary || chat.messagesSummary.prev_count > 0 ? (
             <LoadingSpinner className={styles.spinner} />
+          ) : isScrollable ? (
+            <div className={styles.separator}>
+              <span className={styles.tag}>{messages.endOfMessages}</span>
+            </div>
           ) : null}
         </div>
       </StickyScrollList>
