@@ -419,7 +419,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
             if expect_cid_metadata_json(metadata, action, entity_type):
                 try:
-                    json_metadata = parse_metadata(metadata, action, entity_type)
+                    json_metadata, _ = parse_metadata(metadata, action, entity_type)
                 except Exception:
                     # skip invalid metadata
                     continue
