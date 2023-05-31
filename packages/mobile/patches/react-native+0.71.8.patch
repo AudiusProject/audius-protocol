@@ -10,6 +10,36 @@ index 7279c2a..c3519b2 100644
 +    this._listeners.forEach(listener => listener?.(...args));
    };
  }
+diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+index e948a85..0814a98 100644
+--- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
++++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+@@ -25,6 +25,7 @@ import RefreshControl from '../Components/RefreshControl/RefreshControl';
+ import ScrollView from '../Components/ScrollView/ScrollView';
+ import View from '../Components/View/View';
+ import Batchinator from '../Interaction/Batchinator';
++import Platform from '../Utilities/Platform';
+ import {findNodeHandle} from '../ReactNative/RendererProxy';
+ import flattenStyle from '../StyleSheet/flattenStyle';
+ import StyleSheet from '../StyleSheet/StyleSheet';
+@@ -1843,9 +1844,14 @@ export default class VirtualizedList extends StateSafePureComponent<
+ }
+ 
+ const styles = StyleSheet.create({
+-  verticallyInverted: {
+-    transform: [{scaleY: -1}],
+-  },
++  verticallyInverted:
++  Platform.OS === 'android'
++      ? {
++          scaleY: -1,
++        }
++      : {
++          transform: [{scaleY: -1}]
++        },
+   horizontallyInverted: {
+     transform: [{scaleX: -1}],
+   },
 diff --git a/node_modules/react-native/scripts/.packager.env b/node_modules/react-native/scripts/.packager.env
 new file mode 100644
 index 0000000..361f5fb

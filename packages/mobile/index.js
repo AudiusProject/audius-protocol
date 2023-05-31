@@ -1,4 +1,12 @@
+/* eslint-disable import/first */
+/* eslint-disable import/order */
 import 'react-native-gesture-handler'
+// react-native has an issue with inverted lists on Android, and it got worse
+// with Android 13. To avoid it we patch a react-native style, but that style
+// got deprecated in React Native 0.70. For now the deprecation is limited to a
+// JS runtime check, which we disable here.
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes'
+ViewReactNativeStyleAttributes.scaleY = true
 import { AppRegistry, LogBox } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
 
