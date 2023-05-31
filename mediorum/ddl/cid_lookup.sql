@@ -92,7 +92,6 @@ begin
 end;
 $$ language plpgsql;
 
-
 -- trigger trigger
 drop trigger if exists handle_cid_change on "Files";
 create trigger handle_cid_change
