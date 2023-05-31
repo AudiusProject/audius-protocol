@@ -33,7 +33,8 @@ const initSdk = async () => {
             }
           )
         },
-        signTransaction: async () => {
+        signTransaction: async (data) => {
+          // TODO(nkang): Can probably just use eth-sig-util signTransaction like in the web audiusSdk service, but need to test it thoroughly in a mobile env. So saving that for later.
           return 'Not implemented'
         },
         getSharedSecret: async (publicKey: string | Uint8Array) => {
