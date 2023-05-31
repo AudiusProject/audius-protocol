@@ -449,10 +449,6 @@ function* doFetchLinkUnfurlMetadata(
   }
 }
 
-function* watchFetchUnreadMessagesCount() {
-  yield takeLatest(fetchUnreadMessagesCount, () => doFetchUnreadMessagesCount())
-}
-
 function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
   const { chatId } = action.payload
   try {
@@ -470,6 +466,10 @@ function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
   } catch (e) {
     console.error('deleteChat failed', e, { chatId })
   }
+}
+
+function* watchFetchUnreadMessagesCount() {
+  yield takeLatest(fetchUnreadMessagesCount, () => doFetchUnreadMessagesCount())
 }
 
 function* watchAddMessage() {

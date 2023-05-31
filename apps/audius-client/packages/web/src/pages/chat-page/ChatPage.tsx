@@ -18,7 +18,7 @@ import { ChatList } from './components/ChatList'
 import { ChatMessageList } from './components/ChatMessageList'
 import { CreateChatPrompt } from './components/CreateChatPrompt'
 
-const { connect, disconnect, fetchPermissions } = chatActions
+const { fetchPermissions } = chatActions
 
 const messages = {
   messages: 'Messages'
@@ -52,13 +52,6 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
     },
     [messagesRef, currentChatId, dispatch]
   )
-
-  useEffect(() => {
-    dispatch(connect())
-    return () => {
-      dispatch(disconnect())
-    }
-  }, [dispatch])
 
   useEffect(() => {
     if (firstOtherUser) {
