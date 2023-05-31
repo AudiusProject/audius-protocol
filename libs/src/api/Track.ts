@@ -1,7 +1,6 @@
 import type { BaseConstructorArgs } from './base'
 
 import { Base, Services } from './base'
-import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
