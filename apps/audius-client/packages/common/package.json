@@ -28,7 +28,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
-    "@audius/sdk": "2.0.3-beta.29",
+    "@audius/sdk": "2.0.3-beta.32",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",
     "@optimizely/optimizely-sdk": "4.0.0",
