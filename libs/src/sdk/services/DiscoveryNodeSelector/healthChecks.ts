@@ -2,6 +2,7 @@ import semver from 'semver'
 import {
   ApiHealthResponseData,
   FlaskFullResponse,
+  HealthCheckComms,
   HealthCheckResponseData,
   HealthCheckStatus,
   HealthCheckStatusReason,
@@ -75,10 +76,6 @@ const isApiSolanaIndexerHealthy = ({
   data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
-const isCommsHealthy = ({ data }: { data: HealthCheckResponseData }) => {
-  return data.comms?.healthy
-}
-
 const isApiCommsHealthy = ({ data }: { data: CommsResponse }) => {
   return data.health?.is_healthy
 }
@@ -127,23 +124,30 @@ const getHealthCheckData = async (
 ) => {
   const healthCheckURL = `${endpoint}/health_check`
   let data = null
+  let comms = null
   const response = await fetch(healthCheckURL, fetchOptions)
   if (!response.ok) {
     throw new Error(response.statusText)
   }
   const json = await response.json()
   data = json.data as HealthCheckResponseData
+  comms = json.comms as HealthCheckComms
   if (!data) {
     throw new Error('data')
   }
-  return data
+  if (!comms) {
+    throw new Error('comms')
+  }
+  return { data, comms }
 }
 
 export const parseHealthStatusReason = ({
   data,
+  comms,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
 }: {
   data: HealthCheckResponseData | null
+  comms: HealthCheckComms | null
   healthCheckThresholds: HealthCheckThresholds
 }): HealthCheckStatusReason => {
   if (data === null) {
@@ -159,7 +163,7 @@ export const parseHealthStatusReason = ({
     }
   }
 
-  if (!isCommsHealthy({ data })) {
+  if (!comms?.healthy) {
     return {
       health: HealthCheckStatus.UNHEALTHY,
       reason: 'comms'
@@ -208,12 +212,13 @@ export const getDiscoveryNodeHealthCheck = async ({
     timeoutPromises.push(timeoutPromise)
   }
   try {
-    const data = await Promise.race([
+    const { data, comms } = await Promise.race([
       getHealthCheckData(endpoint, fetchOptions),
       ...timeoutPromises
     ])
     const reason = parseHealthStatusReason({
       data,
+      comms,
       healthCheckThresholds
     })
     return { ...reason, data }
