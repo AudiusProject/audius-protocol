@@ -13,6 +13,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
+from src.utils.helpers import get_final_poa_block
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from web3 import Web3
 from web3.auto import w3
@@ -60,11 +61,12 @@ def response_dict_with_metadata(response_dictionary, sign_response):
     latest_chain_block, _ = get_latest_chain_block_set_if_nx(
         redis_conn, web3_connection
     )
+    final_poa_block = get_final_poa_block()
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None
     )
     response_dictionary["latest_chain_block"] = (
-        int(latest_chain_block) if latest_chain_block else None
+        int(latest_chain_block) + final_poa_block if latest_chain_block else None
     )
 
     # Include plays slot difference information
