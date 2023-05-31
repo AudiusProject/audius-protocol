@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Text, Pressable, Animated } from 'react-native'
+import { Text, Pressable, View } from 'react-native'
 
 import IconCopy from 'app/assets/images/iconCopy2.svg'
 import { makeStyles } from 'app/styles'
@@ -68,12 +68,12 @@ export const CopyMessagesButton = ({
         }
       ]}
     >
-      <Animated.View
+      <View
         style={[styles.copyAnimatedContainer, { opacity: isPressed ? 0.5 : 1 }]}
       >
         <IconCopy fill={white} height={12} width={12} />
         <Text style={styles.copyText}>{messages.copy}</Text>
-      </Animated.View>
+      </View>
     </Pressable>
   )
 }

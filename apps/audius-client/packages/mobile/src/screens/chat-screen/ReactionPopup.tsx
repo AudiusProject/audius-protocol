@@ -7,7 +7,7 @@ import type {
 } from '@audius/common'
 import { chatActions, encodeHashId, accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { View, Dimensions, Pressable, Animated } from 'react-native'
+import { Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { usePopupAnimation } from 'app/hooks/usePopupAnimation'
@@ -180,42 +180,38 @@ export const ReactionPopup = ({
   return (
     <>
       <Animated.View
-        style={[
-          styles.dimBackground,
-          { opacity: backgroundOpacityAnim.current }
-        ]}
+        style={[styles.dimBackground, { opacity: backgroundOpacityAnim }]}
       />
       <Pressable style={styles.outerPressable} onPress={handleClosePopup} />
       {/* This View cuts off the message body when it goes beyond the
       bottom boundary of the flatlist view. */}
-      <View
+      <Animated.View
         style={[
           styles.popupContainer,
           {
             height: containerBottom - containerTop,
             top: containerTop
-          }
+          },
+          { opacity: otherOpacityAnim }
         ]}
       >
         {/* This 2nd pressable ensures that clicking outside of the
         message and reaction list, but inside of flatlist view,
         closes the popup. */}
         <Pressable style={styles.innerPressable} onPress={handleClosePopup} />
-        <Animated.View style={{ opacity: otherOpacityAnim.current }}>
-          <ChatMessageListItem
-            chatId={chatId}
-            message={message}
-            isPopup={true}
-            style={[
-              styles.popupChatMessage,
-              {
-                top: messageTop - containerTop,
-                right: isAuthor ? spacing(6) : undefined,
-                left: !isAuthor ? spacing(6) : undefined
-              }
-            ]}
-          />
-        </Animated.View>
+        <ChatMessageListItem
+          chatId={chatId}
+          message={message}
+          isPopup={true}
+          style={[
+            styles.popupChatMessage,
+            {
+              top: messageTop - containerTop,
+              right: isAuthor ? spacing(6) : undefined,
+              left: !isAuthor ? spacing(6) : undefined
+            }
+          ]}
+        />
         <CopyMessagesButton
           isAuthor={isAuthor}
           messageTop={messageTop}
@@ -233,10 +229,9 @@ export const ReactionPopup = ({
                   REACTION_CONTAINER_HEIGHT -
                   REACTION_CONTAINER_TOP_OFFSET
               ),
-              opacity: otherOpacityAnim.current,
               transform: [
                 {
-                  translateY: translationAnim.current
+                  translateY: translationAnim
                 }
               ]
             }
@@ -252,7 +247,7 @@ export const ReactionPopup = ({
             }}
           />
         </Animated.View>
-      </View>
+      </Animated.View>
     </>
   )
 }

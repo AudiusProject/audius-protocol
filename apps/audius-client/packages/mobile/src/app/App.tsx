@@ -89,7 +89,6 @@ const App = () => {
               <WalletConnectProvider>
                 <PortalProvider>
                   <ErrorBoundary>
-                    <PortalHost name='ChatReactionsPortal' />
                     <NavigationContainer>
                       <Toasts />
                       <Airplay />
@@ -105,6 +104,7 @@ const App = () => {
                       <NotificationReminder />
                       <RateCtaReminder />
                     </NavigationContainer>
+                    <PortalHost name='ChatReactionsPortal' />
                   </ErrorBoundary>
                 </PortalProvider>
               </WalletConnectProvider>
