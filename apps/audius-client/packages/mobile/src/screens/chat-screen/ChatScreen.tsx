@@ -85,7 +85,7 @@ const NEW_MESSAGE_TOAST_SCROLL_THRESHOLD = 100
 
 const messages = {
   title: 'Messages',
-  endReached: 'You’ve reached the end\nof the message history',
+  endReached: 'End of Message History',
   newMessage: 'New Message',
   newMessageReceived: 'New Message!'
 }
