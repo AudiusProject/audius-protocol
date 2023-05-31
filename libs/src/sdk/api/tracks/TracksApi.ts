@@ -91,8 +91,8 @@ export class TracksApi extends TracksApiWithoutStream {
       metadata.fieldVisibility.remixes = false
     }
 
-    // If track is premium or public, set required visibility fields to true
-    if (isPremium || !isUnlisted) {
+    // If track is public, set required visibility fields to true
+    if (!isUnlisted) {
       metadata.fieldVisibility = {
         ...metadata.fieldVisibility,
         genre: true,

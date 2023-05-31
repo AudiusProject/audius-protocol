@@ -1,10 +1,8 @@
 import { TracksApi } from './TracksApi'
-import {
-  DiscoveryNodeSelector,
-  Storage,
-  EntityManager,
-  Auth
-} from '../../services'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { Storage } from '../../services/Storage'
+import { EntityManager } from '../../services/EntityManager'
+import { Auth } from '../../services/Auth'
 import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { Genre } from '../../types/Genre'
