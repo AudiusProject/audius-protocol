@@ -15,7 +15,7 @@
   "react-native": "./dist/index.native.js",
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
-    "test:sdk": "./node_modules/.bin/jest",
+    "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
@@ -100,10 +100,12 @@
     "safe-buffer": "5.2.1",
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
+    "snakecase-keys": "5.4.5",
     "stream-browserify": "3.0.0",
     "ulid": "2.3.0",
     "web3": "1.7.1",
-    "xmlhttprequest": "1.8.0"
+    "xmlhttprequest": "1.8.0",
+    "zod": "3.21.4"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "7.18.2",
