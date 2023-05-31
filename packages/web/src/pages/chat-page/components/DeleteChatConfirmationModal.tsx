@@ -18,11 +18,11 @@ import styles from './DeleteChatConfirmationModal.module.css'
 const { deleteChat } = chatActions
 
 const messages = {
-  title: 'Delete Thread',
-  content: `Are you sure you want to delete this thread?
+  title: 'Delete Conversation',
+  content: `Are you sure you want to delete this conversation?
 
-  Other people in the conversation will still be able to see it.  This can’t be undone.`,
-  confirm: 'Delete Thread',
+  Other people in the conversation will still be able to see it. This can’t be undone.`,
+  confirm: 'Delete Conversation',
   cancel: 'Cancel'
 }
 
