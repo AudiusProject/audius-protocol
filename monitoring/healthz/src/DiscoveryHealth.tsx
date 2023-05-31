@@ -22,6 +22,7 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
+            <th>Block Diff</th>
             <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
@@ -35,7 +36,6 @@ export function DiscoveryHealth() {
             <th>Peers</th>
             <th>Producing</th>
             <th>ACDC Block</th>
-            <th>Block Diff</th>
             <th>ACDC Block Hash</th>
           </tr>
         </thead>
@@ -99,6 +99,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      <td className={isBehind}>{health.block_difference}</td>
       <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
@@ -144,7 +145,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>{getPeers(chainDescription)}</td>
       <td>{getProducing(chainDescription)}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td className={isBehind}>{health.block_difference}</td>
       <td>{health.chain_health?.hash}</td>
     </tr>
   )
