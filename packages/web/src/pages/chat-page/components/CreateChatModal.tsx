@@ -16,6 +16,8 @@ import { useSelector } from 'common/hooks/useSelector'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
 import { MessageUserSearchResult } from 'pages/chat-page/components/CreateChatUserResult'
 
+import { CreateChatEmptyResults } from './CreateChatEmptyResults'
+
 const messages = {
   title: 'New Message'
 }
@@ -68,6 +70,7 @@ export const CreateChatModal = () => {
           closeModal={closeModal}
         />
       )}
+      renderEmpty={() => <CreateChatEmptyResults />}
     />
   )
 }
