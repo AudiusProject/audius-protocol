@@ -101,7 +101,6 @@ def test_index_playlist_view(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
@@ -162,7 +161,6 @@ def test_index_playlist_view(app, mocker):
             block_number=3,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         prev_playlist_seen: List[PlaylistSeen] = (
             session.query(PlaylistSeen).filter(PlaylistSeen.is_current == False).all()

@@ -77,7 +77,6 @@ def test_index_create_notification(app, mocker):
             block_number=20,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
 
         notifications: List[Notification] = session.query(Notification).all()

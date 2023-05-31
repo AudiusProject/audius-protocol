@@ -137,6 +137,6 @@ playlist_metadata_format: PlaylistMetadata = {
     "playlist_name": None,
     "playlist_image_sizes_multihash": None,
     "description": None,
-    "is_album": None,
-    "is_private": None,
+    "is_album": False,
+    "is_private": False,
 }

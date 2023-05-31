@@ -101,7 +101,6 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
 
     with db.scoped_session() as session:
@@ -187,7 +186,6 @@ def test_index_update_user_replica_set(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
 
     with db.scoped_session() as session:

@@ -110,7 +110,6 @@ def test_index_notification_view(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records

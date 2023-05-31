@@ -230,7 +230,7 @@ class ManageEntityParameters:
 def expect_metadata_json(metadata, action, entity_type):
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
-    if action == Action.CREATE and entity_type == EntityType.NOTIFICATION:
+    if entity_type == EntityType.NOTIFICATION:
         return False
     if (
         not metadata
