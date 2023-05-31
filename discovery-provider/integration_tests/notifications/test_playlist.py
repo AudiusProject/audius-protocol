@@ -59,7 +59,11 @@ def test_playlist_track_added_notification(app):
         assert notifications[0].type == "track_added_to_playlist"
         assert notifications[0].slot == None
         assert notifications[0].blocknumber == 0
-        assert notifications[0].data == {"track_id": 20, "playlist_id": 0}
+        assert notifications[0].data == {
+            "track_id": 20,
+            "playlist_id": 0,
+            "playlist_owner_id": 2,
+        }
         assert notifications[0].user_ids == [1]
 
         assert (
@@ -70,7 +74,11 @@ def test_playlist_track_added_notification(app):
         assert notifications[1].type == "track_added_to_playlist"
         assert notifications[1].slot == None
         assert notifications[1].blocknumber == 0
-        assert notifications[1].data == {"track_id": 30, "playlist_id": 0}
+        assert notifications[1].data == {
+            "track_id": 30,
+            "playlist_id": 0,
+            "playlist_owner_id": 2,
+        }
         assert notifications[1].user_ids == [15]
 
 
