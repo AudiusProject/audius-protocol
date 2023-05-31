@@ -53,10 +53,11 @@ from src.tasks.entity_manager.utils import (
     ExistingRecordDict,
     ManageEntityParameters,
     RecordDict,
-    expect_metadata_json,
+    expect_cid_metadata_json,
     get_metadata_type_and_format,
     get_record_key,
     save_cid_metadata,
+    parse_metadata,
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
@@ -150,7 +151,7 @@ def entity_manager_update(
                     )
                     # add processed metadata to cid_metadata dicts to batch save to cid_data table
                     # later
-                    if expect_metadata_json(
+                    if expect_cid_metadata_json(
                         params.metadata, params.action, params.entity_type
                     ):
                         metadata_type, _ = get_metadata_type_and_format(
@@ -367,7 +368,47 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
             if signer:
-                entities_to_fetch[EntityType.DELEGATION].add(signer.lower())
+                entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
+            if entity_type == EntityType.DEVELOPER_APP:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}")
+                    # skip invalid metadata
+                    continue
+
+                raw_address = json_metadata.get("address", None)
+                if raw_address:
+                    entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                        raw_address.lower()
+                    )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
+                    )
+            if entity_type == EntityType.GRANT:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}")
+                    # skip invalid metadata
+                    continue
+
+                raw_grantee_address = json_metadata.get("grantee_address", None)
+                if raw_grantee_address:
+                    entities_to_fetch[EntityType.GRANT].add(
+                        (raw_grantee_address.lower(), user_id)
+                    )
+                    entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                        raw_grantee_address.lower()
+                    )
+                    entities_to_fetch[EntityType.USER_WALLET].add(
+                        raw_grantee_address.lower()
+                    )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
+                    )
 
             # Query social operations as needed
             if action in action_to_record_types.keys():
@@ -376,8 +417,12 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entity_key = get_record_key(user_id, entity_type, entity_id)
                     entities_to_fetch[record_type].add(entity_key)
 
-            if expect_metadata_json(metadata, action, entity_type):
-                json_metadata = json.loads(metadata)
+            if expect_cid_metadata_json(metadata, action, entity_type):
+                try:
+                    json_metadata = parse_metadata(metadata, action, entity_type)
+                except Exception:
+                    # skip invalid metadata
+                    continue
 
                 # Add playlist track ids in entities to fetch
                 # to prevent playlists from including premium tracks
@@ -389,38 +434,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     user_id = json_metadata.get("ai_attribution_user_id")
                     if user_id:
                         entities_to_fetch[EntityType.USER].add(user_id)
-                if entity_type == EntityType.DEVELOPER_APP:
-                    raw_address = json_metadata.get("address", None)
-                    if raw_address:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            raw_address.lower()
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
-                        )
-                if entity_type == EntityType.GRANT:
-                    raw_shared_address = json_metadata.get("grantee_address", None)
-                    if raw_shared_address:
-                        entities_to_fetch[EntityType.GRANT].add(
-                            (raw_shared_address.lower(), user_id)
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
-                        )
-                    raw_grantee_address = json_metadata.get("grantee_address", None)
-                    if raw_grantee_address:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            raw_grantee_address.lower()
-                        )
-                        entities_to_fetch[EntityType.USER_WALLET].add(
-                            raw_grantee_address.lower()
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing developer app address in metadata required for add grant tx"
-                        )
 
     return entities_to_fetch
 

@@ -227,26 +227,30 @@ class ManageEntityParameters:
 
 
 # Whether to expect valid metadata json based on the action and entity type
-def expect_metadata_json(metadata, action, entity_type):
+def expect_cid_metadata_json(metadata, action, entity_type):
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
-    if entity_type == EntityType.NOTIFICATION:
+    # TODO(michelle) validate metadata for notification, delegate,
+    # and delegation types here
+    if entity_type in [
+        EntityType.NOTIFICATION,
+        EntityType.DELEGATION,
+        EntityType.APP_DELEGATE,
+        EntityType.USER_REPLICA_SET
+    ]:
         return False
-    if (
-        not metadata
-        or entity_type == EntityType.USER_REPLICA_SET
-        or action
-        in [
-            Action.REPOST,
-            Action.UNREPOST,
-            Action.SAVE,
-            Action.UNSAVE,
-            Action.FOLLOW,
-            Action.UNFOLLOW,
-            Action.SUBSCRIBE,
-            Action.UNSUBSCRIBE,
-        ]
-    ):
+    if action in [
+        Action.REPOST,
+        Action.UNREPOST,
+        Action.SAVE,
+        Action.UNSAVE,
+        Action.FOLLOW,
+        Action.UNFOLLOW,
+        Action.SUBSCRIBE,
+        Action.UNSUBSCRIBE,
+    ]:
+        return False
+    if not metadata:
         return False
     return True
 
@@ -287,7 +291,7 @@ def sanitize_json(json_resp):
 
 # Returns metadata, cid
 def parse_metadata(metadata, action, entity_type):
-    if not expect_metadata_json(metadata, action, entity_type):
+    if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
 
     try:

@@ -134,7 +134,6 @@ def test_index_app(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
@@ -269,7 +268,6 @@ def test_index_app(app, mocker):
             block_number=1,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -341,7 +339,6 @@ def test_index_app(app, mocker):
             block_number=0,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -410,7 +407,6 @@ def test_index_app(app, mocker):
             block_number=1,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
