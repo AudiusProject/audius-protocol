@@ -29,7 +29,7 @@ import { ProfileInfo } from 'components/profile-info/ProfileInfo'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { ERROR_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
-import styles from '../styles/OAuthLoginPage.module.css'
+import styles from './OAuthLoginPage.module.css'
 const { signOut } = signOutActions
 const { getAccountUser } = accountSelectors
 

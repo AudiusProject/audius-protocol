@@ -52,6 +52,7 @@ import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
 import CheckPage from 'pages/check-page/CheckPage'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import { DeveloperPage } from 'pages/developer-page/DeveloperPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
@@ -150,7 +151,8 @@ import {
   TOP_SUPPORTERS_USERS_ROUTE,
   publicSiteRoutes,
   CHAT_PAGE,
-  PROFILE_PAGE_AI_ATTRIBUTED_TRACKS
+  PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
+  DEVELOPER_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -814,6 +816,8 @@ class App extends Component {
 
                 <Route path={APP_REDIRECT} component={AppRedirectListener} />
                 <Route exact path={NOT_FOUND_PAGE} component={NotFoundPage} />
+
+                <Route exact path={DEVELOPER_PAGE} component={DeveloperPage} />
 
                 <Route
                   exact
