@@ -1,7 +1,6 @@
 import type { BaseConstructorArgs } from './base'
 
 import { Base, Services } from './base'
-import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
@@ -53,7 +52,6 @@ export class Track extends Base {
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
     this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
     this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
-    this.checkIfDownloadAvailable = this.checkIfDownloadAvailable.bind(this)
     this.uploadTrack = this.uploadTrack.bind(this)
     this.uploadTrackContentToCreatorNode =
       this.uploadTrackContentToCreatorNode.bind(this)
@@ -363,19 +361,6 @@ export class Track extends Base {
       userId!,
       limit,
       offset
-    )
-  }
-
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   */
-  async checkIfDownloadAvailable(
-    creatorNodeEndpoints: string,
-    trackId: number
-  ) {
-    return await CreatorNode.checkIfDownloadAvailable(
-      creatorNodeEndpoints,
-      trackId
     )
   }
 
