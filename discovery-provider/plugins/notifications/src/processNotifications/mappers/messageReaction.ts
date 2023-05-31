@@ -7,6 +7,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 export class MessageReaction extends BaseNotification<DMReactionNotification> {
   receiverUserId: number
@@ -56,6 +57,23 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
       [this.receiverUserId, this.senderUserId]
     )
 
+    const title = 'Reaction'
+    const body = `${users[this.senderUserId].name} reacted ${this.notification.reaction} to your message`
+
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'messages'
+      )) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -80,27 +98,14 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
               targetARN: device.awsARN
             },
             {
-              title: 'Reaction',
-              body: `${users[this.senderUserId].name} reacted ${
-                this.notification.reaction
-              } to your message`,
+              title,
+              body,
               data: {}
             }
           )
         })
       )
       await this.incrementBadgeCount(this.receiverUserId)
-    }
-
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.senderUserId,
-        receiverUserId: this.receiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      // TODO: Send out email
     }
   }
 }
