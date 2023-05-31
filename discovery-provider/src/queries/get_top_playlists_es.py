@@ -27,7 +27,7 @@ def get_top_playlists_es(kind, args):
 
     mood = args.get("mood")
     if mood:
-        dsl["must"].append({"term": {"tracks.mood": mood}})
+        dsl["must"].append({"term": {"dominant_mood": mood}})
 
     if args.get("filter") == "followees":
         dsl["must"].append(
