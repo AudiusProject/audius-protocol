@@ -42,10 +42,16 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty=1.19.9.1-r0 openresty-opm luarocks && \
+    && apk add --no-cache openresty=1.19.9.1-r0 openresty-opm lua5.1-dev build-base unzip \
+    && wget https://luarocks.org/releases/luarocks-3.7.0.tar.gz \
+    && tar zxpf luarocks-3.7.0.tar.gz \
+    && cd luarocks-3.7.0 \
+    && ./configure --with-lua-include=/usr/include \
+    && make build \
+    && make install \
+    && luarocks install dkjson \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
-    luarocks install dkjson && \
     mkdir /usr/local/openresty/conf /usr/local/openresty/logs
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
