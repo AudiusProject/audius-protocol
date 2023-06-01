@@ -213,7 +213,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             latest_block = web3.eth.get_block("latest", True)
             latest_block_num = latest_block.number + (final_poa_block or 0)
             latest_block_hash = latest_block.hash.hex()
-            print("raymont", latest_block.number, final_poa_block)
         except Exception as e:
             logger.error(f"Could not get latest block from chain: {e}")
 
