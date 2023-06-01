@@ -1,5 +1,7 @@
 local _M = {}
 
+local cjson = require "cjson"
+
 -- generate a random 10 char string
 function _M.generate_nonce ()
     local res = ""
