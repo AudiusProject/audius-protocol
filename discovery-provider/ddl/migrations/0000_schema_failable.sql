@@ -1,5 +1,3 @@
-
-
 --
 -- PostgreSQL database dump
 --
@@ -26,7 +24,7 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION pg_stat_statements IS 'track execution statistics of all SQL statements executed';
@@ -40,7 +38,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
@@ -54,14 +52,14 @@ CREATE EXTENSION IF NOT EXISTS tsm_system_rows WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION tsm_system_rows; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION tsm_system_rows; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION tsm_system_rows IS 'TABLESAMPLE method which accepts number of rows as a limit';
 
 
 --
--- Name: challengetype; Type: TYPE; Schema: public; Owner: postgres
+-- Name: challengetype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.challengetype AS ENUM (
@@ -72,10 +70,8 @@ CREATE TYPE public.challengetype AS ENUM (
 );
 
 
-ALTER TYPE public.challengetype OWNER TO postgres;
-
 --
--- Name: reposttype; Type: TYPE; Schema: public; Owner: postgres
+-- Name: reposttype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.reposttype AS ENUM (
@@ -85,10 +81,8 @@ CREATE TYPE public.reposttype AS ENUM (
 );
 
 
-ALTER TYPE public.reposttype OWNER TO postgres;
-
 --
--- Name: savetype; Type: TYPE; Schema: public; Owner: postgres
+-- Name: savetype; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.savetype AS ENUM (
@@ -98,10 +92,8 @@ CREATE TYPE public.savetype AS ENUM (
 );
 
 
-ALTER TYPE public.savetype OWNER TO postgres;
-
 --
--- Name: skippedtransactionlevel; Type: TYPE; Schema: public; Owner: postgres
+-- Name: skippedtransactionlevel; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.skippedtransactionlevel AS ENUM (
@@ -110,10 +102,8 @@ CREATE TYPE public.skippedtransactionlevel AS ENUM (
 );
 
 
-ALTER TYPE public.skippedtransactionlevel OWNER TO postgres;
-
 --
--- Name: wallet_chain; Type: TYPE; Schema: public; Owner: postgres
+-- Name: wallet_chain; Type: TYPE; Schema: public; Owner: -
 --
 
 CREATE TYPE public.wallet_chain AS ENUM (
@@ -122,10 +112,8 @@ CREATE TYPE public.wallet_chain AS ENUM (
 );
 
 
-ALTER TYPE public.wallet_chain OWNER TO postgres;
-
 --
--- Name: handle_challenge_disbursement(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_challenge_disbursement(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_challenge_disbursement() RETURNS trigger
@@ -161,10 +149,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_challenge_disbursement() OWNER TO postgres;
-
 --
--- Name: handle_follow(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_follow(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_follow() RETURNS trigger
@@ -243,10 +229,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_follow() OWNER TO postgres;
-
 --
--- Name: handle_play(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_play(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_play() RETURNS trigger
@@ -297,10 +281,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_play() OWNER TO postgres;
-
 --
--- Name: handle_playlist(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_playlist(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_playlist() RETURNS trigger
@@ -392,7 +374,7 @@ begin
                 'track_added_to_playlist',
                 track_owner_id,
                 'track_added_to_playlist:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
-                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id)
+                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id, 'playlist_owner_id', new.playlist_owner_id)
               )
             on conflict do nothing;
           end if;
@@ -408,10 +390,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_playlist() OWNER TO postgres;
-
 --
--- Name: handle_reaction(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_reaction(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_reaction() RETURNS trigger
@@ -480,10 +460,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_reaction() OWNER TO postgres;
-
 --
--- Name: handle_repost(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_repost(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_repost() RETURNS trigger
@@ -669,10 +647,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_repost() OWNER TO postgres;
-
 --
--- Name: handle_save(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_save(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_save() RETURNS trigger
@@ -869,10 +845,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_save() OWNER TO postgres;
-
 --
--- Name: handle_supporter_rank_up(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_supporter_rank_up(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_supporter_rank_up() RETURNS trigger
@@ -943,10 +917,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_supporter_rank_up() OWNER TO postgres;
-
 --
--- Name: handle_track(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_track(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_track() RETURNS trigger
@@ -1056,10 +1028,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_track() OWNER TO postgres;
-
 --
--- Name: handle_user(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_user(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_user() RETURNS trigger
@@ -1073,10 +1043,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_user() OWNER TO postgres;
-
 --
--- Name: handle_user_balance_change(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_user_balance_change(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_user_balance_change() RETURNS trigger
@@ -1138,10 +1106,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_user_balance_change() OWNER TO postgres;
-
 --
--- Name: handle_user_tip(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_user_tip(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.handle_user_tip() RETURNS trigger
@@ -1190,10 +1156,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_user_tip() OWNER TO postgres;
-
 --
--- Name: on_new_row(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: on_new_row(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.on_new_row() RETURNS trigger
@@ -1215,10 +1179,8 @@ end;
 $$;
 
 
-ALTER FUNCTION public.on_new_row() OWNER TO postgres;
-
 --
--- Name: table_has_column(text, text); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: table_has_column(text, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.table_has_column(text, text) RETURNS boolean
@@ -1228,10 +1190,8 @@ CREATE FUNCTION public.table_has_column(text, text) RETURNS boolean
 $_$;
 
 
-ALTER FUNCTION public.table_has_column(text, text) OWNER TO postgres;
-
 --
--- Name: table_has_constraint(text, text); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: table_has_constraint(text, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.table_has_constraint(text, text) RETURNS boolean
@@ -1241,10 +1201,8 @@ CREATE FUNCTION public.table_has_constraint(text, text) RETURNS boolean
 $_$;
 
 
-ALTER FUNCTION public.table_has_constraint(text, text) OWNER TO postgres;
-
 --
--- Name: to_date_safe(character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: to_date_safe(character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.to_date_safe(p_date character varying, p_format character varying) RETURNS date
@@ -1264,10 +1222,8 @@ CREATE FUNCTION public.to_date_safe(p_date character varying, p_format character
         $$;
 
 
-ALTER FUNCTION public.to_date_safe(p_date character varying, p_format character varying) OWNER TO postgres;
-
 --
--- Name: to_timestamp_safe(character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: to_timestamp_safe(character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.to_timestamp_safe(p_timestamp character varying, p_format character varying) RETURNS timestamp without time zone
@@ -1287,10 +1243,8 @@ CREATE FUNCTION public.to_timestamp_safe(p_timestamp character varying, p_format
   $$;
 
 
-ALTER FUNCTION public.to_timestamp_safe(p_timestamp character varying, p_format character varying) OWNER TO postgres;
-
 --
--- Name: track_is_public(record); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: track_is_public(record); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION public.track_is_public(track record) RETURNS boolean
@@ -1305,20 +1259,16 @@ end
 $$;
 
 
-ALTER FUNCTION public.track_is_public(track record) OWNER TO postgres;
-
 --
--- Name: audius_ts_dict; Type: TEXT SEARCH DICTIONARY; Schema: public; Owner: postgres
+-- Name: audius_ts_dict; Type: TEXT SEARCH DICTIONARY; Schema: public; Owner: -
 --
 
 CREATE TEXT SEARCH DICTIONARY public.audius_ts_dict (
     TEMPLATE = pg_catalog.simple );
 
 
-ALTER TEXT SEARCH DICTIONARY public.audius_ts_dict OWNER TO postgres;
-
 --
--- Name: audius_ts_config; Type: TEXT SEARCH CONFIGURATION; Schema: public; Owner: postgres
+-- Name: audius_ts_config; Type: TEXT SEARCH CONFIGURATION; Schema: public; Owner: -
 --
 
 CREATE TEXT SEARCH CONFIGURATION public.audius_ts_config (
@@ -1382,12 +1332,10 @@ ALTER TEXT SEARCH CONFIGURATION public.audius_ts_config
     ADD MAPPING FOR uint WITH simple;
 
 
-ALTER TEXT SEARCH CONFIGURATION public.audius_ts_config OWNER TO postgres;
-
 SET default_tablespace = '';
 
 --
--- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: postgres
+-- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public."SequelizeMeta" (
@@ -1395,10 +1343,8 @@ CREATE TABLE public."SequelizeMeta" (
 );
 
 
-ALTER TABLE public."SequelizeMeta" OWNER TO postgres;
-
 --
--- Name: aggregate_daily_app_name_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_app_name_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_daily_app_name_metrics (
@@ -1411,10 +1357,8 @@ CREATE TABLE public.aggregate_daily_app_name_metrics (
 );
 
 
-ALTER TABLE public.aggregate_daily_app_name_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_daily_app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_daily_app_name_metrics_id_seq
@@ -1426,17 +1370,15 @@ CREATE SEQUENCE public.aggregate_daily_app_name_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_daily_app_name_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_daily_app_name_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_daily_app_name_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_daily_app_name_metrics_id_seq OWNED BY public.aggregate_daily_app_name_metrics.id;
 
 
 --
--- Name: aggregate_daily_total_users_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_total_users_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_daily_total_users_metrics (
@@ -1448,10 +1390,8 @@ CREATE TABLE public.aggregate_daily_total_users_metrics (
 );
 
 
-ALTER TABLE public.aggregate_daily_total_users_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_daily_total_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_total_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_daily_total_users_metrics_id_seq
@@ -1463,17 +1403,15 @@ CREATE SEQUENCE public.aggregate_daily_total_users_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_daily_total_users_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_daily_total_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_daily_total_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_daily_total_users_metrics_id_seq OWNED BY public.aggregate_daily_total_users_metrics.id;
 
 
 --
--- Name: aggregate_daily_unique_users_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_unique_users_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_daily_unique_users_metrics (
@@ -1486,10 +1424,8 @@ CREATE TABLE public.aggregate_daily_unique_users_metrics (
 );
 
 
-ALTER TABLE public.aggregate_daily_unique_users_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_daily_unique_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_daily_unique_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_daily_unique_users_metrics_id_seq
@@ -1501,17 +1437,15 @@ CREATE SEQUENCE public.aggregate_daily_unique_users_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_daily_unique_users_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_daily_unique_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_daily_unique_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_daily_unique_users_metrics_id_seq OWNED BY public.aggregate_daily_unique_users_metrics.id;
 
 
 --
--- Name: plays; Type: TABLE; Schema: public; Owner: postgres
+-- Name: plays; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.plays (
@@ -1529,10 +1463,8 @@ CREATE TABLE public.plays (
 );
 
 
-ALTER TABLE public.plays OWNER TO postgres;
-
 --
--- Name: tracks; Type: TABLE; Schema: public; Owner: postgres
+-- Name: tracks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.tracks (
@@ -1579,10 +1511,8 @@ CREATE TABLE public.tracks (
 );
 
 
-ALTER TABLE public.tracks OWNER TO postgres;
-
 --
--- Name: aggregate_interval_plays; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: aggregate_interval_plays; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.aggregate_interval_plays AS
@@ -1606,10 +1536,8 @@ CREATE MATERIALIZED VIEW public.aggregate_interval_plays AS
   WITH NO DATA;
 
 
-ALTER TABLE public.aggregate_interval_plays OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_app_name_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_app_name_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_monthly_app_name_metrics (
@@ -1622,10 +1550,8 @@ CREATE TABLE public.aggregate_monthly_app_name_metrics (
 );
 
 
-ALTER TABLE public.aggregate_monthly_app_name_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_monthly_app_name_metrics_id_seq
@@ -1637,17 +1563,15 @@ CREATE SEQUENCE public.aggregate_monthly_app_name_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_monthly_app_name_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_app_name_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_app_name_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_monthly_app_name_metrics_id_seq OWNED BY public.aggregate_monthly_app_name_metrics.id;
 
 
 --
--- Name: aggregate_monthly_plays; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_plays; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_monthly_plays (
@@ -1657,10 +1581,8 @@ CREATE TABLE public.aggregate_monthly_plays (
 );
 
 
-ALTER TABLE public.aggregate_monthly_plays OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_total_users_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_total_users_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_monthly_total_users_metrics (
@@ -1672,10 +1594,8 @@ CREATE TABLE public.aggregate_monthly_total_users_metrics (
 );
 
 
-ALTER TABLE public.aggregate_monthly_total_users_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_total_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_total_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_monthly_total_users_metrics_id_seq
@@ -1687,17 +1607,15 @@ CREATE SEQUENCE public.aggregate_monthly_total_users_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_monthly_total_users_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_total_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_total_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_monthly_total_users_metrics_id_seq OWNED BY public.aggregate_monthly_total_users_metrics.id;
 
 
 --
--- Name: aggregate_monthly_unique_users_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_unique_users_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_monthly_unique_users_metrics (
@@ -1710,10 +1628,8 @@ CREATE TABLE public.aggregate_monthly_unique_users_metrics (
 );
 
 
-ALTER TABLE public.aggregate_monthly_unique_users_metrics OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_unique_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_unique_users_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.aggregate_monthly_unique_users_metrics_id_seq
@@ -1725,17 +1641,15 @@ CREATE SEQUENCE public.aggregate_monthly_unique_users_metrics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.aggregate_monthly_unique_users_metrics_id_seq OWNER TO postgres;
-
 --
--- Name: aggregate_monthly_unique_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_unique_users_metrics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.aggregate_monthly_unique_users_metrics_id_seq OWNED BY public.aggregate_monthly_unique_users_metrics.id;
 
 
 --
--- Name: aggregate_playlist; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_playlist; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_playlist (
@@ -1746,10 +1660,8 @@ CREATE TABLE public.aggregate_playlist (
 );
 
 
-ALTER TABLE public.aggregate_playlist OWNER TO postgres;
-
 --
--- Name: aggregate_plays; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_plays; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_plays (
@@ -1758,10 +1670,8 @@ CREATE TABLE public.aggregate_plays (
 );
 
 
-ALTER TABLE public.aggregate_plays OWNER TO postgres;
-
 --
--- Name: aggregate_track; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_track; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_track (
@@ -1771,10 +1681,8 @@ CREATE TABLE public.aggregate_track (
 );
 
 
-ALTER TABLE public.aggregate_track OWNER TO postgres;
-
 --
--- Name: aggregate_user; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_user; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_user (
@@ -1791,10 +1699,8 @@ CREATE TABLE public.aggregate_user (
 );
 
 
-ALTER TABLE public.aggregate_user OWNER TO postgres;
-
 --
--- Name: aggregate_user_tips; Type: TABLE; Schema: public; Owner: postgres
+-- Name: aggregate_user_tips; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.aggregate_user_tips (
@@ -1804,10 +1710,8 @@ CREATE TABLE public.aggregate_user_tips (
 );
 
 
-ALTER TABLE public.aggregate_user_tips OWNER TO postgres;
-
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: postgres
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.alembic_version (
@@ -1815,10 +1719,8 @@ CREATE TABLE public.alembic_version (
 );
 
 
-ALTER TABLE public.alembic_version OWNER TO postgres;
-
 --
--- Name: app_delegates; Type: TABLE; Schema: public; Owner: postgres
+-- Name: app_delegates; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.app_delegates (
@@ -1836,10 +1738,8 @@ CREATE TABLE public.app_delegates (
 );
 
 
-ALTER TABLE public.app_delegates OWNER TO postgres;
-
 --
--- Name: app_name_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: app_name_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.app_name_metrics (
@@ -1853,10 +1753,8 @@ CREATE TABLE public.app_name_metrics (
 );
 
 
-ALTER TABLE public.app_name_metrics OWNER TO postgres;
-
 --
--- Name: app_name_metrics_all_time; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: app_name_metrics_all_time; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.app_name_metrics_all_time AS
@@ -1867,10 +1765,8 @@ CREATE MATERIALIZED VIEW public.app_name_metrics_all_time AS
   WITH NO DATA;
 
 
-ALTER TABLE public.app_name_metrics_all_time OWNER TO postgres;
-
 --
--- Name: app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: app_name_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.app_name_metrics ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -1884,7 +1780,7 @@ ALTER TABLE public.app_name_metrics ALTER COLUMN id ADD GENERATED ALWAYS AS IDEN
 
 
 --
--- Name: app_name_metrics_trailing_month; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: app_name_metrics_trailing_month; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.app_name_metrics_trailing_month AS
@@ -1896,10 +1792,8 @@ CREATE MATERIALIZED VIEW public.app_name_metrics_trailing_month AS
   WITH NO DATA;
 
 
-ALTER TABLE public.app_name_metrics_trailing_month OWNER TO postgres;
-
 --
--- Name: app_name_metrics_trailing_week; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: app_name_metrics_trailing_week; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.app_name_metrics_trailing_week AS
@@ -1911,10 +1805,8 @@ CREATE MATERIALIZED VIEW public.app_name_metrics_trailing_week AS
   WITH NO DATA;
 
 
-ALTER TABLE public.app_name_metrics_trailing_week OWNER TO postgres;
-
 --
--- Name: associated_wallets; Type: TABLE; Schema: public; Owner: postgres
+-- Name: associated_wallets; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.associated_wallets (
@@ -1929,10 +1821,8 @@ CREATE TABLE public.associated_wallets (
 );
 
 
-ALTER TABLE public.associated_wallets OWNER TO postgres;
-
 --
--- Name: associated_wallets_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: associated_wallets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.associated_wallets_id_seq
@@ -1944,17 +1834,15 @@ CREATE SEQUENCE public.associated_wallets_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.associated_wallets_id_seq OWNER TO postgres;
-
 --
--- Name: associated_wallets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: associated_wallets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.associated_wallets_id_seq OWNED BY public.associated_wallets.id;
 
 
 --
--- Name: audio_transactions_history; Type: TABLE; Schema: public; Owner: postgres
+-- Name: audio_transactions_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.audio_transactions_history (
@@ -1972,10 +1860,8 @@ CREATE TABLE public.audio_transactions_history (
 );
 
 
-ALTER TABLE public.audio_transactions_history OWNER TO postgres;
-
 --
--- Name: audius_data_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: audius_data_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.audius_data_txs (
@@ -1984,10 +1870,8 @@ CREATE TABLE public.audius_data_txs (
 );
 
 
-ALTER TABLE public.audius_data_txs OWNER TO postgres;
-
 --
--- Name: blocks; Type: TABLE; Schema: public; Owner: postgres
+-- Name: blocks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.blocks (
@@ -1998,10 +1882,8 @@ CREATE TABLE public.blocks (
 );
 
 
-ALTER TABLE public.blocks OWNER TO postgres;
-
 --
--- Name: challenge_disbursements; Type: TABLE; Schema: public; Owner: postgres
+-- Name: challenge_disbursements; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.challenge_disbursements (
@@ -2014,10 +1896,8 @@ CREATE TABLE public.challenge_disbursements (
 );
 
 
-ALTER TABLE public.challenge_disbursements OWNER TO postgres;
-
 --
--- Name: challenge_listen_streak; Type: TABLE; Schema: public; Owner: postgres
+-- Name: challenge_listen_streak; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.challenge_listen_streak (
@@ -2027,10 +1907,8 @@ CREATE TABLE public.challenge_listen_streak (
 );
 
 
-ALTER TABLE public.challenge_listen_streak OWNER TO postgres;
-
 --
--- Name: challenge_listen_streak_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: challenge_listen_streak_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.challenge_listen_streak_user_id_seq
@@ -2042,17 +1920,15 @@ CREATE SEQUENCE public.challenge_listen_streak_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.challenge_listen_streak_user_id_seq OWNER TO postgres;
-
 --
--- Name: challenge_listen_streak_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: challenge_listen_streak_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.challenge_listen_streak_user_id_seq OWNED BY public.challenge_listen_streak.user_id;
 
 
 --
--- Name: challenge_profile_completion; Type: TABLE; Schema: public; Owner: postgres
+-- Name: challenge_profile_completion; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.challenge_profile_completion (
@@ -2067,10 +1943,8 @@ CREATE TABLE public.challenge_profile_completion (
 );
 
 
-ALTER TABLE public.challenge_profile_completion OWNER TO postgres;
-
 --
--- Name: challenge_profile_completion_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: challenge_profile_completion_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.challenge_profile_completion_user_id_seq
@@ -2082,17 +1956,15 @@ CREATE SEQUENCE public.challenge_profile_completion_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.challenge_profile_completion_user_id_seq OWNER TO postgres;
-
 --
--- Name: challenge_profile_completion_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: challenge_profile_completion_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.challenge_profile_completion_user_id_seq OWNED BY public.challenge_profile_completion.user_id;
 
 
 --
--- Name: challenges; Type: TABLE; Schema: public; Owner: postgres
+-- Name: challenges; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.challenges (
@@ -2105,10 +1977,8 @@ CREATE TABLE public.challenges (
 );
 
 
-ALTER TABLE public.challenges OWNER TO postgres;
-
 --
--- Name: chat; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat (
@@ -2119,10 +1989,8 @@ CREATE TABLE public.chat (
 );
 
 
-ALTER TABLE public.chat OWNER TO postgres;
-
 --
--- Name: chat_blocked_users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_blocked_users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_blocked_users (
@@ -2132,10 +2000,8 @@ CREATE TABLE public.chat_blocked_users (
 );
 
 
-ALTER TABLE public.chat_blocked_users OWNER TO postgres;
-
 --
--- Name: chat_member; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_member; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_member (
@@ -2149,10 +2015,8 @@ CREATE TABLE public.chat_member (
 );
 
 
-ALTER TABLE public.chat_member OWNER TO postgres;
-
 --
--- Name: chat_message; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_message; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_message (
@@ -2164,10 +2028,8 @@ CREATE TABLE public.chat_message (
 );
 
 
-ALTER TABLE public.chat_message OWNER TO postgres;
-
 --
--- Name: chat_message_reactions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_message_reactions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_message_reactions (
@@ -2179,10 +2041,8 @@ CREATE TABLE public.chat_message_reactions (
 );
 
 
-ALTER TABLE public.chat_message_reactions OWNER TO postgres;
-
 --
--- Name: chat_permissions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: chat_permissions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.chat_permissions (
@@ -2191,10 +2051,8 @@ CREATE TABLE public.chat_permissions (
 );
 
 
-ALTER TABLE public.chat_permissions OWNER TO postgres;
-
 --
--- Name: cid_data; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cid_data; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.cid_data (
@@ -2204,10 +2062,8 @@ CREATE TABLE public.cid_data (
 );
 
 
-ALTER TABLE public.cid_data OWNER TO postgres;
-
 --
--- Name: delegations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: delegations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.delegations (
@@ -2225,10 +2081,8 @@ CREATE TABLE public.delegations (
 );
 
 
-ALTER TABLE public.delegations OWNER TO postgres;
-
 --
--- Name: eth_blocks; Type: TABLE; Schema: public; Owner: postgres
+-- Name: eth_blocks; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.eth_blocks (
@@ -2238,10 +2092,8 @@ CREATE TABLE public.eth_blocks (
 );
 
 
-ALTER TABLE public.eth_blocks OWNER TO postgres;
-
 --
--- Name: eth_blocks_last_scanned_block_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: eth_blocks_last_scanned_block_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.eth_blocks_last_scanned_block_seq
@@ -2253,17 +2105,15 @@ CREATE SEQUENCE public.eth_blocks_last_scanned_block_seq
     CACHE 1;
 
 
-ALTER TABLE public.eth_blocks_last_scanned_block_seq OWNER TO postgres;
-
 --
--- Name: eth_blocks_last_scanned_block_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: eth_blocks_last_scanned_block_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.eth_blocks_last_scanned_block_seq OWNED BY public.eth_blocks.last_scanned_block;
 
 
 --
--- Name: follows; Type: TABLE; Schema: public; Owner: postgres
+-- Name: follows; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.follows (
@@ -2279,10 +2129,8 @@ CREATE TABLE public.follows (
 );
 
 
-ALTER TABLE public.follows OWNER TO postgres;
-
 --
--- Name: hourly_play_counts; Type: TABLE; Schema: public; Owner: postgres
+-- Name: hourly_play_counts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.hourly_play_counts (
@@ -2291,10 +2139,8 @@ CREATE TABLE public.hourly_play_counts (
 );
 
 
-ALTER TABLE public.hourly_play_counts OWNER TO postgres;
-
 --
--- Name: indexing_checkpoints; Type: TABLE; Schema: public; Owner: postgres
+-- Name: indexing_checkpoints; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.indexing_checkpoints (
@@ -2304,10 +2150,8 @@ CREATE TABLE public.indexing_checkpoints (
 );
 
 
-ALTER TABLE public.indexing_checkpoints OWNER TO postgres;
-
 --
--- Name: milestones; Type: TABLE; Schema: public; Owner: postgres
+-- Name: milestones; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.milestones (
@@ -2320,10 +2164,8 @@ CREATE TABLE public.milestones (
 );
 
 
-ALTER TABLE public.milestones OWNER TO postgres;
-
 --
--- Name: notification; Type: TABLE; Schema: public; Owner: postgres
+-- Name: notification; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.notification (
@@ -2340,10 +2182,8 @@ CREATE TABLE public.notification (
 );
 
 
-ALTER TABLE public.notification OWNER TO postgres;
-
 --
--- Name: notification_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: notification_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.notification_id_seq
@@ -2355,17 +2195,15 @@ CREATE SEQUENCE public.notification_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.notification_id_seq OWNER TO postgres;
-
 --
--- Name: notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.notification_id_seq OWNED BY public.notification.id;
 
 
 --
--- Name: notification_seen; Type: TABLE; Schema: public; Owner: postgres
+-- Name: notification_seen; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.notification_seen (
@@ -2377,10 +2215,8 @@ CREATE TABLE public.notification_seen (
 );
 
 
-ALTER TABLE public.notification_seen OWNER TO postgres;
-
 --
--- Name: playlist_routes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: playlist_routes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.playlist_routes (
@@ -2396,10 +2232,8 @@ CREATE TABLE public.playlist_routes (
 );
 
 
-ALTER TABLE public.playlist_routes OWNER TO postgres;
-
 --
--- Name: playlist_seen; Type: TABLE; Schema: public; Owner: postgres
+-- Name: playlist_seen; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.playlist_seen (
@@ -2413,10 +2247,8 @@ CREATE TABLE public.playlist_seen (
 );
 
 
-ALTER TABLE public.playlist_seen OWNER TO postgres;
-
 --
--- Name: playlists; Type: TABLE; Schema: public; Owner: postgres
+-- Name: playlists; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.playlists (
@@ -2443,10 +2275,8 @@ CREATE TABLE public.playlists (
 );
 
 
-ALTER TABLE public.playlists OWNER TO postgres;
-
 --
--- Name: plays_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: plays_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.plays_id_seq
@@ -2458,17 +2288,15 @@ CREATE SEQUENCE public.plays_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.plays_id_seq OWNER TO postgres;
-
 --
--- Name: plays_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: plays_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.plays_id_seq OWNED BY public.plays.id;
 
 
 --
--- Name: pubkeys; Type: TABLE; Schema: public; Owner: postgres
+-- Name: pubkeys; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.pubkeys (
@@ -2477,10 +2305,8 @@ CREATE TABLE public.pubkeys (
 );
 
 
-ALTER TABLE public.pubkeys OWNER TO postgres;
-
 --
--- Name: reactions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: reactions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.reactions (
@@ -2495,10 +2321,8 @@ CREATE TABLE public.reactions (
 );
 
 
-ALTER TABLE public.reactions OWNER TO postgres;
-
 --
--- Name: reactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: reactions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.reactions_id_seq
@@ -2510,17 +2334,15 @@ CREATE SEQUENCE public.reactions_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.reactions_id_seq OWNER TO postgres;
-
 --
--- Name: reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.reactions_id_seq OWNED BY public.reactions.id;
 
 
 --
--- Name: related_artists; Type: TABLE; Schema: public; Owner: postgres
+-- Name: related_artists; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.related_artists (
@@ -2531,10 +2353,8 @@ CREATE TABLE public.related_artists (
 );
 
 
-ALTER TABLE public.related_artists OWNER TO postgres;
-
 --
--- Name: remixes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: remixes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.remixes (
@@ -2543,10 +2363,8 @@ CREATE TABLE public.remixes (
 );
 
 
-ALTER TABLE public.remixes OWNER TO postgres;
-
 --
--- Name: reposts; Type: TABLE; Schema: public; Owner: postgres
+-- Name: reposts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.reposts (
@@ -2564,10 +2382,8 @@ CREATE TABLE public.reposts (
 );
 
 
-ALTER TABLE public.reposts OWNER TO postgres;
-
 --
--- Name: reward_manager_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: reward_manager_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.reward_manager_txs (
@@ -2577,10 +2393,8 @@ CREATE TABLE public.reward_manager_txs (
 );
 
 
-ALTER TABLE public.reward_manager_txs OWNER TO postgres;
-
 --
--- Name: rewards_manager_backfill_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: rewards_manager_backfill_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.rewards_manager_backfill_txs (
@@ -2590,10 +2404,8 @@ CREATE TABLE public.rewards_manager_backfill_txs (
 );
 
 
-ALTER TABLE public.rewards_manager_backfill_txs OWNER TO postgres;
-
 --
--- Name: route_metrics; Type: TABLE; Schema: public; Owner: postgres
+-- Name: route_metrics; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.route_metrics (
@@ -2609,10 +2421,8 @@ CREATE TABLE public.route_metrics (
 );
 
 
-ALTER TABLE public.route_metrics OWNER TO postgres;
-
 --
--- Name: route_metrics_all_time; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: route_metrics_all_time; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.route_metrics_all_time AS
@@ -2622,10 +2432,8 @@ CREATE MATERIALIZED VIEW public.route_metrics_all_time AS
   WITH NO DATA;
 
 
-ALTER TABLE public.route_metrics_all_time OWNER TO postgres;
-
 --
--- Name: route_metrics_day_bucket; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: route_metrics_day_bucket; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.route_metrics_day_bucket AS
@@ -2637,10 +2445,8 @@ CREATE MATERIALIZED VIEW public.route_metrics_day_bucket AS
   WITH NO DATA;
 
 
-ALTER TABLE public.route_metrics_day_bucket OWNER TO postgres;
-
 --
--- Name: route_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: route_metrics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 ALTER TABLE public.route_metrics ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -2654,7 +2460,7 @@ ALTER TABLE public.route_metrics ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTIT
 
 
 --
--- Name: route_metrics_month_bucket; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: route_metrics_month_bucket; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.route_metrics_month_bucket AS
@@ -2666,10 +2472,8 @@ CREATE MATERIALIZED VIEW public.route_metrics_month_bucket AS
   WITH NO DATA;
 
 
-ALTER TABLE public.route_metrics_month_bucket OWNER TO postgres;
-
 --
--- Name: route_metrics_trailing_month; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: route_metrics_trailing_month; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.route_metrics_trailing_month AS
@@ -2680,10 +2484,8 @@ CREATE MATERIALIZED VIEW public.route_metrics_trailing_month AS
   WITH NO DATA;
 
 
-ALTER TABLE public.route_metrics_trailing_month OWNER TO postgres;
-
 --
--- Name: route_metrics_trailing_week; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: route_metrics_trailing_week; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.route_metrics_trailing_week AS
@@ -2694,10 +2496,8 @@ CREATE MATERIALIZED VIEW public.route_metrics_trailing_week AS
   WITH NO DATA;
 
 
-ALTER TABLE public.route_metrics_trailing_week OWNER TO postgres;
-
 --
--- Name: rpc_cursor; Type: TABLE; Schema: public; Owner: postgres
+-- Name: rpc_cursor; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.rpc_cursor (
@@ -2706,10 +2506,8 @@ CREATE TABLE public.rpc_cursor (
 );
 
 
-ALTER TABLE public.rpc_cursor OWNER TO postgres;
-
 --
--- Name: rpc_log; Type: TABLE; Schema: public; Owner: postgres
+-- Name: rpc_log; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.rpc_log (
@@ -2722,10 +2520,8 @@ CREATE TABLE public.rpc_log (
 );
 
 
-ALTER TABLE public.rpc_log OWNER TO postgres;
-
 --
--- Name: rpclog; Type: TABLE; Schema: public; Owner: postgres
+-- Name: rpclog; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.rpclog (
@@ -2737,10 +2533,8 @@ CREATE TABLE public.rpclog (
 );
 
 
-ALTER TABLE public.rpclog OWNER TO postgres;
-
 --
--- Name: saves; Type: TABLE; Schema: public; Owner: postgres
+-- Name: saves; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.saves (
@@ -2758,10 +2552,8 @@ CREATE TABLE public.saves (
 );
 
 
-ALTER TABLE public.saves OWNER TO postgres;
-
 --
--- Name: schema_migrations; Type: TABLE; Schema: public; Owner: postgres
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.schema_migrations (
@@ -2769,10 +2561,8 @@ CREATE TABLE public.schema_migrations (
 );
 
 
-ALTER TABLE public.schema_migrations OWNER TO postgres;
-
 --
--- Name: skipped_transactions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: skipped_transactions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.skipped_transactions (
@@ -2786,10 +2576,8 @@ CREATE TABLE public.skipped_transactions (
 );
 
 
-ALTER TABLE public.skipped_transactions OWNER TO postgres;
-
 --
--- Name: skipped_transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: skipped_transactions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.skipped_transactions_id_seq
@@ -2801,17 +2589,15 @@ CREATE SEQUENCE public.skipped_transactions_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.skipped_transactions_id_seq OWNER TO postgres;
-
 --
--- Name: skipped_transactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: skipped_transactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.skipped_transactions_id_seq OWNED BY public.skipped_transactions.id;
 
 
 --
--- Name: spl_token_backfill_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: spl_token_backfill_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.spl_token_backfill_txs (
@@ -2822,10 +2608,8 @@ CREATE TABLE public.spl_token_backfill_txs (
 );
 
 
-ALTER TABLE public.spl_token_backfill_txs OWNER TO postgres;
-
 --
--- Name: spl_token_backfill_txs_last_scanned_slot_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: spl_token_backfill_txs_last_scanned_slot_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.spl_token_backfill_txs_last_scanned_slot_seq
@@ -2837,17 +2621,15 @@ CREATE SEQUENCE public.spl_token_backfill_txs_last_scanned_slot_seq
     CACHE 1;
 
 
-ALTER TABLE public.spl_token_backfill_txs_last_scanned_slot_seq OWNER TO postgres;
-
 --
--- Name: spl_token_backfill_txs_last_scanned_slot_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: spl_token_backfill_txs_last_scanned_slot_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.spl_token_backfill_txs_last_scanned_slot_seq OWNED BY public.spl_token_backfill_txs.last_scanned_slot;
 
 
 --
--- Name: spl_token_tx; Type: TABLE; Schema: public; Owner: postgres
+-- Name: spl_token_tx; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.spl_token_tx (
@@ -2858,10 +2640,8 @@ CREATE TABLE public.spl_token_tx (
 );
 
 
-ALTER TABLE public.spl_token_tx OWNER TO postgres;
-
 --
--- Name: stems; Type: TABLE; Schema: public; Owner: postgres
+-- Name: stems; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.stems (
@@ -2870,10 +2650,8 @@ CREATE TABLE public.stems (
 );
 
 
-ALTER TABLE public.stems OWNER TO postgres;
-
 --
--- Name: subscriptions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: subscriptions; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.subscriptions (
@@ -2888,10 +2666,8 @@ CREATE TABLE public.subscriptions (
 );
 
 
-ALTER TABLE public.subscriptions OWNER TO postgres;
-
 --
--- Name: supporter_rank_ups; Type: TABLE; Schema: public; Owner: postgres
+-- Name: supporter_rank_ups; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.supporter_rank_ups (
@@ -2902,10 +2678,8 @@ CREATE TABLE public.supporter_rank_ups (
 );
 
 
-ALTER TABLE public.supporter_rank_ups OWNER TO postgres;
-
 --
--- Name: tag_track_user; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: tag_track_user; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.tag_track_user AS
@@ -2922,10 +2696,8 @@ CREATE MATERIALIZED VIEW public.tag_track_user AS
   WITH NO DATA;
 
 
-ALTER TABLE public.tag_track_user OWNER TO postgres;
-
 --
--- Name: track_routes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: track_routes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.track_routes (
@@ -2941,10 +2713,8 @@ CREATE TABLE public.track_routes (
 );
 
 
-ALTER TABLE public.track_routes OWNER TO postgres;
-
 --
--- Name: track_trending_scores; Type: TABLE; Schema: public; Owner: postgres
+-- Name: track_trending_scores; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.track_trending_scores (
@@ -2958,10 +2728,8 @@ CREATE TABLE public.track_trending_scores (
 );
 
 
-ALTER TABLE public.track_trending_scores OWNER TO postgres;
-
 --
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.users (
@@ -3001,17 +2769,15 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
-
 --
--- Name: TABLE users; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE users; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE public.users IS 'the users table';
 
 
 --
--- Name: trending_params; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: trending_params; Type: MATERIALIZED VIEW; Schema: public; Owner: -
 --
 
 CREATE MATERIALIZED VIEW public.trending_params AS
@@ -3091,10 +2857,8 @@ CREATE MATERIALIZED VIEW public.trending_params AS
   WITH NO DATA;
 
 
-ALTER TABLE public.trending_params OWNER TO postgres;
-
 --
--- Name: trending_results; Type: TABLE; Schema: public; Owner: postgres
+-- Name: trending_results; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.trending_results (
@@ -3107,10 +2871,8 @@ CREATE TABLE public.trending_results (
 );
 
 
-ALTER TABLE public.trending_results OWNER TO postgres;
-
 --
--- Name: ursm_content_nodes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: ursm_content_nodes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.ursm_content_nodes (
@@ -3131,10 +2893,8 @@ CREATE TABLE public.ursm_content_nodes (
 );
 
 
-ALTER TABLE public.ursm_content_nodes OWNER TO postgres;
-
 --
--- Name: user_balance_changes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_balance_changes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_balance_changes (
@@ -3147,10 +2907,8 @@ CREATE TABLE public.user_balance_changes (
 );
 
 
-ALTER TABLE public.user_balance_changes OWNER TO postgres;
-
 --
--- Name: user_balance_changes_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_balance_changes_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.user_balance_changes_user_id_seq
@@ -3162,17 +2920,15 @@ CREATE SEQUENCE public.user_balance_changes_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_balance_changes_user_id_seq OWNER TO postgres;
-
 --
--- Name: user_balance_changes_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_balance_changes_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.user_balance_changes_user_id_seq OWNED BY public.user_balance_changes.user_id;
 
 
 --
--- Name: user_balances; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_balances; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_balances (
@@ -3186,10 +2942,8 @@ CREATE TABLE public.user_balances (
 );
 
 
-ALTER TABLE public.user_balances OWNER TO postgres;
-
 --
--- Name: user_balances_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_balances_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.user_balances_user_id_seq
@@ -3201,17 +2955,15 @@ CREATE SEQUENCE public.user_balances_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_balances_user_id_seq OWNER TO postgres;
-
 --
--- Name: user_balances_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_balances_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.user_balances_user_id_seq OWNED BY public.user_balances.user_id;
 
 
 --
--- Name: user_bank_accounts; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_bank_accounts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_bank_accounts (
@@ -3222,10 +2974,8 @@ CREATE TABLE public.user_bank_accounts (
 );
 
 
-ALTER TABLE public.user_bank_accounts OWNER TO postgres;
-
 --
--- Name: user_bank_backfill_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_bank_backfill_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_bank_backfill_txs (
@@ -3235,10 +2985,8 @@ CREATE TABLE public.user_bank_backfill_txs (
 );
 
 
-ALTER TABLE public.user_bank_backfill_txs OWNER TO postgres;
-
 --
--- Name: user_bank_txs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_bank_txs; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_bank_txs (
@@ -3248,10 +2996,8 @@ CREATE TABLE public.user_bank_txs (
 );
 
 
-ALTER TABLE public.user_bank_txs OWNER TO postgres;
-
 --
--- Name: user_challenges; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_challenges; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_challenges (
@@ -3264,10 +3010,8 @@ CREATE TABLE public.user_challenges (
 );
 
 
-ALTER TABLE public.user_challenges OWNER TO postgres;
-
 --
--- Name: user_events; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_events; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_events (
@@ -3282,10 +3026,8 @@ CREATE TABLE public.user_events (
 );
 
 
-ALTER TABLE public.user_events OWNER TO postgres;
-
 --
--- Name: user_events_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.user_events_id_seq
@@ -3297,17 +3039,15 @@ CREATE SEQUENCE public.user_events_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_events_id_seq OWNER TO postgres;
-
 --
--- Name: user_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.user_events_id_seq OWNED BY public.user_events.id;
 
 
 --
--- Name: user_listening_history; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_listening_history; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_listening_history (
@@ -3316,10 +3056,8 @@ CREATE TABLE public.user_listening_history (
 );
 
 
-ALTER TABLE public.user_listening_history OWNER TO postgres;
-
 --
--- Name: user_listening_history_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_listening_history_user_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE public.user_listening_history_user_id_seq
@@ -3331,17 +3069,15 @@ CREATE SEQUENCE public.user_listening_history_user_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.user_listening_history_user_id_seq OWNER TO postgres;
-
 --
--- Name: user_listening_history_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_listening_history_user_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE public.user_listening_history_user_id_seq OWNED BY public.user_listening_history.user_id;
 
 
 --
--- Name: user_pubkeys; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_pubkeys; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_pubkeys (
@@ -3350,10 +3086,8 @@ CREATE TABLE public.user_pubkeys (
 );
 
 
-ALTER TABLE public.user_pubkeys OWNER TO postgres;
-
 --
--- Name: user_tips; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_tips; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.user_tips (
@@ -3367,143 +3101,141 @@ CREATE TABLE public.user_tips (
 );
 
 
-ALTER TABLE public.user_tips OWNER TO postgres;
-
 --
--- Name: aggregate_daily_app_name_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_app_name_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_app_name_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_daily_app_name_metrics_id_seq'::regclass);
 
 
 --
--- Name: aggregate_daily_total_users_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_total_users_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_total_users_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_daily_total_users_metrics_id_seq'::regclass);
 
 
 --
--- Name: aggregate_daily_unique_users_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_unique_users_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_unique_users_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_daily_unique_users_metrics_id_seq'::regclass);
 
 
 --
--- Name: aggregate_monthly_app_name_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_app_name_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_app_name_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_monthly_app_name_metrics_id_seq'::regclass);
 
 
 --
--- Name: aggregate_monthly_total_users_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_total_users_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_total_users_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_monthly_total_users_metrics_id_seq'::regclass);
 
 
 --
--- Name: aggregate_monthly_unique_users_metrics id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_unique_users_metrics id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_unique_users_metrics ALTER COLUMN id SET DEFAULT nextval('public.aggregate_monthly_unique_users_metrics_id_seq'::regclass);
 
 
 --
--- Name: associated_wallets id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: associated_wallets id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.associated_wallets ALTER COLUMN id SET DEFAULT nextval('public.associated_wallets_id_seq'::regclass);
 
 
 --
--- Name: challenge_listen_streak user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: challenge_listen_streak user_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenge_listen_streak ALTER COLUMN user_id SET DEFAULT nextval('public.challenge_listen_streak_user_id_seq'::regclass);
 
 
 --
--- Name: challenge_profile_completion user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: challenge_profile_completion user_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenge_profile_completion ALTER COLUMN user_id SET DEFAULT nextval('public.challenge_profile_completion_user_id_seq'::regclass);
 
 
 --
--- Name: eth_blocks last_scanned_block; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: eth_blocks last_scanned_block; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.eth_blocks ALTER COLUMN last_scanned_block SET DEFAULT nextval('public.eth_blocks_last_scanned_block_seq'::regclass);
 
 
 --
--- Name: notification id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: notification id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notification ALTER COLUMN id SET DEFAULT nextval('public.notification_id_seq'::regclass);
 
 
 --
--- Name: plays id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: plays id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.plays ALTER COLUMN id SET DEFAULT nextval('public.plays_id_seq'::regclass);
 
 
 --
--- Name: reactions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: reactions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.reactions ALTER COLUMN id SET DEFAULT nextval('public.reactions_id_seq'::regclass);
 
 
 --
--- Name: skipped_transactions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: skipped_transactions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.skipped_transactions ALTER COLUMN id SET DEFAULT nextval('public.skipped_transactions_id_seq'::regclass);
 
 
 --
--- Name: spl_token_backfill_txs last_scanned_slot; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: spl_token_backfill_txs last_scanned_slot; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.spl_token_backfill_txs ALTER COLUMN last_scanned_slot SET DEFAULT nextval('public.spl_token_backfill_txs_last_scanned_slot_seq'::regclass);
 
 
 --
--- Name: user_balance_changes user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_balance_changes user_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_balance_changes ALTER COLUMN user_id SET DEFAULT nextval('public.user_balance_changes_user_id_seq'::regclass);
 
 
 --
--- Name: user_balances user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_balances user_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_balances ALTER COLUMN user_id SET DEFAULT nextval('public.user_balances_user_id_seq'::regclass);
 
 
 --
--- Name: user_events id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_events id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_events ALTER COLUMN id SET DEFAULT nextval('public.user_events_id_seq'::regclass);
 
 
 --
--- Name: user_listening_history user_id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_listening_history user_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_listening_history ALTER COLUMN user_id SET DEFAULT nextval('public.user_listening_history_user_id_seq'::regclass);
 
 
 --
--- Name: SequelizeMeta SequelizeMeta_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: SequelizeMeta SequelizeMeta_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public."SequelizeMeta"
@@ -3511,7 +3243,7 @@ ALTER TABLE ONLY public."SequelizeMeta"
 
 
 --
--- Name: aggregate_daily_app_name_metrics aggregate_daily_app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_app_name_metrics aggregate_daily_app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_app_name_metrics
@@ -3519,7 +3251,7 @@ ALTER TABLE ONLY public.aggregate_daily_app_name_metrics
 
 
 --
--- Name: aggregate_daily_total_users_metrics aggregate_daily_total_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_total_users_metrics aggregate_daily_total_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_total_users_metrics
@@ -3527,7 +3259,7 @@ ALTER TABLE ONLY public.aggregate_daily_total_users_metrics
 
 
 --
--- Name: aggregate_daily_unique_users_metrics aggregate_daily_unique_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_daily_unique_users_metrics aggregate_daily_unique_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_daily_unique_users_metrics
@@ -3535,7 +3267,7 @@ ALTER TABLE ONLY public.aggregate_daily_unique_users_metrics
 
 
 --
--- Name: aggregate_monthly_app_name_metrics aggregate_monthly_app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_app_name_metrics aggregate_monthly_app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_app_name_metrics
@@ -3543,7 +3275,7 @@ ALTER TABLE ONLY public.aggregate_monthly_app_name_metrics
 
 
 --
--- Name: aggregate_monthly_plays aggregate_monthly_plays_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_plays aggregate_monthly_plays_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_plays
@@ -3551,7 +3283,7 @@ ALTER TABLE ONLY public.aggregate_monthly_plays
 
 
 --
--- Name: aggregate_monthly_total_users_metrics aggregate_monthly_total_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_total_users_metrics aggregate_monthly_total_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_total_users_metrics
@@ -3559,7 +3291,7 @@ ALTER TABLE ONLY public.aggregate_monthly_total_users_metrics
 
 
 --
--- Name: aggregate_monthly_unique_users_metrics aggregate_monthly_unique_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_monthly_unique_users_metrics aggregate_monthly_unique_users_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_monthly_unique_users_metrics
@@ -3567,7 +3299,7 @@ ALTER TABLE ONLY public.aggregate_monthly_unique_users_metrics
 
 
 --
--- Name: aggregate_playlist aggregate_playlist_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_playlist aggregate_playlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_playlist
@@ -3575,7 +3307,7 @@ ALTER TABLE ONLY public.aggregate_playlist
 
 
 --
--- Name: aggregate_track aggregate_track_table_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_track aggregate_track_table_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_track
@@ -3583,7 +3315,7 @@ ALTER TABLE ONLY public.aggregate_track
 
 
 --
--- Name: aggregate_user aggregate_user_table_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_user aggregate_user_table_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_user
@@ -3591,7 +3323,7 @@ ALTER TABLE ONLY public.aggregate_user
 
 
 --
--- Name: aggregate_user_tips aggregate_user_tips_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_user_tips aggregate_user_tips_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_user_tips
@@ -3599,7 +3331,7 @@ ALTER TABLE ONLY public.aggregate_user_tips
 
 
 --
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.alembic_version
@@ -3607,7 +3339,7 @@ ALTER TABLE ONLY public.alembic_version
 
 
 --
--- Name: app_delegates app_delegates_primary_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: app_delegates app_delegates_primary_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.app_delegates
@@ -3615,7 +3347,7 @@ ALTER TABLE ONLY public.app_delegates
 
 
 --
--- Name: app_name_metrics app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: app_name_metrics app_name_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.app_name_metrics
@@ -3623,7 +3355,7 @@ ALTER TABLE ONLY public.app_name_metrics
 
 
 --
--- Name: associated_wallets associated_wallets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: associated_wallets associated_wallets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.associated_wallets
@@ -3631,7 +3363,7 @@ ALTER TABLE ONLY public.associated_wallets
 
 
 --
--- Name: audio_transactions_history audio_transactions_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: audio_transactions_history audio_transactions_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audio_transactions_history
@@ -3639,7 +3371,7 @@ ALTER TABLE ONLY public.audio_transactions_history
 
 
 --
--- Name: audius_data_txs audius_data_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: audius_data_txs audius_data_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.audius_data_txs
@@ -3647,7 +3379,7 @@ ALTER TABLE ONLY public.audius_data_txs
 
 
 --
--- Name: blocks blocks_number_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blocks blocks_number_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blocks
@@ -3655,7 +3387,7 @@ ALTER TABLE ONLY public.blocks
 
 
 --
--- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: blocks blocks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.blocks
@@ -3663,7 +3395,7 @@ ALTER TABLE ONLY public.blocks
 
 
 --
--- Name: challenge_disbursements challenge_disbursements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: challenge_disbursements challenge_disbursements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenge_disbursements
@@ -3671,7 +3403,7 @@ ALTER TABLE ONLY public.challenge_disbursements
 
 
 --
--- Name: challenge_listen_streak challenge_listen_streak_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: challenge_listen_streak challenge_listen_streak_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenge_listen_streak
@@ -3679,7 +3411,7 @@ ALTER TABLE ONLY public.challenge_listen_streak
 
 
 --
--- Name: challenge_profile_completion challenge_profile_completion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: challenge_profile_completion challenge_profile_completion_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenge_profile_completion
@@ -3687,7 +3419,7 @@ ALTER TABLE ONLY public.challenge_profile_completion
 
 
 --
--- Name: challenges challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: challenges challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.challenges
@@ -3695,7 +3427,7 @@ ALTER TABLE ONLY public.challenges
 
 
 --
--- Name: chat_blocked_users chat_blocked_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_blocked_users chat_blocked_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_blocked_users
@@ -3703,7 +3435,7 @@ ALTER TABLE ONLY public.chat_blocked_users
 
 
 --
--- Name: chat_member chat_member_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_member chat_member_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_member
@@ -3711,7 +3443,7 @@ ALTER TABLE ONLY public.chat_member
 
 
 --
--- Name: chat_message chat_message_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_message chat_message_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_message
@@ -3719,7 +3451,7 @@ ALTER TABLE ONLY public.chat_message
 
 
 --
--- Name: chat_message_reactions chat_message_reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_message_reactions chat_message_reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_message_reactions
@@ -3727,7 +3459,7 @@ ALTER TABLE ONLY public.chat_message_reactions
 
 
 --
--- Name: chat_permissions chat_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_permissions chat_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_permissions
@@ -3735,7 +3467,7 @@ ALTER TABLE ONLY public.chat_permissions
 
 
 --
--- Name: chat chat_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat chat_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat
@@ -3743,7 +3475,7 @@ ALTER TABLE ONLY public.chat
 
 
 --
--- Name: cid_data cid_data_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cid_data cid_data_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.cid_data
@@ -3751,7 +3483,7 @@ ALTER TABLE ONLY public.cid_data
 
 
 --
--- Name: delegations delegations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: delegations delegations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.delegations
@@ -3759,7 +3491,7 @@ ALTER TABLE ONLY public.delegations
 
 
 --
--- Name: eth_blocks eth_blocks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: eth_blocks eth_blocks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.eth_blocks
@@ -3767,7 +3499,7 @@ ALTER TABLE ONLY public.eth_blocks
 
 
 --
--- Name: follows follows_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: follows follows_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.follows
@@ -3775,7 +3507,7 @@ ALTER TABLE ONLY public.follows
 
 
 --
--- Name: hourly_play_counts hourly_play_counts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: hourly_play_counts hourly_play_counts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hourly_play_counts
@@ -3783,7 +3515,7 @@ ALTER TABLE ONLY public.hourly_play_counts
 
 
 --
--- Name: indexing_checkpoints indexing_checkpoints_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: indexing_checkpoints indexing_checkpoints_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.indexing_checkpoints
@@ -3791,7 +3523,7 @@ ALTER TABLE ONLY public.indexing_checkpoints
 
 
 --
--- Name: milestones milestones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: milestones milestones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.milestones
@@ -3799,7 +3531,7 @@ ALTER TABLE ONLY public.milestones
 
 
 --
--- Name: notification notification_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: notification notification_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notification
@@ -3807,7 +3539,7 @@ ALTER TABLE ONLY public.notification
 
 
 --
--- Name: notification_seen notification_seen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: notification_seen notification_seen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notification_seen
@@ -3815,7 +3547,7 @@ ALTER TABLE ONLY public.notification_seen
 
 
 --
--- Name: aggregate_plays play_item_id_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: aggregate_plays play_item_id_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.aggregate_plays
@@ -3823,7 +3555,7 @@ ALTER TABLE ONLY public.aggregate_plays
 
 
 --
--- Name: playlist_routes playlist_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: playlist_routes playlist_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.playlist_routes
@@ -3831,7 +3563,7 @@ ALTER TABLE ONLY public.playlist_routes
 
 
 --
--- Name: playlist_seen playlist_seen_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: playlist_seen playlist_seen_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.playlist_seen
@@ -3839,7 +3571,7 @@ ALTER TABLE ONLY public.playlist_seen
 
 
 --
--- Name: playlists playlists_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: playlists playlists_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.playlists
@@ -3847,7 +3579,7 @@ ALTER TABLE ONLY public.playlists
 
 
 --
--- Name: plays plays_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: plays plays_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.plays
@@ -3855,7 +3587,7 @@ ALTER TABLE ONLY public.plays
 
 
 --
--- Name: pubkeys pubkeys_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: pubkeys pubkeys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.pubkeys
@@ -3863,7 +3595,7 @@ ALTER TABLE ONLY public.pubkeys
 
 
 --
--- Name: reactions reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reactions reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.reactions
@@ -3871,7 +3603,7 @@ ALTER TABLE ONLY public.reactions
 
 
 --
--- Name: related_artists related_artists_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: related_artists related_artists_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.related_artists
@@ -3879,7 +3611,7 @@ ALTER TABLE ONLY public.related_artists
 
 
 --
--- Name: remixes remixes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: remixes remixes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.remixes
@@ -3887,7 +3619,7 @@ ALTER TABLE ONLY public.remixes
 
 
 --
--- Name: reposts reposts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reposts reposts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.reposts
@@ -3895,7 +3627,7 @@ ALTER TABLE ONLY public.reposts
 
 
 --
--- Name: reward_manager_txs reward_manager_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: reward_manager_txs reward_manager_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.reward_manager_txs
@@ -3903,7 +3635,7 @@ ALTER TABLE ONLY public.reward_manager_txs
 
 
 --
--- Name: rewards_manager_backfill_txs rewards_manager_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: rewards_manager_backfill_txs rewards_manager_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.rewards_manager_backfill_txs
@@ -3911,7 +3643,7 @@ ALTER TABLE ONLY public.rewards_manager_backfill_txs
 
 
 --
--- Name: route_metrics route_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: route_metrics route_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.route_metrics
@@ -3919,7 +3651,7 @@ ALTER TABLE ONLY public.route_metrics
 
 
 --
--- Name: rpc_cursor rpc_cursor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: rpc_cursor rpc_cursor_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.rpc_cursor
@@ -3927,7 +3659,7 @@ ALTER TABLE ONLY public.rpc_cursor
 
 
 --
--- Name: rpc_log rpc_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: rpc_log rpc_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.rpc_log
@@ -3935,7 +3667,7 @@ ALTER TABLE ONLY public.rpc_log
 
 
 --
--- Name: rpclog rpclog_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: rpclog rpclog_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.rpclog
@@ -3943,7 +3675,7 @@ ALTER TABLE ONLY public.rpclog
 
 
 --
--- Name: saves saves_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: saves saves_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.saves
@@ -3951,7 +3683,7 @@ ALTER TABLE ONLY public.saves
 
 
 --
--- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.schema_migrations
@@ -3959,7 +3691,7 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: skipped_transactions skipped_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: skipped_transactions skipped_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.skipped_transactions
@@ -3967,7 +3699,7 @@ ALTER TABLE ONLY public.skipped_transactions
 
 
 --
--- Name: spl_token_backfill_txs spl_token_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: spl_token_backfill_txs spl_token_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.spl_token_backfill_txs
@@ -3975,7 +3707,7 @@ ALTER TABLE ONLY public.spl_token_backfill_txs
 
 
 --
--- Name: spl_token_tx spl_token_tx_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: spl_token_tx spl_token_tx_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.spl_token_tx
@@ -3983,7 +3715,7 @@ ALTER TABLE ONLY public.spl_token_tx
 
 
 --
--- Name: stems stems_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: stems stems_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.stems
@@ -3991,7 +3723,7 @@ ALTER TABLE ONLY public.stems
 
 
 --
--- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: subscriptions subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.subscriptions
@@ -3999,7 +3731,7 @@ ALTER TABLE ONLY public.subscriptions
 
 
 --
--- Name: supporter_rank_ups supporter_rank_ups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: supporter_rank_ups supporter_rank_ups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.supporter_rank_ups
@@ -4007,7 +3739,7 @@ ALTER TABLE ONLY public.supporter_rank_ups
 
 
 --
--- Name: track_routes track_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: track_routes track_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.track_routes
@@ -4015,7 +3747,7 @@ ALTER TABLE ONLY public.track_routes
 
 
 --
--- Name: track_trending_scores track_trending_scores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: track_trending_scores track_trending_scores_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.track_trending_scores
@@ -4023,7 +3755,7 @@ ALTER TABLE ONLY public.track_trending_scores
 
 
 --
--- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tracks
@@ -4031,7 +3763,7 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: trending_results trending_results_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: trending_results trending_results_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.trending_results
@@ -4039,7 +3771,7 @@ ALTER TABLE ONLY public.trending_results
 
 
 --
--- Name: notification uq_notification; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: notification uq_notification; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.notification
@@ -4047,7 +3779,7 @@ ALTER TABLE ONLY public.notification
 
 
 --
--- Name: ursm_content_nodes ursm_content_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: ursm_content_nodes ursm_content_nodes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ursm_content_nodes
@@ -4055,7 +3787,7 @@ ALTER TABLE ONLY public.ursm_content_nodes
 
 
 --
--- Name: user_balance_changes user_balance_changes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_balance_changes user_balance_changes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_balance_changes
@@ -4063,7 +3795,7 @@ ALTER TABLE ONLY public.user_balance_changes
 
 
 --
--- Name: user_balances user_balances_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_balances user_balances_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_balances
@@ -4071,7 +3803,7 @@ ALTER TABLE ONLY public.user_balances
 
 
 --
--- Name: user_bank_accounts user_bank_accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_bank_accounts user_bank_accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_bank_accounts
@@ -4079,7 +3811,7 @@ ALTER TABLE ONLY public.user_bank_accounts
 
 
 --
--- Name: user_bank_backfill_txs user_bank_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_bank_backfill_txs user_bank_backfill_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_bank_backfill_txs
@@ -4087,7 +3819,7 @@ ALTER TABLE ONLY public.user_bank_backfill_txs
 
 
 --
--- Name: user_bank_txs user_bank_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_bank_txs user_bank_txs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_bank_txs
@@ -4095,7 +3827,7 @@ ALTER TABLE ONLY public.user_bank_txs
 
 
 --
--- Name: user_challenges user_challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_challenges user_challenges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_challenges
@@ -4103,7 +3835,7 @@ ALTER TABLE ONLY public.user_challenges
 
 
 --
--- Name: user_events user_events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_events user_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_events
@@ -4111,7 +3843,7 @@ ALTER TABLE ONLY public.user_events
 
 
 --
--- Name: user_listening_history user_listening_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_listening_history user_listening_history_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_listening_history
@@ -4119,7 +3851,7 @@ ALTER TABLE ONLY public.user_listening_history
 
 
 --
--- Name: user_pubkeys user_pubkeys_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_pubkeys user_pubkeys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_pubkeys
@@ -4127,7 +3859,7 @@ ALTER TABLE ONLY public.user_pubkeys
 
 
 --
--- Name: user_tips user_tips_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_tips user_tips_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_tips
@@ -4135,7 +3867,7 @@ ALTER TABLE ONLY public.user_tips
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
@@ -4143,721 +3875,721 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: blocks_is_current_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: blocks_is_current_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX blocks_is_current_idx ON public.blocks USING btree (is_current) WHERE (is_current IS TRUE);
 
 
 --
--- Name: chat_chat_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: chat_chat_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX chat_chat_id_idx ON public.chat USING btree (chat_id);
 
 
 --
--- Name: chat_member_user_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: chat_member_user_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX chat_member_user_idx ON public.chat_member USING btree (user_id);
 
 
 --
--- Name: follows_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: follows_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX follows_blocknumber_idx ON public.follows USING btree (blocknumber);
 
 
 --
--- Name: follows_inbound_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: follows_inbound_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX follows_inbound_idx ON public.follows USING btree (followee_user_id, follower_user_id, is_current, is_delete);
 
 
 --
--- Name: idx_challenge_disbursements_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_challenge_disbursements_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_challenge_disbursements_slot ON public.challenge_disbursements USING btree (slot);
 
 
 --
--- Name: idx_chat_message_chat_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_chat_message_chat_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_chat_message_chat_id ON public.chat_message USING btree (chat_id);
 
 
 --
--- Name: idx_chat_message_reactions_message_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_chat_message_reactions_message_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_chat_message_reactions_message_id ON public.chat_message_reactions USING btree (message_id);
 
 
 --
--- Name: idx_chat_message_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_chat_message_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_chat_message_user_id ON public.chat_message USING btree (user_id);
 
 
 --
--- Name: idx_reward_manager_txs_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_reward_manager_txs_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_reward_manager_txs_slot ON public.reward_manager_txs USING btree (slot);
 
 
 --
--- Name: idx_rewards_manager_backfill_txs_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_rewards_manager_backfill_txs_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_rewards_manager_backfill_txs_slot ON public.rewards_manager_backfill_txs USING btree (slot);
 
 
 --
--- Name: idx_rpc_relayed_by; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_rpc_relayed_by; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_rpc_relayed_by ON public.rpc_log USING btree (relayed_by, relayed_at);
 
 
 --
--- Name: idx_user_bank_backfill_txs_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_user_bank_backfill_txs_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_user_bank_backfill_txs_slot ON public.user_bank_backfill_txs USING btree (slot);
 
 
 --
--- Name: idx_user_bank_eth_address; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_user_bank_eth_address; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_user_bank_eth_address ON public.user_bank_accounts USING btree (ethereum_address);
 
 
 --
--- Name: idx_user_bank_txs_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_user_bank_txs_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_user_bank_txs_slot ON public.user_bank_txs USING btree (slot);
 
 
 --
--- Name: interval_play_month_count_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: interval_play_month_count_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX interval_play_month_count_idx ON public.aggregate_interval_plays USING btree (month_listen_counts);
 
 
 --
--- Name: interval_play_track_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: interval_play_track_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX interval_play_track_id_idx ON public.aggregate_interval_plays USING btree (track_id);
 
 
 --
--- Name: interval_play_week_count_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: interval_play_week_count_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX interval_play_week_count_idx ON public.aggregate_interval_plays USING btree (week_listen_counts);
 
 
 --
--- Name: is_current_blocks_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: is_current_blocks_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX is_current_blocks_idx ON public.blocks USING btree (is_current);
 
 
 --
--- Name: ix_aggregate_user_tips_receiver_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_aggregate_user_tips_receiver_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_aggregate_user_tips_receiver_user_id ON public.aggregate_user_tips USING btree (receiver_user_id);
 
 
 --
--- Name: ix_associated_wallets_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_associated_wallets_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_associated_wallets_user_id ON public.associated_wallets USING btree (user_id, is_current);
 
 
 --
--- Name: ix_associated_wallets_wallet; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_associated_wallets_wallet; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_associated_wallets_wallet ON public.associated_wallets USING btree (wallet, is_current);
 
 
 --
--- Name: ix_audio_transactions_history_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_audio_transactions_history_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_audio_transactions_history_slot ON public.audio_transactions_history USING btree (slot);
 
 
 --
--- Name: ix_audio_transactions_history_transaction_type; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_audio_transactions_history_transaction_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_audio_transactions_history_transaction_type ON public.audio_transactions_history USING btree (transaction_type);
 
 
 --
--- Name: ix_follows_followee_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_follows_followee_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_follows_followee_user_id ON public.follows USING btree (followee_user_id);
 
 
 --
--- Name: ix_follows_follower_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_follows_follower_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_follows_follower_user_id ON public.follows USING btree (follower_user_id);
 
 
 --
--- Name: ix_notification; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_notification; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_notification ON public.notification USING gin (user_ids);
 
 
 --
--- Name: ix_plays_created_at; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plays_created_at; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plays_created_at ON public.plays USING btree (created_at);
 
 
 --
--- Name: ix_plays_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plays_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plays_slot ON public.plays USING btree (slot);
 
 
 --
--- Name: ix_plays_sol_signature; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plays_sol_signature; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plays_sol_signature ON public.plays USING btree (signature);
 
 
 --
--- Name: ix_plays_user_play_item; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plays_user_play_item; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plays_user_play_item ON public.plays USING btree (play_item_id, user_id);
 
 
 --
--- Name: ix_plays_user_play_item_date; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_plays_user_play_item_date; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_plays_user_play_item_date ON public.plays USING btree (play_item_id, user_id, created_at);
 
 
 --
--- Name: ix_reactions_reacted_to_reaction_type; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_reactions_reacted_to_reaction_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_reactions_reacted_to_reaction_type ON public.reactions USING btree (reacted_to, reaction_type);
 
 
 --
--- Name: ix_reactions_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_reactions_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_reactions_slot ON public.reactions USING btree (slot);
 
 
 --
--- Name: ix_subscriptions_blocknumber; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_subscriptions_blocknumber; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_subscriptions_blocknumber ON public.subscriptions USING btree (blocknumber);
 
 
 --
--- Name: ix_subscriptions_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_subscriptions_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_subscriptions_user_id ON public.subscriptions USING btree (user_id);
 
 
 --
--- Name: ix_supporter_rank_ups_receiver_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_supporter_rank_ups_receiver_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_supporter_rank_ups_receiver_user_id ON public.supporter_rank_ups USING btree (receiver_user_id);
 
 
 --
--- Name: ix_supporter_rank_ups_sender_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_supporter_rank_ups_sender_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_supporter_rank_ups_sender_user_id ON public.supporter_rank_ups USING btree (sender_user_id);
 
 
 --
--- Name: ix_supporter_rank_ups_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_supporter_rank_ups_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_supporter_rank_ups_slot ON public.supporter_rank_ups USING btree (slot);
 
 
 --
--- Name: ix_track_trending_scores_genre; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_track_trending_scores_genre; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_track_trending_scores_genre ON public.track_trending_scores USING btree (genre);
 
 
 --
--- Name: ix_track_trending_scores_score; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_track_trending_scores_score; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_track_trending_scores_score ON public.track_trending_scores USING btree (score);
 
 
 --
--- Name: ix_track_trending_scores_track_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_track_trending_scores_track_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_track_trending_scores_track_id ON public.track_trending_scores USING btree (track_id);
 
 
 --
--- Name: ix_track_trending_scores_type; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_track_trending_scores_type; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_track_trending_scores_type ON public.track_trending_scores USING btree (type);
 
 
 --
--- Name: ix_user_tips_receiver_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_user_tips_receiver_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_user_tips_receiver_user_id ON public.user_tips USING btree (receiver_user_id);
 
 
 --
--- Name: ix_user_tips_sender_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_user_tips_sender_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_user_tips_sender_user_id ON public.user_tips USING btree (sender_user_id);
 
 
 --
--- Name: ix_user_tips_slot; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_user_tips_slot; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_user_tips_slot ON public.user_tips USING btree (slot);
 
 
 --
--- Name: ix_users_handle_lc; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_users_handle_lc; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_users_handle_lc ON public.users USING btree (handle_lc);
 
 
 --
--- Name: ix_users_is_deactivated; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_users_is_deactivated; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_users_is_deactivated ON public.users USING btree (is_deactivated);
 
 
 --
--- Name: ix_users_wallet; Type: INDEX; Schema: public; Owner: postgres
+-- Name: ix_users_wallet; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_users_wallet ON public.users USING btree (wallet);
 
 
 --
--- Name: milestones_name_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: milestones_name_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX milestones_name_idx ON public.milestones USING btree (name, id);
 
 
 --
--- Name: notification_seen_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: notification_seen_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX notification_seen_blocknumber_idx ON public.notification_seen USING btree (blocknumber);
 
 
 --
--- Name: play_item_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: play_item_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX play_item_idx ON public.plays USING btree (play_item_id);
 
 
 --
--- Name: play_updated_at_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: play_updated_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX play_updated_at_idx ON public.plays USING btree (updated_at);
 
 
 --
--- Name: playlist_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: playlist_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX playlist_created_at_idx ON public.playlists USING btree (created_at);
 
 
 --
--- Name: playlist_owner_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: playlist_owner_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX playlist_owner_id_idx ON public.playlists USING btree (playlist_owner_id);
 
 
 --
--- Name: playlist_routes_playlist_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: playlist_routes_playlist_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX playlist_routes_playlist_id_idx ON public.playlist_routes USING btree (playlist_id, is_current);
 
 
 --
--- Name: playlists_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: playlists_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX playlists_blocknumber_idx ON public.playlists USING btree (blocknumber);
 
 
 --
--- Name: related_artists_related_artist_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: related_artists_related_artist_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX related_artists_related_artist_id_idx ON public.related_artists USING btree (related_artist_user_id, user_id);
 
 
 --
--- Name: repost_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: repost_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX repost_created_at_idx ON public.reposts USING btree (created_at);
 
 
 --
--- Name: repost_item_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: repost_item_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX repost_item_id_idx ON public.reposts USING btree (repost_item_id, repost_type);
 
 
 --
--- Name: repost_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: repost_user_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX repost_user_id_idx ON public.reposts USING btree (user_id, repost_type);
 
 
 --
--- Name: reposts_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: reposts_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX reposts_blocknumber_idx ON public.reposts USING btree (blocknumber);
 
 
 --
--- Name: rpclog_method_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: rpclog_method_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX rpclog_method_idx ON public.rpclog USING btree (method);
 
 
 --
--- Name: rpclog_wallet_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: rpclog_wallet_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX rpclog_wallet_idx ON public.rpclog USING btree (wallet);
 
 
 --
--- Name: save_item_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: save_item_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX save_item_id_idx ON public.saves USING btree (save_item_id, save_type);
 
 
 --
--- Name: save_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: save_user_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX save_user_id_idx ON public.saves USING btree (user_id, save_type);
 
 
 --
--- Name: saves_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: saves_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX saves_blocknumber_idx ON public.saves USING btree (blocknumber);
 
 
 --
--- Name: tag_track_user_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: tag_track_user_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX tag_track_user_idx ON public.tag_track_user USING btree (tag, track_id, owner_id);
 
 
 --
--- Name: tag_track_user_tag_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: tag_track_user_tag_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX tag_track_user_tag_idx ON public.tag_track_user USING btree (tag);
 
 
 --
--- Name: track_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: track_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX track_created_at_idx ON public.tracks USING btree (created_at);
 
 
 --
--- Name: track_is_premium_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: track_is_premium_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX track_is_premium_idx ON public.tracks USING btree (is_premium, is_current, is_delete);
 
 
 --
--- Name: track_owner_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: track_owner_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX track_owner_id_idx ON public.tracks USING btree (owner_id);
 
 
 --
--- Name: track_routes_track_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: track_routes_track_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX track_routes_track_id_idx ON public.track_routes USING btree (track_id, is_current);
 
 
 --
--- Name: tracks_ai_attribution_user_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: tracks_ai_attribution_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX tracks_ai_attribution_user_id ON public.tracks USING btree (ai_attribution_user_id, is_current) WHERE ((is_current = true) AND (ai_attribution_user_id IS NOT NULL));
 
 
 --
--- Name: tracks_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: tracks_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX tracks_blocknumber_idx ON public.tracks USING btree (blocknumber);
 
 
 --
--- Name: tracks_track_cid_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: tracks_track_cid_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX tracks_track_cid_idx ON public.tracks USING btree (track_cid, is_current, is_delete);
 
 
 --
--- Name: trending_params_track_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: trending_params_track_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX trending_params_track_id_idx ON public.trending_params USING btree (track_id);
 
 
 --
--- Name: user_challenges_challenge_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: user_challenges_challenge_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_challenges_challenge_idx ON public.user_challenges USING btree (challenge_id);
 
 
 --
--- Name: user_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: user_created_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_created_at_idx ON public.users USING btree (created_at, user_id) WHERE is_current;
 
 
 --
--- Name: user_events_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: user_events_user_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX user_events_user_id_idx ON public.user_events USING btree (user_id, is_current);
 
 
 --
--- Name: users_blocknumber_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: users_blocknumber_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_blocknumber_idx ON public.users USING btree (blocknumber);
 
 
 --
--- Name: users_is_available_false_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: users_is_available_false_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX users_is_available_false_idx ON public.users USING btree (is_available) WHERE (is_available = false);
 
 
 --
--- Name: challenge_disbursements on_challenge_disbursement; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: challenge_disbursements on_challenge_disbursement; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_challenge_disbursement AFTER INSERT ON public.challenge_disbursements FOR EACH ROW EXECUTE PROCEDURE public.handle_challenge_disbursement();
 
 
 --
--- Name: follows on_follow; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: follows on_follow; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_follow AFTER INSERT ON public.follows FOR EACH ROW EXECUTE PROCEDURE public.handle_follow();
 
 
 --
--- Name: plays on_play; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: plays on_play; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_play AFTER INSERT ON public.plays FOR EACH ROW EXECUTE PROCEDURE public.handle_play();
 
 
 --
--- Name: playlists on_playlist; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: playlists on_playlist; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_playlist AFTER INSERT ON public.playlists FOR EACH ROW EXECUTE PROCEDURE public.handle_playlist();
 
 
 --
--- Name: reactions on_reaction; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: reactions on_reaction; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_reaction AFTER INSERT ON public.reactions FOR EACH ROW EXECUTE PROCEDURE public.handle_reaction();
 
 
 --
--- Name: reposts on_repost; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: reposts on_repost; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_repost AFTER INSERT ON public.reposts FOR EACH ROW EXECUTE PROCEDURE public.handle_repost();
 
 
 --
--- Name: saves on_save; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: saves on_save; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_save AFTER INSERT ON public.saves FOR EACH ROW EXECUTE PROCEDURE public.handle_save();
 
 
 --
--- Name: supporter_rank_ups on_supporter_rank_up; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: supporter_rank_ups on_supporter_rank_up; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_supporter_rank_up AFTER INSERT ON public.supporter_rank_ups FOR EACH ROW EXECUTE PROCEDURE public.handle_supporter_rank_up();
 
 
 --
--- Name: tracks on_track; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: tracks on_track; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_track AFTER INSERT OR UPDATE ON public.tracks FOR EACH ROW EXECUTE PROCEDURE public.handle_track();
 
 
 --
--- Name: users on_user; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: users on_user; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_user AFTER INSERT ON public.users FOR EACH ROW EXECUTE PROCEDURE public.handle_user();
 
 
 --
--- Name: user_balance_changes on_user_balance_changes; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: user_balance_changes on_user_balance_changes; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_user_balance_changes AFTER INSERT OR UPDATE ON public.user_balance_changes FOR EACH ROW EXECUTE PROCEDURE public.handle_user_balance_change();
 
 
 --
--- Name: user_tips on_user_tip; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: user_tips on_user_tip; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER on_user_tip AFTER INSERT ON public.user_tips FOR EACH ROW EXECUTE PROCEDURE public.handle_user_tip();
 
 
 --
--- Name: aggregate_plays trg_aggregate_plays; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: aggregate_plays trg_aggregate_plays; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_aggregate_plays AFTER INSERT OR UPDATE ON public.aggregate_plays FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: aggregate_user trg_aggregate_user; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: aggregate_user trg_aggregate_user; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_aggregate_user AFTER INSERT OR UPDATE ON public.aggregate_user FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: follows trg_follows; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: follows trg_follows; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_follows AFTER INSERT OR UPDATE ON public.follows FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: playlists trg_playlists; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: playlists trg_playlists; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_playlists AFTER INSERT OR UPDATE ON public.playlists FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: reposts trg_reposts; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: reposts trg_reposts; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_reposts AFTER INSERT OR UPDATE ON public.reposts FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: saves trg_saves; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: saves trg_saves; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_saves AFTER INSERT OR UPDATE ON public.saves FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: tracks trg_tracks; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: tracks trg_tracks; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_tracks AFTER INSERT OR UPDATE ON public.tracks FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: users trg_users; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: users trg_users; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER trg_users AFTER INSERT OR UPDATE ON public.users FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 
 
 --
--- Name: app_delegates app_delegates_blockhash_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: app_delegates app_delegates_blockhash_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.app_delegates
@@ -4865,7 +4597,7 @@ ALTER TABLE ONLY public.app_delegates
 
 
 --
--- Name: app_delegates app_delegates_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: app_delegates app_delegates_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.app_delegates
@@ -4873,7 +4605,7 @@ ALTER TABLE ONLY public.app_delegates
 
 
 --
--- Name: chat_member chat_member_chat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_member chat_member_chat_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_member
@@ -4881,7 +4613,7 @@ ALTER TABLE ONLY public.chat_member
 
 
 --
--- Name: chat_message_reactions chat_message_reactions_message_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_message_reactions chat_message_reactions_message_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_message_reactions
@@ -4889,7 +4621,7 @@ ALTER TABLE ONLY public.chat_message_reactions
 
 
 --
--- Name: delegations delegations_blockhash_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: delegations delegations_blockhash_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.delegations
@@ -4897,7 +4629,7 @@ ALTER TABLE ONLY public.delegations
 
 
 --
--- Name: delegations delegations_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: delegations delegations_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.delegations
@@ -4905,7 +4637,7 @@ ALTER TABLE ONLY public.delegations
 
 
 --
--- Name: chat_message fk_chat_member; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: chat_message fk_chat_member; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.chat_message
@@ -4913,67 +4645,11 @@ ALTER TABLE ONLY public.chat_message
 
 
 --
--- Name: follows follows_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.follows
-    ADD CONSTRAINT follows_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: playlists playlists_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.playlists
-    ADD CONSTRAINT playlists_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: reposts reposts_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.reposts
-    ADD CONSTRAINT reposts_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: saves saves_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.saves
-    ADD CONSTRAINT saves_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: tracks tracks_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.tracks
-    ADD CONSTRAINT tracks_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: ursm_content_nodes ursm_content_nodes_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.ursm_content_nodes
-    ADD CONSTRAINT ursm_content_nodes_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
-
-
---
--- Name: user_challenges user_challenges_challenge_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_challenges user_challenges_challenge_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.user_challenges
     ADD CONSTRAINT user_challenges_challenge_id_fkey FOREIGN KEY (challenge_id) REFERENCES public.challenges(id);
-
-
---
--- Name: users users_blocknumber_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_blocknumber_fkey FOREIGN KEY (blocknumber) REFERENCES public.blocks(number);
 
 
 --
