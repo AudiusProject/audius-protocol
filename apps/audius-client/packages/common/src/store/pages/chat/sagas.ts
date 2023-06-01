@@ -473,7 +473,7 @@ function* watchFetchUnreadMessagesCount() {
 }
 
 function* watchAddMessage() {
-  yield takeEvery(addMessage, ({ payload }) => fetchChatIfNecessary(payload))
+  yield takeEvery(addMessage, ({ payload }) => doFetchChatIfNecessary(payload))
 }
 
 function* watchFetchChatIfNecessary() {
