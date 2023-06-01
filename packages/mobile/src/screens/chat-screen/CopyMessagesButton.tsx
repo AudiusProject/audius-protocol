@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   copyText: {
     fontSize: typography.fontSize.xs,
     fontFamily: typography.fontByWeight.bold,
-    color: palette.white
+    color: palette.staticWhite
   }
 }))
 

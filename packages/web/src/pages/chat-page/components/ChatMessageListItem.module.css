@@ -17,9 +17,9 @@
   max-width: 448px;
   border-radius: var(--unit-3);
   filter: var(--drop-shadow-near);
-  color: var(--netural);
+  color: var(--static-netural);
   background-color: var(--bubble-color);
-  transition: background-color var(--quick), filter var(--quick);
+  transition: background-color var(--calm), filter var(--calm);
 }
 
 .text a {
@@ -33,12 +33,12 @@
 }
 
 .isAuthor .bubble {
-  color: var(--white);
+  color: var(--static-white);
   --bubble-color: var(--secondary-light-2);
 }
 
 .isAuthor .text a {
-  color: var(--white);
+  color: var(--static-white);
 }
 
 .isAuthor .bubble:hover {

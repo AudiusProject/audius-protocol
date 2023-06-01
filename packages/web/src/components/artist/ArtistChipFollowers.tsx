@@ -34,6 +34,7 @@ export const ArtistChipFollowers = ({
       </div>
       {doesFollowCurrentUser ? (
         <FollowsYouBadge
+          variant='list'
           className={cn(styles.followsYou, { [styles.darkMode]: darkMode })}
         />
       ) : null}
