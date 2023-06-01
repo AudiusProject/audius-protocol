@@ -31,7 +31,7 @@ end
 
 -- encode and sort table t in json
 function _M.encode_sorted(t)
-    return dkjson.encode(t, { indent = true, keyorder = dkjson.sortedkeys(server_health) })
+    return dkjson.encode(t, { indent = true, keyorder = dkjson.sortedkeys(t) })
 end
 
 return _M
