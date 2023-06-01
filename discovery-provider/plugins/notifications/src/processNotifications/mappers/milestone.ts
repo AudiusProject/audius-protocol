@@ -66,7 +66,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     }
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

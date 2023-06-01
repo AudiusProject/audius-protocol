@@ -42,7 +42,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     super(dnDB, identityDB, notification)
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

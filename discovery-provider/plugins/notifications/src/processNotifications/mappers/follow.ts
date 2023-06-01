@@ -33,7 +33,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     this.receiverUserId = followeeUserId
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
