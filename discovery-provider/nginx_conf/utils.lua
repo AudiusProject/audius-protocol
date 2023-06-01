@@ -27,4 +27,22 @@ function _M.starts_with(str, start)
     return str:sub(1, #start) == start
 end
 
+-- Sort keys in table t
+function _M.sort_keys(t)
+    local sorted_table = {}
+    for k, v in pairs(t) do sorted_table[#sorted_table+1] = {k, v} end
+    table.sort(sorted_table, function(a, b) return a[1] < b[1] end)
+    return sorted_table
+end
+
+-- encode and sort table t in json
+function _M.encode_sorted(t)
+    local sorted_table = sort_keys(t)
+    local result = {}
+    for _, kv in ipairs(sorted_table) do
+        result[kv[1]] = kv[2]
+    end
+    return cjson.encode(result)
+end
+
 return _M
