@@ -16,8 +16,16 @@ const slice = createSlice({
   name: 'application/ui/toast',
   initialState,
   reducers: {
-    toast: (_, _action: ToastAction) => {},
-    addToast: (state, action: AddToastAction) => {
+    /**
+     * Adds a toast
+     */
+    toast: (_, _action: ToastAction) => {
+      // Triggers saga
+    },
+    /**
+     * Internal method for the saga to track individual toasts by key
+     */
+    registerToast: (state, action: AddToastAction) => {
       const toast = action.payload
       state.toasts.push(toast)
     },
@@ -40,8 +48,13 @@ const slice = createSlice({
   }
 })
 
-export const { toast, dismissToast, addToast, clearToasts, manualClearToast } =
-  slice.actions
+export const {
+  toast,
+  dismissToast,
+  registerToast,
+  clearToasts,
+  manualClearToast
+} = slice.actions
 
 export const actions = slice.actions
 export default slice.reducer

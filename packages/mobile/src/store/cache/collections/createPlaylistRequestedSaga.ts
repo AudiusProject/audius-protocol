@@ -3,7 +3,7 @@ import { put, takeEvery } from 'typed-redux-saga'
 
 import { navigationRef } from 'app/components/navigation-container/NavigationContainer'
 
-const { addToast } = toastActions
+const { registerToast } = toastActions
 
 const messages = {
   createdToast: 'Playlist Created!'
@@ -20,7 +20,7 @@ export function* createPlaylistRequestedSaga() {
       switch (noticeType) {
         case 'toast': {
           yield* put(
-            addToast({
+            registerToast({
               content: messages.createdToast,
               key: uuid()
             })

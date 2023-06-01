@@ -48,7 +48,7 @@ import {
   retrieveCollections
 } from './utils/retrieveCollections'
 
-const { manualClearToast, addToast, toast } = toastActions
+const { manualClearToast, toast } = toastActions
 const { getUser } = cacheUsersSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getTrack } = cacheTracksSelectors
@@ -730,7 +730,7 @@ function* confirmPublishPlaylist(
           yield* put(manualClearToast({ key: dismissToastKey }))
         }
 
-        yield* put(addToast({ content: 'Your playlist is now public!' }))
+        yield* put(toast({ content: 'Your playlist is now public!' }))
       },
       function* ({ error, timeout, message }) {
         // Fail Call
