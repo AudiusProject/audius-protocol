@@ -8,6 +8,7 @@ import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { FormScreen } from 'app/components/form-screen'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 
 import { PlaylistDescriptionInput } from './LegacyPlaylistDescriptionInput'
@@ -56,14 +57,16 @@ const initialErrors = {
 
 export const CreatePlaylistScreen = () => {
   const { toast } = useToast()
+  const navigation = useNavigation()
 
   const dispatch = useDispatch()
   const handleSubmit = useCallback(
     (values: CreatePlaylistValues) => {
       dispatch(createPlaylist(values, CreatePlaylistSource.FAVORITES_PAGE))
       toast({ content: messages.playlistCreatedToast })
+      navigation.goBack()
     },
-    [dispatch, toast]
+    [dispatch, toast, navigation]
   )
 
   return (

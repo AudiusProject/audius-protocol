@@ -180,8 +180,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           />
           <DeleteFolderConfirmationModal
             folderId={id}
-            isOpen={isDeleteConfirmationOpen}
-            onClose={toggleDeleteConfirmationOpen}
+            visible={isDeleteConfirmationOpen}
+            onCancel={toggleDeleteConfirmationOpen}
           />
         </LeftNavLink>
         {isExpanded ? (

@@ -42,11 +42,14 @@ function* reorderLibrarySagaWorker(action: ReorderAction) {
     })
   )
 
-  const isNewAddition = yield* select(
-    (state: CommonState) => !!state.account.collections[draggingId as number]
-  )
-  if (!isNewAddition) {
-    yield* put(saveCollection(draggingId as number, FavoriteSource.NAVIGATOR))
+  // If dragging in a new playlist, save to user collections
+  if (draggingKind === 'playlist' && typeof draggingId === 'number') {
+    const isNewAddition = yield* select(
+      (state: CommonState) => !!state.account.collections[draggingId]
+    )
+    if (!isNewAddition) {
+      yield* put(saveCollection(draggingId, FavoriteSource.NAVIGATOR))
+    }
   }
 
   const isDroppingIntoFolder = isInsideFolder(playlistLibrary, droppingId)

@@ -189,8 +189,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
       {isOwned && typeof id === 'number' ? (
         <DeleteCollectionConfirmationModal
           collectionId={id}
-          isOpen={isDeleteConfirmationOpen}
-          onClose={toggleDeleteConfirmationOpen}
+          visible={isDeleteConfirmationOpen}
+          onCancel={toggleDeleteConfirmationOpen}
         />
       ) : null}
     </>
