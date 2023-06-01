@@ -54,6 +54,10 @@ const NETWORK_DISCOVERY_NODES = [
   ...generateSlowerHealthyNodes(10)
 ]
 
+const healthyComms = {
+  healthy: true
+}
+
 const handlers = [
   rest.get(`${HEALTHY_NODE}/health_check`, (_req, res, ctx) => {
     const data: HealthCheckResponseData = {
@@ -64,7 +68,11 @@ const handlers = [
         discovery_nodes: NETWORK_DISCOVERY_NODES
       }
     }
-    return res(ctx.delay(25), ctx.status(200), ctx.json({ data }))
+    return res(
+      ctx.delay(25),
+      ctx.status(200),
+      ctx.json({ data, comms: healthyComms })
+    )
   }),
 
   // Slower healthy
@@ -79,7 +87,8 @@ const handlers = [
             service: 'discovery-node',
             version: '1.2.3',
             block_difference: 0
-          }
+          },
+          comms: healthyComms
         })
       )
     }
@@ -91,7 +100,7 @@ const handlers = [
       version: '1.2.3',
       block_difference: 50
     }
-    return res(ctx.status(200), ctx.json({ data }))
+    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
   }),
 
   rest.get(`${BEHIND_LARGE_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
@@ -100,7 +109,7 @@ const handlers = [
       version: '1.2.3',
       block_difference: 200
     }
-    return res(ctx.status(200), ctx.json({ data }))
+    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
   }),
 
   rest.get(`${BEHIND_PATCH_VERSION_NODE}/health_check`, (_req, res, ctx) => {
@@ -109,7 +118,7 @@ const handlers = [
       version: '1.2.2',
       block_difference: 0
     }
-    return res(ctx.status(200), ctx.json({ data }))
+    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
   }),
 
   rest.get(
@@ -120,7 +129,7 @@ const handlers = [
         version: '1.2.2',
         block_difference: 0
       }
-      return res(ctx.status(200), ctx.json({ data }))
+      return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
     }
   ),
 
@@ -130,7 +139,7 @@ const handlers = [
       version: '1.1.0',
       block_difference: 0
     }
-    return res(ctx.status(200), ctx.json({ data }))
+    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
   }),
 
   // Unhealthy (offline)
@@ -155,7 +164,7 @@ const handlers = [
       version: '1.2.3',
       block_difference: 0
     }
-    return res(ctx.json({ data }))
+    return res(ctx.json({ data, comms: healthyComms }))
   })
 ]
 const server = setupServer(...handlers)

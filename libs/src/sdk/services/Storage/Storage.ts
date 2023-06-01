@@ -43,7 +43,7 @@ export class Storage implements StorageService {
     template
   }: {
     file: File
-    onProgress: ProgressCB
+    onProgress?: ProgressCB
     template: FileTemplate
   }) {
     const formData: FormData = new FormData()
@@ -61,7 +61,7 @@ export class Storage implements StorageService {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
       },
       onUploadProgress: (progressEvent) =>
-        onProgress(progressEvent.loaded, progressEvent.total)
+        onProgress?.(progressEvent.loaded, progressEvent.total)
     })
 
     return await this.pollProcessingStatus(

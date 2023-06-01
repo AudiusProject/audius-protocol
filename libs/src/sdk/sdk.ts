@@ -1,5 +1,7 @@
 import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
+import { GrantsAPI } from './api/grants/GrantsAPI'
+import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
@@ -158,6 +160,17 @@ const initializeApis = ({
     services.auth,
     services.discoveryNodeSelector
   )
+  const grants = new GrantsAPI(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
+
+  const developerApps = new DeveloperAppsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
@@ -181,7 +194,9 @@ const initializeApis = ({
     tips,
     resolve,
     full,
-    chats
+    chats,
+    grants,
+    developerApps
   }
 }
 

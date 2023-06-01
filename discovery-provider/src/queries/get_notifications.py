@@ -349,6 +349,7 @@ class TierChangeNotification(TypedDict):
 class TrackAddedToPlaylistNotification(TypedDict):
     track_id: int
     playlist_id: int
+    playlist_owner_id: int
 
 
 class TrendingNotification(TypedDict):

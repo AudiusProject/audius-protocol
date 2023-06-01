@@ -4,7 +4,7 @@ import os
 import requests
 from src.tasks.celery_app import celery
 from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
-from src.utils.get_all_other_nodes import get_all_other_nodes
+from src.utils.get_all_other_nodes import get_all_other_discovery_nodes
 from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,9 @@ def index_discovery_node_peers(self):
     # the maximum signers in addition to the registered static nodes
     max_signers = int(shared_config["discprov"]["max_signers"])
 
-    other_wallets = set([wallet.lower() for wallet in get_all_other_nodes()[1]])
+    other_wallets = set(
+        [wallet.lower() for wallet in get_all_other_discovery_nodes()[1]]
+    )
     logger.info(
         f"index_network_peers.py | Other registered discovery addresses: {other_wallets}"
     )

@@ -21,7 +21,7 @@ def test_get_announcement_notifications(app):
                     "type": "track_added_to_playlist",
                     "group_id": "track_added_to_playlist:playlist_id:1230335492:track_id:1553038297:blocknumber:41260831",
                     "specifier": "1",
-                    "data": {"track_id": 23, "playlist_id": 32},
+                    "data": {"track_id": 23, "playlist_id": 32, "playlist_owner_id": 3},
                     "user_ids": [1],
                 },
             ],
@@ -43,4 +43,5 @@ def test_get_announcement_notifications(app):
             assert u1_notifications[0]["actions"][0]["data"] == {
                 "track_id": 23,
                 "playlist_id": 32,
+                "playlist_owner_id": 3,
             }
