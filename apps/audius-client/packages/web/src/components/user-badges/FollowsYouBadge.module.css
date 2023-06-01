@@ -15,6 +15,10 @@
   box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.2);
 }
 
+.badge:not(.mobile).list {
+  background: transparent;
+}
+
 .badge.mobile {
   color: var(--neutral-light-4);
   border-color: var(--neutral-light-4);
