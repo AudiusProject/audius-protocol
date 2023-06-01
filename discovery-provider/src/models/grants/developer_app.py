@@ -3,8 +3,8 @@ from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class AppDelegate(Base, RepresentableMixin):
-    __tablename__ = "app_delegates"
+class DeveloperApp(Base, RepresentableMixin):
+    __tablename__ = "developer_apps"
 
     blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
     blocknumber = Column(ForeignKey("blocks.number"))  # type: ignore
