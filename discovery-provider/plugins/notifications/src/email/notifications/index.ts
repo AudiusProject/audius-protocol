@@ -45,16 +45,13 @@ export const getUsersCanNotify = async (
   onPage: (emailUsers: EmailUsers) => Promise<void>,
 ) => {
   let lastUser: number = 0;
-  const maxUser = await identityDb('NotificationEmails').max('userId').where('emailFrequency', '=', frequency)
-  const totalCurrentUsers = parseInt(maxUser[0].max as string)
 
   const time = Date.now()
   const timeoutMillis = 14400000
   const timeout = time + timeoutMillis
 
   let offset = 0
-  const maxUserId = totalCurrentUsers + pageCount
-  while (offset < maxUserId) {
+  while (true) {
     const now = Date.now()
     if (now > timeout) break
     const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
@@ -65,16 +62,13 @@ export const getUsersCanNotify = async (
       logger.info("no last user found")
       break
     }
+    if (userRows.length === 0) break
     const emailUsers = userRows.reduce((acc, user) => {
       acc[user.blockchainUserId] = user.email
       return acc
     }, {} as EmailUsers)
     await onPage(emailUsers)
     const userIds = userRows.map((user) => user.blockchainUserId)
-    if (userIds.includes(maxUserId)) {
-      logger.info(`reached highest user id ${maxUserId}`)
-      break
-    }
   }
 }
 
@@ -390,16 +384,16 @@ const processGroupOfEmails = async (dnDb: Knex, identityDb : Knex, users: EmailU
   const groupedNotifications = groupNotifications(notifications, users)
 
   const currentUtcTime = moment.utc()
-  const chuckSize = 20
+  const chunkSize = 20
   const results = []
   let numEmailsSent = 0
   for (
     let chunk = 0;
-    chunk * chuckSize < groupedNotifications.length;
+    chunk * chunkSize < groupedNotifications.length;
     chunk += 1
   ) {
-    const start = chunk * chuckSize
-    const end = (chunk + 1) * chuckSize
+    const start = chunk * chunkSize
+    const end = (chunk + 1) * chunkSize
     const chunkResults = await Promise.all(
       groupedNotifications
         .slice(start, end)
