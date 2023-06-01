@@ -144,7 +144,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
 	if config.TrustedNotifierID > 0 {
-		trustedNotifier, err := ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID))
+		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID))
 		if err == nil {
 			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
