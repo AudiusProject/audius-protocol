@@ -8,12 +8,12 @@ import {
   collectionsSocialActions,
   RepostSource
 } from '@audius/common'
-import { Button, ButtonProps, ButtonType, IconRepost } from '@audius/stems'
+import { ButtonProps, ButtonType, IconRepost } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-import styles from './CollectionHeader.module.css'
+import { CollectionActionButton } from './CollectionActionButton'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
@@ -50,13 +50,11 @@ export const RepostButton = (props: RepostButtonProps) => {
     <Tooltip
       text={has_current_user_reposted ? messages.unrepost : messages.repost}
     >
-      <Button
+      <CollectionActionButton
         type={
           type ??
           (has_current_user_reposted ? ButtonType.SECONDARY : ButtonType.COMMON)
         }
-        className={styles.buttonFormatting}
-        textClassName={styles.buttonTextFormatting}
         text={has_current_user_reposted ? messages.reposted : messages.repost}
         leftIcon={<IconRepost />}
         onClick={handleRepost}
