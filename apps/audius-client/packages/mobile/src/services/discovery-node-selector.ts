@@ -1,11 +1,9 @@
-import { DiscoveryNodeSelectorInstance } from '@audius/common'
+import { DiscoveryNodeSelectorService } from '@audius/common'
 
 import { env } from './env'
-import { localStorage } from './local-storage'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 
-export const discoveryNodeSelectorInstance = new DiscoveryNodeSelectorInstance({
+export const discoveryNodeSelectorService = new DiscoveryNodeSelectorService({
   env,
-  remoteConfigInstance,
-  initialSelectedNode: localStorage.getCachedDiscoveryProvider()
+  remoteConfigInstance
 })

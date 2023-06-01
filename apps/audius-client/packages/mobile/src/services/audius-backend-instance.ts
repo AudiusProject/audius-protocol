@@ -8,7 +8,7 @@ import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { createPrivateKey } from './createPrivateKey'
-import { discoveryNodeSelectorInstance } from './discovery-node-selector'
+import { discoveryNodeSelectorService } from './discovery-node-selector'
 import { withEagerOption } from './eagerLoadUtils'
 import { env } from './env'
 import {
@@ -31,7 +31,7 @@ export const audiusBackendInstance = audiusBackend({
   ethProviderUrls: (Config.ETH_PROVIDER_URL || '').split(','),
   ethRegistryAddress: Config.ETH_REGISTRY_ADDRESS,
   ethTokenAddress: Config.ETH_TOKEN_ADDRESS,
-  discoveryNodeSelectorInstance,
+  discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl: () => {
     return `${Config.PUBLIC_PROTOCOL}//${Config.PUBLIC_HOSTNAME}`

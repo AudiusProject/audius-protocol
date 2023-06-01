@@ -1,1 +1,1 @@
-export * from './DiscoveryNodeSelectorInstance'
+export * from './DiscoveryNodeSelectorService'

@@ -79,7 +79,7 @@ import {
   Nullable,
   removeNullable
 } from '../../utils'
-import type { DiscoveryNodeSelectorInstance } from '../discovery-node-selector'
+import type { DiscoveryNodeSelectorService } from '../discovery-node-selector'
 
 import { MonitoringCallbacks } from './types'
 
@@ -226,7 +226,7 @@ type AudiusBackendParams = {
   ethProviderUrls: Maybe<string[]>
   ethRegistryAddress: Maybe<string>
   ethTokenAddress: Maybe<string>
-  discoveryNodeSelectorInstance: DiscoveryNodeSelectorInstance
+  discoveryNodeSelectorService: DiscoveryNodeSelectorService
   getFeatureEnabled: (
     flag: FeatureFlags,
     fallbackFlag?: FeatureFlags
@@ -283,7 +283,7 @@ export const audiusBackend = ({
   ethProviderUrls,
   ethRegistryAddress,
   ethTokenAddress,
-  discoveryNodeSelectorInstance,
+  discoveryNodeSelectorService,
   getFeatureEnabled,
   getHostUrl,
   getLibs,
@@ -738,15 +738,7 @@ export const audiusBackend = ({
     let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
 
     if (useSdkDiscoveryNodeSelector) {
-      discoveryNodeSelector =
-        await discoveryNodeSelectorInstance.getDiscoveryNodeSelector()
-
-      const initialSelectedNode =
-        await discoveryNodeSelectorInstance.initialSelectedNode
-
-      if (initialSelectedNode) {
-        discoveryProviderSelectionCallback(initialSelectedNode.endpoint, [])
-      }
+      discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
       discoveryNodeSelector.addEventListener('change', (endpoint) => {
         discoveryProviderSelectionCallback(endpoint, [])
