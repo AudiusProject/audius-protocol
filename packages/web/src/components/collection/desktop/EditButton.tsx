@@ -1,12 +1,11 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonProps, ButtonType, IconPencil } from '@audius/stems'
-import cn from 'classnames'
+import { ButtonProps, ButtonType, IconPencil } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
-import styles from './CollectionHeader.module.css'
+import { CollectionActionButton } from './CollectionActionButton'
 
 const messages = {
   edit: 'Edit'
@@ -26,9 +25,7 @@ export const EditButton = (props: EditButtonProps) => {
   )
 
   return (
-    <Button
-      className={cn(styles.buttonFormatting)}
-      textClassName={styles.buttonTextFormatting}
+    <CollectionActionButton
       type={ButtonType.COMMON}
       text={messages.edit}
       leftIcon={<IconPencil />}

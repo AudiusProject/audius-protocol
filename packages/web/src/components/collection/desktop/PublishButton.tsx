@@ -3,14 +3,14 @@ import {
   collectionPageSelectors,
   CommonState
 } from '@audius/common'
-import { Button, ButtonProps, ButtonType, IconRocket } from '@audius/stems'
-import cn from 'classnames'
+import { ButtonProps, ButtonType, IconRocket } from '@audius/stems'
 import { useSelector } from 'react-redux'
 import { useToggle } from 'react-use'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tooltip } from 'components/tooltip'
 
+import { CollectionActionButton } from './CollectionActionButton'
 import styles from './CollectionHeader.module.css'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
@@ -38,9 +38,7 @@ export const PublishButton = (props: PublishButtonProps) => {
   const isDisabled = track_count === 0
 
   const publishButtonElement = (
-    <Button
-      className={cn(styles.buttonFormatting)}
-      textClassName={styles.buttonTextFormatting}
+    <CollectionActionButton
       type={_is_publishing ? ButtonType.DISABLED : ButtonType.COMMON}
       text={
         _is_publishing ? (
