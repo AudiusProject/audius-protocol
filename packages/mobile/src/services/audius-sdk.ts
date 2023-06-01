@@ -5,7 +5,7 @@ import { sdk } from '@audius/sdk'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
-import { discoveryNodeSelectorInstance } from './discovery-node-selector'
+import { discoveryNodeSelectorService } from './discovery-node-selector'
 import { audiusLibs, waitForLibsInit } from './libs'
 
 let inProgress = false
@@ -19,8 +19,7 @@ const initSdk = async () => {
   const audiusSdk = sdk({
     appName: 'audius-mobile-client',
     services: {
-      discoveryNodeSelector:
-        await discoveryNodeSelectorInstance.getDiscoveryNodeSelector(),
+      discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
       auth: {
         sign: async (data: string) => {
           await waitForLibsInit()

@@ -4,7 +4,7 @@ import * as secp from '@noble/secp256k1'
 import { signTypedData } from 'eth-sig-util'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { discoveryNodeSelectorInstance } from 'services/discovery-node-selector'
+import { discoveryNodeSelectorService } from 'services/discovery-node-selector'
 import { entityManagerInstance } from 'services/entity-manager'
 
 declare global {
@@ -22,8 +22,7 @@ const initSdk = async () => {
   const audiusSdk = sdk({
     appName: 'audius-client',
     services: {
-      discoveryNodeSelector:
-        await discoveryNodeSelectorInstance.getDiscoveryNodeSelector(),
+      discoveryNodeSelector: await discoveryNodeSelectorService.getInstance(),
       entityManager: entityManagerInstance,
       auth: {
         sign: async (data) => {
