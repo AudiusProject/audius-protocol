@@ -37,7 +37,7 @@ end
 
 -- encode and sort table t in json
 function _M.encode_sorted(t)
-    local sorted_table = sort_keys(t)
+    local sorted_table = _M.sort_keys(t)
     local result = {}
     for _, kv in ipairs(sorted_table) do
         result[kv[1]] = kv[2]
