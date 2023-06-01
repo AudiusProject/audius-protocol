@@ -300,7 +300,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
 
 
 def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
-    """Tests that the health check skips returnning redis data first if explicitly disabled"""
+    """Tests that the health check takes note of the latest chain block correctly"""
 
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
@@ -348,7 +348,7 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
 
 @patch("src.utils.helpers.get_final_poa_block", return_value=5)
 def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db_mock):
-    """Tests that the health check skips returnning redis data first if explicitly disabled"""
+    """Tests that the health check skips returning redis data first if explicitly disabled"""
 
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
