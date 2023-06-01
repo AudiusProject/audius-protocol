@@ -4,7 +4,7 @@ import type { Toast } from '@audius/common'
 import { uuid, toastActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-const { addToast, manualClearToast } = toastActions
+const { registerToast, manualClearToast } = toastActions
 
 type ManualToastAction = Omit<Toast, 'timeout' | 'key'>
 
@@ -13,7 +13,7 @@ export const useManualToast = () => {
   const handleToast = useCallback(
     (toast: ManualToastAction) => {
       const key = uuid()
-      dispatch(addToast({ ...toast, key, timeout: 'MANUAL' }))
+      dispatch(registerToast({ ...toast, key, timeout: 'MANUAL' }))
 
       return {
         key,
