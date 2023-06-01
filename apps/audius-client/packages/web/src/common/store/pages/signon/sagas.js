@@ -591,7 +591,7 @@ function* signIn(action) {
 function* followCollections(collectionIds, favoriteSource) {
   yield call(waitForWrite)
   try {
-    const result = yield* call(retrieveCollections, collectionIds)
+    const result = yield call(retrieveCollections, collectionIds)
 
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i]
