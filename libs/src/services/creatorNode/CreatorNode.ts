@@ -144,26 +144,6 @@ export class CreatorNode {
     }
   }
 
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   * @param endpoints creator node endpoints
-   * @param trackId
-   */
-  static async checkIfDownloadAvailable(endpoints: string, trackId: number) {
-    const primary = CreatorNode.getPrimary(endpoints)
-    if (primary) {
-      const req: AxiosRequestConfig = {
-        baseURL: primary,
-        url: `/tracks/download_status/${trackId}`,
-        method: 'get'
-      }
-      const { data: body } = await axios(req)
-      if (body.data.cid) return body.data.cid
-    }
-    // Download is not available, clients should display "processing"
-    return null
-  }
-
   /* -------------- */
 
   web3Manager: Nullable<Web3Manager>
