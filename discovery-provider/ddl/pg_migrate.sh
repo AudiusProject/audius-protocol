@@ -8,7 +8,6 @@ set -e
 
 echo " ... starting pg_migrate "
 
-MIGRATIONS_DIR="migrations"
 MIGRATIONS_TABLE="schema_version"
 
 POSTGRES_USER=${POSTGRES_USER:-postgres}
@@ -69,12 +68,14 @@ migrate_dir() {
 migrate() {
     create_migrations_table
 
-    migrate_dir $MIGRATIONS_DIR
+    migrate_dir "migrations"
     migrate_dir "functions"
 
-    # run non_test files if PG_MIGRATE_TEST_MODE is unset
+    # "preflight" files run before server starts
+    # to satisfy any necessary preconditions (e.g. inserting initial block)
+    # the intention is to run "preflight" files for all environments EXCEPT text
     if [[ $PG_MIGRATE_TEST_MODE != "true" ]]; then
-        migrate_dir "non_test"
+        migrate_dir "preflight"
     fi
 }
 
