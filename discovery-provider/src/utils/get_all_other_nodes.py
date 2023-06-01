@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from src.utils import web3_provider
 from src.utils.config import shared_config
@@ -44,7 +44,7 @@ async def get_async_node(sp_id, sp_factory_instance, service_type):
     return result
 
 
-def get_all_nodes(service_type: str) -> Tuple[List[str], List[str]]:
+def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
     eth_web3 = web3_provider.get_eth_web3()
 
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -113,7 +113,7 @@ def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY)
 
 
-def get_all_other_content_nodes_cached(redis) -> List[str]:
+def get_all_other_content_nodes_cached(redis) -> List[Dict[str, str]]:
     """
     Attempts to get the number of content nodes from redis.
     """
