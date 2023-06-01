@@ -56,7 +56,7 @@ const EditFolderModal = () => {
     setIsOpen(false)
   }, [dispatch, setIsOpen])
 
-  const handleClickCancel = useCallback(() => {
+  const handleCancel = useCallback(() => {
     record(make(Name.FOLDER_CANCEL_EDIT, {}))
     handleClose()
   }, [handleClose, record])
@@ -80,9 +80,14 @@ const EditFolderModal = () => {
     [dispatch, folder, folderId, handleClose, playlistLibrary, record]
   )
 
-  const handleClickDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(() => {
     setShowDeleteConfirmation(true)
   }, [])
+
+  const handleDelete = useCallback(() => {
+    setShowDeleteConfirmation(false)
+    handleClose()
+  }, [handleClose])
 
   return (
     <>
@@ -103,8 +108,8 @@ const EditFolderModal = () => {
           <FolderForm
             isEditMode
             onSubmit={handleSubmit}
-            onCancel={handleClickCancel}
-            onDelete={handleClickDelete}
+            onCancel={handleCancel}
+            onDelete={handleConfirmDelete}
             initialFolderName={folder?.name}
           />
         </ModalContent>
@@ -112,8 +117,9 @@ const EditFolderModal = () => {
       {folder ? (
         <DeleteFolderConfirmationModal
           folderId={folder.id}
-          isOpen={showDeleteConfirmation}
-          onClose={onCloseDeleteConfirmation}
+          visible={showDeleteConfirmation}
+          onCancel={onCloseDeleteConfirmation}
+          onDelete={handleDelete}
         />
       ) : null}
     </>

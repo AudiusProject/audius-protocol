@@ -5,11 +5,12 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common'
-import { ModalProps } from '@audius/stems'
 import { useDispatch } from 'react-redux'
+import { SetRequired } from 'type-fest'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
+import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
 
 const { getCollection } = cacheCollectionsSelectors
 const { deletePlaylist } = cacheCollectionsActions
@@ -27,9 +28,9 @@ const messages = {
   }
 }
 
-type DeleteCollectionConfirmationModalProps = Pick<
-  ModalProps,
-  'isOpen' | 'onClose'
+type DeleteCollectionConfirmationModalProps = SetRequired<
+  Partial<DeleteConfirmationModalProps>,
+  'visible' | 'onCancel'
 > & {
   collectionId: ID
 }
@@ -37,7 +38,7 @@ type DeleteCollectionConfirmationModalProps = Pick<
 export const DeleteCollectionConfirmationModal = (
   props: DeleteCollectionConfirmationModalProps
 ) => {
-  const { collectionId, isOpen, onClose } = props
+  const { collectionId, visible, onCancel, onDelete } = props
   const isAlbum = useSelector(
     (state) => getCollection(state, { id: collectionId })?.is_album
   )
@@ -45,8 +46,8 @@ export const DeleteCollectionConfirmationModal = (
 
   const handleDelete = useCallback(() => {
     dispatch(deletePlaylist(collectionId))
-    onClose()
-  }, [dispatch, collectionId, onClose])
+    onDelete?.()
+  }, [dispatch, collectionId, onDelete])
 
   return (
     <DeleteConfirmationModal
@@ -54,9 +55,9 @@ export const DeleteCollectionConfirmationModal = (
         isAlbum ? messages.title.album : messages.title.playlist
       }`}
       entity={isAlbum ? messages.type.album : messages.type.playlist}
-      visible={isOpen}
+      visible={visible}
+      onCancel={onCancel}
       onDelete={handleDelete}
-      onCancel={onClose}
     />
   )
 }

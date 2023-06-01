@@ -7,12 +7,13 @@ import {
   playlistLibraryHelpers,
   playlistLibrarySelectors
 } from '@audius/common'
-import { ModalProps } from '@audius/stems'
 import { useDispatch } from 'react-redux'
+import { SetRequired } from 'type-fest'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { DeleteConfirmationModal } from 'components/delete-confirmation'
+import { DeleteConfirmationModalProps } from 'components/delete-confirmation/DeleteConfirmationModal'
 
 const { selectFolder } = playlistLibrarySelectors
 const { removePlaylistFolderInLibrary } = playlistLibraryHelpers
@@ -28,9 +29,9 @@ const messages = {
   folderEntity: 'Folder'
 }
 
-type DeleteFolderConfirmationModalProps = Pick<
-  ModalProps,
-  'isOpen' | 'onClose'
+type DeleteFolderConfirmationModalProps = SetRequired<
+  Partial<DeleteConfirmationModalProps>,
+  'visible' | 'onCancel'
 > & {
   folderId: string
 }
@@ -38,20 +39,20 @@ type DeleteFolderConfirmationModalProps = Pick<
 export const DeleteFolderConfirmationModal = (
   props: DeleteFolderConfirmationModalProps
 ) => {
-  const { folderId, isOpen, onClose } = props
+  const { folderId, visible, onCancel, onDelete } = props
   const folder = useSelector((state) => selectFolder(state, folderId))
   const playlistLibrary = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const record = useRecord()
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleDelete = useCallback(() => {
     if (!playlistLibrary || !folder) return
     const newLibrary = removePlaylistFolderInLibrary(playlistLibrary, folderId)
     dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
 
     record(make(Name.FOLDER_DELETE, {}))
-    onClose()
-  }, [dispatch, folder, folderId, onClose, playlistLibrary, record])
+    onDelete?.()
+  }, [dispatch, folder, folderId, onDelete, playlistLibrary, record])
 
   return (
     <DeleteConfirmationModal
@@ -59,9 +60,9 @@ export const DeleteFolderConfirmationModal = (
       customDescription={messages.confirmDeleteFolderModalDescription}
       title={messages.confirmDeleteFolderModalTitle}
       entity={messages.folderEntity}
-      onDelete={handleConfirmDelete}
-      onCancel={onClose}
-      visible={isOpen}
+      onDelete={handleDelete}
+      onCancel={onCancel}
+      visible={visible}
     />
   )
 }
