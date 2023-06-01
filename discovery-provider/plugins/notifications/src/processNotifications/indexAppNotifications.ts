@@ -115,12 +115,20 @@ export class AppNotificationsProcessor {
   async process(notifications: NotificationRow[]) {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
-    const timer = new Timer('process app push notifications')
+    const timer = new Timer('Processing notifications duration')
+    const blocknumber = notifications[0].blocknumber
+    const blockhash = this.dnDB
+      .select('blockhash')
+      .from('blocks')
+      .where('number', blocknumber)
+      .first()
     const status = {
       total: notifications.length,
       processed: 0,
       errored: 0,
-      skipped: 0
+      skipped: 0,
+      blocknumber,
+      blockhash
     }
     const mappedNotifications = mapNotifications(
       notifications,
