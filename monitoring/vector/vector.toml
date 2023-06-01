@@ -34,7 +34,7 @@
     if exists(.log) {
       . = parse_json(string!(.log)) ?? .log
     }
-    if !exists(.message) && !exists(.log) && !exists(.msg){
+    if !exists(.message) && !exists(.log) && !exists(.msg) {
       .message = .
     }
 
