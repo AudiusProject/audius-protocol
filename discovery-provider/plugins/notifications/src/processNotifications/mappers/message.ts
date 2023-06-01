@@ -23,7 +23,7 @@ export class Message extends BaseNotification<DMNotification> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -56,8 +56,19 @@ export class Message extends BaseNotification<DMNotification> {
     const title = 'Message'
     const body = `New message from ${users[this.senderUserId].name}`
 
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'messages')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'messages'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed
@@ -71,7 +82,9 @@ export class Message extends BaseNotification<DMNotification> {
         'messages'
       )
     ) {
-      const devices = userNotificationSettings.getDevices(this.receiverUserId)
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
@@ -90,16 +103,6 @@ export class Message extends BaseNotification<DMNotification> {
         })
       )
       await this.incrementBadgeCount(this.receiverUserId)
-    }
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.senderUserId,
-        receiverUserId: this.receiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      // TODO: send out email
     }
   }
 }
