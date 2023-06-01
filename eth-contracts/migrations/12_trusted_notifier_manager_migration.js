@@ -1,11 +1,15 @@
 const contractConfig = require('../contract-config.js')
 const _lib = require('../utils/lib')
 
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const TrustedNotifierManager = artifacts.require('TrustedNotifierManager')
 const Governance = artifacts.require('Governance')
 
-const trustedNotifierManagerProxyKey = web3.utils.utf8ToHex('TrustedNotifierManagerProxy')
+const trustedNotifierManagerProxyKey = web3.utils.utf8ToHex(
+  'TrustedNotifierManagerProxy'
+)
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -20,15 +24,25 @@ module.exports = (deployer, network, accounts) => {
 
     // Get initial Trusted Notifier configs
     const initialNotifierWallet = config.initialNotifierWallet || accounts[20]
-    const initialNotifierEndpoint = config.initialNotifierEndpoint || 'default.trustednotifier'
-    const initialNotifierEmail = config.initialNotifierEmail || 'email@default.trustednotifier'
+    const initialNotifierEndpoint =
+      config.initialNotifierEndpoint || 'default.trustednotifier'
+    const initialNotifierEmail =
+      config.initialNotifierEmail || 'email@default.trustednotifier'
 
     // Deploy TrustedNotifierManager logic and proxy contracts and register proxy
-    const trustedNotifierManager0 = await deployer.deploy(TrustedNotifierManager, { from: proxyDeployerAddress })
+    const trustedNotifierManager0 = await deployer.deploy(
+      TrustedNotifierManager,
+      { from: proxyDeployerAddress }
+    )
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'string', 'string'],
-      [governanceAddress, initialNotifierWallet, initialNotifierEndpoint, initialNotifierEmail]
+      [
+        governanceAddress,
+        initialNotifierWallet,
+        initialNotifierEndpoint,
+        initialNotifierEmail
+      ]
     )
     const trustedNotifierManagerProxy = await deployer.deploy(
       AudiusAdminUpgradeabilityProxy,
@@ -37,7 +51,12 @@ module.exports = (deployer, network, accounts) => {
       initializeCallData,
       { from: proxyDeployerAddress }
     )
-    await _lib.registerContract(governance, trustedNotifierManagerProxyKey, trustedNotifierManagerProxy.address, guardianAddress)
+    await _lib.registerContract(
+      governance,
+      trustedNotifierManagerProxyKey,
+      trustedNotifierManagerProxy.address,
+      guardianAddress
+    )
 
     // Set environment variable
     process.env.notifierAddress = trustedNotifierManagerProxy.address

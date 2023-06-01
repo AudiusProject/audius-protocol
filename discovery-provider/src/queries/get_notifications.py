@@ -49,7 +49,7 @@ FROM
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
-  ARRAY[:user_id] && n.user_ids AND
+  (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
   (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
@@ -83,7 +83,7 @@ FROM (
    from
        notification n
   WHERE
-    ARRAY[:user_id] && n.user_ids AND
+    (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
     (:valid_types is NOT NULL AND n.type in :valid_types) AND
     n.timestamp > COALESCE((
         SELECT
@@ -139,6 +139,7 @@ class NotificationType(str, Enum):
     SUPPORTING_RANK_UP = "supporting_rank_up"
     MILESTONE = "milestone"
     TRACK_MILESTONE = "track_milestone"
+    TRACK_ADDED_TO_PLAYLIST = "track_added_to_playlist"
     PLAYLIST_MILSTONE = "playlist_milestone"
     TIER_CHANGE = "tier_change"
     TRENDING = "trending"
@@ -167,6 +168,7 @@ default_valid_types = [
     NotificationType.SUPPORTER_DETRONED,
     NotificationType.ANNOUNCEMENT,
     NotificationType.REACTION,
+    NotificationType.TRACK_ADDED_TO_PLAYLIST,
 ]
 
 
@@ -344,6 +346,12 @@ class TierChangeNotification(TypedDict):
     current_value: str
 
 
+class TrackAddedToPlaylistNotification(TypedDict):
+    track_id: int
+    playlist_id: int
+    playlist_owner_id: int
+
+
 class TrendingNotification(TypedDict):
     rank: int
     genre: str
@@ -385,6 +393,7 @@ NotificationData = Union[
     TastemakerNotification,
     TipReceiveNotification,
     TipSendNotification,
+    TrackAddedToPlaylistNotification,
     ChallengeRewardNotification,
     ReactionNotification,
     SupporterRankUpNotification,

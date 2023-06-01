@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.25",
+  "version": "2.0.3-beta.30",
   "audius": {
-    "releaseSHA": "febcdf96c3c45f2efdd6a5f757dbf1792edd4bda"
+    "releaseSHA": "aa44c8b27951ed4280972dd937702816a93d977a"
   },
   "description": "Audius SDK",
   "main": "dist/index.cjs.js",
@@ -15,7 +15,7 @@
   "react-native": "./dist/index.native.js",
   "scripts": {
     "init-local": "ts-node initScripts/local.js",
-    "test:sdk": "./node_modules/.bin/jest",
+    "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
@@ -39,7 +39,7 @@
     "lint": "eslint ./src ./types",
     "lint:fix": "npm run lint -- --fix",
     "typecheck": "tsc --noEmit",
-    "sdk:bootstrap": "ts-node ./src/sdk/scripts/generateBootstrapConfig.ts",
+    "sdk:config": "ts-node ./src/sdk/scripts/generateServicesConfig.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",
@@ -100,10 +100,12 @@
     "safe-buffer": "5.2.1",
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
+    "snakecase-keys": "5.4.5",
     "stream-browserify": "3.0.0",
     "ulid": "2.3.0",
     "web3": "1.7.1",
-    "xmlhttprequest": "1.8.0"
+    "xmlhttprequest": "1.8.0",
+    "zod": "3.21.4"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "7.18.2",

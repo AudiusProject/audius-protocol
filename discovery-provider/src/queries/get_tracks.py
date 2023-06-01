@@ -172,12 +172,14 @@ def _get_tracks(session, args):
         elif sort_method == SortMethod.release_date:
             base_query = base_query.order_by(
                 sort_fn(
-                    func.to_timestamp_safe(
-                        TrackWithAggregates.release_date,
-                        "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
+                    coalesce(
+                        func.to_timestamp_safe(
+                            TrackWithAggregates.release_date,
+                            "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
+                        ),
+                        TrackWithAggregates.created_at
                     )
                 ),
-                sort_fn(TrackWithAggregates.created_at),
                 TrackWithAggregates.track_id
             )
         elif sort_method == SortMethod.plays:
@@ -215,12 +217,14 @@ def _get_tracks(session, args):
     if "sort" in args and args.get("sort") is not None:
         if args["sort"] == "date":
             base_query = base_query.order_by(
-                # This func is defined in alembic migrations
-                func.to_timestamp_safe(
-                    TrackWithAggregates.release_date,
-                    "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
+                coalesce(
+                    # This func is defined in alembic migrations
+                    func.to_timestamp_safe(
+                        TrackWithAggregates.release_date,
+                        "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
+                    ),
+                    TrackWithAggregates.created_at,
                 ).desc(),
-                TrackWithAggregates.created_at.desc(),
                 TrackWithAggregates.track_id
             )
         elif args["sort"] == "plays":

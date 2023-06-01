@@ -1,7 +1,9 @@
 const Migrations = artifacts.require('Migrations')
 
 const logBytecodes = (contract) => {
-  console.log(`${contract.contractName} || bytecode: ${contract.bytecode.length} || deployedBytecode: ${contract.deployedBytecode.length}`)
+  console.log(
+    `${contract.contractName} || bytecode: ${contract.bytecode.length} || deployedBytecode: ${contract.deployedBytecode.length}`
+  )
 }
 
 /** log out all contract bytecode lengths */
@@ -24,7 +26,6 @@ logBytecodes(ServiceProviderFactory)
 logBytecodes(ServiceTypeManager)
 logBytecodes(Staking)
 
-
-module.exports = function(deployer) {
-  deployer.deploy(Migrations);
-};
+module.exports = function (deployer) {
+  deployer.deploy(Migrations)
+}

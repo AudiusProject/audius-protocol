@@ -1,12 +1,14 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -93,16 +95,21 @@ var (
 
 type ChatServer struct {
 	*echo.Echo
-	proc   *rpcz.RPCProcessor
-	config *config.DiscoveryConfig
+	proc           *rpcz.RPCProcessor
+	config         *config.DiscoveryConfig
+	websocketError error
 }
 
 func (s *ChatServer) getStatus(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]string{
-		"commit": vcsRevision,
-		"built":  vcsBuildTime,
-		"booted": bootTime,
-		"wip":    vcsDirty,
+	errors := s.proc.SweeperErrors()
+	return c.JSON(http.StatusOK, map[string]any{
+		"commit":          vcsRevision,
+		"built":           vcsBuildTime,
+		"booted":          bootTime,
+		"wip":             vcsDirty,
+		"healthy":         s.websocketError == nil && len(errors) == 0,
+		"errors":          errors,
+		"websocket_error": s.websocketError,
 	})
 }
 
@@ -154,8 +161,9 @@ func (s *ChatServer) mutate(c echo.Context) error {
 }
 
 func (s *ChatServer) getHealthStatus() schema.Health {
+	errors := s.proc.SweeperErrors()
 	return schema.Health{
-		IsHealthy: true,
+		IsHealthy: s.websocketError == nil && len(errors) == 0,
 	}
 }
 
@@ -203,6 +211,10 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 }
 
 func (s *ChatServer) debugCursors(c echo.Context) error {
+	var since time.Time
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("since")); err == nil {
+		since = t
+	}
 	var cursors []struct {
 		Host      string    `db:"relayed_by" json:"relayed_by"`
 		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
@@ -211,11 +223,13 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 	q := `
 	select
 		relayed_by,
-		relayed_at,
-		(select count(*) from rpc_log where relayed_by = c.relayed_by) as count
-	from rpc_cursor c;
+		max(relayed_at) as relayed_at,
+		count(*) as count
+	from rpc_log
+	where relayed_at > $1
+	group by 1;
 	`
-	err := db.Conn.Select(&cursors, q)
+	err := db.Conn.Select(&cursors, q, since)
 	if err != nil {
 		return err
 	}
@@ -741,4 +755,28 @@ func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
+}
+
+func (ss *ChatServer) StartWebsocketTester() {
+	for {
+		time.Sleep(time.Minute)
+		ss.websocketError = ss.doWebsocketTest()
+	}
+}
+
+func (ss *ChatServer) doWebsocketTest() error {
+	wsUrl, err := url.Parse(strings.Replace(ss.config.MyHost, "http", "ws", 1))
+	if err != nil {
+		return err
+	}
+
+	wsUrl = wsUrl.JoinPath("/comms/debug/ws")
+	slog.Info("ws test: " + wsUrl.String())
+
+	ctx := context.Background()
+	con, _, _, err := ws.Dial(ctx, wsUrl.String())
+	if err != nil {
+		return err
+	}
+	return con.Close()
 }

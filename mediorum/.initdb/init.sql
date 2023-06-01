@@ -1,20 +1,10 @@
 -- Only called through `make` - not used by audius-compose and not compatible with audius-compose
-CREATE TABLE IF NOT EXISTS public."Files" (
-    "id" SERIAL PRIMARY KEY,
-    "ownerId" INTEGER NOT NULL,
-    "multihash" text NOT NULL,
-    "sourceFile" text,
-    "storagePath" text NOT NULL,
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
-    "fileUUID" uuid NOT NULL UNIQUE,
-    "cnodeUserUUID" uuid,
-    "type" character varying(16),
-    "fileName" text,
-    "dirMultihash" text,
-    "trackBlockchainId" integer,
-    "clock" integer NOT NULL,
-    "skipped" boolean DEFAULT false NOT NULL
+CREATE TABLE IF NOT EXISTS "Files" (
+  multihash text NOT NULL,
+  "dirMultihash" text,
+  "type" text,
+  "createdAt" timestamp with time zone NOT NULL,
+  "updatedAt" timestamp with time zone NOT NULL
 );
 
 
