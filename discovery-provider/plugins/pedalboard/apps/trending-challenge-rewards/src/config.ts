@@ -3,11 +3,12 @@ import App from "basekit/src/app";
 import moment from "moment";
 
 export type SharedData = {
-  oracleEthAddress: string,
-  AAOEndpoint: string,
-  feePayerOverride: string,
-  libs?: AudiusLibs,
-  sdk: AudiusSdk
+  oracleEthAddress: string;
+  AAOEndpoint: string;
+  feePayerOverride: string;
+  libs: AudiusLibs;
+  sdk: AudiusSdk;
+  localEndpoint: string;
 };
 
 export const condition = (_app: App<SharedData>): boolean => {
@@ -19,7 +20,3 @@ export const condition = (_app: App<SharedData>): boolean => {
   if (now.isSame(timeToDisburse, "seconds")) return true;
   return false;
 };
-
-export const initAudiusLibs = async (): Promise<AudiusLibs | undefined> => {
-  return
-}

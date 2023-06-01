@@ -77,12 +77,13 @@ export const getChallengesDisbursementsUserbanksFriendly = async (
     .orderBy("u.challenge_id")
     .orderBy("u.specifier");
 
-export const getStartBlock = async (
+export const getTrendingChallenges = async (
   discoveryDb: Knex
 ): Promise<UserChallenges[]> =>
   discoveryDb
     .select()
     .from<UserChallenges>(Table.UserChallenges)
+    // only use tt because we just need a trending challenge
     .where("challenge_id", "=", "tt")
     .orderBy("completed_blocknumber", "desc")
     .limit(100);
