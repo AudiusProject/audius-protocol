@@ -273,7 +273,11 @@ BEGIN;
       END IF;
     END $$;
 
-    ALTER TABLE grants ADD CONSTRAINT IF NOT EXISTS grants_pkey primary key (grantee_address, user_id, is_current, txhash);
+    DO $$ BEGIN
+      IF NOT table_has_constraint('grants', 'grants_pkey') THEN
+        ALTER TABLE grants ADD CONSTRAINT grants_pkey primary key (grantee_address, user_id, is_current, txhash);
+      END IF;
+    END $$;
 
     DO $$BEGIN
       IF NOT table_exists('developer_apps') THEN
