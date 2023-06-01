@@ -65,6 +65,7 @@ class TrackMetadata(TypedDict):
     is_premium: Optional[bool]
     premium_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
+    ai_attribution_user_id: Optional[int]
 
 
 track_metadata_format: TrackMetadata = {
@@ -133,7 +134,7 @@ class PlaylistMetadata(TypedDict):
 
 playlist_metadata_format: PlaylistMetadata = {
     "playlist_id": None,
-    "playlist_contents": None,
+    "playlist_contents": {},
     "playlist_name": None,
     "playlist_image_sizes_multihash": None,
     "description": None,

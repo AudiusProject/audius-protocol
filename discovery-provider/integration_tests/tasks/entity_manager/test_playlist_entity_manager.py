@@ -624,16 +624,6 @@ def test_index_invalid_playlists(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-    test_metadata = {
-        "QmCreatePlaylist1": {
-            # missing playlist_contents, invalid metadata
-            "description": "",
-            "playlist_image_sizes_multihash": "",
-            "playlist_name": "playlist 1",
-        }
-    }
-    create_playlist1_json = json.dumps(test_metadata["QmCreatePlaylist1"])
-
     tx_receipts = {
         # invalid create
         "CreatePlaylistBelowOffset": [
@@ -668,7 +658,7 @@ def test_index_invalid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -687,20 +677,6 @@ def test_index_invalid_playlists(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylistInvalidMetadata": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {create_playlist1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )

@@ -184,8 +184,8 @@ def test_valid_parse_metadata(app):
                 "playlist_name": "playlist 1 updated",
                 "playlist_image_sizes_multihash": "",
                 "description": "",
-                "is_album": None,
-                "is_private": None,
+                "is_album": False,
+                "is_private": False,
             },
         }
 
