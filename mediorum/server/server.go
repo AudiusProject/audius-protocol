@@ -168,9 +168,18 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS())
 
-	// public: uis
-	routes.GET("", ss.serveUploadUI)
-	routes.GET("/", ss.serveUploadUI)
+	if config.Env != "stage" && config.Env != "prod" {
+		// public: uis
+		routes.GET("", ss.serveUploadUI)
+		routes.GET("/", ss.serveUploadUI)
+	} else {
+		routes.GET("", func(c echo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/status")
+		})
+		routes.GET("/", func(c echo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/status")
+		})
+	}
 
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads)
