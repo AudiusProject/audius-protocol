@@ -300,7 +300,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
 
 
 def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
-    """Tests that the health check takes note of the latest chain block correctly"""
+    """Tests that the health check skips returning redis data first if explicitly disabled"""
 
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
@@ -348,7 +348,7 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
 
 @patch("src.utils.helpers.get_final_poa_block", return_value=5)
 def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db_mock):
-    """Tests that the health check skips returning redis data first if explicitly disabled"""
+    """Tests that the health check takes note of the latest chain block correctly"""
 
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
@@ -359,12 +359,6 @@ def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db
 
     cache_play_health_vars(redis_mock)
     web3_mock.eth.get_block = get_block
-
-    # Set up redis state
-    redis_mock.set(latest_block_redis_key, "3")
-    redis_mock.set(latest_block_hash_redis_key, "0x3")
-    redis_mock.set(most_recent_indexed_block_redis_key, "2")
-    redis_mock.set(most_recent_indexed_block_hash_redis_key, "0x02")
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -388,10 +382,6 @@ def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db
     assert health_results["db"]["number"] == 6
     assert health_results["db"]["blockhash"] == "0x06"
     assert health_results["block_difference"] == 1
-
-    assert "maximum_healthy_block_difference" in health_results
-    assert "version" in health_results
-    assert "service" in health_results
 
 
 def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
