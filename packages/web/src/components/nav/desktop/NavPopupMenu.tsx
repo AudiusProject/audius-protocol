@@ -67,12 +67,6 @@ const NavPopupMenu = () => {
           iconClassName: styles.menuItemIcon
         }
       : null,
-    {
-      text: messages.settings,
-      onClick: () => navigate(SETTINGS_PAGE),
-      icon: <IconSettings />,
-      iconClassName: styles.menuItemIcon
-    },
     hasTracks
       ? {
           text: messages.dashboard,
@@ -87,6 +81,12 @@ const NavPopupMenu = () => {
       onClick: () => navigate(AUDIO_PAGE),
       icon: <IconCrown />,
       iconClassName: cn(styles.menuItemIcon, styles.crownIcon)
+    },
+    {
+      text: messages.settings,
+      onClick: () => navigate(SETTINGS_PAGE),
+      icon: <IconSettings />,
+      iconClassName: styles.menuItemIcon
     }
   ].filter(removeNullable)
 

@@ -121,8 +121,12 @@
   transition: fill var(--quick);
 }
 
+.reactionsButton:not(.hasReaction):hover {
+  transform: scale(1.1);
+}
+
 .reactionsButton:not(.hasReaction):hover path {
-  fill: var(--primary);
+  fill: var(--secondary-dark-2);
 }
 
 .reactionsButton:not(.hasReaction):active {
@@ -132,6 +136,14 @@
 .reactionEmoji {
   margin-inline-end: -28px;
   filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.15));
+}
+
+.reactionEmoji:hover {
+  transform: scale(1.1);
+}
+
+.reactionEmoji:active {
+  transform: scale(0.6);
 }
 
 .tail {
