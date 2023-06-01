@@ -30,8 +30,8 @@ export enum EntityType {
   USER = 'User',
   USER_REPLICA_SET = 'UserReplicaSet',
   NOTIFICATION = 'Notification',
-  DELEGATE = 'Delegate',
-  DELEGATION = 'Delegation'
+  DEVELOPER_APP = 'DeveloperApp',
+  GRANT = 'Grant'
 }
 
 export type EntityManagerService = {
