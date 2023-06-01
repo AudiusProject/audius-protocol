@@ -115,7 +115,7 @@ def test_index_grant(app, mocker):
         ],
         "grants": [
             {
-                "user_id": 1,
+                "user_id": 6,
                 "grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
             }
         ],
