@@ -1,7 +1,7 @@
 import json
 import os
 from time import time
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from hexbytes import HexBytes
 from src.models.indexing.block import Block
@@ -126,6 +126,7 @@ def cache_play_health_vars(redis_mock):
 
 def test_get_health(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -167,6 +168,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
 
 def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns redis data first"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -213,6 +215,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
 
 def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data if redis data is only partial"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -257,6 +260,7 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
 
 def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     """Tests that the health check can handle an invalid block in the db"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -297,6 +301,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
 
 def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check skips returnning redis data first if explicitly disabled"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -341,8 +346,57 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
+@patch("src.utils.helpers.get_final_poa_block", return_value=5)
+def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db_mock):
+    """Tests that the health check skips returnning redis data first if explicitly disabled"""
+
+    # Set up web3 eth
+    def get_block(_u1, _u2):  # unused
+        block = MagicMock()
+        block.number = 2
+        block.hash = HexBytes(b"\x06")
+        return block
+
+    cache_play_health_vars(redis_mock)
+    web3_mock.eth.get_block = get_block
+
+    # Set up redis state
+    redis_mock.set(latest_block_redis_key, "3")
+    redis_mock.set(latest_block_hash_redis_key, "0x3")
+    redis_mock.set(most_recent_indexed_block_redis_key, "2")
+    redis_mock.set(most_recent_indexed_block_hash_redis_key, "0x02")
+
+    # Set up db state
+    with db_mock.scoped_session() as session:
+        Block.__table__.create(db_mock._engine)
+        session.add(
+            Block(
+                blockhash="0x06",
+                number=6,
+                parenthash="0x05",
+                is_current=True,
+            )
+        )
+
+    args = {}
+    health_results, error = get_health(args, use_redis_cache=False)
+
+    assert error == False
+
+    assert health_results["web"]["blocknumber"] == 7
+    assert health_results["web"]["blockhash"] == "0x06"
+    assert health_results["db"]["number"] == 6
+    assert health_results["db"]["blockhash"] == "0x06"
+    assert health_results["block_difference"] == 1
+
+    assert "maximum_healthy_block_difference" in health_results
+    assert "version" in health_results
+    assert "service" in health_results
+
+
 def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     """Tests that the health check an unhealthy block difference"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
@@ -503,6 +557,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
 
 def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
     """Tests that the health check honors an unhealthy challenge events drift"""
+
     # Set up web3 eth
     def get_block(_u1, _u2):  # unused
         block = MagicMock()
