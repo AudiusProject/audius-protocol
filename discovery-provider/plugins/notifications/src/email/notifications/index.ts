@@ -68,7 +68,6 @@ export const getUsersCanNotify = async (
       return acc
     }, {} as EmailUsers)
     await onPage(emailUsers)
-    const userIds = userRows.map((user) => user.blockchainUserId)
   }
 }
 
