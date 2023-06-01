@@ -39,7 +39,7 @@ const Pages = Object.freeze({
 
 const SHOW_FIRST_UPLOAD_MODAL_DELAY = 3000
 
-const UploadPage = (props) => {
+const UploadPageLegacy = (props) => {
   const { children, page } = props
 
   return (
@@ -451,7 +451,7 @@ class Upload extends Component {
         contentClassName={styles.upload}
         header={header}
       >
-        <UploadPage page={page}>{currentPage}</UploadPage>
+        <UploadPageLegacy page={page}>{currentPage}</UploadPageLegacy>
       </Page>
     )
   }
