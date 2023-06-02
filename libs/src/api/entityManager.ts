@@ -148,9 +148,20 @@ export class EntityManager extends Base {
       }
 
       this.creatorNode.validatePlaylistSchema(metadata)
-      const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
+
+      let metadataCid = ''
+      if (storageV2UploadEnabled) {
+        metadataCid = (
+          await Utils.fileHasher.generateMetadataCidV1(metadata)
+        ).toString()
+      } else {
+        const { metadataMultihash } =
+          await this.creatorNode.uploadPlaylistMetadata(metadata)
+        metadataCid = metadataMultihash
+      }
+
       const entityManagerMetadata = JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: metadataCid,
         data: metadata
       })
       return await this.manageEntity({
@@ -238,9 +249,20 @@ export class EntityManager extends Base {
         is_private: playlist.is_private
       }
       this.creatorNode.validatePlaylistSchema(metadata)
-      const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
+
+      let metadataCid = ''
+      if (storageV2UploadEnabled) {
+        metadataCid = (
+          await Utils.fileHasher.generateMetadataCidV1(metadata)
+        ).toString()
+      } else {
+        const { metadataMultihash } =
+          await this.creatorNode.uploadPlaylistMetadata(metadata)
+        metadataCid = metadataMultihash
+      }
+
       const entityManagerMetadata = JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: metadataCid,
         data: metadata
       })
       return await this.manageEntity({
