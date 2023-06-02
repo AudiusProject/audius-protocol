@@ -128,12 +128,19 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return split
 	}
 
+	// parse raw rpc
+	var rawRpc schema.RawRPC
+	err = json.Unmarshal(rpcLog.Rpc, &rawRpc)
+	if err != nil {
+		logger.Info(err.Error())
+		return nil
+	}
+
 	// get ts
 	messageTs := rpcLog.RelayedAt
 
 	// recover wallet + user
-	signatureHeader := rpcLog.Sig
-	wallet, err := misc.RecoverWallet(rpcLog.Rpc, signatureHeader)
+	wallet, err := misc.RecoverWallet(rpcLog.Rpc, rpcLog.Sig)
 	if err != nil {
 		logger.Warn("unable to recover wallet, skipping")
 		return nil
@@ -145,21 +152,34 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return nil
 	}
 
-	userId, err := queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
-	if err != nil {
-		logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
-		return nil
+	var userId int32
+
+	// attempt to read the (newly added) current_user_id field
+	if rawRpc.CurrentUserID != "" {
+		if u, err := misc.DecodeHashId(rawRpc.CurrentUserID); err == nil && u > 0 {
+			// valid current_user_id + wallet combo?
+			// for now just check that the pair exists in the user table
+			// in the future this can check a "grants" table that a given operation is permitted
+			isValid := false
+			db.Conn.QueryRow(`select count(*) > 0 from users where is_current = true and user_id = $1 and wallet = lower($2)`, u, wallet).Scan(&isValid)
+			if isValid {
+				userId = int32(u)
+			}
+		}
 	}
+
+	// fallback to finding user ID from wallet
+	// we can remove this when all clients send current_user_id
+	if userId == 0 {
+		userId, err = queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
+		if err != nil {
+			logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
+			return nil
+		}
+	}
+
 	logger = logger.With("wallet", wallet, "userId", userId)
 	logger.Debug("got user", "took", takeSplit())
-
-	// parse raw rpc
-	var rawRpc schema.RawRPC
-	err = json.Unmarshal(rpcLog.Rpc, &rawRpc)
-	if err != nil {
-		logger.Info(err.Error())
-		return nil
-	}
 
 	// call any validator
 	err = proc.validator.Validate(userId, rawRpc)
