@@ -198,7 +198,7 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex, i
 
     // Send push notifications
     for (const notification of notifications) {
-      await notification.pushNotification({ isLiveEmailEnabled: false, isBrowserPushEnabled })
+      await notification.processNotification({ isLiveEmailEnabled: false, isBrowserPushEnabled })
     }
 
     // Set last indexed timestamps in redis
