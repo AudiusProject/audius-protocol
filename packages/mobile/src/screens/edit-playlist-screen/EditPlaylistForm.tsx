@@ -7,7 +7,7 @@ import { View, Text } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch } from 'react-redux'
 
-import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
+import IconClose from 'app/assets/images/iconRemove.svg'
 import IconTrash from 'app/assets/images/iconTrash.svg'
 import { Divider, TextButton, Tile } from 'app/components/core'
 import { TrackList } from 'app/components/track-list'
@@ -26,7 +26,7 @@ const { requestOpen: openDeletePlaylist } =
 
 const messages = {
   screenTitle: 'Edit Playlist',
-  reorderTitle: 'Drag to Reorder',
+  reorderTitle: 'Drag Tracks to Reorder',
   deletePlaylist: 'Delete Playlist',
   cancel: 'Cancel',
   save: 'Save'
@@ -46,13 +46,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase'
   },
   reorderTitle: {
-    fontFamily: typography.fontByWeight.heavy,
-    fontSize: typography.fontSize.xs,
-    color: palette.neutralLight4,
-    marginHorizontal: spacing(4),
-    marginTop: spacing(8),
-    marginBottom: spacing(2),
-    textTransform: 'uppercase'
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.large,
+    color: palette.neutral,
+    margin: spacing(4),
+    marginTop: spacing(6),
+    marginBottom: spacing(2)
   },
   backButton: {
     marginLeft: -6
@@ -65,7 +64,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexGrow: 1
   },
   tile: {
-    margin: spacing(3)
+    margin: spacing(3),
+    marginBottom: spacing(8)
   },
   header: { marginBottom: spacing(4) },
   footer: {},
@@ -172,11 +172,13 @@ export const EditPlaylistForm = (
     <FormScreen
       onSubmit={handleSubmit}
       onReset={handleReset}
+      cancelText={messages.cancel}
+      submitText={messages.save}
       goBackOnSubmit
       title={messages.screenTitle}
       topbarLeft={
         <TopBarIconButton
-          icon={IconCaretLeft}
+          icon={IconClose}
           style={styles.backButton}
           onPress={navigation.goBack}
         />

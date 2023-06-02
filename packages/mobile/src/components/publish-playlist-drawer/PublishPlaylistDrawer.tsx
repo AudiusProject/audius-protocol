@@ -26,7 +26,7 @@ const messages = {
     'Are you sure you want to make this playlist public? It will be shared to your feed and your followers will be notified.',
   buttonConfirmText: 'Make Public',
   buttonCancelText: 'Cancel',
-  publishingPlaylistText: 'Making Public...'
+  publishingPlaylistText: 'Making public...'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -55,8 +55,15 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     marginBottom: spacing(8)
   },
   toastContainer: {
+    overflow: 'visible',
     flexDirection: 'row',
-    gap: spacing(1)
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing(2),
+    paddingVertical: spacing(3),
+    paddingHorizontal: spacing(4),
+    paddingTop: spacing(4)
   },
   spinner: {
     height: 18,
@@ -76,7 +83,9 @@ export const PublishPlaylistDrawer = () => {
     const publishingPlaylistToastContent = (
       <View style={styles.toastContainer}>
         <LoadingSpinner style={styles.spinner} color='white' />
-        <Text color='white'>{messages.publishingPlaylistText}</Text>
+        <Text color='white' weight='demiBold' style={{ alignSelf: 'center' }}>
+          {messages.publishingPlaylistText}
+        </Text>
       </View>
     )
 

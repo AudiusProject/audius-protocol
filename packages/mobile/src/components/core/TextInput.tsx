@@ -76,7 +76,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     width: spacing(4)
   },
   placeholderText: {
-    color: palette.neutralLight4
+    color: palette.neutralLight7
   },
   startAdornment: {},
   endAdornment: {

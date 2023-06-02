@@ -100,7 +100,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginLeft: spacing(2)
   },
   icon: { height: 16, width: 16 },
-  removeIcon: { height: 20, width: 20 },
+  removeIcon: { height: 24, width: 24 },
 
   playButtonContainer: {
     marginRight: spacing(4)
@@ -345,6 +345,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           style={styles.trackInnerContainer}
           onPress={onPressTrack}
           onLongPress={drag}
+          delayLongPress={100}
           disabled={isDeleted || isLocked}
         >
           {!hideArt ? (

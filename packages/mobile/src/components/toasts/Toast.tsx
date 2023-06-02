@@ -107,11 +107,15 @@ export const Toast = (props: ToastProps) => {
           }
         ]}
       >
-        <View style={styles.contentRoot}>
-          <Text style={styles.content} weight='demiBold'>
-            {content}
-          </Text>
-        </View>
+        {typeof content === 'string' ? (
+          <View style={styles.contentRoot}>
+            <Text style={styles.content} weight='demiBold'>
+              {content}
+            </Text>
+          </View>
+        ) : (
+          content
+        )}
       </Animated.View>
     </View>
   )
