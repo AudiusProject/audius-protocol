@@ -72,9 +72,11 @@ describe('StorageNodeSelector', () => {
     jest.spyOn(console, 'debug').mockImplementation(() => {})
     jest.spyOn(console, 'error').mockImplementation(() => {})
   })
+
   afterEach(() => {
     server.resetHandlers()
   })
+
   afterAll(() => {
     server.close()
   })
@@ -91,6 +93,7 @@ describe('StorageNodeSelector', () => {
       storageNodeA.endpoint
     )
   })
+
   it('selects the first healthy node', async () => {
     server.use(
       rest.get(`${storageNodeA.endpoint}/status`, (_req, res, ctx) => {
@@ -108,6 +111,7 @@ describe('StorageNodeSelector', () => {
       storageNodeB.endpoint
     )
   })
+
   it('selects correct storage node when discovery node is selected', async () => {
     const bootstrapDiscoveryNodes = [discoveryNode]
     const discoveryNodeSelector = new DiscoveryNodeSelector({
