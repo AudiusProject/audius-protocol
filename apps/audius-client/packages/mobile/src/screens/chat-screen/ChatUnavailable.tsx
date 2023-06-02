@@ -73,7 +73,7 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
               user={otherUser}
               as={Text}
               nameStyle={styles.unavailableText}
-            />
+            />{' '}
             <Text
               style={[styles.unavailableText, styles.link]}
               onPress={handleLearnMorePress}
