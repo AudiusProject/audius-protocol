@@ -21,7 +21,7 @@ import {
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import type { SvgProps } from 'react-native-svg'
 
-import IconClose from 'app/assets/images/iconRemove.svg'
+import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -41,6 +41,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     borderRadius: 8,
     borderWidth: 1,
     paddingVertical: spacing(2),
@@ -67,13 +68,14 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     color: palette.neutral,
     fontFamily: typography.fontByWeight.medium,
     minWidth: 40,
+    flexGrow: 1,
     // Needed for android
     padding: 0
   },
   icon: {
     fill: palette.neutralLight5,
-    height: spacing(4),
-    width: spacing(4)
+    width: spacing(4),
+    height: spacing(4)
   },
   placeholderText: {
     color: palette.neutralLight7
@@ -113,6 +115,7 @@ export type TextInputProps = RNTextInputProps & {
     input: TextStyle
     labelText: TextStyle
   }>
+  iconProp?: Pick<SvgProps, 'fill' | 'width' | 'height'>
   hideInputAccessory?: boolean
 }
 
@@ -132,6 +135,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       styles: stylesProp,
       label,
       Icon,
+      iconProp,
       clearable,
       onClear,
       startAdornment,
@@ -153,6 +157,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     )
     const labelAnimation = useRef(new Animated.Value(isLabelActive ? 16 : 18))
     const borderFocusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0))
+    const iconProps = { ...styles.icon, ...iconProp }
 
     const hideInputAccessory =
       (hideInputAccessoryProp ?? returnKeyType === 'search') ||
@@ -318,7 +323,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             }
             {...other}
           />
-          {clearable ? (
+          {clearable && value ? (
             <Animated.View style={[{ transform: [{ scale }] }]}>
               <TouchableWithoutFeedback
                 onPress={handlePressIcon}
@@ -331,23 +336,18 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                   right: spacing(2)
                 }}
               >
-                <IconClose
-                  style={{
-                    height: styles.icon.height,
-                    width: styles.icon.width
-                  }}
-                  fill={styles.icon.fill}
-                  height={styles.icon.height}
-                  width={styles.icon.width}
+                <IconCloseAlt
+                  fill={iconProps.fill}
+                  height={iconProps.height}
+                  width={iconProps.width}
                 />
               </TouchableWithoutFeedback>
             </Animated.View>
           ) : Icon ? (
             <Icon
-              style={{ height: styles.icon.height, width: styles.icon.width }}
-              fill={styles.icon.fill}
-              height={styles.icon.height}
-              width={styles.icon.width}
+              fill={iconProps.fill}
+              height={iconProps.height}
+              width={iconProps.width}
             />
           ) : null}
           {endAdornment ? (
