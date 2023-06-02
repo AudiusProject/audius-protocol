@@ -138,7 +138,10 @@ describe('Push Notifications', () => {
       messageTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    // expanded timeout because timeout was faster than delay
+    // see 'Does not send DM reaction notifications created fewer than delay minutes ago' test for why
+    // the spy might not have been called
+    await new Promise((r) => setTimeout(r, config.pollInterval * 5))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
