@@ -57,6 +57,10 @@ const useStyles = makeStyles(({ palette }) => ({
     position: 'relative',
     bottom: 1,
     marginHorizontal: 16
+  },
+
+  editButton: {
+    width: 27
   }
 }))
 
@@ -81,7 +85,7 @@ export const DetailsTileActionButtons = ({
   onPressShare
 }: DetailsTileActionButtonsProps) => {
   const styles = useStyles()
-  const { neutralLight4 } = useThemeColors()
+  const { neutralLight2 } = useThemeColors()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
     FeatureFlags.PLAYLIST_UPDATES_PRE_QA
   )
@@ -106,7 +110,7 @@ export const DetailsTileActionButtons = ({
 
   const shareButton = (
     <IconButton
-      fill={neutralLight4}
+      fill={neutralLight2}
       icon={IconShare}
       isDisabled={!isPublished}
       // TODO: Add isDisabled based on if playlist is publishable logic
@@ -119,7 +123,7 @@ export const DetailsTileActionButtons = ({
 
   const overflowMenu = (
     <IconButton
-      fill={neutralLight4}
+      fill={neutralLight2}
       icon={IconKebabHorizontal}
       onPress={onPressOverflow}
       styles={{ icon: styles.actionButton }}
@@ -128,16 +132,16 @@ export const DetailsTileActionButtons = ({
 
   const editButton = (
     <IconButton
-      fill={neutralLight4}
+      fill={neutralLight2}
       icon={IconPencil}
       onPress={onPressEdit}
-      styles={{ icon: styles.actionButton }}
+      styles={{ icon: [styles.actionButton, styles.editButton] }}
     />
   )
 
   const publishButton = (
     <IconButton
-      fill={neutralLight4}
+      fill={neutralLight2}
       icon={IconRocket}
       // TODO: Add isDisabled based on if playlist is publishable logic
       // Needs to check for hidden tracks and things like that

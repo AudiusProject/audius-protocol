@@ -16,7 +16,10 @@ import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  root: {
+    marginHorizontal: spacing(4)
+  },
   legacyImageContainer: {
     height: 216,
     width: 216,
@@ -24,13 +27,14 @@ const useStyles = makeStyles(({ palette }) => ({
     overflow: 'hidden'
   },
   imageContainer: {
-    height: 320,
-    width: 320,
-    borderRadius: 4,
+    aspectRatio: 1,
+    width: '100%',
+    borderRadius: 8,
     overflow: 'hidden'
   },
   image: {
-    height: '100%'
+    height: '100%',
+    borderRadius: 8
   },
   centerIcon: {
     position: 'absolute',
@@ -107,7 +111,7 @@ export const FormImageInput = ({
 
   return (
     <Pressable
-      style={[style, stylesProp?.root]}
+      style={[styles.root, style, stylesProp?.root]}
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}

@@ -10,7 +10,7 @@ import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import { IconButton } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
@@ -36,8 +36,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   iconArrowBack: {
     height: 28,
-    width: 28,
-    transform: [{ rotate: '180deg' }]
+    width: 28
   },
   audiusLogo: {
     height: 24,
@@ -116,7 +115,7 @@ export const useAppScreenOptions = (
               return (
                 <View style={styles.headerLeft}>
                   <IconButton
-                    icon={IconCaretRight}
+                    icon={IconCaretLeft}
                     fill={neutralLight4}
                     styles={{ icon: styles.iconArrowBack }}
                     {...other}
