@@ -15,6 +15,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './ChatList.module.css'
 import { ChatListItem } from './ChatListItem'
+import { SkeletonChatListItem } from './SkeletonChatListItem'
 
 const { getChats, getChatsStatus, getChatsSummary } = chatSelectors
 const { fetchMoreChats } = chatActions
@@ -77,7 +78,11 @@ export const ChatList = (props: ChatListProps) => {
             <div className={styles.subheader}>{messages.start}</div>
           </div>
         ) : (
-          <LoadingSpinner className={styles.spinner} />
+          <>
+            <SkeletonChatListItem />
+            <SkeletonChatListItem style={{ opacity: 0.5 }} />
+            <SkeletonChatListItem style={{ opacity: 0.25 }} />
+          </>
         )}
       </InfiniteScroll>
     </div>
