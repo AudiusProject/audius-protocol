@@ -173,7 +173,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	if userId == 0 {
 		userId, err = queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
 		if err != nil {
-			logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
+			logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", rpcLog.Sig)
 			return nil
 		}
 	}
@@ -205,7 +205,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT DO NOTHING
 		`
-		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, time.Now(), wallet, rpcLog.Rpc, signatureHeader)
+		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, time.Now(), wallet, rpcLog.Rpc, rpcLog.Sig)
 		if err != nil {
 			return err
 		}
