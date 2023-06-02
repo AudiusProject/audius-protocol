@@ -16,7 +16,7 @@ from src.utils.eth_contracts_helpers import fetch_all_registered_content_nodes
 logger = logging.getLogger(__name__)
 
 GET_METADATA_TIMEOUT_SECONDS = 2
-GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
+GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 100
 
 
 def get_metadata_from_json(default_metadata_fields, resp_json):
