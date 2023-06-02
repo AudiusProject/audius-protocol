@@ -6,7 +6,7 @@ import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 
 import styles from './UploadPage.module.css'
-import SelectPage from './components/SelectPage'
+import SelectPageNew from './components/SelectPageNew'
 
 type UploadPageProps = {
   uploadType: UploadType
@@ -24,7 +24,7 @@ export const UploadPageNew = (props: UploadPageProps) => {
   let page
   switch (phase) {
     case Phase.SELECT:
-      page = <SelectPage onContinue={() => setPhase(Phase.EDIT)} />
+      page = <SelectPageNew onContinue={() => setPhase(Phase.EDIT)} />
       break
     case Phase.EDIT:
     case Phase.FINISH:
