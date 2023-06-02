@@ -63,7 +63,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 	}
 
 	sqlDb, _ := db.DB()
-	sqlDb.SetMaxOpenConns(50)
+	sqlDb.SetMaxOpenConns(10)
 
 	// db = db.Debug()
 
