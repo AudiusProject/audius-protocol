@@ -82,7 +82,7 @@ func (p *PeerClient) startSweeper() {
 		if err != nil {
 			p.logger.Warn("sweep failed", "err", err)
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 30)
 	}
 }
 
