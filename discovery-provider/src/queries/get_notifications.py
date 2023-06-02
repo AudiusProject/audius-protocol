@@ -46,10 +46,12 @@ SELECT
     max(n.timestamp) as latest_timestamp
 FROM
     notification n
+JOIN users u on
+  u.user_id = :user_id
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
-  (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
+  ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > u.created_at)) AND
   (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
@@ -82,8 +84,10 @@ FROM (
    select n.type, n.group_id
    from
        notification n
+   join users u on
+       u.user_id = :user_id
   WHERE
-    (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
+    ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > u.created_at)) AND
     (:valid_types is NOT NULL AND n.type in :valid_types) AND
     n.timestamp > COALESCE((
         SELECT

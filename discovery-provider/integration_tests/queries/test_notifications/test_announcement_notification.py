@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_notifications import (
@@ -48,3 +49,31 @@ def test_get_announcement_notifications(app):
                 "title": "my title",
                 "short_description": "my desc",
             }
+
+
+def test_get_announcement_before_account_created(app):
+    with app.app_context():
+        db_mock = get_db()
+
+        test_entities = {
+            "users": [{"user_id": i + 1} for i in range(20)],
+            "notification": [
+                {
+                    "type": "announcement",
+                    "group_id": "fake_group_id",
+                    "specifier": "1",
+                    "data": {"title": "my title", "short_description": "my desc"},
+                    "user_ids": [],
+                    "timestamp": datetime.now() - timedelta(hours=1)
+
+                },
+            ],
+        }
+        populate_mock_db(db_mock, test_entities)
+
+        with db_mock.scoped_session() as session:
+            unread_count = get_unread_notification_count(session, {"user_id": 1})
+            assert unread_count == 0
+            args = {"limit": 10, "user_id": 1}
+            u1_notifications = get_notifications(session, args)
+            assert len(u1_notifications) == 0
