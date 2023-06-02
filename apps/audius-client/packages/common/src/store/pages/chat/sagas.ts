@@ -334,6 +334,9 @@ function* doFetchChatIfNecessary(args: {
     if (chat) {
       yield* fetchUsersForChats([chat])
       yield* put(fetchChatSucceeded({ chat }))
+      // Since this is a new chat and the optimistic unread count won't have
+      // included this, refetch unread count. See PAY-1343.
+      yield* put(fetchUnreadMessagesCount())
     }
   }
 }
