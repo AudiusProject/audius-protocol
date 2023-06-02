@@ -45,13 +45,15 @@ jest
 describe('TracksApi', () => {
   let tracks: TracksApi
 
+  const auth = new Auth()
+
   beforeAll(() => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage(),
+      new Storage({ auth }),
       new EntityManager(),
-      new Auth()
+      auth
     )
   })
 

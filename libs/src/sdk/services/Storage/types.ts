@@ -1,8 +1,7 @@
 import type { CrossPlatformFile as File } from '../../types/File'
+import type { StorageNodeSelectorConfig } from './StorageNodeSelector'
 
-export type StorageServiceConfig = {
-  contentNodeEndpoint: string
-}
+export type StorageServiceConfig = StorageNodeSelectorConfig
 
 export type ProgressCB = (loaded: number, total: number) => void
 

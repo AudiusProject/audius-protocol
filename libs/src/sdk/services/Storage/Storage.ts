@@ -19,15 +19,18 @@ import {
 } from './constants'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
+import { StorageNodeSelector } from './StorageNodeSelector'
 
 export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
   private readonly config: StorageServiceConfig
+  private storageNodeSelector: StorageNodeSelector
 
-  constructor(config?: StorageServiceConfig) {
+  constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
+    this.storageNodeSelector = new StorageNodeSelector(this.config)
   }
 
   /**
@@ -51,11 +54,17 @@ export class Storage implements StorageService {
     // TODO: Test this in a browser env
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
 
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+
+    if (!contentNodeEndpoint) {
+      throw new Error('No content node available for upload')
+    }
+
     // Using axios for now because it supports upload progress,
     // and Node doesn't support XmlHttpRequest
     const response = await axios({
       method: 'post',
-      url: `${this.config.contentNodeEndpoint}/uploads`,
+      url: `${contentNodeEndpoint}/uploads`,
       data: formData,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
@@ -108,9 +117,8 @@ export class Storage implements StorageService {
    * @returns the status, and the success or failed response if the job is complete
    */
   private async getProcessingStatus(id: string): Promise<UploadResponse> {
-    const response = await fetch(
-      `${this.config.contentNodeEndpoint}/uploads/${id}`
-    )
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+    const response = await fetch(`${contentNodeEndpoint}/uploads/${id}`)
     return await response.json()
   }
 }
