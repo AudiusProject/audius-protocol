@@ -365,7 +365,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
 
     if cid_type and len(cid_metadata) != len(cid_type.keys()):
         missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
-        raise Exception(missing_cids_msg)
+        logger.info(f"index_nethermind.py | {missing_cids_msg}")
 
     logger.debug(
         f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
