@@ -678,15 +678,9 @@ export const audiusBackend = ({
   }
 
   async function sanityChecks(audiusLibs: any) {
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
     try {
       const sanityCheckOptions = {
-        skipRollover: getRemoteVar(
-          BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK
-        ),
-        writeMetadataThroughChain: writeMetadataThroughChainEnabled
+        skipRollover: getRemoteVar(BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK)
       }
       const sanityChecks = new SanityChecks(audiusLibs, sanityCheckOptions)
       await sanityChecks.run(
@@ -1280,9 +1274,6 @@ export const audiusBackend = ({
     const storageV2UploadEnabled = await getFeatureEnabled(
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
     if (storageV2SignupEnabled || storageV2UploadEnabled) {
       try {
         const { trackId, updatedMetadata, txReceipt } =
@@ -1308,8 +1299,7 @@ export const audiusBackend = ({
         trackFile,
         coverArtFile,
         metadata,
-        onProgress,
-        writeMetadataThroughChainEnabled
+        onProgress
       )
     }
   }
@@ -1378,13 +1368,7 @@ export const audiusBackend = ({
         uploadedTracks.map((t) => t.metadata)
       )
     } else {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
-      return await audiusLibs.Track.addTracksToChainAndCnode(
-        uploadedTracks,
-        writeMetadataThroughChainEnabled
-      )
+      return await audiusLibs.Track.addTracksToChainAndCnode(uploadedTracks)
     }
   }
 
@@ -1395,15 +1379,7 @@ export const audiusBackend = ({
     if (storageV2UploadEnabled) {
       return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
     } else {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
-      return await audiusLibs.File.uploadImage(
-        file,
-        undefined,
-        null,
-        writeMetadataThroughChainEnabled
-      )
+      return await audiusLibs.File.uploadImage(file, undefined, null)
     }
   }
 
@@ -1415,9 +1391,6 @@ export const audiusBackend = ({
     const storageV2UploadEnabled = await getFeatureEnabled(
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
 
     if (storageV2UploadEnabled) {
       if (metadata.artwork) {
@@ -1433,15 +1406,11 @@ export const audiusBackend = ({
         const resp = await audiusLibs.File.uploadImage(
           metadata.artwork.file,
           undefined,
-          null,
-          writeMetadataThroughChainEnabled
+          null
         )
         cleanedMetadata.cover_art_sizes = resp.dirCID
       }
-      return await audiusLibs.Track.updateTrack(
-        cleanedMetadata,
-        writeMetadataThroughChainEnabled
-      )
+      return await audiusLibs.Track.updateTrack(cleanedMetadata)
     }
   }
 
@@ -1559,9 +1528,6 @@ export const audiusBackend = ({
       newMetadata.associated_sol_wallets ||
       associatedWallets?.associated_sol_wallets
 
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
     const storageV2UploadEnabled = await getFeatureEnabled(
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
@@ -1576,8 +1542,7 @@ export const audiusBackend = ({
           const resp = await audiusLibs.File.uploadImage(
             newMetadata.updatedProfilePicture.file,
             undefined,
-            null,
-            writeMetadataThroughChainEnabled
+            null
           )
           newMetadata.profile_picture_sizes = resp.dirCID
         }
@@ -1593,8 +1558,7 @@ export const audiusBackend = ({
           const resp = await audiusLibs.File.uploadImage(
             newMetadata.updatedCoverPhoto.file,
             false,
-            null,
-            writeMetadataThroughChainEnabled
+            null
           )
           newMetadata.cover_photo_sizes = resp.dirCID
         }
@@ -1633,11 +1597,7 @@ export const audiusBackend = ({
         return { blockHash, blockNumber, userId }
       } else {
         const { blockHash, blockNumber, userId } =
-          await audiusLibs.User.updateCreator(
-            newMetadata.user_id,
-            newMetadata,
-            writeMetadataThroughChainEnabled
-          )
+          await audiusLibs.User.updateCreator(newMetadata.user_id, newMetadata)
         return { blockHash, blockNumber, userId }
       }
     } catch (err) {
@@ -1741,9 +1701,6 @@ export const audiusBackend = ({
       const storageV2UploadEnabled = await getFeatureEnabled(
         FeatureFlags.STORAGE_V2_TRACK_UPLOAD
       )
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const response = await audiusLibs.EntityManager.createPlaylist(
         {
           ...metadata,
@@ -1752,8 +1709,7 @@ export const audiusBackend = ({
           is_album: isAlbum,
           is_private: isPrivate
         },
-        storageV2UploadEnabled,
-        writeMetadataThroughChainEnabled
+        storageV2UploadEnabled
       )
       const { blockHash, blockNumber, error } = response
       if (error) return { playlistId, error }
@@ -1771,14 +1727,10 @@ export const audiusBackend = ({
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
     try {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const { blockHash, blockNumber } =
         await audiusLibs.EntityManager.updatePlaylist(
           metadata,
-          storageV2UploadEnabled,
-          writeMetadataThroughChainEnabled
+          storageV2UploadEnabled
         )
 
       return { blockHash, blockNumber }
@@ -1793,14 +1745,10 @@ export const audiusBackend = ({
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
     try {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const { blockHash, blockNumber } =
         await audiusLibs.EntityManager.updatePlaylist(
           playlist,
-          storageV2UploadEnabled,
-          writeMetadataThroughChainEnabled
+          storageV2UploadEnabled
         )
       return { blockHash, blockNumber }
     } catch (error) {
@@ -1815,17 +1763,13 @@ export const audiusBackend = ({
     )
     try {
       playlist.is_private = false
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const { blockHash, blockNumber } =
         await audiusLibs.EntityManager.updatePlaylist(
           {
             ...playlist,
             is_private: false
           },
-          storageV2UploadEnabled,
-          writeMetadataThroughChainEnabled
+          storageV2UploadEnabled
         )
       return { blockHash, blockNumber }
     } catch (error) {
@@ -1839,14 +1783,10 @@ export const audiusBackend = ({
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
     try {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const { blockHash, blockNumber } =
         await audiusLibs.EntityManager.updatePlaylist(
           playlist,
-          storageV2UploadEnabled,
-          writeMetadataThroughChainEnabled
+          storageV2UploadEnabled
         )
       return { blockHash, blockNumber }
     } catch (error) {
@@ -1860,14 +1800,10 @@ export const audiusBackend = ({
       FeatureFlags.STORAGE_V2_TRACK_UPLOAD
     )
     try {
-      const writeMetadataThroughChainEnabled =
-        (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-        false
       const { blockHash, blockNumber } =
         await audiusLibs.EntityManager.updatePlaylist(
           playlist,
-          storageV2UploadEnabled,
-          writeMetadataThroughChainEnabled
+          storageV2UploadEnabled
         )
       return { blockHash, blockNumber }
     } catch (error) {
@@ -2153,9 +2089,6 @@ export const audiusBackend = ({
         true
       )
     }
-    const writeMetadataThroughChainEnabled =
-      (await getFeatureEnabled(FeatureFlags.WRITE_METADATA_THROUGH_CHAIN)) ??
-      false
     // Returns { userId, error, phase }
     return await audiusLibs.Account.signUp(
       email,
@@ -2173,8 +2106,7 @@ export const audiusBackend = ({
         Failure: Name.CREATE_USER_BANK_FAILURE
       },
       feePayerOverride,
-      true,
-      writeMetadataThroughChainEnabled
+      true
     )
   }
 
