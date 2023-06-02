@@ -1,8 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { chatActions, chatSelectors, Status } from '@audius/common'
-import { View, Text } from 'react-native'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
+import { View, Text, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCompose from 'app/assets/images/iconCompose.svg'
@@ -113,9 +112,9 @@ export const ChatListScreen = () => {
     chats.length === 0 && (chatsStatus ?? Status.LOADING) === Status.LOADING
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
   const iconCompose = (
-    <TouchableWithoutFeedback onPress={navigateToChatUserList}>
+    <TouchableOpacity onPress={navigateToChatUserList}>
       <IconCompose fill={palette.neutralLight4} />
-    </TouchableWithoutFeedback>
+    </TouchableOpacity>
   )
 
   // Prefetch messages for initial loaded chats
