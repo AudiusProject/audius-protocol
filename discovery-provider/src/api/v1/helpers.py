@@ -732,3 +732,23 @@ def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[])
         formatted_response_by_month["totalListens"] += aggregate_monthly_play["count"]
 
     return formatted_response_data
+
+
+def format_developer_app(developer_app):
+    return {
+        "address": developer_app["address"],
+        "user_id": encode_int_id(developer_app["user_id"]),
+        "name": developer_app["name"],
+        "description": developer_app.get("description", None),
+    }
+
+
+def format_authorized_app(authorized_app):
+    return {
+        "address": authorized_app["address"],
+        "name": authorized_app["name"],
+        "description": authorized_app.get("description", None),
+        "grantor_user_id": encode_int_id(authorized_app["grantor_user_id"]),
+        "grant_created_at": authorized_app["grant_created_at"],
+        "grant_updated_at": authorized_app["grant_updated_at"],
+    }

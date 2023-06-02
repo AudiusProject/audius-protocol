@@ -19,6 +19,8 @@ from src.api.v1.helpers import (
     extend_track,
     extend_user,
     format_aggregate_monthly_plays_for_user,
+    format_authorized_app,
+    format_developer_app,
     format_limit,
     format_offset,
     format_query,
@@ -40,6 +42,7 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.activities import activity_model, activity_model_full
 from src.api.v1.models.common import favorite
+from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -64,6 +67,10 @@ from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_challenges import get_challenges
+from src.queries.get_developer_apps import (
+    get_developer_apps_by_user,
+    get_developer_apps_with_grant_for_user,
+)
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_related_artists import get_related_artists
@@ -1872,3 +1879,47 @@ class GetUnclaimedUserId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("user")
         return success_response(unclaimed_id)
+
+
+developer_apps_response = make_response(
+    "developer_apps", ns, fields.List(fields.Nested(developer_app))
+)
+
+
+@ns.route("/<string:id>/developer_apps", doc=False)
+class DeveloperApps(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Developer Apps""",
+        description="""Gets the developer apps that the user owns""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(developer_apps_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        developer_apps = get_developer_apps_by_user(decoded_id)
+        developer_apps = list(map(format_developer_app, developer_apps))
+        return success_response(developer_apps)
+
+
+authorized_apps_response = make_response(
+    "authorized_apps", ns, fields.List(fields.Nested(authorized_app))
+)
+
+
+@ns.route("/<string:id>/authorized_apps", doc=False)
+class AuthorizedApps(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Authorized Apps""",
+        description="""Get the apps that user has authorized to write to their account""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(authorized_apps_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        authorized_apps = get_developer_apps_with_grant_for_user(decoded_id)
+        authorized_apps = list(map(format_authorized_app, authorized_apps))
+        return success_response(authorized_apps)
