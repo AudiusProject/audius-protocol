@@ -25,7 +25,6 @@ import {
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
 
 import { ChatUserListItem } from './ChatUserListItem'
 
@@ -64,14 +63,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginHorizontal: spacing(2),
     marginBottom: spacing(2)
   },
-  searchIcon: {
-    width: spacing(5),
-    height: spacing(5)
-  },
   searchInputContainer: {
     paddingRight: spacing(5),
     paddingLeft: spacing(4),
-    paddingVertical: spacing(5)
+    paddingVertical: spacing(6)
   },
   searchInputText: {
     fontFamily: typography.fontByWeight.demiBold,
@@ -118,6 +113,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   emptyDescription: {
     fontSize: typography.fontSize.large,
     lineHeight: typography.fontSize.large * 1.3
+  },
+  icon: {
+    height: spacing(6),
+    width: spacing(6)
   }
 }))
 
@@ -154,7 +153,6 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     }
   } = props
   const styles = useStyles()
-  const palette = useThemeColors()
   const [query, setQuery] = useState('')
   const [hasQuery, setHasQuery] = useState(false)
   const dispatch = useDispatch()
@@ -198,6 +196,10 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     [setQuery]
   )
 
+  const handleClear = useCallback(() => {
+    setQuery('')
+  }, [setQuery])
+
   const handleLoadMore = useCallback(() => {
     if (status === Status.LOADING || defaultUserList.loading || !hasMore) {
       return
@@ -223,20 +225,17 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
           <View style={styles.searchContainer}>
             <TextInput
               placeholder={messages.search}
-              Icon={() => (
-                <IconSearch
-                  fill={palette.neutralLight4}
-                  width={styles.searchIcon.width}
-                  height={styles.searchIcon.height}
-                />
-              )}
+              Icon={IconSearch}
               styles={{
                 root: styles.searchInputContainer,
                 input: styles.searchInputText
               }}
+              iconProp={styles.icon}
               onChangeText={handleChange}
               value={query}
               inputAccessoryViewID='none'
+              clearable={true}
+              onClear={handleClear}
             />
           </View>
 
