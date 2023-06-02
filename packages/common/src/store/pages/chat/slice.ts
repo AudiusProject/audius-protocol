@@ -17,6 +17,7 @@ import {
 import dayjs from 'dayjs'
 
 import { ID, Status, ChatMessageWithExtras } from 'models'
+import { signOut } from 'store/sign-out/slice'
 import { hasTail } from 'utils/chatUtils'
 import { encodeHashId } from 'utils/hashIds'
 
@@ -547,6 +548,11 @@ const slice = createSlice({
       const { chatId } = action.payload
       chatsAdapter.removeOne(state.chats, chatId)
       chatMessagesAdapter.removeAll(state.messages[chatId])
+    }
+  },
+  extraReducers: {
+    [signOut.type]: () => {
+      return initialState
     }
   }
 })
