@@ -1,5 +1,5 @@
 import type { CrossPlatformFile as File } from '../../types/File'
-import type { StorageNodeSelectorConfig } from './StorageNodeSelector'
+import type { StorageNodeSelectorConfig } from '../StorageNodeSelector'
 
 export type StorageServiceConfig = StorageNodeSelectorConfig
 

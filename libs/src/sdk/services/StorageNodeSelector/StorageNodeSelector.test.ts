@@ -28,11 +28,28 @@ class MockAuth implements AuthService {
     new Uint8Array(),
     0
   ]
-
   getAddress = async () => {
     return userWallet
   }
 }
+
+// class MockDiscoveryNodeSelector implements DiscoveryNodeSelectorService {
+//   callbacks?: Array<(endpoint: string) => void>
+
+//   async getSelectedEndpoint() {
+//     return discoveryNode
+//   }
+//   createMiddleware() {
+//     return {
+//       pre: async () => {},
+//       post: async () => {},
+//       onError: async () => {}
+//     }
+//   }
+//   addEventListener(event: string, callback: (endpoint: string) => void) {
+//     this.callbacks?.push(callback)
+//   }
+// }
 
 const auth = new MockAuth()
 
@@ -48,7 +65,13 @@ const mswHandlers = [
       }
     }
 
-    return res(ctx.status(200), ctx.json({ data }))
+    return res(
+      ctx.status(200),
+      ctx.json({
+        data,
+        comms: { healthy: true }
+      })
+    )
   }),
 
   rest.get(`${storageNodeA.endpoint}/status`, (_req, res, ctx) => {
@@ -113,6 +136,9 @@ describe('StorageNodeSelector', () => {
   it('selects correct storage node when discovery node is selected', async () => {
     const bootstrapDiscoveryNodes = [discoveryNode]
     const discoveryNodeSelector = new DiscoveryNodeSelector({
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      },
       bootstrapServices: bootstrapDiscoveryNodes
     })
 
@@ -121,7 +147,10 @@ describe('StorageNodeSelector', () => {
       auth
     })
 
-    await discoveryNodeSelector.getSelectedEndpoint()
+    const discoveryNodeEndpoint =
+      await discoveryNodeSelector.getSelectedEndpoint()
+
+    expect(discoveryNodeEndpoint).toBe(discoveryNode)
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(

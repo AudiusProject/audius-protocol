@@ -16,18 +16,19 @@ export type StorageNodeSelectorConfig = {
 }
 
 export class StorageNodeSelector {
-  private readonly config: StorageNodeSelectorConfig
-  private readonly auth: Auth
+  private config: StorageNodeSelectorConfig
+  private auth: Auth
   private nodes: StorageNode[]
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
-  private readonly discoveryNodeSelector?: DiscoveryNodeSelector
+  private discoveryNodeSelector?: DiscoveryNodeSelector
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = config
     this.auth = this.config.auth
     this.nodes = this.config.bootstrapNodes ?? []
     this.discoveryNodeSelector = this.config.discoveryNodeSelector
+    this.onChangeDiscoveryNode = this.onChangeDiscoveryNode.bind(this)
 
     this.discoveryNodeSelector?.addEventListener(
       'change',
@@ -35,7 +36,7 @@ export class StorageNodeSelector {
     )
   }
 
-  onChangeDiscoveryNode = async (endpoint: string) => {
+  private async onChangeDiscoveryNode(endpoint: string) {
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
     if (!discoveryHealthCheckResponse.ok) return
@@ -56,17 +57,26 @@ export class StorageNodeSelector {
     return await this.select()
   }
 
+  getNodes() {
+    return { nodes: this.nodes, orderedNodes: this.orderedNodes }
+  }
+
   private async select() {
     if (!this.orderedNodes) {
       this.orderedNodes = await this.orderNodes()
     }
+
+    if (this.orderedNodes.length === 0) {
+      return null
+    }
+
     const currentNodeIndex = this.selectedNode
       ? this.orderedNodes
           .map((node) => node.endpoint)
           .indexOf(this.selectedNode)
       : -1
 
-    let selectedNode: Maybe<string>
+    let selectedNode: Maybe<string> = undefined
     let nextNodeIndex = currentNodeIndex
 
     while (!selectedNode) {

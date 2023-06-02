@@ -19,7 +19,7 @@ import {
 } from './constants'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
-import { StorageNodeSelector } from './StorageNodeSelector'
+import { StorageNodeSelector } from '../StorageNodeSelector'
 
 export class Storage implements StorageService {
   /**
