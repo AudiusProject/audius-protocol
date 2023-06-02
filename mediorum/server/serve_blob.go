@@ -153,9 +153,9 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		ss.logger.Error("unable to POST to identity service", err)
 		return
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		defer res.Body.Close()
 		resBody, _ := io.ReadAll(res.Body)
 		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
 	}
