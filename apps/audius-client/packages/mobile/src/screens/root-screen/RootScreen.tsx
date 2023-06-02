@@ -95,11 +95,13 @@ export const RootScreen = ({
         <Stack.Navigator
           screenOptions={{ gestureEnabled: false, headerShown: false }}
         >
-          {appUpdateRequired || isPendingMandatoryCodePushUpdate ? (
+          {isPendingMandatoryCodePushUpdate || appUpdateRequired ? (
             <Stack.Screen
               name='UpdateStack'
               component={
-                appUpdateRequired ? UpdateRequiredScreen : RestartRequiredScreen
+                isPendingMandatoryCodePushUpdate
+                  ? RestartRequiredScreen
+                  : UpdateRequiredScreen
               }
             />
           ) : showHomeStack ? (
