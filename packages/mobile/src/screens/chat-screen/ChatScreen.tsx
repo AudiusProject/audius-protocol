@@ -54,6 +54,7 @@ import { ChatMessageSeparator } from './ChatMessageSeparator'
 import { ChatTextInput } from './ChatTextInput'
 import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
+import { HeaderShadow } from './HeaderShadow'
 import { ReactionPopup } from './ReactionPopup'
 import { END_REACHED_OFFSET } from './constants'
 
@@ -506,6 +507,7 @@ export const ChatScreen = () => {
       topbarRight={topBarRight}
     >
       <ScreenContent>
+        <HeaderShadow />
         {/* Everything inside the portal displays on top of all other screen contents. */}
         <Portal hostName='ChatReactionsPortal'>
           {canSendMessage && shouldShowPopup && popupMessage ? (
