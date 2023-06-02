@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef, MutableRefObject } from 'react'
+import { ComponentPropsWithoutRef, MutableRefObject, RefCallback } from 'react'
 
 import cn from 'classnames'
 
@@ -19,7 +19,9 @@ type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   size?: InputV2Size
   variant?: InputV2Variant
   showMaxLength?: boolean
-  inputRef?: MutableRefObject<HTMLInputElement>
+  inputRef?:
+    | MutableRefObject<HTMLInputElement | null>
+    | RefCallback<HTMLInputElement>
   warning?: boolean
   error?: boolean
   inputClassName?: string

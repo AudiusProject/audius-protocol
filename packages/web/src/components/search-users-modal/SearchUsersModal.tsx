@@ -18,6 +18,8 @@ import {
   Status
 } from '@audius/common'
 import {
+  IconButton,
+  IconRemove,
   IconSearch,
   Modal,
   ModalHeader,
@@ -30,7 +32,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { InputV2, InputV2Size } from 'components/data-entry/InputV2'
+import {
+  InputV2,
+  InputV2Size,
+  InputV2Variant
+} from 'components/data-entry/InputV2'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './SearchUsersModal.module.css'
@@ -134,12 +140,24 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
       <div className={styles.modalContent}>
         <div className={styles.search}>
           <InputV2
+            inputRef={(el) => el?.focus()}
+            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
             placeholder={messages.searchUsers}
             size={InputV2Size.LARGE}
             value={query}
             onChange={handleChange}
           >
-            <IconSearch className={styles.iconLight} />
+            {query ? (
+              <IconButton
+                icon={<IconRemove className={styles.iconLight} />}
+                aria-label='Clear Search'
+                onClick={() => {
+                  setQuery('')
+                }}
+              />
+            ) : (
+              <IconSearch className={styles.iconLight} />
+            )}
           </InputV2>
         </div>
         <Scrollbar
