@@ -28,6 +28,7 @@ class MockAuth implements AuthService {
     new Uint8Array(),
     0
   ]
+
   getAddress = async () => {
     return userWallet
   }
@@ -41,9 +42,6 @@ const mswHandlers = [
       service: 'discovery-node',
       version: '1.2.3',
       block_difference: 0,
-      comms: {
-        healthy: true
-      },
       network: {
         discovery_nodes: [discoveryNode],
         content_nodes: [storageNodeA, storageNodeB]

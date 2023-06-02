@@ -112,14 +112,16 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
+  const defaultAuthService =
+    config.apiKey && config.apiSecret
+      ? new AppAuth(config.apiKey, config.apiSecret)
+      : new Auth()
+
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
-    storage: new Storage(),
-    auth:
-      config.apiKey && config.apiSecret
-        ? new AppAuth(config.apiKey, config.apiSecret)
-        : new Auth()
+    storage: new Storage({ auth: config.services?.auth ?? defaultAuthService }),
+    auth: defaultAuthService
   }
   return { ...defaultServices, ...config.services }
 }
