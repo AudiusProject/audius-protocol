@@ -41,5 +41,6 @@ tools::
 	go install github.com/rakyll/hey@latest
 
 quicktype::
-	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package ../libs/src/sdk/api/chats/serverTypes.ts
-	gofmt -w discovery/schema/schema.go
+	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
+	npx quicktype@23.0.37 --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/schema.ts
+	# gofmt -w discovery/schema/schema.go

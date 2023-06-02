@@ -129,30 +129,6 @@ type TentacledInvite struct {
 	UserID     string `json:"user_id"`
 }
 
-type RPCPayload struct {
-	Method        RPCMethod        `json:"method"`
-	Params        RPCPayloadParams `json:"params"`
-	CurrentUserID string           `json:"current_user_id"`
-	Timestamp     float64          `json:"timestamp"`
-}
-
-type RPCPayloadParams struct {
-	ReceiverUserIDS []string        `json:"receiver_user_ids,omitempty"`
-	ChatID          *string         `json:"chat_id,omitempty"`
-	Invites         []StickyInvite  `json:"invites,omitempty"`
-	Message         *string         `json:"message,omitempty"`
-	MessageID       *string         `json:"message_id,omitempty"`
-	ParentMessageID *string         `json:"parent_message_id,omitempty"`
-	Reaction        *string         `json:"reaction"`
-	UserID          *string         `json:"user_id,omitempty"`
-	Permit          *ChatPermission `json:"permit,omitempty"`
-}
-
-type StickyInvite struct {
-	InviteCode string `json:"invite_code"`
-	UserID     string `json:"user_id"`
-}
-
 type UserChat struct {
 	ChatID             string       `json:"chat_id"`
 	ChatMembers        []ChatMember `json:"chat_members"`
@@ -225,8 +201,8 @@ type Summary struct {
 }
 
 type ChatWebsocketEventData struct {
-	Metadata Metadata `json:"metadata"`
-	RPC      RPC      `json:"rpc"`
+	Metadata Metadata   `json:"metadata"`
+	RPC      RPCPayload `json:"rpc"`
 }
 
 type Metadata struct {
@@ -234,17 +210,17 @@ type Metadata struct {
 	UserID    string `json:"userId"`
 }
 
-type RPC struct {
-	Method        RPCMethod `json:"method"`
-	Params        RPCParams `json:"params"`
-	CurrentUserID string    `json:"current_user_id"`
-	Timestamp     float64   `json:"timestamp"`
+type RPCPayload struct {
+	CurrentUserID string           `json:"current_user_id"`
+	Method        RPCMethod        `json:"method"`
+	Params        RPCPayloadParams `json:"params"`
+	Timestamp     float64          `json:"timestamp"`
 }
 
-type RPCParams struct {
+type RPCPayloadParams struct {
 	ReceiverUserIDS []string        `json:"receiver_user_ids,omitempty"`
 	ChatID          *string         `json:"chat_id,omitempty"`
-	Invites         []IndigoInvite  `json:"invites,omitempty"`
+	Invites         []StickyInvite  `json:"invites,omitempty"`
 	Message         *string         `json:"message,omitempty"`
 	MessageID       *string         `json:"message_id,omitempty"`
 	ParentMessageID *string         `json:"parent_message_id,omitempty"`
@@ -253,7 +229,7 @@ type RPCParams struct {
 	Permit          *ChatPermission `json:"permit,omitempty"`
 }
 
-type IndigoInvite struct {
+type StickyInvite struct {
 	InviteCode string `json:"invite_code"`
 	UserID     string `json:"user_id"`
 }
