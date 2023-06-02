@@ -21,15 +21,23 @@ end
 
 function _M.get_is_port_exposed(ip, port)
     local tcp = ngx.socket.tcp()
-    tcp:settimeout(10)
+    tcp:settimeout(1000)
     local res, err = tcp:connect(ip, port)
     tcp:close()
     if not res then
-        ngx.log(ngx.ERR, "Could not connect: ", err)
+        ngx.log(ngx.ERR, "Could not connect tcp: ", err)
         return false
-    else
-        return true
     end
+
+    local udp = ngx.socket.udp()
+    udp:settimeout(1000)
+    local res, err = udp:setpeername(ip, port)
+    if not res then
+        ngx.log(ngx.ERR, "Could not peer udp: ", err)
+        return false
+    end
+
+    return true
 end
 
 return _M
