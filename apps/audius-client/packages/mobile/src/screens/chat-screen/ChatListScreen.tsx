@@ -16,6 +16,7 @@ import { useThemePalette, useColor } from 'app/utils/theme'
 
 import { ChatListItem } from './ChatListItem'
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
+import { HeaderShadow } from './HeaderShadow'
 
 const { getChats, getChatsStatus } = chatSelectors
 const { fetchMoreMessages, fetchMoreChats } = chatActions
@@ -74,11 +75,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   writeMessageButton: {
     marginTop: spacing(6)
-  },
-  shadow: {
-    borderBottomColor: palette.neutralLight6,
-    borderBottomWidth: 3,
-    borderBottomLeftRadius: 1
   }
 }))
 
@@ -150,7 +146,7 @@ export const ChatListScreen = () => {
       topbarRight={iconCompose}
     >
       <ScreenContent>
-        <View style={styles.shadow} />
+        <HeaderShadow />
         <View style={styles.rootContainer}>
           {isLoadingFirstTime ? (
             Array(4)
