@@ -142,7 +142,7 @@ enum DMPhase {
   FINSH = 'FINSH'
 }
 
-export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
+export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex, isBrowserPushEnabled?: boolean) {
   const timer = new Timer('dm')
   try {
     // Query DN for unread messages and reactions between min and max cursors
@@ -198,10 +198,7 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
 
     // Send push notifications
     for (const notification of notifications) {
-      await notification.processNotification({
-        isLiveEmailEnabled: false,
-        isBrowserPushEnabled: false
-      })
+      await notification.processNotification({ isLiveEmailEnabled: false, isBrowserPushEnabled })
     }
 
     // Set last indexed timestamps in redis
