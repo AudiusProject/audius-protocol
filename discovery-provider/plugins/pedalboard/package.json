@@ -15,6 +15,7 @@
     "@audius/sdk": "^2.0.3-beta.20",
     "app-template": "^0.0.0",
     "basekit": "^0.0.0",
+    "docker-cli-js": "^2.10.0",
     "knex": "^2.4.2",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.1",

@@ -16,7 +16,7 @@
       "dependsOn": ["^build"]
     },
     "dev": {
-      "cache": false,
+      "cache": true,
       "persistent": true
     },
     "clean": {

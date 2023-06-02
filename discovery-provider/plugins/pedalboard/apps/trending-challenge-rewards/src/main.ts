@@ -8,12 +8,12 @@ export const main = async () => {
   const audiusSdk = sdk({ appName: "trending-challenge-rewards-plugin" });
   const libs = await initAudiusLibs();
   await new App<SharedData>({
-    oracleEthAddress: "",
+    oracleEthAddress: "addr",
     AAOEndpoint: "",
     feePayerOverride: "",
     libs,
     sdk: audiusSdk,
-    localEndpoint: ""
+    localEndpoint: "",
   })
     .cron(condition, onCondition)
     .run();
