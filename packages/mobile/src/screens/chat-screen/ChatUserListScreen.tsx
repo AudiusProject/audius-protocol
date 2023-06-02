@@ -37,7 +37,7 @@ const DEBOUNCE_MS = 100
 
 const messages = {
   title: 'New Message',
-  search: 'Search Users',
+  search: ' Search Users',
   emptyTitle: 'Search for Friends',
   emptyDescription:
     'Search for fellow music lovers and strike up a conversation.'

@@ -17,7 +17,7 @@ const ICON_BLUR = 0.5
 const ICON_FOCUS = 1
 
 const messages = {
-  startNewMessage: 'Start a New Message'
+  startNewMessage: ' Start a New Message'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
