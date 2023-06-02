@@ -35,7 +35,7 @@ type SelectPageProps = {
   onContinue: () => void
 }
 
-export const SelectPage = (props: SelectPageProps) => {
+export const SelectPageNew = (props: SelectPageProps) => {
   const { onContinue } = props
   const dispatch = useDispatch()
   const playing = useSelector(getPlaying)
@@ -182,4 +182,4 @@ export const SelectPage = (props: SelectPageProps) => {
   )
 }
 
-export default SelectPage
+export default SelectPageNew
