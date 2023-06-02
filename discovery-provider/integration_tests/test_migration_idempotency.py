@@ -1,6 +1,7 @@
 import io
 import os
 import re
+import subprocess
 import sys
 
 import alembic
@@ -29,6 +30,15 @@ def steal_stdout():
 
 
 def test_migration_idempotency():
+    subprocess.run(
+        ["./pg_migrate.sh", "test"],
+        shell=True,
+        cwd=os.getcwd() + "/ddl",
+        env=os.environ,
+        check=True,
+    )
+
+    return
     """
     Test the migrations are idempotent -- we can re-run them and they
     succeed. This is a useful test in making sure that during service upgrade

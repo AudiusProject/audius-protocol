@@ -482,7 +482,7 @@ class TrackStream(Resource):
             params["filename"] = filename
 
         base_path = f"tracks/cidstream/{track_cid}"
-        query_string = urllib.parse.urlencode(params)
+        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
         stream_url = urljoin(content_node, path)
 

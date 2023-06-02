@@ -44,7 +44,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     this.tipAmount = this.notification.data.tip_amount
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import moment from 'moment-timezone'
+import moment, { Moment } from 'moment-timezone'
 import { config } from '../../config'
 import {
   DMEmailNotification,
@@ -17,7 +17,7 @@ import { MappingFeatureName, RemoteConfig } from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
 
 // blockchainUserId => email
-type EmailUsers = {
+export type EmailUsers = {
   [blockchainUserId: number]: string
 }
 
@@ -28,8 +28,6 @@ type UserEmailNotification = {
   }
   notifications: EmailNotification[]
 }
-
-const DEFAULT_TIMEZONE = 'America/Los_Angeles'
 
 const Results = Object.freeze({
   USER_TURNED_OFF: 'USER_TURNED_OFF',
@@ -42,11 +40,39 @@ const Results = Object.freeze({
 export const getUsersCanNotify = async (
   identityDb: Knex,
   frequency: EmailFrequency,
-  startOffset: moment.Moment
-): Promise<EmailUsers> => {
-  // const validLastEmailOffset = startOffset.subtract(2, 'hours')
-  const userRows: { blockchainUserId: number; email: string }[] =
-    await identityDb
+  startOffset: moment.Moment,
+  pageCount: number,
+  onPage: (emailUsers: EmailUsers) => Promise<void>,
+) => {
+  let lastUser: number = 0;
+
+  const time = Date.now()
+  const timeoutMillis = 14400000
+  const timeout = time + timeoutMillis
+
+  let offset = 0
+  while (true) {
+    const now = Date.now()
+    if (now > timeout) break
+    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
+    offset = offset + pageCount
+    if (userRows.length === 0) break // once we've reached the end of users for this query
+    lastUser = userRows[userRows.length - 1].blockchainUserId
+    if (lastUser === undefined) {
+      logger.info("no last user found")
+      break
+    }
+    if (userRows.length === 0) break
+    const emailUsers = userRows.reduce((acc, user) => {
+      acc[user.blockchainUserId] = user.email
+      return acc
+    }, {} as EmailUsers)
+    await onPage(emailUsers)
+  }
+}
+
+export const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
+  await identityDb
       .with(
         'lastEmailSentAt',
         identityDb.raw(`
@@ -99,12 +125,9 @@ export const getUsersCanNotify = async (
           )
         }
       })
-  const emailUsers = userRows.reduce((acc, user) => {
-    acc[user.blockchainUserId] = user.email
-    return acc
-  }, {} as EmailUsers)
-  return emailUsers
-}
+      .where('Users.blockchainUserId', '>', lastUser)
+      .limit(pageCount)
+      .orderBy('Users.blockchainUserId')
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
@@ -320,126 +343,126 @@ export async function processEmailNotifications(
       days = 7
     }
     const startOffset = now.clone().subtract(days, 'days')
-    const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+    const pageCount = 1000
+    await getUsersCanNotify(identityDb, frequency, startOffset, pageCount, async (users) => {
+        if (Object.keys(users).length == 0) {
+          logger.info(`processEmailNotifications | No users to process. Exiting...`)
+          return
+        }
 
-    if (Object.keys(users).length == 0) {
-      logger.info(`processEmailNotifications | No users to process. Exiting...`)
-      return
-    }
+        logger.info(
+          `processEmailNotifications | Beginning processing ${
+            Object.keys(users).length
+          } users at ${frequency} frequency`
+        )
 
-    logger.info(
-      `processEmailNotifications | Beginning processing ${
-        Object.keys(users).length
-      } users at ${frequency} frequency`
-    )
-
-    const userNotificationSettings = await buildUserNotificationSettings(
-      identityDb,
-      Object.keys(users).map(Number)
-    )
-
-    const notifications = await getNotifications(
-      dnDb,
-      frequency,
-      startOffset,
-      Object.keys(users),
-      remoteConfig
-    )
-    const groupedNotifications = groupNotifications(notifications, users)
-
-    const currentUtcTime = moment.utc()
-    const chuckSize = 20
-    const results = []
-    let numEmailsSent = 0
-    for (
-      let chunk = 0;
-      chunk * chuckSize < groupedNotifications.length;
-      chunk += 1
-    ) {
-      const start = chunk * chuckSize
-      const end = (chunk + 1) * chuckSize
-      const chunkResults = await Promise.all(
-        groupedNotifications
-          .slice(start, end)
-          .map(async (userNotifications: UserEmailNotification) => {
-            try {
-              if (
-                !userNotificationSettings.shouldSendEmailAtFrequency({
-                  receiverUserId: userNotifications.user.blockchainUserId,
-                  frequency
-                })
-              ) {
-                return {
-                  result: Results.SHOULD_SKIP,
-                  error: 'User turned off or is abusive'
-                }
-              }
-
-              const user = userNotifications.user
-              const notifications = userNotifications.notifications
-              // Set the timezone
-              const sendAt = userNotificationSettings.getUserSendAt(
-                user.blockchainUserId
-              )
-              const sent = await sendNotificationEmail({
-                userId: user.blockchainUserId,
-                email: user.email,
-                frequency,
-                notifications,
-                dnDb,
-                identityDb,
-                sendAt: frequency !== 'live' ? sendAt : null
-              })
-              if (!sent) {
-                // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
-                if (sent === false) {
-                  return {
-                    result: Results.ERROR,
-                    error: 'Unable to send email'
-                  }
-                }
-                return {
-                  result: Results.SHOULD_SKIP,
-                  error: 'No notifications to send in email'
-                }
-              }
-              numEmailsSent += 1
-              await identityDb
-                .insert([
-                  {
-                    userId: user.blockchainUserId,
-                    emailFrequency: frequency,
-                    timestamp: currentUtcTime,
-                    createdAt: currentUtcTime,
-                    updatedAt: currentUtcTime
-                  }
-                ])
-                .into('NotificationEmails')
-              return { result: Results.SENT }
-            } catch (e) {
-              return { result: Results.ERROR, error: e.toString() }
-            }
-          })
-      )
-      results.push(...chunkResults)
-    }
-
-    logger.info(
-      {
-        job: processEmailNotifications
-      },
-      `processEmailNotifications | finished looping over users to send notification emails`
-    )
-    logger.info(
-      {
-        job: processEmailNotifications
-      },
-      `processEmailNotifications | sent ${numEmailsSent} ${frequency} emails`
-    )
+        await processGroupOfEmails(dnDb, identityDb, users, frequency, startOffset, remoteConfig)
+    })
+    
   } catch (e) {
     logger.error(
       'processEmailNotifications | Error processing email notifications'
     )
     logger.error(e)
   }
+}
+
+const processGroupOfEmails = async (dnDb: Knex, identityDb : Knex, users: EmailUsers, frequency: EmailFrequency, startOffset: Moment, remoteConfig: RemoteConfig) => {
+  const userNotificationSettings = await buildUserNotificationSettings(
+    identityDb,
+    Object.keys(users).map(Number)
+  )
+
+  const notifications = await getNotifications(
+    dnDb,
+    frequency,
+    startOffset,
+    Object.keys(users),
+    remoteConfig
+  )
+  const groupedNotifications = groupNotifications(notifications, users)
+
+  const currentUtcTime = moment.utc()
+  const chunkSize = 20
+  const results = []
+  let numEmailsSent = 0
+  for (
+    let chunk = 0;
+    chunk * chunkSize < groupedNotifications.length;
+    chunk += 1
+  ) {
+    const start = chunk * chunkSize
+    const end = (chunk + 1) * chunkSize
+    const chunkResults = await Promise.all(
+      groupedNotifications
+        .slice(start, end)
+        .map(async (userNotifications: UserEmailNotification) => {
+          try {
+            if (
+              !userNotificationSettings.shouldSendEmailAtFrequency({
+                receiverUserId: userNotifications.user.blockchainUserId,
+                frequency
+              })
+            ) {
+              return {
+                result: Results.SHOULD_SKIP,
+                error: 'User turned off or is abusive'
+              }
+            }
+
+            const user = userNotifications.user
+            const notifications = userNotifications.notifications
+            // Set the timezone
+            const sendAt = userNotificationSettings.getUserSendAt(
+              user.blockchainUserId
+            )
+            const sent = await sendNotificationEmail({
+              userId: user.blockchainUserId,
+              email: user.email,
+              frequency,
+              notifications,
+              dnDb,
+              identityDb,
+              sendAt: frequency !== 'live' ? sendAt : null
+            })
+            if (!sent) {
+              // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
+              if (sent === false) {
+                return {
+                  result: Results.ERROR,
+                  error: 'Unable to send email'
+                }
+              }
+              return {
+                result: Results.SHOULD_SKIP,
+                error: 'No notifications to send in email'
+              }
+            }
+            numEmailsSent += 1
+            await identityDb
+              .insert([
+                {
+                  userId: user.blockchainUserId,
+                  emailFrequency: frequency,
+                  timestamp: currentUtcTime,
+                  createdAt: currentUtcTime,
+                  updatedAt: currentUtcTime
+                }
+              ])
+              .into('NotificationEmails')
+            return { result: Results.SENT }
+          } catch (e) {
+            return { result: Results.ERROR, error: e.toString() }
+          }
+        })
+    )
+    results.push(...chunkResults)
+  }
+
+  logger.info(
+    {
+      job: processEmailNotifications
+    },
+    `processEmailNotifications | finished looping over users to send notification emails, sent ${numEmailsSent} ${frequency} emails`
+  )
 }

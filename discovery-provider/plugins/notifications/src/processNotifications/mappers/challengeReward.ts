@@ -88,7 +88,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     } $AUDIO for completing this challenge!`
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

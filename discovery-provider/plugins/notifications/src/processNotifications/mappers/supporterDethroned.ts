@@ -35,7 +35,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     this.receiverUserId = this.notification.data.dethroned_user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
