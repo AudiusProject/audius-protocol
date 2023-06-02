@@ -43,4 +43,8 @@ WORKDIR /app
 
 COPY --from=installer /app .
 
-CMD node "apps/${APP_NAME}/dist/index.js"
+RUN ls
+
+WORKDIR /app/apps/${APP_NAME}
+
+CMD npm run start

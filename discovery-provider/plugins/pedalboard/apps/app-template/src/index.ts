@@ -1,13 +1,13 @@
 import { log } from "logger";
 import App from "basekit/src/app";
-import { Tracks } from "storage";
+import moment from "moment";
 
 type SharedData = {};
 
 const main = async () => {
   await new App<SharedData>({})
-    .listen<Tracks>("tracks", async (app, msg) => {
-      log(`received msg: ${JSON.stringify(msg)}`);
+    .tick({ seconds: 5 }, async (_app) => {
+      console.log(`tick ${moment().calendar()}`)
     })
     .run();
 };

@@ -1,14 +1,14 @@
 version: "3"
 
 services:
-  # app-template:
-  #   container_name: app-template
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/Dockerfile
-  #     args:
-  #       app_name: app-template
-  #   restart: always
+  app-template:
+    container_name: app-template
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: app-template
+    restart: always
 
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
