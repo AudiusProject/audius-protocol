@@ -4,7 +4,7 @@ services:
   poa-ganache:
     build:
       context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
         bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
