@@ -731,7 +731,6 @@ export class Users extends Base {
     // Upload new metadata object to CN
     const { metadataMultihash, metadataFileUUID } =
       await this.creatorNode.uploadCreatorContent(
-        // @ts-expect-error pretty tough one to type
         newMetadata,
         updateEndpointTxBlockNumber
       )
@@ -901,7 +900,6 @@ export class Users extends Base {
       // Upload new metadata object to CN
       phase = phases.UPLOAD_METADATA
       const { metadataMultihash, metadataFileUUID } =
-        // @ts-expect-error tough converting UserMetadata to Metadata
         await this.creatorNode.uploadCreatorContent(newMetadata)
       console.log(
         `${logPrefix} [phase: ${phase}] creatorNode.uploadCreatorContent() completed in ${
