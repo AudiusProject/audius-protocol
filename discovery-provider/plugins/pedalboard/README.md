@@ -53,7 +53,7 @@ At the root of this project is a [docker compose](./docker-compose.yml) file tha
 ```
 2. Run the docker file with the build flag
 ```
-docker compose up --build -d
+docker compose -f docker-compose.pedalboard.yml up -d --build
 ```
 3. In docker dashboard or `docker ps` you should find your running container
 ```
