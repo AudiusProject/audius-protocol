@@ -13,6 +13,8 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+require 'json'
+
 default_platform(:android)
 
 PROD_PACKAGE = 'co.audius.app'
@@ -94,6 +96,8 @@ platform :android do
       end
       releasedVersion = getCurrentlyReleasedVersionName()
       buildFileVersion = getVersionNameFromBuildFile()
+      packageJson = File.open "../../package.json"
+      packageJsonData = JSON.load packageJson
 
       if buildFileVersion > releasedVersion
         UI.message "Doing a full build and release (not over-the-air/Codepush)"
@@ -121,7 +125,7 @@ platform :android do
 
         sh("npm install --prefix=$HOME/.local --global appcenter-cli")
         sh("appcenter login --token #{ENV['APPCENTER_CODEPUSH_API_KEY']}")
-        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -d #{codepushDeployment} -t #{releasedVersion.to_s} --disable-duplicate-release-error")
+        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -d #{codepushDeployment} -t #{releasedVersion.to_s} --disable-duplicate-release-error --description #{packageJsonData["version"]}")
         sh("appcenter logout")
       else
         UI.message "Did not do a deployment in order to avoid pushing to Release Candidate Codepush deployment twice."
