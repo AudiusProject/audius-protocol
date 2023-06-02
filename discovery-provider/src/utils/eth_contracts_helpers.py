@@ -16,6 +16,12 @@ content_node_service_type = bytes("content-node", "utf-8")
 # 30 minutes = 60 sec * 30 min
 cnode_info_redis_ttl_s = 1800
 
+def fetch_trusted_notifier_info(eth_web3, shared_config, redis, eth_abi_values) -> dict:
+    #TODO
+    return {
+        "endpoint": "",
+        "wallet": ""
+    }
 
 def fetch_cnode_info(sp_id, sp_factory_instance, redis):
     sp_id_key = get_cn_sp_id_key(sp_id)
