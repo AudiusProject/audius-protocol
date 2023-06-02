@@ -7,6 +7,7 @@ import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { Genre } from '../../types/Genre'
 import { Mood } from '../../types/Mood'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 
 jest.mock('../../services')
 
@@ -46,12 +47,13 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
+  const storageNodeSelector = new StorageNodeSelector({ auth })
 
   beforeAll(() => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage({ auth }),
+      new Storage({ storageNodeSelector }),
       new EntityManager(),
       auth
     )

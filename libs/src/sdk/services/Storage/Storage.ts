@@ -19,7 +19,7 @@ import {
 } from './constants'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
-import { StorageNodeSelector } from '../StorageNodeSelector'
+import type { StorageNodeSelector } from '../StorageNodeSelector'
 
 export class Storage implements StorageService {
   /**
@@ -30,7 +30,7 @@ export class Storage implements StorageService {
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
-    this.storageNodeSelector = new StorageNodeSelector(this.config)
+    this.storageNodeSelector = this.config.storageNodeSelector
   }
 
   /**

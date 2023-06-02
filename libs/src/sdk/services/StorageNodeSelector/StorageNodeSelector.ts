@@ -16,12 +16,12 @@ export type StorageNodeSelectorConfig = {
 }
 
 export class StorageNodeSelector {
-  private config: StorageNodeSelectorConfig
-  private auth: Auth
+  private readonly config: StorageNodeSelectorConfig
+  private readonly auth: Auth
   private nodes: StorageNode[]
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
-  private discoveryNodeSelector?: DiscoveryNodeSelector
+  private readonly discoveryNodeSelector?: DiscoveryNodeSelector
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = config
@@ -76,7 +76,7 @@ export class StorageNodeSelector {
           .indexOf(this.selectedNode)
       : -1
 
-    let selectedNode: Maybe<string> = undefined
+    let selectedNode: Maybe<string>
     let nextNodeIndex = currentNodeIndex
 
     while (!selectedNode) {

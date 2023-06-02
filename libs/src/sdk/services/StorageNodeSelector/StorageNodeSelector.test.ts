@@ -28,28 +28,11 @@ class MockAuth implements AuthService {
     new Uint8Array(),
     0
   ]
+
   getAddress = async () => {
     return userWallet
   }
 }
-
-// class MockDiscoveryNodeSelector implements DiscoveryNodeSelectorService {
-//   callbacks?: Array<(endpoint: string) => void>
-
-//   async getSelectedEndpoint() {
-//     return discoveryNode
-//   }
-//   createMiddleware() {
-//     return {
-//       pre: async () => {},
-//       post: async () => {},
-//       onError: async () => {}
-//     }
-//   }
-//   addEventListener(event: string, callback: (endpoint: string) => void) {
-//     this.callbacks?.push(callback)
-//   }
-// }
 
 const auth = new MockAuth()
 

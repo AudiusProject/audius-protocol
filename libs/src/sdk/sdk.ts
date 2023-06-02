@@ -34,6 +34,7 @@ import {
   EntityManager,
   AppAuth
 } from './services'
+import { StorageNodeSelector } from './services/StorageNodeSelector'
 
 type ServicesContainer = {
   /**
@@ -117,10 +118,14 @@ const initializeServices = (config: SdkConfig) => {
       ? new AppAuth(config.apiKey, config.apiSecret)
       : new Auth()
 
+  const storageNodeSelector = new StorageNodeSelector({
+    auth: config.services?.auth ?? defaultAuthService
+  })
+
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
-    storage: new Storage({ auth: config.services?.auth ?? defaultAuthService }),
+    storage: new Storage({ storageNodeSelector }),
     auth: defaultAuthService
   }
   return { ...defaultServices, ...config.services }
