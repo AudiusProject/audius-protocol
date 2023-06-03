@@ -6,7 +6,7 @@ from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import (
     save_duration_metric,
 )
-from typing import Any
+from typing import Any, Dict
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from web3 import Web3
@@ -125,17 +125,8 @@ def process_track_delist_statuses(session, resp, endpoint):
         )
 
 
-def process_delist_statuses(session: Session, eth_web3: Web3, redis: Redis, eth_abi_values: Any):
-    #TODO move the trusted notifier fetch to app.py
-    #TODO get trusted notifier endpoint id somehow from env, default to 1
-    trusted_notifier_id = 1
-    if trusted_notifier_id == 0:
-        logger.warn("update_delist_statuses.py | trusted notifier id not set, not polling delist statuses")
-
-    #TODO get trusted notifier for id
-    trusted_notifier = fetch_trusted_notifier_info(eth_web3, shared_config, redis, eth_abi_values)
-    logger.info(f"update_delist_statuses.py | got trusted notifier from chain. endpoint: {trusted_notifier['endpoint']}, wallet: {trusted_notifier['wallet']}")
-    endpoint = trusted_notifier["endpoint"]
+def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
+    endpoint = trusted_notifier_manager["endpoint"]
 
     for entity in ("tracks", "users"):
         sql = text(
@@ -179,8 +170,9 @@ def update_delist_statuses(self) -> None:
 
     db = update_delist_statuses.db
     redis = update_delist_statuses.redis
-    eth_web3 = update_delist_statuses.eth_web3
-    eth_abi_values = update_delist_statuses.eth_abi_values
+    trusted_notifier_manager = update_delist_statuses.trusted_notifier_manager
+    if not trusted_notifier_manager:
+        logger.error("update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses")
 
     have_lock = False
     update_lock = redis.lock(
@@ -193,7 +185,7 @@ def update_delist_statuses(self) -> None:
         try:
             with db.scoped_session() as session:
                 process_delist_statuses(
-                    session, eth_web3, redis, eth_abi_values
+                    session, trusted_notifier_manager
                 )
 
         except Exception as e:
