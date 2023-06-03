@@ -20,7 +20,7 @@ cnode_info_redis_ttl_s = 1800
 def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict:
     trusted_notifier_id = shared_config["eth_contracts"]["trusted_notifier_id"]
     if trusted_notifier_id == 0:
-        logger.error("eth_contracts_helpers.py | trusted notifier id not set")
+        logger.warn("eth_contracts_helpers.py | trusted notifier id not set")
         return {}
 
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -40,7 +40,7 @@ def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict
     ).call()
     wallet, endpoint, email = trusted_notifier_info
     logger.info(
-        f"update_delist_statuses.py | got trusted notifier from chain. endpoint: {endpoint}, wallet: {wallet}"
+        f"eth_contracts_helpers.py | got trusted notifier from chain. endpoint: {endpoint}, wallet: {wallet}"
     )
     return {
         "wallet": wallet,
