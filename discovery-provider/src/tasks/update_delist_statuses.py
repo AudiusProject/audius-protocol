@@ -20,8 +20,8 @@ logger = StructuredLogger(__name__)
 
 UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
-QUERY_BATCH_SIZE = 5000
-WRITE_BATCH_SIZE = 1000
+DELIST_BATCH_SIZE = 5000
+USER_QUERY_BATCH_SIZE = 1000
 
 
 def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[User]:
@@ -51,8 +51,8 @@ def update_user_is_available_statuses(session, users):
             relisted_user_ids.append(user_id)
 
     for user_ids, deactivate in ((delisted_user_ids, True), (relisted_user_ids, False)):
-        for i in range(0, len(user_ids), WRITE_BATCH_SIZE):
-            user_ids_batch = user_ids[i : i + WRITE_BATCH_SIZE]
+        for i in range(0, len(user_ids), USER_QUERY_BATCH_SIZE):
+            user_ids_batch = user_ids[i : i + USER_QUERY_BATCH_SIZE]
             try:
                 users_to_update = query_users_by_user_ids(session, user_ids_batch)
                 for user in users_to_update:
@@ -149,7 +149,7 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
     timestamp = datetime.strptime(cursor_before, "%Y-%m-%d %H:%M:%S%z")
     # Convert the datetime object to the RFC3339Nano format
     formatted_cursor_before = quote(timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f%z"))
-    poll_more_endpoint = f"{endpoint}/statuses/{entity}?cursor={formatted_cursor_before}&batchSize={QUERY_BATCH_SIZE}"
+    poll_more_endpoint = f"{endpoint}/statuses/{entity}?cursor={formatted_cursor_before}&batchSize={DELIST_BATCH_SIZE}"
 
     resp = signed_get(poll_more_endpoint, shared_config["delegate"]["private_key"])
     resp.raise_for_status()
