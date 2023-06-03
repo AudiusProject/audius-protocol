@@ -173,6 +173,7 @@ def update_delist_statuses(self) -> None:
     trusted_notifier_manager = update_delist_statuses.trusted_notifier_manager
     if not trusted_notifier_manager:
         logger.error("update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses")
+        return
 
     have_lock = False
     update_lock = redis.lock(
