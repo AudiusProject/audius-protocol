@@ -34,13 +34,21 @@ import {
   EntityManager,
   AppAuth
 } from './services'
-import { StorageNodeSelector } from './services/StorageNodeSelector'
+import {
+  StorageNodeSelector,
+  StorageNodeSelectorService
+} from './services/StorageNodeSelector'
 
 type ServicesContainer = {
   /**
    * Service used to choose discovery node
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+
+  /**
+   * Service used to choose storage node
+   */
+  storageNodeSelector: StorageNodeSelectorService
 
   /**
    * Service used to write and update entities on chain
@@ -124,6 +132,7 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
+    storageNodeSelector,
     entityManager: new EntityManager(),
     storage: new Storage({ storageNodeSelector }),
     auth: defaultAuthService

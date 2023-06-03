@@ -3,6 +3,7 @@ import fetch from 'cross-fetch'
 import type { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { Auth } from '../Auth'
+import type { StorageNodeSelectorService } from './types'
 
 type StorageNode = {
   endpoint: string
@@ -15,12 +16,13 @@ export type StorageNodeSelectorConfig = {
   discoveryNodeSelector?: DiscoveryNodeSelector
 }
 
-export class StorageNodeSelector {
+export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
   private readonly auth: Auth
   private nodes: StorageNode[]
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
+  private selectedDiscoveryNode?: string | null
   private readonly discoveryNodeSelector?: DiscoveryNodeSelector
 
   constructor(config: StorageNodeSelectorConfig) {
@@ -28,15 +30,25 @@ export class StorageNodeSelector {
     this.auth = this.config.auth
     this.nodes = this.config.bootstrapNodes ?? []
     this.discoveryNodeSelector = this.config.discoveryNodeSelector
-    this.onChangeDiscoveryNode = this.onChangeDiscoveryNode.bind(this)
 
     this.discoveryNodeSelector?.addEventListener(
       'change',
-      this.onChangeDiscoveryNode
+      this.onChangeDiscoveryNode.bind(this)
     )
+
+    this.checkIfDiscoveryNodeAlreadyAvailable()
+  }
+
+  private async checkIfDiscoveryNodeAlreadyAvailable() {
+    const endpoint = await this.discoveryNodeSelector?.getSelectedEndpoint()
+    if (endpoint) {
+      this.onChangeDiscoveryNode(endpoint)
+    }
   }
 
   private async onChangeDiscoveryNode(endpoint: string) {
+    if (this.selectedDiscoveryNode === endpoint) return
+    this.selectedDiscoveryNode = endpoint
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
     if (!discoveryHealthCheckResponse.ok) return
@@ -55,10 +67,6 @@ export class StorageNodeSelector {
       return this.selectedNode
     }
     return await this.select()
-  }
-
-  getNodes() {
-    return { nodes: this.nodes, orderedNodes: this.orderedNodes }
   }
 
   private async select() {
@@ -90,7 +98,7 @@ export class StorageNodeSelector {
     }
 
     this.selectedNode = selectedNode
-    return this.selectedNode
+    return this.selectedNode ?? null
   }
 
   private async orderNodes() {

@@ -116,6 +116,26 @@ describe('StorageNodeSelector', () => {
     )
   })
 
+  it('selects correct storage node when discovery node already available', async () => {
+    const discoveryNodeSelector = new DiscoveryNodeSelector({
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      },
+      initialSelectedNode: discoveryNode
+    })
+
+    const storageNodeSelector = new StorageNodeSelector({
+      discoveryNodeSelector,
+      auth
+    })
+
+    await waitForExpect(async () => {
+      expect(await storageNodeSelector.getSelectedNode()).toEqual(
+        storageNodeA.endpoint
+      )
+    })
+  })
+
   it('selects correct storage node when discovery node is selected', async () => {
     const bootstrapDiscoveryNodes = [discoveryNode]
     const discoveryNodeSelector = new DiscoveryNodeSelector({
@@ -129,11 +149,6 @@ describe('StorageNodeSelector', () => {
       discoveryNodeSelector,
       auth
     })
-
-    const discoveryNodeEndpoint =
-      await discoveryNodeSelector.getSelectedEndpoint()
-
-    expect(discoveryNodeEndpoint).toBe(discoveryNode)
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(
