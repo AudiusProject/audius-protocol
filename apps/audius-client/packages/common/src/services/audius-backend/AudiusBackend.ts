@@ -430,54 +430,15 @@ export const audiusBackend = ({
     })
   }
 
-  async function fetchCID(
-    cid: CID,
-    creatorNodeGateways = [] as string[],
-    cache = true,
-    asUrl = true,
-    trackId: Nullable<ID> = null
-  ) {
+  async function fetchCID(cid: CID, cache = true, asUrl = true) {
     await waitForLibsInit()
 
     // If requesting a url (we mean a blob url for the file),
     // otherwise, default to JSON
     const responseType = asUrl ? 'blob' : 'json'
 
-    // TODO read only from discovery after CID metadata migration
-    const getMetadataFromDiscoveryEnabled =
-      (await getFeatureEnabled(
-        FeatureFlags.GET_METADATA_FROM_DISCOVERY_ENABLED
-      )) ?? false
-    if (getMetadataFromDiscoveryEnabled) {
-      try {
-        const res = await audiusLibs.File.fetchCIDFromDiscovery(
-          cid,
-          responseType
-        )
-        if (res?.data) {
-          if (asUrl) {
-            const url = nativeMobile
-              ? res.config.url
-              : URL.createObjectURL(res.data)
-            if (cache) CIDCache.add(cid, url)
-            return url
-          }
-          return res.data
-        }
-      } catch (e) {
-        console.error(e)
-      }
-      // If failed to find metadata in discovery, try with content nodes
-    }
-
     try {
-      const res = await audiusLibs.File.fetchCID(
-        cid,
-        creatorNodeGateways,
-        () => {},
-        responseType,
-        trackId
-      )
+      const res = await audiusLibs.File.fetchCIDFromDiscovery(cid, responseType)
       if (asUrl) {
         const url = nativeMobile
           ? res.config.url
@@ -1458,15 +1419,9 @@ export const audiusBackend = ({
    * @returns Object The associated wallets mapping of address to nested signature
    */
   async function fetchUserAssociatedEthWallets(user: User) {
-    const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(
-        cid,
-        gateways,
-        /* cache */ false,
-        /* asUrl */ false
-      )
+      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
       if (metadata?.associated_wallets) {
         return metadata.associated_wallets
       }
@@ -1480,15 +1435,9 @@ export const audiusBackend = ({
    * @returns Object The associated wallets mapping of address to nested signature
    */
   async function fetchUserAssociatedSolWallets(user: User) {
-    const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(
-        cid,
-        gateways,
-        /* cache */ false,
-        /* asUrl */ false
-      )
+      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
       if (metadata?.associated_sol_wallets) {
         return metadata.associated_sol_wallets
       }
@@ -1502,15 +1451,9 @@ export const audiusBackend = ({
    * @returns Object The associated wallets mapping of address to nested signature
    */
   async function fetchUserAssociatedWallets(user: User) {
-    const gateways = getCreatorNodeIPFSGateways(user.creator_node_endpoint)
     const cid = user?.metadata_multihash ?? null
     if (cid) {
-      const metadata = await fetchCID(
-        cid,
-        gateways,
-        /* cache */ false,
-        /* asUrl */ false
-      )
+      const metadata = await fetchCID(cid, /* cache */ false, /* asUrl */ false)
       return {
         associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
         associated_wallets: metadata?.associated_wallets ?? null
