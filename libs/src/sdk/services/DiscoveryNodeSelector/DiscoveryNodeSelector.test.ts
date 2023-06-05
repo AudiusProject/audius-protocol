@@ -45,25 +45,20 @@ const NETWORK_DISCOVERY_NODES = [
   ...generateSlowerHealthyNodes(10)
 ]
 
-const healthyComms = {
-  healthy: true
-}
-
 const handlers = [
   rest.get(`${HEALTHY_NODE}/health_check`, (_req, res, ctx) => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
       block_difference: 0,
+      comms: {
+        healthy: true
+      },
       network: {
         discovery_nodes: NETWORK_DISCOVERY_NODES
       }
     }
-    return res(
-      ctx.delay(25),
-      ctx.status(200),
-      ctx.json({ data, comms: healthyComms })
-    )
+    return res(ctx.delay(25), ctx.status(200), ctx.json({ data }))
   }),
 
   // Slower healthy
@@ -77,9 +72,11 @@ const handlers = [
           data: {
             service: 'discovery-node',
             version: '1.2.3',
-            block_difference: 0
-          },
-          comms: healthyComms
+            block_difference: 0,
+            comms: {
+              healthy: true
+            }
+          }
         })
       )
     }
@@ -89,27 +86,36 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
-      block_difference: 50
+      block_difference: 50,
+      comms: {
+        healthy: true
+      }
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return res(ctx.status(200), ctx.json({ data }))
   }),
 
   rest.get(`${BEHIND_LARGE_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.3',
-      block_difference: 200
+      block_difference: 200,
+      comms: {
+        healthy: true
+      }
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return res(ctx.status(200), ctx.json({ data }))
   }),
 
   rest.get(`${BEHIND_PATCH_VERSION_NODE}/health_check`, (_req, res, ctx) => {
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.2.2',
-      block_difference: 0
+      block_difference: 0,
+      comms: {
+        healthy: true
+      }
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return res(ctx.status(200), ctx.json({ data }))
   }),
 
   rest.get(
@@ -118,9 +124,12 @@ const handlers = [
       const data: HealthCheckResponseData = {
         service: 'discovery-node',
         version: '1.2.2',
-        block_difference: 0
+        block_difference: 0,
+        comms: {
+          healthy: true
+        }
       }
-      return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+      return res(ctx.status(200), ctx.json({ data }))
     }
   ),
 
@@ -128,9 +137,12 @@ const handlers = [
     const data: HealthCheckResponseData = {
       service: 'discovery-node',
       version: '1.1.0',
-      block_difference: 0
+      block_difference: 0,
+      comms: {
+        healthy: true
+      }
     }
-    return res(ctx.status(200), ctx.json({ data, comms: healthyComms }))
+    return res(ctx.status(200), ctx.json({ data }))
   }),
 
   // Unhealthy (offline)
@@ -155,7 +167,7 @@ const handlers = [
       version: '1.2.3',
       block_difference: 0
     }
-    return res(ctx.json({ data, comms: healthyComms }))
+    return res(ctx.json({ data }))
   })
 ]
 const server = setupServer(...handlers)

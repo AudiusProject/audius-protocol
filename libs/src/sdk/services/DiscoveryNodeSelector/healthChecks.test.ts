@@ -9,7 +9,6 @@ describe('health_check', () => {
   test('no data is unhealthy', () => {
     const { health, reason } = parseHealthStatusReason({
       data: null,
-      comms: null,
       healthCheckThresholds: {
         maxSlotDiffPlays: 10,
         maxBlockDiff: 10,
@@ -31,10 +30,10 @@ describe('health_check', () => {
           tx_info: {
             slot_diff: 100
           }
+        },
+        comms: {
+          healthy: true
         }
-      },
-      comms: {
-        healthy: true
       },
       healthCheckThresholds: {
         maxSlotDiffPlays: 10,
@@ -57,10 +56,10 @@ describe('health_check', () => {
           tx_info: {
             slot_diff: 100
           }
+        },
+        comms: {
+          healthy: false
         }
-      },
-      comms: {
-        healthy: false
       },
       healthCheckThresholds: {
         maxSlotDiffPlays: 10,
