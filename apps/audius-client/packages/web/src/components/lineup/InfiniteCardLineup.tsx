@@ -15,7 +15,7 @@ type InfiniteLoadingProps = {
 
 export type InfiniteCardLineupProps = CardLineupProps & InfiniteLoadingProps
 
-const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
+export const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
   const { hasMore, loadMore, ...lineupProps } = props
   const scrollRef = useRef(null)
 
@@ -45,5 +45,3 @@ const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
     </>
   )
 }
-
-export default InfiniteCardLineup

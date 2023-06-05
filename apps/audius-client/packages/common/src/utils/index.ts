@@ -1,5 +1,6 @@
 export * from './allSettled'
 export * from './browserNotifications'
+export * from './collectionUtils'
 export * from './error'
 export * from './fillString'
 export * from './formatUtil'

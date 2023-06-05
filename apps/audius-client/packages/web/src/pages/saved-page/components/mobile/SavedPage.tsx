@@ -8,7 +8,7 @@ import {
 } from 'react'
 
 import {
-  AccountCollection,
+  filterCollections,
   CommonState,
   ID,
   Lineup,
@@ -22,10 +22,9 @@ import {
   User,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
-  statusIsNotFinalized,
   useFetchedSavedCollections,
   usePremiumContentAccessMap,
-  useSavedAlbums
+  useAccountAlbums
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -40,7 +39,7 @@ import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import CardLineup from 'components/lineup/CardLineup'
-import InfiniteCardLineup from 'components/lineup/InfiniteCardLineup'
+import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
@@ -200,27 +199,6 @@ const TracksLineup = ({
   )
 }
 
-type FilterCollectionsOptions = {
-  filterText?: string
-}
-
-const filterCollections = (
-  collections: AccountCollection[],
-  { filterText = '' }: FilterCollectionsOptions
-) => {
-  return collections.filter((item: AccountCollection) => {
-    if (filterText) {
-      const matchesPlaylistName =
-        item.name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-      const matchesOwnerName =
-        item.user.handle.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-
-      return matchesPlaylistName || matchesOwnerName
-    }
-    return true
-  })
-}
-
 type AlbumCardProps = {
   albumId: ID
 }
@@ -263,7 +241,8 @@ const AlbumCard = ({ albumId }: AlbumCardProps) => {
 const AlbumCardLineup = () => {
   const goToRoute = useGoToRoute()
 
-  const { data: unfilteredAlbums } = useSavedAlbums()
+  const { data: unfilteredAlbums, status: accountAlbumsStatus } =
+    useAccountAlbums()
   const [filterText, setFilterText] = useState('')
   const filteredAlbumIds = useMemo(
     () => filterCollections(unfilteredAlbums, { filterText }).map((a) => a.id),
@@ -272,7 +251,6 @@ const AlbumCardLineup = () => {
 
   const {
     data: fetchedAlbumIds,
-    status,
     hasMore,
     fetchMore
   } = useFetchedSavedCollections({
@@ -295,9 +273,12 @@ const AlbumCardLineup = () => {
 
   const contentRefCallback = useOffsetScroll()
 
+  const noSavedAlbums =
+    accountAlbumsStatus === Status.SUCCESS && unfilteredAlbums.length === 0
+
   return (
     <div className={styles.cardLineupContainer}>
-      {!statusIsNotFinalized(status) && unfilteredAlbums.length === 0 ? (
+      {noSavedAlbums ? (
         <EmptyTab
           message={
             <>
