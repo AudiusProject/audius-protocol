@@ -1,6 +1,6 @@
 import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
-import { GrantsAPI } from './api/grants/GrantsAPI'
+import { GrantsApi } from './api/grants/GrantsApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
@@ -176,7 +176,7 @@ const initializeApis = ({
     services.auth,
     services.discoveryNodeSelector
   )
-  const grants = new GrantsAPI(
+  const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,
     services.auth

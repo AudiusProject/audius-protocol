@@ -10,7 +10,7 @@ import { GRANT_REQUIRED_VALUES } from './constants'
 import type { CreateGrantRequest, RevokeGrantRequest } from './types'
 
 // Note (nkang): Eventually this will extend the generated GrantsAPI
-export class GrantsAPI {
+export class GrantsApi {
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,
@@ -41,11 +41,11 @@ export class GrantsAPI {
 
     const response = await this.entityManager.manageEntity({
       userId: decodedUserId,
-      entityType: EntityType.DELEGATION,
+      entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.CREATE,
       metadata: JSON.stringify({
-        delegate_address: appApiKey
+        grantee_address: appApiKey
       }),
       auth: this.auth
     })
@@ -82,11 +82,11 @@ export class GrantsAPI {
 
     const response = await this.entityManager.manageEntity({
       userId: decodedUserId,
-      entityType: EntityType.DELEGATION,
+      entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.DELETE,
       metadata: JSON.stringify({
-        delegate_address: appApiKey
+        grantee_address: appApiKey
       }),
       auth: this.auth
     })
