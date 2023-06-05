@@ -5,10 +5,7 @@ import { CreatorNode } from '../services/creatorNode'
  * Add secondary creator nodes for a user if they don't have any
  * Goal: Make it so users always have a replica set
  */
-export const addSecondaries = async (
-  libs: AudiusLibs,
-  writeMetadataThroughChain = false
-) => {
+export const addSecondaries = async (libs: AudiusLibs) => {
   console.debug('Sanity Check - addSecondaries')
   const user = libs.userStateManager?.getCurrentUser()
 
@@ -57,8 +54,7 @@ export const addSecondaries = async (
     )
     await libs.User?.updateCreator(
       user.user_id,
-      newMetadata,
-      writeMetadataThroughChain
+      newMetadata
     )
   }
 }

@@ -44,6 +44,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
+	if ss.isCidBlacklisted(ctx, key) {
+		return c.String(403, "cid is blacklisted by this node")
+	}
+
 	// If the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
@@ -112,7 +116,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
 	if err != nil {
-		ss.logger.Warn("unable to parse signature for request", c.QueryParam("signature"))
+		ss.logger.Warn("unable to parse signature for request", "signature", c.QueryParam("signature"))
 		return
 	}
 
@@ -149,14 +153,12 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		ss.logger.Error("unable to POST to identity service", err)
 		return
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		defer res.Body.Close()
 		resBody, _ := io.ReadAll(res.Body)
 		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
 	}
-
-	return
 }
 
 // checks signature from discovery node for cidstream endpoint + premium content.
