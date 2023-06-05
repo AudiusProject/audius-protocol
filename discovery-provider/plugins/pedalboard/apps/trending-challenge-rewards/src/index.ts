@@ -2,5 +2,5 @@ import { log } from "logger";
 import { main } from "./main";
 
 (async () => {
-  await main().catch(log);
+  await main().catch(console.error);
 })();

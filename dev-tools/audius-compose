@@ -343,6 +343,12 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up discovery provider notifications container",
 )
+@click.option(
+    "-p",
+    "--pedalboard",
+    is_flag=True,
+    help="Bring up the pedalboard containers",
+)
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
@@ -355,6 +361,7 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     notifs,
+    pedalboard,
     comms,
     args,
     services,
@@ -384,6 +391,7 @@ def up(
                 *(["--profile=block-explorer"] if block_explorer else []),
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=notifications"] if notifs else []),
+                *(["--profile=pedalboard"] if pedalboard else []),
                 *(["--profile=creator"] if creator_node_replicas > 0 else []),
                 *(["--profile=comms"] if comms else []),
                 *(["--profile=storagev2"]),

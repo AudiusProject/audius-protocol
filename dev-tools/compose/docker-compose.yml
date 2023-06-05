@@ -22,6 +22,7 @@ x-common: &common
     - "audius-protocol-solana-test-validator-1:host-gateway"
     - "audius-protocol-eth-ganache-1:host-gateway"
     - "audius-protocol-poa-ganache-1:host-gateway"
+    - "audius-protocol-pedalboard:host-gateway"
   deploy:
     resources:
       limits:
@@ -130,6 +131,19 @@ services:
       file: docker-compose.creator.yml
       service: creator-node
     <<: *common
+
+  # Pedalboard (plugins)
+  plugin-app-template:
+    extends:
+      file: docker-compose.pedalboard.yml
+      service: app-template
+    <<: *common
+
+  plugin-trending-challenge-rewards:
+    extends:
+      file: docker-compose.pedalboard.yml
+      service: trending-challenge-rewards
+    <<: *common  
 
   # Comms (aka dms)
 

@@ -10,6 +10,7 @@ import {
   getChallengesDisbursementsUserbanksFriendly,
   getTrendingChallenges,
 } from "./queries";
+import fetch from "node-fetch";
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const onCondition = async (app: App<SharedData>): Promise<void> => {
@@ -67,5 +68,14 @@ const assembleNodeGroups = async (libs: AudiusLibs): Promise<Result<Map<string, 
 }
 
 const canSuccessfullyAttest = async (endpoint: string, specifier: string, userId: number, challengeId: number): Promise<Result<boolean, string>> => {
-  return new Err("")
+  const urlRes = await makeAttestation()
+  if (urlRes.err) return urlRes
+  const url = urlRes.unwrap()
+  console.log({ url })
+  const res = await fetch(url)
+  return new Ok(res && res.ok)
+}
+
+const makeAttestation = async (): Promise<Result<string, string>> => {
+  return new Ok("")
 }
