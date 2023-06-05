@@ -44,7 +44,6 @@ const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
 
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
-    transform: [{ rotate: '180deg' }],
     marginLeft: -6
   },
   tile: {

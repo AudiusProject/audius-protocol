@@ -100,7 +100,11 @@ type CollectionScreenDetailsTileProps = {
   collectionId: number | SmartCollectionVariant
 } & Omit<
   DetailsTileProps,
-  'descriptionLinkPressSource' | 'details' | 'headerText' | 'onPressPlay'
+  | 'descriptionLinkPressSource'
+  | 'details'
+  | 'headerText'
+  | 'onPressPlay'
+  | 'collectionId'
 >
 
 const recordPlay = (id: Maybe<number>, play = true) => {
@@ -203,7 +207,6 @@ export const CollectionScreenDetailsTile = ({
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
-        hideArt
         showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
@@ -227,6 +230,7 @@ export const CollectionScreenDetailsTile = ({
   return (
     <DetailsTile
       {...detailsTileProps}
+      collectionId={typeof collectionId === 'number' ? collectionId : undefined}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}

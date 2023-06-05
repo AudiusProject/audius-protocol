@@ -25,12 +25,14 @@ import { AddCollectionCard } from '../collection-list/AddCollectionCard'
 import type { ImageProps } from '../image/FastImage'
 
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
+const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
+  addToPlaylistUISelectors
 const { getAccountWithOwnPlaylists } = accountSelectors
 
 const messages = {
   title: 'Add To Playlist',
-  addedToast: 'Added To Playlist!'
+  addedToast: 'Added To Playlist!',
+  hiddenAdd: 'You cannot add hidden tracks to a public playlist.'
 }
 
 const useStyles = makeStyles(() => ({
@@ -55,6 +57,7 @@ export const AddToPlaylistDrawer = () => {
   const { onClose } = useDrawerState('AddToPlaylist')
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
+  const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const user = useSelector(getAccountWithOwnPlaylists)
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
     FeatureFlags.PLAYLIST_UPDATES_PRE_QA
@@ -97,12 +100,18 @@ export const AddToPlaylistDrawer = () => {
         />
       ) : (
         <Card
+          style={{ opacity: isTrackUnlisted && !item.is_private ? 0.5 : 1 }}
           key={item.playlist_id}
           type='collection'
           id={item.playlist_id}
           primaryText={item.playlist_name}
           secondaryText={user?.name}
           onPress={() => {
+            // Don't add if the track is hidden, but playlist is public
+            if (isTrackUnlisted && !item.is_private) {
+              toast({ content: messages.hiddenAdd })
+              return
+            }
             toast({ content: messages.addedToast })
             dispatch(addTrackToPlaylist(trackId!, item.playlist_id))
             onClose()
@@ -113,6 +122,7 @@ export const AddToPlaylistDrawer = () => {
     [
       addToNewPlaylist,
       dispatch,
+      isTrackUnlisted,
       onClose,
       renderImage,
       toast,

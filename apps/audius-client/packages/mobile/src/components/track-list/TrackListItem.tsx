@@ -215,7 +215,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   } = track
   const { is_deactivated, name } = user
 
-  const isDeleted = is_delete || !!is_deactivated || is_unlisted
+  const isDeleted = is_delete || !!is_deactivated
+  const isUnlisted = is_unlisted
 
   const { isUserAccessTBD, doesUserHaveAccess } = usePremiumContentAccess(track)
   const isLocked = !isUserAccessTBD && !doesUserHaveAccess
@@ -305,7 +306,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const handlePressSave = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
     e.stopPropagation()
-    const isNotAvailable = isDeleted && !has_current_user_saved
+    const isNotAvailable = (isDeleted || isUnlisted) && !has_current_user_saved
     if (!isNotAvailable && onSave) {
       onSave(has_current_user_saved, track_id)
     }
@@ -353,6 +354,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               track={track as Track}
               isActive={isActive}
               isPlaying={isPlaying}
+              isUnlisted={isUnlisted}
             />
           ) : isActive && !isDeleted && !isLocked ? (
             <View style={styles.playButtonContainer}>

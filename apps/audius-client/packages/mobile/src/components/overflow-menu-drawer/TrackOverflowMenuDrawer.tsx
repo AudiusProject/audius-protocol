@@ -62,7 +62,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   if (!track || !user) {
     return null
   }
-  const { owner_id, title } = track
+  const { owner_id, title, is_unlisted } = track
   const { handle } = user
 
   if (!id || !owner_id || !handle || !title) {
@@ -81,7 +81,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatch(shareTrack(id, ShareSource.OVERFLOW)),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
-      dispatch(openAddToPlaylistModal(id, title)),
+      dispatch(openAddToPlaylistModal(id, title, is_unlisted)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation?.push('Track', { id })

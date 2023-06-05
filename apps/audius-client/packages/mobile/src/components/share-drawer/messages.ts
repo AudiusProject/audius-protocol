@@ -10,6 +10,8 @@ const shareTypeMap: Record<ShareType, string> = {
 
 export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
+  playlistShareHelperText:
+    'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.',
   twitter: 'Share to Twitter',
   instagramStory: 'Share to Instagram Story',
   snapchat: 'Share to Snapchat',

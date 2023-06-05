@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import type { Track, User, SearchTrack, SearchUser } from '@audius/common'
+import type { Track, User, SearchTrack, SearchUser, ID } from '@audius/common'
 import type { TextStyle } from 'react-native'
 
 import type { GestureResponderHandler } from 'app/types/gesture'
@@ -16,6 +16,9 @@ export type DetailsTileDetail = {
 }
 
 export type DetailsTileProps = {
+  /** Id of the collection */
+  collectionId?: ID
+
   /** Cosign information */
   coSign?: Track['_co_sign']
 

@@ -9,12 +9,14 @@ type AddToPlaylistActions = ActionType<typeof actions>
 export type AddToPlaylistState = {
   trackId: ID | null
   trackTitle: string | null
+  isUnlisted: boolean
 }
 
 const initialState = {
   isOpen: false,
   trackId: null,
-  trackTitle: null
+  trackTitle: null,
+  isUnlisted: false
 }
 
 const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
@@ -24,14 +26,16 @@ const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
       return {
         ...state,
         trackId: action.trackId,
-        trackTitle: action.trackTitle
+        trackTitle: action.trackTitle,
+        isUnlisted: action.isUnlisted ?? false
       }
     },
     [actions.CLOSE](state, _action) {
       return {
         ...state,
         trackId: null,
-        trackTitle: null
+        trackTitle: null,
+        isUnlisted: false
       }
     }
   }

@@ -181,6 +181,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
  * The details shown at the top of the Track Screen and Collection Screen
  */
 export const DetailsTile = ({
+  collectionId,
   coSign,
   description,
   descriptionLinkPressSource,
@@ -393,6 +394,7 @@ export const DetailsTile = ({
               hideShare={hideShare}
               isOwner={isOwner}
               isPlaylist={isPlaylist}
+              collectionId={collectionId}
               isPublished={isPublished}
               onPressEdit={onPressEdit}
               onPressOverflow={onPressOverflow}
