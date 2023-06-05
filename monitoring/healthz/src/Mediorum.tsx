@@ -17,6 +17,8 @@ export function Mediorum() {
             <th>ver</th>
             <th>built at</th>
             <th>started at</th>
+            <th>uploads</th>
+            <th>problem blobs</th>
           </tr>
         </thead>
         <tbody>
@@ -34,6 +36,10 @@ export function MediorumRow({ sp }: { sp: SP }) {
     [sp.endpoint + '/internal/health'],
     fetchUrl
   )
+  const { data: metrics } = useQuery(
+    [sp.endpoint + '/internal/metrics'],
+    fetchUrl
+  )
   return (
     <tr>
       <td>
@@ -46,6 +52,8 @@ export function MediorumRow({ sp }: { sp: SP }) {
       <td>
         <RelTime date={deets?.started_at} />
       </td>
+      <td>{metrics?.uploads}</td>
+      <td>{metrics?.problem_blobs}</td>
     </tr>
   )
 }

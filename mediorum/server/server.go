@@ -220,6 +220,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/debug/uploads", ss.dumpUploads)
 	routes.GET("/debug/ls", ss.getLs)
 	routes.GET("/debug/peers", ss.debugPeers)
+	routes.GET("/debug/cid", ss.debugCidCursor)
 
 	// -------------------
 	// internal
@@ -234,7 +235,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)
 	internalApi.GET("/health/peers", ss.getPeerHealth)
-	internalApi.GET("/debug/cid", ss.debugCid) // move here until mediorum first for all
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)

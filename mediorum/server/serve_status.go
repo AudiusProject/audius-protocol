@@ -9,7 +9,7 @@ import (
 	"gocloud.dev/blob"
 )
 
-type CidCursor struct {
+type cidCursor struct {
 	Host      string    `json:"host"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -46,9 +46,9 @@ func (ss *MediorumServer) debugPeers(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) debugCid(c echo.Context) error {
+func (ss *MediorumServer) debugCidCursor(c echo.Context) error {
 	ctx := context.Background()
-	cidCursors := []CidCursor{}
+	cidCursors := []cidCursor{}
 	sql := `select * from cid_cursor order by host`
 	err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, sql)
 
