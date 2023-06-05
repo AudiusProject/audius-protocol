@@ -1,5 +1,8 @@
 import { ID } from '../../models/Identifiers'
 
+/** A minimal record of a collection saved to an account. Can be used to fetch
+ * a full Collection record if extended metadata is needed.
+ */
 export type AccountCollection = {
   id: ID
   name: string

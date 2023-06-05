@@ -2,32 +2,30 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ID, Nullable, Track, UID, User } from '@audius/common'
 import {
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  savedPageActions,
-  Status,
   FavoriteSource,
   PlaybackSource,
-  savedPageTracksLineupActions as tracksActions,
+  Status,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  reachabilitySelectors,
+  savedPageActions,
   savedPageSelectors,
-  tracksSocialActions,
-  reachabilitySelectors
+  savedPageTracksLineupActions as tracksActions,
+  tracksSocialActions
 } from '@audius/common'
-import { isEqual, debounce } from 'lodash'
+import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { FilterInput } from './FilterInput'
+import { LoadingMoreSpinner } from './LoadingMoreSpinner'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useFavoritesLineup } from './useFavoritesLineup'
@@ -71,7 +69,6 @@ export const TracksTab = () => {
   const dispatch = useDispatch()
   const styles = useStyles()
   const isReachable = useSelector(getIsReachable)
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   const [filterValue, setFilterValue] = useState('')
   const [fetchPage, setFetchPage] = useState(0)
@@ -129,7 +126,7 @@ export const TracksTab = () => {
     if (
       allTracksFetched ||
       isFetchingMore ||
-      (isOfflineModeEnabled && !isReachable) ||
+      !isReachable ||
       trackUids.length < fetchPage * FETCH_LIMIT
     ) {
       return
@@ -146,7 +143,6 @@ export const TracksTab = () => {
     fetchPage,
     filterValue,
     isFetchingMore,
-    isOfflineModeEnabled,
     isReachable,
     trackUids.length
   ])
@@ -179,10 +175,12 @@ export const TracksTab = () => {
     return debounce(setFilterValue, 250)
   }, [])
 
+  const loadingSpinner = <LoadingMoreSpinner />
+
   return (
     <VirtualizedScrollView>
       {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
-        isOfflineModeEnabled && !isReachable ? (
+        !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
           <EmptyTileCTA message={messages.emptyTabText} />
@@ -215,15 +213,7 @@ export const TracksTab = () => {
                   />
                 </Tile>
               ) : null}
-              {isFetchingMore ? (
-                <LoadingSpinner
-                  style={{
-                    alignSelf: 'center',
-                    marginTop: spacing(1),
-                    marginBottom: spacing(8)
-                  }}
-                />
-              ) : null}
+              {isFetchingMore ? loadingSpinner : null}
             </Animated.View>
           </WithLoader>
         </>

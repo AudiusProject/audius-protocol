@@ -1,7 +1,3 @@
-import { accountActions } from '@audius/common'
-import { useDispatch } from 'react-redux'
-import { useEffectOnce } from 'react-use'
-
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconFavorite from 'app/assets/images/iconFavorite.svg'
 import IconNote from 'app/assets/images/iconNote.svg'
@@ -9,16 +5,12 @@ import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import {
-  useIsOfflineModeEnabled,
-  useReadOfflineOverride
-} from 'app/hooks/useIsOfflineModeEnabled'
+import { useReadOfflineOverride } from 'app/hooks/useIsOfflineModeEnabled'
 
 import { AlbumsTab } from './AlbumsTab'
 import { FavoritesDownloadSection } from './FavoritesDownloadSection'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
-const { fetchSavedPlaylists, fetchSavedAlbums } = accountActions
 
 const messages = {
   header: 'Favorites'
@@ -44,15 +36,7 @@ const favoritesScreens = [
 
 export const FavoritesScreen = () => {
   useAppTabScreen()
-  const dispatch = useDispatch()
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
-
   useReadOfflineOverride()
-
-  useEffectOnce(() => {
-    dispatch(fetchSavedPlaylists())
-    dispatch(fetchSavedAlbums())
-  })
 
   return (
     <Screen>
@@ -61,9 +45,9 @@ export const FavoritesScreen = () => {
         icon={IconFavorite}
         styles={{ icon: { marginLeft: 3 } }}
       >
-        {isOfflineModeEnabled ? <FavoritesDownloadSection /> : null}
+        <FavoritesDownloadSection />
       </ScreenHeader>
-      <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
+      <ScreenContent isOfflineCapable>
         <TopTabNavigator
           screens={favoritesScreens}
           screenOptions={{ lazy: true }}

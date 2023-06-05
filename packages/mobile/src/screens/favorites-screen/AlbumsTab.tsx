@@ -1,17 +1,17 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors, statusIsNotFinalized } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 import { VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
-import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 
 import { FilterInput } from './FilterInput'
+import { LoadingMoreSpinner } from './LoadingMoreSpinner'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
-import { useCollectionScreenData } from './useCollectionScreenData'
+import { useCollectionsScreenData } from './useCollectionsScreenData'
 
 const { getIsReachable } = reachabilitySelectors
 
@@ -22,15 +22,29 @@ const messages = {
 
 export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
-  const { filteredCollections: userAlbums, collectionIdsToNumTracks } =
-    useCollectionScreenData(filterValue, 'albums')
+  const {
+    collectionIds: userAlbums,
+    hasMore,
+    fetchMore,
+    status
+  } = useCollectionsScreenData({
+    filterValue,
+    collectionType: 'albums'
+  })
   const isReachable = useSelector(getIsReachable)
-  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+
+  const handleEndReached = useCallback(() => {
+    if (isReachable && hasMore) {
+      fetchMore()
+    }
+  }, [isReachable, hasMore, fetchMore])
+
+  const loadingSpinner = <LoadingMoreSpinner />
 
   return (
     <VirtualizedScrollView>
-      {!userAlbums?.length && !filterValue ? (
-        isOfflineModeEnabled && !isReachable ? (
+      {!statusIsNotFinalized(status) && !userAlbums?.length && !filterValue ? (
+        !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
           <EmptyTileCTA message={messages.emptyTabText} />
@@ -44,9 +58,15 @@ export const AlbumsTab = () => {
             onChangeText={setFilterValue}
           />
           <CollectionList
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
             scrollEnabled={false}
-            collection={userAlbums}
-            collectionIdsToNumTracks={collectionIdsToNumTracks}
+            collectionIds={userAlbums}
+            ListFooterComponent={
+              statusIsNotFinalized(status) && isReachable
+                ? loadingSpinner
+                : null
+            }
             style={{ marginVertical: 12 }}
           />
         </>

@@ -30,7 +30,6 @@ const {
   getUserId,
   getUserHandle,
   getAccountUser,
-  getAccountAlbumIds,
   getAccountSavedPlaylistIds,
   getAccountOwnedPlaylistIds,
   getAccountToCache
@@ -46,7 +45,6 @@ const {
   twitterLogin,
   instagramLogin,
   tikTokLogin,
-  fetchSavedAlbums,
   fetchSavedPlaylists,
   addAccountPlaylist
 } = accountActions
@@ -361,14 +359,6 @@ function* associateTikTokAccount(action) {
   }
 }
 
-function* fetchSavedAlbumsAsync() {
-  yield waitForRead()
-  const cachedSavedAlbums = yield select(getAccountAlbumIds)
-  if (cachedSavedAlbums.length > 0) {
-    yield call(retrieveCollections, cachedSavedAlbums)
-  }
-}
-
 function* fetchSavedPlaylistsAsync() {
   yield waitForRead()
 
@@ -413,10 +403,6 @@ function* watchTikTokLogin() {
   yield takeEvery(tikTokLogin.type, associateTikTokAccount)
 }
 
-function* watchFetchSavedAlbums() {
-  yield takeEvery(fetchSavedAlbums.type, fetchSavedAlbumsAsync)
-}
-
 function* watchFetchSavedPlaylists() {
   yield takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
 }
@@ -433,7 +419,6 @@ export default function sagas() {
     watchTwitterLogin,
     watchInstagramLogin,
     watchTikTokLogin,
-    watchFetchSavedAlbums,
     watchFetchSavedPlaylists,
     watchAddAccountPlaylist
   ]
