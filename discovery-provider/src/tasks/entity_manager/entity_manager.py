@@ -594,14 +594,14 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             and_queries.append(
                 and_(
                     Grant.user_id == grantor_user_id,
-                    Grant.grantee_address == grantee_address,
+                    func.lower(Grant.grantee_address) == grantee_address,
                     Grant.is_current == True,
                 )
             )
 
         grants: List[Grant] = session.query(Grant).filter(or_(*and_queries)).all()
         existing_entities[EntityType.GRANT] = {
-            (grant.grantee_address, grant.user_id): grant for grant in grants
+            (grant.grantee_address.lower(), grant.user_id): grant for grant in grants
         }
         for grant in grants:
             entities_to_fetch[EntityType.DEVELOPER_APP].add(

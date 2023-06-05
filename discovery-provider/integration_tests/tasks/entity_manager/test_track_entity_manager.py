@@ -340,7 +340,7 @@ def test_index_valid_track(app, mocker):
                         "_userId": 2,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateTrack4", "data": {track4_json}}}',
-                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
             },
