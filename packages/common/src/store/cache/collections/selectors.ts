@@ -69,6 +69,32 @@ export const getCollectionsByUid = (state: CommonState) => {
   }, {} as { [uid: string]: Collection | null })
 }
 
+const getCollectionTracks = (state: CommonState, { id }: { id?: ID }) => {
+  const collection = getCollection(state, { id })
+  const collectionTrackIds = collection?.playlist_contents.track_ids.map(
+    (track_id) => track_id.track // track === actual track id, oof
+  )
+  return getTracks(state, { ids: collectionTrackIds })
+}
+
+export const getIsCollectionEmpty = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const collectionTracks = getCollectionTracks(state, { id })
+
+  return Object.values(collectionTracks).length === 0
+}
+
+export const getCollecitonHasHiddenTracks = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const collectionTracks = getCollectionTracks(state, { id })
+
+  return Object.values(collectionTracks)?.some((track) => track.is_unlisted)
+}
+
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   const statuses: { [id: number]: Status } = {}
   props.ids.forEach((id) => {

@@ -2,14 +2,17 @@ import type { Track } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 import { View } from 'react-native'
 
+import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconPause from 'app/assets/images/pbIconPauseAlt.svg'
 import IconPlay from 'app/assets/images/pbIconPlayAlt.svg'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 type TrackArtworkProps = {
   track: Track
   isActive?: boolean
+  isUnlisted?: boolean
   isPlaying: boolean
 }
 
@@ -31,8 +34,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const TrackArtwork = (props: TrackArtworkProps) => {
-  const { isPlaying, isActive, track } = props
+  const { isPlaying, isActive, track, isUnlisted } = props
   const styles = useStyles()
+  const { staticWhite } = useThemeColors()
 
   const ActiveIcon = isPlaying ? IconPause : IconPlay
 
@@ -42,6 +46,11 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
       size={SquareSizes.SIZE_150_BY_150}
       style={styles.image}
     >
+      {isUnlisted && !isActive ? (
+        <View style={styles.artworkIcon}>
+          <IconHidden fill={staticWhite} />
+        </View>
+      ) : null}
       {isActive ? (
         <View style={styles.artworkIcon}>
           <ActiveIcon />

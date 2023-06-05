@@ -23,7 +23,6 @@ import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
@@ -43,14 +42,17 @@ const { getAccountUser } = accountSelectors
 
 export const shareToastTimeout = 1500
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(({ spacing }) => ({
+  titleContainer: {
+    paddingBottom: spacing(4)
+  },
   title: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 16
+    paddingTop: spacing(2),
+    paddingBottom: spacing(4)
   },
   titleText: {
     textTransform: 'uppercase'
@@ -58,12 +60,16 @@ const useStyles = makeStyles(() => ({
   titleIcon: {
     marginRight: spacing(3)
   },
+  titleHelperText: {
+    paddingHorizontal: spacing(4),
+    textAlign: 'center'
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24
+    paddingVertical: spacing(3),
+    paddingHorizontal: spacing(6)
   },
   viewShot: {
     position: 'absolute',
@@ -257,21 +263,28 @@ export const ShareDrawer = () => {
         modalName='Share'
         rows={getRows()}
         renderTitle={() => (
-          <View style={styles.title}>
-            <IconShare
-              style={styles.titleIcon}
-              fill={neutralLight2}
-              height={18}
-              width={20}
-            />
-            <Text
-              weight='heavy'
-              color='neutralLight2'
-              fontSize='xl'
-              style={styles.titleText}
-            >
-              {messages.modalTitle(shareType)}
-            </Text>
+          <View style={styles.titleContainer}>
+            <View style={styles.title}>
+              <IconShare
+                style={styles.titleIcon}
+                fill={neutralLight2}
+                height={18}
+                width={20}
+              />
+              <Text
+                weight='heavy'
+                color='neutralLight2'
+                fontSize='xl'
+                style={styles.titleText}
+              >
+                {messages.modalTitle(shareType)}
+              </Text>
+            </View>
+            {shareType === 'playlist' ? (
+              <Text style={styles.titleHelperText} fontSize={'large'}>
+                {messages.playlistShareHelperText}
+              </Text>
+            ) : null}
           </View>
         )}
         styles={{ row: styles.row }}

@@ -11,7 +11,7 @@ const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 
 function* handleRequestOpen(action: ReturnType<typeof actions.requestOpen>) {
   yield put(fetchSavedPlaylists())
-  yield put(actions.open(action.trackId, action.trackTitle))
+  yield put(actions.open(action.trackId, action.trackTitle, action.isUnlisted))
   yield put(setVisibility({ modal: 'AddToPlaylist', visible: true }))
 }
 

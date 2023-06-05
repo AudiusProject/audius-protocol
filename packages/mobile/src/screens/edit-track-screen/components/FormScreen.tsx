@@ -1,12 +1,10 @@
 import type { ReactElement, ReactNode } from 'react'
 
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import type { ScreenProps } from 'app/components/core'
 import { ScreenContent, Button, Screen } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -34,7 +32,6 @@ export const FormScreen = (props: FormScreenProps) => {
   const { children, bottomSection, style: styleProp, ...other } = props
   const styles = useStyles()
   const navigation = useNavigation()
-  const isKeyboardOpen = useSelector(getIsKeyboardOpen)
 
   const defaultBottomSection = (
     <Button
@@ -50,11 +47,9 @@ export const FormScreen = (props: FormScreenProps) => {
     <Screen variant='secondary' style={[styles.root, styleProp]} {...other}>
       <ScreenContent>
         {children}
-        {isKeyboardOpen ? null : (
-          <View style={styles.bottomSection}>
-            {bottomSection ?? defaultBottomSection}
-          </View>
-        )}
+        <View style={styles.bottomSection}>
+          {bottomSection ?? defaultBottomSection}
+        </View>
       </ScreenContent>
     </Screen>
   )
