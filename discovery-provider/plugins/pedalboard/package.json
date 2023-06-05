@@ -13,7 +13,9 @@
   "dependencies": {
     "@audius/libs": "^1.2.118",
     "@audius/sdk": "^2.0.3-beta.20",
+    "@types/node-fetch": "^2.6.4",
     "app-template": "^0.0.0",
+    "axios": "^1.4.0",
     "basekit": "^0.0.0",
     "knex": "^2.4.2",
     "moment": "^2.29.4",

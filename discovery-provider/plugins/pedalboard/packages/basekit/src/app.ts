@@ -33,8 +33,7 @@ export default class App<AppData> {
       this.discoveryDb = knex({
         client: "pg",
         connection: {
-          connectionString:
-          discoveryConnectionString,
+          connectionString: discoveryConnectionString,
         },
       });
     }
@@ -151,7 +150,7 @@ export default class App<AppData> {
 
   private async initListenHandlers(): Promise<(() => Promise<void>)[]> {
     const db = this.discoveryDb;
-    if (db === undefined) return []
+    if (db === undefined) return [];
     const func = async () => {
       const conn = await db.client.acquireConnection().catch(console.error);
       conn.on("notification", async (msg: any) => {

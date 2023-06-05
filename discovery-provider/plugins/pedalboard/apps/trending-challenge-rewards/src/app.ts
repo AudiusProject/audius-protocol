@@ -1,6 +1,6 @@
 import App from "basekit/src/app";
-import { Knex } from "knex"
-import { Ok, Err, Result } from 'ts-results';
+import { Knex } from "knex";
+import { Ok, Err, Result } from "ts-results";
 import { AudiusLibs } from "@audius/sdk";
 import { SharedData } from "./config";
 import {
@@ -11,37 +11,44 @@ import {
   getTrendingChallenges,
 } from "./queries";
 import fetch from "node-fetch";
+import axios from "axios";
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const onCondition = async (app: App<SharedData>): Promise<void> => {
-  const disburse = await onDisburse(app)
-  disburse.mapErr(console.error)
-}
-
-export const onDisburse = async (app: App<SharedData>): Promise<Result<undefined, string>> => {
-  const db = app.getDnDb();
-  const libs = app.viewAppData().libs
-
-  const startingBlockRes = await findStartingBlock(db)
-  if (startingBlockRes.err) return startingBlockRes
-  const [startingBlock, specifier] = startingBlockRes.unwrap()
-
-  const nodeGroupsRes = await assembleNodeGroups(libs)
-  if(nodeGroupsRes.err) return nodeGroupsRes
-  const nodeGroups = nodeGroupsRes.unwrap()
-
-  return new Ok(undefined)
+  const disburse = await onDisburse(app);
+  disburse.mapErr(console.error);
 };
 
-const findStartingBlock = async (db: Knex): Promise<Result<[number, string], string>> => {
-  const challenges = await getTrendingChallenges(db)
-  const firstChallenge = challenges.at(0)
-  if (firstChallenge === undefined) return new Err(`no challenges found ${challenges}`)
-  const completedBlocknumber = firstChallenge.completed_blocknumber
-  if (completedBlocknumber === null) return new Err(`completed block number is null ${firstChallenge}`)
-  const specifier = firstChallenge.specifier
-  return new Ok([completedBlocknumber, specifier])
-}
+export const onDisburse = async (
+  app: App<SharedData>
+): Promise<Result<undefined, string>> => {
+  const db = app.getDnDb();
+  const libs = app.viewAppData().libs;
+
+  const startingBlockRes = await findStartingBlock(db);
+  if (startingBlockRes.err) return startingBlockRes;
+  const [startingBlock, specifier] = startingBlockRes.unwrap();
+
+  const nodeGroupsRes = await assembleNodeGroups(libs);
+  if (nodeGroupsRes.err) return nodeGroupsRes;
+  const nodeGroups = nodeGroupsRes.unwrap();
+
+  return new Ok(undefined);
+};
+
+const findStartingBlock = async (
+  db: Knex
+): Promise<Result<[number, string], string>> => {
+  const challenges = await getTrendingChallenges(db);
+  const firstChallenge = challenges.at(0);
+  if (firstChallenge === undefined)
+    return new Err(`no challenges found ${challenges}`);
+  const completedBlocknumber = firstChallenge.completed_blocknumber;
+  if (completedBlocknumber === null)
+    return new Err(`completed block number is null ${firstChallenge}`);
+  const specifier = firstChallenge.specifier;
+  return new Ok([completedBlocknumber, specifier]);
+};
 
 // copied from libs because I couldn't figure out where to import it
 type Node = {
@@ -49,33 +56,176 @@ type Node = {
   spID?: string;
   owner: string;
   delegateOwnerWallet: string;
-}
+};
 
-const assembleNodeGroups = async (libs: AudiusLibs): Promise<Result<Map<string, Node[]>, string>> => {
-  const nodes = await libs.ServiceProvider?.discoveryProvider.serviceSelector.getServices({ verbose: true })
-  if (nodes === undefined) return new Err("no nodes returned from libs service provider")
-  const groups = new Map<string, Node[]>()
+const assembleNodeGroups = async (
+  libs: AudiusLibs
+): Promise<Result<Map<string, Node[]>, string>> => {
+  const nodes =
+    await libs.ServiceProvider?.discoveryProvider.serviceSelector.getServices({
+      verbose: true,
+    });
+  if (nodes === undefined)
+    return new Err("no nodes returned from libs service provider");
+  const groups = new Map<string, Node[]>();
   for (const node of nodes) {
-    const ownerNodes = groups.get(node.owner)
+    const ownerNodes = groups.get(node.owner);
     if (ownerNodes === undefined) {
-      groups.set(node.owner, [node])
+      groups.set(node.owner, [node]);
     } else {
-      ownerNodes.push(node)
-      groups.set(node.owner, ownerNodes)
+      ownerNodes.push(node);
+      groups.set(node.owner, ownerNodes);
     }
   }
-  return new Ok(groups)
-}
+  return new Ok(groups);
+};
 
-const canSuccessfullyAttest = async (endpoint: string, specifier: string, userId: number, challengeId: number): Promise<Result<boolean, string>> => {
-  const urlRes = await makeAttestation()
-  if (urlRes.err) return urlRes
-  const url = urlRes.unwrap()
-  console.log({ url })
-  const res = await fetch(url)
-  return new Ok(res && res.ok)
-}
+const canSuccessfullyAttest = async (
+  endpoint: string,
+  specifier: string,
+  userId: number,
+  challengeId: string
+): Promise<Result<boolean, string>> => {
+  const url = makeAttestationEndpoint(
+    endpoint,
+    specifier,
+    userId,
+    challengeId,
+    ""
+  );
+  console.log({ url });
+  const res = await fetch(url);
+  return new Ok(res && res.ok);
+};
 
-const makeAttestation = async (): Promise<Result<string, string>> => {
-  return new Ok("")
-}
+const makeAttestationEndpoint = (
+  endpoint: string,
+  specifier: string,
+  userId: number,
+  challengeId: string,
+  oracleEthAddress: string
+): string =>
+  `${endpoint}/v1/challenges/${challengeId}/attest?oracle=${oracleEthAddress}&specifier=${encodeURIComponent(
+    specifier
+  )}&user_id=${userId}`;
+
+type Challenge = {
+  challenge_id: string;
+  user_id: string;
+  specifier: string;
+  amount: string;
+  completed_blocknumber: number;
+  handle: string;
+  wallet: string;
+};
+
+const getAllChallenges = async (startBlock: number) => {
+  const res = await axios.get(
+    `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
+  );
+  const data: Challenge[] = res.data.data;
+
+  const toDisburse = data.filter((c) =>
+    ["tt", "tp", "tut"].includes(c.challenge_id)
+  );
+
+  console.log(`Found ${toDisburse.length} trending challenges to disburse`);
+  let possibleNodeSet = [];
+  let possibleChallenges = [];
+  let impossibleChallenges = [];
+  let congestionErrors = [];
+  let setToChallengeMap = {};
+
+  for (const challenge of toDisburse) {
+    console.log(`Trying challenge: ${JSON.stringify(challenge)}`);
+
+    let isValidNodeSet = possibleNodeSet.length === 3;
+    // Ensure any pre-existing set is valid
+    if (isValidNodeSet) {
+      console.log("Validing existing node set...");
+      for (const endpoint of possibleNodeSet) {
+        const canAttest = await canSuccessfullyAttest(
+          endpoint,
+          challenge.specifier,
+          challenge.user_id,
+          challenge.challenge_id
+        );
+
+        if (!canAttest) {
+          isValidNodeSet = false;
+          console.info("Invalid node set");
+          break;
+        }
+      }
+    }
+    // select again if needed
+    if (!isValidNodeSet) {
+      possibleNodeSet = [];
+      console.log("Node set not valid. Selecting nodes...");
+      for (const nodeGroup of Object.values(groups)) {
+        if (possibleNodeSet.length === 3) {
+          console.log(`Got 3 nodes!: ${JSON.stringify(possibleNodeSet)}`);
+          break;
+        }
+
+        for (const node of nodeGroup) {
+          const canAttest = await canSuccessfullyAttest(
+            node.endpoint,
+            challenge.specifier,
+            challenge.user_id,
+            challenge.challenge_id
+          );
+          if (canAttest) {
+            console.log(`Found attestable node: ${node.endpoint}`);
+            possibleNodeSet.push(node.endpoint);
+          }
+          // Can't add another from this node group, so break
+          break;
+        }
+      }
+    } else {
+      console.log("Valid node set found!");
+    }
+    // did we succeed?
+    if (possibleNodeSet.length !== 3) {
+      console.log(
+        `Could not find a valid node set for challenge: ${JSON.stringify(
+          challenge
+        )}, skipping.`
+      );
+      impossibleChallenges.push(challenge);
+      // reset it for next time
+      possibleNodeSet = [];
+      continue;
+    }
+
+    possibleChallenges.push({ challenge });
+    const key = possibleNodeSet.sort().join(",");
+    setToChallengeMap[key] = [...(setToChallengeMap[key] ?? []), challenge];
+
+    console.log(`Attesting for challenge: ${JSON.stringify(challenge)}`);
+
+    const { error } = await audiusLibs.Rewards.submitAndEvaluate({
+      challengeId: challenge.challenge_id,
+      encodedUserId: challenge.user_id,
+      handle: challenge.handle,
+      recipientEthAddress: challenge.wallet,
+      specifier: challenge.specifier,
+      oracleEthAddress,
+      amount: parseInt(challenge.amount),
+      quorumSize: 3,
+      AAOEndpoint,
+      instructionsPerTransaction: 2,
+      maxAggregationAttempts: 1,
+      endpoints: possibleNodeSet,
+      feePayerOverride: "HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+    });
+
+    if (error) {
+      console.log(
+        "Challenge was unattestable despite new nodes, aborting..." +
+          JSON.stringify(challenge)
+      );
+    }
+  }
+};

@@ -7,7 +7,7 @@ type SharedData = {};
 const main = async () => {
   await new App<SharedData>({})
     .tick({ seconds: 5 }, async (_app) => {
-      console.log(`tick ${moment().calendar()}`)
+      console.log(`tick ${moment().calendar()}`);
     })
     .run();
 };

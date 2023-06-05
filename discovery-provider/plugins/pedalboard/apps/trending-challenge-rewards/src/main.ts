@@ -13,7 +13,7 @@ export const main = async () => {
     feePayerOverride: "",
     libs,
     sdk: audiusSdk,
-    localEndpoint: ""
+    localEndpoint: "",
   })
     .cron(condition, onCondition)
     .run();
