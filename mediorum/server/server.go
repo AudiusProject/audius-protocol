@@ -5,11 +5,13 @@ import (
 	"crypto/ecdsa"
 	"log"
 	"mediorum/crudr"
+	"mediorum/ethcontracts"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -57,13 +59,14 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo      *echo.Echo
-	bucket    *blob.Bucket
-	placement *placement
-	logger    *slog.Logger
-	crud      *crudr.Crudr
-	pgPool    *pgxpool.Pool
-	quit      chan os.Signal
+	echo            *echo.Echo
+	bucket          *blob.Bucket
+	placement       *placement
+	logger          *slog.Logger
+	crud            *crudr.Crudr
+	pgPool          *pgxpool.Pool
+	quit            chan os.Signal
+	trustedNotifier *ethcontracts.NotifierInfo
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -138,6 +141,19 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud)
 
+	// Read trusted notifier endpoint from chain
+	var trustedNotifier ethcontracts.NotifierInfo
+	if config.TrustedNotifierID > 0 {
+		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID))
+		if err == nil {
+			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
+		} else {
+			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", err)
+		}
+	} else {
+		slog.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
+	}
+
 	// echoServer server
 	echoServer := echo.New()
 	echoServer.HideBanner = true
@@ -151,13 +167,14 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Use(middleware.Logger())
 
 	ss := &MediorumServer{
-		echo:      echoServer,
-		bucket:    bucket,
-		placement: newPlacement(config),
-		crud:      crud,
-		pgPool:    pgPool,
-		logger:    logger,
-		quit:      make(chan os.Signal, 1),
+		echo:            echoServer,
+		bucket:          bucket,
+		placement:       newPlacement(config),
+		crud:            crud,
+		pgPool:          pgPool,
+		logger:          logger,
+		quit:            make(chan os.Signal, 1),
+		trustedNotifier: &trustedNotifier,
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -168,9 +185,18 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS())
 
-	// public: uis
-	routes.GET("", ss.serveUploadUI)
-	routes.GET("/", ss.serveUploadUI)
+	if config.Env != "stage" && config.Env != "prod" {
+		// public: uis
+		routes.GET("", ss.serveUploadUI)
+		routes.GET("/", ss.serveUploadUI)
+	} else {
+		routes.GET("", func(c echo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/status")
+		})
+		routes.GET("/", func(c echo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/status")
+		})
+	}
 
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads)
@@ -185,7 +211,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:cid", ss.getBlob)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
 
 	// status + debug:
@@ -194,11 +220,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/debug/uploads", ss.dumpUploads)
 	routes.GET("/debug/ls", ss.getLs)
 	routes.GET("/debug/peers", ss.debugPeers)
-
-	// legacy:
-	routes.GET("/cid/:cid", ss.serveLegacyCid)
-	routes.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
-	routes.GET("/metadata", ss.serveCidMetadata)
 
 	// -------------------
 	// internal
@@ -213,6 +234,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)
 	internalApi.GET("/health/peers", ss.getPeerHealth)
+	internalApi.GET("/debug/cid", ss.debugCid) // move here until mediorum first for all
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)

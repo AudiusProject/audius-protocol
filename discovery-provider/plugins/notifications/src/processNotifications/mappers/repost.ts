@@ -38,7 +38,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     this.repostUserId = this.notification.data.user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

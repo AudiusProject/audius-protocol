@@ -40,7 +40,13 @@ def cache_current_nodes_task(self):
             logger.info("cache_current_nodes.py | set current discovery nodes in redis")
 
             logger.info("cache_current_nodes.py | fetching all other content nodes")
-            content_nodes = get_all_other_content_nodes()[0]
+            content_node_endpoints, content_node_wallets = get_all_other_content_nodes()
+            content_nodes = [
+                {"endpoint": endpoint, "delegateOwnerWallet": delegateOwnerWallet}
+                for endpoint, delegateOwnerWallet in zip(
+                    content_node_endpoints, content_node_wallets
+                )
+            ]
 
             set_json_cached_key(redis, ALL_CONTENT_NODES_CACHE_KEY, content_nodes)
             logger.info("cache_current_nodes.py | set current content nodes in redis")

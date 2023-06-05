@@ -16,7 +16,7 @@ machine:
 steps:
   - when:
       condition:
-        matches: { pattern: "^true$", value: << parameters.freeze >> }
+        matches: { pattern: "true", value: << parameters.freeze >> }
       steps:
         - run: circleci-agent step halt
   - run:

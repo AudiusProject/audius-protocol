@@ -142,7 +142,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
     return latest_block
 
 
-def update_latest_block_redis():
+def update_latest_block_redis(final_poa_block):
     latest_block_from_chain = web3.eth.get_block("latest", True)
     default_indexing_interval_seconds = int(
         update_task.shared_config["discprov"]["block_processing_interval_sec"]
@@ -151,7 +151,7 @@ def update_latest_block_redis():
     # these keys have a TTL which is the indexing interval
     redis.set(
         latest_block_redis_key,
-        latest_block_from_chain.number,
+        latest_block_from_chain.number + (final_poa_block or 0),
         ex=default_indexing_interval_seconds,
     )
     redis.set(
@@ -1091,7 +1091,6 @@ def revert_blocks(self, db, revert_blocks_list):
                 # NOTE: There is no need mark previous as is_current for notification seen
 
             for playlist_seen_to_revert in revert_playlist_seen:
-
                 previous_playlist_seen_entry = (
                     session.query(PlaylistSeen)
                     .filter(
@@ -1169,7 +1168,7 @@ def update_task(self):
     update_task.entity_manager_contract = entity_manager_contract
 
     # Update redis cache for health check queries
-    update_latest_block_redis()
+    update_latest_block_redis(final_poa_block)
 
     DEFAULT_LOCK_TIMEOUT = 60 * 10  # ten minutes
 

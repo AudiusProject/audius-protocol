@@ -84,17 +84,10 @@ func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
 	return proc.validator.Validate(userId, rawRpc)
 }
 
-// ApplyAndPublish is the "no nats" version of submit and wait.
-// it:
+// ApplyAndPublish:
 //   - timestamps message
 //   - applies locally
-//   - publishes to SSE server for any connected peers.
-//
-// there are several todos here to match the "manyfeeds" document:
-//   - should consider partition ID and forward to rendezvous "write leader"
-//   - should return error if apply fails
-//   - `sync_client.go` needs to perform backfill on boot
-//   - SSE publish is "fire and forget" style... if we want a quorum write thing we'll need some form of ACKs
+//   - pushes to peers.
 func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog, error) {
 
 	// apply
@@ -114,7 +107,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	return rpcLog, nil
 }
 
-// Validates + applies a NATS message
+// Validates + applies a message
 func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 
 	logger := slog.With()
@@ -135,12 +128,19 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return split
 	}
 
+	// parse raw rpc
+	var rawRpc schema.RawRPC
+	err = json.Unmarshal(rpcLog.Rpc, &rawRpc)
+	if err != nil {
+		logger.Info(err.Error())
+		return nil
+	}
+
 	// get ts
 	messageTs := rpcLog.RelayedAt
 
 	// recover wallet + user
-	signatureHeader := rpcLog.Sig
-	wallet, err := misc.RecoverWallet(rpcLog.Rpc, signatureHeader)
+	wallet, err := misc.RecoverWallet(rpcLog.Rpc, rpcLog.Sig)
 	if err != nil {
 		logger.Warn("unable to recover wallet, skipping")
 		return nil
@@ -152,21 +152,34 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return nil
 	}
 
-	userId, err := queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
-	if err != nil {
-		logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
-		return nil
+	var userId int32
+
+	// attempt to read the (newly added) current_user_id field
+	if rawRpc.CurrentUserID != "" {
+		if u, err := misc.DecodeHashId(rawRpc.CurrentUserID); err == nil && u > 0 {
+			// valid current_user_id + wallet combo?
+			// for now just check that the pair exists in the user table
+			// in the future this can check a "grants" table that a given operation is permitted
+			isValid := false
+			db.Conn.QueryRow(`select count(*) > 0 from users where is_current = true and user_id = $1 and wallet = lower($2)`, u, wallet).Scan(&isValid)
+			if isValid {
+				userId = int32(u)
+			}
+		}
 	}
+
+	// fallback to finding user ID from wallet
+	// we can remove this when all clients send current_user_id
+	if userId == 0 {
+		userId, err = queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
+		if err != nil {
+			logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", rpcLog.Sig)
+			return nil
+		}
+	}
+
 	logger = logger.With("wallet", wallet, "userId", userId, "relayed_by", rpcLog.RelayedBy, "relayed_at", rpcLog.RelayedAt, "sig", rpcLog.Sig)
 	logger.Debug("got user", "took", takeSplit())
-
-	// parse raw rpc
-	var rawRpc schema.RawRPC
-	err = json.Unmarshal(rpcLog.Rpc, &rawRpc)
-	if err != nil {
-		logger.Info(err.Error())
-		return nil
-	}
 
 	// call any validator
 	err = proc.validator.Validate(userId, rawRpc)
@@ -192,7 +205,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT DO NOTHING
 		`
-		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, time.Now(), wallet, rpcLog.Rpc, signatureHeader)
+		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, time.Now(), wallet, rpcLog.Rpc, rpcLog.Sig)
 		if err != nil {
 			return err
 		}
@@ -321,7 +334,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		logger.Debug("commited", "took", takeSplit())
 
 		// send out websocket events fire + forget style
-		websocketNotify(rawRpc, userId, messageTs.Round(time.Microsecond))
+		websocketNotify(rpcLog.Rpc, userId, messageTs.Round(time.Microsecond))
 		logger.Debug("websocket push done", "took", takeSplit())
 
 		return nil
@@ -334,25 +347,38 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	return err
 }
 
-func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
-	if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
+func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time) {
+	if chatId := gjson.GetBytes(rpcJson, "params.chat_id").String(); chatId != "" {
+
 		var userIds []int32
 		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
 		if err != nil {
 			logger.Warn("failed to load chat members for websocket push " + err.Error())
-		} else {
-			var parsedParams schema.RPCPayloadParams
-			err := json.Unmarshal(rawRpc.Params, &parsedParams)
-			if err != nil {
-				logger.Error("Failed to parse params", err)
-				return
-			}
-			payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
-			encodedUserId, _ := misc.EncodeHashId(int(userId))
-			data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
-			for _, subscribedUserId := range userIds {
-				websocketPush(subscribedUserId, data)
-			}
+			return
+		}
+
+		encodedUserId, _ := misc.EncodeHashId(int(userId))
+
+		// this struct should match ChatWebsocketEventData
+		// but we create a matching anon struct here
+		// so we can simply pass thru the RPC as a json.RawMessage
+		// which is simpler than satisfying the quicktype generated schema.RPC struct
+		data := struct {
+			RPC      json.RawMessage `json:"rpc"`
+			Metadata schema.Metadata `json:"metadata"`
+		}{
+			rpcJson,
+			schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId},
+		}
+
+		j, err := json.Marshal(data)
+		if err != nil {
+			logger.Warn("invalid websocket json " + err.Error())
+			return
+		}
+
+		for _, subscribedUserId := range userIds {
+			websocketPush(subscribedUserId, j)
 		}
 
 	}

@@ -125,7 +125,7 @@ def test_get_attestation(app):
 @pytest.fixture
 def patch_get_all_other_nodes():
     with patch(
-        "src.queries.get_attestation.get_all_other_nodes",
+        "src.queries.get_attestation.get_all_other_discovery_nodes",
         return_value=(
             ["some_discovery.com"],
             ["0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"],

@@ -37,7 +37,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     this.remixUserId = parseInt(this.notification.specifier)
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

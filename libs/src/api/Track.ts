@@ -1,7 +1,6 @@
 import type { BaseConstructorArgs } from './base'
 
 import { Base, Services } from './base'
-import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
@@ -53,7 +52,6 @@ export class Track extends Base {
     this.getRepostersForTrack = this.getRepostersForTrack.bind(this)
     this.getRepostersForPlaylist = this.getRepostersForPlaylist.bind(this)
     this.getListenHistoryTracks = this.getListenHistoryTracks.bind(this)
-    this.checkIfDownloadAvailable = this.checkIfDownloadAvailable.bind(this)
     this.uploadTrack = this.uploadTrack.bind(this)
     this.uploadTrackContentToCreatorNode =
       this.uploadTrackContentToCreatorNode.bind(this)
@@ -366,19 +364,6 @@ export class Track extends Base {
     )
   }
 
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   */
-  async checkIfDownloadAvailable(
-    creatorNodeEndpoints: string,
-    trackId: number
-  ) {
-    return await CreatorNode.checkIfDownloadAvailable(
-      creatorNodeEndpoints,
-      trackId
-    )
-  }
-
   /* ------- SETTERS ------- */
 
   /**
@@ -469,8 +454,7 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void,
-    writeMetadataThroughChain = false
+    onProgress: () => void
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -535,12 +519,10 @@ export class Track extends Base {
 
       // Write metadata to chain
       const trackId = await this._generateTrackId()
-      const entityManagerMetadata = writeMetadataThroughChain
-        ? JSON.stringify({
-            cid: metadataMultihash,
-            data: metadata
-          })
-        : metadataMultihash
+      const entityManagerMetadata = JSON.stringify({
+          cid: metadataMultihash,
+          data: metadata
+        })
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
         EntityManagerClient.EntityType.TRACK,
@@ -706,8 +688,7 @@ export class Track extends Base {
    * Associates tracks with user on creatorNode
    */
   async addTracksToChainAndCnode(
-    trackMultihashAndUUIDList: ChainInfo[],
-    writeMetadataThroughChain = false
+    trackMultihashAndUUIDList: ChainInfo[]
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     const ownerId = this.userStateManager.getCurrentUserId()
@@ -732,13 +713,10 @@ export class Track extends Base {
             metadata
           } = trackInfo
 
-          let entityManagerMetadata = metadataMultihash
-          if (writeMetadataThroughChain && metadata) {
-            entityManagerMetadata = JSON.stringify({
-              cid: metadataMultihash,
-              data: metadata
-            })
-          }
+          const entityManagerMetadata = JSON.stringify({
+            cid: metadataMultihash,
+            data: metadata
+          })
 
           // Write metadata to chain
           const trackId = await this._generateTrackId()
@@ -806,10 +784,7 @@ export class Track extends Base {
    * such as track content, cover art are already on creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
    */
-  async updateTrack(
-    metadata: TrackMetadata,
-    writeMetadataThroughChain = false
-  ) {
+  async updateTrack(metadata: TrackMetadata) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
 
@@ -826,9 +801,10 @@ export class Track extends Base {
       await this.creatorNode.uploadTrackMetadata(metadata)
     // Write the new metadata to chain
     const trackId: number = metadata.track_id
-    const entityManagerMetadata = writeMetadataThroughChain
-      ? JSON.stringify({ cid: metadataMultihash, data: metadata })
-      : metadataMultihash
+    const entityManagerMetadata = JSON.stringify({
+      cid: metadataMultihash,
+      data: metadata
+    })
     const response = await this.contracts.EntityManagerClient!.manageEntity(
       ownerId,
       EntityManagerClient.EntityType.TRACK,
@@ -922,8 +898,10 @@ export class Track extends Base {
 
   /* ------- PRIVATE  ------- */
 
+  // Throws an error upon validation failure
   _validateTrackMetadata(metadata: TrackMetadata) {
     this.OBJECT_HAS_PROPS(metadata, TRACK_PROPS, TRACK_REQUIRED_PROPS)
+    this.creatorNode.validateTrackSchema(metadata)
   }
 
   async _generateTrackId(): Promise<number> {

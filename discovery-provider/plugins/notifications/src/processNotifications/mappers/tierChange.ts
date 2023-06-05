@@ -23,7 +23,7 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
     this.receiverUserId = userIds[0]
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

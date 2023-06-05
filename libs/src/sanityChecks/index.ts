@@ -11,14 +11,12 @@ export class SanityChecks {
   libs: AudiusLibs
   options: {
     skipRollover: boolean
-    writeMetadataThroughChain: boolean
   }
 
   constructor(
     libsInstance: AudiusLibs,
     options = {
-      skipRollover: false,
-      writeMetadataThroughChain: false
+      skipRollover: false
     }
   ) {
     this.libs = libsInstance
@@ -32,19 +30,11 @@ export class SanityChecks {
     creatorNodeWhitelist: Nullable<Set<string>> = null,
     creatorNodeBlacklist: Nullable<Set<string>> = null
   ) {
-    await addSecondaries(this.libs, this.options.writeMetadataThroughChain)
-    await assignReplicaSetIfNecessary(
-      this.libs,
-      this.options.writeMetadataThroughChain
-    )
+    await addSecondaries(this.libs)
+    await assignReplicaSetIfNecessary(this.libs)
     await syncNodes(this.libs)
     if (!this.options.skipRollover) {
-      await rolloverNodes(
-        this.libs,
-        creatorNodeWhitelist,
-        creatorNodeBlacklist,
-        this.options.writeMetadataThroughChain
-      )
+      await rolloverNodes(this.libs, creatorNodeWhitelist, creatorNodeBlacklist)
     }
     await needsRecoveryEmail(this.libs)
   }

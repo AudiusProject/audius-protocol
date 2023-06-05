@@ -1,8 +1,6 @@
 import type { StorageServiceConfig } from './types'
 
-export const defaultStorageServiceConfig: StorageServiceConfig = {
-  contentNodeEndpoint: 'http://audius-protocol-creator-node-1'
-}
+export const defaultStorageServiceConfig: Partial<StorageServiceConfig> = {}
 
 export const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 export const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes

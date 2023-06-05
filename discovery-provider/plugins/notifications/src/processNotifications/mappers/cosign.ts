@@ -36,7 +36,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     this.trackId = this.notification.data.track_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
