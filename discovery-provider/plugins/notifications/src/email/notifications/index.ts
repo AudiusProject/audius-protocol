@@ -47,13 +47,29 @@ export const getUsersCanNotify = async (
   let lastUser: number = 0;
 
   const time = Date.now()
-  const timeoutMillis = 14400000
-  const timeout = time + timeoutMillis
+  // const timeoutMillis = 14400000
+  // const timeout = time + timeoutMillis
+
+  const maxUserIdRes = await identityDb("NotificationEmails as NE")
+    .where("NE.emailFrequency", "=", frequency)
+    .join('Users', 'NE.userId', 'Users.id')
+    .max('Users.blockchainUserId')
+    .first()
+
+  if (maxUserIdRes === undefined) {
+    logger.warn(`didn't find max user`)
+    return
+  }
+
+  const maxUserIdParsed = parseInt(maxUserIdRes.max as string)
+  const maxUserId = maxUserIdParsed + pageCount
 
   let offset = 0
-  while (true) {
+  while (offset < maxUserId) {
     const now = Date.now()
-    if (now > timeout) break
+    // if (now > timeout) {
+    //   logger.warn(`timeout reached for scheduled emails: ${frequency}`)
+    // }
     const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
     offset = offset + pageCount
     if (userRows.length === 0) break // once we've reached the end of users for this query
