@@ -2,14 +2,14 @@ from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from src.models.delegates.app_delegate import AppDelegate
+from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-new_delegates_data = [
+new_apps_data = [
     {
         "user_id": 1,
         "name": "My App",
@@ -31,8 +31,8 @@ new_delegates_data = [
 ]
 
 
-def test_index_delegate(app, mocker):
-    "Tests delegate action"
+def test_index_app(app, mocker):
+    "Tests app action"
 
     # setup db and mocked txs
     with app.app_context():
@@ -43,50 +43,50 @@ def test_index_delegate(app, mocker):
     """"
     const resp = await this.manageEntity({
         userId,
-        entityType: EntityType.APP_DELEGATE,
+        entityType: EntityType.DEVELOPER_APP,
         entityId: 0,
         action: Action.CREATE,
         metadataMultihash: ''
       })
     """
     tx_receipts = {
-        "CreateDelegateTx1": [
+        "CreateAppTx1": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
-                        "_userId": new_delegates_data[0]["user_id"],
-                        "_metadata": f"""{{"name": "{new_delegates_data[0]["name"]}", "address": "{new_delegates_data[0]["address"]}", "is_personal_access": {'true' if new_delegates_data[0]["is_personal_access"] else 'false' }}}""",
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "address": "{new_apps_data[0]["address"]}", "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "CreateDelegateTx2": [
+        "CreateAppTx2": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
-                        "_userId": new_delegates_data[1]["user_id"],
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": new_apps_data[1]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_delegates_data[1]["name"]}", "address": "{new_delegates_data[1]["address"]}", "is_personal_access": {'true' if new_delegates_data[1]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "address": "{new_apps_data[1]["address"]}", "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "CreateDelegateTx3": [
+        "CreateAppTx3": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
-                        "_userId": new_delegates_data[2]["user_id"],
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": new_apps_data[2]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_delegates_data[2]["name"]}", "address": "{new_delegates_data[2]["address"]}", "is_personal_access": {'true' if new_delegates_data[2]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "address": "{new_apps_data[2]["address"]}", "is_personal_access": {'true' if new_apps_data[2]["is_personal_access"] else 'false' }}}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -113,7 +113,7 @@ def test_index_delegate(app, mocker):
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
             for user_id in range(1, 4)
         ],
-        "app_delegates": [
+        "developer_apps": [
             {
                 "user_id": 5,
                 "name": "My App",
@@ -137,31 +137,31 @@ def test_index_delegate(app, mocker):
         )
 
         # validate db records
-        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
-        assert len(all_delegates) == 4
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
+        assert len(all_apps) == 4
 
-        for expected_delegate in new_delegates_data:
+        for expected_app in new_apps_data:
             found_matches = [
                 item
-                for item in all_delegates
-                if item.address == expected_delegate["address"].lower()
+                for item in all_apps
+                if item.address == expected_app["address"].lower()
             ]
             assert len(found_matches) == 1
             res = found_matches[0]
-            assert res.user_id == expected_delegate["user_id"]
-            assert res.name == expected_delegate["name"]
-            assert res.is_personal_access == expected_delegate["is_personal_access"]
+            assert res.user_id == expected_app["user_id"]
+            assert res.name == expected_app["name"]
+            assert res.is_personal_access == expected_app["is_personal_access"]
             assert res.blocknumber == 0
 
-    # Test invalid create delegate txs
+    # Test invalid create app txs
     tx_receipts = {
-        "CreateDelegateInvalidTx1": [
+        "CreateAppInvalidTx1": [
             {
                 # Incorrect signer
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 4,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Wrong Signer", "address": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055", "is_personal_access": false}',
@@ -170,13 +170,13 @@ def test_index_delegate(app, mocker):
                 )
             },
         ],
-        "CreateDelegateInvalidTx2": [
+        "CreateAppInvalidTx2": [
             {
                 # Duplicate address
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Dupe address", "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4", "is_personal_access": false}',
@@ -185,13 +185,13 @@ def test_index_delegate(app, mocker):
                 )
             },
         ],
-        "CreateDelegateInvalidTx3": [
+        "CreateAppInvalidTx3": [
             {
                 # Missing user id
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 0,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Missing user id", "address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
@@ -200,13 +200,13 @@ def test_index_delegate(app, mocker):
                 )
             },
         ],
-        "CreateDelegateInvalidTx4": [
+        "CreateAppInvalidTx4": [
             {
                 # Missing name
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 0,
                         "_action": Action.CREATE,
                         "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
@@ -236,34 +236,34 @@ def test_index_delegate(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_delegates) == 4
+        assert len(all_apps) == 4
 
-    # # Test invalid delete delegate txs
+    # # Test invalid delete app txs
     tx_receipts = {
-        "DeleteDelegateInvalidTx1": [
+        "DeleteAppInvalidTx1": [
             {
                 # Incorrect signer
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_delegates_data[0]["user_id"],
-                        "_metadata": f"""{{"address": "{new_delegates_data[0]["address"]}"}}""",
+                        "_userId": new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{new_apps_data[0]["address"]}"}}""",
                         "_signer": "incorrectwallet",
                     }
                 )
             },
         ],
-        "DeleteDelegateInvalidTx2": [
+        "DeleteAppInvalidTx2": [
             {
-                # Delegate doesn't exist
+                # App doesn't exist
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.DELETE,
                         "_metadata": '{"address": "0x3a388671bb4D6E1bbbbD79Ee191b40FB45A8F4C4"}',
@@ -272,16 +272,16 @@ def test_index_delegate(app, mocker):
                 )
             },
         ],
-        "DeleteDelegateInvalidTx3": [
+        "DeleteAppInvalidTx3": [
             {
-                # User id doesn't match delegate
+                # User id doesn't match app
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 1,
                         "_action": Action.DELETE,
-                        "_metadata": f"""{{"address": "{new_delegates_data[2]["address"]}"}}""",
+                        "_metadata": f"""{{"address": "{new_apps_data[2]["address"]}"}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -308,50 +308,50 @@ def test_index_delegate(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_delegates) == 4
+        assert len(all_apps) == 4
 
-    # Test valid delete delegate txs
+    # Test valid delete app txs
     tx_receipts = {
-        "DeleteDelegateTx1": [
+        "DeleteAppTx1": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_delegates_data[0]["user_id"],
-                        "_metadata": f"""{{"address": "{new_delegates_data[0]["address"]}"}}""",
-                        "_signer": f"user{new_delegates_data[0]['user_id']}wallet",
+                        "_userId": new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{new_apps_data[0]["address"]}"}}""",
+                        "_signer": f"user{new_apps_data[0]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "DeleteDelegateTx2": [
+        "DeleteAppTx2": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_delegates_data[1]["user_id"],
-                        "_metadata": f"""{{"address": "{new_delegates_data[1]["address"]}"}}""",
-                        "_signer": f"user{new_delegates_data[1]['user_id']}wallet",
+                        "_userId": new_apps_data[1]["user_id"],
+                        "_metadata": f"""{{"address": "{new_apps_data[1]["address"]}"}}""",
+                        "_signer": f"user{new_apps_data[1]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "DeleteDelegateTx3": [
+        "DeleteAppTx3": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.APP_DELEGATE,
+                        "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_delegates_data[2]["user_id"],
-                        "_metadata": f"""{{"address": "{new_delegates_data[2]["address"]}"}}""",
-                        "_signer": f"user{new_delegates_data[2]['user_id']}wallet",
+                        "_userId": new_apps_data[2]["user_id"],
+                        "_metadata": f"""{{"address": "{new_apps_data[2]["address"]}"}}""",
+                        "_signer": f"user{new_apps_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -377,14 +377,14 @@ def test_index_delegate(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
-        assert len(all_delegates) == 7
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
+        assert len(all_apps) == 7
 
-        for expected_delegate in new_delegates_data:
+        for expected_app in new_apps_data:
             found_matches = [
                 item
-                for item in all_delegates
-                if item.address == expected_delegate["address"].lower()
+                for item in all_apps
+                if item.address == expected_app["address"].lower()
             ]
             assert len(found_matches) == 2
             old = [item for item in found_matches if item.is_current == False]
@@ -394,17 +394,16 @@ def test_index_delegate(app, mocker):
             old = old[0]
             updated = updated[0]
             assert (
-                old.user_id == expected_delegate["user_id"]
-                and updated.user_id == expected_delegate["user_id"]
+                old.user_id == expected_app["user_id"]
+                and updated.user_id == expected_app["user_id"]
             )
             assert (
-                old.name == expected_delegate["name"]
-                and updated.name == expected_delegate["name"]
+                old.name == expected_app["name"]
+                and updated.name == expected_app["name"]
             )
             assert (
-                old.is_personal_access == expected_delegate["is_personal_access"]
-                and updated.is_personal_access
-                == expected_delegate["is_personal_access"]
+                old.is_personal_access == expected_app["is_personal_access"]
+                and updated.is_personal_access == expected_app["is_personal_access"]
             )
             assert old.is_delete == False and updated.is_delete == True
             assert old.blocknumber == 0 and updated.blocknumber == 1

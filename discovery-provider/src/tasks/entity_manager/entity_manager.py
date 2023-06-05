@@ -8,8 +8,8 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models.delegates.app_delegate import AppDelegate
-from src.models.delegates.delegation import Delegation
+from src.models.grants.developer_app import DeveloperApp
+from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -20,11 +20,11 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.app_delegate import (
-    create_app_delegate,
-    delete_app_delegate,
+from src.tasks.entity_manager.developer_app import (
+    create_developer_app,
+    delete_developer_app,
 )
-from src.tasks.entity_manager.delegation import create_delegation, revoke_delegation
+from src.tasks.entity_manager.grant import create_grant, revoke_grant
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -225,24 +225,24 @@ def entity_manager_update(
                         view_playlist(params)
                     elif (
                         params.action == Action.CREATE
-                        and params.entity_type == EntityType.APP_DELEGATE
+                        and params.entity_type == EntityType.DEVELOPER_APP
                     ):
-                        create_app_delegate(params)
+                        create_developer_app(params)
                     elif (
                         params.action == Action.DELETE
-                        and params.entity_type == EntityType.APP_DELEGATE
+                        and params.entity_type == EntityType.DEVELOPER_APP
                     ):
-                        delete_app_delegate(params)
+                        delete_developer_app(params)
                     elif (
                         params.action == Action.CREATE
-                        and params.entity_type == EntityType.DELEGATION
+                        and params.entity_type == EntityType.GRANT
                     ):
-                        create_delegation(params)
+                        create_grant(params)
                     elif (
                         params.action == Action.DELETE
-                        and params.entity_type == EntityType.DELEGATION
+                        and params.entity_type == EntityType.GRANT
                     ):
-                        revoke_delegation(params)
+                        revoke_grant(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -340,52 +340,52 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             ):
                 entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
                 entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
-            if entity_type == EntityType.APP_DELEGATE:
+            if entity_type == EntityType.DEVELOPER_APP:
                 if json_metadata and isinstance(json_metadata, dict):
                     raw_address = json_metadata.get("address", None)
                     if raw_address:
-                        entities_to_fetch[EntityType.APP_DELEGATE].add(
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
                             raw_address.lower()
                         )
                     else:
                         logger.error(
-                            "tasks | entity_manager.py | Missing address in metadata required for add delegate tx"
+                            "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
                         )
                 else:
                     logger.error(
-                        "tasks | entity_manager.py | Missing metadata required for add delegate tx"
+                        "tasks | entity_manager.py | Missing metadata required for add developer app tx"
                     )
-            if entity_type == EntityType.DELEGATION:
+            if entity_type == EntityType.GRANT:
                 if json_metadata and isinstance(json_metadata, dict):
-                    raw_shared_address = json_metadata.get("shared_address", None)
-                    if raw_shared_address:
-                        entities_to_fetch[EntityType.DELEGATION].add(
-                            raw_shared_address.lower()
+                    raw_grantee_address = json_metadata.get("grantee_address", None)
+                    if raw_grantee_address:
+                        entities_to_fetch[EntityType.GRANT].add(
+                            (raw_grantee_address.lower(), user_id)
                         )
                     else:
                         logger.error(
-                            "tasks | entity_manager.py | Missing shared address in metadata required for add delegation tx"
+                            "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
                         )
-                    raw_delegate_address = json_metadata.get("delegate_address", None)
-                    if raw_delegate_address:
-                        entities_to_fetch[EntityType.APP_DELEGATE].add(
-                            raw_delegate_address.lower()
+                    raw_grantee_address = json_metadata.get("grantee_address", None)
+                    if raw_grantee_address:
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            raw_grantee_address.lower()
                         )
                         entities_to_fetch[EntityType.USER_WALLET].add(
-                            raw_delegate_address.lower()
+                            raw_grantee_address.lower()
                         )
                     else:
                         logger.error(
-                            "tasks | entity_manager.py | Missing delegate address in metadata required for add delegation tx"
+                            "tasks | entity_manager.py | Missing developer app address in metadata required for add grant tx"
                         )
                 else:
                     logger.error(
-                        "tasks | entity_manager.py | Missing metadata required for add delegation tx"
+                        "tasks | entity_manager.py | Missing metadata required for add grant tx"
                     )
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
             if signer:
-                entities_to_fetch[EntityType.DELEGATION].add(signer.lower())
+                entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
             action = helpers.get_tx_arg(event, "_action")
 
             # Query social operations as needed
@@ -584,40 +584,45 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for playlist_seen in playlist_seens
         }
 
-    # DELEGATIONS
-    if entities_to_fetch[EntityType.DELEGATION]:
-        delegations: List[Delegation] = (
-            session.query(Delegation)
-            .filter(
-                func.lower(Delegation.shared_address).in_(
-                    entities_to_fetch[EntityType.DELEGATION]
-                ),
-                Delegation.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.DELEGATION] = {
-            delegation.shared_address.lower(): delegation for delegation in delegations
-        }
-        for delegation in delegations:
-            entities_to_fetch[EntityType.APP_DELEGATE].add(
-                delegation.delegate_address.lower()
+    # GRANTS
+    if entities_to_fetch[EntityType.GRANT]:
+        grants_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.GRANT]
+        and_queries = []
+        for grant_key in grants_to_fetch:
+            grantee_address = grant_key[0]
+            grantor_user_id = grant_key[1]
+            and_queries.append(
+                and_(
+                    Grant.user_id == grantor_user_id,
+                    func.lower(Grant.grantee_address) == grantee_address,
+                    Grant.is_current == True,
+                )
             )
 
-    # APP DELEGATES
-    if entities_to_fetch[EntityType.APP_DELEGATE]:
-        delegates: List[AppDelegate] = (
-            session.query(AppDelegate)
+        grants: List[Grant] = session.query(Grant).filter(or_(*and_queries)).all()
+        existing_entities[EntityType.GRANT] = {
+            (grant.grantee_address.lower(), grant.user_id): grant for grant in grants
+        }
+        for grant in grants:
+            entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                grant.grantee_address.lower()
+            )
+
+    # APP DEVELOPER APPS
+    if entities_to_fetch[EntityType.DEVELOPER_APP]:
+        developer_apps: List[DeveloperApp] = (
+            session.query(DeveloperApp)
             .filter(
-                func.lower(AppDelegate.address).in_(
-                    entities_to_fetch[EntityType.APP_DELEGATE]
+                func.lower(DeveloperApp.address).in_(
+                    entities_to_fetch[EntityType.DEVELOPER_APP]
                 ),
-                AppDelegate.is_current == True,
+                DeveloperApp.is_current == True,
             )
             .all()
         )
-        existing_entities[EntityType.APP_DELEGATE] = {
-            delegate.address.lower(): delegate for delegate in delegates
+        existing_entities[EntityType.DEVELOPER_APP] = {
+            developer_app.address.lower(): developer_app
+            for developer_app in developer_apps
         }
 
     return existing_entities
