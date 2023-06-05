@@ -293,4 +293,6 @@ BEGIN;
         ALTER TABLE developer_apps RENAME CONSTRAINT app_delegates_primary_key TO developer_apps_pkey;
       END IF;
     END $$;
+
+    alter table developer_apps add column if not exists description varchar(255);
 COMMIT;
