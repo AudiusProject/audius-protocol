@@ -1,12 +1,10 @@
 package rpcz
 
 import (
-	"encoding/json"
 	"net"
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/schema"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"golang.org/x/exp/slog"
@@ -60,15 +58,9 @@ func removeWebsocket(toRemove userWebsocket) {
 	websockets = keep
 }
 
-func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
+func websocketPush(userId int32, payload []byte) {
 	mu.Lock()
 	defer mu.Unlock()
-
-	payload, err := json.Marshal(data)
-	if err != nil {
-		logger.Error("failed to encode json: ", err)
-		return
-	}
 
 	// filter out expired messages and append new one
 	recent2 := []*recentMessage{}
@@ -89,7 +81,7 @@ func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
 			continue
 		}
 
-		err = wsutil.WriteServerMessage(s.conn, ws.OpText, payload)
+		err := wsutil.WriteServerMessage(s.conn, ws.OpText, payload)
 		if err != nil {
 			logger.Info("websocket push failed: " + err.Error())
 			removeWebsocket(s)
@@ -99,29 +91,3 @@ func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
 	}
 
 }
-
-/*
-const loc = window.location;
-const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
-const uri = `${proto}${loc.host}/chats/ws`
-const ws = new WebSocket(uri)
-
-ws.onopen = function() {
-	console.log('WS Connected')
-}
-
-ws.onclose = function() {
-	console.log('WS Close')
-}
-
-ws.onerror = function(event) {
-	console.log('WS Error', event)
-	this.fallback = true
-	this.pollFallback()
-	setInterval(() => this.pollFallback(), 5000)
-}
-
-ws.onmessage = function(evt) {
-	console.log('ws msg', evt)
-}
-*/
