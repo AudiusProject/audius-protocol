@@ -14,7 +14,7 @@ import { CollectionList } from 'app/components/collection-list'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
-import { useSelectProfile } from './selectors'
+import { getIsOwner, useSelectProfile } from './selectors'
 const { getProfilePlaylists, getCollectionsStatus } = profilePageSelectors
 const { fetchCollections } = profilePageActions
 
@@ -29,6 +29,7 @@ export const PlaylistsTab = () => {
   const collectionsStatus = useSelector((state) =>
     getCollectionsStatus(state, handle)
   )
+  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
@@ -48,7 +49,7 @@ export const PlaylistsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={playlist_count}
-      showCreatePlaylistTile={isPlaylistUpdatesEnabled}
+      showCreatePlaylistTile={isPlaylistUpdatesEnabled && isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
     />
   )
