@@ -121,7 +121,7 @@ function* onSignedIn({ payload: { account } }) {
 
   // Create userbank only if lazy is not enabled
   const feePayerOverride = yield select(getFeePayer)
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
   if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
     yield call(
       createUserBankIfNeeded,

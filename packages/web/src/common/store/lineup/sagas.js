@@ -44,8 +44,8 @@ const flatten = (list) =>
 function* filterDeletes(tracksMetadata, removeDeleted) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const remoteConfig = yield* getContext('remoteConfigInstance')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+  const remoteConfig = yield getContext('remoteConfigInstance')
   yield call(remoteConfig.waitForRemoteConfig)
 
   const isGatedContentEnabled = yield getFeatureEnabled(
