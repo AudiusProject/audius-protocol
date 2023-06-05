@@ -23,6 +23,14 @@ WITH user_seen as (
     user_id = :user_id
   ORDER BY
     seen_at desc
+), user_created_at as (
+  SELECT
+    created_at
+  FROM
+    users
+  WHERE
+    user_id =  :user_id
+  AND is_current
 )
 SELECT
     n.type,
@@ -46,12 +54,10 @@ SELECT
     max(n.timestamp) as latest_timestamp
 FROM
     notification n
-JOIN users u on
-  u.user_id = :user_id
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
-  ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > u.created_at)) AND
+  ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > (SELECT created_at FROM user_created_at))) AND
   (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
@@ -78,16 +84,23 @@ notification_groups_sql = notification_groups_sql.bindparams(
 unread_notification_count_sql = text(
     """
 --- Create Intervals of user seen
+WITH user_created_at as (
+  SELECT
+    created_at
+  FROM
+    users
+  WHERE
+    user_id = :user_id
+  AND is_current
+)
 SELECT
     count(*)
 FROM (
    select n.type, n.group_id
    from
        notification n
-   join users u on
-       u.user_id = :user_id
   WHERE
-    ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > u.created_at)) AND
+    ((ARRAY[:user_id] && n.user_ids) OR (n.type = 'announcement' AND n.timestamp > (SELECT created_at FROM user_created_at))) AND
     (:valid_types is NOT NULL AND n.type in :valid_types) AND
     n.timestamp > COALESCE((
         SELECT
