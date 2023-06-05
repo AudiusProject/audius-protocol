@@ -85,7 +85,7 @@ begin
                 'track_added_to_playlist',
                 track_owner_id,
                 'track_added_to_playlist:playlist_id:' || new.playlist_id || ':track_id:' || (track_item->>'track')::int || ':blocknumber:' || new.blocknumber,
-                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id)
+                json_build_object('track_id', (track_item->>'track')::int, 'playlist_id', new.playlist_id, 'playlist_owner_id', new.playlist_owner_id)
               )
             on conflict do nothing;
           end if;

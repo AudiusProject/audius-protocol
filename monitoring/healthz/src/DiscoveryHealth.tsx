@@ -22,6 +22,7 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
+            <th>Block Diff</th>
             <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
@@ -35,7 +36,6 @@ export function DiscoveryHealth() {
             <th>Peers</th>
             <th>Producing</th>
             <th>ACDC Block</th>
-            <th>Block Diff</th>
             <th>ACDC Block Hash</th>
           </tr>
         </thead>
@@ -89,7 +89,11 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     return (!str.includes("The node stopped producing blocks.")).toString()
   }
   // currently discprov does not expose the address of its internal chain instance
-  const isSigner = (str: string | undefined) => getProducing(str)
+  const isSigner = (nodeAddr?: string, signerAddrs?: string[]) => {
+    if (nodeAddr === undefined) return "node address not found"
+    if (signerAddrs === undefined) return "clique signers not found"
+    return signerAddrs.includes(nodeAddr).toString()
+  }
   const chainDescription: string = health.chain_health?.entries["node-health"].description
 
   return (
@@ -99,6 +103,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      <td className={isBehind}>{health.block_difference}</td>
       <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
@@ -140,11 +145,10 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       <td>{`${dbSize} GB`}</td>
       <td>{health.chain_health?.status}</td>
-      <td>{isSigner(chainDescription)}</td>
+      <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>
       <td>{getPeers(chainDescription)}</td>
       <td>{getProducing(chainDescription)}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td className={isBehind}>{health.block_difference}</td>
       <td>{health.chain_health?.hash}</td>
     </tr>
   )

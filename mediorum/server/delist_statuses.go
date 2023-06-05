@@ -8,12 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"golang.org/x/exp/slog"
 
-	"mediorum/ethcontracts"
 	"mediorum/server/signature"
 )
 
@@ -88,27 +86,13 @@ func (u *UserDelistStatus) UnmarshalJSON(data []byte) error {
 }
 
 func (ss *MediorumServer) startPollingDelistStatuses() {
-	// Read trusted notifier endpoint and wallet from chain
-	trustedNotifierID := ss.Config.TrustedNotifierID
-	if trustedNotifierID == 0 {
-		slog.Warn("trusted notifier id not set, not polling delist statuses")
-		return
-	}
-	trustedNotifier, err := ethcontracts.GetNotifierForID(strconv.Itoa(trustedNotifierID))
-	if err != nil {
-		slog.Error("failed to get trusted notifier from chain, not polling delist statuses", err)
-		return
-	}
-	slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
-
-	// Poll trusted notifier endpoint for delist statuses periodically. We only care about tracks for now.
 	ticker := time.NewTicker(DelistStatusPollingInterval)
 	for {
 		<-ticker.C
 
 		for _, entity := range []string{"tracks", "users"} {
 			startedAt := time.Now()
-			err := ss.pollDelistStatuses(entity, trustedNotifier.Endpoint, trustedNotifier.Wallet)
+			err := ss.pollDelistStatuses(entity, ss.trustedNotifier.Endpoint, ss.trustedNotifier.Wallet)
 			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", entity)
 			if err == nil {
 				slog.Info(pollingMsg, "took", time.Since(startedAt))

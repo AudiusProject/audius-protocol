@@ -7,6 +7,7 @@ import { useServiceProviders } from './useServiceProviders'
 
 export function DMMatrix() {
   const [env, nodeType] = useEnvironmentSelection()
+  const [since, setSince] = useState('2023-05-25')
   const { data: sps, error } = useServiceProviders(env, nodeType)
   const [m, setM] = useState<
     Record<string, Record<string, { count: number; relayed_at: string }>>
@@ -19,7 +20,10 @@ export function DMMatrix() {
 
   useEffect(() => {
     sps?.map(async (sp) => {
-      const resp = await fetch(sp.endpoint + `/comms/debug/cursors`)
+      const sinceParam = encodeURIComponent(new Date(since).toISOString())
+      const resp = await fetch(
+        sp.endpoint + `/comms/debug/cursors?since=${sinceParam}`
+      )
       const data = await resp.json()
       const inner: any = {}
       for (let peer of data) {
@@ -27,7 +31,7 @@ export function DMMatrix() {
       }
       setM((m) => ({ ...m, [sp.endpoint]: inner }))
     })
-  }, [sps])
+  }, [sps, since])
 
   const hosts = Object.keys(m)
   const hostSortKey = (host: string) =>
@@ -36,7 +40,11 @@ export function DMMatrix() {
 
   return (
     <div>
-      <h1>matrix {env}</h1>
+      <input
+        type="date"
+        value={since}
+        onChange={(e) => setSince(e.target.value)}
+      />
 
       <table className="table">
         <thead>

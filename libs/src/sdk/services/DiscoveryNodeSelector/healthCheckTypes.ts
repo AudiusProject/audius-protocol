@@ -20,19 +20,20 @@ export type ApiHealthResponseData =
   | CommsResponse
   | { data: unknown } // V1 non-full has no health fields
 
+export type HealthCheckComms = Partial<{
+  healthy: boolean
+  errors: unknown
+  websocket_error: unknown
+  commit: string
+  booted: string
+  built: string
+  wip: boolean
+}>
+
 export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean
   block_difference: number
   challenge_last_event_age_sec: number
-  comms: {
-    healthy: boolean
-    errors: unknown
-    websocket_error: unknown
-    commit: string
-    booted: string
-    built: string
-    wip: boolean
-  }
   database_connections: number
   database_is_localhost: boolean
   database_size: number
@@ -54,6 +55,7 @@ export type HealthCheckResponseData = DeepPartial<{
   maximum_healthy_block_difference: number
   meets_min_requirements: boolean
   network: {
+    content_nodes: Array<{ endpoint: string; ownerDelegateWallet: string }>
     discovery_nodes: string[]
   }
   num_users_in_immediate_balance_refresh_queue: number

@@ -95,7 +95,10 @@ export type RPCPayloadRequest =
   | ChatPermitRPC
   | ValidateCanChatRPC
 
-export type RPCPayload = RPCPayloadRequest & { timestamp: number }
+export type RPCPayload = RPCPayloadRequest & {
+  current_user_id: string
+  timestamp: number
+}
 
 export type RPCMethod = RPCPayload['method']
 

@@ -40,7 +40,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

@@ -18,7 +18,6 @@ import (
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
-	"comms.audius.co/discovery/the_graph"
 	"comms.audius.co/shared/signing"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
@@ -211,6 +210,10 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 }
 
 func (s *ChatServer) debugCursors(c echo.Context) error {
+	var since time.Time
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("since")); err == nil {
+		since = t
+	}
 	var cursors []struct {
 		Host      string    `db:"relayed_by" json:"relayed_by"`
 		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
@@ -219,11 +222,13 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 	q := `
 	select
 		relayed_by,
-		relayed_at,
-		(select count(*) from rpc_log where relayed_by = c.relayed_by) as count
-	from rpc_cursor c;
+		max(relayed_at) as relayed_at,
+		count(*) as count
+	from rpc_log
+	where relayed_at > $1
+	group by 1;
 	`
-	err := db.Conn.Select(&cursors, q)
+	err := db.Conn.Select(&cursors, q, since)
 	if err != nil {
 		return err
 	}
@@ -731,8 +736,6 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 }
 
 func (ss *ChatServer) postRpcReceive(c echo.Context) error {
-	// set by our custom basic auth middleware
-	peer := c.Get("peer").(the_graph.Peer)
 
 	// bind to RpcRow
 	rpc := new(schema.RpcLog)
@@ -746,7 +749,7 @@ func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 		return err
 	}
 
-	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
+	slog.Info("got relay", "from", rpc.RelayedBy, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
 }

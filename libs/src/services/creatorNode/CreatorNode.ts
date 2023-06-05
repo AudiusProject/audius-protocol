@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 import retry from 'async-retry'
-import { Nullable, TrackMetadata, Utils, uuid } from '../../utils'
+import { Nullable, TrackMetadata, UserMetadata, Utils, uuid } from '../../utils'
 import {
   userSchemaType,
   trackSchemaType,
@@ -144,26 +144,6 @@ export class CreatorNode {
     }
   }
 
-  /**
-   * Checks if a download is available from provided creator node endpoints
-   * @param endpoints creator node endpoints
-   * @param trackId
-   */
-  static async checkIfDownloadAvailable(endpoints: string, trackId: number) {
-    const primary = CreatorNode.getPrimary(endpoints)
-    if (primary) {
-      const req: AxiosRequestConfig = {
-        baseURL: primary,
-        url: `/tracks/download_status/${trackId}`,
-        method: 'get'
-      }
-      const { data: body } = await axios(req)
-      if (body.data.cid) return body.data.cid
-    }
-    // Download is not available, clients should display "processing"
-    return null
-  }
-
   /* -------------- */
 
   web3Manager: Nullable<Web3Manager>
@@ -223,6 +203,21 @@ export class CreatorNode {
     if (!this.lazyConnect) {
       await this.connect()
     }
+  }
+
+  // Throws an error upon validation failure
+  validatePlaylistSchema(metadata: PlaylistMetadata) {
+    this.schemas?.[playlistSchemaType].validate?.(metadata)
+  }
+
+  // Throws an error upon validation failure
+  validateUserSchema(metadata: UserMetadata) {
+    this.schemas?.[userSchemaType].validate?.(metadata)
+  }
+
+  // Throws an error upon validation failure
+  validateTrackSchema(metadata: TrackMetadata) {
+    this.schemas?.[trackSchemaType].validate?.(metadata)
   }
 
   /** Establishes a connection to a content node endpoint */
@@ -285,26 +280,27 @@ export class CreatorNode {
    * Uploads creator content to a creator node
    * @param metadata the creator metadata
    */
-  async uploadCreatorContent(metadata: TrackMetadata, blockNumber = null) {
+  async uploadCreatorContent(metadata: UserMetadata, blockNumber = null) {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas?.[userSchemaType].validate?.(metadata)
-
-      const requestObj: AxiosRequestConfig = {
-        url: '/audius_users/metadata',
-        method: 'post',
-        data: {
-          metadata,
-          blockNumber
-        }
-      }
-
-      const { data: body } = await this._makeRequest(requestObj)
-      return body
+      this.validateUserSchema(metadata)
     } catch (e) {
       console.error('Error validating creator metadata', e)
+      throw e
     }
+
+    const requestObj: AxiosRequestConfig = {
+      url: '/audius_users/metadata',
+      method: 'post',
+      data: {
+        metadata,
+        blockNumber
+      }
+    }
+
+    const { data: body } = await this._makeRequest(requestObj)
+    return body
   }
 
   /**
@@ -532,9 +528,10 @@ export class CreatorNode {
     // this does the actual validation before sending to the creator node
     // if validation fails, validate() will throw an error
     try {
-      this.schemas?.[trackSchemaType].validate?.(metadata)
-    } catch (e) {
+      this.validateTrackSchema(metadata)
+    } catch(e) {
       console.error('Error validating track metadata', e)
+      throw e
     }
 
     const { data: body } = await this._makeRequest(
@@ -559,9 +556,10 @@ export class CreatorNode {
   async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
     // Validate object before sending
     try {
-      this.schemas?.[playlistSchemaType].validate?.(metadata)
+      this.validatePlaylistSchema(metadata)
     } catch (e) {
       console.error('Error validating playlist metadata', e)
+      throw e
     }
 
     const { data: body } = await this._makeRequest(
