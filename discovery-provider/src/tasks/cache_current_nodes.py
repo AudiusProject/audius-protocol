@@ -2,8 +2,10 @@ import logging
 
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import (
+    ALL_ALIVE_CONTENT_NODES_CACHE_KEY,
     ALL_CONTENT_NODES_CACHE_KEY,
     ALL_DISCOVERY_NODES_CACHE_KEY,
+    filter_alive_content_nodes,
     get_all_other_content_nodes,
     get_all_other_discovery_nodes,
     get_node_endpoint,
@@ -50,6 +52,14 @@ def cache_current_nodes_task(self):
 
             set_json_cached_key(redis, ALL_CONTENT_NODES_CACHE_KEY, content_nodes)
             logger.info("cache_current_nodes.py | set current content nodes in redis")
+
+            logger.info("cache_current_nodes.py | checking content nodes for liveness")
+            alive_content_nodes = filter_alive_content_nodes(content_nodes)
+
+            set_json_cached_key(
+                redis, ALL_ALIVE_CONTENT_NODES_CACHE_KEY, alive_content_nodes
+            )
+            logger.info("cache_current_nodes.py | set alive content nodes in redis")
         else:
             logger.info("cache_current_nodes.py | Failed to acquire lock")
     except Exception as e:
