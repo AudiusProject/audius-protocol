@@ -15,26 +15,20 @@ import (
 
 const CidLookupBatchSize = 1000
 
-func (ss *MediorumServer) startBeamClients() {
-	for _, peer := range ss.Config.Peers {
-		if peer.Host == ss.Config.Self.Host {
-			continue
-		}
-		go ss.startBeamClientForPeer(peer)
-	}
-}
-
-func (ss *MediorumServer) startBeamClientForPeer(peer Peer) {
+func (ss *MediorumServer) startCidBeamClient() {
 	for {
-		time.Sleep(jitterSeconds(60, 90))
-
-		result, err := ss.beamFromPeer(peer)
-		if err != nil {
-			log.Println("beam failed", peer.Host, err)
-			time.Sleep(time.Minute * 10)
-		} else if result.RowCount > 0 {
-			log.Printf("beam OK %+v \n", result)
+		for _, peer := range ss.Config.Peers {
+			if peer.Host == ss.Config.Self.Host {
+				continue
+			}
+			result, err := ss.beamFromPeer(peer)
+			if err != nil {
+				log.Println("beam failed", peer.Host, err)
+			} else if result.RowCount > 0 {
+				log.Printf("beam OK %+v \n", result)
+			}
 		}
+		time.Sleep(time.Minute)
 	}
 }
 

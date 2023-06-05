@@ -272,7 +272,7 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	ss.startBeamClients()
+	go ss.startCidBeamClient()
 
 	go ss.startPollingDelistStatuses()
 
