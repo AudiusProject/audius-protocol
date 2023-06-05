@@ -29,7 +29,6 @@ export function DMMatrix() {
       for (let peer of data) {
         inner[peer.relayed_by] = peer
       }
-      console.log(sp.endpoint, inner)
       setM((m) => ({ ...m, [sp.endpoint]: inner }))
     })
   }, [sps, since])
