@@ -8,6 +8,8 @@ import { setupServer } from 'msw/node'
 import type { AuthService } from '../Auth/types'
 import type { EIP712TypedData } from 'eth-sig-util'
 
+jest.mock('../DiscoveryNodeSelector')
+
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',
   ownerDelegateWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54971'
@@ -35,6 +37,7 @@ class MockAuth implements AuthService {
 }
 
 const auth = new MockAuth()
+const discoveryNodeSelector = new DiscoveryNodeSelector()
 
 const mswHandlers = [
   rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
@@ -90,7 +93,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth
+      auth,
+      discoveryNodeSelector
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
@@ -108,7 +112,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth
+      auth,
+      discoveryNodeSelector
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(

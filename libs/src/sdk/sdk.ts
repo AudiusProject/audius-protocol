@@ -38,6 +38,7 @@ import {
   StorageNodeSelector,
   StorageNodeSelectorService
 } from './services/StorageNodeSelector'
+import { defaultEntityManagerConfig } from './services/EntityManager/constants'
 
 type ServicesContainer = {
   /**
@@ -126,15 +127,25 @@ const initializeServices = (config: SdkConfig) => {
       ? new AppAuth(config.apiKey, config.apiSecret)
       : new Auth()
 
-  const storageNodeSelector = new StorageNodeSelector({
-    auth: config.services?.auth ?? defaultAuthService
+  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector()
+
+  const defaultStorageNodeSelector = new StorageNodeSelector({
+    auth: config.services?.auth ?? defaultAuthService,
+    discoveryNodeSelector:
+      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+  })
+
+  const defaultEntityManager = new EntityManager({
+    ...defaultEntityManagerConfig,
+    discoveryNodeSelector:
+      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
 
   const defaultServices: ServicesContainer = {
-    discoveryNodeSelector: new DiscoveryNodeSelector(),
-    storageNodeSelector,
-    entityManager: new EntityManager(),
-    storage: new Storage({ storageNodeSelector }),
+    storageNodeSelector: defaultStorageNodeSelector,
+    discoveryNodeSelector: defaultDiscoveryNodeSelector,
+    entityManager: defaultEntityManager,
+    storage: new Storage({ storageNodeSelector: defaultStorageNodeSelector }),
     auth: defaultAuthService
   }
   return { ...defaultServices, ...config.services }

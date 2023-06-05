@@ -47,7 +47,11 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
-  const storageNodeSelector = new StorageNodeSelector({ auth })
+  const discoveryNodeSelector = new DiscoveryNodeSelector()
+  const storageNodeSelector = new StorageNodeSelector({
+    auth,
+    discoveryNodeSelector
+  })
 
   beforeAll(() => {
     tracks = new TracksApi(

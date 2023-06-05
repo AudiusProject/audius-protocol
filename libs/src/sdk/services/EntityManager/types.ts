@@ -1,10 +1,12 @@
 import type { AuthService } from '../Auth'
 import type { TransactionReceipt } from 'web3-core'
+import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 
 export type EntityManagerConfig = {
   contractAddress: string
   web3ProviderUrl: string
   identityServiceUrl: string
+  discoveryNodeSelector: DiscoveryNodeSelectorService
 }
 
 export enum Action {

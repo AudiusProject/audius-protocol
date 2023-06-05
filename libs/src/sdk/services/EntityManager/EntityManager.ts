@@ -19,6 +19,14 @@ import type {
   EntityType
 } from './types'
 
+enum BlockConfirmation {
+  CONFIRMED = 'CONFIRMED',
+  DENIED = 'DENIED',
+  UNKNOWN = 'UNKNOWN'
+}
+
+const POLLING_FREQUENCY_MILLIS = 2000
+
 export class EntityManager implements EntityManagerService {
   /**
    * Configuration passed in by consumer (with defaults)
@@ -107,8 +115,46 @@ export class EntityManager implements EntityManagerService {
 
     const jsonResponse = await response.json()
 
+    await this.confirmWrite(jsonResponse.receipt)
+
     return {
       txReceipt: jsonResponse.receipt
+    }
+  }
+
+  async confirmWrite({
+    blockHash,
+    blockNumber
+  }: {
+    blockHash: string
+    blockNumber: string
+  }) {
+    const confirmBlock = async () => {
+      const { block_passed } = await (
+        await fetch(
+          `${this.config.discoveryNodeSelector.getSelectedEndpoint()}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
+        )
+      ).json()
+
+      return block_passed
+        ? BlockConfirmation.CONFIRMED
+        : BlockConfirmation.UNKNOWN
+    }
+
+    let confirmation: BlockConfirmation = await confirmBlock()
+
+    // TODO If timeout, throw error
+    while (confirmation === BlockConfirmation.UNKNOWN) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, POLLING_FREQUENCY_MILLIS)
+      )
+      confirmation = await confirmBlock()
+    }
+
+    if (confirmation === BlockConfirmation.CONFIRMED) {
+      return
+    } else {
+      throw Error('Transaction failed')
     }
   }
 }

@@ -1,20 +1,15 @@
 import { Maybe, RendezvousHash, isNodeHealthy } from '../../../utils'
 import fetch from 'cross-fetch'
-import type { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
+import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { Auth } from '../Auth'
-import type { StorageNodeSelectorService } from './types'
-
-type StorageNode = {
-  endpoint: string
-  ownerDelegateWallet: string
-}
-
-export type StorageNodeSelectorConfig = {
-  bootstrapNodes?: StorageNode[]
-  auth: Auth
-  discoveryNodeSelector?: DiscoveryNodeSelector
-}
+import type {
+  StorageNode,
+  StorageNodeSelectorConfig,
+  StorageNodeSelectorService
+} from './types'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import { defaultStorageNodeSelectorConfig } from './contants'
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
@@ -23,10 +18,13 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
   private selectedDiscoveryNode?: string | null
-  private readonly discoveryNodeSelector?: DiscoveryNodeSelector
+  private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
 
   constructor(config: StorageNodeSelectorConfig) {
-    this.config = config
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultStorageNodeSelectorConfig
+    )
     this.auth = this.config.auth
     this.nodes = this.config.bootstrapNodes ?? []
     this.discoveryNodeSelector = this.config.discoveryNodeSelector
