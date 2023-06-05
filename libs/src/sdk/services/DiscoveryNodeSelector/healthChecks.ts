@@ -1,7 +1,6 @@
 import semver from 'semver'
 import {
   ApiHealthResponseData,
-  FlaskFullResponse,
   HealthCheckResponseData,
   HealthCheckStatus,
   HealthCheckStatusReason,
@@ -9,19 +8,6 @@ import {
 } from './healthCheckTypes'
 import { DISCOVERY_SERVICE_NAME } from './constants'
 import fetch from 'cross-fetch'
-import type { CommsResponse } from '../../../legacy'
-
-export const isFullFlaskResponse = (
-  data: ApiHealthResponseData
-): data is FlaskFullResponse => {
-  return (data as FlaskFullResponse).version !== undefined
-}
-
-export const isCommsResponse = (
-  data: ApiHealthResponseData
-): data is CommsResponse => {
-  return (data as CommsResponse).health !== undefined
-}
 
 const isIndexerHealthy = ({
   data,
@@ -38,7 +24,7 @@ const isApiIndexerHealthy = ({
   data,
   maxBlockDiff
 }: {
-  data: FlaskFullResponse
+  data: ApiHealthResponseData
   maxBlockDiff: number
 }) =>
   data.latest_chain_block === null ||
@@ -66,7 +52,7 @@ const isApiSolanaIndexerHealthy = ({
   data,
   maxSlotDiffPlays
 }: {
-  data: FlaskFullResponse
+  data: ApiHealthResponseData
   maxSlotDiffPlays: number | null
 }) =>
   !maxSlotDiffPlays ||
@@ -75,14 +61,6 @@ const isApiSolanaIndexerHealthy = ({
   data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
-const isCommsHealthy = ({ data }: { data: HealthCheckResponseData }) => {
-  return data.comms?.healthy
-}
-
-const isApiCommsHealthy = ({ data }: { data: CommsResponse }) => {
-  return data.health?.is_healthy
-}
-
 export const parseApiHealthStatusReason = ({
   data,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
@@ -90,34 +68,30 @@ export const parseApiHealthStatusReason = ({
   data: ApiHealthResponseData
   healthCheckThresholds: HealthCheckThresholds
 }) => {
-  if (isFullFlaskResponse(data)) {
-    if (data.version?.service !== DISCOVERY_SERVICE_NAME) {
-      return { health: HealthCheckStatus.UNHEALTHY, reason: 'name' }
-    }
-    if (minVersion) {
-      if (!data.version.version) {
-        return {
-          health: HealthCheckStatus.UNHEALTHY,
-          reason: 'version'
-        }
+  if (
+    data.version?.service &&
+    data.version.service !== DISCOVERY_SERVICE_NAME
+  ) {
+    return { health: HealthCheckStatus.UNHEALTHY, reason: 'name' }
+  }
+  if (minVersion) {
+    if (data.version && !data.version.version) {
+      return {
+        health: HealthCheckStatus.UNHEALTHY,
+        reason: 'version'
       }
+    }
 
-      if (semver.lt(data.version.version, minVersion)) {
-        return { health: HealthCheckStatus.BEHIND, reason: 'version' }
-      }
-    }
-    if (!isApiIndexerHealthy({ data, maxBlockDiff })) {
-      return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
-    }
-    if (!isApiSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
-      return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
-    }
-  } else if (isCommsResponse(data)) {
-    if (!isApiCommsHealthy({ data })) {
-      return { health: HealthCheckStatus.UNHEALTHY, reason: 'comms' }
+    if (data.version && semver.lt(data.version.version, minVersion)) {
+      return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
-
+  if (!isApiIndexerHealthy({ data, maxBlockDiff })) {
+    return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
+  }
+  if (!isApiSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
+    return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
+  }
   return { health: HealthCheckStatus.HEALTHY }
 }
 
@@ -159,13 +133,6 @@ export const parseHealthStatusReason = ({
     }
   }
 
-  if (!isCommsHealthy({ data })) {
-    return {
-      health: HealthCheckStatus.UNHEALTHY,
-      reason: 'comms'
-    }
-  }
-
   if (minVersion) {
     if (!data.version) {
       return {
@@ -178,7 +145,6 @@ export const parseHealthStatusReason = ({
       return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
-
   if (!isIndexerHealthy({ data, maxBlockDiff })) {
     return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }
