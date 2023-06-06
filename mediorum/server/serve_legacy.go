@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -39,6 +38,9 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		log.Println("error serving cid", cid, storagePath, err)
 		return ss.redirectToCid(c, cid)
 	}
+
+	// v1 file listen
+	go ss.logTrackListen(c)
 
 	return nil
 }
@@ -88,7 +90,7 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 		return c.Redirect(302, dest.String())
 	}
 
-	return errors.New("no host found with cid: " + cid)
+	return c.String(404, "no host found with cid: "+cid)
 }
 
 func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
