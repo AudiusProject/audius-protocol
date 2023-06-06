@@ -12,7 +12,8 @@ export type SharedData = {
   libs: AudiusLibs;
   sdk: AudiusSdk;
   localEndpoint: string;
-  dryRun: boolean
+  dryRun: boolean;
+  dateToRun: string;
 };
 
 export const initSharedData = async (): Promise<Result<SharedData, string>> => {
@@ -29,10 +30,13 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
   const feePayerOverride = process.env.feePayerOverride
   const localEndpoint = process.env.localEndpoint
 
+  const dateToRun = process.env.dateToRun
+
   if (oracleEthAddress === undefined) return new Err("oracleEthAddress defined")
   if (AAOEndpoint === undefined) return new Err("AAOEndpoint undefined")
   if (feePayerOverride === undefined) return new Err("feePayerOverride undefined")
   if (localEndpoint === undefined) return new Err("localEndpoint undefined")
+  if (dateToRun === undefined) return new Err("dateToRun undefined")
 
   return new Ok({
     oracleEthAddress,
@@ -41,14 +45,14 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
     libs,
     sdk: audiusSdk,
     localEndpoint,
-    dryRun
+    dryRun,
+    dateToRun
   })
 }
 
-export const condition = (_app: App<SharedData>): boolean => {
-  // check on Fridays at 11am PST
-  // TODO: pull this in from configuration
-  const date = Date.parse("Fri 09:43:00 GMT-0600");
+export const condition = (app: App<SharedData>): boolean => {
+  const { dateToRun } = app.viewAppData()
+  const date = Date.parse(dateToRun);
   const timeToDisburse = moment(date);
   const now = moment();
   if (now.isSame(timeToDisburse, "seconds")) return true;
