@@ -18,6 +18,7 @@ logger = StructuredLogger(__name__)
 class CreateDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
     name: Union[str, None]
+    description: Union[str, None]
     is_personal_access: Union[bool, None]
 
 
