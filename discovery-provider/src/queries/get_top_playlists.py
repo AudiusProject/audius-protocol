@@ -39,9 +39,7 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
-    # disable es while making mapping changes to fix scoring
-    # skip_es = request.args.get("es") == "0"
-    skip_es = True
+    skip_es = args.get("es") == "0"
     use_es = esclient and not skip_es
     if use_es:
         try:
