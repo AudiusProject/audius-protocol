@@ -228,7 +228,7 @@ const getAllChallenges = async (app: App<SharedData>, startBlock: number) => {
       instructionsPerTransaction: 2,
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
-      feePayerOverride: "",//"HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+      feePayerOverride: "",
       logger: console
     });
 
