@@ -18,6 +18,7 @@ logger = StructuredLogger(__name__)
 class CreateDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
     name: Union[str, None]
+    description: Union[str, None]
     is_personal_access: Union[bool, None]
 
 
@@ -32,6 +33,7 @@ def get_developer_app_metadata_from_raw(
         "address": None,
         "name": None,
         "is_personal_access": None,
+        "description": None,
     }
     if raw_metadata:
         try:
@@ -44,6 +46,7 @@ def get_developer_app_metadata_from_raw(
 
             # CREATE only fields:
             metadata["name"] = json_metadata.get("name", None)
+            metadata["description"] = json_metadata.get("description", None)
             metadata["is_personal_access"] = json_metadata.get(
                 "is_personal_access", None
             )
@@ -113,6 +116,13 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise Exception(
                 "Invalid Create Developer App Transaction, is_personal_access must be a boolean (or empty)"
             )
+        if metadata["description"] != None and (
+            not isinstance(metadata["description"], str)
+            or len((metadata["description"])) > 160
+        ):
+            raise Exception(
+                "Invalid Create Developer App Transaction, description must be under 161 chars"
+            )
     else:
         raise Exception(
             f"Invalid Developer App Transaction, action {params.action} is not valid"
@@ -134,6 +144,7 @@ def create_developer_app(params: ManageEntityParameters):
         address=cast(
             str, metadata["address"]
         ),  # cast to assert non null (since we validated above)
+        description=(metadata["description"] or None),
         is_personal_access=(metadata["is_personal_access"] or False),
         txhash=params.txhash,
         blockhash=params.event_blockhash,

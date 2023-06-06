@@ -13,12 +13,14 @@ new_apps_data = [
     {
         "user_id": 1,
         "name": "My App",
+        "description": "My app description",
         "address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
         "is_personal_access": False,
     },
     {
         "user_id": 1,
         "name": "My Other App",
+        "description": "",
         "address": "0x7Be50316dCD27a224E82F80bB154C1ea70D57f19",
         "is_personal_access": True,
     },
@@ -26,7 +28,6 @@ new_apps_data = [
         "user_id": 2,
         "name": "User 2 App",
         "address": "0x1A3a04F77Eca3BBae35d79FC4B48a783D382AC63",
-        "is_personal_access": False,
     },
 ]
 
@@ -57,7 +58,7 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "address": "{new_apps_data[0]["address"]}", "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "description": "{new_apps_data[0]["description"]}", "address": "{new_apps_data[0]["address"]}", "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
@@ -72,7 +73,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[1]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "address": "{new_apps_data[1]["address"]}", "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "description": "{new_apps_data[1]["description"]}", "address": "{new_apps_data[1]["address"]}", "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -86,7 +87,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[2]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "address": "{new_apps_data[2]["address"]}", "is_personal_access": {'true' if new_apps_data[2]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "address": "{new_apps_data[2]["address"]}"}}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -150,7 +151,12 @@ def test_index_app(app, mocker):
             res = found_matches[0]
             assert res.user_id == expected_app["user_id"]
             assert res.name == expected_app["name"]
-            assert res.is_personal_access == expected_app["is_personal_access"]
+            assert res.description == (
+                expected_app.get("description", None) or None
+            )  # If description value is empty in metadata, the description value should be null in the table row.
+            assert res.is_personal_access == expected_app.get(
+                "is_personal_access", False
+            )
             assert res.blocknumber == 0
 
     # Test invalid create app txs
@@ -207,9 +213,39 @@ def test_index_app(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
-                        "_userId": 0,
+                        "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
+                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx5": [
+            {
+                # Description is too long
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "name": "My app", "description": "The picket fence had stood for years without any issue. That was all it was. A simple, white, picket fence. Why it had all of a sudden become a lightning rod within the community was still unbelievable to most."}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx6": [
+            {
+                # Description is not right type
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "name": "My app", "description": false}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -240,7 +276,7 @@ def test_index_app(app, mocker):
         # make sure no new rows were added
         assert len(all_apps) == 4
 
-    # # Test invalid delete app txs
+    # Test invalid delete app txs
     tx_receipts = {
         "DeleteAppInvalidTx1": [
             {
@@ -401,9 +437,13 @@ def test_index_app(app, mocker):
                 old.name == expected_app["name"]
                 and updated.name == expected_app["name"]
             )
-            assert (
-                old.is_personal_access == expected_app["is_personal_access"]
-                and updated.is_personal_access == expected_app["is_personal_access"]
+            assert old.description == (
+                expected_app.get("description", None) or None
+            ) and updated.description == (expected_app.get("description", None) or None)
+            assert old.is_personal_access == expected_app.get(
+                "is_personal_access", False
+            ) and updated.is_personal_access == expected_app.get(
+                "is_personal_access", False
             )
             assert old.is_delete == False and updated.is_delete == True
             assert old.blocknumber == 0 and updated.blocknumber == 1

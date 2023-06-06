@@ -18,7 +18,7 @@ authorized_app = ns.model(
     {
         "address": fields.String(required=True),
         "name": fields.String(required=True),
-        "description": fields.String(required=True),
+        "description": fields.String(required=False),
         "grantor_user_id": fields.String(required=True),
         "grant_created_at": fields.String(required=True),
         "grant_updated_at": fields.String(required=True),
