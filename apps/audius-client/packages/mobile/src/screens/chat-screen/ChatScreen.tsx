@@ -16,7 +16,7 @@ import {
   useCanSendMessage
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
-import type { FlatListProps } from 'react-native'
+import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
   FlatList,
   Keyboard,
@@ -56,7 +56,7 @@ import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
 import { HeaderShadow } from './HeaderShadow'
 import { ReactionPopup } from './ReactionPopup'
-import { END_REACHED_OFFSET } from './constants'
+import { END_REACHED_MIN_MESSAGES } from './constants'
 
 type ChatFlatListProps = FlatListProps<ChatMessageWithExtras>
 type ChatListEventHandler<K extends keyof ChatFlatListProps> = NonNullable<
@@ -104,8 +104,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   listContentContainer: {
     paddingHorizontal: spacing(6),
-    display: 'flex',
-    minHeight: '100%'
+    display: 'flex'
   },
   profileTitle: {
     display: 'flex',
@@ -231,15 +230,12 @@ export const ChatScreen = () => {
   const isLoading =
     (chat?.messagesStatus ?? Status.LOADING) === Status.LOADING &&
     chatMessages?.length === 0
-  // Only show the end reached indicator if there are no previous messages and
-  // flatlist is scrollable. Add an offset to the screen height because flatListInnerHeight
-  // starts at screen height due to height: 100% css property.
+  // Only show the end reached indicator if there are no previous messages, more than 10 messages,
+  // and the flatlist is scrollable.
   const shouldShowEndReachedIndicator =
     !(chat?.messagesSummary?.prev_count ?? true) &&
-    flatListInnerHeight.current - chatContainerTop.current >
-      chatContainerBottom.current -
-        chatContainerTop.current +
-        END_REACHED_OFFSET
+    chatMessages.length > END_REACHED_MIN_MESSAGES &&
+    flatListInnerHeight.current > chatContainerBottom.current
   const popupMessageId = useSelector(getReactionsPopupMessageId)
   const popupMessage = useSelector((state) =>
     getChatMessageById(state, chatId ?? '', popupMessageId ?? '')
@@ -479,6 +475,10 @@ export const ChatScreen = () => {
     []
   )
 
+  const handleFlatListLayout = useCallback((event: LayoutChangeEvent) => {
+    flatListInnerHeight.current = event.nativeEvent.layout.height
+  }, [])
+
   return (
     <Screen
       url={url}
@@ -553,6 +553,7 @@ export const ChatScreen = () => {
             ) : (
               <View style={styles.listContainer}>
                 <FlatList
+                  onLayout={handleFlatListLayout}
                   contentContainerStyle={styles.listContentContainer}
                   data={chatMessages}
                   keyExtractor={(message) => message.message_id}
