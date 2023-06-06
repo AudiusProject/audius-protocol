@@ -332,6 +332,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
     discovery_nodes = get_all_other_nodes.get_all_other_discovery_nodes_cached(redis)
     content_nodes = get_all_other_nodes.get_all_other_content_nodes_cached(redis)
+    alive_content_nodes = get_all_other_nodes.get_all_alive_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     backfilled_cid_data = get_backfilled_cid_data(redis)
     health_results = {
@@ -372,7 +373,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
+        "network": {
+            "discovery_nodes": discovery_nodes,
+            "content_nodes": content_nodes,
+            "alive_content_nodes": alive_content_nodes,
+        },
         "backfilled_cid_data": backfilled_cid_data,
     }
 

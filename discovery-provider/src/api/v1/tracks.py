@@ -70,7 +70,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
-from src.utils.get_all_other_nodes import get_all_other_content_nodes_cached
+from src.utils.get_all_other_nodes import get_all_alive_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
@@ -447,25 +447,24 @@ class TrackStream(Resource):
         is_storage_v2 = not (len(track_cid) == 46 and track_cid.startswith("Qm"))
         if is_storage_v2:
             redis = redis_connection.get_redis()
-            # TODO (theo): make celery task use /health/peers endpoint to save only healthy CNs to a separate redis key
-            content_nodes = get_all_other_content_nodes_cached(redis)
-            if not content_nodes:
+            alive_nodes = get_all_alive_content_nodes_cached(redis)
+            if not alive_nodes:
                 logger.error(
                     f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
                 )
                 abort_not_found(track_id, ns)
 
             rendezvous = RendezvousHash(
-                *[cn["delegateOwnerWallet"] for cn in content_nodes]
+                *[node["delegateOwnerWallet"] for node in alive_nodes]
             )
             content_node_wallet = rendezvous.get(track_cid)
             content_node = next(
                 (
-                    cn["endpoint"]
-                    for cn in content_nodes
-                    if cn["delegateOwnerWallet"] == content_node_wallet
+                    node["endpoint"]
+                    for node in alive_nodes
+                    if node["delegateOwnerWallet"] == content_node_wallet
                 ),
-                content_nodes[0]["endpoint"],
+                alive_nodes[0]["endpoint"],
             )
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
