@@ -55,9 +55,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
 
-	// v1 feature parity
-	go ss.logTrackListen(c)
-
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
 		return ss.serveLegacyCid(c)
@@ -76,6 +73,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return err
 		}
 		defer blob.Close()
+
+		// v2 file listen
+		go ss.logTrackListen(c)
+
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
 	}
@@ -102,9 +103,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	if os.Getenv("identityService") == "" ||
-		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
-		c.QueryParam("skip_play_count") == "true" {
+	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+
+	if skipPlayCount ||
+		os.Getenv("identityService") == "" ||
+		!rangeIsFirstByte(c.Request().Header.Get("Range")) {
 		// todo: skip count for trusted notifier requests should be inferred
 		// by the requesting entity and not some query param
 		return
@@ -156,8 +159,10 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		resBody, _ := io.ReadAll(res.Body)
-		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
+		}
 	}
 }
 
