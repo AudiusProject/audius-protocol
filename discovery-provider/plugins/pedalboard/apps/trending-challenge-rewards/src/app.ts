@@ -239,4 +239,14 @@ const getAllChallenges = async (app: App<SharedData>, startBlock: number) => {
       );
     }
   }
+  console.log(JSON.stringify(setToChallengeMap, null, 2))
+  console.log(
+    `All done. Impossible challenges: ${
+      impossibleChallenges.length
+    }: ${JSON.stringify(
+      impossibleChallenges
+    )}, possible challenges: ${JSON.stringify(
+      possibleChallenges
+    )}`
+  )
 };
