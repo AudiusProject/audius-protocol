@@ -111,7 +111,7 @@ const makeAttestationEndpoint = (
 
 type Challenge = {
   challenge_id: string;
-  user_id: string;
+  user_id: number;
   specifier: string;
   amount: string;
   completed_blocknumber: number;
@@ -119,7 +119,13 @@ type Challenge = {
   wallet: string;
 };
 
-const getAllChallenges = async (startBlock: number) => {
+const getAllChallenges = async (app: App<SharedData>, startBlock: number) => {
+  const libsRes = app.viewAppData().libs
+  if (libsRes === null) return undefined
+  const libs = libsRes
+  const groupsRes = await assembleNodeGroups(libs)
+  if (groupsRes.err) return groupsRes
+  const groups = groupsRes.unwrap()
   const res = await axios.get(
     `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
@@ -130,11 +136,11 @@ const getAllChallenges = async (startBlock: number) => {
   );
 
   console.log(`Found ${toDisburse.length} trending challenges to disburse`);
-  let possibleNodeSet = [];
+  let possibleNodeSet: string[] = [];
   let possibleChallenges = [];
   let impossibleChallenges = [];
   let congestionErrors = [];
-  let setToChallengeMap = {};
+  let setToChallengeMap = new Map<string, any[]>();
 
   for (const challenge of toDisburse) {
     console.log(`Trying challenge: ${JSON.stringify(challenge)}`);
@@ -201,24 +207,29 @@ const getAllChallenges = async (startBlock: number) => {
 
     possibleChallenges.push({ challenge });
     const key = possibleNodeSet.sort().join(",");
-    setToChallengeMap[key] = [...(setToChallengeMap[key] ?? []), challenge];
+    setToChallengeMap.set(key, [...(setToChallengeMap.get(key) ?? []), challenge])
 
     console.log(`Attesting for challenge: ${JSON.stringify(challenge)}`);
 
-    const { error } = await audiusLibs.Rewards.submitAndEvaluate({
+    const encodedUserId = challenge.user_id.toString()
+    const rewards = libs.Rewards
+    if (rewards === null) throw new Error("rewards object null")
+
+    const { error } = await rewards.submitAndEvaluate({
       challengeId: challenge.challenge_id,
-      encodedUserId: challenge.user_id,
+      encodedUserId,
       handle: challenge.handle,
       recipientEthAddress: challenge.wallet,
       specifier: challenge.specifier,
-      oracleEthAddress,
+      oracleEthAddress: "",
       amount: parseInt(challenge.amount),
       quorumSize: 3,
-      AAOEndpoint,
+      AAOEndpoint: "",
       instructionsPerTransaction: 2,
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
-      feePayerOverride: "HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+      feePayerOverride: "",//"HXqdXhJiRe2reQVWmWq13V8gjGtVP7rSh27va5gC3M3P",
+      logger: console
     });
 
     if (error) {
