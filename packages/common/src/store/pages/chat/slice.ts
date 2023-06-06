@@ -131,7 +131,10 @@ const slice = createSlice({
     },
     createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
       const { chat } = action.payload
-      chatsAdapter.upsertOne(state.chats, chat)
+      chatsAdapter.upsertOne(state.chats, {
+        ...chat,
+        messagesStatus: Status.IDLE // ensures ChatScreen/ChatMessagesList show "Say Hi"
+      })
       if (!(chat.chat_id in state.messages)) {
         state.messages[chat.chat_id] = chatMessagesAdapter.getInitialState()
       }

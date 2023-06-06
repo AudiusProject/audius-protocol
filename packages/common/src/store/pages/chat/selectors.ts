@@ -226,8 +226,8 @@ export const getCanCreateChat = createSelector(
     }
     if (!user) {
       return {
-        canCreateChat: false,
-        callToAction: ChatPermissionAction.NONE
+        canCreateChat: true,
+        callToAction: ChatPermissionAction.NOT_APPLICABLE
       }
     }
 

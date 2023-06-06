@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 
+import { User } from 'models/User'
 import { CommonState } from 'store/index'
 import {
   getCanSendMessage,
@@ -16,7 +17,9 @@ export const useCanSendMessage = (currentChatId?: string) => {
     (state) => getOtherChatUsers(state, currentChatId),
     [currentChatId]
   )
-  const firstOtherUser = users[0]
+
+  // Explicitly define type as undefinable since users could be empty
+  const firstOtherUser: User | undefined = users[0]
 
   const { canSendMessage, callToAction } = useSelector((state: CommonState) =>
     getCanSendMessage(state, {
