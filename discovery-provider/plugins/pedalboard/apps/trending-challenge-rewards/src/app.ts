@@ -86,14 +86,15 @@ const canSuccessfullyAttest = async (
   endpoint: string,
   specifier: string,
   userId: number,
-  challengeId: string
+  challengeId: string,
+  oracleEthAddress: string
 ): Promise<Result<boolean, string>> => {
   const url = makeAttestationEndpoint(
     endpoint,
     specifier,
     userId,
     challengeId,
-    ""
+    oracleEthAddress
   );
   console.log({ url });
   const res = await fetch(url);
@@ -122,9 +123,8 @@ type Challenge = {
 };
 
 const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]>, startBlock: number) => {
-  const libsRes = app.viewAppData().libs
-  if (libsRes === null) return undefined
-  const libs = libsRes
+  const {dryRun, AAOEndpoint, oracleEthAddress, feePayerOverride, libs } = app.viewAppData()
+  if (libs === null) return undefined
   const res = await axios.get(
     `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
@@ -153,7 +153,8 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
           endpoint,
           challenge.specifier,
           challenge.user_id,
-          challenge.challenge_id
+          challenge.challenge_id,
+          oracleEthAddress
         );
 
         if (!canAttest) {
@@ -178,7 +179,8 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
             node.endpoint,
             challenge.specifier,
             challenge.user_id,
-            challenge.challenge_id
+            challenge.challenge_id,
+            oracleEthAddress
           );
           if (canAttest) {
             console.log(`Found attestable node: ${node.endpoint}`);
@@ -213,8 +215,8 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
     const encodedUserId = challenge.user_id.toString()
     const rewards = libs.Rewards
     if (rewards === null) throw new Error("rewards object null")
-    
-    if (app.viewAppData().dryRun) {
+
+    if (dryRun) {
       console.log('completed dry run')
       return
     }
@@ -224,14 +226,14 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
       handle: challenge.handle,
       recipientEthAddress: challenge.wallet,
       specifier: challenge.specifier,
-      oracleEthAddress: "",
+      oracleEthAddress,
       amount: parseInt(challenge.amount),
       quorumSize: 3,
-      AAOEndpoint: "",
+      AAOEndpoint,
       instructionsPerTransaction: 2,
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
-      feePayerOverride: "",
+      feePayerOverride,
       logger: console
     });
 
