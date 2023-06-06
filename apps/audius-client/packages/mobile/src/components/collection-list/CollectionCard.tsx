@@ -87,7 +87,7 @@ const useTrackCountWithOfflineOverride = (collection: Collection | null) => {
     if (!collection) {
       return 0
     }
-    if (!isReachable) {
+    if (isReachable) {
       return collection.playlist_contents.track_ids.length
     }
     const trackIds =
