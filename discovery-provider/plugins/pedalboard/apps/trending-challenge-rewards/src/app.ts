@@ -33,6 +33,8 @@ export const onDisburse = async (
   if (nodeGroupsRes.err) return nodeGroupsRes;
   const nodeGroups = nodeGroupsRes.unwrap();
 
+  await getAllChallenges(app, nodeGroups, startingBlock)
+
   return new Ok(undefined);
 };
 
@@ -50,7 +52,7 @@ const findStartingBlock = async (
   return new Ok([completedBlocknumber, specifier]);
 };
 
-// copied from libs because I couldn't figure out where to import it
+// copied from libs because it's not exported
 type Node = {
   endpoint: string;
   spID?: string;
@@ -119,13 +121,10 @@ type Challenge = {
   wallet: string;
 };
 
-const getAllChallenges = async (app: App<SharedData>, startBlock: number) => {
+const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]>, startBlock: number) => {
   const libsRes = app.viewAppData().libs
   if (libsRes === null) return undefined
   const libs = libsRes
-  const groupsRes = await assembleNodeGroups(libs)
-  if (groupsRes.err) return groupsRes
-  const groups = groupsRes.unwrap()
   const res = await axios.get(
     `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
@@ -214,7 +213,11 @@ const getAllChallenges = async (app: App<SharedData>, startBlock: number) => {
     const encodedUserId = challenge.user_id.toString()
     const rewards = libs.Rewards
     if (rewards === null) throw new Error("rewards object null")
-
+    
+    if (app.viewAppData().dryRun) {
+      console.log('completed dry run')
+      return
+    }
     const { error } = await rewards.submitAndEvaluate({
       challengeId: challenge.challenge_id,
       encodedUserId,

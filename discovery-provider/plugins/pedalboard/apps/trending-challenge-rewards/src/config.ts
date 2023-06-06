@@ -9,6 +9,7 @@ export type SharedData = {
   libs: AudiusLibs;
   sdk: AudiusSdk;
   localEndpoint: string;
+  dryRun: boolean
 };
 
 export const condition = (_app: App<SharedData>): boolean => {
