@@ -12,11 +12,11 @@ jest.mock('../DiscoveryNodeSelector')
 
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',
-  ownerDelegateWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54971'
+  delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54971'
 }
 const storageNodeB = {
   endpoint: 'https://node-b.audius.co',
-  ownerDelegateWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
+  delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
 }
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'

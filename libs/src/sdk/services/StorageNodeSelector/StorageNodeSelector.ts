@@ -45,17 +45,26 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   }
 
   private async onChangeDiscoveryNode(endpoint: string) {
+    this.info('Updating list of available content nodes')
     if (this.selectedDiscoveryNode === endpoint) return
     this.selectedDiscoveryNode = endpoint
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
-    if (!discoveryHealthCheckResponse.ok) return
+    if (!discoveryHealthCheckResponse.ok) {
+      this.warn('Discovery provider health check did not respond successfully')
+      return
+    }
 
     const responseData: { data: HealthCheckResponseData } =
       await discoveryHealthCheckResponse.json()
     const contentNodes = responseData.data.network?.content_nodes
 
-    if (!contentNodes) return
+    if (!contentNodes) {
+      this.warn(
+        'Discovery provider health check did not contain any available content nodes'
+      )
+      return
+    }
 
     this.nodes = contentNodes
   }
@@ -96,12 +105,13 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     this.selectedNode = selectedNode
+    this.info('Selected content node', this.selectedNode)
     return this.selectedNode ?? null
   }
 
   private async orderNodes() {
     const userAddress = await this.auth.getAddress()
-    const nodeOwnerWallets = this.nodes.map((node) => node.ownerDelegateWallet)
+    const nodeOwnerWallets = this.nodes.map((node) => node.delegateOwnerWallet)
     const hash = new RendezvousHash(...nodeOwnerWallets)
     const orderedOwnerWallets = hash.getN(this.nodes.length, userAddress)
     const orderedNodes = orderedOwnerWallets.map((ownerWallet) => {
@@ -109,5 +119,24 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       return this.nodes[index] as StorageNode
     })
     return orderedNodes
+  }
+
+  private debug(...args: any[]) {
+    console.debug('[audius-sdk][storage-node-selector]', ...args)
+  }
+
+  /** console.info proxy utility to add a prefix */
+  private info(...args: any[]) {
+    console.info('[audius-sdk][storage-node-selector]', ...args)
+  }
+
+  /** console.warn proxy utility to add a prefix */
+  private warn(...args: any[]) {
+    console.warn('[audius-sdk][storage-node-selector]', ...args)
+  }
+
+  /** console.error proxy utility to add a prefix */
+  private error(...args: any[]) {
+    console.warn('[audius-sdk][storage-node-selector]', ...args)
   }
 }

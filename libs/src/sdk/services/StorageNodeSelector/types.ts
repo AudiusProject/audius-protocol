@@ -7,7 +7,7 @@ export type StorageNodeSelectorService = {
 
 export type StorageNode = {
   endpoint: string
-  ownerDelegateWallet: string
+  delegateOwnerWallet: string
 }
 
 export type StorageNodeSelectorConfig = {

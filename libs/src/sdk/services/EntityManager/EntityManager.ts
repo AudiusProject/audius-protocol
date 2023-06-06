@@ -26,6 +26,7 @@ enum BlockConfirmation {
 }
 
 const POLLING_FREQUENCY_MILLIS = 2000
+const CONFIRMATION_TIMEOUT = 30000
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -122,17 +123,25 @@ export class EntityManager implements EntityManagerService {
     }
   }
 
+  /**
+   * Confirms a write by polling for the block to be indexed by the selected
+   * discovery node
+   */
   async confirmWrite({
     blockHash,
     blockNumber
   }: {
     blockHash: string
-    blockNumber: string
+    blockNumber: number
   }) {
     const confirmBlock = async () => {
-      const { block_passed } = await (
+      const endpoint =
+        await this.config.discoveryNodeSelector.getSelectedEndpoint()
+      const {
+        data: { block_passed }
+      } = await (
         await fetch(
-          `${this.config.discoveryNodeSelector.getSelectedEndpoint()}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
+          `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
         )
       ).json()
 
@@ -143,13 +152,20 @@ export class EntityManager implements EntityManagerService {
 
     let confirmation: BlockConfirmation = await confirmBlock()
 
-    // TODO If timeout, throw error
+    const confirmationTimeout = setTimeout(() => {
+      throw new Error(
+        `Could not confirm write within ${CONFIRMATION_TIMEOUT}ms`
+      )
+    }, CONFIRMATION_TIMEOUT)
+
     while (confirmation === BlockConfirmation.UNKNOWN) {
       await new Promise((resolve) =>
         setTimeout(resolve, POLLING_FREQUENCY_MILLIS)
       )
       confirmation = await confirmBlock()
     }
+
+    clearTimeout(confirmationTimeout)
 
     if (confirmation === BlockConfirmation.CONFIRMED) {
       return
