@@ -752,3 +752,15 @@ def format_authorized_app(authorized_app):
         "grant_created_at": authorized_app["grant_created_at"],
         "grant_updated_at": authorized_app["grant_updated_at"],
     }
+
+
+def get_prefixed_eth_address(address: str):
+    if not address.startswith("0x"):
+        return "0x" + address
+    return address
+
+
+def get_non_prefixed_eth_address(address: str):
+    if address.startswith("0x"):
+        return address[2:]
+    return address

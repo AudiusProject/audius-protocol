@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List, Optional
 
-from sqlalchemy import asc, text
+from sqlalchemy import asc, func, text
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.utils import db_session
@@ -36,10 +36,10 @@ def get_developer_apps_by_user(user_id: int) -> List[Dict]:
 
 def get_developer_app_by_address(address: str) -> Optional[DeveloperApp]:
     """
-    Returns developer app matching given address ("API Key)
+    Returns developer app matching given address ("API Key" + 0x prefix)
 
     Args:
-        address: String non 0x-prefixed, compressed wallet address ("API Key") of developer app
+        address: Address of developer app
 
     Returns:
         developer app
@@ -49,7 +49,7 @@ def get_developer_app_by_address(address: str) -> Optional[DeveloperApp]:
         developer_app = (
             session.query(DeveloperApp)
             .filter(
-                DeveloperApp.address == address,
+                func.lower(DeveloperApp.address) == address.lower(),
                 DeveloperApp.is_current == True,
                 DeveloperApp.is_delete == False,
             )

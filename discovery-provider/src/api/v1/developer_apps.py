@@ -2,6 +2,7 @@ from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     abort_not_found,
     format_developer_app,
+    get_prefixed_eth_address,
     make_response,
     success_response,
 )
@@ -32,7 +33,9 @@ class GetDeveloperApp(Resource):
     )
     @ns.marshal_with(developer_app_response)
     def get(self, address):
-        raw_developer_app = get_developer_app_by_address(address)
+        raw_developer_app = get_developer_app_by_address(
+            get_prefixed_eth_address(address)
+        )
         developer_app = format_developer_app(raw_developer_app)
         if not developer_app:
             abort_not_found(address, ns)
