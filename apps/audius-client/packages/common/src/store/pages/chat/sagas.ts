@@ -214,6 +214,11 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       .map((id) => encodeHashId(id))
       .sort()
       .join(':')
+
+    // Optimistically navigate - if we fail we'll toast
+    yield* put(goToChat({ chatId }))
+    yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
+
     try {
       yield* call(doFetchChatIfNecessary, { chatId })
     } catch {}
@@ -235,8 +240,6 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
         throw new Error("Chat couldn't be found after creating")
       }
       yield* put(createChatSucceeded({ chat }))
-      yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
-      yield* put(goToChat({ chatId: chat.chat_id }))
     }
   } catch (e) {
     console.error('createChatFailed', e)
