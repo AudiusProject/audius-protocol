@@ -3,6 +3,7 @@ import {
   getContext,
   savedPageSelectors
 } from '@audius/common'
+import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
@@ -78,6 +79,9 @@ function* downloadAllFavorites() {
   }
 
   // Add favorited collections and their tracks
+  // AccountCollections don't include track lists, so retrieve all the collections
+  // first
+  yield* call(fetchAllAccountCollections)
   const favoritedCollections = yield* select(getAccountCollections)
 
   for (const favoritedCollection of favoritedCollections) {

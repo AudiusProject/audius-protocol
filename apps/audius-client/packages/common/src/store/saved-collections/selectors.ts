@@ -10,6 +10,7 @@ import { CommonState } from '../commonStore'
 import { CollectionType } from './types'
 
 const getAccountCollections = (state: CommonState) => state.account.collections
+
 export const getSavedCollectionsState = (
   state: CommonState,
   type: CollectionType
