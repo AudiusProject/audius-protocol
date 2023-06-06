@@ -9,8 +9,9 @@ class DeveloperApp(Base, RepresentableMixin):
     blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
     blocknumber = Column(ForeignKey("blocks.number"))  # type: ignore
     address = Column(String, primary_key=True, nullable=False, index=True)
-    user_id = Column(Integer, nullable=True, index=True)
-    name = Column(String, nullable=False, index=False)
+    user_id = Column(Integer, nullable=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
     is_personal_access = Column(Boolean, nullable=False, server_default=text("false"))
     is_delete = Column(Boolean, nullable=False, server_default=text("false"))
     is_current = Column(Boolean, nullable=False, primary_key=True)
