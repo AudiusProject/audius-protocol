@@ -51,6 +51,7 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
 }
 
 export const condition = (app: App<SharedData>): boolean => {
+  // "Fri 09:43:00 GMT-0600"
   const { dateToRun } = app.viewAppData()
   const date = Date.parse(dateToRun);
   const timeToDisburse = moment(date);
