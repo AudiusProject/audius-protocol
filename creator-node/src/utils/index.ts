@@ -12,8 +12,6 @@ import {
   verifySignature,
   stringifyMap,
   isFqdn,
-  getCharsInRange,
-  getCharsInRanges,
   clearActiveJobs
 } from './utils'
 import {
@@ -77,8 +75,6 @@ export {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
-  getCharsInRange,
-  getCharsInRanges,
   isMp3File
 }
 
@@ -113,7 +109,5 @@ module.exports = {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
-  getCharsInRange,
-  getCharsInRanges,
   isMp3File
 }

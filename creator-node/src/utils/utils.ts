@@ -1,7 +1,6 @@
 import type { Queue } from 'bullmq'
 import type Logger from 'bunyan'
 
-import { range } from 'lodash'
 import { recoverPersonalSignature } from 'eth-sig-util'
 
 import { logger as genericLogger } from '../logging'
@@ -45,18 +44,4 @@ export async function clearActiveJobs(queue: Queue, queueLogger: Logger) {
     `Removing ${oldActiveJobs.length} leftover active jobs from ${queue.name}`
   )
   return Promise.allSettled(oldActiveJobs.map((job) => job.remove()))
-}
-
-export function getCharsInRange(startChar: string, endChar: string): string[] {
-  return range(startChar.charCodeAt(0), endChar.charCodeAt(0) + 1).map(
-    (charCode) => String.fromCharCode(charCode)
-  )
-}
-
-export function getCharsInRanges(...ranges: string[]): string[] {
-  const charsInRanges = []
-  for (const range of ranges) {
-    charsInRanges.push(...getCharsInRange(range.charAt(0), range.charAt(1)))
-  }
-  return charsInRanges
 }
