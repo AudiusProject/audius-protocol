@@ -21,6 +21,7 @@ export const hasTail = (message: ChatMessage, newMessage?: ChatMessage) => {
  * Checks if the current message:
  * - Is the first unread message
  * - Is by a different user than the current one
+ * - Is not the very first message
  */
 export const isEarliestUnread = ({
   unreadCount,
@@ -45,7 +46,7 @@ export const isEarliestUnread = ({
     prevMessage &&
     (!lastReadAt || dayjs(prevMessage.created_at).isAfter(lastReadAt))
   const isAuthor = message.sender_user_id === currentUserId
-  return isUnread && !isPreviousMessageUnread && !isAuthor
+  return isUnread && !!prevMessage && !isPreviousMessageUnread && !isAuthor
 }
 
 /**
