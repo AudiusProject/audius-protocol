@@ -51,7 +51,7 @@ def query_tracks_by_track_ids(session: Session, track_ids: List[int]) -> List[Tr
 def update_user_is_available_statuses(session, users):
     """Update users table to reflect delist statuses"""
     # If there are duplicate user ids with different delist values in users,
-    # only the most recent change is persisted because users is sorted by asc createdAt
+    # only the most recent value is persisted because users is sorted by asc createdAt
     user_id_to_delisted_map = {}
     for user in users:
         user_id = user["userId"]
@@ -83,7 +83,7 @@ def update_user_is_available_statuses(session, users):
 def update_track_is_available_statuses(session, tracks):
     """Update tracks table to reflect delist statuses"""
     # If there are duplicate track ids with different delist values in tracks,
-    # only the most recent change is persisted because tracks is sorted by asc createdAt
+    # only the most recent value is persisted because tracks is sorted by asc createdAt
     track_id_to_delisted_map = {}
     for track in tracks:
         track_id = track["trackId"]
