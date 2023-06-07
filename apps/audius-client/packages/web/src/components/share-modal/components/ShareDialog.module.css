@@ -41,7 +41,9 @@
 
 .description {
   margin-bottom: var(--unit-6);
-  font-weight: var(--font-demi-bold);
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 1.5;
 }
 
 .actionList {

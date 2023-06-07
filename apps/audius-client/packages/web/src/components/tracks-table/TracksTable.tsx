@@ -7,7 +7,7 @@ import {
   usePremiumContentAccessMap,
   UserTrack
 } from '@audius/common'
-import { IconLock } from '@audius/stems'
+import { IconHidden, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -158,13 +158,23 @@ export const TracksTable = ({
     (cellInfo: TrackCell) => {
       const index = cellInfo.row.index
       const active = index === playingIndex
+      const track = cellInfo.row.original
+      const isTrackUnlisted = track.is_unlisted
+
       return (
-        <TablePlayButton
-          className={cn(styles.tablePlayButton, { [styles.active]: active })}
-          paused={!playing}
-          playing={active}
-          hideDefault={false}
-        />
+        <>
+          <TablePlayButton
+            className={cn(styles.tablePlayButton, { [styles.active]: active })}
+            paused={!playing}
+            playing={active}
+            hideDefault={false}
+          />
+          {isTrackUnlisted ? (
+            <IconHidden
+              className={cn(styles.hiddenIcon, { [styles.hidden]: active })}
+            />
+          ) : null}
+        </>
       )
     },
     [playing, playingIndex]
