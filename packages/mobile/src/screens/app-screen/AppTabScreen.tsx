@@ -332,6 +332,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
             // @ts-ignore hard to correctly type navigation params (PAY-1141)
             params?.chatId
           }
+          options={{ fullScreenGestureEnabled: false }}
         />
       </Stack.Group>
     </Stack.Navigator>
