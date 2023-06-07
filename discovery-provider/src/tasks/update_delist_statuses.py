@@ -130,7 +130,8 @@ def insert_user_delist_statuses(session, users):
               unnest(:user_id) AS user_id,
               unnest(:delisted) AS delisted,
               unnest((:reason)::delist_user_reason[]) AS reason
-        ) AS data;
+        ) AS data
+        ON CONFLICT DO NOTHING;
         """
     )
     session.execute(
@@ -158,7 +159,8 @@ def insert_track_delist_statuses(session, tracks):
               unnest(:track_cid) AS track_cid,
               unnest(:delisted) AS delisted,
               unnest((:reason)::delist_track_reason[]) AS reason
-        ) AS data;
+        ) AS data
+        ON CONFLICT DO NOTHING;
         """
     )
     session.execute(
