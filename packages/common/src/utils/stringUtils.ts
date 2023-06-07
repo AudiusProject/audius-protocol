@@ -19,9 +19,20 @@ export const paramsToQueryString = (params: {
 }
 
 /**
- * Permalinks have the following format: '/<handle>/<track-slug>'
+ * Track permalinks have the following format: '/<handle>/<track-slug>'
  */
 export const parseTrackRouteFromPermalink = (permalink: string) => {
   const [, handle, slug] = permalink.split('/')
   return { slug, trackId: null, handle }
+}
+
+/**
+ * Playlist permalinks have the following format: '/<handle>/playlist/<playlist-slug-with-id-at-the-end>'
+ *
+ * @param permalink
+ * @returns playlist id
+ */
+export const parsePlaylistIdFromPermalink = (permalink: string) => {
+  const playlistNameWithId = permalink?.split('/').slice(-1)[0] ?? ''
+  return parseInt(playlistNameWithId.split('-').slice(-1)[0])
 }

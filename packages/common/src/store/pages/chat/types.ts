@@ -13,3 +13,11 @@ export enum ChatPermissionAction {
   /** User is signed out and needs to sign in */
   SIGN_UP
 }
+
+export type ChatMessageTileProps = {
+  link: string
+  styles?: any
+  onEmpty?: () => void
+  onSuccess?: () => void
+  className?: string
+}

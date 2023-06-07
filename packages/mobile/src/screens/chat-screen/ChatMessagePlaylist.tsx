@@ -1,46 +1,48 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
+import type { ChatMessageTileProps, ID, TrackPlayback } from '@audius/common'
 import {
   Kind,
-  Status,
-  makeUid,
-  ID,
+  PlaybackSource,
   QueueSource,
-  playerSelectors,
-  getPathFromPlaylistUrl,
-  useGetPlaylistById,
   accountSelectors,
+  getPathFromPlaylistUrl,
+  makeUid,
+  playerSelectors,
+  useGetPlaylistById,
   useGetTracksByIds,
   usePlayTrack,
   usePauseTrack,
-  ChatMessageTileProps,
   parsePlaylistIdFromPermalink
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
-import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
+import { CollectionTile } from 'app/components/lineup-tile'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 const { getUserId } = accountSelectors
-const { getTrackId } = playerSelectors
+const { getUid, getPlaying, getTrackId } = playerSelectors
 
 export const ChatMessagePlaylist = ({
   link,
   onEmpty,
   onSuccess,
-  className
+  styles
 }: ChatMessageTileProps) => {
   const currentUserId = useSelector(getUserId)
+  const isPlaying = useSelector(getPlaying)
   const playingTrackId = useSelector(getTrackId)
+  const playingUid = useSelector(getUid)
 
   const playlistId = parsePlaylistIdFromPermalink(
     getPathFromPlaylistUrl(link) ?? ''
   )
-  const { data: playlist, status } = useGetPlaylistById(
+  const { data: playlist } = useGetPlaylistById(
     {
       playlistId,
-      currentUserId: currentUserId!
+      currentUserId
     },
-    { disabled: !playlistId || !currentUserId }
+    { disabled: !playlistId }
   )
   const collection = useMemo(() => {
     return playlist
@@ -58,9 +60,9 @@ export const ChatMessagePlaylist = ({
   const { data: tracks } = useGetTracksByIds(
     {
       ids: trackIds,
-      currentUserId: currentUserId!
+      currentUserId
     },
-    { disabled: !trackIds.length || !currentUserId }
+    { disabled: !trackIds.length }
   )
 
   const uidMap = useMemo(() => {
@@ -92,15 +94,47 @@ export const ChatMessagePlaylist = ({
     }))
   }, [tracks, uidMap])
 
-  const play = usePlayTrack()
-  const playTrack = useCallback(
-    (uid: string) => {
-      play({ uid, entries })
+  const isActive = playingUid !== null && playingUid === uid
+
+  const recordAnalytics = useCallback(
+    ({ name, id }: { name: TrackPlayback; id: ID }) => {
+      trackEvent(
+        make({
+          eventName: name,
+          id: `${id}`,
+          source: PlaybackSource.CHAT_PLAYLIST_TRACK
+        })
+      )
     },
-    [play, entries]
+    []
   )
 
-  const pauseTrack = usePauseTrack()
+  const playTrack = usePlayTrack(recordAnalytics)
+  const pauseTrack = usePauseTrack(recordAnalytics)
+
+  const togglePlay = useCallback(() => {
+    if (!isPlaying || !isActive) {
+      if (isActive) {
+        playTrack({ id: playingTrackId!, uid: playingUid!, entries })
+      } else {
+        const trackUid = tracksWithUids[0] ? tracksWithUids[0].uid : null
+        const trackId = tracksWithUids[0] ? tracksWithUids[0].track_id : null
+        if (!trackUid || !trackId) return
+        playTrack({ id: trackId, uid: trackUid, entries })
+      }
+    } else {
+      pauseTrack(playingTrackId!)
+    }
+  }, [
+    isPlaying,
+    isActive,
+    playingUid,
+    playingTrackId,
+    entries,
+    tracksWithUids,
+    playTrack,
+    pauseTrack
+  ])
 
   useEffect(() => {
     if (collection && uid) {
@@ -111,25 +145,17 @@ export const ChatMessagePlaylist = ({
   }, [collection, uid, onSuccess, onEmpty])
 
   return collection && uid ? (
-    <div className={className}>
-      {/* You may wonder why we use the mobile web playlist tile here.
-      It's simply because the chat playlist tile uses the same design as mobile web. */}
-      <MobilePlaylistTile
-        index={0}
-        uid={uid}
-        collection={collection}
-        tracks={tracksWithUids}
-        playTrack={playTrack}
-        pauseTrack={pauseTrack}
-        hasLoaded={() => {}}
-        isLoading={status === Status.LOADING || status === Status.IDLE}
-        isTrending={false}
-        showRankIcon={false}
-        numLoadingSkeletonRows={tracksWithUids.length}
-        togglePlay={() => {}}
-        playingTrackId={playingTrackId}
-        variant='readonly'
-      />
-    </div>
+    <CollectionTile
+      index={0}
+      togglePlay={togglePlay}
+      uid={uid}
+      collection={collection}
+      tracks={tracksWithUids}
+      isTrending={false}
+      showArtistPick={false}
+      showRankIcon={false}
+      styles={styles}
+      variant='readonly'
+    />
   ) : null
 }

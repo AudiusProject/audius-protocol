@@ -54,11 +54,11 @@
   user-select: text;
 }
 
-:not(.isAuthor) .linkPreview {
+:not(.isAuthor) :not(.hideMessage) .unfurl {
   border-bottom: 1px solid var(--neutral-light-7);
 }
 
-.isAuthor .linkPreview {
+.isAuthor :not(.hideMessage) .unfurl {
   border-bottom: 1px solid var(--secondary-dark-1);
 }
 
@@ -152,8 +152,13 @@
   bottom: 0;
 }
 
-.tail svg * {
+:not(.hideMessage) .tail svg * {
   fill: var(--bubble-color);
+  transition: fill var(--quick);
+}
+
+.hideMessage .tail svg * {
+  fill: var(--white);
   transition: fill var(--quick);
 }
 

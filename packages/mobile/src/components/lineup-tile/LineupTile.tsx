@@ -53,6 +53,8 @@ export const LineupTile = ({
   item,
   user,
   isPlayingUid,
+  variant,
+  styles,
   TileProps
 }: LineupTileProps) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
@@ -99,8 +101,10 @@ export const LineupTile = ({
     isTrack &&
     (item.genre === Genre.PODCASTS || item.genre === Genre.AUDIOBOOKS)
 
+  const isReadonly = variant === 'readonly'
+
   return (
-    <LineupTileRoot onPress={handlePress} {...TileProps}>
+    <LineupTileRoot onPress={handlePress} style={styles} {...TileProps}>
       {showPremiumCornerTag && cornerTagIconType ? (
         <LineupTileBannerIcon
           type={cornerTagIconType}
@@ -143,6 +147,7 @@ export const LineupTile = ({
           index={index}
           isCollection={isCollection}
           isTrending={isTrending}
+          variant={variant}
           isUnlisted={isUnlisted}
           playCount={playCount}
           repostCount={repost_count}
@@ -151,19 +156,21 @@ export const LineupTile = ({
         />
       </View>
       {children}
-      <LineupTileActionButtons
-        hasReposted={has_current_user_reposted}
-        hasSaved={has_current_user_saved}
-        isOwner={isOwner}
-        isShareHidden={hideShare}
-        isUnlisted={isUnlisted}
-        trackId={trackId}
-        doesUserHaveAccess={doesUserHaveAccess}
-        onPressOverflow={onPressOverflow}
-        onPressRepost={onPressRepost}
-        onPressSave={onPressSave}
-        onPressShare={onPressShare}
-      />
+      {!isReadonly ? (
+        <LineupTileActionButtons
+          hasReposted={has_current_user_reposted}
+          hasSaved={has_current_user_saved}
+          isOwner={isOwner}
+          isShareHidden={hideShare}
+          isUnlisted={isUnlisted}
+          trackId={trackId}
+          doesUserHaveAccess={doesUserHaveAccess}
+          onPressOverflow={onPressOverflow}
+          onPressRepost={onPressRepost}
+          onPressSave={onPressSave}
+          onPressShare={onPressShare}
+        />
+      ) : null}
     </LineupTileRoot>
   )
 }

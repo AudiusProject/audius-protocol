@@ -1,6 +1,7 @@
 import { ID, Kind } from 'models'
 import { createApi } from 'src/audius-query/createApi'
 import { parseTrackRouteFromPermalink } from 'utils/stringUtils'
+import { Nullable } from 'utils/typeUtils'
 
 const trackApi = createApi({
   reducerPath: 'trackApi',
@@ -17,9 +18,16 @@ const trackApi = createApi({
     },
     getTrackByPermalink: {
       fetch: async (
-        { permalink, currentUserId }: { permalink: string; currentUserId: ID },
+        {
+          permalink,
+          currentUserId
+        }: { permalink: Nullable<string>; currentUserId: Nullable<ID> },
         { apiClient }
       ) => {
+        if (!permalink) {
+          console.error('Attempting to get track but permalink is null...')
+          return
+        }
         const { handle, slug } = parseTrackRouteFromPermalink(permalink)
         return await apiClient.getTrackByHandleAndSlug({
           handle,
@@ -35,7 +43,7 @@ const trackApi = createApi({
     },
     getTracksByIds: {
       fetch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId: ID },
+        { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
         { apiClient }
       ) => {
         return await apiClient.getTracks({ ids, currentUserId })

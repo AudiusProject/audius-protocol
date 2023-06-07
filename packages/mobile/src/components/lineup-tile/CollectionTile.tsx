@@ -53,16 +53,20 @@ const { getCollection, getTracksFromCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 export const CollectionTile = (props: LineupItemProps) => {
-  const { uid } = props
+  const { uid, collection: collectionOverride, tracks: tracksOverride } = props
 
   const collection = useProxySelector(
-    (state) => getCollection(state, { uid }),
-    [uid]
+    (state) => {
+      return collectionOverride ?? getCollection(state, { uid })
+    },
+    [collectionOverride, uid]
   )
 
   const tracks = useProxySelector(
-    (state) => getTracksFromCollection(state, { uid }),
-    [uid]
+    (state) => {
+      return tracksOverride ?? getTracksFromCollection(state, { uid })
+    },
+    [tracksOverride, uid]
   )
 
   const user = useProxySelector(
@@ -102,6 +106,7 @@ const CollectionTileComponent = ({
   togglePlay,
   tracks,
   user,
+  variant,
   ...lineupTileProps
 }: CollectionTileProps) => {
   const dispatch = useDispatch()
@@ -253,6 +258,7 @@ const CollectionTileComponent = ({
       title={playlist_name}
       item={collection}
       user={user}
+      variant={variant}
     >
       <CollectionTileTrackList tracks={tracks} onPress={handlePressTitle} />
     </LineupTile>
