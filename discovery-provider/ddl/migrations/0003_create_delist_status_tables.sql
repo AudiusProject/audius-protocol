@@ -1,3 +1,4 @@
+-- 5/31/23 poll trusted notifier for delisted statuses
 BEGIN;
 
 -- Define enums
