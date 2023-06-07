@@ -44,17 +44,17 @@ export const ChatMessagePlaylist = ({
     },
     { disabled: !playlistId }
   )
+
   const collection = useMemo(() => {
     return playlist
       ? {
           ...playlist,
-          // todo: make sure good value is passed in here
+          // Include this field to conform with the component prop type.
           _cover_art_sizes: {}
         }
       : null
   }, [playlist])
 
-  const uid = playlist ? makeUid(Kind.COLLECTIONS, playlist.playlist_id) : null
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
   const { data: tracks } = useGetTracksByIds(
@@ -65,17 +65,28 @@ export const ChatMessagePlaylist = ({
     { disabled: !trackIds.length }
   )
 
+  const collectionId = playlist?.playlist_id
+
+  const uid = useMemo(() => {
+    return collectionId ? makeUid(Kind.COLLECTIONS, collectionId) : null
+  }, [collectionId])
+
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
       result[id] = makeUid(Kind.TRACKS, id)
       return result
     }, {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlist?.playlist_id])
+  }, [collectionId])
+
+  /**
+   * Include uids for the tracks as those are used to play the tracks,
+   * and also to determine which track is currently playing.
+   * Also include the other properties to conform with the component.
+   */
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      // todo: make sure good value is passed in here
       _cover_art_sizes: {},
       user: {
         ...track.user,
@@ -86,6 +97,7 @@ export const ChatMessagePlaylist = ({
       uid: uidMap[track.track_id]
     }))
   }, [tracks, uidMap])
+
   const entries = useMemo(() => {
     return (tracks || []).map((track) => ({
       id: track.track_id,

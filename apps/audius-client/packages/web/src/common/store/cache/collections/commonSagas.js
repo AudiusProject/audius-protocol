@@ -1065,18 +1065,13 @@ function* watchFetchCoverArt() {
           coverArtSize,
           gateways
         )
+        collection._cover_art_sizes = {
+          ...collection._cover_art_sizes,
+          [coverArtSize || DefaultSizes.OVERRIDE]: url
+        }
         yield put(
           cacheActions.update(Kind.COLLECTIONS, [
-            {
-              id: collectionId,
-              metadata: {
-                ...collection,
-                _cover_art_sizes: {
-                  ...collection._cover_art_sizes,
-                  [coverArtSize || DefaultSizes.OVERRIDE]: url
-                }
-              }
-            }
+            { id: collectionId, metadata: collection }
           ])
         )
       } catch (e) {

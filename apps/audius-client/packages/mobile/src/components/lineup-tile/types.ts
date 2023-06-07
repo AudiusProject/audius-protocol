@@ -7,9 +7,9 @@ import type {
   Collection,
   FavoriteType,
   Track,
-  LineupTrack,
   User,
-  RepostType
+  RepostType,
+  EnhancedCollectionTrack
 } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
@@ -53,7 +53,7 @@ export type LineupItemProps = {
   collection?: Collection
 
   /** Optionally passed in tracks to override  */
-  tracks?: LineupTrack[]
+  tracks?: EnhancedCollectionTrack[]
 
   /** Passed in styles */
   styles?: StyleProp<ViewStyle>

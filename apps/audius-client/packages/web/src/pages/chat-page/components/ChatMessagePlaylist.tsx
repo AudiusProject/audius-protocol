@@ -14,14 +14,20 @@ import {
   usePlayTrack,
   usePauseTrack,
   ChatMessageTileProps,
-  parsePlaylistIdFromPermalink
+  parsePlaylistIdFromPermalink,
+  SquareSizes,
+  cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  CommonState
 } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
 const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { fetchCoverArt } = cacheCollectionsActions
 
 export const ChatMessagePlaylist = ({
   link,
@@ -29,6 +35,7 @@ export const ChatMessagePlaylist = ({
   onSuccess,
   className
 }: ChatMessageTileProps) => {
+  const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
@@ -42,17 +49,22 @@ export const ChatMessagePlaylist = ({
     },
     { disabled: !playlistId || !currentUserId }
   )
-  const collection = useMemo(() => {
-    return playlist
-      ? {
-          ...playlist,
-          // todo: make sure good value is passed in here
-          _cover_art_sizes: {}
-        }
-      : null
-  }, [playlist])
 
-  const uid = playlist ? makeUid(Kind.COLLECTIONS, playlist.playlist_id) : null
+  const collectionId = playlist?.playlist_id
+  const collection = useSelector((state: CommonState) =>
+    getCollection(state, { id: collectionId })
+  )
+
+  useEffect(() => {
+    if (collectionId) {
+      dispatch(fetchCoverArt(collectionId, SquareSizes.SIZE_150_BY_150))
+    }
+  }, [collectionId, dispatch])
+
+  const uid = useMemo(() => {
+    return collectionId ? makeUid(Kind.COLLECTIONS, collectionId) : null
+  }, [collectionId])
+
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
   const { data: tracks } = useGetTracksByIds(
@@ -69,11 +81,16 @@ export const ChatMessagePlaylist = ({
       return result
     }, {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playlist?.playlist_id])
+  }, [collectionId])
+
+  /**
+   * Include uids for the tracks as those are used to play the tracks,
+   * and also to determine which track is currently playing.
+   * Also include the other properties to conform with the component.
+   */
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      // todo: make sure good value is passed in here
       _cover_art_sizes: {},
       user: {
         ...track.user,
@@ -84,6 +101,7 @@ export const ChatMessagePlaylist = ({
       uid: uidMap[track.track_id]
     }))
   }, [tracks, uidMap])
+
   const entries = useMemo(() => {
     return (tracks || []).map((track) => ({
       id: track.track_id,
