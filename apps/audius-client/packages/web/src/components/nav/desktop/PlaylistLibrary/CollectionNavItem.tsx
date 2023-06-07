@@ -4,6 +4,8 @@ import {
   Name,
   ID,
   cacheCollectionsActions,
+  cacheTracksSelectors,
+  cacheCollectionsSelectors,
   playlistLibraryActions,
   PlaylistLibraryKind,
   PlaylistLibraryID,
@@ -32,7 +34,9 @@ import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmatio
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 
+const { getTrack } = cacheTracksSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
+const { getCollection } = cacheCollectionsSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
 
@@ -142,11 +146,21 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const draggingKind = useSelector(selectDraggingKind)
   const draggingId = useSelector(selectDraggingId)
+  const track = useSelector((state) =>
+    getTrack(state, { id: typeof draggingId === 'string' ? null : draggingId })
+  )
+  const collection = useSelector((state) =>
+    getCollection(state, { id: typeof id === 'string' ? null : id })
+  )
+
+  const hiddenTrackCheck =
+    !!track && !!collection && track?.is_unlisted && !collection?.is_private
 
   const isDisabled =
     (draggingKind === 'track' && !isOwned) ||
     draggingId === id ||
-    (draggingKind === 'playlist-folder' && level > 0)
+    (draggingKind === 'playlist-folder' && level > 0) ||
+    hiddenTrackCheck
 
   if (!name || !url) return null
 
