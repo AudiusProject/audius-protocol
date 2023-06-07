@@ -213,10 +213,10 @@ def process_track_delist_statuses(session, resp, endpoint):
 
 def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
     endpoint = trusted_notifier_manager["endpoint"]
+    if endpoint[-1] != "/":
+        endpoint += "/"
 
     for entity in (DelistEntity.USERS, DelistEntity.TRACKS):
-        if endpoint[-1] != "/":
-            endpoint += "/"
         poll_more_endpoint = (
             f"{endpoint}statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
         )
