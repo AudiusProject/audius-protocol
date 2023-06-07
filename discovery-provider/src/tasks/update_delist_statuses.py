@@ -233,8 +233,8 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
         cursor_before = (
             session.query(DelistStatusCursor.created_at)
             .filter(
-                DelistStatusCursor.host == endpoint
-                and DelistStatusCursor.entity == entity
+                DelistStatusCursor.host == endpoint,
+                DelistStatusCursor.entity == entity
             )
             .first()
         )
@@ -285,7 +285,6 @@ def update_delist_statuses(self) -> None:
             with db.scoped_session() as session:
                 process_delist_statuses(session, trusted_notifier_manager)
                 session.commit()
-            session.close()
 
         except Exception as e:
             logger.error(
@@ -295,6 +294,7 @@ def update_delist_statuses(self) -> None:
         finally:
             if have_lock:
                 update_lock.release()
+            session.close()
     else:
         logger.warning(
             "update_delist_statuses.py | Lock not acquired",
