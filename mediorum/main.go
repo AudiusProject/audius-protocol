@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"mediorum/ethcontracts"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -64,22 +65,31 @@ func startStagingOrProd(isProd bool) {
 	if err != nil {
 		slog.Warn("failed to parse trustedNotifierID", "err", err)
 	}
+	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, delegateOwnerWallet)
+	if err != nil || spID == 0 {
+		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
+	}
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   creatorNodeEndpoint,
 			Wallet: delegateOwnerWallet,
 		},
-		ListenPort:        "1991",
-		Peers:             peers,
-		Signers:           signers,
-		ReplicationFactor: 3,
-		PrivateKey:        privateKey,
-		Dir:               "/tmp/mediorum",
-		PostgresDSN:       os.Getenv("dbUrl"),
-		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
-		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
-		TrustedNotifierID: trustedNotifierID,
+		ListenPort:          "1991",
+		Peers:               peers,
+		Signers:             signers,
+		ReplicationFactor:   3,
+		PrivateKey:          privateKey,
+		Dir:                 "/tmp/mediorum",
+		PostgresDSN:         os.Getenv("dbUrl"),
+		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
+		UpstreamCN:          getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
+		TrustedNotifierID:   trustedNotifierID,
+		SPID:                spID,
+		SPOwnerWallet:       os.Getenv("spOwnerWallet"),
+		GitSHA:              os.Getenv("GIT_SHA"),
+		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 	}
 
 	ss, err := server.New(config)
@@ -95,6 +105,10 @@ func startDevInstance() {
 	if v := os.Getenv("IDX"); v != "" {
 		idx = v
 	}
+	spID, err := strconv.Atoi(idx)
+	if err != nil {
+		log.Fatalf("failed to parse spID: %v", err)
+	}
 
 	postgresDSN := fmt.Sprintf("postgres://postgres:example@localhost:5454/m%s", idx)
 	if v := os.Getenv("dbUrl"); v != "" {
@@ -109,11 +123,17 @@ func startDevInstance() {
 			Host:   fmt.Sprintf(hostNameTemplate, idx),
 			Wallet: "0xWallet" + idx,
 		},
-		Peers:             network,
-		ReplicationFactor: 3,
-		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
-		PostgresDSN:       postgresDSN,
-		ListenPort:        "199" + idx,
+		Peers:               network,
+		ReplicationFactor:   3,
+		Dir:                 fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
+		PostgresDSN:         postgresDSN,
+		ListenPort:          "199" + idx,
+		SPID:                spID,
+		SPOwnerWallet:       "0xWallet" + idx,
+		GitSHA:              os.Getenv("GIT_SHA"),
+		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+		LegacyFSRoot:        "/file_storage",
 	}
 
 	ss, err := server.New(config)
@@ -152,15 +172,25 @@ func startDevCluster() {
 
 	for idx, peer := range network {
 		peer := peer
+		spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(peer.Host, peer.Wallet)
+		if err != nil || spID == 0 {
+			log.Fatalf("failed to recover spID for %s, %s: %v", peer.Host, peer.Wallet, err)
+		}
 		config := server.MediorumConfig{
-			Self:              peer,
-			Peers:             network,
-			Signers:           signers,
-			ReplicationFactor: 3,
-			Dir:               fmt.Sprintf(dirTemplate, idx+1),
-			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
-			ListenPort:        fmt.Sprintf("199%d", idx+1),
-			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
+			Self:                peer,
+			Peers:               network,
+			Signers:             signers,
+			ReplicationFactor:   3,
+			Dir:                 fmt.Sprintf(dirTemplate, idx+1),
+			PostgresDSN:         fmt.Sprintf(dbUrlTemplate, idx+1),
+			ListenPort:          fmt.Sprintf("199%d", idx+1),
+			UpstreamCN:          fmt.Sprintf(upstreamCNTemplate, idx+1),
+			SPID:                spID,
+			SPOwnerWallet:       peer.Wallet,
+			GitSHA:              os.Getenv("GIT_SHA"),
+			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+			LegacyFSRoot:        "/file_storage",
 		}
 		if privateKey, found := os.LookupEnv(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)); found {
 			config.PrivateKey = privateKey

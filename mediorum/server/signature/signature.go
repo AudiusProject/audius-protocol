@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -87,7 +88,7 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	data := fmt.Sprintf("{\"data\":\"listen\",\"timestamp\":\"%s\"}", timestamp)
 
-	signature, err := sign(data, privateKey)
+	signature, err := Sign(data, privateKey)
 	if err != nil {
 		fmt.Println("Error signing message:", err)
 		return nil, err
@@ -101,7 +102,7 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 }
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func Sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	// hash the input
 	hash := crypto.Keccak256Hash([]byte(input))
 	// TextHash will prepend Ethereum signed message prefix to the hash
@@ -119,4 +120,56 @@ func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 func recover(input string, signature []byte) (common.Address, error) {
 	hash := crypto.Keccak256Hash([]byte(input))
 	return sigverify.EcRecoverEx(hash.Bytes(), signature)
+}
+
+func sortedMap(m map[string]interface{}) map[string]interface{} {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	result := make(map[string]interface{})
+	for _, k := range keys {
+		switch v := m[k].(type) {
+		case map[string]interface{}:
+			result[k] = sortedMap(v)
+		case []interface{}:
+			arr := make([]interface{}, len(v))
+			for i, elem := range v {
+				if elemMap, ok := elem.(map[string]interface{}); ok {
+					arr[i] = sortedMap(elemMap)
+				} else {
+					arr[i] = elem
+				}
+			}
+			result[k] = arr
+		default:
+			result[k] = v
+		}
+	}
+
+	return result
+}
+
+func SortKeys(data interface{}) (string, error) {
+	jsonString, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	var dataMap map[string]interface{}
+	err = json.Unmarshal(jsonString, &dataMap)
+	if err != nil {
+		return "", err
+	}
+
+	sortedDataMap := sortedMap(dataMap)
+
+	sortedJsonString, err := json.Marshal(sortedDataMap)
+	if err != nil {
+		return "", err
+	}
+
+	return string(sortedJsonString), nil
 }

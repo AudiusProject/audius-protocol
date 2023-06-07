@@ -86,6 +86,11 @@ func (u *UserDelistStatus) UnmarshalJSON(data []byte) error {
 }
 
 func (ss *MediorumServer) startPollingDelistStatuses() {
+	if ss.trustedNotifier.Endpoint == "" {
+		slog.Warn("trusted notifier not properly setup, not polling delist statuses")
+		return
+	}
+
 	ticker := time.NewTicker(DelistStatusPollingInterval)
 	for {
 		<-ticker.C

@@ -82,7 +82,6 @@ export discoveryNodeUnhealthyBlockDiff=10
 export maxBatchClockStatusBatchSize=5
 
 export entityManagerAddress="0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66"
-export entityManagerReplicaSetEnabled="true"
 
 # Premium content
 export premiumContentEnabled="true"

@@ -14,28 +14,25 @@ import (
 )
 
 type NotifierInfo struct {
-	Wallet   string
-	Endpoint string
-	Email    string
+	Wallet   string `json:"wallet"`
+	Endpoint string `json:"endpoint"`
+	Email    string `json:"email"`
 }
 
-func GetNotifierForID(ID string) (NotifierInfo, error) {
+func GetNotifierForID(ID string, delegateOwnerWallet string) (NotifierInfo, error) {
 	client, err := ethclient.Dial(os.Getenv("ethProviderUrl"))
 	if err != nil {
 		return NotifierInfo{}, fmt.Errorf("failed to connect to Ethereum node: %v", err)
 	}
 
 	ethRegistryAddress := os.Getenv("ethRegistryAddress")
-	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
-
-	notifierID := new(big.Int)
-	notifierID.SetString(ID, 10)
-
 	notifierContractAddress, err := GetContractAddr(client, common.HexToAddress(ethRegistryAddress), "TrustedNotifierManagerProxy")
 	if err != nil {
 		return NotifierInfo{}, fmt.Errorf("failed to get contract address: %v", err)
 	}
 
+	notifierID := new(big.Int)
+	notifierID.SetString(ID, 10)
 	callData, err := trustedNotifierManagerAbi.Pack("getNotifierForID", notifierID)
 	if err != nil {
 		return NotifierInfo{}, fmt.Errorf("failed to pack contract method: %v", err)
@@ -67,6 +64,43 @@ func GetNotifierForID(ID string) (NotifierInfo, error) {
 		Endpoint: removeTrailingSlash(output.Endpoint),
 		Email:    removeTrailingSlash(output.Email),
 	}, nil
+}
+
+func GetServiceProviderIdFromEndpoint(endpoint string, delegateOwnerWallet string) (int, error) {
+	client, err := ethclient.Dial(os.Getenv("ethProviderUrl"))
+	if err != nil {
+		return 0, fmt.Errorf("failed to connect to Ethereum node: %v", err)
+	}
+
+	ethRegistryAddress := os.Getenv("ethRegistryAddress")
+	serviceProviderFactoryAddress, err := GetContractAddr(client, common.HexToAddress(ethRegistryAddress), "ServiceProviderFactory")
+	if err != nil {
+		return 0, fmt.Errorf("failed to get contract address: %v", err)
+	}
+
+	callData, err := serviceProviderFactoryAbi.Pack("getServiceProviderIdFromEndpoint", endpoint)
+	if err != nil {
+		return 0, fmt.Errorf("failed to pack contract method: %v", err)
+	}
+
+	result, err := client.CallContract(context.Background(), ethereum.CallMsg{
+		From: common.HexToAddress(delegateOwnerWallet),
+		To:   &serviceProviderFactoryAddress,
+		Data: callData,
+	}, nil)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to call contract method: %v", err)
+	}
+
+	var output *big.Int
+
+	err = serviceProviderFactoryAbi.UnpackIntoInterface(&output, "getServiceProviderIdFromEndpoint", result)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unpack contract method result: %v", err)
+	}
+
+	return int(output.Uint64()), nil
 }
 
 func GetContractAddr(client *ethclient.Client, ethRegistryAddr common.Address, contractRegistryKey string) (common.Address, error) {

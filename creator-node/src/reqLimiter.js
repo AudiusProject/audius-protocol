@@ -123,16 +123,6 @@ const imageReqLimiter = rateLimit({
   keyGenerator: ipKeyGenerator
 })
 
-const URSMRequestForSignatureReqLimiter = rateLimit({
-  store: new RedisStore({
-    client: client,
-    prefix: 'URSMRequestForSignatureReqLimiter',
-    expiry: 60 * 60 // one hour in seconds
-  }),
-  max: config.get('URSMRequestForSignatureReqLimit'), // max requests per hour
-  keyGenerator: ipKeyGenerator
-})
-
 const batchCidsExistReqLimiter = rateLimit({
   store: new RedisStore({
     client: client,
@@ -248,7 +238,6 @@ module.exports = {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  URSMRequestForSignatureReqLimiter,
   batchCidsExistReqLimiter,
   getRateLimiterMiddleware
 }
