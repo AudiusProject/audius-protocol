@@ -17,9 +17,14 @@ import (
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
+	cid := c.Param("cid")
 	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: c.Param("cid")}).Find(&locations)
-	return c.JSON(200, locations)
+	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
+	return c.JSON(200, map[string]any{
+		"cid":       cid,
+		"locations": locations,
+		"preferred": ss.placement.topAll(cid),
+	})
 }
 
 func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
