@@ -201,6 +201,9 @@ def process_user_delist_statuses(session, resp, endpoint):
         update_user_is_available_statuses(session, users)
         cursor_after = users[-1]["createdAt"]
         update_delist_status_cursor(session, cursor_after, endpoint, DelistEntity.USERS)
+    logger.info(
+        f"update_delist_statuses.py | processed {len(users)} user delist statuses"
+    )
 
 
 def process_track_delist_statuses(session, resp, endpoint):
@@ -213,6 +216,9 @@ def process_track_delist_statuses(session, resp, endpoint):
         update_delist_status_cursor(
             session, cursor_after, endpoint, DelistEntity.TRACKS
         )
+    logger.info(
+        f"update_delist_statuses.py | processed {len(tracks)} track delist statuses"
+    )
 
 
 def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
@@ -246,10 +252,6 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
             process_user_delist_statuses(session, resp.json(), endpoint)
         elif entity == DelistEntity.TRACKS:
             process_track_delist_statuses(session, resp.json(), endpoint)
-
-        logger.info(
-            f"update_delist_statuses.py | finished polling delist statuses for {entity}"
-        )
 
 
 # ####### CELERY TASKS ####### #
