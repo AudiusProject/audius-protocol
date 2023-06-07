@@ -13,13 +13,23 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
       rewardsManagerProgramId: process.env.rewardsManagerProgramId,
       rewardsManagerProgramPDA: process.env.rewardsManagerProgramPDA,
       rewardsManagerTokenPDA: process.env.rewardsManagerTokenPDA,
-      useRelay: process.env.useRelay
+      useRelay: process.env.useRelay,
     },
-  }
+    ethWeb3Config: {
+      tokenAddress: process.env.tokenAddress,
+      registryAddress: process.env.registryAddress,
+      providers: process.env.providers?.split(","),
+      ownerWallet: process.env.ownerWallet,
+      claimDistributionContractAddress:
+        process.env.claimDistributionContractAddress,
+      wormholeContractAddress: process.env.wormholeContractAddress,
+    },
+  };
 
   const libsConfig = {
     solanaWeb3Config: config.solanaWeb3Config,
-    isServer: true,
+    ethWeb3Config: config.ethWeb3Config,
+    discoveryProviderConfig: {},
     logger: console,
     isDebug: false,
     localStorage: false,

@@ -37,12 +37,14 @@ export const onDisburse = async (
   if (startingBlockRes.err) return startingBlockRes;
   const [startingBlock, specifier] = startingBlockRes.unwrap();
 
-  const formattedResults = formatDisbursementTable(await getChallengesDisbursementsUserbanksFriendly(db, specifier))
-  console.log(formattedResults)
+  const formattedResults = formatDisbursementTable(
+    await getChallengesDisbursementsUserbanksFriendly(db, specifier)
+  );
+  console.log(formattedResults);
 
   await client.chat.postMessage({
     channel: command.channel_id,
-    text: '```'+ formattedResults + '```',
+    text: "```" + formattedResults + "```",
   });
 
   const nodeGroupsRes = await assembleNodeGroups(libs);
