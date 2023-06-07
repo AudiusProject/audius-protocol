@@ -155,15 +155,6 @@ export class WalletClient {
     }
   }
 
-  async claim(): Promise<void> {
-    try {
-      await this.audiusBackendInstance.makeDistributionClaim()
-    } catch (err) {
-      console.error(err)
-      throw err
-    }
-  }
-
   async sendTokens(address: WalletAddress, amount: BNWei): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')

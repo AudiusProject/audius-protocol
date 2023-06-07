@@ -108,7 +108,11 @@ function* fetchBestNewReleases() {
 
 function* fetchUnderTheRadar() {
   const explore = yield* getContext('explore')
-  const tracks = yield* call([explore, 'getFeedNotListenedTo'])
+  const currentUserId = yield* select(getUserId)
+  if (currentUserId == null) {
+    return
+  }
+  const tracks = yield* call([explore, 'getFeedNotListenedTo'], currentUserId)
 
   const trackIds = tracks
     .filter((track: UserTrack) => !track.user.is_deactivated)

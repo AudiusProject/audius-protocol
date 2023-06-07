@@ -331,7 +331,7 @@ export function* fetchUserSocials({ handle }) {
   }
   user = yield call(waitForValue, getUser, { handle })
   const socials = yield call(
-    audiusBackendInstance.getCreatorSocialHandle,
+    audiusBackendInstance.getSocialHandles,
     user.handle
   )
 

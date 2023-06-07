@@ -249,10 +249,7 @@ function* deleteTrackAsync(action) {
   const handle = yield select(getUserHandle)
 
   // Before deleting, check if the track is set as the artist pick & delete if so
-  const socials = yield call(
-    audiusBackendInstance.getCreatorSocialHandle,
-    handle
-  )
+  const socials = yield call(audiusBackendInstance.getSocialHandles, handle)
   if (socials.pinnedTrackId === action.trackId) {
     yield put(
       cacheActions.update(Kind.USERS, [
