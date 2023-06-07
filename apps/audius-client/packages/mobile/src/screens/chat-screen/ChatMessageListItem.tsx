@@ -175,6 +175,7 @@ type ChatMessageListItemProps = {
   isPopup: boolean
   style?: StyleProp<ViewStyle>
   onLongPress?: (id: string) => void
+  handleClosePopup?: () => void
   itemsRef?: any
 }
 
@@ -187,6 +188,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     isPopup = false,
     style: styleProp,
     onLongPress,
+    handleClosePopup,
     itemsRef
   } = props
   const styles = useStyles()
@@ -253,8 +255,8 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
           <Pressable
             onLongPress={handleLongPress}
             delayLongPress={REACTION_LONGPRESS_DELAY}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            onPressIn={isPopup ? handleClosePopup : handlePressIn}
+            onPressOut={isPopup ? handleClosePopup : handlePressOut}
           >
             <View style={styles.shadow}>
               <View style={styles.shadow2}>
