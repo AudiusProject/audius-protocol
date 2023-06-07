@@ -44,7 +44,7 @@ func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, 
 	}
 
 	// make this really low for the demo
-	healthyHosts := ss.findHealthyHostNames("1 minute")
+	healthyHosts := ss.findHealthyHostNames("5 minutes")
 
 	problems := []ProblemBlob{}
 	err := ss.crud.DB.Model(&Blob{}).

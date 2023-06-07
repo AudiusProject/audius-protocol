@@ -214,13 +214,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
 
-	// status + debug:
-	routes.GET("/status", ss.getStatus)
-	routes.GET("/debug/blobs", ss.dumpBlobs)
-	routes.GET("/debug/uploads", ss.dumpUploads)
-	routes.GET("/debug/ls", ss.getLs)
-	routes.GET("/debug/peers", ss.debugPeers)
-	routes.GET("/debug/cid", ss.debugCidCursor)
+	// unified health check?
+	routes.GET("/health_check", ss.serveUnifiedHealthCheck)
 
 	// -------------------
 	// internal
@@ -231,10 +226,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
-
-	// should health be internal or public?
-	internalApi.GET("/health", ss.getMyHealth)
-	internalApi.GET("/health/peers", ss.getPeerHealth)
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
