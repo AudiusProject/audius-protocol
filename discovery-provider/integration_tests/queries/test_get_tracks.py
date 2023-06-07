@@ -29,7 +29,7 @@ def populate_tracks(db):
                 "owner_id": 1287289,
                 "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2020, 5, 17),
-                "ai_attribution_user_id": 1287289
+                "ai_attribution_user_id": 1287289,
             },
             {
                 "track_id": 4,
@@ -96,7 +96,7 @@ def populate_tracks(db):
                 "owner_id": 5,
                 "release_date": "Fri Jun 19 2020 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 21),
-                "ai_attribution_user_id": 1287289
+                "ai_attribution_user_id": 1287289,
             },
             {
                 "track_id": 13,
@@ -154,7 +154,12 @@ def populate_tracks(db):
         "users": [
             {"user_id": 1287289, "handle": "some-test-user"},
             {"user_id": 4, "handle": "some-other-user"},
-            {"user_id": 5, "handle": "test-user-5", "artist_pick_track_id": 12, "allow_ai_attribution": True},
+            {
+                "user_id": 5,
+                "handle": "test-user-5",
+                "artist_pick_track_id": 12,
+                "allow_ai_attribution": True,
+            },
         ],
     }
 
@@ -383,9 +388,15 @@ def test_get_ai_attributed_tracks(app):
 
     with db.scoped_session() as session:
         tracks = _get_tracks(
-            session, {"user_id": 1287289, "offset": 0, "limit": 10, "ai_attributed_only": True, "sort": "date"}
+            session,
+            {
+                "user_id": 1287289,
+                "offset": 0,
+                "limit": 10,
+                "ai_attributed_only": True,
+                "sort": "date",
+            },
         )
         assert len(tracks) == 2
         assert tracks[0]["track_id"] == 12
         assert tracks[1]["track_id"] == 3
-

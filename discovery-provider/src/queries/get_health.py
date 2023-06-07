@@ -183,8 +183,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     latest_block_hash: Optional[str] = None
     latest_indexed_block_num: Optional[int] = None
     latest_indexed_block_hash: Optional[str] = None
-    last_track_unavailability_job_start_time: Optional[str] = None
-    last_track_unavailability_job_end_time: Optional[str] = None
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None

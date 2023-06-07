@@ -42,6 +42,7 @@ from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_constants import final_poa_block_redis_key
@@ -49,7 +50,6 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
-from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -116,7 +116,9 @@ def create_celery(test_config=None):
     eth_abi_values = helpers.load_eth_abi_values()
 
     # Initialize trusted notifier manager info
-    trusted_notifier_manager = fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values)
+    trusted_notifier_manager = fetch_trusted_notifier_info(
+        eth_web3, shared_config, eth_abi_values
+    )
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
@@ -418,7 +420,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_delist_statuses": {
                 "task": "update_delist_statuses",
-                "schedule": timedelta(seconds=20)
+                "schedule": timedelta(seconds=20),
             },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",

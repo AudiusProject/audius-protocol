@@ -1,21 +1,16 @@
-import logging
-from urllib.parse import quote
 from datetime import datetime
-from sqlalchemy.sql import text
-from src.tasks.celery_app import celery
-from src.utils.prometheus_metric import (
-    save_duration_metric,
-)
-from typing import Any, List, Tuple, TypedDict, Dict, Union
-from src.utils.structured_logger import StructuredLogger, log_duration
-from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
-from web3 import Web3
-from redis import Redis
-from src.utils.config import shared_config
+from typing import Dict, List
+from urllib.parse import quote
+
 from sqlalchemy.orm.session import Session
-from src.utils.auth_helpers import signed_get
+from sqlalchemy.sql import text
+from src.models.users.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.users.user import User
-from src.models.users.delist_status_cursor import DelistStatusCursor, DelistEntity
+from src.tasks.celery_app import celery
+from src.utils.auth_helpers import signed_get
+from src.utils.config import shared_config
+from src.utils.prometheus_metric import save_duration_metric
+from src.utils.structured_logger import StructuredLogger, log_duration
 
 logger = StructuredLogger(__name__)
 
@@ -96,7 +91,7 @@ def insert_user_delist_statuses(session, users):
             "user_id": list(map(lambda user: user["userId"], users)),
             "delisted": list(map(lambda user: user["delisted"], users)),
             "reason": list(map(lambda user: user["reason"], users)),
-        }
+        },
     )
 
 
@@ -120,8 +115,8 @@ def process_user_delist_statuses(session, resp, endpoint):
             {
                 "cursor": cursor_after,
                 "endpoint": endpoint,
-                "entity": DelistEntity.USERS
-            }
+                "entity": DelistEntity.USERS,
+            },
         )
 
 
@@ -130,8 +125,16 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
     # Only process user delist statuses
     entity = DelistEntity.USERS
 
-    poll_more_endpoint = f"{endpoint}/statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
-    cursor_before = session.query(DelistStatusCursor.created_at).filter(DelistStatusCursor.host == endpoint and DelistStatusCursor.entity == entity).first()
+    poll_more_endpoint = (
+        f"{endpoint}/statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
+    )
+    cursor_before = (
+        session.query(DelistStatusCursor.created_at)
+        .filter(
+            DelistStatusCursor.host == endpoint and DelistStatusCursor.entity == entity
+        )
+        .first()
+    )
     if cursor_before:
         # Convert the cursor string to a datetime object
         timestamp = datetime.strptime(cursor_before, "%Y-%m-%d %H:%M:%S%z")
@@ -143,7 +146,9 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
     resp.raise_for_status()
 
     process_user_delist_statuses(session, resp.json(), endpoint)
-    logger.info(f"update_delist_statuses.py | finished polling delist statuses for {entity}")
+    logger.info(
+        f"update_delist_statuses.py | finished polling delist statuses for {entity}"
+    )
 
 
 # ####### CELERY TASKS ####### #
@@ -157,7 +162,9 @@ def update_delist_statuses(self) -> None:
     redis = update_delist_statuses.redis
     trusted_notifier_manager = update_delist_statuses.trusted_notifier_manager
     if not trusted_notifier_manager:
-        logger.error("update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses")
+        logger.error(
+            "update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses"
+        )
         return
     if trusted_notifier_manager["endpoint"] == "default.trustednotifier":
         logger.info("update_delist_statuses.py | not polling delist statuses")
@@ -173,9 +180,7 @@ def update_delist_statuses(self) -> None:
     if have_lock:
         try:
             with db.scoped_session() as session:
-                process_delist_statuses(
-                    session, trusted_notifier_manager
-                )
+                process_delist_statuses(session, trusted_notifier_manager)
                 session.commit()
             session.close()
 

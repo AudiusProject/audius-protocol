@@ -17,6 +17,7 @@ content_node_service_type = bytes("content-node", "utf-8")
 # 30 minutes = 60 sec * 30 min
 cnode_info_redis_ttl_s = 1800
 
+
 def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict:
     trusted_notifier_id = int(shared_config["eth_contracts"]["trusted_notifier_id"])
     if trusted_notifier_id == 0:
@@ -42,11 +43,7 @@ def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict
     logger.info(
         f"eth_contracts_helpers.py | got trusted notifier from chain. endpoint: {endpoint}, wallet: {wallet}"
     )
-    return {
-        "wallet": wallet,
-        "endpoint": endpoint,
-        "email": email
-    }
+    return {"wallet": wallet, "endpoint": endpoint, "email": email}
 
 
 def fetch_cnode_info(sp_id, sp_factory_instance, redis):

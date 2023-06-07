@@ -1,4 +1,3 @@
-import logging  # pylint: disable=C0302
 import re
 
 from flask import Blueprint, Response, request

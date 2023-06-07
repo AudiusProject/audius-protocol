@@ -1,14 +1,15 @@
-from unittest import mock
-from typing import List
 from datetime import datetime, timedelta
-from integration_tests.utils import populate_mock_db
+from typing import List
+from unittest import mock
 
+from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
+from src.models.users.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.users.user import User
-from src.models.users.user_delist_status import UserDelistStatus, DelistUserReason
-from src.models.users.delist_status_cursor import DelistStatusCursor, DelistEntity
+from src.models.users.user_delist_status import DelistUserReason, UserDelistStatus
+from src.tasks.update_delist_statuses import process_delist_statuses
 from src.utils.db_session import get_db
-from src.tasks.update_delist_statuses import process_delist_statuses, DELIST_BATCH_SIZE
+
 
 def _seed_db(db):
     test_entities = {
@@ -21,7 +22,6 @@ def _seed_db(db):
                 "user_id": 200,
                 "is_current": True,
             },
-
         ]
     }
     populate_mock_db(db, test_entities)
@@ -53,19 +53,19 @@ def test_update_delist_statuses(mock_requests, app):
                     "createdAt": datetime.now(),
                     "userId": 100,
                     "delisted": True,
-                    "reason": "STRIKE_THRESHOLD"
+                    "reason": "STRIKE_THRESHOLD",
                 },
                 {
                     "createdAt": datetime.now() + timedelta(hours=1),
                     "userId": 100,
                     "delisted": False,
-                    "reason": "COPYRIGHT_SCHOOL"
+                    "reason": "COPYRIGHT_SCHOOL",
                 },
                 {
                     "createdAt": datetime.now() + timedelta(hours=2),
                     "userId": 200,
                     "delisted": True,
-                    "reason": "MANUAL"
+                    "reason": "MANUAL",
                 },
             ]
         }
