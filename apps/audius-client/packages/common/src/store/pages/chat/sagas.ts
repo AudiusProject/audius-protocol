@@ -65,8 +65,13 @@ const {
   deleteChat,
   deleteChatSucceeded
 } = chatActions
-const { getChatsSummary, getChat, getUnfurlMetadata, getNonOptimisticChat } =
-  chatSelectors
+const {
+  getChatsSummary,
+  getChat,
+  getUnfurlMetadata,
+  getNonOptimisticChat,
+  getOtherChatUsers
+} = chatSelectors
 const { toast } = toastActions
 
 /**
@@ -315,32 +320,40 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
     console.error('sendMessageFailed', e)
     yield* put(sendMessageFailed({ chatId, messageId: messageIdToUse }))
 
-    // Refetch permissions and blocking on failed message send
+    // Fetch the chat to see if permissions need rechecking
+    yield* call(doFetchChat, { chatId })
+    // Refetch blocking status to see if user was just blocked or has just blocked that user
     yield* put(fetchBlockees())
     yield* put(fetchBlockers())
     if (userId) {
-      yield* put(fetchPermissions({ userIds: [userId] }))
+      const otherUsers = yield* select((state) =>
+        getOtherChatUsers(state, chatId)
+      )
+      // Get permissions of ourselves and other users in the chat
+      yield* put(
+        fetchPermissions({
+          userIds: [userId, ...otherUsers.map((u) => u.user_id)]
+        })
+      )
     }
   }
 }
 
-function* doFetchChatIfNecessary(args: {
-  chatId: string
-  bustCache?: boolean
-}) {
-  const { chatId, bustCache = false } = args
+function* doFetchChat({ chatId }: { chatId: string }) {
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
+  if (chat) {
+    yield* fetchUsersForChats([chat])
+    yield* put(fetchChatSucceeded({ chat }))
+  }
+}
+
+function* doFetchChatIfNecessary(args: { chatId: string }) {
+  const { chatId } = args
   const existingChat = yield* select((state) => getChat(state, chatId))
-  if (!existingChat || bustCache) {
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
-    const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
-    if (chat) {
-      yield* fetchUsersForChats([chat])
-      yield* put(fetchChatSucceeded({ chat }))
-      // Since this is a new chat and the optimistic unread count won't have
-      // included this, refetch unread count. See PAY-1343.
-      yield* put(fetchUnreadMessagesCount())
-    }
+  if (!existingChat) {
+    yield* call(doFetchChat, { chatId })
   }
 }
 

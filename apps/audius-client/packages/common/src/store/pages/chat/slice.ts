@@ -301,7 +301,7 @@ const slice = createSlice({
     },
     fetchChatIfNecessary: (
       _state,
-      _action: PayloadAction<{ chatId: string; bustCache?: boolean }>
+      _action: PayloadAction<{ chatId: string }>
     ) => {
       // triggers saga
     },
