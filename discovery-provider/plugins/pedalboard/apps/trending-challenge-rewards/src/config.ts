@@ -20,7 +20,7 @@ export type SharedData = {
 export const initSharedData = async (): Promise<Result<SharedData, string>> => {
   dotenv.config();
 
-  //const libs = await initAudiusLibs();
+  const libs = await initAudiusLibs();
 
   // default to true if undefined, otherwise explicitly state false to not do dry run
   const dryRun = !(
@@ -47,7 +47,7 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
     oracleEthAddress,
     AAOEndpoint,
     feePayerOverride,
-    libs: null,
+    libs,
     localEndpoint,
     dryRun,
     dateToRun,
