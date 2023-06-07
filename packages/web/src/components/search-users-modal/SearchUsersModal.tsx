@@ -1,11 +1,4 @@
-import {
-  ChangeEvent,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { ChangeEvent, ReactNode, useCallback, useRef, useState } from 'react'
 
 import {
   cacheUsersSelectors,
@@ -62,7 +55,7 @@ type SearchUsersModalProps = {
     hasMore: boolean
   }
   renderEmpty?: () => ReactNode
-  renderUser: (user: User, closeModal: () => void) => ReactNode
+  renderUser: (user: User, closeParentModal: () => void) => ReactNode
 }
 
 export const SearchUsersModal = (props: SearchUsersModalProps) => {
@@ -106,6 +99,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
 
   const handleClose = useCallback(() => {
     setIsVisible(false)
+    setQuery('')
   }, [setIsVisible])
 
   const handleChange = useCallback(
@@ -125,12 +119,6 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
       defaultUserList.loadMore()
     }
   }, [hasQuery, query, status, defaultUserList, dispatch])
-
-  useEffect(() => {
-    if (isVisible) {
-      setQuery('')
-    }
-  }, [isVisible, setQuery])
 
   return (
     <Modal isOpen={isVisible} onClose={handleClose}>

@@ -58,7 +58,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
-  CreateChat: CreateChatModal,
   InboxSettings: InboxSettingsModal,
   LockedContent: LockedContentModal,
   HCaptcha: HCaptchaModal,
@@ -91,6 +90,7 @@ const Modals = () => {
       <UnloadDialog />
       <CollectibleDetailsModal />
       <StripeOnRampModal />
+      <CreateChatModal />
 
       {!isMobileClient && (
         <>

@@ -84,10 +84,12 @@ const { getCanCreateChat } = chatSelectors
 
 export const InboxUnavailableModal = ({
   isVisible,
+  onDismiss,
   onClose,
   user
 }: {
   isVisible: boolean
+  onDismiss?: () => void
   onClose: () => void
   user: User
 }) => {
@@ -112,6 +114,11 @@ export const InboxUnavailableModal = ({
     }
   }, [dispatch, onClose, user, callToAction])
 
+  const handleDismiss = useCallback(() => {
+    onDismiss?.()
+    onClose()
+  }, [onDismiss, onClose])
+
   const { content, buttonText, buttonIcon } = actionToContent(
     callToAction,
     user,
@@ -122,7 +129,7 @@ export const InboxUnavailableModal = ({
     <Modal
       bodyClassName={styles.modalBody}
       isOpen={isVisible}
-      onClose={onClose}
+      onClose={handleDismiss}
     >
       <ModalHeader>
         <ModalTitle
