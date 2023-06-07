@@ -275,16 +275,6 @@ export const ChatScreen = () => {
     }
   }, [chatId, dispatch])
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        if (chatId) {
-          dispatch(markChatAsRead({ chatId }))
-        }
-      }
-    }, [chatId, dispatch])
-  )
-
   // Fetch all permissions, blockers/blockees, and recheck_permissions flag
   useEffect(() => {
     dispatch(fetchBlockees())
@@ -331,6 +321,32 @@ export const ChatScreen = () => {
       hasScrolledToUnreadTag.current = true
     }
   }, [earliestUnreadIndex, chatMessages])
+
+  // Scroll to bottom when user navigates to this screen and there are no unread
+  // messages, because if there are we want to scroll to the earliest unread message.
+  useFocusEffect(
+    useCallback(() => {
+      if (chat?.unread_message_count === 0) {
+        flatListRef.current?.scrollToOffset({ offset: 0 })
+      }
+    }, [chat?.unread_message_count])
+  )
+
+  // Mark chat as read when user leaves this screen
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (chatId) {
+          dispatch(markChatAsRead({ chatId }))
+        }
+        // Hacky way to get unread indicator to disappear when user navigates away
+        // then returns to this screen while staying in the same navigation stack.
+        if (chatFrozenRef.current) {
+          chatFrozenRef.current.unread_message_count = 0
+        }
+      }
+    }, [chatId, dispatch])
+  )
 
   const latestMessage = chatMessages.length > 0 ? chatMessages[0] : null
 
