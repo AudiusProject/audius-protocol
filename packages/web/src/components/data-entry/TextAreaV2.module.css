@@ -74,3 +74,9 @@
   align-items: flex-end;
   gap: var(--unit-1);
 }
+
+.children {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
