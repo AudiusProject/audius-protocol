@@ -9,7 +9,7 @@ import {
   cacheUsersSelectors,
   Status
 } from '@audius/common'
-import { View, Image } from 'react-native'
+import { View, Image, Keyboard } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -220,7 +220,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
       topbarRight={null}
     >
       <ScreenContent>
-        <View style={styles.shadow} />
+        <View style={styles.shadow} onTouchStart={Keyboard.dismiss} />
         <View style={styles.rootContainer}>
           <View style={styles.searchContainer}>
             <TextInput
@@ -247,6 +247,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
               keyExtractor={(user: User) => user.handle}
               contentContainerStyle={styles.flatListContainer}
               ListEmptyComponent={<ListEmpty />}
+              keyboardShouldPersistTaps='always'
             />
           ) : (
             <View style={styles.spinnerContainer}>
