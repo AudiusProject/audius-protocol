@@ -9,13 +9,15 @@ import {
   createUserBankIfNeeded,
   getContext,
   FeatureFlags,
-  chatActions
+  chatActions,
+  ErrorLevel
 } from '@audius/common'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
@@ -234,7 +236,7 @@ export function* fetchLocalAccountAsync() {
       cachedAccountUser.orderedPlaylists
     )
   } else if (!currentUserExists) {
-    yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND' }))
+    yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
 }
 
@@ -383,6 +385,19 @@ function* watchFetchAccount() {
   yield takeEvery(fetchAccount.type, fetchAccountAsync)
 }
 
+function* watchFetchAccountFailed() {
+  yield takeEvery(accountActions.fetchAccountFailed.type, function* (action) {
+    const userId = yield select(getUserId)
+    if (userId) {
+      yield call(reportToSentry, {
+        level: ErrorLevel.Error,
+        error: new Error(`Fetch account failed: ${action.payload.reason}`),
+        additionalInfo: { userId }
+      })
+    }
+  })
+}
+
 function* watchFetchLocalAccount() {
   yield takeEvery(fetchLocalAccount.type, fetchLocalAccountAsync)
 }
@@ -415,6 +430,7 @@ export default function sagas() {
   return [
     watchFetchAccount,
     watchFetchLocalAccount,
+    watchFetchAccountFailed,
     watchSignedIn,
     watchTwitterLogin,
     watchInstagramLogin,
