@@ -119,7 +119,7 @@ def insert_user_delist_statuses(session, users):
         SELECT *
         FROM (
             SELECT
-              unnest(:created_at) AS created_at,
+              unnest((:created_at)::timestamptz[]) AS created_at,
               unnest(:user_id) AS user_id,
               unnest(:delisted) AS delisted,
               unnest((:reason)::delist_user_reason[]) AS reason
@@ -146,7 +146,7 @@ def insert_track_delist_statuses(session, tracks):
         SELECT *
         FROM (
             SELECT
-              unnest(:created_at) AS created_at,
+              unnest((:created_at)::timestamptz[]) AS created_at,
               unnest(:track_id) AS track_id,
               unnest(:owner_id) AS owner_id,
               unnest(:track_cid) AS track_cid,

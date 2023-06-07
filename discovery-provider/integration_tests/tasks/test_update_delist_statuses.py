@@ -68,19 +68,19 @@ def test_update_user_delist_statuses(mock_requests, app):
             "tracks": [],
             "users": [
                 {
-                    "createdAt": datetime.now(),
+                    "createdAt": "2023-05-17 18:00:00.999999+00",
                     "userId": 100,
                     "delisted": True,
                     "reason": "STRIKE_THRESHOLD",
                 },
                 {
-                    "createdAt": datetime.now() + timedelta(hours=1),
+                    "createdAt": "2023-05-17 19:00:00.999999+00",
                     "userId": 100,
                     "delisted": False,
                     "reason": "COPYRIGHT_SCHOOL",
                 },
                 {
-                    "createdAt": datetime.now() + timedelta(hours=2),
+                    "createdAt": "2023-05-17 20:00:00.999999+00",
                     "userId": 200,
                     "delisted": True,
                     "reason": "MANUAL",
@@ -150,7 +150,7 @@ def test_update_track_delist_statuses(mock_requests, app):
             "users": [],
             "tracks": [
                 {
-                    "createdAt": datetime.now(),
+                    "createdAt": "2023-05-17 20:47:29.362983+00",
                     "trackId": 300,
                     "ownerId": 100,
                     "trackCid": "1234",
@@ -158,7 +158,7 @@ def test_update_track_delist_statuses(mock_requests, app):
                     "reason": "DMCA",
                 },
                 {
-                    "createdAt": datetime.now() + timedelta(hours=1),
+                    "createdAt": "2023-05-17 21:47:29.362983+00",
                     "trackId": 400,
                     "ownerId": 200,
                     "trackCid": "5678",
@@ -166,7 +166,7 @@ def test_update_track_delist_statuses(mock_requests, app):
                     "reason": "ACR",
                 },
                 {
-                    "createdAt": datetime.now() + timedelta(hours=1),
+                    "createdAt": "2023-05-17 22:47:29.362983+00",
                     "trackId": 400,
                     "ownerId": 200,
                     "trackCid": "5678",
