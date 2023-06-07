@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import {
   accountSelectors,
   chatActions,
+  ChatPermissionAction,
   chatSelectors,
   removeNullable,
   tippingActions,
@@ -19,7 +20,6 @@ import {
   PopupMenu,
   PopupPosition
 } from '@audius/stems'
-import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -36,12 +36,15 @@ const messages = {
   visit: "Visit User's Profile",
   block: 'Block Messages',
   unblock: 'Unblock Messages',
-  notPermitted: 'Cannot Be Messaged'
+  notPermitted: 'Cannot Be Messaged',
+  sendTipRequired: 'Send a Tip to Message',
+  unblockRequired: 'Blocked'
 }
 
 type UserResultComposeProps = {
   user: User
-  closeModal: () => void
+  closeParentModal: () => void
+  openInboxUnavailableModal: (user: User) => void
 }
 
 const { getUserId } = accountSelectors
@@ -63,29 +66,57 @@ const renderTrigger = (
   />
 )
 
+const renderCustomChip = (callToAction: ChatPermissionAction) => {
+  switch (callToAction) {
+    case ChatPermissionAction.TIP:
+      return (
+        <div className={styles.notPermitted}>
+          <IconBlockMessages className={styles.icon} />
+          <span>{messages.sendTipRequired}</span>
+        </div>
+      )
+    case ChatPermissionAction.UNBLOCK:
+      return (
+        <div className={styles.notPermitted}>
+          <IconBlockMessages className={styles.icon} />
+          <span>{messages.unblockRequired}</span>
+        </div>
+      )
+    default:
+      return (
+        <div className={styles.notPermitted}>
+          <IconBlockMessages className={styles.icon} />
+          <span>{messages.notPermitted}</span>
+        </div>
+      )
+  }
+}
+
 export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const dispatch = useDispatch()
-  const { user, closeModal } = props
+  const { user, closeParentModal, openInboxUnavailableModal } = props
   const currentUserId = useSelector(getUserId)
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportersMap = useSelector(getOptimisticSupporters)
   const blockeeList = useSelector(getBlockees)
   const isBlockee = blockeeList.includes(user.user_id)
 
-  const { canCreateChat } = useSelector((state) =>
+  const { canCreateChat, callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId: user.user_id })
   )
 
   const handleComposeClicked = useCallback(() => {
     if (canCreateChat) {
       dispatch(createChat({ userIds: [user.user_id] }))
+    } else {
+      openInboxUnavailableModal(user)
     }
-  }, [dispatch, user, canCreateChat])
+  }, [dispatch, user, canCreateChat, openInboxUnavailableModal])
 
   const handleVisitClicked = useCallback(() => {
     dispatch(pushRoute(profilePage(user.handle)))
-    closeModal()
-  }, [dispatch, user, closeModal])
+    closeParentModal()
+  }, [dispatch, user, closeParentModal])
 
   const handleBlockClicked = useCallback(() => {
     dispatch(blockUser({ userId: user.user_id }))
@@ -136,21 +167,13 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   }
 
   return (
-    <div
-      className={cn(styles.root, {
-        [styles.disabled]: !canCreateChat
-      })}
-    >
+    <div className={styles.root}>
       <ArtistChip
         className={styles.artistChip}
         user={user}
         showPopover={false}
         showSupportFor={currentUserId ?? undefined}
-        customChips={
-          canCreateChat ? null : (
-            <div className={styles.notPermitted}>{messages.notPermitted}</div>
-          )
-        }
+        customChips={canCreateChat ? null : renderCustomChip(callToAction)}
         onClickArtistName={handleComposeClicked}
       />
       <PopupMenu
