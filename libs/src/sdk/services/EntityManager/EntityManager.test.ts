@@ -75,6 +75,13 @@ const mswHandlers = [
 ]
 
 const server = setupServer(...mswHandlers)
+
+jest
+  .spyOn(EntityManager.prototype, 'contractMethod', 'get')
+  .mockImplementation(() => () => ({
+    encodeABI: () => ''
+  }))
+
 const entityManager = new EntityManager({
   discoveryNodeSelector,
   web3ProviderUrl: developmentConfig.web3ProviderUrl,

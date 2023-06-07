@@ -11,10 +11,10 @@ import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityMana
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import type { Contract } from 'web3-eth-contract'
 import {
+  CONFIRMATION_POLLING_INTERVAL,
   CONFIRMATION_TIMEOUT,
   defaultEntityManagerConfig,
-  DEFAULT_GAS_LIMIT,
-  POLLING_FREQUENCY_MILLIS
+  DEFAULT_GAS_LIMIT
 } from './constants'
 import {
   BlockConfirmation,
@@ -45,10 +45,14 @@ export class EntityManager implements EntityManagerService {
     )
   }
 
+  public get contractMethod() {
+    return this.contract.methods.manageEntity
+  }
+
   /**
    * Calls the manage entity method on chain to update some data
    */
-  async manageEntity({
+  public async manageEntity({
     userId,
     entityType,
     entityId,
@@ -74,7 +78,7 @@ export class EntityManager implements EntityManagerService {
     const senderAddress = await auth.getAddress()
     const signature = await auth.signTransaction(signatureData)
 
-    const method = await this.contract.methods.manageEntity(
+    const method = await this.contractMethod(
       userId,
       entityType,
       entityId,
@@ -118,14 +122,16 @@ export class EntityManager implements EntityManagerService {
    * Confirms a write by polling for the block to be indexed by the selected
    * discovery node
    */
-  async confirmWrite({
+  public async confirmWrite({
     blockHash,
     blockNumber,
-    confirmationTimeout = CONFIRMATION_TIMEOUT
+    confirmationTimeout = CONFIRMATION_TIMEOUT,
+    confirmationPollingInterval = CONFIRMATION_POLLING_INTERVAL
   }: {
     blockHash: string
     blockNumber: number
     confirmationTimeout?: number
+    confirmationPollingInterval?: number
   }) {
     const confirmBlock = async () => {
       const endpoint =
@@ -153,7 +159,7 @@ export class EntityManager implements EntityManagerService {
         )
       }
       await new Promise((resolve) =>
-        setTimeout(resolve, POLLING_FREQUENCY_MILLIS)
+        setTimeout(resolve, confirmationPollingInterval)
       )
       confirmation = await confirmBlock()
     }
