@@ -64,8 +64,7 @@ def test_get_announcement_before_account_created(app):
                     "specifier": "1",
                     "data": {"title": "my title", "short_description": "my desc"},
                     "user_ids": [],
-                    "timestamp": datetime.now() - timedelta(hours=1)
-
+                    "timestamp": datetime.now() - timedelta(hours=1),
                 },
             ],
         }

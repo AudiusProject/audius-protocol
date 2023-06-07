@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from typing import List
 from unittest import mock
 
@@ -206,6 +205,7 @@ def test_update_track_delist_statuses(mock_requests, app):
         assert all_delist_statuses[2].track_cid == "5678"
         assert not all_delist_statuses[2].delisted
         assert all_delist_statuses[2].reason == DelistTrackReason.MANUAL
+        print(f"track 400 delist created at: {all_delist_statuses[2].created_at}")
 
         # check cursor persisted
         track_delist_cursors: List[DelistStatusCursor] = (

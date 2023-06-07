@@ -59,7 +59,9 @@ def update_user_is_available_statuses(session, users):
         user_id_to_delisted_map[user_id] = delisted
 
     for i in range(0, len(user_id_to_delisted_map), DN_QUERY_BATCH_SIZE):
-        user_ids_batch = list(user_id_to_delisted_map.keys())[i : i + DN_QUERY_BATCH_SIZE]
+        user_ids_batch = list(user_id_to_delisted_map.keys())[
+            i : i + DN_QUERY_BATCH_SIZE
+        ]
         try:
             users_to_update = query_users_by_user_ids(session, user_ids_batch)
             for user in users_to_update:
@@ -91,7 +93,9 @@ def update_track_is_available_statuses(session, tracks):
         track_id_to_delisted_map[track_id] = delisted
 
     for i in range(0, len(track_id_to_delisted_map), DN_QUERY_BATCH_SIZE):
-        track_ids_batch = list(track_id_to_delisted_map.keys())[i : i + DN_QUERY_BATCH_SIZE]
+        track_ids_batch = list(track_id_to_delisted_map.keys())[
+            i : i + DN_QUERY_BATCH_SIZE
+        ]
         try:
             tracks_to_update = query_tracks_by_track_ids(session, track_ids_batch)
             for track in tracks_to_update:
