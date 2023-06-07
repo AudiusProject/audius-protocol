@@ -235,6 +235,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
 	// internal health: used by loadtest tool
+	internalApi.GET("/health", ss.getMyHealth)
 	internalApi.GET("/health/peers", ss.getPeerHealth)
 
 	// internal: crud

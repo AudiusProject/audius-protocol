@@ -12,6 +12,10 @@ import (
 	"github.com/tidwall/sjson"
 )
 
+func (ss *MediorumServer) getMyHealth(c echo.Context) error {
+	return c.JSON(200, ss.healthReport())
+}
+
 func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
 	peers := []*ServerHealth{}
 	ss.crud.DB.Find(&peers)
