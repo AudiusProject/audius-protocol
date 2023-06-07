@@ -18,7 +18,7 @@ content_node_service_type = bytes("content-node", "utf-8")
 cnode_info_redis_ttl_s = 1800
 
 def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict:
-    trusted_notifier_id = shared_config["eth_contracts"]["trusted_notifier_id"]
+    trusted_notifier_id = int(shared_config["eth_contracts"]["trusted_notifier_id"])
     if trusted_notifier_id == 0:
         logger.warn("eth_contracts_helpers.py | trusted notifier id not set")
         return {}

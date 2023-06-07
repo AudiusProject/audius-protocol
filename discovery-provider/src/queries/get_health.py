@@ -33,10 +33,6 @@ from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
-    UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY,
-    UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY,
-    UPDATE_USER_IS_AVAILABLE_FINISH_REDIS_KEY,
-    UPDATE_USER_IS_AVAILABLE_START_REDIS_KEY,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
     latest_block_hash_redis_key,
@@ -268,43 +264,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         else None
     )
 
-    try:
-        last_track_unavailability_job_start_time = str(
-            redis.get(UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY).decode()
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not get latest track unavailability job start timestamp: {e}"
-        )
-        last_track_unavailability_job_start_time = None
-
-    try:
-        last_track_unavailability_job_end_time = str(
-            redis.get(UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY).decode()
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not get latest track unavailability job end timestamp: {e}"
-        )
-        last_track_unavailability_job_end_time = None
-    try:
-        last_user_unavailability_job_start_time = str(
-            redis.get(UPDATE_USER_IS_AVAILABLE_START_REDIS_KEY).decode()
-        )
-    except Exception as e:
-        logger.error(
-            f"Could not get latest user unavailability job start timestamp: {e}"
-        )
-        last_user_unavailability_job_start_time = None
-
-    try:
-        last_user_unavailability_job_end_time = str(
-            redis.get(UPDATE_USER_IS_AVAILABLE_FINISH_REDIS_KEY).decode()
-        )
-    except Exception as e:
-        logger.error(f"Could not get latest user unavailability job end timestamp: {e}")
-        last_user_unavailability_job_end_time = None
-
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -354,10 +313,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "num_users_in_lazy_balance_refresh_queue": num_users_in_lazy_balance_refresh_queue,
         "num_users_in_immediate_balance_refresh_queue": num_users_in_immediate_balance_refresh_queue,
         "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
-        "last_track_unavailability_job_start_time": last_track_unavailability_job_start_time,
-        "last_track_unavailability_job_end_time": last_track_unavailability_job_end_time,
-        "last_user_unavailability_job_start_time": last_user_unavailability_job_start_time,
-        "last_user_unavailability_job_end_time": last_user_unavailability_job_end_time,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,

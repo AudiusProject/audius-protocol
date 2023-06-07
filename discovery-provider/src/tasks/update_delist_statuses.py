@@ -15,6 +15,7 @@ from src.utils.config import shared_config
 from sqlalchemy.orm.session import Session
 from src.utils.auth_helpers import signed_get
 from src.models.users.user import User
+from src.models.users.delist_status_cursor import DelistStatusCursor, DelistEntity
 
 logger = StructuredLogger(__name__)
 
@@ -77,14 +78,14 @@ def update_user_is_available_statuses(session, users):
 def insert_user_delist_statuses(session, users):
     sql = text(
         """
-        INSERT INTO user_delist_statuses ("createdAt", "userId", delisted", "reason")
+        INSERT INTO user_delist_statuses (created_at, user_id, delisted, reason)
         SELECT *
         FROM (
             SELECT
               unnest(:created_at) AS created_at,
               unnest(:user_id) AS user_id,
               unnest(:delisted) AS delisted,
-              unnest(:reason) AS reason
+              unnest((:reason)::delist_user_reason[]) AS reason
         ) AS data;
         """
     )
@@ -119,7 +120,7 @@ def process_user_delist_statuses(session, resp, endpoint):
             {
                 "cursor": cursor_after,
                 "endpoint": endpoint,
-                "entity": "users"
+                "entity": DelistEntity.USERS
             }
         )
 
@@ -127,29 +128,16 @@ def process_user_delist_statuses(session, resp, endpoint):
 def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
     endpoint = trusted_notifier_manager["endpoint"]
     # Only process user delist statuses
-    entity = "users"
+    entity = DelistEntity.USERS
 
-    sql = text(
-        """
-        SELECT created_at
-        FROM delist_status_cursor
-        WHERE host = :host AND entity = :entity
-
-        """
-    )
-    rows = session.execute(
-        sql,
-        {
-            "host": endpoint,
-            "entity": entity
-        }
-    )
-    cursor_before = rows[0][0]
-    # Convert the cursor string to a datetime object
-    timestamp = datetime.strptime(cursor_before, "%Y-%m-%d %H:%M:%S%z")
-    # Convert the datetime object to the RFC3339Nano format
-    formatted_cursor_before = quote(timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f%z"))
-    poll_more_endpoint = f"{endpoint}/statuses/{entity}?cursor={formatted_cursor_before}&batchSize={DELIST_BATCH_SIZE}"
+    poll_more_endpoint = f"{endpoint}/statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
+    cursor_before = session.query(DelistStatusCursor.created_at).filter(DelistStatusCursor.host == endpoint and DelistStatusCursor.entity == entity).first()
+    if cursor_before:
+        # Convert the cursor string to a datetime object
+        timestamp = datetime.strptime(cursor_before, "%Y-%m-%d %H:%M:%S%z")
+        # Convert the datetime object to the RFC3339Nano format
+        formatted_cursor_before = quote(timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f%z"))
+        poll_more_endpoint += f"&cursor={formatted_cursor_before}"
 
     resp = signed_get(poll_more_endpoint, shared_config["delegate"]["private_key"])
     resp.raise_for_status()
@@ -171,6 +159,9 @@ def update_delist_statuses(self) -> None:
     if not trusted_notifier_manager:
         logger.error("update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses")
         return
+    if trusted_notifier_manager["endpoint"] == "default.trustednotifier":
+        logger.info("update_delist_statuses.py | not polling delist statuses")
+        return
 
     have_lock = False
     update_lock = redis.lock(
@@ -185,6 +176,8 @@ def update_delist_statuses(self) -> None:
                 process_delist_statuses(
                     session, trusted_notifier_manager
                 )
+                session.commit()
+            session.close()
 
         except Exception as e:
             logger.error(

@@ -20,10 +20,9 @@ def basic_auth_nonce(private_key):
         nonce = "dev:mode"
     else:
         # Current time in ms
-        timestamp = round(time.time() * 1000)
+        timestamp = str(round(time.time() * 1000))
         signature = sign(timestamp, private_key)
-        signature_hex = f"0x{signature.encode('utf-8').hex()}"
-        nonce = f"{timestamp}:{signature_hex}"
+        nonce = f"{timestamp}:{signature.hex()}"
 
     encoded_nonce = base64.b64encode(nonce.encode('utf-8')).decode('utf-8')
     return f"Basic {encoded_nonce}"
