@@ -50,73 +50,66 @@ def query_tracks_by_track_ids(session: Session, track_ids: List[int]) -> List[Tr
 
 def update_user_is_available_statuses(session, users):
     """Update users table to reflect delist statuses"""
-    delisted_user_ids = []
-    relisted_user_ids = []
+    # If there are duplicate user ids with different delist values in users,
+    # only the most recent change is persisted because users is sorted by asc createdAt
+    user_id_to_delisted_map = {}
     for user in users:
         user_id = user["userId"]
         delisted = user["delisted"]
-        if delisted:
-            delisted_user_ids.append(user_id)
-        else:
-            relisted_user_ids.append(user_id)
+        user_id_to_delisted_map[user_id] = delisted
 
-    for user_ids, deactivate in ((delisted_user_ids, True), (relisted_user_ids, False)):
-        for i in range(0, len(user_ids), DN_QUERY_BATCH_SIZE):
-            user_ids_batch = user_ids[i : i + DN_QUERY_BATCH_SIZE]
-            try:
-                users_to_update = query_users_by_user_ids(session, user_ids_batch)
-                for user in users_to_update:
-                    if deactivate:
-                        # Deactivate active users that have been delisted
-                        if user.is_available:
-                            user.is_available = False
-                            user.is_deactivated = True
-                    else:
-                        # Re-activate deactivated users that have been un-delisted
-                        if not user.is_available:
-                            user.is_available = True
-                            user.is_deactivated = False
-            except Exception as e:
-                logger.warn(
-                    f"update_delist_statuses.py | Could not process user id batch {user_ids_batch}: {e}\nContinuing..."
-                )
+    for i in range(0, len(user_id_to_delisted_map), DN_QUERY_BATCH_SIZE):
+        user_ids_batch = list(user_id_to_delisted_map.keys())[i : i + DN_QUERY_BATCH_SIZE]
+        try:
+            users_to_update = query_users_by_user_ids(session, user_ids_batch)
+            for user in users_to_update:
+                delisted = user_id_to_delisted_map[user.user_id]
+                if delisted:
+                    # Deactivate active users that have been delisted
+                    if user.is_available:
+                        user.is_available = False
+                        user.is_deactivated = True
+                else:
+                    # Re-activate deactivated users that have been un-delisted
+                    if not user.is_available:
+                        user.is_available = True
+                        user.is_deactivated = False
+        except Exception as e:
+            logger.warn(
+                f"update_delist_statuses.py | Could not process user id batch {user_ids_batch}: {e}\nContinuing..."
+            )
 
 
 def update_track_is_available_statuses(session, tracks):
     """Update tracks table to reflect delist statuses"""
-    delisted_track_ids = []
-    relisted_track_ids = []
+    # If there are duplicate track ids with different delist values in tracks,
+    # only the most recent change is persisted because tracks is sorted by asc createdAt
+    track_id_to_delisted_map = {}
     for track in tracks:
         track_id = track["trackId"]
         delisted = track["delisted"]
-        if delisted:
-            delisted_track_ids.append(track_id)
-        else:
-            relisted_track_ids.append(track_id)
+        track_id_to_delisted_map[track_id] = delisted
 
-    for track_ids, deactivate in (
-        (delisted_track_ids, True),
-        (relisted_track_ids, False),
-    ):
-        for i in range(0, len(track_ids), DN_QUERY_BATCH_SIZE):
-            track_ids_batch = track_ids[i : i + DN_QUERY_BATCH_SIZE]
-            try:
-                tracks_to_update = query_tracks_by_track_ids(session, track_ids_batch)
-                for track in tracks_to_update:
-                    if deactivate:
-                        # Deactivate active tracks that have been delisted
-                        if track.is_available:
-                            track.is_available = False
-                            track.is_delete = True
-                    else:
-                        # Re-activate deactivated tracks that have been un-delisted
-                        if not track.is_available:
-                            track.is_available = True
-                            track.is_delete = False
-            except Exception as e:
-                logger.warn(
-                    f"update_delist_statuses.py | Could not process track id batch {track_ids_batch}: {e}\nContinuing..."
-                )
+    for i in range(0, len(track_id_to_delisted_map), DN_QUERY_BATCH_SIZE):
+        track_ids_batch = list(track_id_to_delisted_map.keys())[i : i + DN_QUERY_BATCH_SIZE]
+        try:
+            tracks_to_update = query_tracks_by_track_ids(session, track_ids_batch)
+            for track in tracks_to_update:
+                delisted = track_id_to_delisted_map[track.track_id]
+                if delisted:
+                    # Deactivate active tracks that have been delisted
+                    if track.is_available:
+                        track.is_available = False
+                        track.is_delete = True
+                else:
+                    # Re-activate deactivated tracks that have been un-delisted
+                    if not track.is_available:
+                        track.is_available = True
+                        track.is_delete = False
+        except Exception as e:
+            logger.warn(
+                f"update_delist_statuses.py | Could not process track id batch {track_ids_batch}: {e}\nContinuing..."
+            )
 
 
 def insert_user_delist_statuses(session, users):
@@ -197,6 +190,7 @@ def update_delist_status_cursor(session, cursor, endpoint, entity):
 
 
 def process_user_delist_statuses(session, resp, endpoint):
+    # Expect users in resp to be sorted by createdAt asc
     users = resp["result"]["users"]
     if len(users) > 0:
         insert_user_delist_statuses(session, users)
@@ -206,6 +200,7 @@ def process_user_delist_statuses(session, resp, endpoint):
 
 
 def process_track_delist_statuses(session, resp, endpoint):
+    # Expect tracks in resp to be sorted by createdAt asc
     tracks = resp["result"]["tracks"]
     if len(tracks) > 0:
         insert_track_delist_statuses(session, tracks)
