@@ -12,7 +12,9 @@ import {
   useToggleTrack,
   ID,
   TrackPlayback,
-  ChatMessageTileProps
+  ChatMessageTileProps,
+  cacheTracksActions,
+  SquareSizes
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -20,6 +22,7 @@ import { make } from 'common/store/analytics/actions'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
 
 const { getUserId } = accountSelectors
+const { fetchCoverArt } = cacheTracksActions
 
 export const ChatMessageTrack = ({
   link,
@@ -40,6 +43,13 @@ export const ChatMessageTrack = ({
   )
 
   const trackId = track?.track_id
+
+  useEffect(() => {
+    if (trackId) {
+      dispatch(fetchCoverArt(trackId, SquareSizes.SIZE_150_BY_150))
+    }
+  }, [trackId, dispatch])
+
   const uid = useMemo(() => {
     return trackId ? makeUid(Kind.TRACKS, trackId) : null
   }, [trackId])

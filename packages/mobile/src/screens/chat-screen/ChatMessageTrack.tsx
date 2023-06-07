@@ -34,26 +34,8 @@ export const ChatMessageTrack = ({
     },
     { disabled: !permalink }
   )
-  const item = useMemo(() => {
-    return track
-      ? {
-          ...track,
-          // todo: make sure good value is passed in here
-          _cover_art_sizes: {}
-        }
-      : null
-  }, [track])
 
-  const user = useMemo(() => {
-    return track
-      ? {
-          ...track.user,
-          // todo: make sure good values are passed in here
-          _profile_picture_sizes: {},
-          _cover_photo_sizes: {}
-        }
-      : null
-  }, [track])
+  const user = useMemo(() => (track ? { ...track.user } : null), [track])
 
   const trackId = track?.track_id
   const uid = useMemo(() => {
@@ -82,14 +64,14 @@ export const ChatMessageTrack = ({
   })
 
   useEffect(() => {
-    if (item && user && uid) {
+    if (track && user && uid) {
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [item, user, uid, onSuccess, onEmpty])
+  }, [track, user, uid, onSuccess, onEmpty])
 
-  return item && user && uid ? (
+  return track && user && uid ? (
     <TrackTile
       index={0}
       togglePlay={togglePlay}

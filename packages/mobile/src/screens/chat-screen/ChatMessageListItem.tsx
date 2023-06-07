@@ -305,7 +305,10 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       isPressed={isPressed}
                       onEmpty={onLinkPreviewEmpty}
                       onSuccess={onLinkPreviewSuccess}
-                      style={{ ...chatStyles, borderBottomWidth: 1 }}
+                      style={{
+                        ...chatStyles,
+                        borderBottomWidth: hideMessage ? 0 : 1
+                      }}
                     />
                   ) : null}
                   {!hideMessage ? (
