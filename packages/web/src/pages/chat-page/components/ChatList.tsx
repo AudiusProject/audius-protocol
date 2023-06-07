@@ -17,7 +17,7 @@ import styles from './ChatList.module.css'
 import { ChatListItem } from './ChatListItem'
 import { SkeletonChatListItem } from './SkeletonChatListItem'
 
-const { getChats, getChatsStatus, getChatsSummary } = chatSelectors
+const { getChats, getChatsStatus, getHasMoreChats } = chatSelectors
 const { fetchMoreChats } = chatActions
 
 const messages = {
@@ -36,7 +36,7 @@ export const ChatList = (props: ChatListProps) => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const chats = useSelector(getChats)
   const status = useSelector(getChatsStatus)
-  const summary = useSelector(getChatsSummary)
+  const hasMore = useSelector(getHasMoreChats)
 
   const handleLoadMoreChats = useCallback(() => {
     dispatch(fetchMoreChats())
@@ -54,13 +54,15 @@ export const ChatList = (props: ChatListProps) => {
         pageStart={0}
         initialLoad={true}
         loadMore={handleLoadMoreChats}
-        hasMore={
-          status === Status.IDLE ||
-          (summary?.prev_count !== undefined && summary?.prev_count > 0)
-        }
+        hasMore={hasMore}
         useWindow={false}
         loader={
-          <LoadingSpinner key={'loading-spinner'} className={styles.spinner} />
+          hasLoadedOnce ? (
+            <LoadingSpinner
+              key={'loading-spinner'}
+              className={styles.spinner}
+            />
+          ) : undefined
         }
       >
         {chats?.length > 0 ? (

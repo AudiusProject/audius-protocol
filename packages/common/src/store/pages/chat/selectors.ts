@@ -2,6 +2,7 @@ import { ChatPermission, UserChat } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
 import { ID } from 'models/Identifiers'
+import { Status } from 'models/Status'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
@@ -27,6 +28,13 @@ export const getChatsStatus = (state: CommonState) =>
 
 export const getChatsSummary = (state: CommonState) =>
   state.pages.chat.chats.summary
+
+export const getHasMoreChats = (state: CommonState) => {
+  const { status, summary } = state.pages.chat.chats
+  return (
+    status === Status.IDLE || (!!summary?.prev_count && summary.prev_count > 0)
+  )
+}
 
 export const getOptimisticReads = (state: CommonState) =>
   state.pages.chat.optimisticChatRead
