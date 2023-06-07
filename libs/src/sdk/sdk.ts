@@ -141,11 +141,15 @@ const initializeServices = (config: SdkConfig) => {
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
 
+  const defaultStorage = new Storage({
+    storageNodeSelector: defaultStorageNodeSelector
+  })
+
   const defaultServices: ServicesContainer = {
     storageNodeSelector: defaultStorageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
     entityManager: defaultEntityManager,
-    storage: new Storage({ storageNodeSelector: defaultStorageNodeSelector }),
+    storage: defaultStorage,
     auth: defaultAuthService
   }
   return { ...defaultServices, ...config.services }

@@ -102,7 +102,11 @@ export class EntityManager implements EntityManagerService {
     const jsonResponse = await response.json()
 
     if (!skipConfirmation) {
-      await this.confirmWrite(jsonResponse.receipt, confirmationTimeout)
+      await this.confirmWrite({
+        blockHash: jsonResponse.receipt.blockHash,
+        blockNumber: jsonResponse.receipt.blockNumber,
+        confirmationTimeout
+      })
     }
 
     return {
@@ -114,16 +118,15 @@ export class EntityManager implements EntityManagerService {
    * Confirms a write by polling for the block to be indexed by the selected
    * discovery node
    */
-  async confirmWrite(
-    {
-      blockHash,
-      blockNumber
-    }: {
-      blockHash: string
-      blockNumber: number
-    },
-    confirmationTimeout: number = CONFIRMATION_TIMEOUT
-  ) {
+  async confirmWrite({
+    blockHash,
+    blockNumber,
+    confirmationTimeout = CONFIRMATION_TIMEOUT
+  }: {
+    blockHash: string
+    blockNumber: number
+    confirmationTimeout?: number
+  }) {
     const confirmBlock = async () => {
       const endpoint =
         await this.config.discoveryNodeSelector.getSelectedEndpoint()
@@ -142,25 +145,19 @@ export class EntityManager implements EntityManagerService {
 
     let confirmation: BlockConfirmation = await confirmBlock()
 
-    const timeout = setTimeout(() => {
-      throw new Error(
-        `Could not confirm write within ${CONFIRMATION_TIMEOUT}ms`
-      )
-    }, confirmationTimeout)
-
+    const start = Date.now()
     while (confirmation === BlockConfirmation.UNKNOWN) {
+      if (Date.now() - start > confirmationTimeout) {
+        throw new Error(
+          `Could not confirm write within ${confirmationTimeout}ms`
+        )
+      }
       await new Promise((resolve) =>
         setTimeout(resolve, POLLING_FREQUENCY_MILLIS)
       )
       confirmation = await confirmBlock()
     }
 
-    clearTimeout(timeout)
-
-    if (confirmation === BlockConfirmation.CONFIRMED) {
-      return
-    } else {
-      throw Error('Transaction failed')
-    }
+    return true
   }
 }

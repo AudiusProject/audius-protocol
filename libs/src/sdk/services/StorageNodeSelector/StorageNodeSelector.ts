@@ -2,7 +2,7 @@ import { Maybe, RendezvousHash, isNodeHealthy } from '../../../utils'
 import fetch from 'cross-fetch'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
-import type { Auth } from '../Auth'
+import type { AuthService } from '../Auth'
 import type {
   StorageNode,
   StorageNodeSelectorConfig,
@@ -13,7 +13,7 @@ import { defaultStorageNodeSelectorConfig } from './contants'
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
-  private readonly auth: Auth
+  private readonly auth: AuthService
   private nodes: StorageNode[]
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
@@ -121,10 +121,6 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     return orderedNodes
   }
 
-  private debug(...args: any[]) {
-    console.debug('[audius-sdk][storage-node-selector]', ...args)
-  }
-
   /** console.info proxy utility to add a prefix */
   private info(...args: any[]) {
     console.info('[audius-sdk][storage-node-selector]', ...args)
@@ -132,11 +128,6 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
   /** console.warn proxy utility to add a prefix */
   private warn(...args: any[]) {
-    console.warn('[audius-sdk][storage-node-selector]', ...args)
-  }
-
-  /** console.error proxy utility to add a prefix */
-  private error(...args: any[]) {
     console.warn('[audius-sdk][storage-node-selector]', ...args)
   }
 }
