@@ -58,7 +58,8 @@ const statePruner = (state: AppState) => {
   return {
     account: {
       status: state.account.status,
-      userId: state.account.userId
+      userId: state.account.userId,
+      reason: state.account.reason
     },
     pages: {
       profile: {
