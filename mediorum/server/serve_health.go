@@ -49,6 +49,11 @@ func (ss *MediorumServer) serveUnifiedHealthCheck(c echo.Context) error {
 		mediorumHealth["peers"] = peers
 	}
 
+	// problem blob count
+	// this might be too expensive for health_check?
+	// problemBlobCount, _ := ss.findProblemBlobsCount(false)
+	// mediorumHealth["problem_blobs"] = problemBlobCount
+
 	// cursor status
 	cidCursors := []struct {
 		Host      string    `json:"host"`

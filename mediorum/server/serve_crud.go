@@ -15,6 +15,7 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	ss.crud.DB.
 		Where("host = ? AND ulid >= ?", ss.Config.Self.Host, after).
 		Limit(PullLimit).
+		Order("ulid asc").
 		Find(&ops)
 	return c.JSON(200, ops)
 }
