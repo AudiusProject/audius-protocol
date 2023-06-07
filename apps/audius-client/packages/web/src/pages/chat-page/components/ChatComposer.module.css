@@ -7,20 +7,45 @@
   padding: var(--unit-2) var(--unit-4);
 }
 
+.input {
+  padding: var(--unit-2) var(--unit-4);
+}
+
 .icon {
-  width: 1.5em;
-  height: 1.5em;
-  display: block; /* Prevent descender space */
+  width: var(--unit-5);
+  height: var(--unit-5);
+  /* 1 pixel nudge to visually center */
+  position: relative;
+  left: -1px;
 }
 
 .icon path {
-  fill: var(--primary);
+  fill: var(--static-white);
 }
 
 button.sendButton {
-  display: block; /* Prevent descender space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: var(--unit-8);
+  width: var(--unit-8);
+  border-radius: var(--unit-4);
+  background-color: var(--primary);
+  transform: scale(1);
+  transition: all var(--quick);
 }
 
-.sendButton:not(:disabled) .icon:hover path {
-  fill: var(--secondary);
+button.sendButton:not(:disabled):hover {
+  transform: scale(1.05);
+  background-color: var(--primary-light-2);
+}
+
+button.sendButton:not(:disabled):active {
+  background-color: var(--primary-dark-2);
+  transform: scale(0.95);
+}
+
+button.sendButton:disabled,
+button.sendButton:disabled .icon path {
+  opacity: 0.5;
 }

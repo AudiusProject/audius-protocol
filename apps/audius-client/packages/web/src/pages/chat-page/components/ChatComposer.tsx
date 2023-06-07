@@ -30,6 +30,20 @@ export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
 
 const MAX_MESSAGE_LENGTH = 10000
 
+type ChatSendButtonProps = { disabled: boolean }
+
+export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
+  return (
+    <IconButton
+      className={styles.sendButton}
+      disabled={disabled}
+      aria-label={messages.sendMessage}
+      type={'submit'}
+      icon={<IconSend className={styles.icon} />}
+    />
+  )
+}
+
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId } = props
   const dispatch = useDispatch()
@@ -81,13 +95,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
           grows
           resize
         >
-          <IconButton
-            className={styles.sendButton}
-            disabled={!value}
-            aria-label={messages.sendMessage}
-            type={'submit'}
-            icon={<IconSend className={styles.icon} />}
-          />
+          <ChatSendButton disabled={!value} />
         </TextAreaV2>
       </form>
     </div>
