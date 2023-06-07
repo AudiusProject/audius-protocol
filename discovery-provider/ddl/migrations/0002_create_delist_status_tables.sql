@@ -49,8 +49,10 @@ CREATE TABLE IF NOT EXISTS user_delist_statuses (
 
 -- Create indexes to look up delist statuses by a track's ID, CID, or owner ID. Also a user's ID
 CREATE INDEX IF NOT EXISTS track_delist_statuses_owner_id_created_at ON track_delist_statuses USING btree (owner_id, created_at);
-CREATE INDEX IF NOT EXISTS track_delist_statuses_track_id_created_at ON track_delist_statuses USING btree (track_id, created_at);
+--CREATE INDEX IF NOT EXISTS track_delist_statuses_track_id_created_at ON track_delist_statuses USING btree (track_id, created_at);
 CREATE INDEX IF NOT EXISTS track_delist_statuses_track_cid_created_at ON track_delist_statuses USING btree (track_cid, created_at);
-CREATE INDEX IF NOT EXISTS user_delist_statuses_user_id_createdAt ON user_delist_statuses USING btree (user_id, created_at);
+--CREATE INDEX IF NOT EXISTS user_delist_statuses_user_id_createdAt ON user_delist_statuses USING btree (user_id, created_at);
+DROP INDEX IF EXISTS user_delist_statuses_user_id_createdat;
+DROP INDEX IF EXISTS track_delist_statuses_track_id_created_at;
 
 COMMIT;

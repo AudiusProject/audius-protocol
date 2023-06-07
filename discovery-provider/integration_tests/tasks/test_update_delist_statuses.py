@@ -92,7 +92,7 @@ def test_update_user_delist_statuses(mock_requests, app):
 
     with db.scoped_session() as session:
         trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co",
+            "endpoint": "http://mock-trusted-notifier.audius.co/",
             "wallet": "0x0",
         }
         process_delist_statuses(session, trusted_notifier_manager)
@@ -180,7 +180,7 @@ def test_update_track_delist_statuses(mock_requests, app):
 
     with db.scoped_session() as session:
         trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co",
+            "endpoint": "http://mock-trusted-notifier.audius.co/",
             "wallet": "0x0",
         }
         process_delist_statuses(session, trusted_notifier_manager)
