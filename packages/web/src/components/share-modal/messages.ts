@@ -24,5 +24,8 @@ export const messages = {
     `Check out ${playlistName} by ${handle} @AudiusProject #Audius`,
   // TODO: See if you can display my when the account user is the user
   audioNftPlaylistShareText: (name: string) =>
-    `Check out ${name} Audio NFTs in a playlist @AudiusProject #Audius`
+    `Check out ${name} Audio NFTs in a playlist @AudiusProject #Audius`,
+  shareDescription: 'Spread the word! Share with your friends and fans!',
+  playlistShareDescription:
+    'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.'
 }

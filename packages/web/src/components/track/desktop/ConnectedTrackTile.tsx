@@ -211,6 +211,7 @@ const ConnectedTrackTile = ({
       isFavorited,
       isOwner,
       isReposted,
+      isUnlisted,
       trackId,
       trackTitle: title,
       genre: genre as Genre,

@@ -9,13 +9,16 @@ import {
 import { ButtonProps, ButtonType, IconShare } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
+import { Tooltip } from 'components/tooltip'
+
 import { CollectionActionButton } from './CollectionActionButton'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const messages = {
-  share: 'Share'
+  share: 'Share',
+  emptyPlaylistTooltipText: 'You can’t share an empty playlist.'
 }
 
 type ShareButtonProps = Partial<ButtonProps> & {
@@ -52,7 +55,7 @@ export const ShareButton = (props: ShareButtonProps) => {
     }
   }, [dispatch, collectionId, userId])
 
-  return (
+  const shareButtonElement = (
     <CollectionActionButton
       type={type ?? ButtonType.COMMON}
       text={messages.share}
@@ -61,5 +64,13 @@ export const ShareButton = (props: ShareButtonProps) => {
       onClick={handleShare}
       {...other}
     />
+  )
+
+  return other.disabled ? (
+    <Tooltip text={messages.emptyPlaylistTooltipText}>
+      <span>{shareButtonElement}</span>
+    </Tooltip>
+  ) : (
+    shareButtonElement
   )
 }

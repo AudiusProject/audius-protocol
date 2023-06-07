@@ -26,7 +26,6 @@
 }
 
 .list {
-  cursor: pointer;
   user-select: none;
   font-size: var(--font-xs);
   background-color: var(--white);
@@ -42,7 +41,12 @@
   color: var(--neutral);
 }
 
-.listItem:hover {
+.listItem.disabled .playlistName,
+.listItem.disabled .imageWrapper {
+  opacity: 0.5;
+}
+
+.listItem:not(.disabled):hover {
   cursor: pointer;
   color: var(--white);
   background: var(--secondary);

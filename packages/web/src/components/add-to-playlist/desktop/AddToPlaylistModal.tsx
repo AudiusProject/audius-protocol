@@ -19,12 +19,14 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
+import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 
 import styles from './AddToPlaylistModal.module.css'
-const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
+const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
+  addToPlaylistUISelectors
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
@@ -35,7 +37,8 @@ const messages = {
   searchPlaceholder: 'Find one of your playlists',
   addedToast: 'Added To Playlist!',
   createdToast: 'Playlist Created!',
-  view: 'View'
+  view: 'View',
+  hiddenAdd: 'You cannot add hidden tracks to a public playlist.'
 }
 
 const AddToPlaylistModal = () => {
@@ -45,6 +48,7 @@ const AddToPlaylistModal = () => {
   const [isOpen, setIsOpen] = useModalState('AddToPlaylist')
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
+  const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const currentCollectionId = useSelector(getCollectionId)
   const account = useSelector((state: AppState) =>
     getAccountWithOwnPlaylists(state)
@@ -76,6 +80,10 @@ const AddToPlaylistModal = () => {
       )
     }
     setIsOpen(false)
+  }
+
+  const handleDisabledPlaylistClick = () => {
+    toast(messages.hiddenAdd)
   }
 
   const handleCreatePlaylist = () => {
@@ -124,8 +132,13 @@ const AddToPlaylistModal = () => {
             {filteredPlaylists.map((playlist) => (
               <div key={`${playlist.playlist_id}`}>
                 <PlaylistItem
+                  disabled={isTrackUnlisted && !playlist.is_private}
                   playlist={playlist}
-                  handleClick={handlePlaylistClick}
+                  handleClick={
+                    isTrackUnlisted && !playlist.is_private
+                      ? handleDisabledPlaylistClick
+                      : handlePlaylistClick
+                  }
                 />
               </div>
             ))}
@@ -139,9 +152,14 @@ const AddToPlaylistModal = () => {
 type PlaylistItemProps = {
   handleClick: (playlist: Collection) => void
   playlist: Collection
+  disabled?: boolean
 }
 
-const PlaylistItem = ({ handleClick, playlist }: PlaylistItemProps) => {
+const PlaylistItem = ({
+  disabled = false,
+  handleClick,
+  playlist
+}: PlaylistItemProps) => {
   const image = useCollectionCoverArt(
     playlist.playlist_id,
     playlist._cover_art_sizes,
@@ -149,13 +167,22 @@ const PlaylistItem = ({ handleClick, playlist }: PlaylistItemProps) => {
   )
 
   return (
-    <div className={cn(styles.listItem)} onClick={() => handleClick(playlist)}>
+    <div
+      className={cn(styles.listItem, [{ [styles.disabled]: disabled }])}
+      onClick={() => handleClick(playlist)}
+    >
       <DynamicImage
         className={styles.image}
         wrapperClassName={styles.imageWrapper}
         image={image}
       />
-      <span className={styles.playlistName}>{playlist.playlist_name}</span>
+      {disabled ? (
+        <Tooltip text={messages.hiddenAdd} placement='right'>
+          <span className={styles.playlistName}>{playlist.playlist_name}</span>
+        </Tooltip>
+      ) : (
+        <span className={styles.playlistName}>{playlist.playlist_name}</span>
+      )}
     </div>
   )
 }

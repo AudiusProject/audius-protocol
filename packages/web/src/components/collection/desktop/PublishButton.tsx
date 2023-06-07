@@ -1,4 +1,5 @@
 import {
+  cacheCollectionsSelectors,
   Collection,
   collectionPageSelectors,
   CommonState
@@ -16,11 +17,14 @@ import { PublishConfirmationModal } from './PublishConfirmationModal'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
+const { getCollecitonHasHiddenTracks } = cacheCollectionsSelectors
 
 const messages = {
   publish: 'Make Public',
   publishing: 'Making Public',
-  emptyPlaylistTooltipText: 'You must add at least 1 song.'
+  emptyPlaylistTooltipText: 'You must add at least 1 song.',
+  hiddenTracksTooltipText:
+    'You cannot make a playlist with hidden tracks public.'
 }
 
 type PublishButtonProps = Partial<ButtonProps> & {
@@ -32,10 +36,13 @@ export const PublishButton = (props: PublishButtonProps) => {
   const { _is_publishing, track_count } = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
+  const hasHiddenTracks = useSelector((state: CommonState) =>
+    getCollecitonHasHiddenTracks(state, { id: collectionId })
+  )
 
   const [isConfirming, toggleIsConfirming] = useToggle(false)
 
-  const isDisabled = track_count === 0
+  const isDisabled = track_count === 0 || hasHiddenTracks
 
   const publishButtonElement = (
     <CollectionActionButton
@@ -63,9 +70,15 @@ export const PublishButton = (props: PublishButtonProps) => {
 
   return (
     <>
-      {track_count === 0 ? (
-        <Tooltip text={messages.emptyPlaylistTooltipText}>
-          <div>{publishButtonElement}</div>
+      {track_count === 0 || hasHiddenTracks ? (
+        <Tooltip
+          text={
+            hasHiddenTracks
+              ? messages.hiddenTracksTooltipText
+              : messages.emptyPlaylistTooltipText
+          }
+        >
+          <span>{publishButtonElement}</span>
         </Tooltip>
       ) : (
         publishButtonElement

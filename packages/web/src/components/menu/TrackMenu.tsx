@@ -79,6 +79,7 @@ export type OwnProps = {
   isOwner: boolean
   isOwnerDeactivated?: boolean
   isReposted: boolean
+  isUnlisted?: boolean
   trackId: ID
   trackTitle: string
   genre: Genre
@@ -122,6 +123,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       isOwner,
       isOwnerDeactivated,
       isReposted,
+      isUnlisted,
       openAddToPlaylistModal,
       openEditTrackModal,
       openEmbedModal,
@@ -173,7 +175,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     const addToPlaylistMenuItem = {
       text: messages.addToPlaylist,
       onClick: () => {
-        openAddToPlaylistModal(trackId, trackTitle)
+        openAddToPlaylistModal(trackId, trackTitle, isUnlisted ?? false)
       }
     }
 
@@ -313,8 +315,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setArtistPick: (trackId: ID) =>
       dispatch(showSetAsArtistPickConfirmation(trackId)),
     unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
-    openAddToPlaylistModal: (trackId: ID, title: string) =>
-      dispatch(openAddToPlaylist(trackId, title)),
+    openAddToPlaylistModal: (trackId: ID, title: string, isUnlisted: boolean) =>
+      dispatch(openAddToPlaylist(trackId, title, isUnlisted)),
     openEditTrackModal: (trackId: ID) =>
       dispatch(editTrackModalActions.open(trackId)),
     openEmbedModal: (trackId: ID) =>
