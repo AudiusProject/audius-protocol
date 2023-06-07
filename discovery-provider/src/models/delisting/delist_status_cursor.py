@@ -6,7 +6,7 @@ from src.models.model_utils import RepresentableMixin
 
 
 class DelistEntity(str, enum.Enum):
-    TRACKS = ("TRACKS",)
+    TRACKS = "TRACKS"
     USERS = "USERS"
 
 
