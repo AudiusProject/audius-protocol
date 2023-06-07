@@ -9,7 +9,7 @@ import type {
   StorageNodeSelectorService
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import { defaultStorageNodeSelectorConfig } from './contants'
+import { defaultStorageNodeSelectorConfig } from './constants'
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
