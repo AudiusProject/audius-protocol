@@ -17,7 +17,7 @@ import { ChatListItem } from './ChatListItem'
 import { ChatListItemSkeleton } from './ChatListItemSkeleton'
 import { HeaderShadow } from './HeaderShadow'
 
-const { getChats, getChatsStatus } = chatSelectors
+const { getChats, getChatsStatus, getHasMoreChats } = chatSelectors
 const { fetchMoreMessages, fetchMoreChats } = chatActions
 
 const CHATS_MESSAGES_PREFETCH_LIMIT = 10
@@ -106,6 +106,7 @@ export const ChatListScreen = () => {
   const chats = useSelector(getChats)
   const nonEmptyChats = chats.filter((chat) => !!chat.last_message)
   const chatsStatus = useSelector(getChatsStatus)
+  const hasMore = useSelector(getHasMoreChats)
 
   // If this is the first fetch, we want to show the fade-out loading skeleton
   // On subsequent loads, we want to show a skeleton in each incoming chat row.
@@ -133,9 +134,9 @@ export const ChatListScreen = () => {
   }, [chats, dispatch])
 
   const handleLoadMore = useCallback(() => {
-    if (chatsStatus === Status.LOADING) return
+    if (chatsStatus === Status.LOADING || !hasMore) return
     dispatch(fetchMoreChats())
-  }, [chatsStatus, dispatch])
+  }, [hasMore, chatsStatus, dispatch])
 
   return (
     <Screen
