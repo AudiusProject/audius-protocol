@@ -16,6 +16,7 @@ import {
   useCanSendMessage
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
+import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
   FlatList,
@@ -56,7 +57,11 @@ import { ChatUnavailable } from './ChatUnavailable'
 import { EmptyChatMessages } from './EmptyChatMessages'
 import { HeaderShadow } from './HeaderShadow'
 import { ReactionPopup } from './ReactionPopup'
-import { END_REACHED_MIN_MESSAGES } from './constants'
+import {
+  END_REACHED_MIN_MESSAGES,
+  NEW_MESSAGE_TOAST_SCROLL_THRESHOLD,
+  SCROLL_TO_BOTTOM_THRESHOLD
+} from './constants'
 
 type ChatFlatListProps = FlatListProps<ChatMessageWithExtras>
 type ChatListEventHandler<K extends keyof ChatFlatListProps> = NonNullable<
@@ -80,9 +85,6 @@ const {
 } = chatActions
 const { getUserId } = accountSelectors
 const { getHasTrack } = playerSelectors
-
-export const REACTION_CONTAINER_HEIGHT = 70
-const NEW_MESSAGE_TOAST_SCROLL_THRESHOLD = 100
 
 const messages = {
   title: 'Messages',
@@ -273,6 +275,16 @@ export const ChatScreen = () => {
     }
   }, [chatId, dispatch])
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        if (chatId) {
+          dispatch(markChatAsRead({ chatId }))
+        }
+      }
+    }, [chatId, dispatch])
+  )
+
   // Fetch all permissions, blockers/blockees, and recheck_permissions flag
   useEffect(() => {
     dispatch(fetchBlockees())
@@ -374,8 +386,11 @@ export const ChatScreen = () => {
   const handleScroll = useCallback<ChatListEventHandler<'onScroll'>>(
     (event) => {
       scrollPosition.current = event.nativeEvent.contentOffset.y
+      if (scrollPosition.current < SCROLL_TO_BOTTOM_THRESHOLD && chatId) {
+        dispatch(markChatAsRead({ chatId }))
+      }
     },
-    [scrollPosition]
+    [chatId, dispatch]
   )
 
   const handleTopRightPress = () => {
