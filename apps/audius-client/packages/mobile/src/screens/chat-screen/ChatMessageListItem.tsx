@@ -6,12 +6,14 @@ import {
   accountSelectors,
   chatSelectors,
   decodeHashId,
-  formatMessageDate
+  formatMessageDate,
+  isPlaylistUrl,
+  isTrackUrl
 } from '@audius/common'
 import type { ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { View } from 'react-native'
+import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import ChatTail from 'app/assets/images/ChatTail.svg'
@@ -20,6 +22,8 @@ import { makeStyles } from 'app/styles'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
+import { ChatMessagePlaylist } from './ChatMessagePlaylist'
+import { ChatMessageTrack } from './ChatMessageTrack'
 import { LinkPreview } from './LinkPreview'
 import { ResendMessageButton } from './ResendMessageButton'
 import { REACTION_LONGPRESS_DELAY } from './constants'
@@ -121,20 +125,32 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   reactionMarginBottom: {
     marginBottom: spacing(2)
+  },
+  unfurl: {
+    width: Dimensions.get('window').width - 48,
+    minHeight: 72,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0
+  },
+  unfurlAuthor: {
+    borderBottomColor: palette.secondaryDark1
+  },
+  unfurlOtherUser: {
+    borderBottomColor: palette.neutralLight7
   }
 }))
 
 const useGetTailColor = (
   isAuthor: boolean,
   isPressed: boolean,
-  isLinkPreviewOnly
+  hideMessage: boolean
 ) => {
   const styles = useStyles()
   return isPressed
-    ? isAuthor && !isLinkPreviewOnly
+    ? isAuthor && !hideMessage
       ? styles.pressedIsAuthor.backgroundColor
       : styles.pressed.backgroundColor
-    : isAuthor && !isLinkPreviewOnly
+    : isAuthor && !hideMessage
     ? styles.isAuthor.backgroundColor
     : styles.bubble.backgroundColor
 }
@@ -178,10 +194,13 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   const senderUserId = decodeHashId(message.sender_user_id)
   const isAuthor = senderUserId === userId
   const [isPressed, setIsPressed] = useState(false)
+  const [emptyLinkPreview, setEmptyLinkPreview] = useState(false)
   const links = find(message.message)
   const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
-  const isLinkPreviewOnly = link && link.value === message.message
-  const tailColor = useGetTailColor(isAuthor, isPressed, isLinkPreviewOnly)
+  const linkValue = link?.value
+  const isLinkPreviewOnly = linkValue === message.message
+  const hideMessage = isLinkPreviewOnly && !emptyLinkPreview
+  const tailColor = useGetTailColor(isAuthor, isPressed, hideMessage)
   const isUnderneathPopup =
     useSelector((state) =>
       isIdEqualToReactionsPopupMessageId(state, message.message_id)
@@ -200,6 +219,24 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
       onLongPress?.(message.message_id)
     }
   }, [message.message_id, message.status, onLongPress])
+
+  const onLinkPreviewEmpty = useCallback(() => {
+    if (linkValue) {
+      setEmptyLinkPreview(true)
+    }
+  }, [linkValue])
+
+  const onLinkPreviewSuccess = useCallback(() => {
+    if (linkValue) {
+      setEmptyLinkPreview(false)
+    }
+  }, [linkValue])
+
+  const chatStyles = !hideMessage
+    ? isAuthor
+      ? { ...styles.unfurl, ...styles.unfurlAuthor }
+      : { ...styles.unfurl, ...styles.unfurlOtherUser }
+    : styles.unfurl
 
   return (
     <>
@@ -237,20 +274,39 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       : null
                   }
                 >
-                  {link ? (
+                  {isPlaylistUrl(linkValue) ? (
+                    <ChatMessagePlaylist
+                      key={`${link.value}-${link.start}-${link.end}`}
+                      link={link.value}
+                      onEmpty={onLinkPreviewEmpty}
+                      onSuccess={onLinkPreviewSuccess}
+                      styles={chatStyles}
+                    />
+                  ) : isTrackUrl(linkValue) ? (
+                    <ChatMessageTrack
+                      key={`${link.value}-${link.start}-${link.end}`}
+                      link={link.value}
+                      onEmpty={onLinkPreviewEmpty}
+                      onSuccess={onLinkPreviewSuccess}
+                      styles={chatStyles}
+                    />
+                  ) : link ? (
                     <LinkPreview
                       key={`${link.value}-${link.start}-${link.end}`}
                       chatId={chatId}
                       messageId={message.message_id}
                       href={link.href}
-                      isLinkPreviewOnly={isLinkPreviewOnly}
+                      hideMessage={hideMessage}
                       onLongPress={handleLongPress}
                       onPressIn={handlePressIn}
                       onPressOut={handlePressOut}
                       isPressed={isPressed}
+                      onEmpty={onLinkPreviewEmpty}
+                      onSuccess={onLinkPreviewSuccess}
+                      style={{ ...chatStyles, borderBottomWidth: 1 }}
                     />
                   ) : null}
-                  {!isLinkPreviewOnly ? (
+                  {!hideMessage ? (
                     <Hyperlink
                       text={message.message}
                       styles={{

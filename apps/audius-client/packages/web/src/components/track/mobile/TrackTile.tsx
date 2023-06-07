@@ -20,6 +20,7 @@ import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
 import { TrackTileProps } from 'components/track/types'
@@ -133,7 +134,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     genre,
     isPlaying,
     isBuffering,
-    isChat
+    variant
   } = props
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
@@ -211,8 +212,10 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     setModalVisibility
   ])
 
+  const isReadonly = variant === 'readonly'
+
   return (
-    <div className={cn(styles.container, { [styles.chat]: isChat })}>
+    <div className={cn(styles.container, { [styles.readonly]: isReadonly })}>
       {showPremiumCornerTag && cornerTagIconType ? (
         <TrackBannerIcon
           type={cornerTagIconType}
@@ -304,9 +307,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
               href={profilePage(artistHandle)}
               onClick={props.goToArtistPage}
             >
-              <span className={cn(fadeIn, styles.userName)}>
-                {props.artistName}
-              </span>
+              <div className={cn(fadeIn, styles.userName)}>
+                <ArtistPopover handle={artistHandle}>
+                  <span onClick={props.goToArtistPage}>{props.artistName}</span>
+                </ArtistPopover>
+              </div>
               <UserBadges
                 userId={userId}
                 badgeSize={12}
@@ -325,7 +330,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             <div className={styles.coSignLabel}>{messages.coSign}</div>
           )}
         </div>
-        {coSign && !isChat ? (
+        {coSign ? (
           <div className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
@@ -356,7 +361,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
-                  props.repostCount && !isChat
+                  props.repostCount && !isReadonly
                     ? props.makeGoToRepostsPage(id)
                     : undefined
                 }
@@ -376,7 +381,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
                   [styles.isHidden]: props.isUnlisted
                 })}
                 onClick={
-                  props.saveCount && !isChat
+                  props.saveCount && !isReadonly
                     ? props.makeGoToFavoritesPage(id)
                     : undefined
                 }
@@ -400,7 +405,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             {formatListenCount(props.listenCount)}
           </div>
         </div>
-        {!isChat ? (
+        {!isReadonly ? (
           <BottomButtons
             hasSaved={props.hasCurrentUserSaved}
             hasReposted={props.hasCurrentUserReposted}

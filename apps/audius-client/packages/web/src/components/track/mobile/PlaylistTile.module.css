@@ -15,7 +15,7 @@
   margin: 0px auto 12px;
 }
 
-.container.chat {
+.container.readonly {
   margin: 0;
   max-width: none;
   min-width: 448px;
@@ -25,7 +25,7 @@
   box-shadow: none;
 }
 
-.container.chat:hover {
+.container.readonly:hover {
   transform: scale3d(1.005, 1.005, 1.005);
 }
 
@@ -95,7 +95,7 @@
   fill: var(--primary);
 }
 
-.chat .statItem:active {
+.readonly .statItem:active {
   color: unset;
   transform: scale(1);
 }
@@ -289,7 +289,7 @@
   color: var(--neutral-light-4);
 }
 
-.chat .favoriteButtonWrapper:hover {
+.readonly .favoriteButtonWrapper:hover {
   transform: scale3d(1, 1, 1);
 }
 
@@ -299,7 +299,7 @@
   margin-left: 4px;
 }
 
-.chat .repostButtonWrapper:hover {
+.readonly .repostButtonWrapper:hover {
   transform: scale3d(1, 1, 1);
 }
 

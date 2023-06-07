@@ -7,14 +7,22 @@ import type {
   Collection,
   FavoriteType,
   Track,
+  LineupTrack,
   User,
   RepostType
 } from '@audius/common'
+import type { StyleProp, ViewStyle } from 'react-native'
 
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { TileProps } from '../core'
 import type { ImageProps } from '../image/FastImage'
+
+/**
+ * Optional variant to modify the lineup item features and styles
+ * The 'readonly' variant will remove the action buttons on the tile
+ */
+export type LineupItemVariant = 'readonly'
 
 export type LineupItemProps = {
   /** Index of tile in lineup */
@@ -37,6 +45,18 @@ export type LineupItemProps = {
 
   /** Uid of the item */
   uid: UID
+
+  /** Optionally passed in variant */
+  variant?: LineupItemVariant
+
+  /** Optionally passed in collection to override  */
+  collection?: Collection
+
+  /** Optionally passed in tracks to override  */
+  tracks?: LineupTrack[]
+
+  /** Passed in styles */
+  styles?: StyleProp<ViewStyle>
 }
 
 export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {

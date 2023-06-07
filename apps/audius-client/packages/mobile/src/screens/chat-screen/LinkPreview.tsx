@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
+
 import { useLinkUnfurlMetadata } from '@audius/common'
-import type { GestureResponderEvent } from 'react-native'
+import type { GestureResponderEvent, ViewStyle } from 'react-native'
 import { View, Image } from 'react-native'
 
 import { Text, Link } from 'app/components/core'
@@ -70,32 +72,44 @@ type LinkPreviewProps = {
   chatId: string
   messageId: string
   href: string
-  isLinkPreviewOnly: boolean
+  hideMessage: boolean
   isPressed: boolean
   onLongPress: (event: GestureResponderEvent) => void
   onPressIn: (event: GestureResponderEvent) => void
   onPressOut: (event: GestureResponderEvent) => void
+  onEmpty?: () => void
+  onSuccess?: () => void
+  style?: ViewStyle
 }
 
 export const LinkPreview = ({
   chatId,
   messageId,
   href,
-  isLinkPreviewOnly,
+  hideMessage,
   isPressed = false,
   onLongPress,
   onPressIn,
-  onPressOut
+  onPressOut,
+  onEmpty,
+  onSuccess,
+  style
 }: LinkPreviewProps) => {
   const styles = useStyles()
   const metadata = useLinkUnfurlMetadata(chatId, messageId, href)
+  const { description, title, site_name: siteName, image } = metadata || {}
+  const willRender = !!(description || title || image)
   const domain = metadata?.url ? new URL(metadata.url).hostname : ''
 
-  if (!metadata) {
-    return null
-  }
+  useEffect(() => {
+    if (willRender) {
+      onSuccess?.()
+    } else {
+      onEmpty?.()
+    }
+  }, [willRender, onSuccess, onEmpty])
 
-  return (
+  return willRender ? (
     <Link
       url={href}
       delayLongPress={REACTION_LONGPRESS_DELAY}
@@ -107,17 +121,18 @@ export const LinkPreview = ({
         style={[
           styles.root,
           isPressed ? styles.pressed : null,
-          isLinkPreviewOnly ? styles.rootIsLinkPreviewOnly : null
+          hideMessage ? styles.rootIsLinkPreviewOnly : null,
+          style
         ]}
       >
-        {metadata.description || metadata.title ? (
+        {description || title ? (
           <>
-            {metadata.image ? (
+            {image ? (
               <View style={styles.thumbnail}>
                 <Image
-                  source={{ uri: metadata.image }}
+                  source={{ uri: image }}
                   style={styles.image}
-                  alt={metadata.site_name}
+                  alt={siteName}
                 />
               </View>
             ) : null}
@@ -132,28 +147,26 @@ export const LinkPreview = ({
             <View
               style={[styles.textContainer, isPressed ? styles.pressed : null]}
             >
-              {metadata.title ? (
-                <Text style={styles.title}>{metadata.title}</Text>
-              ) : null}
-              {metadata.description ? (
+              {title ? <Text style={styles.title}>{title}</Text> : null}
+              {description ? (
                 <Text numberOfLines={1} style={styles.description}>
-                  {metadata.description}
+                  {description}
                 </Text>
               ) : (
                 <View style={styles.noDescriptionMarginBottom} />
               )}
             </View>
           </>
-        ) : metadata.image ? (
+        ) : image ? (
           <View>
             <Image
               style={styles.image}
-              source={{ uri: metadata.image }}
-              alt={metadata.site_name}
+              source={{ uri: image }}
+              alt={siteName}
             />
           </View>
         ) : null}
       </View>
     </Link>
-  )
+  ) : null
 }

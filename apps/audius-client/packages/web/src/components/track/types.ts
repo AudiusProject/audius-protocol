@@ -45,6 +45,7 @@ export type TileProps = {
   goToRoute: (route: string) => void
   isTrending: boolean
   showRankIcon: boolean
+  variant?: 'readonly'
 }
 
 export type TrackTileProps = TileProps & {
@@ -63,7 +64,6 @@ export type TrackTileProps = TileProps & {
   artistHandle: string
   artistIsVerified: boolean
   isFeed?: boolean
-  isChat?: boolean
   isPlaying?: boolean
   isBuffering?: boolean
   ordered?: boolean
@@ -99,7 +99,6 @@ export type PlaylistTileProps = TileProps & {
   disableActions?: boolean
   ordered?: boolean
   isFeed?: boolean
-  isChat?: boolean
   uploading?: boolean
   uploadPercent?: number
   ownerId: ID

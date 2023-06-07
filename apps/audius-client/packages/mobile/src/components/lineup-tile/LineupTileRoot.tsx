@@ -12,5 +12,5 @@ const styles = StyleSheet.create({
 type LineupTileRootProps = TileProps
 
 export const LineupTileRoot = (props: LineupTileRootProps) => {
-  return <Tile {...props} styles={{ tile: styles.tile }} />
+  return <Tile {...props} styles={{ tile: [styles.tile, props.style] }} />
 }

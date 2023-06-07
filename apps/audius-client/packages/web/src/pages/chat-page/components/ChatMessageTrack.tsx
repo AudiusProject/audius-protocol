@@ -1,42 +1,34 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import {
   Kind,
   Status,
   makeUid,
-  queueSelectors,
-  playerSelectors,
-  Name,
   PlaybackSource,
-  queueActions,
   QueueSource,
   accountSelectors,
   useGetTrackByPermalink,
-  getPathFromTrackUrl
+  getPathFromTrackUrl,
+  useToggleTrack,
+  ID,
+  TrackPlayback,
+  ChatMessageTileProps
 } from '@audius/common'
-import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
 
-import styles from './ChatMessageTrack.module.css'
-
 const { getUserId } = accountSelectors
-const { makeGetCurrent } = queueSelectors
-const { getPlaying } = playerSelectors
-const { clear, add, play, pause } = queueActions
 
-type ChatMessageTrackProps = {
-  link: string
-  isAuthor: boolean
-}
-
-export const ChatMessageTrack = ({ link, isAuthor }: ChatMessageTrackProps) => {
+export const ChatMessageTrack = ({
+  link,
+  onEmpty,
+  onSuccess,
+  className
+}: ChatMessageTileProps) => {
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const currentQueueItem = useSelector(makeGetCurrent())
-  const playing = useSelector(getPlaying)
   const permalink = getPathFromTrackUrl(link)
 
   const { data: track, status } = useGetTrackByPermalink(
@@ -47,70 +39,46 @@ export const ChatMessageTrack = ({ link, isAuthor }: ChatMessageTrackProps) => {
     { disabled: !permalink || !currentUserId }
   )
 
+  const trackId = track?.track_id
   const uid = useMemo(() => {
-    return track ? makeUid(Kind.TRACKS, track.track_id) : ''
-  }, [track])
-  const isTrackPlaying =
-    playing &&
-    !!track &&
-    !!currentQueueItem.track &&
-    currentQueueItem.uid === uid
+    return trackId ? makeUid(Kind.TRACKS, trackId) : null
+  }, [trackId])
 
   const recordAnalytics = useCallback(
-    ({ name, source }: { name: Name; source: PlaybackSource }) => {
+    ({ name, id }: { name: TrackPlayback; id: ID }) => {
       if (!track) return
       dispatch(
         make(name, {
-          id: `${track.track_id}`,
-          source
+          id: `${id}`,
+          source: PlaybackSource.CHAT_TRACK
         })
       )
     },
     [dispatch, track]
   )
 
-  const onTogglePlay = useCallback(() => {
-    if (!track) return
-    if (isTrackPlaying) {
-      dispatch(pause({}))
-      recordAnalytics({
-        name: Name.PLAYBACK_PAUSE,
-        source: PlaybackSource.CHAT_TRACK
-      })
-    } else if (
-      currentQueueItem.uid !== uid &&
-      currentQueueItem.track &&
-      currentQueueItem.uid === uid
-    ) {
-      dispatch(play({}))
-      recordAnalytics({
-        name: Name.PLAYBACK_PLAY,
-        source: PlaybackSource.CHAT_TRACK
-      })
-    } else {
-      dispatch(clear({}))
-      dispatch(
-        add({
-          entries: [
-            { id: track.track_id, uid, source: QueueSource.CHAT_TRACKS }
-          ]
-        })
-      )
-      dispatch(play({ uid }))
-      recordAnalytics({
-        name: Name.PLAYBACK_PLAY,
-        source: PlaybackSource.CHAT_TRACK
-      })
-    }
-  }, [dispatch, recordAnalytics, track, isTrackPlaying, currentQueueItem, uid])
+  const { togglePlay, isTrackPlaying } = useToggleTrack({
+    id: track?.track_id,
+    uid,
+    source: QueueSource.CHAT_TRACKS,
+    recordAnalytics
+  })
 
-  return track ? (
-    <div className={cn(styles.container, { [styles.isAuthor]: isAuthor })}>
+  useEffect(() => {
+    if (track && uid) {
+      onSuccess?.()
+    } else {
+      onEmpty?.()
+    }
+  }, [track, uid, onSuccess, onEmpty])
+
+  return track && uid ? (
+    <div className={className}>
       {/* You may wonder why we use the mobile web track tile here.
       It's simply because the chat track tile uses the same design as mobile web. */}
       <MobileTrackTile
         index={0}
-        togglePlay={onTogglePlay}
+        togglePlay={togglePlay}
         uid={uid}
         isLoading={status === Status.LOADING || status === Status.IDLE}
         hasLoaded={() => {}}
@@ -118,7 +86,7 @@ export const ChatMessageTrack = ({ link, isAuthor }: ChatMessageTrackProps) => {
         showRankIcon={false}
         showArtistPick={false}
         isActive={isTrackPlaying}
-        isChat
+        variant='readonly'
       />
     </div>
   ) : null

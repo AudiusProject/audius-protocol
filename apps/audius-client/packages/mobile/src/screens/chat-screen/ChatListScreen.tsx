@@ -104,6 +104,7 @@ export const ChatListScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<AppTabScreenParamList>()
   const chats = useSelector(getChats)
+  const nonEmptyChats = chats.filter((chat) => !!chat.last_message)
   const chatsStatus = useSelector(getChatsStatus)
 
   // If this is the first fetch, we want to show the fade-out loading skeleton
@@ -159,7 +160,7 @@ export const ChatListScreen = () => {
               ))
           ) : (
             <FlatList
-              data={chats}
+              data={nonEmptyChats}
               contentContainerStyle={styles.listContainer}
               renderItem={({ item }) => <ChatListItem chatId={item.chat_id} />}
               keyExtractor={(chat) => chat.chat_id}

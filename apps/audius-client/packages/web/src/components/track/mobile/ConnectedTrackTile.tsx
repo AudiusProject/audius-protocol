@@ -106,8 +106,8 @@ const ConnectedTrackTile = ({
   isTrending,
   showRankIcon,
   isActive,
-  isFeed = false,
-  isChat = false
+  variant,
+  isFeed = false
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
   const {
@@ -287,7 +287,7 @@ const ConnectedTrackTile = ({
       premiumConditions={premiumConditions}
       doesUserHaveAccess={doesUserHaveAccess}
       showRankIcon={showRankIcon}
-      isChat={isChat}
+      variant={variant}
     />
   )
 }

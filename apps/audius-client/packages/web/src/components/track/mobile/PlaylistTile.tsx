@@ -135,7 +135,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     isTrending,
     showRankIcon,
     trackCount,
-    isChat
+    variant
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -144,6 +144,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     }
   }, [artworkLoaded, hasLoaded, index, showSkeleton])
 
+  const isReadonly = variant === 'readonly'
   const shouldShow = artworkLoaded && !showSkeleton
   const fadeIn = {
     [styles.show]: shouldShow,
@@ -151,7 +152,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
 
   return (
-    <div className={cn(styles.container, { [styles.chat]: isChat })}>
+    <div className={cn(styles.container, { [styles.readonly]: isReadonly })}>
       <div className={styles.mainContent} onClick={props.togglePlay}>
         <div className={cn(styles.duration, styles.statText, fadeIn)}>
           {formatLineupTileDuration(props.duration)}
@@ -217,7 +218,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   [styles.disabledStatItem]: !props.saveCount
                 })}
                 onClick={
-                  props.saveCount && !isChat
+                  props.saveCount && !isReadonly
                     ? props.makeGoToFavoritesPage(props.id)
                     : undefined
                 }
@@ -236,7 +237,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   [styles.disabledStatItem]: !props.repostCount
                 })}
                 onClick={
-                  props.repostCount && !isChat
+                  props.repostCount && !isReadonly
                     ? props.makeGoToRepostsPage(props.id)
                     : undefined
                 }
@@ -261,7 +262,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
           numLoadingSkeletonRows={numLoadingSkeletonRows}
           trackCount={trackCount}
         />
-        {!isChat ? (
+        {!isReadonly ? (
           <div className={cn(fadeIn)}>
             <BottomButtons
               hasSaved={props.hasCurrentUserSaved}
