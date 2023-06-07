@@ -120,8 +120,18 @@ export const getUnreadMessagesCount = (state: CommonState) => {
   return state.pages.chat.unreadMessagesCount
 }
 
-export const getHasUnreadMessages = (state: CommonState) =>
-  getUnreadMessagesCount(state) > 0
+export const getHasUnreadMessages = (state: CommonState) => {
+  if (getUnreadMessagesCount(state) > 0) {
+    return true
+  }
+  const chats = getChats(state)
+  for (const chat of chats) {
+    if (chat.unread_message_count > 0) {
+      return true
+    }
+  }
+  return false
+}
 
 export const getOtherChatUsersFromChat = (
   state: CommonState,
