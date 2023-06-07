@@ -211,6 +211,7 @@ export const ReactionPopup = ({
               left: !isAuthor ? spacing(6) : undefined
             }
           ]}
+          handleClosePopup={handleClosePopup}
         />
         <CopyMessagesButton
           isAuthor={isAuthor}
