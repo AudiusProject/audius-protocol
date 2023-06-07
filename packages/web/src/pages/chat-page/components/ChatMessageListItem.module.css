@@ -68,68 +68,82 @@
   margin-bottom: var(--unit-4);
 }
 
-.reactionsButton {
-  display: flex;
-  opacity: 0;
+/* Reactions positioning */
+
+.reactionsContainer {
+  bottom: -24px;
+  position: absolute;
   flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
-  position: absolute;
+  display: flex;
   cursor: pointer;
-  bottom: -24px;
-  /* transform looks better if it only eases-out */
-  transition: opacity var(--quick), transform 0.07s ease-out;
-  transform: scale(0.5);
 }
 
-.reactionsButton:not(.hasReaction) {
-  background-color: var(--white);
-  border: 1px solid var(--neutral-light-6);
-  width: var(--unit-8);
-  height: var(--unit-8);
+.reactionsContainer:not(.hasReaction) {
   bottom: -16px;
-  border-radius: 50%;
 }
 
-.root.isAuthor .reactionsButton {
+.root.isAuthor .reactionsContainer {
   left: -16px;
 }
-.root:not(.isAuthor) .reactionsButton {
+.root:not(.isAuthor) .reactionsContainer {
   right: -16px;
   direction: rtl;
 }
 
-.root.isAuthor .reactionsButton.hasReaction {
+.root.isAuthor .reactionsContainer.hasReaction {
   left: -24px;
 }
 
-.root:not(.isAuthor) .reactionsButton.hasReaction {
+.root:not(.isAuthor) .reactionsContainer.hasReaction {
   right: -24px;
 }
 
+/* Styling of reaction button inside the reactions container */
+
+.reactionsButton {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  /* transform looks better if it only eases-out */
+  transition: opacity var(--quick), transform 0.07s ease-out;
+}
+
+.reactionsContainer:not(.hasReaction) .reactionsButton {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  width: var(--unit-8);
+  height: var(--unit-8);
+  border-radius: 50%;
+}
+
 .bubble:hover .reactionsButton,
-.reactionsButton.isOpened,
-.reactionsButton.hasReaction {
+.reactionsContainer.isOpened .reactionsButton,
+.reactionsContainer.hasReaction .reactionsButton {
   transform: scale(1, 1);
   opacity: 1;
 }
 
-.reactionsButton:not(.hasReaction) path {
+.reactionsContainer:not(.hasReaction) path {
   width: var(--unit-6);
   height: var(--unit-6);
   fill: var(--secondary);
   transition: fill var(--quick);
 }
 
-.reactionsButton:not(.hasReaction):hover {
+.reactionsContainer:not(.hasReaction):hover .reactionsButton {
   transform: scale(1.1);
 }
 
-.reactionsButton:not(.hasReaction):hover path {
+.reactionsContainer:not(.hasReaction):hover .reactionsButton path {
   fill: var(--secondary-dark-2);
 }
 
-.reactionsButton:not(.hasReaction):active {
+.reactionsContainer:not(.hasReaction):active .reactionsButton {
   transform: scale(0.6);
 }
 

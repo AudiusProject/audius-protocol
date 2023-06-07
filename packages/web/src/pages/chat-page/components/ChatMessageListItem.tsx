@@ -145,7 +145,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     return (
       <div
         ref={reactionButtonRef}
-        className={cn(styles.reactionsButton, {
+        className={cn(styles.reactionsContainer, {
           [styles.isOpened]: isReactionPopupVisible,
           [styles.hasReaction]:
             message.reactions && message.reactions.length > 0
@@ -170,7 +170,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             )
           })
         ) : (
-          <IconPlus className={styles.addReactionIcon} />
+          <div className={cn(styles.reactionsButton)}>
+            <IconPlus className={styles.addReactionIcon} />
+          </div>
         )}
       </div>
     )
