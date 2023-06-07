@@ -3,7 +3,8 @@ import {
   FeedFilter,
   ID,
   UserCollectionMetadata,
-  UserTrack
+  UserTrack,
+  UserTrackMetadata
 } from '../../models'
 import { encodeHashId, removeNullable } from '../../utils'
 import {
@@ -22,10 +23,6 @@ const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
 type TopUserListen = {
   userId: number
   trackId: number
-}
-
-type UserListens = {
-  [key: number]: number
 }
 
 type ExploreConfig = {
@@ -63,27 +60,7 @@ export class Explore {
     }
   }
 
-  async getUserListens(trackIds: ID[]): Promise<UserListens> {
-    try {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      const idQuery = trackIds.map((id) => `&trackIdList=${id}`).join('')
-      return fetch(
-        `${this.audiusBackendInstance.identityServiceUrl}/users/listens?${idQuery}`,
-        {
-          headers: {
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          }
-        }
-      )
-        .then((res) => res.json())
-        .then((res) => res.listenMap)
-    } catch (e) {
-      console.error(e)
-      return {}
-    }
-  }
-
+  // TODO(C-2719)
   async getTopFolloweeTracksFromWindow(
     userId: ID,
     window: string,
@@ -105,22 +82,30 @@ export class Explore {
     }
   }
 
-  async getFeedNotListenedTo(limit = 25) {
+  async getFeedNotListenedTo(currentUserId: ID, limit = 25) {
     try {
-      const lineupItems = await this.audiusBackendInstance.getSocialFeed({
-        filter: FeedFilter.ORIGINAL,
+      const lineupItems = (await this.apiClient.getSocialFeed({
         offset: 0,
-        limit: 100,
-        withUsers: true,
-        tracksOnly: true
-      })
+        limit,
+        with_users: true,
+        filter: FeedFilter.ORIGINAL,
+        tracks_only: true,
+        current_user_id: currentUserId
+      })) as UserTrackMetadata[] | null
+      if (!lineupItems) return []
 
       const tracks = lineupItems.filter(
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
       )
-      const trackIds = tracks.map((track) => track.track_id)
 
-      const listens: any = await this.getUserListens(trackIds)
+      // Imperfect solution. Ideally we use an endpoint that gives us true/false
+      // if a user has listened to a passed in array of tracks.
+      const history = await this.apiClient.getUserTrackHistory({
+        currentUserId,
+        userId: currentUserId,
+        limit: 50
+      })
+      const listens = history.map((item) => item.track?.track_id)
 
       const notListenedToTracks = tracks.filter(
         (track) => !listens[track.track_id]
@@ -146,6 +131,7 @@ export class Explore {
     }
   }
 
+  // TODO(C-2719)
   async getTopFolloweeSaves(limit = 25) {
     try {
       const libs = await this.audiusBackendInstance.getAudiusLibs()
@@ -158,6 +144,7 @@ export class Explore {
     }
   }
 
+  // TODO(C-2719)
   async getMostLovedTracks(userId: ID, limit = 25) {
     try {
       const encodedUserId = encodeHashId(userId)
@@ -175,6 +162,7 @@ export class Explore {
     }
   }
 
+  // TODO(C-2719)
   async getFeelingLuckyTracks(userId: ID | null, limit = 25) {
     try {
       let tracks: APITrack[]
@@ -200,18 +188,8 @@ export class Explore {
     }
   }
 
-  async getLatestTrackID(): Promise<number> {
-    try {
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      const latestTrackID = await libs.discoveryProvider.getLatest('track')
-      return latestTrackID
-    } catch (e) {
-      console.error(e)
-      return 0
-    }
-  }
-
   /** PLAYLIST ENDPOINTS */
+  // TODO(C-2719)
   async getTopCollections(
     type?: 'playlist' | 'album',
     followeesOnly?: boolean,

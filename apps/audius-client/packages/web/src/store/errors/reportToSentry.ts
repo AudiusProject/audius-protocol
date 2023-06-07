@@ -17,6 +17,7 @@ export const reportToSentry = async ({
   error,
   name
 }: ReportToSentryArgs) => {
+  console.debug(error, level)
   try {
     Sentry.withScope((scope) => {
       if (level) {

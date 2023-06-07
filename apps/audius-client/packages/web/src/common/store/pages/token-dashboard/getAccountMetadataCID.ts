@@ -7,11 +7,14 @@ const { getUserId } = accountSelectors
 
 export function* getAccountMetadataCID() {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const apiClient = yield* getContext('apiClient')
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return null
 
-  const users = yield* call(audiusBackendInstance.getCreators, [accountUserId])
+  const users = yield* call([apiClient, apiClient.getUser], {
+    userId: accountUserId,
+    currentUserId: accountUserId
+  })
   if (users.length !== 1) return null
   return users[0].metadata_multihash
 }

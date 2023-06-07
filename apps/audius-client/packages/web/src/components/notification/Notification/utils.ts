@@ -41,7 +41,7 @@ export const getRankSuffix = (rank: number) => {
 }
 
 export const getTwitterHandleByUserHandle = async (userHandle: string) => {
-  const { twitterHandle } = await audiusBackendInstance.getCreatorSocialHandle(
+  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(
     userHandle
   )
   return twitterHandle || ''

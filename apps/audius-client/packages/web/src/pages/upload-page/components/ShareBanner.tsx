@@ -61,7 +61,7 @@ const getContinuePage = (uploadType: UploadType) => {
 }
 
 const getTwitterHandleByUserHandle = async (userHandle: string) => {
-  const { twitterHandle } = await audiusBackendInstance.getCreatorSocialHandle(
+  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(
     userHandle
   )
   return twitterHandle || ''

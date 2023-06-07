@@ -35,7 +35,6 @@ import {
   CoverPhotoSizes,
   DefaultSizes,
   FailureReason,
-  FeedFilter,
   ID,
   Name,
   PlaylistTrackId,
@@ -44,8 +43,7 @@ import {
   Track,
   TrackMetadata,
   User,
-  UserMetadata,
-  UserTrack
+  UserMetadata
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -847,16 +845,6 @@ export const audiusBackend = ({
     return audiusLibs.creatorNode.setEndpoint(endpoint)
   }
 
-  async function isCreatorNodeSyncing(endpoint: string) {
-    try {
-      const { isBehind, isConfigured } =
-        await audiusLibs.creatorNode.getSyncStatus(endpoint)
-      return isBehind && isConfigured
-    } catch (e) {
-      return true
-    }
-  }
-
   async function listCreatorNodes() {
     return audiusLibs.ServiceProvider.listCreatorNodes()
   }
@@ -878,11 +866,12 @@ export const audiusBackend = ({
   async function getAccount() {
     await waitForLibsInit()
     try {
+      // TODO: Non-v1
       const account = audiusLibs.Account.getCurrentUser()
       if (!account) return null
 
       try {
-        const body = await getCreatorSocialHandle(account.handle)
+        const body = await getSocialHandles(account.handle)
         account.twitter_handle = body.twitterHandle || null
         account.instagram_handle = body.instagramHandle || null
         account.tiktok_handle = body.tikTokHandle || null
@@ -911,178 +900,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function getAllTracks({
-    offset,
-    limit,
-    idsArray,
-    withUsers = true,
-    filterDeletes = false
-  }: {
-    offset: number
-    limit: number
-    idsArray: ID[]
-    withUsers?: boolean
-    filterDeletes?: boolean
-  }) {
-    try {
-      const tracks = await withEagerOption(
-        {
-          normal: (libs) => libs.Track.getTracks,
-          eager: DiscoveryAPI.getTracks
-        },
-        limit,
-        offset,
-        idsArray,
-        null, // targetUserId
-        null, // sort
-        null, // minBlockNumber
-        filterDeletes, // filterDeleted
-        withUsers // withUsers
-      )
-      return tracks || []
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  /**
-   * @typedef {Object} getTracksIdentifier
-   * @property {string} handle
-   * @property {number} id
-   * @property {string} url_title
-   */
-
-  /**
-   * gets all tracks matching identifiers, including unlisted.
-   *
-   * @param {getTracksIdentifier[]} identifiers
-   * @returns {(Array)} track
-   */
-  async function getTracksIncludingUnlisted(
-    identifiers: { id: ID }[],
-    withUsers = true
-  ) {
-    try {
-      const tracks = await withEagerOption(
-        {
-          normal: (libs) => libs.Track.getTracksIncludingUnlisted,
-          eager: DiscoveryAPI.getTracksIncludingUnlisted
-        },
-        identifiers,
-        withUsers
-      )
-
-      return tracks
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  async function getArtistTracks({
-    offset,
-    limit,
-    userId,
-    sort = null,
-    filterDeleted = null,
-    withUsers = true
-  }: Omit<
-    DiscoveryAPIParams<typeof DiscoveryAPI.getTracks>,
-    'sort' | 'filterDeleted'
-  > & {
-    sort: Nullable<boolean>
-    filterDeleted: Nullable<boolean>
-  }) {
-    try {
-      const tracks = await withEagerOption(
-        {
-          normal: (libs) => libs.Track.getTracks,
-          eager: DiscoveryAPI.getTracks
-        },
-        limit,
-        offset,
-        null,
-        userId,
-        sort,
-        null,
-        filterDeleted,
-        withUsers
-      )
-      return tracks || []
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  async function getSocialFeed({
-    filter,
-    offset,
-    limit,
-    withUsers = true,
-    tracksOnly = false
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.getSocialFeed>) {
-    const filterMap = {
-      [FeedFilter.ALL]: 'all',
-      [FeedFilter.ORIGINAL]: 'original',
-      [FeedFilter.REPOST]: 'repost'
-    }
-
-    let feedItems: Array<Collection | UserTrack> = []
-    try {
-      feedItems = await withEagerOption(
-        {
-          normal: (libs) => libs.User.getSocialFeed,
-          eager: DiscoveryAPI.getSocialFeed,
-          requiresUser: true
-        },
-        filterMap[filter as FeedFilter],
-        limit,
-        offset,
-        withUsers,
-        tracksOnly
-      )
-      // It's possible all the requests timed out,
-      // we need to not return a null object here.
-      if (!feedItems) return []
-    } catch (err) {
-      console.error(err)
-    }
-    return feedItems.map((item) => {
-      if ('playlist_id' in item) {
-        return getCollectionImages(item)
-      }
-      return item
-    })
-  }
-
-  async function getUserFeed({
-    offset,
-    limit,
-    userId,
-    withUsers = true
-  }: DiscoveryAPIParams<typeof DiscoveryAPI.getUserRepostFeed> & {
-    userId: string
-  }) {
-    try {
-      const tracks = await withEagerOption(
-        {
-          normal: (libs) => libs.User.getUserRepostFeed,
-          eager: DiscoveryAPI.getUserRepostFeed
-        },
-        userId,
-        limit,
-        offset,
-        withUsers
-      )
-      return tracks
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
+  // TODO(C-2719)
   async function searchTags({
     query,
     userTagCount,
@@ -1137,7 +955,7 @@ export const audiusBackend = ({
     }
   }
 
-  // userId, start, end
+  // TODO(C-2719)
   async function getUserListenCountsMonthly(
     currentUserId: number,
     startTime: string,
@@ -1375,6 +1193,7 @@ export const audiusBackend = ({
     }
   }
 
+  // TODO(C-2719)
   async function getCreators(ids: ID[]) {
     try {
       if (ids.length === 0) return []
@@ -1400,7 +1219,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function getCreatorSocialHandle(handle: string) {
+  async function getSocialHandles(handle: string) {
     try {
       const res = await fetch(
         `${identityServiceUrl}/social_handles?handle=${handle}`
@@ -1418,6 +1237,7 @@ export const audiusBackend = ({
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
+  // TODO(C-2719)
   async function fetchUserAssociatedEthWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1434,6 +1254,7 @@ export const audiusBackend = ({
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
+  // TODO(C-2719)
   async function fetchUserAssociatedSolWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1450,6 +1271,7 @@ export const audiusBackend = ({
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
+  // TODO(C-2719)
   async function fetchUserAssociatedWallets(user: User) {
     const cid = user?.metadata_multihash ?? null
     if (cid) {
@@ -1577,6 +1399,7 @@ export const audiusBackend = ({
     }
   }
 
+  // TODO(C-2719)
   async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
     let followers = []
     try {
@@ -1599,6 +1422,7 @@ export const audiusBackend = ({
     return followers
   }
 
+  // TODO(C-2719)
   async function getPlaylists(
     userId: Nullable<ID>,
     playlistIds: Nullable<ID[]>,
@@ -1755,6 +1579,7 @@ export const audiusBackend = ({
     }
   }
 
+  // TODO(C-2719)
   async function validateTracksInPlaylist(playlistId: ID) {
     try {
       const { isValid, invalidTrackIds } =
@@ -1828,40 +1653,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSavedPlaylists(limit = 100, offset = 0) {
-    try {
-      const saves = await withEagerOption(
-        {
-          normal: (libs) => libs.Playlist.getSavedPlaylists,
-          eager: DiscoveryAPI.getSavedPlaylists
-        },
-        limit,
-        offset
-      )
-      return saves.map((save: { save_item_id: ID }) => save.save_item_id)
-    } catch (err) {
-      console.log(getErrorMessage(err))
-      return []
-    }
-  }
-
-  async function getSavedAlbums(limit = 100, offset = 0) {
-    try {
-      const saves = await withEagerOption(
-        {
-          normal: (libs) => libs.Playlist.getSavedAlbums,
-          eager: DiscoveryAPI.getSavedAlbums
-        },
-        limit,
-        offset
-      )
-      return saves.map((save: { save_item_id: ID }) => save.save_item_id)
-    } catch (err) {
-      console.log(getErrorMessage(err))
-      return []
-    }
-  }
-
+  // TODO(C-2719)
   async function getSavedTracks(limit = 100, offset = 0) {
     try {
       return withEagerOption(
@@ -2592,6 +2384,7 @@ export const audiusBackend = ({
     return notification
   }
 
+  // TODO(C-2719)
   async function getDiscoveryNotifications({
     timestamp,
     groupIdOffset,
@@ -3074,6 +2867,7 @@ export const audiusBackend = ({
   /**
    * Returns whether the current user is subscribed to userId.
    */
+  // TODO(C-2719)
   async function getUserSubscribed(userId: ID) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
@@ -3246,38 +3040,6 @@ export const audiusBackend = ({
     try {
       const amount = await audiusLibs.Account.getClaimDistributionAmount()
       return amount
-    } catch (e) {
-      console.error(e)
-      return null
-    }
-  }
-
-  /**
-   * Make the claim for the distribution
-   * NOTE: if the claim was already made, the response will 500 and error
-   * @returns {Promise<boolean>} didMakeClaim
-   */
-  async function makeDistributionClaim() {
-    await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return null
-
-    await audiusLibs.Account.makeDistributionClaim()
-    return true
-  }
-
-  /**
-   * Make a request to check if the user has already claimed
-   * @returns {Promise<boolean>} doesHaveClaim
-   */
-  async function getHasClaimed() {
-    await waitForLibsInit()
-    const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return
-
-    try {
-      const hasClaimed = await audiusLibs.Account.getHasClaimed()
-      return hasClaimed
     } catch (e) {
       console.error(e)
       return null
@@ -3666,8 +3428,6 @@ export const audiusBackend = ({
     getAudioTransactionsCount,
     getAddressSolBalance,
     getAssociatedTokenAccountInfo,
-    getAllTracks,
-    getArtistTracks,
     getAudiusLibs,
     getAudiusLibsTyped,
     getBalance,
@@ -3677,10 +3437,9 @@ export const audiusBackend = ({
     getCollectionImages,
     getCreatorNodeIPFSGateways,
     getCreators,
-    getCreatorSocialHandle,
+    getSocialHandles,
     getEmailNotificationSettings,
     getFolloweeFollows,
-    getHasClaimed,
     getImageUrl,
     getLatestTxReceipt,
     getNotifications,
@@ -3689,16 +3448,11 @@ export const audiusBackend = ({
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
-    getSavedAlbums,
-    getSavedPlaylists,
     getSavedTracks,
     getSelectableCreatorNodes,
     getSignature,
-    getSocialFeed,
     getTrackImages,
-    getTracksIncludingUnlisted,
     getUserEmail,
-    getUserFeed,
     getUserImages,
     getUserListenCountsMonthly,
     getUserSubscribed,
@@ -3706,10 +3460,8 @@ export const audiusBackend = ({
     getWeb3,
     handleInUse,
     identityServiceUrl,
-    isCreatorNodeSyncing,
     legacyUserNodeUrl,
     listCreatorNodes,
-    makeDistributionClaim,
     markAllNotificationAsViewed,
     orderPlaylist,
     publishPlaylist,
