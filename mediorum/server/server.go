@@ -49,6 +49,7 @@ type MediorumConfig struct {
 	ListenPort        string
 	UpstreamCN        string
 	TrustedNotifierID int
+	MyIndex           int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -88,6 +89,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		log.Fatal("invalid host: ", err)
 	} else if config.ListenPort == "" {
 		config.ListenPort = hostUrl.Port()
+	}
+
+	// find MyIndex in peers list to enable round-robin turn taking (i.e. in repair.go)
+	// in staging + prod the graph query will order by SP ID,
+	// so every SP should get a consistent MyIndex across restarts
+	for idx, peer := range config.Peers {
+		if peer.Host == config.Self.Host {
+			config.MyIndex = idx
+			break
+		}
 	}
 
 	if config.Dir == "" {
