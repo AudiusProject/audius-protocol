@@ -21,7 +21,8 @@ export type ChallengeDisbursementUserbankFriendly = {
 };
 
 export const getChallengesDisbursementsUserbanks = async (
-  discoveryDb: Knex
+  discoveryDb: Knex,
+  specifier: string
 ): Promise<ChallengeDisbursementUserbank[]> =>
   await discoveryDb<ChallengeDisbursementUserbank>("user_challenges as u")
     .select(
@@ -47,11 +48,12 @@ export const getChallengesDisbursementsUserbanks = async (
       "=",
       "users.wallet"
     )
-    .where("u.specifier", "~", "2022-05-27")
+    .where("u.specifier", "~", specifier)
     .where("users.is_current", true);
 
 export const getChallengesDisbursementsUserbanksFriendly = async (
-  discoveryDb: Knex
+  discoveryDb: Knex,
+  specifier: string
 ): Promise<ChallengeDisbursementUserbankFriendly[]> =>
   await discoveryDb<ChallengeDisbursementUserbankFriendly>(
     "user_challenges as u"
@@ -72,7 +74,7 @@ export const getChallengesDisbursementsUserbanksFriendly = async (
       );
     })
     .join("users", "users.user_id", "=", "u.user_id")
-    .where("u.specifier", "~", "2023-04-28")
+    .where("u.specifier", "~", specifier)
     .where("users.is_current", true)
     .orderBy("u.challenge_id")
     .orderBy("u.specifier");

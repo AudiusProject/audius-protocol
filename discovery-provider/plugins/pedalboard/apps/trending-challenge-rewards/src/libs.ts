@@ -12,11 +12,10 @@ const config = {
     rewardsManagerProgramPDA: process.env.rewardsManagerProgramPDA,
     rewardsManagerTokenPDA: process.env.rewardsManagerTokenPDA,
     useRelay: process.env.useRelay
-  }
+  },
 }
 
 // TODO: promote this into a packages instead of tcr
- // @ts-ignore
 export const initAudiusLibs = async (): Promise<AudiusLibs> => {
   const libsConfig = {
     solanaWeb3Config: config.solanaWeb3Config,

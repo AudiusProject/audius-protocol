@@ -13,8 +13,12 @@
   "dependencies": {
     "@audius/libs": "^1.2.118",
     "@audius/sdk": "^2.0.3-beta.20",
+    "@slack/bolt": "^3.13.1",
+    "@slack/web-api": "^6.8.1",
     "@types/node-fetch": "^2.6.4",
     "app-template": "^0.0.0",
+    "ascii-table": "^0.0.9",
+    "ascii-table3": "^0.8.2",
     "axios": "^1.4.0",
     "basekit": "^0.0.0",
     "dotenv": "^16.1.4",

@@ -8,7 +8,7 @@ dayjs.extend(duration);
 
 export default class App<AppData> {
   // database connections
-  private discoveryDb?: Knex;
+  private discoveryDb: Knex;
   private identityDb?: Knex;
 
   // pg notify handlers
@@ -28,15 +28,14 @@ export default class App<AppData> {
 
   private appData: AppData;
 
-  constructor(appData: AppData, discoveryConnectionString?: string) {
-    if (!discoveryConnectionString === undefined) {
-      this.discoveryDb = knex({
-        client: "pg",
-        connection: {
-          connectionString: discoveryConnectionString,
-        },
-      });
-    }
+  constructor(appData: AppData) {
+    this.discoveryDb = knex({
+      client: "pg",
+      connection: {
+        connectionString:
+          "postgresql://postgres:postgres@localhost:5432/audius_discovery",
+      },
+    });
     this.listeners = new Map();
     this.scans = new Map();
     this.tickers = [];
@@ -119,8 +118,6 @@ export default class App<AppData> {
   /* External Usage Methods */
 
   getDnDb(): Knex {
-    if (this.discoveryDb === undefined)
-      throw new Error("discovery connection not established");
     return this.discoveryDb;
   }
 

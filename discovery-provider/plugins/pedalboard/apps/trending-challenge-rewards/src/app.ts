@@ -12,28 +12,44 @@ import {
 } from "./queries";
 import fetch from "node-fetch";
 import axios from "axios";
+import { RespondFn, SlashCommand } from "@slack/bolt";
+import { WebClient } from "@slack/web-api";
+import { formatDisbursementTable } from "./slack";
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const onCondition = async (app: App<SharedData>): Promise<void> => {
-  const disburse = await onDisburse(app);
-  disburse.mapErr(console.error);
+  // const { dryRun } = app.viewAppData()
+  // const disburse = await onDisburse(app, dryRun);
+  // disburse.mapErr(console.error);
 };
 
+// dryRun separated out so it can be run manually via another trigger
 export const onDisburse = async (
-  app: App<SharedData>
+  app: App<SharedData>,
+  dryRun: boolean,
+  slack: { command: SlashCommand; client: WebClient }
 ): Promise<Result<undefined, string>> => {
   const db = app.getDnDb();
   const libs = app.viewAppData().libs;
+  const { command, client } = slack;
 
   const startingBlockRes = await findStartingBlock(db);
   if (startingBlockRes.err) return startingBlockRes;
   const [startingBlock, specifier] = startingBlockRes.unwrap();
 
+  const formattedResults = formatDisbursementTable(await getChallengesDisbursementsUserbanksFriendly(db, specifier))
+  console.log(formattedResults)
+
+  await client.chat.postMessage({
+    channel: command.channel_id,
+    text: '```'+ formattedResults + '```',
+  });
+
   const nodeGroupsRes = await assembleNodeGroups(libs);
   if (nodeGroupsRes.err) return nodeGroupsRes;
   const nodeGroups = nodeGroupsRes.unwrap();
 
-  await getAllChallenges(app, nodeGroups, startingBlock)
+  await getAllChallenges(app, nodeGroups, startingBlock, dryRun);
 
   return new Ok(undefined);
 };
@@ -42,7 +58,7 @@ const findStartingBlock = async (
   db: Knex
 ): Promise<Result<[number, string], string>> => {
   const challenges = await getTrendingChallenges(db);
-  const firstChallenge = challenges.at(0);
+  const firstChallenge = challenges[0];
   if (firstChallenge === undefined)
     return new Err(`no challenges found ${challenges}`);
   const completedBlocknumber = firstChallenge.completed_blocknumber;
@@ -122,9 +138,15 @@ type Challenge = {
   wallet: string;
 };
 
-const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]>, startBlock: number) => {
-  const {dryRun, AAOEndpoint, oracleEthAddress, feePayerOverride, libs } = app.viewAppData()
-  if (libs === null) return undefined
+const getAllChallenges = async (
+  app: App<SharedData>,
+  groups: Map<string, Node[]>,
+  startBlock: number,
+  dryRun: boolean
+) => {
+  const { AAOEndpoint, oracleEthAddress, feePayerOverride, libs } =
+    app.viewAppData();
+  if (libs === null) return undefined;
   const res = await axios.get(
     `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
@@ -138,7 +160,6 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
   let possibleNodeSet: string[] = [];
   let possibleChallenges = [];
   let impossibleChallenges = [];
-  let congestionErrors = [];
   let setToChallengeMap = new Map<string, any[]>();
 
   for (const challenge of toDisburse) {
@@ -208,17 +229,20 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
 
     possibleChallenges.push({ challenge });
     const key = possibleNodeSet.sort().join(",");
-    setToChallengeMap.set(key, [...(setToChallengeMap.get(key) ?? []), challenge])
+    setToChallengeMap.set(key, [
+      ...(setToChallengeMap.get(key) ?? []),
+      challenge,
+    ]);
 
     console.log(`Attesting for challenge: ${JSON.stringify(challenge)}`);
 
-    const encodedUserId = challenge.user_id.toString()
-    const rewards = libs.Rewards
-    if (rewards === null) throw new Error("rewards object null")
+    const encodedUserId = challenge.user_id.toString();
+    const rewards = libs.Rewards;
+    if (rewards === null) throw new Error("rewards object null");
 
     if (dryRun) {
-      console.log('completed dry run')
-      return
+      console.log("completed dry run");
+      return;
     }
     const { error } = await rewards.submitAndEvaluate({
       challengeId: challenge.challenge_id,
@@ -234,7 +258,7 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
       feePayerOverride,
-      logger: console
+      logger: console,
     });
 
     if (error) {
@@ -244,14 +268,12 @@ const getAllChallenges = async (app: App<SharedData>, groups: Map<string, Node[]
       );
     }
   }
-  console.log(JSON.stringify(setToChallengeMap, null, 2))
+  console.log(JSON.stringify(setToChallengeMap, null, 2));
   console.log(
     `All done. Impossible challenges: ${
       impossibleChallenges.length
     }: ${JSON.stringify(
       impossibleChallenges
-    )}, possible challenges: ${JSON.stringify(
-      possibleChallenges
-    )}`
-  )
+    )}, possible challenges: ${JSON.stringify(possibleChallenges)}`
+  );
 };
