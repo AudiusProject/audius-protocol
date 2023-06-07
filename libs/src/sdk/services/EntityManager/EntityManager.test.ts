@@ -12,6 +12,12 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
 const discoveryNode = 'https://discovery-provider.audius.co'
 
+jest.mock('../DiscoveryNodeSelector')
+
+jest
+  .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
+  .mockImplementation(async () => discoveryNode)
+
 class MockAuth implements AuthService {
   getSharedSecret = async () => new Uint8Array()
   signTransaction: (data: EIP712TypedData) => Promise<string> = async () =>
