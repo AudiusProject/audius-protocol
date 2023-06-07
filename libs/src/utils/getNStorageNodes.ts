@@ -73,7 +73,7 @@ export const isNodeHealthy = async (
   try {
     const resp = await axios({
       baseURL: endpoint,
-      url: `/status`,
+      url: `/health_check`,
       method: 'get',
       timeout: 3000
     })
