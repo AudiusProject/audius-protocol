@@ -104,11 +104,12 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
-	// todo: skip count for trusted notifier requests should be inferred
-	// by the requesting entity and not some query param
+
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
 		!rangeIsFirstByte(c.Request().Header.Get("Range")) {
+		// todo: skip count for trusted notifier requests should be inferred
+		// by the requesting entity and not some query param
 		return
 	}
 
@@ -134,14 +135,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		"solanaListen": false,
 		"timestamp":    signatureData.Timestamp,
 		"signature":    signatureData.Signature,
-	}
-
-	logOnly := true
-	if logOnly {
-		// as of now we favor client POSTing to /listen
-		// this will change to be all server side as part of a larger initiative
-		ss.logger.Info(fmt.Sprintf("skipping track listen as logOnly set to true: %v", body))
-		return
 	}
 
 	buf, err := json.Marshal(body)
