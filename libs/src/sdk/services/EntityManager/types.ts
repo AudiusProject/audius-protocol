@@ -9,6 +9,12 @@ export type EntityManagerConfig = {
   discoveryNodeSelector: DiscoveryNodeSelectorService
 }
 
+export type EntityManagerService = {
+  manageEntity: (
+    options: ManageEntityOptions
+  ) => Promise<{ txReceipt: TransactionReceipt }>
+}
+
 export enum Action {
   CREATE = 'Create',
   UPDATE = 'Update',
@@ -36,13 +42,47 @@ export enum EntityType {
   DELEGATION = 'Delegation'
 }
 
-export type EntityManagerService = {
-  manageEntity: (options: {
-    userId: number
-    entityType: EntityType
-    entityId: number
-    action: Action
-    metadata: string
-    auth: AuthService
-  }) => Promise<{ txReceipt: TransactionReceipt }>
+export type ManageEntityOptions = {
+  /**
+   * The numeric user id
+   */
+  userId: number
+  /**
+   * The type of entity being modified
+   */
+  entityType: EntityType
+  /**
+   * The id of the entity
+   */
+  entityId: number
+  /**
+   * Action being performed on the entity
+   */
+  action: Action
+  /**
+   * Metadata associated with the action
+   */
+  metadata: string
+  /**
+   * An instance of AuthService
+   */
+  auth: AuthService
+  /**
+   * Timeout confirmation of the write
+   */
+  confirmationTimeout?: number
+  /**
+   * Skip confirmation of the write
+   */
+  skipConfirmation?: boolean
+}
+
+export enum BlockConfirmation {
+  CONFIRMED = 'CONFIRMED',
+  DENIED = 'DENIED',
+  UNKNOWN = 'UNKNOWN'
+}
+
+export type WriteOptions = {
+  confirmationTimeout?: number
 }

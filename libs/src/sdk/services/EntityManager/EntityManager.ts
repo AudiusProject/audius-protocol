@@ -9,24 +9,19 @@ import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { AuthService } from '../Auth'
 import type { Contract } from 'web3-eth-contract'
-import { defaultEntityManagerConfig, DEFAULT_GAS_LIMIT } from './constants'
-import type {
-  Action,
+import {
+  CONFIRMATION_TIMEOUT,
+  defaultEntityManagerConfig,
+  DEFAULT_GAS_LIMIT,
+  POLLING_FREQUENCY_MILLIS
+} from './constants'
+import {
+  BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
-  EntityType
+  ManageEntityOptions
 } from './types'
-
-enum BlockConfirmation {
-  CONFIRMED = 'CONFIRMED',
-  DENIED = 'DENIED',
-  UNKNOWN = 'UNKNOWN'
-}
-
-const POLLING_FREQUENCY_MILLIS = 2000
-const CONFIRMATION_TIMEOUT = 30000
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -51,12 +46,7 @@ export class EntityManager implements EntityManagerService {
   }
 
   /**
-   * Calls the manage entity method on chain
-   * @param {number} userId The numeric user id
-   * @param {EntityType} entityType The type of entity being modified
-   * @param {number} entityId The id of the entity
-   * @param {Action} action Action being performed on the entity
-   * @param {string} metadata CID multihash or metadata associated with action
+   * Calls the manage entity method on chain to update some data
    */
   async manageEntity({
     userId,
@@ -64,15 +54,10 @@ export class EntityManager implements EntityManagerService {
     entityId,
     action,
     metadata,
-    auth
-  }: {
-    userId: number
-    entityType: EntityType
-    entityId: number
-    action: Action
-    metadata: string
-    auth: AuthService
-  }): Promise<{ txReceipt: TransactionReceipt }> {
+    auth,
+    confirmationTimeout = CONFIRMATION_TIMEOUT,
+    skipConfirmation = false
+  }: ManageEntityOptions): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const signatureData = signatureSchemas.generators.getManageEntityData(
@@ -116,7 +101,9 @@ export class EntityManager implements EntityManagerService {
 
     const jsonResponse = await response.json()
 
-    await this.confirmWrite(jsonResponse.receipt)
+    if (!skipConfirmation) {
+      await this.confirmWrite(jsonResponse.receipt, confirmationTimeout)
+    }
 
     return {
       txReceipt: jsonResponse.receipt
@@ -127,13 +114,16 @@ export class EntityManager implements EntityManagerService {
    * Confirms a write by polling for the block to be indexed by the selected
    * discovery node
    */
-  async confirmWrite({
-    blockHash,
-    blockNumber
-  }: {
-    blockHash: string
-    blockNumber: number
-  }) {
+  async confirmWrite(
+    {
+      blockHash,
+      blockNumber
+    }: {
+      blockHash: string
+      blockNumber: number
+    },
+    confirmationTimeout: number = CONFIRMATION_TIMEOUT
+  ) {
     const confirmBlock = async () => {
       const endpoint =
         await this.config.discoveryNodeSelector.getSelectedEndpoint()
@@ -152,11 +142,11 @@ export class EntityManager implements EntityManagerService {
 
     let confirmation: BlockConfirmation = await confirmBlock()
 
-    const confirmationTimeout = setTimeout(() => {
+    const timeout = setTimeout(() => {
       throw new Error(
         `Could not confirm write within ${CONFIRMATION_TIMEOUT}ms`
       )
-    }, CONFIRMATION_TIMEOUT)
+    }, confirmationTimeout)
 
     while (confirmation === BlockConfirmation.UNKNOWN) {
       await new Promise((resolve) =>
@@ -165,7 +155,7 @@ export class EntityManager implements EntityManagerService {
       confirmation = await confirmBlock()
     }
 
-    clearTimeout(confirmationTimeout)
+    clearTimeout(timeout)
 
     if (confirmation === BlockConfirmation.CONFIRMED) {
       return
