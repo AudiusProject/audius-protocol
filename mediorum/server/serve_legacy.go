@@ -2,15 +2,12 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/sourcegraph/conc/stream"
 )
 
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
@@ -107,50 +104,11 @@ func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool
 	                 FROM "track_delist_statuses"
 	                 WHERE "trackCid" = $1
 	                 ORDER BY "createdAt" DESC
-	                 LIMIT 1), 
+	                 LIMIT 1),
 	            false)`
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
 	if err != nil {
 		log.Println("isCidBlacklisted err", err)
 	}
 	return blacklisted
-}
-
-// this is a POC bulk endpoint for streaming all the type = 'metadata'
-// json blobs
-func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
-	ctx := c.Request().Context()
-	sql := `select multihash, "storagePath" from "Files" where type = 'metadata' order by multihash limit 1000000`
-
-	rows, err := ss.pgPool.Query(ctx, sql)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	pool := stream.New().WithMaxGoroutines(4)
-	w := c.Response().Writer
-
-	for rows.Next() {
-		var cid string
-		var storagePath string
-		err := rows.Scan(&cid, &storagePath)
-		if err != nil {
-			return err
-		}
-
-		pool.Go(func() stream.Callback {
-			data, err := os.ReadFile(storagePath)
-			return func() {
-				if err != nil {
-					log.Println("err reading cid file", storagePath, cid, err)
-				} else {
-					fmt.Fprintf(w, "%s\t%s\n", cid, data)
-				}
-			}
-		})
-	}
-
-	pool.Wait()
-	return nil
 }

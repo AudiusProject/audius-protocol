@@ -1,10 +1,6 @@
 package server
 
 import (
-	"bytes"
-	"crypto/rand"
-	"crypto/sha1"
-	"encoding/base32"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -15,6 +11,7 @@ import (
 	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
 	"github.com/multiformats/go-multihash"
+	"github.com/oklog/ulid/v2"
 )
 
 var (
@@ -62,6 +59,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			defer wg.Done()
 
 			upload := &Upload{
+				ID:               ulid.Make().String(),
 				Status:           JobStatusNew,
 				Template:         template,
 				CreatedBy:        ss.Config.Self.Host,
@@ -71,18 +69,12 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			randomID, err := randomHash()
-			if err != nil {
-				upload.Error = err.Error()
-				return
-			}
 			formFileCID, err := computeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			upload.ID = randomID
 			upload.OrigFileCID = formFileCID
 			upload.FFProbe, _ = ffprobeUpload(formFile)
 
@@ -99,7 +91,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				return
 			}
 
-			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "formFileCID", formFileCID, "mirrors", upload.Mirrors)
+			ss.logger.Info("mirrored", "name", formFile.Filename, "uploadID", upload.ID, "cid", formFileCID, "mirrors", upload.Mirrors)
 
 			if template == JobTemplateImgSquare || template == JobTemplateImgBackdrop {
 				upload.TranscodeResults["original.jpg"] = formFileCID
@@ -174,11 +166,13 @@ func computeFileCID(f io.ReadSeeker) (string, error) {
 	return cid.String(), nil
 }
 
-func randomHash() (string, error) {
-	buf := make([]byte, 128)
-	rand.Read(buf)
-	hash := sha1.New()
-	io.Copy(hash, bytes.NewReader(buf))
-	fileHash := base32.StdEncoding.EncodeToString(hash.Sum(nil))
-	return fileHash, nil
+func validateCID(expectedCID string, f io.ReadSeeker) error {
+	computed, err := computeFileCID(f)
+	if err != nil {
+		return err
+	}
+	if computed != expectedCID {
+		return fmt.Errorf("expected cid: %s but contents hashed to %s", expectedCID, computed)
+	}
+	return nil
 }

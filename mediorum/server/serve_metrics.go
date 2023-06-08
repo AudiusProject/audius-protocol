@@ -5,9 +5,9 @@ import (
 )
 
 type Metrics struct {
-	Host         string
-	Uploads      int64
-	ProblemBlobs int64
+	Host         string `json:"host"`
+	Uploads      int64  `json:"uploads"`
+	ProblemBlobs int64  `json:"problem_blobs"`
 }
 
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
