@@ -67,7 +67,7 @@ begin
   end if;
 
   -- create a milestone if applicable
-  select new_val into milestone where new_val in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
+  select new_val into milestone where new_val in (10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000);
   if new.is_delete = false and milestone is not null then
     insert into milestones 
       (id, name, threshold, blocknumber, slot, timestamp)
