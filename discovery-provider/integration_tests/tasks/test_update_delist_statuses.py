@@ -11,7 +11,7 @@ from src.models.delisting.track_delist_status import (
 from src.models.delisting.user_delist_status import DelistUserReason, UserDelistStatus
 from src.models.tracks.track import Track
 from src.models.users.user import User
-from src.tasks.update_delist_statuses import process_delist_statuses
+from src.tasks.update_delist_statuses import DELIST_BATCH_SIZE, process_delist_statuses
 from src.utils.db_session import get_db
 
 
@@ -229,3 +229,78 @@ def test_update_track_delist_statuses(mock_requests, app):
         assert not all_tracks[0].is_available
         assert not all_tracks[1].is_delete
         assert all_tracks[1].is_available
+
+
+def test_format_poll_more_endpoint(app, mocker):
+    with app.app_context():
+        db = get_db()
+
+    def assert_signed_get(*args, **kwargs):
+        poll_more_endpoint = args[0]
+        endpoint, query_params = poll_more_endpoint.split("?")
+        entity = endpoint.split("/")[-1]
+        assert entity == "users" or entity == "tracks"
+
+        query_params = query_params.split("&")
+        assert len(query_params) == 2
+        for query_param in query_params:
+            key, val = query_param.split("=")
+            if key == "batchSize":
+                assert val == str(DELIST_BATCH_SIZE)
+            if key == "cursor":
+                if entity == "users":
+                    assert val == "2023-05-17T18%3A00%3A00.999999Z"
+                else:
+                    assert val == "2023-06-06T12%3A00%3A00.000000Z"
+
+        mock_return = {
+            "result": {
+                "users": [],
+                "tracks": [],
+            }
+        }
+        return _mock_response(mock_return)
+
+    with db.scoped_session() as session:
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        trusted_notifier_manager = {
+            "endpoint": trusted_notifier_endpoint,
+            "wallet": "0x0",
+        }
+        session.execute("TRUNCATE delist_status_cursor")
+        session.execute(
+            """
+            INSERT INTO delist_status_cursor
+            (created_at, host, entity)
+            VALUES (:cursor1, :endpoint1, :entity1),
+            (:cursor2, :endpoint2, :entity2)
+            """,
+            {
+                "cursor1": "2023-05-17 18:00:00.999999+00",
+                "endpoint1": trusted_notifier_endpoint,
+                "entity1": DelistEntity.USERS,
+                "cursor2": "2023-06-06 12:00:00.000000+00",
+                "endpoint2": trusted_notifier_endpoint,
+                "entity2": DelistEntity.TRACKS,
+            }
+        )
+        mocker.patch(
+            "src.tasks.update_delist_statuses.signed_get",
+            side_effect=assert_signed_get,
+            autospec=True
+        )
+        process_delist_statuses(session, trusted_notifier_manager)
+
+        # check cursor unchanged
+        delist_cursors: List[DelistStatusCursor] = (
+            session.query(DelistStatusCursor)
+            .order_by(asc(DelistStatusCursor.created_at))
+            .all()
+        )
+        assert len(delist_cursors) == 2
+        assert delist_cursors[0].host == trusted_notifier_manager["endpoint"]
+        assert delist_cursors[0].entity == DelistEntity.USERS
+        assert str(delist_cursors[0].created_at) == "2023-05-17 18:00:00.999999+00:00"
+        assert delist_cursors[1].host == trusted_notifier_manager["endpoint"]
+        assert delist_cursors[1].entity == DelistEntity.TRACKS
+        assert str(delist_cursors[1].created_at) == "2023-06-06 12:00:00+00:00"
