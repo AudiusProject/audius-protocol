@@ -36,11 +36,11 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
   slackApp.command("/echo", async (args) => await echo(app, args));
   slackApp.command(
     "/disburse",
-    async (args) => await disburse(app, args, client)
+    async (args) => await disburse(app, args, false)
   );
   slackApp.command(
     "/disbursetest",
-    async (args) => await disburse(app, args, client)
+    async (args) => await disburse(app, args, true)
   );
 
   return new Ok(slackApp);
@@ -58,11 +58,11 @@ const echo = async (
 const disburse = async (
   app: App<SharedData>,
   args: SlackCommandMiddlewareArgs,
-  client: WebClient
+  dryRun: boolean
 ): Promise<void> => {
   const { command, ack, respond } = args;
   await ack();
-  await onDisburse(app, true);
+  await onDisburse(app, dryRun);
 };
 
 export const formatDisbursementTable = (

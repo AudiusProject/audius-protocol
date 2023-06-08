@@ -38,6 +38,12 @@ export const onDisburse = async (
   if (startingBlockRes.err) return startingBlockRes;
   const [startingBlock, specifier] = startingBlockRes.unwrap();
 
+  const nodeGroupsRes = await assembleNodeGroups(libs);
+  if (nodeGroupsRes.err) return nodeGroupsRes;
+  const nodeGroups = nodeGroupsRes.unwrap();
+
+  await getAllChallenges(app, nodeGroups, startingBlock, dryRun);
+
   const formattedResults = formatDisbursementTable(
     await getChallengesDisbursementsUserbanksFriendly(db, specifier)
   );
@@ -49,12 +55,6 @@ export const onDisburse = async (
     channel,
     text: "```" + formattedResults + "```",
   });
-
-  const nodeGroupsRes = await assembleNodeGroups(libs);
-  if (nodeGroupsRes.err) return nodeGroupsRes;
-  const nodeGroups = nodeGroupsRes.unwrap();
-
-  await getAllChallenges(app, nodeGroups, startingBlock, dryRun);
 
   return new Ok(undefined);
 };

@@ -33,7 +33,7 @@ export default class App<AppData> {
       client: "pg",
       connection: {
         connectionString:
-          "postgresql://postgres:postgres@localhost:5432/audius_discovery",
+          process.env.discoveryDb || "postgresql://postgres:postgres@localhost:5432/audius_discovery",
       },
     });
     this.listeners = new Map();
