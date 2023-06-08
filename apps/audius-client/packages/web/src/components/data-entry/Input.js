@@ -19,11 +19,11 @@ class Input extends Component {
     if (this.props.onFocus) this.props.onFocus(true)
   }
 
-  onBlur = () => {
+  onBlur = (e) => {
     this.setState({
       focused: false
     })
-    if (this.props.onBlur) this.props.onBlur()
+    if (this.props.onBlur) this.props.onBlur(e.target.value)
   }
 
   onChange = (e) => {
