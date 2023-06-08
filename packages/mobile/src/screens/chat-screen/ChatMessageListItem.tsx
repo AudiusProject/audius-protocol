@@ -257,6 +257,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
             delayLongPress={REACTION_LONGPRESS_DELAY}
             onPressIn={isPopup ? handleClosePopup : handlePressIn}
             onPressOut={isPopup ? handleClosePopup : handlePressOut}
+            style={{ opacity: isUnderneathPopup ? 0 : 1 }}
           >
             <View style={styles.shadow}>
               <View style={styles.shadow2}>

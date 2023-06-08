@@ -1,5 +1,5 @@
 import type { MutableRefObject, RefObject } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import type { ChatMessageWithExtras } from '@audius/common'
 import {
@@ -208,7 +208,6 @@ export const ChatScreen = () => {
   const { chatId } = params
   const url = `/chat/${encodeUrlName(chatId ?? '')}`
 
-  const [shouldShowPopup, setShouldShowPopup] = useState(false)
   const hasScrolledToUnreadTag = useRef(false)
   const flatListRef = useRef<FlatList<ChatMessageWithExtras>>(null)
   const itemsRef = useRef<Record<string, View | null>>({})
@@ -421,9 +420,8 @@ export const ChatScreen = () => {
   }
 
   const onCloseReactionPopup = useCallback(() => {
-    setShouldShowPopup(false)
     dispatch(setReactionsPopupMessageId({ messageId: null }))
-  }, [setShouldShowPopup, dispatch])
+  }, [dispatch])
 
   const handleMessagePress = useCallback(
     async (id: string) => {
@@ -445,7 +443,6 @@ export const ChatScreen = () => {
       messageTop.current = messageY - spacing(2)
       messageHeight.current = messageH
       dispatch(setReactionsPopupMessageId({ messageId: id }))
-      setShouldShowPopup(true)
       light()
     },
     [dispatch]
@@ -549,7 +546,7 @@ export const ChatScreen = () => {
         <HeaderShadow />
         {/* Everything inside the portal displays on top of all other screen contents. */}
         <Portal hostName='ChatReactionsPortal'>
-          {canSendMessage && shouldShowPopup && popupMessage ? (
+          {canSendMessage && popupMessage ? (
             <ReactionPopup
               chatId={chatId}
               messageTop={messageTop.current}
@@ -558,7 +555,6 @@ export const ChatScreen = () => {
               containerBottom={chatContainerBottom.current}
               isAuthor={decodeHashId(popupMessage?.sender_user_id) === userId}
               message={popupMessage}
-              shouldShowPopup={shouldShowPopup}
               onClose={onCloseReactionPopup}
             />
           ) : null}
@@ -616,7 +612,7 @@ export const ChatScreen = () => {
                       <ChatMessageSeparator content={messages.endReached} />
                     ) : null
                   }
-                  scrollEnabled={!shouldShowPopup}
+                  scrollEnabled={popupMessageId == null}
                 />
               </View>
             )}
