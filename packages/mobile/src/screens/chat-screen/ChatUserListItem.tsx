@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(18)
   },
   border: {
-    borderBottomColor: palette.neutralLight4,
+    borderBottomColor: palette.neutralLight8,
     borderBottomWidth: 1
   },
   userContainer: {

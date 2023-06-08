@@ -45,7 +45,6 @@ button.sendButton:not(:disabled):active {
   transform: scale(0.95);
 }
 
-button.sendButton:disabled,
-button.sendButton:disabled .icon path {
+button.sendButton:disabled {
   opacity: 0.5;
 }
