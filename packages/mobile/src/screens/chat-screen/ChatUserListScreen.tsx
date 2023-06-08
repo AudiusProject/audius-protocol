@@ -1,15 +1,21 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import type { User, ID } from '@audius/common'
+import type { User } from '@audius/common'
 import {
-  searchUsersModalSelectors,
-  searchUsersModalActions,
-  useProxySelector,
-  chatActions,
+  FOLLOWERS_USER_LIST_TAG,
+  Status,
+  accountSelectors,
   cacheUsersSelectors,
-  Status
+  chatActions,
+  followersUserListActions,
+  followersUserListSelectors,
+  searchUsersModalActions,
+  searchUsersModalSelectors,
+  statusIsNotFinalized,
+  useProxySelector,
+  userListActions
 } from '@audius/common'
-import { View, Image, Keyboard } from 'react-native'
+import { Image, Keyboard, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -17,10 +23,10 @@ import IconCompose from 'app/assets/images/iconCompose.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
 import {
-  Screen,
-  Text,
   FlatList,
+  Screen,
   ScreenContent,
+  Text,
   TextInput
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -28,12 +34,13 @@ import { makeStyles } from 'app/styles'
 
 import { ChatUserListItem } from './ChatUserListItem'
 
+const { getAccountUser } = accountSelectors
 const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 
-const DEBOUNCE_MS = 100
+const DEBOUNCE_MS = 150
 
 const messages = {
   title: 'New Message',
@@ -134,40 +141,71 @@ const ListEmpty = () => {
   )
 }
 
-type ChatUserListScreenProps = {
-  debounceMs?: number
-  defaultUserList?: {
-    userIds: ID[]
-    loadMore: () => void
-    loading: boolean
+const useDefaultUserList = () => {
+  const dispatch = useDispatch()
+  const currentUser = useSelector(getAccountUser)
+  const { hasMore, loading, userIds } = useSelector(
+    followersUserListSelectors.getUserList
+  )
+  const loadMore = useCallback(() => {
+    if (currentUser) {
+      dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+      dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
+    }
+  }, [dispatch, currentUser])
+
+  useEffect(() => {
+    loadMore()
+  }, [loadMore])
+
+  return {
+    hasMore,
+    loadMore,
+    // Emulating Status behavior for consistency below. UserList has a legacy
+    // pattern with errorSagas and doesn't use Status directly
+    status: loading ? Status.LOADING : Status.SUCCESS,
+    userIds
   }
 }
 
-export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
-  const {
-    debounceMs = DEBOUNCE_MS,
-    defaultUserList = {
-      userIds: [],
-      loading: false,
-      loadMore: () => {}
-    }
-  } = props
+const useQueryUserList = (query: string) => {
+  const dispatch = useDispatch()
+  const { userIds, status, hasMore } = useSelector(getUserList)
+
+  const loadMore = useCallback(() => {
+    dispatch(searchUsers({ query }))
+  }, [query, dispatch])
+
+  useEffect(() => {
+    loadMore()
+  }, [loadMore])
+
+  return { hasMore, loadMore, status, userIds }
+}
+
+export const ChatUserListScreen = () => {
   const styles = useStyles()
   const [query, setQuery] = useState('')
-  const [hasQuery, setHasQuery] = useState(false)
+  const [inputValue, setInputValue] = useState('')
   const dispatch = useDispatch()
 
-  const { userIds, hasMore, status } = useSelector(getUserList)
+  const defaultUserList = useDefaultUserList()
+  const queryUserList = useQueryUserList(query)
+
+  const hasQuery = query.length > 0
+
+  const { hasMore, loadMore, status, userIds } = hasQuery
+    ? queryUserList
+    : defaultUserList
+
   const users = useProxySelector(
     (state) => {
-      const ids = hasQuery ? userIds : defaultUserList.userIds
+      const ids = userIds
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
     },
-    [hasQuery, userIds]
+    [userIds]
   )
-  const isLoading =
-    hasQuery && status === Status.LOADING && userIds.length === 0
 
   useEffect(() => {
     dispatch(fetchBlockees())
@@ -182,34 +220,24 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
 
   useDebounce(
     () => {
-      dispatch(searchUsers({ query }))
-      setHasQuery(!!query)
+      setQuery(inputValue)
     },
-    debounceMs,
-    [query, setHasQuery, dispatch]
-  )
-
-  const handleChange = useCallback(
-    (text: string) => {
-      setQuery(text)
-    },
-    [setQuery]
+    DEBOUNCE_MS,
+    [inputValue, setQuery, dispatch]
   )
 
   const handleClear = useCallback(() => {
+    setInputValue('')
     setQuery('')
   }, [setQuery])
 
   const handleLoadMore = useCallback(() => {
-    if (status === Status.LOADING || defaultUserList.loading || !hasMore) {
-      return
+    if (status !== Status.LOADING && hasMore) {
+      loadMore()
     }
-    if (hasQuery) {
-      dispatch(searchUsers({ query }))
-    } else {
-      defaultUserList.loadMore()
-    }
-  }, [status, defaultUserList, hasMore, hasQuery, dispatch, query])
+  }, [status, loadMore, hasMore])
+
+  const isLoading = statusIsNotFinalized(status) && userIds.length === 0
 
   return (
     <Screen
@@ -231,15 +259,19 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
                 input: styles.searchInputText
               }}
               iconProp={styles.icon}
-              onChangeText={handleChange}
-              value={query}
+              onChangeText={setInputValue}
+              value={inputValue}
               inputAccessoryViewID='none'
               clearable={true}
               onClear={handleClear}
             />
           </View>
 
-          {!isLoading ? (
+          {isLoading ? (
+            <View style={styles.spinnerContainer}>
+              <LoadingSpinner style={styles.loadingSpinner} />
+            </View>
+          ) : (
             <FlatList
               onEndReached={handleLoadMore}
               data={users}
@@ -249,10 +281,6 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
               ListEmptyComponent={<ListEmpty />}
               keyboardShouldPersistTaps='always'
             />
-          ) : (
-            <View style={styles.spinnerContainer}>
-              <LoadingSpinner style={styles.loadingSpinner} />
-            </View>
           )}
         </View>
       </ScreenContent>
