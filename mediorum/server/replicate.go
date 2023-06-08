@@ -44,33 +44,28 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) error {
 	ctx := context.Background()
 
-	// already in bucket?
-	_, err := ss.bucket.Attributes(ctx, fileName)
-	if err == nil {
-		return nil
-	}
+	// already have?
+	alreadyHave, _ := ss.bucket.Exists(ctx, fileName)
+	if !alreadyHave {
+		w, err := ss.bucket.NewWriter(ctx, fileName, nil)
+		if err != nil {
+			return err
+		}
 
-	w, err := ss.bucket.NewWriter(ctx, fileName, nil)
-	if err != nil {
-		return err
-	}
+		_, err = io.Copy(w, file)
+		if err != nil {
+			return err
+		}
 
-	_, err = io.Copy(w, file)
-	if err != nil {
-		return err
+		w.Close()
 	}
 
 	// record that we "have" this key
-	err = ss.crud.Create(&Blob{
+	return ss.crud.Create(&Blob{
 		Host:      ss.Config.Self.Host,
 		Key:       fileName,
 		CreatedAt: time.Now().UTC(),
 	})
-	if err != nil {
-		ss.logger.Warn(err.Error())
-	}
-
-	return w.Close()
 }
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {

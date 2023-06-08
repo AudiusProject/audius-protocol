@@ -43,6 +43,18 @@ func (ss *MediorumServer) healthReport() ServerHealth {
 	}
 }
 
+func (ss *MediorumServer) allPeers() ([]ServerHealth, error) {
+	healths := []ServerHealth{}
+	err := ss.crud.DB.
+		Order("host").
+		Find(&healths).
+		Error
+	if err != nil {
+		ss.logger.Warn(err.Error())
+	}
+	return healths, err
+}
+
 func (ss *MediorumServer) findHealthyPeers(aliveInLast string) ([]ServerHealth, error) {
 	// was unable to get this to work with ? or $1
 	// so use string interpolation.
