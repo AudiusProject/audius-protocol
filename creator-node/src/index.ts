@@ -34,8 +34,7 @@ import { logger } from './logging'
 import { sequelize } from './models'
 import {
   emptyTmpTrackUploadArtifacts,
-  sweepSubdirectoriesInFiles,
-  migrateFilesWithNonStandardStoragePaths
+  sweepSubdirectoriesInFiles
 } from './diskManager'
 
 const EthereumWallet = require('ethereumjs-wallet')
@@ -135,18 +134,6 @@ const runAsyncBackgroundTasks = async () => {
   if (config.get('backgroundDiskCleanupCheckEnabled')) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     sweepSubdirectoriesInFiles()
-  }
-
-  if (
-    config.get('migrateFilesWithLegacyStoragePath') ||
-    config.get('migrateFilesWithCustomStoragePath')
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    migrateFilesWithNonStandardStoragePaths(
-      500,
-      serviceRegistry.prometheusRegistry,
-      logger
-    )
   }
 }
 

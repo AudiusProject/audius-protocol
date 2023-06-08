@@ -62,11 +62,11 @@ jobs:
         - open-vpn
         - build-freeze
       hosts: >-
-        # stage-discovery-4
-        # stage-discovery-1
-        # stage-discovery-2
-        # stage-discovery-3
-        # stage-discovery-5
+        stage-discovery-4
+        stage-discovery-1
+        stage-discovery-2
+        stage-discovery-3
+        stage-discovery-5
       service: discovery-provider
       freeze: $FREEZE_BUILD
 

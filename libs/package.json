@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.32",
+  "version": "2.0.3-beta.37",
   "audius": {
-    "releaseSHA": "a305d0897da1c600f7eb7b166600c600c7be12be"
+    "releaseSHA": "2261e762bc1b5026e172869024e846ae4dde714b"
   },
   "description": "Audius SDK",
   "main": "dist/index.cjs.js",
@@ -110,7 +110,6 @@
   "devDependencies": {
     "@babel/plugin-transform-runtime": "7.18.2",
     "@babel/preset-env": "7.16.11",
-    "@jest/globals": "29.4.1",
     "@openapitools/openapi-generator-cli": "2.4.26",
     "@openzeppelin/test-helpers": "0.5.6",
     "@rollup/plugin-alias": "3.1.9",
@@ -127,6 +126,7 @@
     "@types/expect": "24.3.0",
     "@types/form-data": "2.5.0",
     "@types/hashids": "2.0.1",
+    "@types/jest": "29.5.2",
     "@types/lodash": "4.14.149",
     "@types/mocha": "9.1.0",
     "@types/node-localstorage": "1.3.0",
@@ -164,7 +164,8 @@
     "ts-node": "10.7.0",
     "type-fest": "2.17.0",
     "typed-emitter": "2.1.0",
-    "typescript": "4.6.2"
+    "typescript": "4.6.2",
+    "wait-for-expect": "3.0.2"
   },
   "repository": {
     "type": "git",

@@ -49,6 +49,7 @@ type MediorumConfig struct {
 	ListenPort        string
 	UpstreamCN        string
 	TrustedNotifierID int
+	MyIndex           int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -88,6 +89,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		log.Fatal("invalid host: ", err)
 	} else if config.ListenPort == "" {
 		config.ListenPort = hostUrl.Port()
+	}
+
+	// find MyIndex in peers list to enable round-robin turn taking (i.e. in repair.go)
+	// in staging + prod the graph query will order by SP ID,
+	// so every SP should get a consistent MyIndex across restarts
+	for idx, peer := range config.Peers {
+		if peer.Host == config.Self.Host {
+			config.MyIndex = idx
+			break
+		}
 	}
 
 	if config.Dir == "" {
@@ -214,12 +225,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
 
-	// status + debug:
+	// unified health check?
 	routes.GET("/status", ss.getStatus)
-	routes.GET("/debug/blobs", ss.dumpBlobs)
-	routes.GET("/debug/uploads", ss.dumpUploads)
-	routes.GET("/debug/ls", ss.getLs)
-	routes.GET("/debug/peers", ss.debugPeers)
+	routes.GET("/health_check", ss.serveUnifiedHealthCheck)
 
 	// -------------------
 	// internal
@@ -227,14 +235,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
+	// internal health: used by loadtest tool
+	internalApi.GET("/health", ss.getMyHealth)
+	internalApi.GET("/health/peers", ss.getPeerHealth)
+
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
-
-	// should health be internal or public?
-	internalApi.GET("/health", ss.getMyHealth)
-	internalApi.GET("/health/peers", ss.getPeerHealth)
-	internalApi.GET("/debug/cid", ss.debugCid) // move here until mediorum first for all
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
@@ -272,7 +279,7 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	ss.startBeamClients()
+	go ss.startCidBeamClient()
 
 	go ss.startPollingDelistStatuses()
 

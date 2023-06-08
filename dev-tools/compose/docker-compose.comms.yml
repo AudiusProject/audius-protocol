@@ -16,7 +16,6 @@ x-discovery: &discovery
       GOARCH: arm64
   restart: unless-stopped
   stop_signal: SIGKILL
-  command: discovery
   volumes:
     - ${PROJECT_ROOT}/comms/discovery:/app/discovery
     - ${PROJECT_ROOT}/comms/shared:/app/shared

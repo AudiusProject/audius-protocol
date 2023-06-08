@@ -1,6 +1,5 @@
 import json
 import logging
-import random
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -65,15 +64,16 @@ from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
-from src.tasks.index_network_peers import CONTENT_PEERS_REDIS_KEY
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
     TrendingStrategyFactory,
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
+from src.utils.get_all_other_nodes import get_all_alive_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
+from src.utils.rendezvous import RendezvousHash
 
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
@@ -447,10 +447,25 @@ class TrackStream(Resource):
         is_storage_v2 = not (len(track_cid) == 46 and track_cid.startswith("Qm"))
         if is_storage_v2:
             redis = redis_connection.get_redis()
-            content_nodes = (
-                redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
+            alive_nodes = get_all_alive_content_nodes_cached(redis)
+            if not alive_nodes:
+                logger.error(
+                    f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
+                )
+                abort_not_found(track_id, ns)
+
+            rendezvous = RendezvousHash(
+                *[node["delegateOwnerWallet"] for node in alive_nodes]
             )
-            content_node = random.choice(content_nodes)
+            content_node_wallet = rendezvous.get(track_cid)
+            content_node = next(
+                (
+                    node["endpoint"]
+                    for node in alive_nodes
+                    if node["delegateOwnerWallet"] == content_node_wallet
+                ),
+                alive_nodes[0]["endpoint"],
+            )
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
             content_node = content_nodes[0]

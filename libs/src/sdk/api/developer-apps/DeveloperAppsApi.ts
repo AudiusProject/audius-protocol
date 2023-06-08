@@ -50,7 +50,7 @@ export class DeveloperAppsApi {
     const apiKey = Buffer.from(apiKeyRaw).toString('hex')
     const response = await this.entityManager.manageEntity({
       userId: decodedUserId,
-      entityType: EntityType.DELEGATE,
+      entityType: EntityType.DEVELOPER_APP,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.CREATE,
       metadata: JSON.stringify({
@@ -92,7 +92,7 @@ export class DeveloperAppsApi {
 
     const response = await this.entityManager.manageEntity({
       userId: decodedUserId,
-      entityType: EntityType.DELEGATE,
+      entityType: EntityType.DEVELOPER_APP,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.DELETE,
       metadata: JSON.stringify({

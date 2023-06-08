@@ -9,7 +9,7 @@ export function encodeId(id: number | string) {
 }
 
 export function decodeId(id: string) {
-  return parseInt(id) || hasher.decode(id)
+  return hasher.decode(id)
 }
 
 // // helper functions for content node images

@@ -1,13 +1,11 @@
 import json
 import logging
-from typing import List
 
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
     PlaylistSeen,
 )
-from src.models.users.user import User
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.config import shared_config
 

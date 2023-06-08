@@ -9,7 +9,7 @@ func (ss *MediorumServer) startHealthBroadcaster() {
 	ss.logger.Debug("starting health broadcaster")
 
 	// broadcast health more often on boot (1s)
-	// and more slowly after 10s
+	// and more slowly after (45s)
 	count := 0
 	delay := time.Second
 
@@ -20,9 +20,10 @@ func (ss *MediorumServer) startHealthBroadcaster() {
 			return
 		case <-time.After(delay):
 			ss.crud.Patch(ss.healthReport())
-			count++
-			if count > 10 {
-				delay = time.Second * 60
+			if count < 10 {
+				count++
+			} else if count == 10 {
+				delay = time.Second * 45
 			}
 		}
 	}
@@ -40,6 +41,18 @@ func (ss *MediorumServer) healthReport() ServerHealth {
 		// pending transcode tasks
 		// is deregistering / readonly type of thing
 	}
+}
+
+func (ss *MediorumServer) allPeers() ([]ServerHealth, error) {
+	healths := []ServerHealth{}
+	err := ss.crud.DB.
+		Order("host").
+		Find(&healths).
+		Error
+	if err != nil {
+		ss.logger.Warn(err.Error())
+	}
+	return healths, err
 }
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast string) ([]ServerHealth, error) {

@@ -3,6 +3,7 @@ from flask.helpers import url_for
 from flask_restx import Api
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.cid_data import full_ns as cid_data_full_ns
+from src.api.v1.developer_apps import ns as developer_apps_ns
 from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
 from src.api.v1.notifications import full_ns as notifications_full_ns
@@ -39,8 +40,10 @@ api_v1.add_namespace(playlists_ns)
 api_v1.add_namespace(tracks_ns)
 api_v1.add_namespace(challenges_ns)
 api_v1.add_namespace(tips_ns)
+api_v1.add_namespace(developer_apps_ns)
 api_v1.add_namespace(metrics_ns)
 api_v1.add_namespace(resolve_ns)
+
 
 bp_full = Blueprint("api_v1_full", __name__, url_prefix="/v1/full")
 api_v1_full = ApiWithHTTPS(bp_full, version="1.0")

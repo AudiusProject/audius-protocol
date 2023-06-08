@@ -355,7 +355,6 @@ def notifications():
     # Cache owner info for network entities and pass in w/results
     owner_info = {const.tracks: {}, const.albums: {}, const.playlists: {}}
 
-
     # List of notifications generated from current protocol state
     notifications_unsorted = []
     with db.scoped_session() as session:
@@ -389,7 +388,6 @@ def notifications():
             follow_notifications.append(follow_notif)
 
         notifications_unsorted.extend(follow_notifications)
-
 
         #
         # Query relevant favorite information
@@ -472,7 +470,6 @@ def notifications():
             )
             notifications_unsorted.extend(favorite_remix_notifications)
 
-
         #
         # Query relevant tier change information
         #
@@ -514,7 +511,6 @@ def notifications():
                 tier_change_notifications.append(tier_change_notif)
 
         notifications_unsorted.extend(tier_change_notifications)
-
 
         #
         # Query relevant repost information
@@ -602,7 +598,6 @@ def notifications():
 
         # Query relevant created entity notification - tracks/albums/playlists
         created_notifications = []
-
 
         #
         # Query relevant created tracks for remix information

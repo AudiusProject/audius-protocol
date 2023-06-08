@@ -340,7 +340,7 @@ def test_index_valid_track(app, mocker):
                         "_userId": 2,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateTrack4", "data": {track4_json}}}',
-                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
             },
@@ -371,18 +371,17 @@ def test_index_valid_track(app, mocker):
                 "allow_ai_attribution": True,
             },
         ],
-        "app_delegates": [
+        "developer_apps": [
             {
                 "user_id": 1,
                 "name": "My App",
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
             },
         ],
-        "delegations": [
+        "grants": [
             {
                 "user_id": 2,
-                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
             }
         ],
     }
@@ -561,7 +560,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "CreateTrackInvalidDeletedDelegate": [
+        "CreateTrackInvalidDeletedApp": [
             {
                 "args": AttributeDict(
                     {
@@ -575,7 +574,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "CreateTrackInvalidRevokedDelegation": [
+        "CreateTrackInvalidRevokedGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -589,7 +588,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "CreateTrackInvalidWrongUserDelegation": [
+        "CreateTrackInvalidWrongUserGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -632,7 +631,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "UpdateTrackInvalidDeletedDelegate": [
+        "UpdateTrackInvalidDeletedApp": [
             {
                 "args": AttributeDict(
                     {
@@ -646,7 +645,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "UpdateTrackInvalidRevokedDelegation": [
+        "UpdateTrackInvalidRevokedGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -660,7 +659,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "UpdateTrackInvalidWrongUserDelegation": [
+        "UpdateTrackInvalidWrongUserGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -717,7 +716,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "DeleteTrackInvalidDeletedDelegate": [
+        "DeleteTrackInvalidDeletedApp": [
             {
                 "args": AttributeDict(
                     {
@@ -731,7 +730,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "DeleteTrackInvalidRevokedDelegation": [
+        "DeleteTrackInvalidRevokedGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -745,7 +744,7 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        "DeleteTrackInvalidWrongUserDelegation": [
+        "DeleteTrackInvalidWrongUserGrant": [
             {
                 "args": AttributeDict(
                     {
@@ -783,7 +782,7 @@ def test_index_invalid_tracks(app, mocker):
         "tracks": [
             {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
         ],
-        "app_delegates": [
+        "developer_apps": [
             {
                 "user_id": 2,
                 "name": "My App",
@@ -796,22 +795,19 @@ def test_index_invalid_tracks(app, mocker):
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
         ],
-        "delegations": [
+        "grants": [
             {
                 "user_id": 1,
-                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
             },
             {
                 "user_id": 1,
-                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
-                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
                 "is_revoked": True,
             },
             {
                 "user_id": 2,
-                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
-                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
         ],
     }

@@ -1,7 +1,9 @@
 import asyncio
 import logging
-from typing import List, Optional, Tuple
+import random
+from typing import Dict, List, Optional, Tuple
 
+import requests
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import is_fqdn, load_eth_abi_values
@@ -16,6 +18,7 @@ DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
 CONTENT_NODE_SERVICE_TYPE = bytes("content-node", "utf-8")
 ALL_DISCOVERY_NODES_CACHE_KEY = "all-discovery-nodes"
 ALL_CONTENT_NODES_CACHE_KEY = "all-content-nodes"
+ALL_ALIVE_CONTENT_NODES_CACHE_KEY = "all-alive-content-nodes"
 
 
 # Perform eth web3 call to fetch endpoint info
@@ -44,7 +47,7 @@ async def get_async_node(sp_id, sp_factory_instance, service_type):
     return result
 
 
-def get_all_nodes(service_type: str) -> Tuple[List[str], List[str]]:
+def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
     eth_web3 = web3_provider.get_eth_web3()
 
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -67,7 +70,7 @@ def get_all_nodes(service_type: str) -> Tuple[List[str], List[str]]:
     all_other_nodes = []
     all_other_wallets = []
 
-    # fetch all discovery nodes info in parallel
+    # fetch all nodes' info in parallel
     async def fetch_results():
         result = await asyncio.gather(
             *map(
@@ -105,6 +108,35 @@ def get_all_other_content_nodes() -> Tuple[List[str], List[str]]:
     return get_all_nodes(CONTENT_NODE_SERVICE_TYPE)
 
 
+# Ask a min number of content nodes to return a list of other alive content nodes (content nodes query each other for liveness)
+def filter_alive_content_nodes(all_content_nodes, min_responses=5, sample_num=10):
+    alive_nodes = set()
+    num_responses = 0
+    for content_node in random.sample(
+        all_content_nodes, min(sample_num, len(all_content_nodes))
+    ):
+        try:
+            response = requests.get(f"{content_node['endpoint']}/internal/health/peers")
+            response.raise_for_status()
+            json_response = response.json()
+            if json_response.get("healthy"):
+                for item in json_response["healthy"]:
+                    alive_nodes.add(item["host"])
+                num_responses += 1
+                if num_responses == min_responses:
+                    break
+        except Exception as e:
+            print(
+                f"Failed to get health response from {content_node['endpoint']}: {str(e)}"
+            )
+
+    # There should never be 0 alive nodes, so if there are none, just return all nodes
+    if not alive_nodes:
+        return all_content_nodes
+
+    return [node for node in all_content_nodes if node["endpoint"] in alive_nodes]
+
+
 def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     """
     Attempts to get the number of discovery nodes from redis.
@@ -113,9 +145,17 @@ def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY)
 
 
-def get_all_other_content_nodes_cached(redis) -> List[str]:
+def get_all_other_content_nodes_cached(redis) -> List[Dict[str, str]]:
     """
-    Attempts to get the number of content nodes from redis.
+    Attempts to get the content nodes from redis.
     """
 
     return get_json_cached_key(redis, ALL_CONTENT_NODES_CACHE_KEY)
+
+
+def get_all_alive_content_nodes_cached(redis) -> List[Dict[str, str]]:
+    """
+    Attempts to get the healthy content nodes from redis.
+    """
+
+    return get_json_cached_key(redis, ALL_ALIVE_CONTENT_NODES_CACHE_KEY)

@@ -18,7 +18,6 @@ import (
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
-	"comms.audius.co/discovery/the_graph"
 	"comms.audius.co/shared/signing"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
@@ -131,7 +130,16 @@ func (s *ChatServer) mutate(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 
-	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
+	//
+	rpcLog := &schema.RpcLog{
+		RelayedBy:  s.config.MyHost,
+		RelayedAt:  time.Now(),
+		FromWallet: wallet,
+		Rpc:        payload,
+		Sig:        c.Request().Header.Get(signing.SigHeader),
+	}
+
+	userId, err := rpcz.GetRPCCurrentUserID(rpcLog, &rawRpc)
 	if err != nil {
 		return c.String(400, "wallet not found: "+err.Error())
 	}
@@ -140,15 +148,6 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	err = s.proc.Validate(userId, rawRpc)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
-	}
-
-	//
-	rpcLog := &schema.RpcLog{
-		RelayedBy:  s.config.MyHost,
-		RelayedAt:  time.Now(),
-		FromWallet: wallet,
-		Rpc:        payload,
-		Sig:        c.Request().Header.Get(signing.SigHeader),
 	}
 
 	ok, err := s.proc.ApplyAndPublish(rpcLog)
@@ -737,8 +736,6 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 }
 
 func (ss *ChatServer) postRpcReceive(c echo.Context) error {
-	// set by our custom basic auth middleware
-	peer := c.Get("peer").(the_graph.Peer)
 
 	// bind to RpcRow
 	rpc := new(schema.RpcLog)
@@ -752,7 +749,7 @@ func (ss *ChatServer) postRpcReceive(c echo.Context) error {
 		return err
 	}
 
-	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
+	slog.Info("got relay", "from", rpc.RelayedBy, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
 }

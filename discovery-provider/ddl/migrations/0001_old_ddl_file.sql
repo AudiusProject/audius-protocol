@@ -7,6 +7,11 @@ CREATE OR REPLACE FUNCTION table_has_column(text, text) RETURNS boolean AS $$
   SELECT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND column_name = $2)
 $$ LANGUAGE SQL;
 
+-- helper function to make rename table if not exists easier
+CREATE OR REPLACE FUNCTION table_exists(text) RETURNS boolean AS $$
+  SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = $1)
+$$ LANGUAGE SQL;
+
 -- helper function to make add constraint if not exists easier
 CREATE OR REPLACE FUNCTION table_has_constraint(text, text) RETURNS boolean AS $$
   SELECT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = $1::regclass AND conname = $2)
@@ -251,4 +256,43 @@ BEGIN;
   where handle_lc = 'skreamizm';
 
   delete from users where txhash='0x7bc1e2c100a04061098db053957072b7eb0db75ab8f5c35873b56f6b6b817d9e'; -- tx without handle from another wallet
+COMMIT;
+
+-- 5/31/23 Rename delegations -> grants, app_delegates -> developer_apps. Remove shared_address from delegations.
+BEGIN;
+    DO $$BEGIN
+      IF NOT table_exists('grants') THEN
+        ALTER TABLE delegations RENAME TO grants;
+      END IF;
+    END$$;
+    ALTER TABLE grants DROP CONSTRAINT IF EXISTS delegations_pkey;
+    ALTER TABLE grants DROP COLUMN IF EXISTS shared_address;
+    DO $$ BEGIN
+      IF NOT table_has_column('grants', 'grantee_address') THEN
+        ALTER TABLE grants RENAME COLUMN delegate_address TO grantee_address;
+      END IF;
+    END $$;
+
+    DO $$ BEGIN
+      IF NOT table_has_constraint('grants', 'grants_pkey') THEN
+        ALTER TABLE grants ADD CONSTRAINT grants_pkey primary key (grantee_address, user_id, is_current, txhash);
+      END IF;
+    END $$;
+
+    DO $$BEGIN
+      IF NOT table_exists('developer_apps') THEN
+        ALTER TABLE app_delegates RENAME TO developer_apps;
+      END IF;
+    END$$;
+
+    DO $$ BEGIN
+      IF
+        table_has_constraint('developer_apps', 'app_delegates_primary_key') AND
+        NOT table_has_constraint('developer_apps', 'developer_apps_pkey')
+      THEN
+        ALTER TABLE developer_apps RENAME CONSTRAINT app_delegates_primary_key TO developer_apps_pkey;
+      END IF;
+    END $$;
+
+    alter table developer_apps add column if not exists description varchar(255);
 COMMIT;

@@ -2,37 +2,34 @@ from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from src.models.delegates.delegation import Delegation
+from src.models.grants.grant import Grant
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-new_delegations_data = [
+new_grants_data = [
     {
         "user_id": 1,
-        "shared_address": "0xDEA175F7C4c773DC54FC7C132eA85805936069BF",
-        "delegate_address": "user3wallet",
-        "is_user_delegation": True,
+        "grantee_address": "user3wallet",
+        "is_user_grant": True,
     },
     {
         "user_id": 1,
-        "shared_address": "0x2aa4998ddf6A2C365323021061E0AE0F18F5a1DC",
-        "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-        "is_user_delegation": False,
+        "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+        "is_user_grant": False,
     },
     {
         "user_id": 1,
-        "shared_address": "0xaCa953E9197B79ca297A51315eA7FB467e062757",
-        "delegate_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
-        "is_user_delegation": False,
+        "grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+        "is_user_grant": False,
     },
 ]
 
 
-def test_index_delegation(app, mocker):
-    "Tests delegation create action"
+def test_index_grant(app, mocker):
+    "Tests grant create action"
 
     # setup db and mocked txs
     with app.app_context():
@@ -41,44 +38,44 @@ def test_index_delegation(app, mocker):
         update_task = UpdateTask(None, web3, None)
 
     tx_receipts = {
-        "CreateDelegationTx1": [
+        "CreateGrantTx1": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[0]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}", "delegate_address": "{new_delegations_data[0]["delegate_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[0]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[0]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[0]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "CreateDelegationTx2": [
+        "CreateGrantTx2": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[1]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}", "delegate_address": "{new_delegations_data[1]["delegate_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[1]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[1]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[1]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "CreateDelegationTx3": [
+        "CreateGrantTx3": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[2]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[2]["shared_address"]}", "delegate_address": "{new_delegations_data[2]["delegate_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[2]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[2]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": f"user{new_delegations_data[2]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -104,7 +101,7 @@ def test_index_delegation(app, mocker):
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
             for user_id in range(1, 6)
         ],
-        "app_delegates": [
+        "developer_apps": [
             {
                 "user_id": 5,
                 "name": "My App",
@@ -116,11 +113,10 @@ def test_index_delegation(app, mocker):
                 "address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
             },
         ],
-        "delegations": [
+        "grants": [
             {
-                "user_id": 1,
-                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-                "delegate_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+                "user_id": 6,
+                "grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
             }
         ],
     }
@@ -140,86 +136,82 @@ def test_index_delegation(app, mocker):
         )
 
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
-        assert len(all_delegations) == 4
+        all_grants: List[Grant] = session.query(Grant).all()
+        assert len(all_grants) == 4
 
-        for expected_delegation in new_delegations_data:
+        for expected_grant in new_grants_data:
             found_matches = [
                 item
-                for item in all_delegations
-                if item.shared_address == expected_delegation["shared_address"].lower()
+                for item in all_grants
+                if item.grantee_address == expected_grant["grantee_address"].lower()
+                and item.user_id == expected_grant["user_id"]
             ]
             assert len(found_matches) == 1
             res = found_matches[0]
-            assert res.user_id == expected_delegation["user_id"]
-            assert res.shared_address == expected_delegation["shared_address"].lower()
             assert res.is_current == True
-            assert (
-                res.delegate_address == expected_delegation["delegate_address"].lower()
-            )
-            if expected_delegation["is_user_delegation"]:
+            if expected_grant["is_user_grant"]:
                 assert res.is_approved == False
             else:
                 assert res.is_approved == True
             assert res.blocknumber == 0
 
-    # Test invalid create delegation txs
+    # Test invalid create grant txs
     tx_receipts = {
-        "CreateDelegationInvalidTx1": [
+        "CreateGrantInvalidTx1": [
             {
                 # Incorrect signer
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 1,
-                        "_metadata": '{"shared_address": "0x7899C15374cD5E332656BDDc6801c16af76a584B", "delegate_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d"}',
+                        "_metadata": '{"grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d"}',
                         "_action": Action.CREATE,
                         "_signer": "user2wallet",
                     }
                 )
             },
         ],
-        "CreateDelegationInvalidTx2": [
+        "CreateGrantInvalidTx2": [
             {
                 # Duplicate address
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 1,
-                        "_metadata": '{"shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c", "delegate_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d"}',
+                        "_metadata": '{"grantee_address": "0x04c9fc3784120f50932436f84c59aebebb12e0d"}',
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "CreateDelegationInvalidTx3": [
+        "CreateGrantInvalidTx3": [
             {
-                # Delegate doesn't exist
+                # App doesn't exist
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"shared_address": "0xaB6Ac417265Ee2B8A1f1f460987CeF5Be71584b9", "delegate_address": "0xB131910795586228F0D11c1560771aea9DB382C8"}',
+                        "_metadata": '{"grantee_address": "0xB131910795586228F0D11c1560771aea9DB382C8"}',
                         "_signer": "user2wallet",
                     }
                 )
             },
         ],
-        "CreateDelegationInvalidTx4": [
+        "CreateGrantInvalidTx4": [
             {
                 # Missing metadata
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"shared_address": "0x1843CaAa96a173e8e31FD43503f44c33e4471385"}',
+                        "_metadata": '{"address": "0x1843CaAa96a173e8e31FD43503f44c33e4471385"}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -246,50 +238,50 @@ def test_index_delegation(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
+        all_grants: List[Grant] = session.query(Grant).all()
         # make sure no new rows were added
-        assert len(all_delegations) == 4
+        assert len(all_grants) == 4
 
     tx_receipts = {
-        "InvalidDeleteDelegationTx1": [
+        "InvalidDeleteGrantTx1": [
             {
-                # Delegation doesn't exist
+                # Grant doesn't exist
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 1,
-                        "_metadata": '{"shared_address": "0xaB6Ac417265Ee2B8A1f1f4cccc7CeF5Be71584b9"}',
+                        "_metadata": '{"grantee_address": "0xaB6Ac417265Ee2B8A1f1f4cccc7CeF5Be71584b9"}',
                         "_action": Action.DELETE,
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "InvalidDeleteDelegationTx2": [
+        "InvalidDeleteGrantTx2": [
             {
                 "args": AttributeDict(
                     {
-                        # User id doesn't match delegation
+                        # User id doesn't match grant
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
+                        "_entityType": EntityType.GRANT,
                         "_userId": 3,
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[0]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
                         "_signer": "user3wallet",
                     }
                 )
             },
         ],
-        "InvalidDeleteDelegationTx3": [
+        "InvalidDeleteGrantTx3": [
             {
                 "args": AttributeDict(
                     {
                         # Signer is incorrect
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[0]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[0]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[0]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
                         "_signer": "badsigner",
                     }
@@ -317,50 +309,50 @@ def test_index_delegation(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
+        all_grants: List[Grant] = session.query(Grant).all()
         # make sure no new rows were added
-        assert len(all_delegations) == 4
+        assert len(all_grants) == 4
 
     # Valid deletes
     tx_receipts = {
-        "DeleteDelegationTx1": [
+        "DeleteGrantTx1": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[0]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[0]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[0]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
-                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[0]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "DeleteDelegationTx2": [
+        "DeleteGrantTx2": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[1]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[1]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[1]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
-                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[1]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "DeleteDelegationTx3": [
+        "DeleteGrantTx3": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[2]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[2]["shared_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[2]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[2]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
-                        "_signer": f"user{new_delegations_data[2]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -386,25 +378,23 @@ def test_index_delegation(app, mocker):
         )
 
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
-        assert len(all_delegations) == 7
+        all_grants: List[Grant] = session.query(Grant).all()
+        assert len(all_grants) == 7
 
-        for expected_delegation in new_delegations_data:
+        for expected_grant in new_grants_data:
             found_matches = [
                 item
-                for item in all_delegations
-                if item.shared_address == expected_delegation["shared_address"].lower()
+                for item in all_grants
+                if item.grantee_address == expected_grant["grantee_address"].lower()
                 and item.is_current == True
+                and item.user_id == expected_grant["user_id"]
             ]
             assert len(found_matches) == 1
             res = found_matches[0]
-            assert res.user_id == expected_delegation["user_id"]
-            assert res.shared_address == expected_delegation["shared_address"].lower()
+            assert res.user_id == expected_grant["user_id"]
             assert res.is_current == True
-            assert (
-                res.delegate_address == expected_delegation["delegate_address"].lower()
-            )
-            if expected_delegation["is_user_delegation"]:
+            assert res.grantee_address == expected_grant["grantee_address"].lower()
+            if expected_grant["is_user_grant"]:
                 assert res.is_approved == False
             else:
                 assert res.is_approved == True
@@ -413,16 +403,16 @@ def test_index_delegation(app, mocker):
 
     # Duplicate delete - should fail
     tx_receipts = {
-        "DeleteDelegationTx4": [
+        "DeleteGrantTx4": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[0]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[0]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[0]["grantee_address"]}"}}""",
                         "_action": Action.DELETE,
-                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[0]['user_id']}wallet",
                     }
                 )
             },
@@ -448,22 +438,22 @@ def test_index_delegation(app, mocker):
         )
 
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
+        all_grants: List[Grant] = session.query(Grant).all()
         # No change
-        assert len(all_delegations) == 7
+        assert len(all_grants) == 7
 
-    # Reactivate a revoked delegation
+    # Reactivate a revoked grant
     tx_receipts = {
-        "CreateDelegationTx4": [
+        "CreateGrantTx4": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATION,
-                        "_userId": new_delegations_data[1]["user_id"],
-                        "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}", "delegate_address": "{new_delegations_data[1]["delegate_address"]}"}}""",
+                        "_entityType": EntityType.GRANT,
+                        "_userId": new_grants_data[1]["user_id"],
+                        "_metadata": f"""{{"grantee_address": "{new_grants_data[1]["grantee_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
+                        "_signer": f"user{new_grants_data[1]['user_id']}wallet",
                     }
                 )
             },
@@ -489,21 +479,21 @@ def test_index_delegation(app, mocker):
         )
 
         # validate db records
-        all_delegations: List[Delegation] = session.query(Delegation).all()
-        assert len(all_delegations) == 8
-        expected_delegation = new_delegations_data[1]
+        all_grants: List[Grant] = session.query(Grant).all()
+        assert len(all_grants) == 8
+        expected_grant = new_grants_data[1]
         found_matches = [
             item
-            for item in all_delegations
-            if item.shared_address == expected_delegation["shared_address"].lower()
+            for item in all_grants
+            if item.grantee_address == expected_grant["grantee_address"].lower()
+            and item.user_id == expected_grant["user_id"]
             and item.is_current == True
         ]
         assert len(found_matches) == 1
         res = found_matches[0]
-        assert res.user_id == expected_delegation["user_id"]
-        assert res.shared_address == expected_delegation["shared_address"].lower()
+        assert res.user_id == expected_grant["user_id"]
         assert res.is_current == True
-        assert res.delegate_address == expected_delegation["delegate_address"].lower()
+        assert res.grantee_address == expected_grant["grantee_address"].lower()
         assert res.is_approved == True
         assert res.is_revoked == False
         assert res.blocknumber == 0

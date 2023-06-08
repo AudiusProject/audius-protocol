@@ -17,9 +17,14 @@ import (
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
+	cid := c.Param("cid")
 	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: c.Param("cid")}).Find(&locations)
-	return c.JSON(200, locations)
+	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
+	return c.JSON(200, map[string]any{
+		"cid":       cid,
+		"locations": locations,
+		"preferred": ss.placement.topAll(cid),
+	})
 }
 
 func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
@@ -55,9 +60,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
 
-	// v1 feature parity
-	go ss.logTrackListen(c)
-
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
 		return ss.serveLegacyCid(c)
@@ -76,6 +78,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return err
 		}
 		defer blob.Close()
+
+		// v2 file listen
+		go ss.logTrackListen(c)
+
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
 	}
@@ -102,11 +108,12 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	if os.Getenv("identityService") == "" ||
-		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
-		c.QueryParam("skip_play_count") == "true" {
-		// todo: skip count for trusted notifier requests should be inferred
-		// by the requesting entity and not some query param
+	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+	// todo: skip count for trusted notifier requests should be inferred
+	// by the requesting entity and not some query param
+	if skipPlayCount ||
+		os.Getenv("identityService") == "" ||
+		!rangeIsFirstByte(c.Request().Header.Get("Range")) {
 		return
 	}
 
@@ -134,6 +141,14 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		"signature":    signatureData.Signature,
 	}
 
+	logOnly := true
+	if logOnly {
+		// as of now we favor client POSTing to /listen
+		// this will change to be all server side as part of a larger initiative
+		ss.logger.Info(fmt.Sprintf("skipping track listen as logOnly set to true: %v", body))
+		return
+	}
+
 	buf, err := json.Marshal(body)
 	if err != nil {
 		ss.logger.Error("unable to build request", err)
@@ -156,8 +171,10 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		resBody, _ := io.ReadAll(res.Body)
-		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from src.models.delegates.app_delegate import AppDelegate
-from src.models.delegates.delegation import Delegation
+from src.models.grants.developer_app import DeveloperApp
+from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
@@ -93,7 +93,7 @@ def populate_mock_db_blocks(db, min, max):
 
 def populate_mock_db(db, entities, block_offset=None):
     """
-    Helper function to populate the mock DB with tracks, users, plays, app delegates, and follows
+    Helper function to populate the mock DB with tracks, users, plays, developer apps, grants, and follows
 
     Args:
         db - sqlalchemy db session
@@ -111,8 +111,8 @@ def populate_mock_db(db, entities, block_offset=None):
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
-        app_delegates = entities.get("app_delegates", [])
-        delegations = entities.get("delegations", [])
+        developer_apps = entities.get("developer_apps", [])
+        grants = entities.get("grants", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -149,8 +149,8 @@ def populate_mock_db(db, entities, block_offset=None):
             len(tracks),
             len(playlists),
             len(users),
-            len(app_delegates),
-            len(delegations),
+            len(developer_apps),
+            len(grants),
             len(follows),
             len(saves),
             len(reposts),
@@ -279,37 +279,36 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(user)
             session.add(user_bank)
 
-        for i, delegate_meta in enumerate(app_delegates):
-            delegate = AppDelegate(
-                user_id=delegate_meta.get("user_id", i),
-                name=delegate_meta.get("name", str(i)),
-                address=delegate_meta.get("address", str(i)),
-                is_personal_access=delegate_meta.get("is_personal_access", False),
+        for i, developer_app_meta in enumerate(developer_apps):
+            developer_app = DeveloperApp(
+                user_id=developer_app_meta.get("user_id", i),
+                name=developer_app_meta.get("name", str(i)),
+                address=developer_app_meta.get("address", str(i)),
+                is_personal_access=developer_app_meta.get("is_personal_access", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
-                is_delete=delegate_meta.get("is_delete", False),
+                is_delete=developer_app_meta.get("is_delete", False),
                 is_current=True,
-                txhash=delegate_meta.get("txhash", str(i + block_offset)),
-                updated_at=delegate_meta.get("updated_at", datetime.now()),
-                created_at=delegate_meta.get("created_at", datetime.now()),
+                txhash=developer_app_meta.get("txhash", str(i + block_offset)),
+                updated_at=developer_app_meta.get("updated_at", datetime.now()),
+                created_at=developer_app_meta.get("created_at", datetime.now()),
             )
-            session.add(delegate)
+            session.add(developer_app)
 
-        for i, delegation_meta in enumerate(delegations):
-            delegation = Delegation(
-                user_id=delegation_meta.get("user_id", i),
-                shared_address=delegation_meta.get("shared_address", str(i)),
-                delegate_address=delegation_meta.get("delegate_address", str(i)),
-                is_approved=delegation_meta.get("is_approved", False),
-                is_revoked=delegation_meta.get("is_revoked", False),
+        for i, grant_meta in enumerate(grants):
+            grant = Grant(
+                user_id=grant_meta.get("user_id", i),
+                grantee_address=grant_meta.get("grantee_address", str(i)),
+                is_approved=grant_meta.get("is_approved", False),
+                is_revoked=grant_meta.get("is_revoked", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
                 is_current=True,
-                txhash=delegation_meta.get("txhash", str(i + block_offset)),
-                updated_at=delegation_meta.get("updated_at", datetime.now()),
-                created_at=delegation_meta.get("created_at", datetime.now()),
+                txhash=grant_meta.get("txhash", str(i + block_offset)),
+                updated_at=grant_meta.get("updated_at", datetime.now()),
+                created_at=grant_meta.get("created_at", datetime.now()),
             )
-            session.add(delegation)
+            session.add(grant)
 
         for i, follow_meta in enumerate(follows):
             follow = Follow(
