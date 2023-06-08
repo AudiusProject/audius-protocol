@@ -1,5 +1,5 @@
-import { DiscoveryNodeSelector, sdk } from "@audius/sdk";
-import { UploadTrackRequest } from "@audius/sdk";
+import { DiscoveryNodeSelector, EntityManager, sdk } from "@audius/sdk";
+import { UploadTrackRequest, developmentConfig } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
 
@@ -13,11 +13,19 @@ const port = 3000;
 
 // Test/develop sdk functionality here
 
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+});
+
 const audiusSdk = sdk({
   appName: "sdk-consumer",
   services: {
-    discoveryNodeSelector: new DiscoveryNodeSelector({
-      initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+    discoveryNodeSelector,
+    entityManager: new EntityManager({
+      discoveryNodeSelector,
+      web3ProviderUrl: developmentConfig.web3ProviderUrl,
+      contractAddress: developmentConfig.entityManagerContractAddress,
+      identityServiceUrl: developmentConfig.identityServiceUrl,
     }),
   },
   apiKey: "",

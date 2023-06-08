@@ -1,32 +1,30 @@
 import { Maybe, RendezvousHash, isNodeHealthy } from '../../../utils'
 import fetch from 'cross-fetch'
-import type { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
+import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
-import type { Auth } from '../Auth'
-import type { StorageNodeSelectorService } from './types'
-
-type StorageNode = {
-  endpoint: string
-  ownerDelegateWallet: string
-}
-
-export type StorageNodeSelectorConfig = {
-  bootstrapNodes?: StorageNode[]
-  auth: Auth
-  discoveryNodeSelector?: DiscoveryNodeSelector
-}
+import type { AuthService } from '../Auth'
+import type {
+  StorageNode,
+  StorageNodeSelectorConfig,
+  StorageNodeSelectorService
+} from './types'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import { defaultStorageNodeSelectorConfig } from './constants'
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
-  private readonly auth: Auth
+  private readonly auth: AuthService
   private nodes: StorageNode[]
   private orderedNodes?: StorageNode[]
   private selectedNode?: string | null
   private selectedDiscoveryNode?: string | null
-  private readonly discoveryNodeSelector?: DiscoveryNodeSelector
+  private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
 
   constructor(config: StorageNodeSelectorConfig) {
-    this.config = config
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultStorageNodeSelectorConfig
+    )
     this.auth = this.config.auth
     this.nodes = this.config.bootstrapNodes ?? []
     this.discoveryNodeSelector = this.config.discoveryNodeSelector
@@ -47,17 +45,26 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   }
 
   private async onChangeDiscoveryNode(endpoint: string) {
+    this.info('Updating list of available content nodes')
     if (this.selectedDiscoveryNode === endpoint) return
     this.selectedDiscoveryNode = endpoint
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
-    if (!discoveryHealthCheckResponse.ok) return
+    if (!discoveryHealthCheckResponse.ok) {
+      this.warn('Discovery provider health check did not respond successfully')
+      return
+    }
 
     const responseData: { data: HealthCheckResponseData } =
       await discoveryHealthCheckResponse.json()
     const contentNodes = responseData.data.network?.content_nodes
 
-    if (!contentNodes) return
+    if (!contentNodes) {
+      this.warn(
+        'Discovery provider health check did not contain any available content nodes'
+      )
+      return
+    }
 
     this.nodes = contentNodes
   }
@@ -98,12 +105,13 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     this.selectedNode = selectedNode
+    this.info('Selected content node', this.selectedNode)
     return this.selectedNode ?? null
   }
 
   private async orderNodes() {
     const userAddress = await this.auth.getAddress()
-    const nodeOwnerWallets = this.nodes.map((node) => node.ownerDelegateWallet)
+    const nodeOwnerWallets = this.nodes.map((node) => node.delegateOwnerWallet)
     const hash = new RendezvousHash(...nodeOwnerWallets)
     const orderedOwnerWallets = hash.getN(this.nodes.length, userAddress)
     const orderedNodes = orderedOwnerWallets.map((ownerWallet) => {
@@ -111,5 +119,15 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       return this.nodes[index] as StorageNode
     })
     return orderedNodes
+  }
+
+  /** console.info proxy utility to add a prefix */
+  private info(...args: any[]) {
+    console.info('[audius-sdk][storage-node-selector]', ...args)
+  }
+
+  /** console.warn proxy utility to add a prefix */
+  private warn(...args: any[]) {
+    console.warn('[audius-sdk][storage-node-selector]', ...args)
   }
 }

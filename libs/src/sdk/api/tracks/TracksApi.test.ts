@@ -47,7 +47,11 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
-  const storageNodeSelector = new StorageNodeSelector({ auth })
+  const discoveryNodeSelector = new DiscoveryNodeSelector()
+  const storageNodeSelector = new StorageNodeSelector({
+    auth,
+    discoveryNodeSelector
+  })
 
   beforeAll(() => {
     tracks = new TracksApi(
@@ -57,6 +61,10 @@ describe('TracksApi', () => {
       new EntityManager(),
       auth
     )
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'info').mockImplementation(() => {})
+    jest.spyOn(console, 'debug').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('uploadTrack', () => {
