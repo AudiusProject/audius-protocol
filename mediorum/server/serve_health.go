@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"mediorum/ethcontracts"
@@ -108,12 +107,13 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	sortedData, err := signature.SortKeys(data)
 	if err != nil {
-		return errors.New("failed to sort health check data: " + err.Error())
+		return c.JSON(500, map[string]string{"error": "Failed to sort health check data: " + err.Error()})
 	}
 	signature, err := signature.Sign(sortedData, ss.Config.privateKey)
 	if err != nil {
-		return errors.New("failed to sign health check response: " + err.Error())
+		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
 	}
+
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 	return c.JSON(200, healthCheckResponse{
 		Data:      data,
