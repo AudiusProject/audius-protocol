@@ -32,26 +32,26 @@
   border-color: var(--neutral-light-6);
 }
 
-.root:has(input:focus) {
+.root.focused {
   border-color: var(--secondary);
 }
 
 .root.warning,
-.root.warning:has(input:focus) {
+.root.warning.focused {
   border-color: var(--accent-orange);
 }
 
 .root.error,
-.root.error:has(input:focus) {
+.root.error.focused {
   border-color: var(--accent-red);
 }
 
 .root.error:hover,
-.root.error:hover:has(input:focus) {
+.root.error:hover.focused {
   border-color: var(--accent-red-dark-1);
 }
 
-.root:has(input:disabled) {
+.root.disabled {
   background-color: var(--neutral-light-9);
   border-color: var(--neutral-light-8);
 }
@@ -86,7 +86,8 @@
 }
 
 /** Add the "*" to required fields, but have it disappear when elevated **/
-.elevatedPlaceholderLabel:has(input:required:not(:focus))
+.required:not(.focused)
+  .elevatedPlaceholderLabel
   .placeholder:not(.hasValue)::after {
   content: ' *';
 }
@@ -105,7 +106,7 @@
 }
 
 /** Move the elevated placeholder to the top left if focused or has text **/
-.elevatedPlaceholderLabel:has(input:focus) .placeholder,
+.focused .elevatedPlaceholderLabel .placeholder,
 .placeholder.hasValue {
   transform: translate(0px, calc(-1em - var(--gap)));
   font-size: var(--font-xs);

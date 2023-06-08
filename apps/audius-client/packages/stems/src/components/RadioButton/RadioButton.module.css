@@ -23,11 +23,13 @@
   box-sizing: border-box;
 }
 
-.root:has(:checked)::before {
+/* Use the .checked class since Firefox doesn't support :has() */
+.root.checked::before {
   background: var(--white);
   border: 6px solid var(--secondary);
 }
 
-.root:has(:disabled)::before {
+/* Use the .disabled class since Firefox doesn't support :has() */
+.root.disabled::before {
   background: var(--neutral-light-7);
 }
