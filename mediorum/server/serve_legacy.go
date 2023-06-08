@@ -84,9 +84,11 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	for _, host := range hosts {
 		dest := replaceHost(*c.Request().URL, host)
 		log.Println("redirecting to: ", dest.String())
+		ss.logger.Debug("redirecting cid to host", "cid", cid, "host", dest.String())
 		return c.Redirect(302, dest.String())
 	}
 
+	ss.logger.Debug("no host found with cid", "cid", cid)
 	return c.String(404, "no host found with cid: "+cid)
 }
 
