@@ -34,19 +34,19 @@ export const onDisburse = async (
   if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined")
   const client = new WebClient(token)
 
-  const startingBlockRes = await findStartingBlock(db);
-  if (startingBlockRes.err) return startingBlockRes;
-  const [startingBlock, specifier] = startingBlockRes.unwrap();
+  const completedBlockRes = await findStartingBlock(db);
+  if (completedBlockRes.err) return completedBlockRes;
+  const [completedBlock, specifier] = completedBlockRes.unwrap();
 
   const nodeGroupsRes = await assembleNodeGroups(libs);
   if (nodeGroupsRes.err) return nodeGroupsRes;
   const nodeGroups = nodeGroupsRes.unwrap();
 
-  await getAllChallenges(app, nodeGroups, startingBlock, dryRun);
+  await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
-  const formattedResults = formatDisbursementTable(
-    await getChallengesDisbursementsUserbanksFriendly(db, specifier)
-  );
+  const friendly = await getChallengesDisbursementsUserbanksFriendly(db, specifier)
+  console.log('friendly = ', JSON.stringify(friendly))
+  const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
 
   const channel = process.env.SLACK_CHANNEL
@@ -59,10 +59,11 @@ export const onDisburse = async (
   return new Ok(undefined);
 };
 
-const findStartingBlock = async (
+export const findStartingBlock = async (
   db: Knex
 ): Promise<Result<[number, string], string>> => {
   const challenges = await getTrendingChallenges(db);
+  console.log('challenges = ', JSON.stringify(challenges))
   const firstChallenge = challenges[0];
   if (firstChallenge === undefined)
     return new Err(`no challenges found ${challenges}`);
@@ -70,7 +71,9 @@ const findStartingBlock = async (
   if (completedBlocknumber === null)
     return new Err(`completed block number is null ${firstChallenge}`);
   const specifier = firstChallenge.specifier;
-  return new Ok([completedBlocknumber, specifier]);
+  // why we subtract one
+  // https://www.notion.so/audiusproject/Manually-Complete-Rewards-Challenge-Manually-disburse-trending-24daed058dc54e4a8adb4912814481f2?pvs=4#1ced75c9c41740ce8facd19bf0d46720
+  return new Ok([completedBlocknumber - 1, specifier]);
 };
 
 // copied from libs because it's not exported
@@ -245,32 +248,32 @@ const getAllChallenges = async (
     const rewards = libs.Rewards;
     if (rewards === null) throw new Error("rewards object null");
 
-    if (dryRun) {
-      console.log("completed dry run");
-      return;
-    }
-    const { error } = await rewards.submitAndEvaluate({
-      challengeId: challenge.challenge_id,
-      encodedUserId,
-      handle: challenge.handle,
-      recipientEthAddress: challenge.wallet,
-      specifier: challenge.specifier,
-      oracleEthAddress,
-      amount: parseInt(challenge.amount),
-      quorumSize: 3,
-      AAOEndpoint,
-      instructionsPerTransaction: 2,
-      maxAggregationAttempts: 1,
-      endpoints: possibleNodeSet,
-      feePayerOverride,
-      logger: console,
-    });
-
-    if (error) {
-      console.log(
-        "Challenge was unattestable despite new nodes, aborting..." +
-          JSON.stringify(challenge)
-      );
+    if (!dryRun) {
+      const { error } = await rewards.submitAndEvaluate({
+        challengeId: challenge.challenge_id,
+        encodedUserId,
+        handle: challenge.handle,
+        recipientEthAddress: challenge.wallet,
+        specifier: challenge.specifier,
+        oracleEthAddress,
+        amount: parseInt(challenge.amount),
+        quorumSize: 3,
+        AAOEndpoint,
+        instructionsPerTransaction: 2,
+        maxAggregationAttempts: 1,
+        endpoints: possibleNodeSet,
+        feePayerOverride,
+        logger: console,
+      });
+  
+      if (error) {
+        console.log(
+          "Challenge was unattestable despite new nodes, aborting..." +
+            JSON.stringify(challenge)
+        );
+      }
+    } else {
+      console.log('running dry run')
     }
   }
   console.log(JSON.stringify(setToChallengeMap, null, 2));
