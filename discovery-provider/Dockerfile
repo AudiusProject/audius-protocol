@@ -2,6 +2,7 @@
 FROM audius/contracts:1.0.0 AS contracts
 
 FROM alpine:3.14
+LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
 WORKDIR $INSTALL_PATH
@@ -42,17 +43,11 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add --no-cache openresty=1.19.9.1-r0 openresty-opm lua5.1-dev build-base unzip && \
-    wget https://luarocks.org/releases/luarocks-3.7.0.tar.gz && \
-    tar zxpf luarocks-3.7.0.tar.gz && \
-    cd luarocks-3.7.0 && \
-    ./configure --with-lua-include=/usr/include && \
-    make build && \
-    make install && \
+    apk add openresty=1.19.9.1-r0 openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
-    mkdir /usr/local/openresty/conf /usr/local/openresty/logs && \
-    luarocks install dkjson
+    opm get bsiara/dkjson && \
+    mkdir /usr/local/openresty/conf /usr/local/openresty/logs
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
@@ -64,20 +59,19 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0
 
+COPY nginx_conf /usr/local/openresty/conf/
+
+COPY scripts/init-db.sh scripts/init-db.sh
+RUN bash scripts/init-db.sh
 
 # Upgrade pip first to accomodate anchor.py installation
 COPY requirements.txt requirements.txt
 RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
 
-COPY scripts/init-db.sh scripts/init-db.sh
-RUN bash scripts/init-db.sh
+COPY . .
+RUN cd es-indexer && npm install && npm run build
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
-
-COPY . .
-RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
-
-COPY nginx_conf /usr/local/openresty/conf/
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha
@@ -92,7 +86,7 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=5s --timeout=10s --retries=12 \
-    CMD pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1
+HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
+    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
