@@ -9,6 +9,7 @@ const redisClient = new Redis(
   config.get('redisHost'),
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
+const models = require('../models')
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 
@@ -174,8 +175,8 @@ const windowMapping = {
 const getRelayRateLimiterMiddleware = (window) => {
   return getRateLimiter({
     windowMs: windowMapping[window],
-    prefix: `relayWalletRateLimiter`,
-    max: function (req) {
+    prefix: `relayWalletRateLimiter:${window}`,
+    max: async function (req) {
       const decodedABI = AudiusABIDecoder.decodeMethod(
         'EntityManager',
         req.body.encodedABI
@@ -186,9 +187,29 @@ const getRelayRateLimiterMiddleware = (window) => {
       const entityType = decodedABI.params.find(
         (param) => param.name === '_entityType'
       ).value
-      const key = action + entityType
-      const limit = config.get(key)[window]
-      return limit
+      let key = action + entityType
+
+      let limit = config.get(key)
+
+      const user = await models.User.findOne({
+        where: { walletAddress: body.senderAddress },
+        attributes: [
+          'id',
+          'blockchainUserId',
+          'walletAddress',
+          'handle',
+          'isBlockedFromRelay',
+          'isBlockedFromNotifications',
+          'isBlockedFromEmails',
+          'appliedRules'
+        ]
+      })
+      if (user) {
+        limit = limit.get('owner')
+      } else {
+        limit = limit.get('app')
+      }
+      return limit[window]
     },
     keyGenerator: function (req) {
       const decodedABI = AudiusABIDecoder.decodeMethod(

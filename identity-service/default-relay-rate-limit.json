@@ -1,6 +1,12 @@
 {
   "SaveTrack": {
-    "daily": 50,
-    "hourly": 5
+    "owner": {
+      "daily": 1,
+      "hourly": 1
+    },
+    "app": {
+      "daily": 1,
+      "hourly": 1
+    }
   }
 }

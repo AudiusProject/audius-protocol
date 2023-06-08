@@ -88,6 +88,7 @@ const sendTransaction = async (
 
 const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   req.logger.info('asdf isaac')
+
   let {
     contractRegistryKey,
     contractAddress,

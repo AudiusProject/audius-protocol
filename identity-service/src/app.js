@@ -401,7 +401,11 @@ class App {
       ethRelayIPRateLimiter
     )
 
-    this.express.use('/relay', getRelayRateLimiterMiddleware('hourly'))
+    this.express.use(
+      '/relay',
+      getRelayRateLimiterMiddleware('hourly'),
+      getRelayRateLimiterMiddleware('daily')
+    )
     this.express.use(getRateLimiterMiddleware())
   }
 
