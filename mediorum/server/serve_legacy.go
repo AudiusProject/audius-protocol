@@ -36,6 +36,8 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return ss.redirectToCid(c, cid)
 	}
 
+	log.Println("serving legacy cid", cid)
+
 	// v1 file listen
 	go ss.logTrackListen(c)
 
@@ -83,12 +85,11 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	log.Println("potential hosts for cid", cid, hosts)
 	for _, host := range hosts {
 		dest := replaceHost(*c.Request().URL, host)
-		log.Println("redirecting to: ", dest.String())
-		ss.logger.Debug("redirecting cid to host", "cid", cid, "host", dest.String())
+		log.Println("redirecting to:", dest.String())
 		return c.Redirect(302, dest.String())
 	}
 
-	ss.logger.Debug("no host found with cid", "cid", cid)
+	log.Println("no host found with cid", cid)
 	return c.String(404, "no host found with cid: "+cid)
 }
 

@@ -50,7 +50,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	key := c.Param("cid")
 
 	if ss.isCidBlacklisted(ctx, key) {
-		ss.logger.Debug("cid is blacklisted", "cid", key)
+		ss.logger.Info("cid is blacklisted", "cid", key)
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
@@ -80,10 +80,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		}
 		defer blob.Close()
 
+		ss.logger.Info("serving v2 cid", "cid", key)
+
 		// v2 file listen
 		go ss.logTrackListen(c)
 
-		ss.logger.Debug("serving cid", "cid", key)
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
 	}
