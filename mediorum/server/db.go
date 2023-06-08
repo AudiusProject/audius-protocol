@@ -47,13 +47,6 @@ type ServerHealth struct {
 	BuiltAt   string    `json:"built_at"`
 }
 
-type LogLine struct {
-	ID        string `gorm:"primaryKey"`
-	Host      string `gorm:"not null"`
-	Message   string
-	CreatedAt time.Time `gorm:"index"`
-}
-
 func dbMustDial(dbPath string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
 		SkipDefaultTransaction: true,
@@ -73,13 +66,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{})
+	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
+	crud.RegisterModels(&Blob{}, &Upload{}, &ServerHealth{})
 
 	sqlDb, _ := crud.DB.DB()
 

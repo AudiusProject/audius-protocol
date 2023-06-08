@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-docker system prune -a --force
+# docker system prune -a --force
 
 cd audius-docker-compose/creator-node
 git fetch
-git checkout dev
+git checkout mediorum_tag_2
 git pull
 
 FILE='/home/ubuntu/audius-docker-compose/creator-node/.env'

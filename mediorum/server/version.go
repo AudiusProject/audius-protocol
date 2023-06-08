@@ -1,6 +1,7 @@
 package server
 
 import (
+	"os"
 	"runtime/debug"
 
 	"golang.org/x/exp/slog"
@@ -24,6 +25,11 @@ func init() {
 				vcsDirty = s.Value
 			}
 		}
+	}
+
+	// read GIT_SHA which is set by circleci build
+	if gitSha := os.Getenv("GIT_SHA"); gitSha != "" && vcsRevision == "" {
+		vcsRevision = gitSha
 	}
 
 	slog.Info("MEDIORUM", "revision", vcsRevision, "built", vcsBuildTime, "wip", vcsDirty)
