@@ -94,23 +94,37 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 
 	for _, problem := range problems {
 
+		logger := logger.With("cid", problem.Key)
+
 		// if I have the file...
 		// call replicate
 		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
 		if iHave {
 			logger.Info("repairing", "cid", problem.Key)
-			blob, err := ss.bucket.NewReader(ctx, problem.Key, nil)
+			r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
 			if err != nil {
-				logger.Warn("failed to read key", "key", problem.Key, "err", err)
+				logger.Error("failed to read key", err)
 				continue
 			}
-			defer blob.Close()
+			defer r.Close()
 
-			hosts, err := ss.replicateFile(problem.Key, blob)
+			// validate CID matches
+			err = validateCID(problem.Key, r)
 			if err != nil {
-				logger.Warn("failed to replicate", "key", problem.Key, "err", err)
+				logger.Error("CID validation failed", err)
+				// nuke this fool
+				err = ss.dropFromMyBucket(problem.Key)
+				if err != nil {
+					logger.Error("unable to drop invalid CID", err)
+				}
+				continue
+			}
+
+			hosts, err := ss.replicateFile(problem.Key, r)
+			if err != nil {
+				logger.Error("failed to replicate", err)
 			} else {
-				logger.Info("repaired", "key", problem.Key, "hosts", hosts)
+				logger.Info("repaired", "hosts", hosts)
 			}
 		}
 	}
@@ -134,16 +148,16 @@ func (ss *MediorumServer) cleanupOverReplicatedBlobs() error {
 			continue
 		}
 
+		logger := logger.With("cid", problem.Key)
 		hosts := strings.Split(problem.Hosts, ",")
 		myIdx := slices.Index(hosts, ss.Config.Self.Host)
 		if myIdx+1 > ss.Config.ReplicationFactor {
-			logger := logger.With("cid", problem.Key)
-			logger.Info("deleting")
+			logger.Info("deleting", "myIdx", myIdx, "hosts", hosts)
 			err = ss.dropFromMyBucket(problem.Key)
 			if err != nil {
-				ss.logger.Error("cleanup: delete failed", err)
+				logger.Error("delete failed", err)
 			} else {
-				ss.logger.Info("cleanup: delete OK")
+				logger.Info("delete OK")
 			}
 		}
 	}
