@@ -479,9 +479,10 @@ def get_notifications(session: Session, args: GetNotificationArgs):
     notifications_and_actions = [
         {
             **notification,
-            "actions": [
-                notification_id_data[id] for id in notification["notification_ids"]
-            ],
+            "actions": sorted(
+                [notification_id_data[id] for id in notification["notification_ids"]],
+                key=lambda x: x["specifier"],
+            ),
         }
         for notification in notifications
     ]
