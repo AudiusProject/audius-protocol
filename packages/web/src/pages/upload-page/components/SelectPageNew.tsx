@@ -4,7 +4,6 @@ import {
   Nullable,
   playerActions,
   playerSelectors,
-  TrackMetadata,
   UploadType,
   removeNullable
 } from '@audius/common'
@@ -20,27 +19,24 @@ import { processFiles } from '../store/utils/processFiles'
 
 import styles from './SelectPage.module.css'
 import TracksPreview from './TracksPreview'
+import { TrackForUpload } from './types'
 const { pause } = playerActions
 
 const { getPlaying } = playerSelectors
 
 type ErrorType = { reason: 'size' | 'type' } | null
 
-type TrackForUpload = {
-  file: File
-  preview: HTMLAudioElement
-  metadata: TrackMetadata
-}
 type SelectPageProps = {
+  tracks: TrackForUpload[]
+  setTracks: (tracks: TrackForUpload[]) => void
   onContinue: () => void
 }
 
 export const SelectPageNew = (props: SelectPageProps) => {
-  const { onContinue } = props
+  const { tracks, setTracks, onContinue } = props
   const dispatch = useDispatch()
   const playing = useSelector(getPlaying)
 
-  const [tracks, setTracks] = useState<TrackForUpload[]>([])
   const [uploadTrackError, setUploadTrackError] =
     useState<Nullable<ErrorType>>(null)
   // TODO: support upload types when directing to next page
@@ -83,7 +79,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
 
       setTracks([...tracks, ...processedTracks])
     },
-    [tracks, uploadType]
+    [setTracks, tracks, uploadType]
   )
 
   const onRemoveTrack = useCallback(
@@ -93,7 +89,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
         tracks.length === 2 ? UploadType.INDIVIDUAL_TRACK : uploadType
       )
     },
-    [tracks, uploadType]
+    [setTracks, tracks, uploadType]
   )
 
   const stopPreview = useCallback(() => {

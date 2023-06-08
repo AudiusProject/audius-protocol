@@ -100,6 +100,7 @@
     "electron-log": "3.0.9",
     "electron-updater": "4.3.5",
     "eth-sig-util": "3.0.1",
+    "formik": "2.4.1",
     "fxa-common-password-list": "0.0.2",
     "gl-audio-analyser": "1.0.3",
     "gl-buffer": "2.1.2",
@@ -171,7 +172,8 @@
     "web-vitals": "0.2.2",
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
-    "webpack-bundle-analyzer": "4.5.0"
+    "webpack-bundle-analyzer": "4.5.0",
+    "yup": "1.2.0"
   },
   "main": "src/electron.js",
   "build": {
