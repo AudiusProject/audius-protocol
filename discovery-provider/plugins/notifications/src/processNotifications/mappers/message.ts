@@ -98,7 +98,8 @@ export class Message extends BaseNotification<DMNotification> {
               title,
               body,
               data: {
-                chat_id: this.notification.chat_id
+                type: 'Message',
+                chatId: this.notification.chat_id
               }
             }
           )

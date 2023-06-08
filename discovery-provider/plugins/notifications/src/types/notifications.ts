@@ -14,6 +14,7 @@ export type DMNotification = {
 
 export type DMReactionNotification = {
   chat_id: string
+  message_id: string
   sender_user_id: number
   receiver_user_id: number
   reaction: string

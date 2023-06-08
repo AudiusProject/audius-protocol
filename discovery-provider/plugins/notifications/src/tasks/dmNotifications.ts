@@ -88,6 +88,7 @@ async function getUnreadReactions(
   return await discoveryDB
     .select(
       'chat_member.chat_id as chat_id',
+      'chat_message.message_id',
       'chat_message_reactions.user_id as sender_user_id',
       'chat_message.user_id as receiver_user_id',
       'chat_message_reactions.reaction as reaction',
