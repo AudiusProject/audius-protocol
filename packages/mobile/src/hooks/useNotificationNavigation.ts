@@ -36,7 +36,9 @@ import type {
   TipSendNotification,
   TipSendPushNotification,
   TrendingTrackNotification,
-  UserSubscriptionNotification
+  UserSubscriptionNotification,
+  MessagePushNotification,
+  MessageReactionPushNotification
 } from '@audius/common'
 import {
   notificationsUserListActions,
@@ -172,6 +174,17 @@ export const useNotificationNavigation = () => {
     [navigation]
   )
 
+  const messagesHandler = useCallback(
+    (
+      notification: MessagePushNotification | MessageReactionPushNotification
+    ) => {
+      navigation.navigate('Chat', {
+        chatId: notification.chatId
+      })
+    },
+    [navigation]
+  )
+
   const notificationTypeHandlerMap = useMemo(
     () => ({
       [NotificationType.AddTrackToPlaylist]: (
@@ -280,7 +293,9 @@ export const useNotificationNavigation = () => {
           )
         }
       },
-      [NotificationType.Tastemaker]: entityHandler
+      [NotificationType.Tastemaker]: entityHandler,
+      [PushNotificationType.Message]: messagesHandler,
+      [PushNotificationType.MessageReaction]: messagesHandler
     }),
     [
       dispatch,
@@ -289,6 +304,7 @@ export const useNotificationNavigation = () => {
       profileHandler,
       socialActionHandler,
       entityHandler,
+      messagesHandler,
       store
     ]
   )

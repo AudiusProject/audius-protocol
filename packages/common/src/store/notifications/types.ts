@@ -75,7 +75,9 @@ export enum PushNotificationType {
   SupporterRankUp = 'SupporterRankUp',
   SupportingRankUp = 'SupportingRankUp',
   SupporterDethroned = 'SupporterDethroned',
-  AddTrackToPlaylist = 'AddTrackToPlaylist'
+  AddTrackToPlaylist = 'AddTrackToPlaylist',
+  Message = 'Message',
+  MessageReaction = 'MessageReaction'
 }
 
 export enum Entity {
@@ -925,3 +927,12 @@ export type FetchNotificationsFailedAction = PayloadAction<{
   message: string
   shouldReport?: boolean
 }>
+
+export type MessagePushNotification = {
+  chatId: string
+}
+
+export type MessageReactionPushNotification = {
+  chatId: string
+  messageId: string
+}
