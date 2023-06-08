@@ -1,11 +1,9 @@
 from __future__ import absolute_import
 
 import os
-from contextlib import contextmanager
 import subprocess
+from contextlib import contextmanager
 
-import alembic
-import alembic.config
 import pytest
 import src
 from pytest_postgresql import factories

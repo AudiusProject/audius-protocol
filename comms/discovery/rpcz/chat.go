@@ -34,7 +34,7 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 }
 
 func chatDelete(tx *sqlx.Tx, userId int32, chatId string, messageTimestamp time.Time) error {
-	_, err := tx.Exec("update chat_member set cleared_history_at = $1 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
+	_, err := tx.Exec("update chat_member set cleared_history_at = $1, last_active_at = $1, unread_count = 0 where chat_id = $2 and user_id = $3", messageTimestamp, chatId, userId)
 	return err
 }
 

@@ -14,5 +14,5 @@ export const servicesConfig: ServicesConfig = {
   ],
   "web3ProviderUrl": "https://poa-gateway.staging.audius.co",
   "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
-  "identityServiceEndpoint": "https://identityservice.staging.audius.co"
+  "identityServiceUrl": "https://identityservice.staging.audius.co"
 }

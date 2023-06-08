@@ -62,13 +62,15 @@ def test_reaction_notification(app):
 
         assert len(notifications) == 2
         assert notifications[0].specifier == "3"
-        assert notifications[
-            0
-        ].group_id == "reaction:reaction_to:sig_1:reaction_type:tip:reaction_value:1"
+        assert (
+            notifications[0].group_id
+            == "reaction:reaction_to:sig_1:reaction_type:tip:reaction_value:1"
+        )
         assert notifications[1].specifier == "4"
-        assert notifications[
-            1
-        ].group_id == "reaction:reaction_to:sig_2:reaction_type:tip:reaction_value:2"
+        assert (
+            notifications[1].group_id
+            == "reaction:reaction_to:sig_2:reaction_type:tip:reaction_value:2"
+        )
         assert notifications[0].type == "reaction"
         assert notifications[0].slot == 1
         assert notifications[0].blocknumber == None
