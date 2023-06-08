@@ -244,9 +244,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// internal: blobs
+	internalApi.GET("/blobs/broken", ss.getBlobBroken)
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
+	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics

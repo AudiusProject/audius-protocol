@@ -165,3 +165,14 @@ func computeFileCID(f io.ReadSeeker) (string, error) {
 	}
 	return cid.String(), nil
 }
+
+func validateCID(expectedCID string, f io.ReadSeeker) error {
+	computed, err := computeFileCID(f)
+	if err != nil {
+		return err
+	}
+	if computed != expectedCID {
+		return fmt.Errorf("expected cid: %s but contents hashed to %s", expectedCID, computed)
+	}
+	return nil
+}
