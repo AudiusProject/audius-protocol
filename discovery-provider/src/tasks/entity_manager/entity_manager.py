@@ -23,6 +23,7 @@ from src.models.users.user import User
 from src.tasks.entity_manager.developer_app import (
     create_developer_app,
     delete_developer_app,
+    get_app_address_from_signature,
 )
 from src.tasks.entity_manager.grant import create_grant, revoke_grant
 from src.tasks.entity_manager.notification import (
@@ -379,9 +380,16 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 if raw_address:
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
                 else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
-                    )
+                    try:
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            get_app_address_from_signature(
+                                json_metadata.get("app_signature", {})
+                            )
+                        )
+                    except:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
+                        )
             if entity_type == EntityType.GRANT:
                 try:
                     json_metadata = json.loads(metadata)

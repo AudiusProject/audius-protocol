@@ -72,6 +72,7 @@ anchorpy==0.8.3
 
 # Test
 pytest-mock==3.6.1
+freezegun==1.2.2
 
 
 # Dev reload

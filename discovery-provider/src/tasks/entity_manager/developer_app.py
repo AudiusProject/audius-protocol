@@ -1,6 +1,8 @@
 import json
+from datetime import datetime
 from typing import Optional, TypedDict, Union, cast
 
+from eth_account.messages import defunct_hash_message
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.utils import (
     Action,
@@ -8,6 +10,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
 )
+from src.utils import web3_provider
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.structured_logger import StructuredLogger
@@ -15,15 +18,36 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
+class AppSignature(TypedDict):
+    message: str
+    signature: str
+
+
 class CreateDeveloperAppMetadata(TypedDict):
-    address: Union[str, None]
     name: Union[str, None]
     description: Union[str, None]
     is_personal_access: Union[bool, None]
+    app_signature: AppSignature
 
 
 class RevokeDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
+
+
+def get_app_address_from_signature(app_signature: AppSignature):
+    web3 = web3_provider.get_eth_web3()
+    message_hash = defunct_hash_message(text=app_signature["message"])
+    app_address = web3.eth.account.recoverHash(
+        message_hash, signature=app_signature["signature"]
+    )
+    return app_address.lower()
+
+
+def is_within_6_hours(timestamp_str):
+    current_time = datetime.now()
+    timestamp = datetime.fromtimestamp(int(timestamp_str))
+    time_difference = current_time - timestamp
+    return time_difference.total_seconds() < 6 * 60 * 60
 
 
 def get_developer_app_metadata_from_raw(
@@ -34,7 +58,9 @@ def get_developer_app_metadata_from_raw(
         "name": None,
         "is_personal_access": None,
         "description": None,
+        "app_signature": None,
     }
+
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
@@ -50,6 +76,7 @@ def get_developer_app_metadata_from_raw(
             metadata["is_personal_access"] = json_metadata.get(
                 "is_personal_access", None
             )
+            metadata["app_signature"] = json_metadata.get("app_signature", None)
             return metadata
         except Exception as e:
             logger.error(
@@ -61,14 +88,11 @@ def get_developer_app_metadata_from_raw(
 
 def validate_developer_app_tx(params: ManageEntityParameters, metadata):
     user_id = params.user_id
+    address = metadata.get("address", None)
 
     if params.entity_type != EntityType.DEVELOPER_APP:
         raise Exception(
             f"Invalid Developer App Transaction, wrong entity type {params.entity_type}"
-        )
-    if not metadata["address"]:
-        raise Exception(
-            f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
         )
     if not user_id:
         raise Exception(
@@ -90,25 +114,56 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             f"Invalid {params.action} Developer App Transaction, user does not match signer"
         )
     if params.action == Action.DELETE:
-        if metadata["address"] not in params.existing_records[EntityType.DEVELOPER_APP]:
+        if not address:
+            raise Exception(
+                f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
+            )
+
+        if address not in params.existing_records[EntityType.DEVELOPER_APP]:
             raise Exception(
                 f"Invalid Delete Developer App Transaction, developer app with address {metadata['address']} does not exist"
             )
         existing_developer_app = params.existing_records[EntityType.DEVELOPER_APP][
-            metadata["address"]
+            address
         ]
         if user_id != existing_developer_app.user_id:
             raise Exception(
                 f"Invalid Delete Developer App Transaction, user id {user_id} does not match given developer app address"
             )
     elif params.action == Action.CREATE:
+        if not metadata["app_signature"]:
+            raise Exception(
+                "Invalid Create Developer App Transaction, app signature is required and was not provided"
+            )
+        if (
+            not isinstance(metadata["app_signature"], dict)
+            or not metadata["app_signature"]
+            .get("message", "")
+            .startswith("Creating Audius developer app at ")
+            or not is_within_6_hours(
+                (metadata["app_signature"].get("message", "").split())[-1]
+            )
+        ):
+            raise Exception(
+                "Invalid Create Developer App Transaction, app signature provided does not have correct message"
+            )
+        try:
+            address = get_app_address_from_signature(metadata["app_signature"])
+        except:
+            raise Exception(
+                "Invalid Create Developer App Transaction, app signature provided is invalid"
+            )
+        if not address:
+            raise Exception(
+                "Invalid Create Developer App Transaction, app signature provided is invalid"
+            )
         if not metadata["name"]:
             raise Exception(
                 "Invalid Create Developer App Transaction, name is required and was not provided"
             )
-        if metadata["address"] in params.existing_records[EntityType.DEVELOPER_APP]:
+        if address in params.existing_records[EntityType.DEVELOPER_APP]:
             raise Exception(
-                f"Invalid Create Developer App Transaction, address {metadata['address']} already exists"
+                f"Invalid Create Developer App Transaction, address {address} already exists"
             )
         if metadata["is_personal_access"] != None and not isinstance(
             metadata["is_personal_access"], bool
@@ -127,13 +182,14 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         raise Exception(
             f"Invalid Developer App Transaction, action {params.action} is not valid"
         )
+    return address
 
 
 def create_developer_app(params: ManageEntityParameters):
     metadata = get_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception("Invalid Developer App Transaction, unable to parse metadata")
-    validate_developer_app_tx(params, metadata)
+    address = validate_developer_app_tx(params, metadata)
     user_id = params.user_id
 
     developer_app_record = DeveloperApp(
@@ -142,7 +198,7 @@ def create_developer_app(params: ManageEntityParameters):
             str, metadata["name"]
         ),  # cast to assert non null (since we validated above)
         address=cast(
-            str, metadata["address"]
+            str, address
         ),  # cast to assert non null (since we validated above)
         description=(metadata["description"] or None),
         is_personal_access=(metadata["is_personal_access"] or False),
@@ -155,7 +211,7 @@ def create_developer_app(params: ManageEntityParameters):
     )
 
     validate_developer_app_record(developer_app_record)
-    params.add_developer_app_record(metadata["address"], developer_app_record)
+    params.add_developer_app_record(address, developer_app_record)
     return developer_app_record
 
 
@@ -165,10 +221,9 @@ def delete_developer_app(params: ManageEntityParameters):
         raise Exception(
             "Invalid Revoke Developer App Transaction, unable to parse metadata"
         )
-    validate_developer_app_tx(params, metadata)
-    address = metadata["address"]
+    address = validate_developer_app_tx(params, metadata)
     existing_developer_app = params.existing_records[EntityType.DEVELOPER_APP][address]
-    if metadata["address"] in params.new_records[EntityType.DEVELOPER_APP]:
+    if address in params.new_records[EntityType.DEVELOPER_APP]:
         existing_developer_app = params.new_records[EntityType.DEVELOPER_APP][address][
             -1
         ]
