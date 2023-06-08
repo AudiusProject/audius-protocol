@@ -15,7 +15,7 @@ import {
   useProxySelector,
   userListActions
 } from '@audius/common'
-import { Image, Keyboard, View } from 'react-native'
+import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -33,6 +33,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { ChatUserListItem } from './ChatUserListItem'
+import { HeaderShadow } from './HeaderShadow'
 
 const { getAccountUser } = accountSelectors
 const { searchUsers } = searchUsersModalActions
@@ -67,8 +68,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   searchContainer: {
     marginTop: spacing(8),
-    marginHorizontal: spacing(2),
-    marginBottom: spacing(2)
+    paddingHorizontal: spacing(2),
+    paddingBottom: spacing(2)
+  },
+  searchBorder: {
+    borderBottomColor: palette.neutralLight8,
+    borderBottomWidth: 1
   },
   searchInputContainer: {
     paddingRight: spacing(5),
@@ -82,11 +87,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   profilePicture: {
     height: spacing(18),
     width: spacing(18)
-  },
-  shadow: {
-    borderBottomColor: palette.neutralLight6,
-    borderBottomWidth: 3,
-    borderBottomLeftRadius: 1
   },
   flatListContainer: {
     minHeight: '100%'
@@ -248,9 +248,16 @@ export const ChatUserListScreen = () => {
       topbarRight={null}
     >
       <ScreenContent>
-        <View style={styles.shadow} onTouchStart={Keyboard.dismiss} />
+        <HeaderShadow />
         <View style={styles.rootContainer}>
-          <View style={styles.searchContainer}>
+          <View
+            style={[
+              styles.searchContainer,
+              // Only show the border below the search input if
+              // there are scrollable users below
+              users?.length ? styles.searchBorder : null
+            ]}
+          >
             <TextInput
               placeholder={messages.search}
               Icon={IconSearch}
@@ -278,7 +285,8 @@ export const ChatUserListScreen = () => {
               renderItem={({ item }) => <ChatUserListItem user={item} />}
               keyExtractor={(user: User) => user.handle}
               contentContainerStyle={styles.flatListContainer}
-              ListEmptyComponent={<ListEmpty />}
+              // Only show empty component if there is no search query
+              ListEmptyComponent={query ? null : <ListEmpty />}
               keyboardShouldPersistTaps='always'
             />
           )}
