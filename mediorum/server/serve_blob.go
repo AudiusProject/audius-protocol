@@ -104,8 +104,10 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
+	logger := ss.logger.With("cid", key)
 
 	if ss.isCidBlacklisted(ctx, key) {
+		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
@@ -117,7 +119,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	if isLegacyCID(key) {
-		ss.logger.Debug("serving legacy cid", "cid", key)
+		logger.Debug("serving legacy cid")
 		return ss.serveLegacyCid(c)
 	}
 
