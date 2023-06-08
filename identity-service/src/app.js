@@ -24,6 +24,7 @@ const { logger, loggingMiddleware } = require('./logging')
 const {
   getRateLimiter,
   getRateLimiterMiddleware,
+  getRelayRateLimiterMiddleware,
   isIPWhitelisted,
   getIP
 } = require('./rateLimiter.js')
@@ -399,6 +400,8 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
+
+    this.express.use('/relay', getRelayRateLimiterMiddleware('hourly'))
     this.express.use(getRateLimiterMiddleware())
   }
 

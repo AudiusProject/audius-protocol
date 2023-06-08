@@ -9,6 +9,8 @@ const redisClient = new Redis(
   config.get('redisHost'),
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
+const { libs } = require('@audius/sdk')
+const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 
@@ -165,9 +167,50 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
+const windowMapping = {
+  hourly: 60 * 60 * 1000,
+  daily: 24 * 60 * 60 * 1000
+}
+const getRelayRateLimiterMiddleware = (window) => {
+  return getRateLimiter({
+    windowMs: windowMapping[window],
+    prefix: `relayWalletRateLimiter`,
+    max: function (req) {
+      const decodedABI = AudiusABIDecoder.decodeMethod(
+        'EntityManager',
+        req.body.encodedABI
+      )
+      const action = decodedABI.params.find(
+        (param) => param.name === '_action'
+      ).value
+      const entityType = decodedABI.params.find(
+        (param) => param.name === '_entityType'
+      ).value
+      const key = action + entityType
+      const limit = config.get(key)[window]
+      return limit
+    },
+    keyGenerator: function (req) {
+      const decodedABI = AudiusABIDecoder.decodeMethod(
+        'EntityManager',
+        req.body.encodedABI
+      )
+      const action = decodedABI.params.find(
+        (param) => param.name === '_action'
+      ).value
+      const entityType = decodedABI.params.find(
+        (param) => param.name === '_entityType'
+      ).value
+      const key = action + entityType
+      return ':::' + key + ':' + req.body.senderAddress
+    }
+  })
+}
+
 module.exports = {
   getIP,
   isIPWhitelisted,
   getRateLimiter,
-  getRateLimiterMiddleware
+  getRateLimiterMiddleware,
+  getRelayRateLimiterMiddleware
 }

@@ -873,6 +873,8 @@ const config = convict({
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
+const defaultRelayRateLimit = fs.existsSync('default-relay-rate-limit.json')
+if (defaultRelayRateLimit) config.loadFile('default-relay-rate-limit.json')
 if (fs.existsSync('eth-contract-config.json')) {
   // eslint isn't smart enought to know this is a conditional require, so this fails
   // on CI where the file doesn't exist.
