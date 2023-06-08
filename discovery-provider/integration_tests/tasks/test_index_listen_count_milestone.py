@@ -17,11 +17,14 @@ milestone_threshold = [
     250,
     500,
     1000,
+    2500,
     5000,
     10000,
-    20000,
+    25000,
     50000,
     100000,
+    250000,
+    500000,
     1000000,
 ]
 next_threshold = dict(zip(milestone_threshold[:-1], milestone_threshold[1:]))
@@ -222,7 +225,7 @@ def test_listen_count_milestone_processing(app):
 
         with db.scoped_session() as session:
             milestones = session.query(Milestone).filter(Milestone.slot == 14).all()
-            assert len(milestones) == 14
+            assert len(milestones) == 15
             sorted_milestones = sorted(milestones, key=lambda m: (m.id, m.threshold))
             sorted_milestones = [
                 (milestone.id, milestone.threshold) for milestone in sorted_milestones
