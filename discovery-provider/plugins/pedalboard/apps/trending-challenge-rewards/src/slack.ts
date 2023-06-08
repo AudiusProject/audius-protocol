@@ -62,7 +62,7 @@ const disburse = async (
 ): Promise<void> => {
   const { command, ack, respond } = args;
   await ack();
-  await onDisburse(app, true, { command, client });
+  await onDisburse(app, true);
 };
 
 export const formatDisbursementTable = (

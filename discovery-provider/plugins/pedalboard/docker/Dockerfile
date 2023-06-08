@@ -29,11 +29,6 @@ RUN apk add --no-cache libc6-compat git
 RUN apk update
 RUN apk add --no-cache python3 py3-pip make g++
 
-# install local deps
-RUN npm i ./packages/storage
-RUN npm i ./packages/basekit
-RUN npm i ./packages/logger
-
 # First install dependencies (as they change less often)
 RUN npm install
 
