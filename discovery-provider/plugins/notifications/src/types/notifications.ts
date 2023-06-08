@@ -6,12 +6,14 @@ import {
 import { NotificationRow } from './dn'
 
 export type DMNotification = {
+  chat_id: string
   sender_user_id: number
   receiver_user_id: number
   timestamp: Date
 }
 
 export type DMReactionNotification = {
+  chat_id: string
   sender_user_id: number
   receiver_user_id: number
   reaction: string
