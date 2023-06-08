@@ -12,6 +12,10 @@ import (
 	"github.com/tidwall/sjson"
 )
 
+func (ss *MediorumServer) getStatus(c echo.Context) error {
+	return c.JSON(200, ss)
+}
+
 func (ss *MediorumServer) getMyHealth(c echo.Context) error {
 	return c.JSON(200, ss.healthReport())
 }

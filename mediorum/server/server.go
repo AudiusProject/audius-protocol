@@ -226,6 +226,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/contact", ss.serveContact)
 
 	// unified health check?
+	routes.GET("/status", ss.getStatus)
 	routes.GET("/health_check", ss.serveUnifiedHealthCheck)
 
 	// -------------------

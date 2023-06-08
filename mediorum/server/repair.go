@@ -98,7 +98,7 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 		// call replicate
 		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
 		if iHave {
-			logger.Info("replicate", "cid", problem.Key)
+			logger.Info("repairing", "cid", problem.Key)
 			blob, err := ss.bucket.NewReader(ctx, problem.Key, nil)
 			if err != nil {
 				logger.Warn("failed to read key", "key", problem.Key, "err", err)
@@ -110,7 +110,7 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 			if err != nil {
 				logger.Warn("failed to replicate", "key", problem.Key, "err", err)
 			} else {
-				logger.Debug("repaired", "key", problem.Key, "hosts", hosts)
+				logger.Info("repaired", "key", problem.Key, "hosts", hosts)
 			}
 		}
 	}
@@ -137,12 +137,13 @@ func (ss *MediorumServer) cleanupOverReplicatedBlobs() error {
 		hosts := strings.Split(problem.Hosts, ",")
 		myIdx := slices.Index(hosts, ss.Config.Self.Host)
 		if myIdx+1 > ss.Config.ReplicationFactor {
-			logger.Info("delete", "cid", problem.Key)
+			logger := logger.With("cid", problem.Key)
+			logger.Info("deleting")
 			err = ss.dropFromMyBucket(problem.Key)
 			if err != nil {
-				ss.logger.Warn("cleanup: delete failed", "err", err)
+				ss.logger.Error("cleanup: delete failed", err)
 			} else {
-				ss.logger.Debug("cleanup: deleted " + problem.Key)
+				ss.logger.Info("cleanup: delete OK")
 			}
 		}
 	}
