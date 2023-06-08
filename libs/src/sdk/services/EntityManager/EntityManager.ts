@@ -45,10 +45,6 @@ export class EntityManager implements EntityManagerService {
     )
   }
 
-  public get contractMethod() {
-    return this.contract.methods.manageEntity
-  }
-
   /**
    * Calls the manage entity method on chain to update some data
    */
@@ -78,7 +74,7 @@ export class EntityManager implements EntityManagerService {
     const senderAddress = await auth.getAddress()
     const signature = await auth.signTransaction(signatureData)
 
-    const method = await this.contractMethod(
+    const method = await this.contract.methods.manageEntity(
       userId,
       entityType,
       entityId,
