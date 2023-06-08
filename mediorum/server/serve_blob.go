@@ -17,9 +17,14 @@ import (
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
+	cid := c.Param("cid")
 	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: c.Param("cid")}).Find(&locations)
-	return c.JSON(200, locations)
+	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
+	return c.JSON(200, map[string]any{
+		"cid":       cid,
+		"locations": locations,
+		"preferred": ss.placement.topAll(cid),
+	})
 }
 
 func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
@@ -30,6 +35,35 @@ func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
 	return c.JSON(200, problems)
 }
 
+func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
+	ctx := c.Request().Context()
+	problems, err := ss.findProblemBlobs(false)
+	if err != nil {
+		return err
+	}
+	results := map[string]string{}
+	for _, problem := range problems {
+		if !ss.placement.isMyHash(problem.Key) {
+			continue
+		}
+		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
+		if err != nil {
+			results[problem.Key] = err.Error()
+			continue
+		}
+		defer r.Close()
+		cid, err := computeFileCID(r)
+		if err != nil {
+			results[problem.Key] = err.Error()
+			continue
+		}
+		if cid != problem.Key {
+			results[problem.Key] = fmt.Sprintf("computed cid %s", cid)
+		}
+	}
+	return c.JSON(200, results)
+}
+
 func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
@@ -38,6 +72,33 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 		return err
 	}
 	return c.JSON(200, attr)
+}
+
+// similar to blob info... but more complete
+func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
+	ctx := c.Request().Context()
+	key := c.Param("cid")
+
+	// verify blob exists
+	r, err := ss.bucket.NewReader(ctx, key, nil)
+	if err != nil {
+		return err
+	}
+
+	// verify CID matches
+	err = validateCID(key, r)
+	if err != nil {
+		return err
+	}
+
+	// verify DB row exists
+	var existingBlob *Blob
+	err = ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, key).First(&existingBlob).Error
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, existingBlob)
 }
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
@@ -91,8 +152,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return err
 	}
 	for _, blob := range blobs {
-		// double tripple check server is up and has blob
-		if ss.hostHasBlob(blob.Host, key) {
+		// do a check server is up and has blob
+		if ss.hostHasBlob(blob.Host, key, false) {
 			dest := replaceHost(*c.Request().URL, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
@@ -104,11 +165,12 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
-	// todo: skip count for trusted notifier requests should be inferred
-	// by the requesting entity and not some query param
+
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
 		!rangeIsFirstByte(c.Request().Header.Get("Range")) {
+		// todo: skip count for trusted notifier requests should be inferred
+		// by the requesting entity and not some query param
 		return
 	}
 
@@ -134,14 +196,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		"solanaListen": false,
 		"timestamp":    signatureData.Timestamp,
 		"signature":    signatureData.Signature,
-	}
-
-	logOnly := true
-	if logOnly {
-		// as of now we favor client POSTing to /listen
-		// this will change to be all server side as part of a larger initiative
-		ss.logger.Info(fmt.Sprintf("skipping track listen as logOnly set to true: %v", body))
-		return
 	}
 
 	buf, err := json.Marshal(body)
@@ -227,10 +281,12 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	files := form.File["files"]
+	files := form.File[filesFormFieldName]
 	defer form.RemoveAll()
 
 	for _, upload := range files {
+		cid := upload.Filename
+		logger := ss.logger.With("cid", cid)
 
 		inp, err := upload.Open()
 		if err != nil {
@@ -238,17 +294,18 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 		}
 		defer inp.Close()
 
-		cid, err := computeFileCID(inp)
+		err = validateCID(cid, inp)
 		if err != nil {
-			return err
-		}
-		if cid != upload.Filename {
-			ss.logger.Warn("postBlob CID mismatch", "filename", upload.Filename, "cid", cid)
+			logger.Info("postBlob got invalid CID", "err", err)
+			return c.JSON(400, map[string]string{
+				"error": err.Error(),
+			})
 		}
 
 		err = ss.replicateToMyBucket(cid, inp)
 		if err != nil {
-			ss.logger.Info("accept ERR", "file", upload.Filename, "err", err)
+			ss.logger.Info("accept ERR", "err", err)
+			return err
 		}
 	}
 

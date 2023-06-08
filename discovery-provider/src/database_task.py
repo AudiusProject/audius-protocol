@@ -17,6 +17,7 @@ class DatabaseTask(Task):
         cid_metadata_client=None,
         redis=None,
         eth_web3_provider=None,
+        trusted_notifier_manager=None,
         solana_client_manager=None,
         challenge_event_bus=None,
         eth_manager=None,
@@ -30,6 +31,7 @@ class DatabaseTask(Task):
         self._cid_metadata_client = cid_metadata_client
         self._redis = redis
         self._eth_web3_provider = eth_web3_provider
+        self._trusted_notifier_manager = trusted_notifier_manager
         self._solana_client_manager = solana_client_manager
         self._challenge_event_bus = challenge_event_bus
         self._eth_manager = eth_manager
@@ -69,6 +71,10 @@ class DatabaseTask(Task):
     @property
     def eth_web3(self):
         return self._eth_web3_provider
+
+    @property
+    def trusted_notifier_manager(self):
+        return self._trusted_notifier_manager
 
     @property
     def solana_client_manager(self):

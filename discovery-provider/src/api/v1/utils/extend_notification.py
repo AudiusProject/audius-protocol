@@ -403,7 +403,9 @@ def extend_track_added_to_playlist(action: NotificationAction):
         "data": {
             "track_id": encode_int_id(data["track_id"]),
             "playlist_id": encode_int_id(data["playlist_id"]),
-            "playlist_owner_id": encode_int_id(data["playlist_owner_id"]) if data.get("playlist_owner_id") else None
+            "playlist_owner_id": encode_int_id(data["playlist_owner_id"])
+            if data.get("playlist_owner_id")
+            else None,
         },
     }
     return notification

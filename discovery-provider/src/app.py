@@ -38,11 +38,11 @@ from src.queries import (
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
-from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
-from src.tasks.update_user_is_available import UPDATE_USER_IS_AVAILABLE_LOCK
+from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_constants import final_poa_block_redis_key
@@ -59,6 +59,7 @@ abi_values = None
 eth_web3 = None
 eth_abi_values = None
 
+trusted_notifier_manager = None
 solana_client_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
@@ -102,6 +103,7 @@ def create_app(test_config=None):
 def create_celery(test_config=None):
     # pylint: disable=W0603
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
+    global trusted_notifier_manager
     global solana_client_manager
 
     web3endpoint = web3_provider.get_web3()
@@ -112,6 +114,11 @@ def create_celery(test_config=None):
     # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
     eth_abi_values = helpers.load_eth_abi_values()
+
+    # Initialize trusted notifier manager info
+    trusted_notifier_manager = fetch_trusted_notifier_info(
+        eth_web3, shared_config, eth_abi_values
+    )
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
@@ -314,7 +321,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_spl_token",
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
-            "src.tasks.update_track_is_available",
+            "src.tasks.update_delist_statuses",
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
         ],
@@ -411,13 +418,9 @@ def configure_celery(celery, test_config=None):
                 "task": "index_reactions",
                 "schedule": timedelta(seconds=5),
             },
-            "update_track_is_available": {
-                "task": "update_track_is_available",
-                "schedule": timedelta(minutes=10),
-            },
-            "update_user_is_available": {
-                "task": "update_user_is_available",
-                "schedule": timedelta(minutes=10),
+            "update_delist_statuses": {
+                "task": "update_delist_statuses",
+                "schedule": timedelta(seconds=20),
             },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
@@ -496,8 +499,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("backfill_cid_data_lock")
     redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
-    redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
-    redis_inst.delete(UPDATE_USER_IS_AVAILABLE_LOCK)
+    redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
 
     # delete cached final_poa_block in case it has changed
@@ -519,6 +521,7 @@ def configure_celery(celery, test_config=None):
                 cid_metadata_client=cid_metadata_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
+                trusted_notifier_manager=trusted_notifier_manager,
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,

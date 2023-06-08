@@ -3,5 +3,5 @@ export type ServicesConfig = {
   discoveryNodes: string[]
   entityManagerContractAddress: string
   web3ProviderUrl: string
-  identityServiceEndpoint: string
+  identityServiceUrl: string
 }
