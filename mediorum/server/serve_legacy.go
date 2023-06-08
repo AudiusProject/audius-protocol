@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"log"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -32,11 +31,9 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	}
 
 	if err = c.File(storagePath); err != nil {
-		log.Println("error serving cid", cid, storagePath, err)
+		ss.logger.Error("error serving cid", err, "cid", cid, "storagePath", storagePath)
 		return ss.redirectToCid(c, cid)
 	}
-
-	log.Println("serving legacy cid", cid)
 
 	// v1 file listen
 	go ss.logTrackListen(c)
@@ -59,7 +56,7 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	}
 
 	if err = c.File(storagePath); err != nil {
-		log.Println("error serving dirCid", dirCid, storagePath, err)
+		ss.logger.Error("error serving dirCid", err, "dirCid", dirCid, "storagePath", storagePath)
 		return ss.redirectToCid(c, dirCid)
 	}
 
@@ -82,14 +79,15 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	// here we would want to check that host in question is up
 	// (perhaps using healthy hosts convetion from elsewhere)
 	// for now just use first host
-	log.Println("potential hosts for cid", cid, hosts)
+	logger := ss.logger.With("cid", cid)
+	logger.Info("potential hosts for cid", "hosts", hosts)
 	for _, host := range hosts {
 		dest := replaceHost(*c.Request().URL, host)
-		log.Println("redirecting to:", dest.String())
+		logger.Info("redirecting to: " + dest.String())
 		return c.Redirect(302, dest.String())
 	}
 
-	log.Println("no host found with cid", cid)
+	logger.Info("no host found with cid")
 	return c.String(404, "no host found with cid: "+cid)
 }
 
@@ -111,7 +109,7 @@ func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool
 	            false)`
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
 	if err != nil {
-		log.Println("isCidBlacklisted err", err)
+		ss.logger.Error("isCidBlacklisted err", err, "cid", cid)
 	}
 	return blacklisted
 }

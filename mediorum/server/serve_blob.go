@@ -48,9 +48,10 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
+	logger := ss.logger.With("cid", key)
 
 	if ss.isCidBlacklisted(ctx, key) {
-		ss.logger.Info("cid is blacklisted", "cid", key)
+		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
@@ -62,7 +63,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	if isLegacyCID(key) {
-		ss.logger.Debug("serving legacy cid", "cid", key)
+		logger.Debug("serving legacy cid")
 		return ss.serveLegacyCid(c)
 	}
 
@@ -79,8 +80,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return err
 		}
 		defer blob.Close()
-
-		ss.logger.Info("serving v2 cid", "cid", key)
 
 		// v2 file listen
 		go ss.logTrackListen(c)
