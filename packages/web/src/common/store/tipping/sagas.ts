@@ -31,7 +31,8 @@ import {
   processAndCacheUsers,
   solanaSelectors,
   createUserBankIfNeeded,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  chatActions
 } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
@@ -80,6 +81,7 @@ const {
 } = tippingSelectors
 const { update } = cacheActions
 const getAccountUser = accountSelectors.getAccountUser
+const { fetchPermissions } = chatActions
 
 export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
 const DISMISSED_TIP_KEY = 'dismissed-tips'
@@ -213,6 +215,46 @@ function* overrideSupportersForUser({
   )
 }
 
+/**
+ * Polls the getUserSupporter endpoint to check if the sender is listed as a supporter of the recipient
+ */
+function* confirmTipIndexed({
+  sender,
+  recipient,
+  maxAttempts = 60,
+  delayMs = 1000
+}: {
+  sender: User
+  recipient: User
+  maxAttempts?: number
+  delayMs?: number
+}) {
+  for (let attempts = 0; attempts < maxAttempts; attempts++) {
+    console.debug(
+      `Confirming tip is indexed... [${
+        attempts + 1
+      }/${maxAttempts}] (delay: ${delayMs}ms)`
+    )
+    try {
+      const apiClient = yield* getContext('apiClient')
+      const response = yield* call([apiClient, apiClient.getUserSupporter], {
+        currentUserId: sender.user_id,
+        userId: recipient.user_id,
+        supporterUserId: sender.user_id
+      })
+      if (response) {
+        console.debug('Tip indexed')
+        return true
+      }
+    } catch (e) {
+      console.error('Error confirming tip indexed: ', e)
+    }
+    yield* delay(delayMs)
+  }
+  console.error('Tip could not be confirmed as indexed')
+  return false
+}
+
 function* sendTipAsync() {
   const walletClient = yield* getContext('walletClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -335,6 +377,12 @@ function* sendTipAsync() {
       })
     )
     yield put(refreshTipGatedTracks({ userId: recipient.user_id, trackId }))
+    yield fork(function* () {
+      yield* call(confirmTipIndexed, { sender, recipient })
+      yield* put(
+        fetchPermissions({ userIds: [sender.user_id, recipient.user_id] })
+      )
+    })
 
     /**
      * Store optimistically updated supporting value for sender
