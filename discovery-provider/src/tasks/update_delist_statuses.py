@@ -233,8 +233,7 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
         cursor_before = (
             session.query(DelistStatusCursor.created_at)
             .filter(
-                DelistStatusCursor.host == endpoint,
-                DelistStatusCursor.entity == entity
+                DelistStatusCursor.host == endpoint, DelistStatusCursor.entity == entity
             )
             .first()
         )

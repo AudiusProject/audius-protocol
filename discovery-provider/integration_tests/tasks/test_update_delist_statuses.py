@@ -282,12 +282,12 @@ def test_format_poll_more_endpoint(app, mocker):
                 "cursor2": "2023-06-06 12:00:00.000000+00",
                 "endpoint2": trusted_notifier_endpoint,
                 "entity2": DelistEntity.TRACKS,
-            }
+            },
         )
         mocker.patch(
             "src.tasks.update_delist_statuses.signed_get",
             side_effect=assert_signed_get,
-            autospec=True
+            autospec=True,
         )
         process_delist_statuses(session, trusted_notifier_manager)
 
