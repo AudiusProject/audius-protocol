@@ -12,6 +12,7 @@ import (
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
+	logger := ss.logger.With("cid", cid)
 	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 
 	// lookup on-disk storage path
@@ -20,6 +21,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	if err == pgx.ErrNoRows {
 		return ss.redirectToCid(c, cid)
 	} else if err != nil {
+		logger.Error("error querying cid storage path", err)
 		return err
 	}
 
@@ -31,7 +33,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	}
 
 	if err = c.File(storagePath); err != nil {
-		ss.logger.Error("error serving cid", err, "cid", cid, "storagePath", storagePath)
+		logger.Error("error serving cid", err, "storagePath", storagePath)
 		return ss.redirectToCid(c, cid)
 	}
 
@@ -45,6 +47,7 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	ctx := c.Request().Context()
 	dirCid := c.Param("dirCid")
 	fileName := c.Param("fileName")
+	logger := ss.logger.With("dirCid", dirCid)
 
 	sql := `select "storagePath" from "Files" where "dirMultihash" = $1 and "fileName" = $2`
 	var storagePath string
@@ -52,11 +55,12 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	if err == pgx.ErrNoRows {
 		return ss.redirectToCid(c, dirCid)
 	} else if err != nil {
+		logger.Error("error querying dirCid storage path", err)
 		return err
 	}
 
 	if err = c.File(storagePath); err != nil {
-		ss.logger.Error("error serving dirCid", err, "dirCid", dirCid, "storagePath", storagePath)
+		logger.Error("error serving dirCid", err, "storagePath", storagePath)
 		return ss.redirectToCid(c, dirCid)
 	}
 
@@ -109,7 +113,7 @@ func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool
 	            false)`
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
 	if err != nil {
-		ss.logger.Error("isCidBlacklisted err", err, "cid", cid)
+		ss.logger.Error("isCidBlacklisted error", err, "cid", cid)
 	}
 	return blacklisted
 }
