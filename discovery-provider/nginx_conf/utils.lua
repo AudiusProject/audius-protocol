@@ -1,6 +1,7 @@
 local _M = {}
 
 local dkjson = require "dkjson"
+local cjson = require "cjson"
 
 -- generate a random 10 char string
 function _M.generate_nonce ()
@@ -31,7 +32,13 @@ end
 
 -- encode and sort table t in json
 function _M.encode_sorted(t)
+    -- use dkjson for sorting
     return dkjson.encode(t, { indent = true, keyorder = dkjson.sortedkeys(t) })
+end
+
+-- decode json
+function _M.decode(json)
+    return cjson.decode(json)
 end
 
 return _M

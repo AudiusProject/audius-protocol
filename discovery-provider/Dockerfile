@@ -49,10 +49,10 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
     ./configure --with-lua-include=/usr/include && \
     make build && \
     make install && \
-    luarocks install dkjson && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
-    mkdir /usr/local/openresty/conf /usr/local/openresty/logs
+    mkdir /usr/local/openresty/conf /usr/local/openresty/logs && \
+    luarocks install dkjson
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
