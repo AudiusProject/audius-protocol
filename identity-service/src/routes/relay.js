@@ -23,6 +23,8 @@ module.exports = function (app) {
     '/relay',
     captchaMiddleware,
     handleResponse(async (req, res, next) => {
+      req.logger.info('asdf in relay')
+
       const body = req.body
       const redis = req.app.get('redis')
 

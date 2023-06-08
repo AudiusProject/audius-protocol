@@ -9,7 +9,7 @@ const redisClient = new Redis(
   config.get('redisHost'),
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
-const models = require('../models')
+const models = require('./models')
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 
@@ -192,7 +192,7 @@ const getRelayRateLimiterMiddleware = (window) => {
       let limit = config.get(key)
 
       const user = await models.User.findOne({
-        where: { walletAddress: body.senderAddress },
+        where: { walletAddress: req.body.senderAddress },
         attributes: [
           'id',
           'blockchainUserId',
@@ -205,10 +205,14 @@ const getRelayRateLimiterMiddleware = (window) => {
         ]
       })
       if (user) {
-        limit = limit.get('owner')
+        req.logger.info(`asdf user exists ${req.body.senderAddress} ${user}`)
+        limit = limit['owner']
       } else {
-        limit = limit.get('app')
+        req.logger.info(`asdf user does not exist ${req.body.senderAddress}`)
+        limit = limit['app']
       }
+
+      req.logger.info('asdf isaac max set')
       return limit[window]
     },
     keyGenerator: function (req) {
