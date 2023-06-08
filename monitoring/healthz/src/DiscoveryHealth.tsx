@@ -31,7 +31,8 @@ export function DiscoveryHealth() {
             {isContent && <th>selectedDiscoveryProvider</th>}
             <th>Storage</th>
             <th>DB Size</th>
-            <th>ACDC Signer Health</th>
+            <th>Your IP</th>
+            <th>ACDC Health</th>
             <th>Is Signer</th>
             <th>Peers</th>
             <th>Producing</th>
@@ -51,10 +52,15 @@ export function DiscoveryHealth() {
 
 function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const { data, error } = useSWR(sp.endpoint + '/health_check', fetcher)
+  const { data: ipCheck, error: ipCheckError } = useSWR(
+    sp.endpoint + '/ip_check',
+    fetcher
+  )
 
   const health = data?.data
+  const yourIp = ipCheck?.data
 
-  if (!health)
+  if (!health || !yourIp)
     return (
       <tr>
         <td>
@@ -62,7 +68,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
-        <td>{error ? 'error' : 'loading'}</td>
+        <td>{error || ipCheckError ? 'error' : 'loading'}</td>
       </tr>
     )
 
@@ -80,21 +86,22 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
-    if (str === undefined) return "chain health undefined"
+    if (str === undefined) return 'chain health undefined'
     const match = str.match(/Peers: (\d+)\./)
-    return (match && match[1]) ? match[1] : "no peers found"
+    return match && match[1] ? match[1] : 'no peers found'
   }
   const getProducing = (str: string | undefined) => {
-    if (str === undefined) return "chain health undefined"
-    return (!str.includes("The node stopped producing blocks.")).toString()
+    if (str === undefined) return 'chain health undefined'
+    return (!str.includes('The node stopped producing blocks.')).toString()
   }
   // currently discprov does not expose the address of its internal chain instance
   const isSigner = (nodeAddr?: string, signerAddrs?: string[]) => {
-    if (nodeAddr === undefined) return "node address not found"
-    if (signerAddrs === undefined) return "clique signers not found"
+    if (nodeAddr === undefined) return 'node address not found'
+    if (signerAddrs === undefined) return 'clique signers not found'
     return signerAddrs.includes(nodeAddr).toString()
   }
-  const chainDescription: string = health.chain_health?.entries["node-health"].description
+  const chainDescription: string =
+    health.chain_health?.entries['node-health'].description
 
   return (
     <tr>
@@ -144,6 +151,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </span>
       </td>
       <td>{`${dbSize} GB`}</td>
+      <td>{`${yourIp}`}</td>
       <td>{health.chain_health?.status}</td>
       <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>
       <td>{getPeers(chainDescription)}</td>
