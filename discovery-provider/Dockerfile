@@ -2,7 +2,6 @@
 FROM audius/contracts:1.0.0 AS contracts
 
 FROM alpine:3.14
-LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
 WORKDIR $INSTALL_PATH
@@ -59,19 +58,20 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0
 
-COPY nginx_conf /usr/local/openresty/conf/
-
-COPY scripts/init-db.sh scripts/init-db.sh
-RUN bash scripts/init-db.sh
 
 # Upgrade pip first to accomodate anchor.py installation
 COPY requirements.txt requirements.txt
 RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
 
-COPY . .
-RUN cd es-indexer && npm install && npm run build
+COPY scripts/init-db.sh scripts/init-db.sh
+RUN bash scripts/init-db.sh
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
+
+COPY . .
+RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
+
+COPY nginx_conf /usr/local/openresty/conf/
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha
@@ -86,7 +86,7 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
-    CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
+HEALTHCHECK --interval=5s --timeout=10s --retries=12 \
+    CMD pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]
