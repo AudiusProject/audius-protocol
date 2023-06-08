@@ -245,5 +245,6 @@ def test_listen_count_milestone_processing(app):
                 (9, 250),
                 (9, 500),
                 (9, 1000),
+                (9, 2500),
                 (9, 5000),
             ]
