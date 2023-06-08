@@ -33,10 +33,8 @@ end
 -- encode and sort table t in json
 function _M.encode_sorted(t)
     local keys = {}
-    local n = 0
-    for k, _ in pairs(t) do
-      n = n + 1
-      keys[n] = k
+    for k in pairs(t) do
+        table.insert(keys, k)
     end
     table.sort(keys)
     return dkjson.encode(t, { keyorder = keys })
