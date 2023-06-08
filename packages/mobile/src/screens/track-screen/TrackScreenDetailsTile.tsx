@@ -139,6 +139,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     justifyContent: 'center',
     paddingHorizontal: spacing(4)
   },
+  headerRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   headerText: {
     marginTop: spacing(4),
     marginBottom: spacing(4),
@@ -458,12 +464,14 @@ export const TrackScreenDetailsTile = ({
       </View>
     ) : (
       <View style={styles.headerContainer}>
-        <TrackDownloadStatusIndicator
-          style={styles.downloadStatusIndicator}
-          size={20}
-          trackId={track_id}
-        />
-        {renderHeaderText()}
+        <View style={styles.headerRow}>
+          <TrackDownloadStatusIndicator
+            style={styles.downloadStatusIndicator}
+            size={20}
+            trackId={track_id}
+          />
+          {renderHeaderText()}
+        </View>
         {renderAiHeader()}
       </View>
     )
