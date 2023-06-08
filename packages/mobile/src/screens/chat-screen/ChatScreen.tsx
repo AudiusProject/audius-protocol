@@ -510,6 +510,14 @@ export const ChatScreen = () => {
     flatListInnerHeight.current = event.nativeEvent.layout.height
   }, [])
 
+  // Scroll to the bottom if the user sends a message
+  const handleMessageSent = useCallback(() => {
+    // Set a timeout to ensure the full render happened and we got the final height
+    setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true })
+    }, 0)
+  }, [flatListRef])
+
   return (
     <Screen
       url={url}
@@ -621,7 +629,10 @@ export const ChatScreen = () => {
                 pointerEvents={'box-none'}
               >
                 <View style={styles.whiteBackground} />
-                <ChatTextInput chatId={chatId} />
+                <ChatTextInput
+                  chatId={chatId}
+                  onMessageSent={handleMessageSent}
+                />
               </View>
             ) : null}
           </KeyboardAvoidingView>

@@ -3,7 +3,9 @@ import {
   ComponentPropsWithoutRef,
   FormEvent,
   useCallback,
-  useState
+  useState,
+  useRef,
+  useEffect
 } from 'react'
 
 import { chatActions } from '@audius/common'
@@ -26,6 +28,7 @@ const ENTER_KEY = 'Enter'
 
 export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
+  onMessageSent: () => void
 }
 
 const MAX_MESSAGE_LENGTH = 10000
@@ -45,9 +48,10 @@ export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
 }
 
 export const ChatComposer = (props: ChatComposerProps) => {
-  const { chatId } = props
+  const { chatId, onMessageSent } = props
   const dispatch = useDispatch()
   const [value, setValue] = useState('')
+  const ref = useRef<HTMLTextAreaElement>(null)
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -63,9 +67,10 @@ export const ChatComposer = (props: ChatComposerProps) => {
         const message = value
         dispatch(sendMessage({ chatId, message }))
         setValue('')
+        onMessageSent()
       }
     },
-    [chatId, value, setValue, dispatch]
+    [chatId, value, setValue, dispatch, onMessageSent]
   )
 
   // Submit when pressing enter while not holding shift
@@ -79,10 +84,17 @@ export const ChatComposer = (props: ChatComposerProps) => {
     [handleSubmit]
   )
 
+  useEffect(() => {
+    if (chatId) {
+      ref.current?.focus()
+    }
+  }, [ref, chatId])
+
   return (
     <div className={cn(styles.root, props.className)}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <TextAreaV2
+          ref={ref}
           rows={1}
           className={styles.input}
           placeholder={messages.sendMessagePlaceholder}

@@ -45,13 +45,23 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
         dispatch(pushRoute(chatPage(chatId)))
       } else {
         messagesRef.current?.scrollTo({
-          top: messagesRef.current?.scrollHeight,
+          top: messagesRef.current.scrollHeight,
           behavior: 'smooth'
         })
       }
     },
     [messagesRef, currentChatId, dispatch]
   )
+
+  const handleMessageSent = useCallback(() => {
+    // Set a timeout so that the date etc has a chance to render first
+    setTimeout(() => {
+      messagesRef.current?.scrollTo({
+        top: messagesRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
+    }, 0)
+  }, [messagesRef])
 
   useEffect(() => {
     if (firstOtherUser) {
@@ -93,7 +103,12 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
                 className={styles.messageList}
                 chatId={currentChatId}
               />
-              {canSendMessage ? <ChatComposer chatId={currentChatId} /> : null}
+              {canSendMessage ? (
+                <ChatComposer
+                  chatId={currentChatId}
+                  onMessageSent={handleMessageSent}
+                />
+              ) : null}
             </>
           ) : (
             <CreateChatPrompt />

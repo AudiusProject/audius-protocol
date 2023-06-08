@@ -22,6 +22,7 @@ export const RadioButton = (props: RadioButtonProps) => {
     onChange,
     name: nameProp,
     checked: checkedProp,
+    disabled,
     ...other
   } = props
 
@@ -46,13 +47,22 @@ export const RadioButton = (props: RadioButtonProps) => {
   )
 
   return (
-    <div className={cn(styles.root, className)}>
+    <div
+      className={cn(
+        styles.root,
+        // Firefox doesn't support :has() so we're using classes here
+        { [styles.disabled]: disabled },
+        { [styles.checked]: checked },
+        className
+      )}
+    >
       <input
         className={cn(styles.input, inputClassName)}
         name={name}
         checked={checked}
         type='radio'
         onChange={handleChange}
+        disabled={disabled}
         {...other}
       />
     </div>

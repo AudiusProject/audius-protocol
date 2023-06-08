@@ -51,9 +51,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type ChatTextInputProps = {
   chatId: string
+  onMessageSent: () => void
 }
 
-export const ChatTextInput = ({ chatId }: ChatTextInputProps) => {
+export const ChatTextInput = ({
+  chatId,
+  onMessageSent
+}: ChatTextInputProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const { primary, primaryDark2 } = useThemeColors()
@@ -66,8 +70,9 @@ export const ChatTextInput = ({ chatId }: ChatTextInputProps) => {
     if (chatId && inputMessage) {
       dispatch(sendMessage({ chatId, message: inputMessage }))
       setInputMessage('')
+      onMessageSent()
     }
-  }, [inputMessage, chatId, dispatch])
+  }, [inputMessage, chatId, dispatch, onMessageSent])
 
   const renderIcon = () => (
     <Pressable

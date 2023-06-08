@@ -3,6 +3,7 @@ import { ComponentPropsWithoutRef, MutableRefObject, RefCallback } from 'react'
 import cn from 'classnames'
 
 import styles from './InputV2.module.css'
+import { useFocusState } from './useFocusState'
 
 export enum InputV2Size {
   SMALL,
@@ -42,6 +43,9 @@ export const InputV2 = (props: InputV2Props) => {
     warning: warningProp,
     error,
     inputClassName,
+    disabled,
+    onFocus: onFocusProp,
+    onBlur: onBlurProp,
     ...other
   } = props
 
@@ -59,20 +63,41 @@ export const InputV2 = (props: InputV2Props) => {
     [styles.error]: error
   }
 
+  /**
+   * Since Firefox doesn't support the :has() pseudo selector,
+   * manually track the focused state and use classes for focus, required, and disabled
+   */
+  const [isFocused, handleFocus, handleBlur] = useFocusState(
+    onFocusProp,
+    onBlurProp
+  )
+
   const input = (
     <input
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       ref={inputRef}
       placeholder={!elevatePlaceholder ? placeholder : undefined}
       required={required}
       className={inputClassName}
       value={value}
       maxLength={maxLength}
+      disabled={disabled}
       {...other}
     />
   )
 
   return (
-    <div className={cn(styles.root, style, className)}>
+    <div
+      className={cn(
+        styles.root,
+        { [styles.focused]: isFocused },
+        { [styles.disabled]: disabled },
+        { [styles.required]: required },
+        style,
+        className
+      )}
+    >
       {elevatePlaceholder ? (
         <label className={styles.elevatedPlaceholderLabel}>
           <span
