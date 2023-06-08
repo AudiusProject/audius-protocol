@@ -67,7 +67,6 @@ export const AlbumsTab = () => {
                 ? loadingSpinner
                 : null
             }
-            style={{ marginVertical: 12 }}
           />
         </>
       )}
