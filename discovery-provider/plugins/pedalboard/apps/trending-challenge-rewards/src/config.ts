@@ -18,7 +18,7 @@ export type SharedData = {
 };
 
 export const initSharedData = async (): Promise<Result<SharedData, string>> => {
-  dotenv.config();
+  dotenv.config({ path: "./tcr.env" });
 
   const libs = await initAudiusLibs();
 

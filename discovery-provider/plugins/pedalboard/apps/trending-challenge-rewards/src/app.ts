@@ -18,20 +18,21 @@ import { formatDisbursementTable } from "./slack";
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const onCondition = async (app: App<SharedData>): Promise<void> => {
-  // const { dryRun } = app.viewAppData()
-  // const disburse = await onDisburse(app, dryRun);
-  // disburse.mapErr(console.error);
+  const { dryRun } = app.viewAppData()
+  const disburse = await onDisburse(app, dryRun);
+  disburse.mapErr(console.error);
 };
 
 // dryRun separated out so it can be run manually via another trigger
 export const onDisburse = async (
   app: App<SharedData>,
-  dryRun: boolean,
-  slack: { command: SlashCommand; client: WebClient }
+  dryRun: boolean
 ): Promise<Result<undefined, string>> => {
   const db = app.getDnDb();
   const libs = app.viewAppData().libs;
-  const { command, client } = slack;
+  const token = process.env.SLACK_BOT_TOKEN
+  if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined")
+  const client = new WebClient(token)
 
   const startingBlockRes = await findStartingBlock(db);
   if (startingBlockRes.err) return startingBlockRes;
@@ -42,8 +43,10 @@ export const onDisburse = async (
   );
   console.log(formattedResults);
 
+  const channel = process.env.SLACK_CHANNEL
+  if (channel === undefined) return new Err("SLACK_CHANNEL not defined")
   await client.chat.postMessage({
-    channel: command.channel_id,
+    channel,
     text: "```" + formattedResults + "```",
   });
 
@@ -146,11 +149,11 @@ const getAllChallenges = async (
   startBlock: number,
   dryRun: boolean
 ) => {
-  const { AAOEndpoint, oracleEthAddress, feePayerOverride, libs } =
+  const { AAOEndpoint, oracleEthAddress, feePayerOverride, libs, localEndpoint } =
     app.viewAppData();
   if (libs === null) return undefined;
   const res = await axios.get(
-    `https://discoveryprovider.audius.co/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
+    `${localEndpoint}/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
   const data: Challenge[] = res.data.data;
 
