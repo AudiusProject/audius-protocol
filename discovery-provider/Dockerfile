@@ -85,4 +85,7 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 
+HEALTHCHECK --interval=5s --timeout=10s --retries=12 \
+    CMD pgrep pg_migrate || curl -f http://localhost:5000/health_check   
+
 CMD ["bash", "scripts/start.sh"]
