@@ -7,12 +7,34 @@ import type { EIP712TypedData } from 'eth-sig-util'
 import { EntityManager } from './EntityManager'
 import { developmentConfig } from '../../config'
 import { Action, EntityType } from './types'
+import Web3 from '../../utils/web3'
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
 const discoveryNode = 'https://discovery-provider.audius.co'
 
 jest.mock('../DiscoveryNodeSelector')
+jest.mock('../../utils/web3', () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      eth: {
+        net: {
+          getId: () => ''
+        },
+        Contract: jest.fn().mockImplementation(() => ({
+          methods: {
+            manageEntity: () => ({
+              encodeABI: () => ''
+            })
+          }
+        }))
+      }
+    }
+  })
+})
+;(Web3 as any).providers = {
+  HttpProvider: jest.fn().mockImplementation(() => {})
+}
 
 jest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
