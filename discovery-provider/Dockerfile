@@ -85,5 +85,4 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 
-
 CMD ["bash", "scripts/start.sh"]
