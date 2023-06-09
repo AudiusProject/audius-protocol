@@ -1,7 +1,7 @@
-import { ParseRequestError } from '../legacy'
 import { developmentConfig, productionConfig, stagingConfig } from './config'
 import { sdk } from './sdk'
 import { DiscoveryNodeSelector } from './services'
+import { ParseRequestError } from './utils/parseRequestParameters'
 ;(window as any).audiusSdk = sdk
 ;(window as any).audiusSdk.DiscoveryNodeSelector = DiscoveryNodeSelector
 ;(window as any).audiusSdk.config = {
