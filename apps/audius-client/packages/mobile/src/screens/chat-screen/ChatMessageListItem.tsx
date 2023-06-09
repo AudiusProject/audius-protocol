@@ -49,7 +49,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   bubble: {
     marginTop: spacing(2),
     backgroundColor: palette.white,
-    borderRadius: spacing(3)
+    borderRadius: spacing(3),
+    overflow: 'hidden'
   },
   isAuthor: {
     backgroundColor: palette.secondaryLight2
@@ -133,7 +134,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   unfurl: {
     width: Dimensions.get('window').width - 48,
-    minHeight: 72
+    minHeight: 72,
+    borderRadius: 0 // Undoes border radius from track/collection tiles
   }
 }))
 
@@ -236,18 +238,12 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   const { secondaryDark1, neutralLight7 } = useThemeColors()
 
   const borderBottomColor = isAuthor ? secondaryDark1 : neutralLight7
-  const borderBottomWidth = hideMessage
-    ? 0
-    : isCollection || isTrack
-    ? undefined
-    : 1
-  const borderBottomRadius = hideMessage ? undefined : 0
+  const borderBottomWidth =
+    hideMessage || isCollection || isTrack ? undefined : 1
   const unfurlStyles = {
     ...styles.unfurl,
     borderBottomColor,
-    borderBottomWidth,
-    borderBottomLeftRadius: borderBottomRadius,
-    borderBottomRightRadius: borderBottomRadius
+    borderBottomWidth
   }
 
   return (
@@ -309,7 +305,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       chatId={chatId}
                       messageId={message.message_id}
                       href={link.href}
-                      hideMessage={hideMessage}
                       onLongPress={handleLongPress}
                       onPressIn={handlePressIn}
                       onPressOut={handlePressOut}
