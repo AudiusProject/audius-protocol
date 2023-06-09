@@ -7,7 +7,7 @@ import {
   chatSelectors,
   decodeHashId,
   formatMessageDate,
-  isPlaylistUrl,
+  isCollectionUrl,
   isTrackUrl
 } from '@audius/common'
 import type { ChatMessageReaction } from '@audius/sdk'
@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux'
 import ChatTail from 'app/assets/images/ChatTail.svg'
 import { Pressable, Hyperlink, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 import { reactionMap } from '../notifications-screen/Reaction'
@@ -132,15 +133,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   unfurl: {
     width: Dimensions.get('window').width - 48,
-    minHeight: 72,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0
-  },
-  unfurlAuthor: {
-    borderBottomColor: palette.secondaryDark1
-  },
-  unfurlOtherUser: {
-    borderBottomColor: palette.neutralLight7
+    minHeight: 72
   }
 }))
 
@@ -200,12 +193,14 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   const senderUserId = decodeHashId(message.sender_user_id)
   const isAuthor = senderUserId === userId
   const [isPressed, setIsPressed] = useState(false)
-  const [emptyLinkPreview, setEmptyLinkPreview] = useState(false)
+  const [emptyUnfurl, setEmptyUnfurl] = useState(false)
   const links = find(message.message)
   const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
   const linkValue = link?.value
-  const isLinkPreviewOnly = linkValue === message.message
-  const hideMessage = isLinkPreviewOnly && !emptyLinkPreview
+  const isUnfurlOnly = linkValue === message.message.trim()
+  const hideMessage = isUnfurlOnly && !emptyUnfurl
+  const isCollection = isCollectionUrl(linkValue)
+  const isTrack = isTrackUrl(linkValue)
   const tailColor = useGetTailColor(isAuthor, isPressed, hideMessage)
   const isUnderneathPopup =
     useSelector((state) =>
@@ -226,23 +221,34 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     }
   }, [message.message_id, message.status, onLongPress])
 
-  const onLinkPreviewEmpty = useCallback(() => {
+  const onUnfurlEmpty = useCallback(() => {
     if (linkValue) {
-      setEmptyLinkPreview(true)
+      setEmptyUnfurl(true)
     }
   }, [linkValue])
 
-  const onLinkPreviewSuccess = useCallback(() => {
+  const onUnfurlSuccess = useCallback(() => {
     if (linkValue) {
-      setEmptyLinkPreview(false)
+      setEmptyUnfurl(false)
     }
   }, [linkValue])
 
-  const chatStyles = !hideMessage
-    ? isAuthor
-      ? { ...styles.unfurl, ...styles.unfurlAuthor }
-      : { ...styles.unfurl, ...styles.unfurlOtherUser }
-    : styles.unfurl
+  const { secondaryDark1, neutralLight7 } = useThemeColors()
+
+  const borderBottomColor = isAuthor ? secondaryDark1 : neutralLight7
+  const borderBottomWidth = hideMessage
+    ? 0
+    : isCollection || isTrack
+    ? undefined
+    : 1
+  const borderBottomRadius = hideMessage ? undefined : 0
+  const unfurlStyles = {
+    ...styles.unfurl,
+    borderBottomColor,
+    borderBottomWidth,
+    borderBottomLeftRadius: borderBottomRadius,
+    borderBottomRightRadius: borderBottomRadius
+  }
 
   return (
     <>
@@ -281,21 +287,21 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       : null
                   }
                 >
-                  {isPlaylistUrl(linkValue) ? (
+                  {isCollection ? (
                     <ChatMessagePlaylist
                       key={`${link.value}-${link.start}-${link.end}`}
                       link={link.value}
-                      onEmpty={onLinkPreviewEmpty}
-                      onSuccess={onLinkPreviewSuccess}
-                      styles={chatStyles}
+                      onEmpty={onUnfurlEmpty}
+                      onSuccess={onUnfurlSuccess}
+                      styles={unfurlStyles}
                     />
-                  ) : isTrackUrl(linkValue) ? (
+                  ) : isTrack ? (
                     <ChatMessageTrack
                       key={`${link.value}-${link.start}-${link.end}`}
                       link={link.value}
-                      onEmpty={onLinkPreviewEmpty}
-                      onSuccess={onLinkPreviewSuccess}
-                      styles={chatStyles}
+                      onEmpty={onUnfurlEmpty}
+                      onSuccess={onUnfurlSuccess}
+                      styles={unfurlStyles}
                     />
                   ) : link ? (
                     <LinkPreview
@@ -308,12 +314,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       onPressIn={handlePressIn}
                       onPressOut={handlePressOut}
                       isPressed={isPressed}
-                      onEmpty={onLinkPreviewEmpty}
-                      onSuccess={onLinkPreviewSuccess}
-                      style={{
-                        ...chatStyles,
-                        borderBottomWidth: hideMessage ? 0 : 1
-                      }}
+                      onEmpty={onUnfurlEmpty}
+                      onSuccess={onUnfurlSuccess}
+                      style={unfurlStyles}
                     />
                   ) : null}
                   {!hideMessage ? (

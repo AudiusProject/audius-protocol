@@ -102,9 +102,15 @@ export const LineupTile = ({
     (item.genre === Genre.PODCASTS || item.genre === Genre.AUDIOBOOKS)
 
   const isReadonly = variant === 'readonly'
+  const scale = isReadonly ? 1 : undefined
 
   return (
-    <LineupTileRoot onPress={handlePress} style={styles} {...TileProps}>
+    <LineupTileRoot
+      onPress={handlePress}
+      style={styles}
+      scaleTo={scale}
+      {...TileProps}
+    >
       {showPremiumCornerTag && cornerTagIconType ? (
         <LineupTileBannerIcon
           type={cornerTagIconType}

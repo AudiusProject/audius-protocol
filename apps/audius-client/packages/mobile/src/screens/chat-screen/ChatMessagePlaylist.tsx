@@ -106,7 +106,7 @@ export const ChatMessagePlaylist = ({
     }))
   }, [tracks, uidMap])
 
-  const isActive = playingUid !== null && playingUid === uid
+  const isActive = tracksWithUids.find((track) => track.uid === playingUid)
 
   const recordAnalytics = useCallback(
     ({ name, id }: { name: TrackPlayback; id: ID }) => {

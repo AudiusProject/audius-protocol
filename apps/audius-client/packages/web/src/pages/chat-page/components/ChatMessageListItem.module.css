@@ -45,6 +45,18 @@
   --bubble-color: var(--secondary-light-1);
 }
 
+.bubble .unfurlOtherUser {
+  border-bottom: 1px solid var(--neutral-light-7);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.bubble .unfurlAuthor {
+  border-bottom: 1px solid var(--secondary-dark-1);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
 .text {
   padding: var(--unit-4);
   white-space: pre-wrap;
@@ -52,14 +64,6 @@
   text-align: left;
   line-height: 150%;
   user-select: text;
-}
-
-:not(.isAuthor) :not(.hideMessage) .unfurl {
-  border-bottom: 1px solid var(--neutral-light-7);
-}
-
-.isAuthor :not(.hideMessage) .unfurl {
-  border-bottom: 1px solid var(--secondary-dark-1);
 }
 
 .meta {

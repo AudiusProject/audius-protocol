@@ -135,7 +135,8 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     isTrending,
     showRankIcon,
     trackCount,
-    variant
+    variant,
+    containerClassName
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -152,7 +153,13 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   }
 
   return (
-    <div className={cn(styles.container, { [styles.readonly]: isReadonly })}>
+    <div
+      className={cn(
+        styles.container,
+        { [styles.readonly]: isReadonly },
+        containerClassName
+      )}
+    >
       <div className={styles.mainContent} onClick={props.togglePlay}>
         <div className={cn(styles.duration, styles.statText, fadeIn)}>
           {formatLineupTileDuration(props.duration)}

@@ -121,6 +121,7 @@ const ConnectedPlaylistTile = ({
   showRankIcon,
   isTrending,
   variant,
+  containerClassName,
   isFeed = false
 }: ConnectedPlaylistTileProps) => {
   const collection = getCollectionWithFallback(nullableCollection)
@@ -268,6 +269,7 @@ const ConnectedPlaylistTile = ({
 
   return (
     <PlaylistTile
+      containerClassName={containerClassName}
       uid={uid}
       id={collection.playlist_id}
       userId={collection.playlist_owner_id}
