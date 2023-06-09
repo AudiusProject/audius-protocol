@@ -43,7 +43,8 @@ func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
 	}
 	results := map[string]string{}
 	for _, problem := range problems {
-		if !ss.placement.isMyHash(problem.Key) {
+		_, isMine := ss.rendezvous(problem.Key)
+		if !isMine {
 			continue
 		}
 		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)

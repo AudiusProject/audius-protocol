@@ -178,6 +178,9 @@ func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
 }
 
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
+	if host == ss.Config.Self.Host {
+		return errors.New("should not pull blob from self")
+	}
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}

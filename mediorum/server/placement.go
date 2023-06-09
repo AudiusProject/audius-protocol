@@ -1,9 +1,8 @@
 package server
 
 import (
-	"strings"
-
 	"github.com/tysonmote/rendezvous"
+	"golang.org/x/exp/slices"
 )
 
 type placement struct {
@@ -30,19 +29,8 @@ func newPlacement(config MediorumConfig) *placement {
 
 }
 
-func (p *placement) isMyHash(h string) bool {
-	h = fileNameHashPrefix(h)
-	topN := p.hashRing.GetN(p.config.ReplicationFactor, h)
-	for _, h := range topN {
-		if h == p.config.Self.Host {
-			return true
-		}
-	}
-	return false
-}
-
+// todo: use `rendezvous` everywhere instead?
 func (p *placement) topAll(h string) []Peer {
-	h = fileNameHashPrefix(h)
 	topN := p.hashRing.GetN(len(p.peerMap), h)
 	peers := make([]Peer, len(topN))
 	for idx, k := range topN {
@@ -51,19 +39,14 @@ func (p *placement) topAll(h string) []Peer {
 	return peers
 }
 
-func (p *placement) topN(h string) []Peer {
-	h = fileNameHashPrefix(h)
-	topN := p.hashRing.GetN(p.config.ReplicationFactor, h)
-	peers := make([]Peer, len(topN))
-	for idx, k := range topN {
-		peers[idx] = p.peerMap[k]
+func (ss *MediorumServer) rendezvous(h string) ([]string, bool) {
+	// TODO: move healthy hosts to in memory
+	hosts := ss.findHealthyHostNames("5 minutes")
+	hashRing := rendezvous.New()
+	for _, host := range hosts {
+		hashRing.Add(host)
 	}
-	return peers
-}
-
-func fileNameHashPrefix(key string) string {
-	if idx := strings.Index(key, "_"); idx != -1 {
-		return key[:idx]
-	}
-	return key
+	orderedHosts := hashRing.GetN(len(hosts), h)
+	isMine := slices.Index(orderedHosts, ss.Config.Self.Host) < ss.Config.ReplicationFactor // || ss.Config.FullNode
+	return orderedHosts, isMine
 }
