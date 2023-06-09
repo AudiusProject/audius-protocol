@@ -34,7 +34,7 @@ export const LinkPreview = (props: LinkPreviewProps) => {
       href={href}
       title={title || siteName || description || 'View Image'}
       target={'_blank'}
-      rel='noreferrer'
+      rel='noreferrer noopener'
     >
       {description || title ? (
         <>
