@@ -1,6 +1,6 @@
 import { memo, useCallback, useState } from 'react'
 
-import type { ReactionTypes, ChatMessageWithExtras } from '@audius/common'
+import type { ReactionTypes } from '@audius/common'
 import {
   Status,
   accountSelectors,
@@ -31,7 +31,7 @@ import { ResendMessageButton } from './ResendMessageButton'
 import { REACTION_LONGPRESS_DELAY } from './constants'
 
 const { getUserId } = accountSelectors
-const { isIdEqualToReactionsPopupMessageId } = chatSelectors
+const { isIdEqualToReactionsPopupMessageId, getChatMessageById } = chatSelectors
 
 const TAIL_HORIZONTAL_OFFSET = 7
 
@@ -169,7 +169,7 @@ const ChatReaction = ({ reaction }: ChatReactionProps) => {
 }
 
 type ChatMessageListItemProps = {
-  message: ChatMessageWithExtras
+  messageId: string
   chatId: string
   isPopup: boolean
   style?: StyleProp<ViewStyle>
@@ -182,7 +182,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   props: ChatMessageListItemProps
 ) {
   const {
-    message,
+    messageId,
     chatId,
     isPopup = false,
     style: styleProp,
@@ -192,21 +192,24 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   } = props
   const styles = useStyles()
   const userId = useSelector(getUserId)
-  const senderUserId = decodeHashId(message.sender_user_id)
+  const message = useSelector((state) =>
+    getChatMessageById(state, chatId, messageId)
+  )
+  const senderUserId = message ? decodeHashId(message.sender_user_id) : null
   const isAuthor = senderUserId === userId
   const [isPressed, setIsPressed] = useState(false)
   const [emptyUnfurl, setEmptyUnfurl] = useState(false)
-  const links = find(message.message)
+  const links = find(message?.message ?? '')
   const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
   const linkValue = link?.value
-  const isUnfurlOnly = linkValue === message.message.trim()
+  const isUnfurlOnly = linkValue === message?.message.trim()
   const hideMessage = isUnfurlOnly && !emptyUnfurl
   const isCollection = isCollectionUrl(linkValue)
   const isTrack = isTrackUrl(linkValue)
   const tailColor = useGetTailColor(isAuthor, isPressed, hideMessage)
   const isUnderneathPopup =
     useSelector((state) =>
-      isIdEqualToReactionsPopupMessageId(state, message.message_id)
+      isIdEqualToReactionsPopupMessageId(state, messageId)
     ) && !isPopup
 
   const handlePressIn = useCallback(() => {
@@ -218,10 +221,10 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   }, [setIsPressed])
 
   const handleLongPress = useCallback(() => {
-    if (message.status !== Status.ERROR) {
-      onLongPress?.(message.message_id)
+    if (message?.status !== Status.ERROR) {
+      onLongPress?.(messageId)
     }
-  }, [message.message_id, message.status, onLongPress])
+  }, [message?.status, messageId, onLongPress])
 
   const onUnfurlEmpty = useCallback(() => {
     if (linkValue) {
@@ -246,7 +249,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     borderBottomWidth
   }
 
-  return (
+  return message ? (
     <>
       <View
         style={[
@@ -278,9 +281,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       : null
                   ]}
                   ref={
-                    itemsRef
-                      ? (el) => (itemsRef.current[message.message_id] = el)
-                      : null
+                    itemsRef ? (el) => (itemsRef.current[messageId] = el) : null
                   }
                 >
                   {isCollection ? (
@@ -303,7 +304,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     <LinkPreview
                       key={`${link.value}-${link.start}-${link.end}`}
                       chatId={chatId}
-                      messageId={message.message_id}
+                      messageId={messageId}
                       href={link.href}
                       onLongPress={handleLongPress}
                       onPressIn={handlePressIn}
@@ -316,7 +317,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                   ) : null}
                   {!hideMessage ? (
                     <Hyperlink
-                      text={message.message}
+                      text={messageId}
                       styles={{
                         root: [
                           styles.message,
@@ -351,7 +352,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                             : styles.reactionContainerOtherUser
                         ]}
                       >
-                        {message.reactions.map((reaction) => {
+                        {message?.reactions.map((reaction) => {
                           return (
                             <ChatReaction
                               key={reaction.created_at}
@@ -368,7 +369,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
           </Pressable>
         </View>
         {isAuthor && message.status === Status.ERROR ? (
-          <ResendMessageButton messageId={message.message_id} chatId={chatId} />
+          <ResendMessageButton messageId={messageId} chatId={chatId} />
         ) : null}
         {message.hasTail ? (
           <>
@@ -385,5 +386,5 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
         ) : null}
       </View>
     </>
-  )
+  ) : null
 })
