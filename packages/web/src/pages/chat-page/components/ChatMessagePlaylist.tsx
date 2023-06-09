@@ -129,25 +129,24 @@ export const ChatMessagePlaylist = ({
   }, [collection, uid, onSuccess, onEmpty])
 
   return collection && uid ? (
-    <div className={className}>
-      {/* You may wonder why we use the mobile web playlist tile here.
-      It's simply because the chat playlist tile uses the same design as mobile web. */}
-      <MobilePlaylistTile
-        index={0}
-        uid={uid}
-        collection={collection}
-        tracks={tracksWithUids}
-        playTrack={playTrack}
-        pauseTrack={pauseTrack}
-        hasLoaded={() => {}}
-        isLoading={status === Status.LOADING || status === Status.IDLE}
-        isTrending={false}
-        showRankIcon={false}
-        numLoadingSkeletonRows={tracksWithUids.length}
-        togglePlay={() => {}}
-        playingTrackId={playingTrackId}
-        variant='readonly'
-      />
-    </div>
+    // You may wonder why we use the mobile web playlist tile here.
+    // It's simply because the chat playlist tile uses the same design as mobile web.
+    <MobilePlaylistTile
+      containerClassName={className}
+      index={0}
+      uid={uid}
+      collection={collection}
+      tracks={tracksWithUids}
+      playTrack={playTrack}
+      pauseTrack={pauseTrack}
+      hasLoaded={() => {}}
+      isLoading={status === Status.LOADING || status === Status.IDLE}
+      isTrending={false}
+      showRankIcon={false}
+      numLoadingSkeletonRows={tracksWithUids.length}
+      togglePlay={() => {}}
+      playingTrackId={playingTrackId}
+      variant='readonly'
+    />
   ) : null
 }

@@ -20,14 +20,8 @@
   min-width: 448px;
   min-height: unset;
   margin-bottom: 0;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
   border: none;
   box-shadow: none;
-}
-
-.container.readonly:hover {
-  transform: scale3d(1.005, 1.005, 1.005);
 }
 
 .container .artworkIcon,

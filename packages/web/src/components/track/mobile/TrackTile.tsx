@@ -134,7 +134,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     genre,
     isPlaying,
     isBuffering,
-    variant
+    variant,
+    containerClassName
   } = props
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
@@ -215,7 +216,13 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   const isReadonly = variant === 'readonly'
 
   return (
-    <div className={cn(styles.container, { [styles.readonly]: isReadonly })}>
+    <div
+      className={cn(
+        styles.container,
+        { [styles.readonly]: isReadonly },
+        containerClassName
+      )}
+    >
       {showPremiumCornerTag && cornerTagIconType ? (
         <TrackBannerIcon
           type={cornerTagIconType}

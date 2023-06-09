@@ -107,6 +107,7 @@ const ConnectedTrackTile = ({
   showRankIcon,
   isActive,
   variant,
+  containerClassName,
   isFeed = false
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)
@@ -231,6 +232,7 @@ const ConnectedTrackTile = ({
 
   return (
     <TrackTile
+      containerClassName={containerClassName}
       uid={uid}
       id={track_id}
       userId={user_id}
