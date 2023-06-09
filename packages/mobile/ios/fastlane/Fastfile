@@ -116,40 +116,9 @@ platform :ios do
       puts "ENVFILE: #{ENV['ENVFILE']}"
     end
 
-    # Version number (e.g. 1.0.100) will be incremented by a patch version
-    # from the currently live version in the app store. If a higher version number
-    # is specified in Info.plist, that one will be used
-
-    currentReleasedVersionNumberString = options[:current_released_version] ? (options[:current_released_version].to_s) : (get_app_store_version_number(
-      bundle_id: 'co.audius.audiusmusic'
-    ))
-
-    currentReleasedVersionNumber = options[:current_released_version] ? (options[:current_released_version]) : (Gem::Version.new currentReleasedVersionNumberString)
-
     plistVersionNumber = options[:plist_version] ? (options[:plist_version]) : (Gem::Version.new get_version_number_from_plist(
       scheme: scheme
     ))
-
-    # If the version specified in project is greater than
-    # the previous version number, there is no need to modify version number in the project
-    if plistVersionNumber <= currentReleasedVersionNumber
-      # Increment the patch version
-      # This is necessary because the same version number cannot be used twice on the app store
-      patchRegex = /\d+.\d+.(\d+)/
-      previousPatch = currentReleasedVersionNumberString[patchRegex, 1]
-      currentReleasedVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
-      plistVersionNumber = currentReleasedVersionNumberString
-
-      increment_version_number_in_plist(
-        version_number: plistVersionNumber,
-        scheme: scheme
-      )
-
-      increment_version_number_in_xcodeproj(
-        version_number: plistVersionNumber,
-        scheme: scheme
-      )
-    end
 
     # Increment build
 
@@ -227,7 +196,7 @@ platform :ios do
       codepushDeployment = CODEPUSH_RC_DEPLOYMENT
     end
     currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
-    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
+    isVersionIncremented = true # REVERT!!!
     packageJson = File.open "../../package.json"
     packageJsonData = JSON.load packageJson
     if !isVersionIncremented
