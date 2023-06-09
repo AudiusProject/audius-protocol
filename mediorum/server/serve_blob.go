@@ -254,7 +254,7 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 			}
 
 			// check signature not too old
-			age := time.Since(time.Unix(sig.Data.Timestamp, 0))
+			age := time.Since(time.Unix(sig.Data.Timestamp/1000, 0))
 			if age > (time.Hour * 48) {
 				return c.JSON(401, map[string]string{
 					"error":  "signature too old",
