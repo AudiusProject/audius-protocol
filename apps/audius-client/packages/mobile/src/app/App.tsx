@@ -103,8 +103,8 @@ const App = () => {
                       <OAuth />
                       <NotificationReminder />
                       <RateCtaReminder />
+                      <PortalHost name='ChatReactionsPortal' />
                     </NavigationContainer>
-                    <PortalHost name='ChatReactionsPortal' />
                   </ErrorBoundary>
                 </PortalProvider>
               </WalletConnectProvider>
