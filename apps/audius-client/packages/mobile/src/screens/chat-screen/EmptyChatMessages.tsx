@@ -10,9 +10,8 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  emptyContainer: {
+  root: {
     marginTop: spacing(8),
-    marginHorizontal: spacing(6),
     padding: spacing(6),
     display: 'flex',
     flexDirection: 'row',
@@ -22,7 +21,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderWidth: 1,
     borderRadius: spacing(2)
   },
-  emptyTextContainer: {
+  textContainer: {
     display: 'flex',
     flexDirection: 'column',
     marginHorizontal: spacing(6)
@@ -31,13 +30,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(16),
     width: spacing(16)
   },
-  emptyTitle: {
+  title: {
     fontSize: typography.fontSize.xxl,
     color: palette.neutral,
     fontFamily: typography.fontByWeight.bold,
     lineHeight: typography.fontSize.xxl * 1.3
   },
-  emptyText: {
+  text: {
     marginTop: spacing(2),
     marginRight: spacing(6),
     fontSize: typography.fontSize.large,
@@ -49,11 +48,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 export const EmptyChatMessages = () => {
   const styles = useStyles()
   return (
-    <View style={styles.emptyContainer}>
+    <View style={styles.root}>
       <Image style={styles.wavingHand} source={WavingHand} />
-      <View style={styles.emptyTextContainer}>
-        <Text style={styles.emptyTitle}>{messages.sayHello}</Text>
-        <Text style={styles.emptyText}>{messages.firstImpressions}</Text>
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>{messages.sayHello}</Text>
+        <Text style={styles.text}>{messages.firstImpressions}</Text>
       </View>
     </View>
   )
