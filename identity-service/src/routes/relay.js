@@ -29,19 +29,8 @@ module.exports = function (app) {
       const redis = req.app.get('redis')
 
       // TODO: Use auth middleware to derive this
-      const user = await models.User.findOne({
-        where: { walletAddress: body.senderAddress },
-        attributes: [
-          'id',
-          'blockchainUserId',
-          'walletAddress',
-          'handle',
-          'isBlockedFromRelay',
-          'isBlockedFromNotifications',
-          'isBlockedFromEmails',
-          'appliedRules'
-        ]
-      })
+      const user = req.user
+      req.logger.info(`asdf relay user ${user}`)
 
       let optimizelyClient
       let detectAbuseOnRelay = false

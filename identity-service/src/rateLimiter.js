@@ -177,6 +177,7 @@ const getRelayRateLimiterMiddleware = (window) => {
     windowMs: windowMapping[window],
     prefix: `relayWalletRateLimiter:${window}`,
     max: async function (req) {
+      req.logger.info('asdf getting rate limiter')
       const decodedABI = AudiusABIDecoder.decodeMethod(
         'EntityManager',
         req.body.encodedABI
@@ -191,21 +192,29 @@ const getRelayRateLimiterMiddleware = (window) => {
 
       let limit = config.get(key)
 
-      const user = await models.User.findOne({
-        where: { walletAddress: req.body.senderAddress },
-        attributes: [
-          'id',
-          'blockchainUserId',
-          'walletAddress',
-          'handle',
-          'isBlockedFromRelay',
-          'isBlockedFromNotifications',
-          'isBlockedFromEmails',
-          'appliedRules'
-        ]
-      })
-      if (user) {
-        req.logger.info(`asdf user exists ${req.body.senderAddress} ${user}`)
+      if (!req.isFromApp && !req.user) {
+        req.logger.info('asdf getting user')
+        req.user = await models.User.findOne({
+          where: { walletAddress: req.body.senderAddress },
+          attributes: [
+            'id',
+            'blockchainUserId',
+            'walletAddress',
+            'handle',
+            'isBlockedFromRelay',
+            'isBlockedFromNotifications',
+            'isBlockedFromEmails',
+            'appliedRules'
+          ]
+        })
+        req.logger.info(`asdf added user ${req.user}`)
+      } else {
+        req.isFromApp = true
+      }
+      if (req.user) {
+        req.logger.info(
+          `asdf user exists ${req.body.senderAddress} ${req.user}`
+        )
         limit = limit['owner']
       } else {
         req.logger.info(`asdf user does not exist ${req.body.senderAddress}`)
