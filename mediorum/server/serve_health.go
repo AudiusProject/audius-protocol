@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )
 
@@ -105,11 +106,15 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	// problemBlobCount, _ := ss.findProblemBlobsCount(false)
 	// data.ProblemBlobs = problemBlobCount
 
-	sortedData, err := signature.SortKeys(data)
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to marshal health check data: " + err.Error()})
+	}
+	dataBytesSorted, err := jcs.Transform(dataBytes)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to sort health check data: " + err.Error()})
 	}
-	signature, err := signature.Sign(sortedData, ss.Config.privateKey)
+	signature, err := signature.SignBytes(dataBytesSorted, ss.Config.privateKey)
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
 	}
