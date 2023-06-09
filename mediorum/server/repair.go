@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"gorm.io/gorm"
 )
 
@@ -84,47 +85,60 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 	// find under-replicated content
 	logger := ss.logger.With("task", "repair")
 
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
+	cidCursor := ""
+	for {
+		var cidBatch []string
+		err := pgxscan.Select(ctx, ss.pgPool, &cidBatch,
+			`select distinct key
+			 from blobs
+			 where key > $1
+			 order by key
+			 limit 1000`, cidCursor)
 
-	logger.Info("starting repair", "problem_blob_count", len(problems))
-
-	for _, problem := range problems {
-		cid := problem.Key
-
-		logger := logger.With("cid", cid)
-
-		preferredHosts, isMine := ss.rendezvous(cid)
-
-		iHave, err := ss.bucket.Exists(ctx, cid)
 		if err != nil {
-			logger.Error("exist check failed", err)
-			continue
+			return err
+		}
+		if len(cidBatch) == 0 {
+			break
 		}
 
-		if isMine && !iHave {
-			success := false
-			for _, host := range preferredHosts {
-				if host == ss.Config.Self.Host {
-					continue
-				}
-				err := ss.pullFileFromHost(host, problem.Key)
-				if err != nil {
-					logger.Error("pull failed", err, "host", host)
-				} else {
-					logger.Info("pull OK", "host", host)
-					success = true
-					break
-				}
+		for _, cid := range cidBatch {
+			cidCursor = cid
+
+			logger := logger.With("cid", cid)
+
+			preferredHosts, isMine := ss.rendezvous(cid)
+
+			isOnDisk, err := ss.bucket.Exists(ctx, cid)
+			if err != nil {
+				logger.Error("exist check failed", err)
+				continue
 			}
-			if !success {
-				logger.Warn("failed to pull from any host", "hosts", preferredHosts)
-				// creator-node style... go down the list?  rendezvous?
+
+			// todo: validate CID, delete if invalid
+			// todo: check isInDb, create if not
+
+			if isMine && !isOnDisk {
+				success := false
+				for _, host := range preferredHosts {
+					if host == ss.Config.Self.Host {
+						continue
+					}
+					err := ss.pullFileFromHost(host, cid)
+					if err != nil {
+						logger.Error("pull failed", err, "host", host)
+					} else {
+						logger.Info("pull OK", "host", host)
+						success = true
+						break
+					}
+				}
+				if !success {
+					logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+					// creator-node style... go down the list?  rendezvous?
+				}
 			}
 		}
-
 	}
 
 	return nil
