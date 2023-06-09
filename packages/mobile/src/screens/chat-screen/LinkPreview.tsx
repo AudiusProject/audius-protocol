@@ -33,7 +33,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     display: 'flex',
     flexGrow: 1,
     width: '100%',
-    height: '100%'
+    minWidth: spacing(12),
+    minHeight: spacing(50)
   },
   domainContainer: {
     borderBottomColor: palette.neutralLight7,
