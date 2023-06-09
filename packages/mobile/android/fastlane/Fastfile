@@ -99,7 +99,7 @@ platform :android do
       packageJson = File.open "../../package.json"
       packageJsonData = JSON.load packageJson
 
-      if buildFileVersion > releasedVersion
+      if true # Revert!!!
         UI.message "Doing a full build and release (not over-the-air/Codepush)"
         # Build app and release via play store
 

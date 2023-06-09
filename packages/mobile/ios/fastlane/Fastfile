@@ -227,7 +227,7 @@ platform :ios do
       codepushDeployment = CODEPUSH_RC_DEPLOYMENT
     end
     currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
-    isVersionIncremented = true # REVERT!!!
+    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
     packageJson = File.open "../../package.json"
     packageJsonData = JSON.load packageJson
     if !isVersionIncremented
