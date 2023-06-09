@@ -84,6 +84,7 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
 	// verify CID matches
 	err = validateCID(key, r)
@@ -274,6 +275,19 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 
 		return next(c)
 	}
+}
+
+func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
+	ctx := c.Request().Context()
+	key := c.Param("cid")
+
+	blob, err := ss.bucket.NewReader(ctx, key, nil)
+	if err != nil {
+		return err
+	}
+	defer blob.Close()
+
+	return c.Stream(200, blob.ContentType(), blob)
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {

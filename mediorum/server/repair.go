@@ -1,13 +1,11 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -82,7 +80,6 @@ func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, err
 
 func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 	// find under-replicated content
-	ctx := context.Background()
 	logger := ss.logger.With("task", "repair")
 
 	problems, err := ss.findProblemBlobs(false)
@@ -96,37 +93,30 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 
 		logger := logger.With("cid", problem.Key)
 
-		// if I have the file...
-		// call replicate
-		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
-		if iHave {
-			logger.Info("repairing", "cid", problem.Key)
-			r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
-			if err != nil {
-				logger.Error("failed to read key", err)
-				continue
-			}
-			defer r.Close()
+		// if is mine and don't have
+		// pull from someone who does
+		shouldHave := ss.placement.isMyHash(problem.Key)
+		butDont := !strings.Contains(problem.Hosts, ss.Config.Self.Host)
 
-			// validate CID matches
-			err = validateCID(problem.Key, r)
-			if err != nil {
-				logger.Error("CID validation failed", err)
-				// nuke this fool
-				err = ss.dropFromMyBucket(problem.Key)
+		if shouldHave && butDont {
+			hosts := strings.Split(problem.Hosts, ",")
+			success := false
+			for _, host := range hosts {
+				err := ss.pullFileFromHost(host, problem.Key)
 				if err != nil {
-					logger.Error("unable to drop invalid CID", err)
+					logger.Error("pull failed", err, "host", host)
+				} else {
+					logger.Info("pull OK", "host", host)
+					success = true
+					break
 				}
-				continue
 			}
-
-			hosts, err := ss.replicateFile(problem.Key, r)
-			if err != nil {
-				logger.Error("failed to replicate", err)
-			} else {
-				logger.Info("repaired", "hosts", hosts)
+			if !success {
+				logger.Warn("failed to pull from any host", "hosts", hosts)
+				// creator-node style... go down the list?  rendezvous?
 			}
 		}
+
 	}
 
 	return nil
@@ -143,16 +133,34 @@ func (ss *MediorumServer) cleanupOverReplicatedBlobs() error {
 	logger.Info("starting cleanup", "problem_blob_count", len(problems))
 
 	for _, problem := range problems {
-		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
-		if !iHave {
+
+		// don't delete a blob if we _should_ have it
+		shouldHave := ss.placement.isMyHash(problem.Key)
+		if shouldHave {
+			continue
+		}
+
+		// can't delete a blob if we _don't_ have it
+		dontHave := !strings.Contains(problem.Hosts, ss.Config.Self.Host)
+		if dontHave {
 			continue
 		}
 
 		logger := logger.With("cid", problem.Key)
-		hosts := strings.Split(problem.Hosts, ",")
-		myIdx := slices.Index(hosts, ss.Config.Self.Host)
-		if myIdx+1 > ss.Config.ReplicationFactor {
-			logger.Info("deleting", "myIdx", myIdx, "hosts", hosts)
+		preferred := ss.placement.topAll(problem.Key)
+
+		depth := 0
+		for _, peer := range preferred {
+			if ss.hostHasBlob(peer.Host, problem.Key, true) {
+				depth++
+			}
+			if peer.Host == ss.Config.Self.Host {
+				break
+			}
+		}
+
+		if depth > ss.Config.ReplicationFactor {
+			logger.Info("deleting", "depth", depth, "hosts", preferred)
 			err = ss.dropFromMyBucket(problem.Key)
 			if err != nil {
 				logger.Error("delete failed", err)
@@ -164,3 +172,14 @@ func (ss *MediorumServer) cleanupOverReplicatedBlobs() error {
 
 	return nil
 }
+
+// func (ss *MediorumServer) validateMyBlobs() error {
+// 	// Find my blobs
+
+// 	// for blob in my blobs:
+// 	//   verify on disk?
+// 	//   verify record?
+
+// 	// maybe just add pull?
+
+// }

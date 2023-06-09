@@ -246,9 +246,19 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: blobs
 	internalApi.GET("/blobs/broken", ss.getBlobBroken)
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
+
+	// old info routes
+	// TODO: remove
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
+
+	// new info routes
+	internalApi.GET("/blobs/:cid/locaiton", ss.getBlobLocation)
+	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
+
+	// internal: blobs between peers
+	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics

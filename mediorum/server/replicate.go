@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"mediorum/server/signature"
 	"mime/multipart"
@@ -112,6 +113,7 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}
 
 	// first check if target already has it...
+	// todo: this should be cheap check... host should be responsible for doing more expensive check
 	if ss.hostHasBlob(peer.Host, fileName, true) {
 		ss.logger.Info(peer.Host + " already has " + fileName)
 		return nil
@@ -173,4 +175,28 @@ func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
 	}
 	defer has.Body.Close()
 	return has.StatusCode == 200
+}
+
+func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	u := apiPath(host, "internal/blobs", cid)
+
+	req, err := signature.SignedGet(u, ss.Config.privateKey)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("pull blob: bad status: %d cid: %s host: %s", resp.StatusCode, cid, host)
+	}
+
+	return ss.replicateToMyBucket(cid, resp.Body)
 }

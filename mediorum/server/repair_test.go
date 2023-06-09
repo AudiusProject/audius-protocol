@@ -28,9 +28,11 @@ func TestRepair(t *testing.T) {
 		assert.Equal(t, problems[0].R, 1)
 	}
 
-	// do repair
-	err = ss.repairUnderReplicatedBlobs()
-	assert.NoError(t, err)
+	// tell all servers do repair
+	for _, s := range testNetwork {
+		err = s.repairUnderReplicatedBlobs()
+		assert.NoError(t, err)
+	}
 
 	// wait for crud replication
 	time.Sleep(time.Millisecond * 100)
@@ -86,6 +88,6 @@ func TestRepair(t *testing.T) {
 
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.True(t, len(blobs) == replicationFactor)
+		assert.Equal(t, replicationFactor, len(blobs))
 	}
 }
