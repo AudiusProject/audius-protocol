@@ -178,11 +178,6 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     )
   }
 
-  const unfurlClassNames = cn({
-    [styles.unfurlAuthor]: !hideMessage && isAuthor,
-    [styles.unfurlOtherUser]: !hideMessage && !isAuthor
-  })
-
   return (
     <div
       className={cn(styles.root, {
@@ -195,54 +190,56 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           [styles.hideMessage]: hideMessage
         })}
       >
-        {isCollectionUrl(linkValue) ? (
-          <ChatMessagePlaylist
-            className={unfurlClassNames}
-            link={link.value}
-            onEmpty={onUnfurlEmpty}
-            onSuccess={onUnfurlSuccess}
-          />
-        ) : isTrackUrl(linkValue) ? (
-          <ChatMessageTrack
-            className={unfurlClassNames}
-            link={link.value}
-            onEmpty={onUnfurlEmpty}
-            onSuccess={onUnfurlSuccess}
-          />
-        ) : link ? (
-          <LinkPreview
-            className={unfurlClassNames}
-            href={link.href}
-            chatId={chatId}
-            messageId={message.message_id}
-            onEmpty={onUnfurlEmpty}
-            onSuccess={onUnfurlSuccess}
-          />
-        ) : null}
-        {!hideMessage ? (
-          <div className={styles.text}>
-            <Linkify
-              options={{
-                attributes: {
-                  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-                    const url = event.currentTarget.href
+        <div className={styles.bubbleCorners}>
+          {isCollectionUrl(linkValue) ? (
+            <ChatMessagePlaylist
+              className={styles.unfurl}
+              link={link.value}
+              onEmpty={onUnfurlEmpty}
+              onSuccess={onUnfurlSuccess}
+            />
+          ) : isTrackUrl(linkValue) ? (
+            <ChatMessageTrack
+              className={styles.unfurl}
+              link={link.value}
+              onEmpty={onUnfurlEmpty}
+              onSuccess={onUnfurlSuccess}
+            />
+          ) : link ? (
+            <LinkPreview
+              className={styles.unfurl}
+              href={link.href}
+              chatId={chatId}
+              messageId={message.message_id}
+              onEmpty={onUnfurlEmpty}
+              onSuccess={onUnfurlSuccess}
+            />
+          ) : null}
+          {!hideMessage ? (
+            <div className={styles.text}>
+              <Linkify
+                options={{
+                  attributes: {
+                    onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
+                      const url = event.currentTarget.href
 
-                    if (isAudiusUrl(url)) {
-                      const path = getPathFromAudiusUrl(url)
-                      event.nativeEvent.preventDefault()
-                      onClickInternalLink(path ?? '/')
+                      if (isAudiusUrl(url)) {
+                        const path = getPathFromAudiusUrl(url)
+                        event.nativeEvent.preventDefault()
+                        onClickInternalLink(path ?? '/')
+                      }
                     }
+                  },
+                  target: (href) => {
+                    return isAudiusUrl(href) ? '' : '_blank'
                   }
-                },
-                target: (href) => {
-                  return isAudiusUrl(href) ? '' : '_blank'
-                }
-              }}
-            >
-              {message.message}
-            </Linkify>
-          </div>
-        ) : null}
+                }}
+              >
+                {message.message}
+              </Linkify>
+            </div>
+          ) : null}
+        </div>
         {renderReactions()}
         {hasTail ? (
           <div className={styles.tail}>

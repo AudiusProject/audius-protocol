@@ -15,11 +15,14 @@
   z-index: 1;
   display: inline-block;
   max-width: 448px;
-  border-radius: var(--unit-3);
   filter: var(--drop-shadow-near);
   color: var(--static-netural);
-  background-color: var(--bubble-color);
   transition: background-color var(--calm), filter var(--calm);
+}
+
+.bubbleCorners {
+  border-radius: var(--unit-3);
+  overflow: hidden;
 }
 
 .text a {
@@ -45,16 +48,12 @@
   --bubble-color: var(--secondary-light-1);
 }
 
-.bubble .unfurlOtherUser {
+.bubble .unfurl:not(:last-child) {
   border-bottom: 1px solid var(--neutral-light-7);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
-.bubble .unfurlAuthor {
+.isAuthor .bubble .unfurl:not(:last-child) {
   border-bottom: 1px solid var(--secondary-dark-1);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
 }
 
 .text {
@@ -64,6 +63,7 @@
   text-align: left;
   line-height: 150%;
   user-select: text;
+  background-color: var(--bubble-color);
 }
 
 .meta {
@@ -168,6 +168,7 @@
   display: flex;
   position: absolute;
   bottom: 0;
+  z-index: -1;
 }
 
 :not(.hideMessage) .tail svg * {

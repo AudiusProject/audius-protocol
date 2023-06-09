@@ -33,6 +33,7 @@
 }
 
 .image {
+  display: block;
   max-width: 448px;
 }
 
