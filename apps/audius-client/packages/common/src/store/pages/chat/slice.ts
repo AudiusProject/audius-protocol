@@ -416,15 +416,15 @@ const slice = createSlice({
       recalculatePreviousMessageHasTail(state.messages[chatId], 0)
 
       // Handle unread counts
+      const existingChat = getChat(state, chatId)
+      const optimisticRead = state.optimisticChatRead[chatId]
+      const existingUnreadCount = optimisticRead
+        ? optimisticRead.unread_message_count
+        : existingChat?.unread_message_count ?? 0
       if (!isSelfMessage) {
         // If we're actively reading, this will immediately get marked as read.
         // Ignore the unread bump to prevent flicker
         if (state.activeChatId !== chatId) {
-          const existingChat = getChat(state, chatId)
-          const optimisticRead = state.optimisticChatRead[chatId]
-          const existingUnreadCount = optimisticRead
-            ? optimisticRead.unread_message_count
-            : existingChat?.unread_message_count ?? 0
           chatsAdapter.updateOne(state.chats, {
             id: chatId,
             changes: { unread_message_count: existingUnreadCount + 1 }
@@ -434,6 +434,15 @@ const slice = createSlice({
         // Web or mobile: update optimistic unread count
         state.optimisticUnreadMessagesCount =
           (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) + 1
+      } else {
+        // Mark chat as read if its our own
+        chatsAdapter.updateOne(state.chats, {
+          id: chatId,
+          changes: { unread_message_count: 0, last_read_at: message.created_at }
+        })
+        state.optimisticUnreadMessagesCount =
+          (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) -
+          existingUnreadCount
       }
     },
     /**

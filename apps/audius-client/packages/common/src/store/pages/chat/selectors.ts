@@ -124,6 +124,7 @@ export const getHasUnreadMessages = (state: CommonState) => {
   if (getUnreadMessagesCount(state) > 0) {
     return true
   }
+  // This really shouldn't be necessary since the above should be kept in sync
   const chats = getChats(state)
   for (const chat of chats) {
     if (chat.unread_message_count > 0) {
