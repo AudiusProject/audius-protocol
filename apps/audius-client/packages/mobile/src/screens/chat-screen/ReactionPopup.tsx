@@ -220,7 +220,7 @@ export const ReactionPopup = ({
         <Pressable style={styles.innerPressable} onPress={handleClosePopup} />
         <ChatMessageListItem
           chatId={chatId}
-          message={message}
+          messageId={message.message_id}
           isPopup={true}
           style={[
             styles.popupChatMessage,

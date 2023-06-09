@@ -429,6 +429,9 @@ export const ChatScreen = () => {
       if (messageRef === null || messageRef === undefined) {
         return
       }
+      if (!canSendMessage) {
+        return
+      }
       // Measure position of selected message to create a copy of it on top
       // of the dimmed background inside the portal.
       const { messageY, messageH } = await new Promise<{
@@ -445,7 +448,7 @@ export const ChatScreen = () => {
       dispatch(setReactionsPopupMessageId({ messageId: id }))
       light()
     },
-    [dispatch]
+    [canSendMessage, dispatch]
   )
 
   const topBarRight = (
@@ -462,7 +465,7 @@ export const ChatScreen = () => {
     ({ item }) => (
       <>
         <ChatMessageListItem
-          message={item}
+          messageId={item.message_id}
           chatId={chatId}
           itemsRef={itemsRef}
           isPopup={false}
