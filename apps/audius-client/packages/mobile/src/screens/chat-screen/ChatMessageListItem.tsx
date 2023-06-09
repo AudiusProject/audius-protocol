@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux'
 import ChatTail from 'app/assets/images/ChatTail.svg'
 import { Pressable, Hyperlink, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 import { reactionMap } from '../notifications-screen/Reaction'
 
@@ -36,11 +37,13 @@ const TAIL_HORIZONTAL_OFFSET = 7
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootOtherUser: {
     display: 'flex',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    minHeight: spacing(4)
   },
   rootIsAuthor: {
     display: 'flex',
-    alignItems: 'flex-end'
+    alignItems: 'flex-end',
+    minHeight: spacing(4)
   },
   bubble: {
     marginTop: spacing(2),
@@ -94,7 +97,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   tail: {
     display: 'flex',
     position: 'absolute',
-    bottom: 0
+    bottom: 0,
+    zIndex: zIndex.CHAT_TAIL
   },
   tailIsAuthor: {
     right: -TAIL_HORIZONTAL_OFFSET
