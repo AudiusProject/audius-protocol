@@ -11,13 +11,7 @@ import { REACTION_LONGPRESS_DELAY } from './constants'
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
-    backgroundColor: palette.white,
-    borderTopLeftRadius: spacing(3),
-    borderTopRightRadius: spacing(3),
-    overflow: 'hidden'
-  },
-  rootIsLinkPreviewOnly: {
-    borderRadius: spacing(3)
+    backgroundColor: palette.white
   },
   pressed: {
     backgroundColor: palette.neutralLight10
@@ -73,7 +67,6 @@ type LinkPreviewProps = {
   chatId: string
   messageId: string
   href: string
-  hideMessage: boolean
   isPressed: boolean
   onLongPress: (event: GestureResponderEvent) => void
   onPressIn: (event: GestureResponderEvent) => void
@@ -87,7 +80,6 @@ export const LinkPreview = ({
   chatId,
   messageId,
   href,
-  hideMessage,
   isPressed = false,
   onLongPress,
   onPressIn,
@@ -118,14 +110,7 @@ export const LinkPreview = ({
       onPressIn={onPressIn}
       onPressOut={onPressOut}
     >
-      <View
-        style={[
-          styles.root,
-          isPressed ? styles.pressed : null,
-          hideMessage ? styles.rootIsLinkPreviewOnly : null,
-          style
-        ]}
-      >
+      <View style={[styles.root, isPressed ? styles.pressed : null, style]}>
         {description || title ? (
           <>
             {image ? (
