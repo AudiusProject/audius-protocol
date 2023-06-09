@@ -105,8 +105,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     flexShrink: 1
   },
   listContentContainer: {
-    paddingHorizontal: spacing(6),
-    display: 'flex'
+    display: 'flex',
+    flexGrow: 1,
+    paddingHorizontal: spacing(6)
   },
   profileTitle: {
     display: 'flex',
@@ -165,6 +166,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   loadingSpinner: {
     height: spacing(10),
     width: spacing(10)
+  },
+  emptyContainer: {
+    display: 'flex',
+    flexGrow: 1
   }
 }))
 
@@ -576,14 +581,12 @@ export const ChatScreen = () => {
             }
             style={[
               styles.keyboardAvoiding,
-              hasCurrentlyPlayingTrack ? { bottom: PLAY_BAR_HEIGHT } : null
+              hasCurrentlyPlayingTrack
+                ? { bottom: PLAY_BAR_HEIGHT, paddingTop: PLAY_BAR_HEIGHT }
+                : null
             ]}
             onKeyboardHide={measureChatContainerBottom}
           >
-            {chat?.messagesStatus === Status.SUCCESS &&
-            chatMessages?.length === 0 ? (
-              <EmptyChatMessages />
-            ) : null}
             {isLoading ? (
               <View style={styles.loadingSpinnerContainer}>
                 <LoadingSpinner style={styles.loadingSpinner} />
@@ -606,6 +609,16 @@ export const ChatScreen = () => {
                   refreshing={chat?.messagesStatus === Status.LOADING}
                   maintainVisibleContentPosition={
                     maintainVisibleContentPosition
+                  }
+                  ListEmptyComponent={
+                    // Wrap the EmptyChatMessages in a view here rather than within the component
+                    // For some reason, this prevents this inversion bug:
+                    // https://github.com/facebook/react-native/issues/21196
+                    // This is better than doing a rotation transform because when the react bug is fixed,
+                    // our workaround won't re-introduce the bug!
+                    <View style={styles.emptyContainer}>
+                      <EmptyChatMessages />
+                    </View>
                   }
                   ListHeaderComponent={
                     canSendMessage ? null : <ChatUnavailable chatId={chatId} />
