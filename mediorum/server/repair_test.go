@@ -30,7 +30,7 @@ func TestRepair(t *testing.T) {
 
 	// tell all servers do repair
 	for _, s := range testNetwork {
-		err = s.repairUnderReplicatedBlobs()
+		err = s.runRepair(false)
 		assert.NoError(t, err)
 	}
 
@@ -73,7 +73,7 @@ func TestRepair(t *testing.T) {
 
 	// tell all servers to do cleanup
 	for _, server := range testNetwork {
-		err = server.cleanupOverReplicatedBlobs()
+		err = server.runRepair(true)
 		assert.NoError(t, err)
 	}
 
