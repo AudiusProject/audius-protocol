@@ -16,19 +16,14 @@ import {
   userListActions
 } from '@audius/common'
 import { View, Image } from 'react-native'
+import { KeyboardAwareFlatList } from 'react-native-keyboard-aware-scroll-view'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import IconCompose from 'app/assets/images/iconCompose.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
-import {
-  FlatList,
-  Screen,
-  ScreenContent,
-  Text,
-  TextInput
-} from 'app/components/core'
+import { Screen, ScreenContent, Text, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
@@ -89,7 +84,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(18)
   },
   flatListContainer: {
-    minHeight: '100%'
+    minHeight: '100%',
+    flexGrow: 1
   },
   emptyContainer: {
     marginTop: spacing(6),
@@ -279,8 +275,9 @@ export const ChatUserListScreen = () => {
               <LoadingSpinner style={styles.loadingSpinner} />
             </View>
           ) : (
-            <FlatList
+            <KeyboardAwareFlatList
               onEndReached={handleLoadMore}
+              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               data={users}
               renderItem={({ item }) => <ChatUserListItem user={item} />}
               keyExtractor={(user: User) => user.handle}
