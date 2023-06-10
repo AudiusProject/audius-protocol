@@ -20,7 +20,7 @@ class StructuredLogger:
     def reset_context(self):
         self.context = {}
 
-    def reset_context(self, key):
+    def reset_context_key(self, key):
         if key in self.context:
             self.context.pop(key)
 
@@ -69,7 +69,7 @@ def log_duration(logger: StructuredLogger):
             duration = end_time - start_time
             logger.set_context("duration", duration)
             logger.info(f"{func.__name__} completed in {duration}")
-            logger.reset_context("duration")
+            logger.reset_context_key("duration")
             return result
 
         return wrapper
