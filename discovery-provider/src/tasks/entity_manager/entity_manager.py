@@ -74,7 +74,6 @@ def get_record_columns(record) -> List[str]:
 
 
 def entity_manager_update(
-    _,  # main indexing task
     update_task: DatabaseTask,
     session: Session,
     entity_manager_txs: List[Any],
