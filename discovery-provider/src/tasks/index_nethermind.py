@@ -37,12 +37,12 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
-from src.tasks.index import save_cid_metadata
 from src.tasks.metadata import (
     playlist_metadata_format,
     track_metadata_format,
     user_metadata_format,
 )
+from src.tasks.save_cid_metadata import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json

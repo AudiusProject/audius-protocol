@@ -8,8 +8,8 @@ from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
     USER_ID_OFFSET,
 )
-from src.tasks.index import save_cid_metadata
 from src.tasks.index_nethermind import fetch_cid_metadata
+from src.tasks.save_cid_metadata import save_cid_metadata
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.db_session import get_db
 from web3 import Web3
