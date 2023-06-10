@@ -290,10 +290,6 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    indexing_interval_sec = int(
-        shared_config["discprov"]["block_processing_interval_sec"]
-    )
-
     # Update celery configuration
     celery.conf.update(
         imports=[
@@ -326,10 +322,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_aggregates",
         ],
         beat_schedule={
-            "update_discovery_provider_nethermind": {
-                "task": "update_discovery_provider_nethermind",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
@@ -506,6 +498,9 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(final_poa_block_redis_key)
 
     logger.info("Redis instance initialized!")
+
+    # Start main indexer
+    celery.send_task("update_discovery_provider_nethermind")
 
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):

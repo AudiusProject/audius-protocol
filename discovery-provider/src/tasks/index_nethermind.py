@@ -1145,15 +1145,10 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
 def update_task(self):
-    # ask identity did you switch relay
-    # start indexing from the start block we've configured (stage/prod may be different)
-
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    redis = update_task.redis
-
     final_poa_block = helpers.get_final_poa_block()
     # Initialize contracts and attach to the task singleton
     entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
@@ -1163,154 +1158,135 @@ def update_task(self):
         address=get_contract_addresses()[ENTITY_MANAGER],
         abi=entity_manager_contract_abi,
     )
-
     update_task.entity_manager_contract = entity_manager_contract
 
     # Update redis cache for health check queries
     update_latest_block_redis(final_poa_block)
 
-    DEFAULT_LOCK_TIMEOUT = 60 * 10  # ten minutes
-
-    # Define lock acquired boolean
-    have_lock = False
-    # Define redis lock object
-    # blocking_timeout is duration it waits to try to acquire lock
-    # timeout is the duration the lock is held
-    update_lock = redis.lock(
-        "disc_prov_lock_nethermind", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT
-    )
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            logger.set_context("request_id", self.request.id)
-            logger.info("Acquired disc_prov_lock_nethermind")
+        logger.set_context("request_id", self.request.id)
+        logger.info("Acquired disc_prov_lock_nethermind")
 
-            latest_block = get_latest_block(db, final_poa_block)
+        latest_block = get_latest_block(db, final_poa_block)
 
-            # Capture block information between latest and target block hash
-            index_blocks_list = []
+        # Capture block information between latest and target block hash
+        index_blocks_list = []
 
-            # Capture outdated block information given current database state
-            revert_blocks_list = []
+        # Capture outdated block information given current database state
+        revert_blocks_list = []
 
-            with db.scoped_session() as session:
-                block_intersection_found = False
-                intersect_block_hash = web3.toHex(latest_block.hash)
+        with db.scoped_session() as session:
+            block_intersection_found = False
+            intersect_block_hash = web3.toHex(latest_block.hash)
 
-                # First, we capture the block hash at which the current tail
-                # and our indexed data intersect
-                while not block_intersection_found:
-                    current_hash = web3.toHex(latest_block.hash)
-                    parent_hash = web3.toHex(latest_block.parentHash)
+            # First, we capture the block hash at which the current tail
+            # and our indexed data intersect
+            while not block_intersection_found:
+                current_hash = web3.toHex(latest_block.hash)
+                parent_hash = web3.toHex(latest_block.parentHash)
 
-                    latest_block_db_query = session.query(Block).filter(
-                        Block.blockhash == current_hash
-                        and Block.parenthash == parent_hash
-                        and Block.is_current == True
-                    )
-
-                    # Exit loop if we are up to date
-                    if latest_block_db_query.count() > 0:
-                        block_intersection_found = True
-                        intersect_block_hash = current_hash
-                        continue
-
-                    index_blocks_list.append(latest_block)
-
-                    parent_block_query = session.query(Block).filter(
-                        Block.blockhash == parent_hash
-                    )
-
-                    # Intersection is considered found if current block parenthash is
-                    # present in Blocks table
-                    block_intersection_found = parent_block_query.count() > 0
-
-                    num_blocks = len(index_blocks_list)
-                    if num_blocks % 50 == 0:
-                        logger.debug(
-                            f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
-                        )
-
-                    # Special case for initial block 0x0 or first block number after final_poa_block
-                    reached_initial_block = latest_block.number == final_poa_block + 1
-                    if reached_initial_block:
-                        block_intersection_found = True
-                        intersect_block_hash = web3.toHex(latest_block.parentHash)
-                    else:
-                        latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += final_poa_block
-                        latest_block = AttributeDict(latest_block)
-                        intersect_block_hash = web3.toHex(latest_block.hash)
-
-                # Determine whether current indexed data (is_current == True) matches the
-                # intersection block hash
-                # Important when determining whether undo operations are necessary
-                base_query = session.query(Block)
-                base_query = base_query.filter(Block.is_current == True)
-                db_block_query = base_query.all()
-
-                assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
-                db_current_block = db_block_query[0]
-
-                # Check current block
-                undo_operations_required = (
-                    db_current_block.blockhash != intersect_block_hash
-                    and not reached_initial_block
+                latest_block_db_query = session.query(Block).filter(
+                    Block.blockhash == current_hash
+                    and Block.parenthash == parent_hash
+                    and Block.is_current == True
                 )
 
-                if undo_operations_required:
+                # Exit loop if we are up to date
+                if latest_block_db_query.count() > 0:
+                    block_intersection_found = True
+                    intersect_block_hash = current_hash
+                    continue
+
+                index_blocks_list.append(latest_block)
+
+                parent_block_query = session.query(Block).filter(
+                    Block.blockhash == parent_hash
+                )
+
+                # Intersection is considered found if current block parenthash is
+                # present in Blocks table
+                block_intersection_found = parent_block_query.count() > 0
+
+                num_blocks = len(index_blocks_list)
+                if num_blocks % 50 == 0:
                     logger.debug(
-                        f"index_nethermind.py | update_task | Undo required - {undo_operations_required}. \
-                                Intersect_blockhash : {intersect_block_hash}.\
-                                DB current blockhash {db_current_block.blockhash}"
+                        f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                     )
+
+                # Special case for initial block 0x0 or first block number after final_poa_block
+                reached_initial_block = latest_block.number == final_poa_block + 1
+                if reached_initial_block:
+                    block_intersection_found = True
+                    intersect_block_hash = web3.toHex(latest_block.parentHash)
                 else:
+                    latest_block = dict(web3.eth.get_block(parent_hash, True))
+                    latest_block["number"] += final_poa_block
+                    latest_block = AttributeDict(latest_block)
+                    intersect_block_hash = web3.toHex(latest_block.hash)
+
+            # Determine whether current indexed data (is_current == True) matches the
+            # intersection block hash
+            # Important when determining whether undo operations are necessary
+            base_query = session.query(Block)
+            base_query = base_query.filter(Block.is_current == True)
+            db_block_query = base_query.all()
+
+            assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+            db_current_block = db_block_query[0]
+
+            # Check current block
+            undo_operations_required = (
+                db_current_block.blockhash != intersect_block_hash
+                and not reached_initial_block
+            )
+
+            if undo_operations_required:
+                logger.debug(
+                    f"index_nethermind.py | update_task | Undo required - {undo_operations_required}. \
+                            Intersect_blockhash : {intersect_block_hash}.\
+                            DB current blockhash {db_current_block.blockhash}"
+                )
+            else:
+                logger.debug(
+                    f"index_nethermind.py | update_task | Intersect_blockhash : {intersect_block_hash}"
+                )
+
+            # Assign traverse block to current database block
+            traverse_block = db_current_block
+
+            # Add blocks to 'block remove' list from here as we traverse to the
+            # valid intersect block
+            while (
+                traverse_block.blockhash != intersect_block_hash
+                and undo_operations_required
+            ):
+                revert_blocks_list.append(traverse_block)
+                parent_query = session.query(Block).filter(
+                    Block.blockhash == traverse_block.parenthash
+                )
+
+                if parent_query.count() == 0:
                     logger.debug(
-                        f"index_nethermind.py | update_task | Intersect_blockhash : {intersect_block_hash}"
+                        f"index_nethermind.py | update_task | Special case exit traverse block parenthash - "
+                        f"{traverse_block.parenthash}"
                     )
+                    break
+                traverse_block = parent_query[0]
 
-                # Assign traverse block to current database block
-                traverse_block = db_current_block
+            # Ensure revert blocks list is available after session scope
+            session.expunge_all()
 
-                # Add blocks to 'block remove' list from here as we traverse to the
-                # valid intersect block
-                while (
-                    traverse_block.blockhash != intersect_block_hash
-                    and undo_operations_required
-                ):
-                    revert_blocks_list.append(traverse_block)
-                    parent_query = session.query(Block).filter(
-                        Block.blockhash == traverse_block.parenthash
-                    )
+        # Exit DB scope, revert/index functions will manage their own sessions
+        # Perform revert operations
+        revert_blocks(self, db, revert_blocks_list)
 
-                    if parent_query.count() == 0:
-                        logger.debug(
-                            f"index_nethermind.py | update_task | Special case exit traverse block parenthash - "
-                            f"{traverse_block.parenthash}"
-                        )
-                        break
-                    traverse_block = parent_query[0]
-
-                # Ensure revert blocks list is available after session scope
-                session.expunge_all()
-
-            # Exit DB scope, revert/index functions will manage their own sessions
-            # Perform revert operations
-            revert_blocks(self, db, revert_blocks_list)
-
-            # Perform indexing operations
-            index_blocks(self, db, index_blocks_list)
-            logger.debug(
-                f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
-            )
-        else:
-            logger.info(
-                f"index_nethermind.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock_nethermind"
-            )
+        # Perform indexing operations
+        index_blocks(self, db, index_blocks_list)
+        logger.debug(
+            f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
+        )
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)
         raise e
     finally:
-        if have_lock:
-            update_lock.release()
+        celery.send_task("update_discovery_provider_nethermind")
