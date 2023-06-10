@@ -48,7 +48,6 @@ describe.skip('test SnapbackSM -- determineNewReplicaSet, sync queue, and reconf
     'creatorNodeEndpoint': 'http://cn1_creator-node_1:4000',
     'spID': 1,
     'spOwnerWallet': '0x18a1a15f7b63f48532233ee3dd6de4f48f0c35f3',
-    'isRegisteredOnURSM': true,
     'country': 'US',
     'latitude': '41.2619',
     'longitude': '-95.8608',

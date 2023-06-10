@@ -5,13 +5,9 @@ const uuid = require('uuid/v4')
 const {
   successResponse,
   handleResponse,
-  handleApiError,
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../../apiHelpers')
-const {
-  respondToURSMRequestForSignature
-} = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
   getReplicaSetSpIdsByUserId
@@ -43,31 +39,6 @@ const router = express.Router()
 const syncDebounceQueue = {}
 
 // Controllers
-
-/**
- * Controller for `/ursm_request_for_signature` route
- * Calls `URSMRegistrationComponentService
- */
-const respondToURSMRequestForProposalController = async (req) => {
-  const serviceRegistry = req.app.get('serviceRegistry')
-
-  const { spID, timestamp, signature } = req.query
-
-  const logger = req.logger
-
-  try {
-    const response = await respondToURSMRequestForSignature(
-      serviceRegistry,
-      logger,
-      spID,
-      timestamp,
-      signature
-    )
-    return successResponse(response)
-  } catch (e) {
-    return handleApiError(e)
-  }
-}
 
 const getSyncStatusController = async (req, _res) => {
   try {
@@ -312,58 +283,32 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
     logger: req.logger
   })
 
-  // First try updateReplicaSet via URSM
-  // Fallback to EntityManager when relay errors
+  const { blockNumber } = await audiusLibs.User.updateEntityManagerReplicaSet({
+    userId,
+    primary: newPrimarySpId,
+    secondaries: newSecondarySpIds,
+    oldPrimary: currentSpIds.primaryId,
+    oldSecondaries: currentSpIds.secondaryIds
+  })
+
+  // Wait for blockhash/blockNumber to be indexed
   try {
-    await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
+    await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
       userId,
-      newPrimarySpId,
-      newSecondarySpIds,
-      currentSpIds.primaryId,
-      currentSpIds.secondaryIds
+      newReplicaSetSPIds,
+      blockNumber
     )
-
-    return successResponse({ msg: 'Success via UserReplicaSetManager' })
   } catch (e) {
-    if (!config.get('entityManagerReplicaSetEnabled')) {
-      return errorResponseServerError(
-        `Failed via UserReplicaSetManager with error ${e.message} & EntityManager disabled`
-      )
-    }
-
-    const { blockNumber } = await audiusLibs.User.updateEntityManagerReplicaSet(
-      {
-        userId,
-        primary: newPrimarySpId,
-        secondaries: newSecondarySpIds,
-        oldPrimary: currentSpIds.primaryId,
-        oldSecondaries: currentSpIds.secondaryIds
-      }
+    return errorResponseServerError(
+      `Failed via EntityManager - Indexing unable to confirm updated replica set`
     )
-
-    // Wait for blockhash/blockNumber to be indexed
-    try {
-      await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
-        userId,
-        newReplicaSetSPIds,
-        blockNumber
-      )
-    } catch (e) {
-      return errorResponseServerError(
-        `Failed via EntityManager - Indexing unable to confirm updated replica set`
-      )
-    }
-
-    return successResponse({ msg: 'Success via EntityManager' })
   }
+
+  return successResponse({ msg: 'Success via EntityManager' })
 }
 
 // Routes
 
-router.get(
-  '/ursm_request_for_signature',
-  handleResponse(respondToURSMRequestForProposalController)
-)
 router.get(
   '/sync_status/uuid/:syncUuid',
   handleResponse(getSyncStatusController)

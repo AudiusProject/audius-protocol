@@ -6,7 +6,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 const initAudiusLibs = require('./services/initAudiusLibs')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
   logger: genericLogger,
   getStartTime,
@@ -44,7 +43,6 @@ class ServiceRegistry {
     this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
-    this.URSMRegistrationManager = null // Registers node on L2 URSM contract, no-ops afterward
     this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
 
     // Queues
@@ -339,19 +337,6 @@ class ServiceRegistry {
     this.syncImmediateQueue = new SyncImmediateQueue()
     await this.syncImmediateQueue.init(config, this.redis, this)
 
-    // If entity manager is enabled, there's no need to register on L2 because
-    // discovery node will use L1 to validate
-    if (config.get('entityManagerReplicaSetEnabled')) {
-      config.set('isRegisteredOnURSM', true)
-      this.logInfo(
-        `When EntityManager is enabled, skip register node on l2 ursm`
-      )
-    } else {
-      // L2URSMRegistration (requires L1 identity)
-      // Retries indefinitely
-      await this._registerNodeOnL2URSM()
-    }
-
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
     // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(config, this.libs)
@@ -452,70 +437,6 @@ class ServiceRegistry {
         'spID'
       )}`
     )
-  }
-
-  /**
-   * Wait until URSM contract is deployed, then attempt to register on L2 URSM with infinite retries
-   * Requires L1 identity
-   */
-  async _registerNodeOnL2URSM() {
-    // Wait until URSM contract has been deployed (for backwards-compatibility)
-    let retryTimeoutMs = config.get('devMode')
-      ? 10000 /** 10sec */
-      : 600000 /* 10min */
-
-    let isInitialized = false
-    while (!isInitialized) {
-      this.logInfo(
-        `Attempting to init UserReplicaSetManagerClient on ${retryTimeoutMs}ms interval...`
-      )
-      try {
-        await this.libs.contracts.initUserReplicaSetManagerClient(false)
-
-        if (this.libs.contracts.UserReplicaSetManagerClient) {
-          isInitialized = true
-          // Short circuit earlier instead of waiting for another timeout and loop iteration
-          break
-        }
-
-        // Swallow any errors in contract client init
-      } catch (e) {
-        this.logError(`Error initting UserReplicaSetManagerClient ${e}`)
-      }
-
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    this.URSMRegistrationManager = new URSMRegistrationManager(
-      config,
-      this.libs
-    )
-
-    // Attempt to register on URSM with infinite retries
-    isInitialized = false
-    let attempt = 0
-    retryTimeoutMs = 10000 // 10sec
-    while (!isInitialized) {
-      this.logInfo(
-        `Attempting to register node on L2 URSM on ${retryTimeoutMs}ms interval || attempt #${++attempt} ...`
-      )
-
-      try {
-        await this.URSMRegistrationManager.run()
-
-        isInitialized = true
-        // Short circuit earlier instead of waiting for another timeout and loop iteration
-        break
-
-        // Swallow any errors during registration attempt
-      } catch (e) {
-        this.logError(`RegisterNodeOnL2URSM Error ${e}`)
-      }
-
-      await utils.timeout(retryTimeoutMs, false)
-    }
-
-    this.logInfo('URSM Registration completed')
   }
 
   logInfo(msg) {
