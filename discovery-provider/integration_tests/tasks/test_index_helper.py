@@ -317,6 +317,7 @@ def test_fetch_cid_metadata(app, mocker):
             )
             for tx_receipt in tx_receipts
         ]
-        cid_metadata, cid_type = fetch_cid_metadata(db, entity_manager_txs)
+        with db.scoped_session() as session:
+            cid_metadata, cid_type = fetch_cid_metadata(session, entity_manager_txs)
         assert cid_metadata == expected_metadata
         assert cid_type == expected_cid_type

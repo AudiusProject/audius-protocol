@@ -497,7 +497,7 @@ def is_block_on_chain(block: Block):
 
 
 @log_duration(logger)
-def index_forward(session: Session, latest_database_block: Block):
+def index_next_block(session: Session, latest_database_block: Block):
     """
     Given the latest block in the database, index forward one block.
     """
@@ -1084,7 +1084,7 @@ def update_task(self):
             latest_database_block = get_latest_database_block(session)
             block_from_chain = is_block_on_chain(latest_database_block)
             if block_from_chain:
-                index_forward(session, latest_database_block)
+                index_next_block(session, latest_database_block)
             else:
                 revert_block(session, latest_database_block)
     except Exception as e:
