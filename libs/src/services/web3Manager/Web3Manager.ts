@@ -1,7 +1,12 @@
 import Web3 from '../../LibsWeb3'
 import sigUtil from 'eth-sig-util'
 import retry from 'async-retry'
-import { ContractMethod, estimateGas, Nullable } from '../../utils'
+import {
+  ContractMethod,
+  estimateGas,
+  MultiProvider,
+  Nullable
+} from '../../utils'
 import { AudiusABIDecoder } from '../ABIDecoder'
 import EthereumWallet from 'ethereumjs-wallet'
 import { XMLHttpRequest } from './XMLHttpRequest'
@@ -12,6 +17,7 @@ import type Web3Type from 'web3'
 import type { HttpProvider, TransactionReceipt, EventLog } from 'web3-core'
 import type { EIP712TypedData } from 'eth-sig-util'
 import type { DecodedLog } from 'abi-decoder'
+import type { AudiusLibs } from '../../AudiusLibs'
 
 const DEFAULT_GAS_LIMIT = 2000000
 
@@ -333,6 +339,12 @@ export class Web3Manager {
   // End vendored code
 }
 
+declare global {
+  interface Window {
+    audiusLibs: AudiusLibs
+  }
+}
+
 /** Browser and testing-compatible signTypedData */
 const ethSignTypedData = async (
   web3: Web3Type,
@@ -342,8 +354,12 @@ const ethSignTypedData = async (
   return await new Promise((resolve, reject) => {
     let processedSignatureData: EIP712TypedData | string = signatureData
     let method
-    // @ts-expect-error isMetaMask not captured by web3Provider
-    if (web3.currentProvider.isMetaMask === true) {
+    const provider = window.audiusLibs.web3Manager?.getWeb3()
+      .currentProvider as MultiProvider
+    if (
+      // @ts-expect-error isMetaMask is not defined on HTTPProvider, but MetaMask's flavor has it.
+      provider?.providers?.[0]?.isMetaMask === true
+    ) {
       method = 'eth_signTypedData_v3'
       processedSignatureData = JSON.stringify(signatureData)
     } else {
