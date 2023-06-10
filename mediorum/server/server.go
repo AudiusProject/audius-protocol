@@ -25,8 +25,8 @@ import (
 )
 
 type Peer struct {
-	Host   string
-	Wallet string
+	Host   string `json:"host"`
+	Wallet string `json:"wallet"`
 }
 
 func (p Peer) ApiPath(parts ...string) string {
@@ -36,20 +36,25 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
-	Env               string
-	Self              Peer
-	Peers             []Peer
-	Signers           []Peer
-	ReplicationFactor int
-	Dir               string `default:"/tmp/mediorum"`
-	BlobStoreDSN      string `json:"-"`
-	PostgresDSN       string `json:"-"`
-	LegacyFSRoot      string `json:"-"`
-	PrivateKey        string `json:"-"`
-	ListenPort        string
-	UpstreamCN        string
-	TrustedNotifierID int
-	MyIndex           int
+	Env                 string
+	Self                Peer
+	Peers               []Peer
+	Signers             []Peer
+	ReplicationFactor   int
+	Dir                 string `default:"/tmp/mediorum"`
+	BlobStoreDSN        string `json:"-"`
+	PostgresDSN         string `json:"-"`
+	LegacyFSRoot        string `json:"-"`
+	PrivateKey          string `json:"-"`
+	ListenPort          string
+	UpstreamCN          string
+	TrustedNotifierID   int
+	SPID                int
+	SPOwnerWallet       string
+	GitSHA              string
+	AudiusDockerCompose string
+	AutoUpgradeEnabled  bool
+	MyIndex             int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -68,6 +73,9 @@ type MediorumServer struct {
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+	storagePathUsed uint64
+	storagePathSize uint64
+	databaseSize    uint64
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -155,7 +163,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
 	if config.TrustedNotifierID > 0 {
-		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID))
+		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID), config.Self.Wallet)
 		if err == nil {
 			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
@@ -202,10 +210,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		routes.GET("/", ss.serveUploadUI)
 	} else {
 		routes.GET("", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/status")
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
 		})
 		routes.GET("/", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/status")
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
 		})
 	}
 
@@ -224,10 +232,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
-
-	// unified health check?
-	routes.GET("/status", ss.getStatus)
-	routes.GET("/health_check", ss.serveUnifiedHealthCheck)
+	routes.GET("/health_check", ss.serveHealthCheck)
+	routes.GET("/status", ss.serveHealthCheck) // TODO: Remove - temporary after all clients update to only use /health_check (/status was used in libs)
 
 	// -------------------
 	// internal
@@ -236,7 +242,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
 	// internal health: used by loadtest tool
-	internalApi.GET("/health", ss.getMyHealth)
 	internalApi.GET("/health/peers", ss.getPeerHealth)
 
 	// internal: crud
@@ -284,6 +289,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startCidBeamClient()
 
 	go ss.startPollingDelistStatuses()
+
+	go ss.monitorDiskAndDbStatus()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

@@ -79,7 +79,6 @@ describe('Test secondarySyncFromPrimary()', function () {
 
   /** Wipe DB + Redis */
   beforeEach(async function () {
-    config.set('entityManagerReplicaSetEnabled', true)
     try {
       await destroyUsers()
     } catch (e) {
@@ -1839,7 +1838,6 @@ describe('Test primarySyncFromSecondary() with mocked export', () => {
    * Setup mocks, deps
    */
   beforeEach(async function () {
-    config.set('entityManagerReplicaSetEnabled', true)
     await destroyUsers()
 
     await redisClient.flushdb()

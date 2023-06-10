@@ -1,23 +1,131 @@
 package server
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
+	"mediorum/ethcontracts"
+	"mediorum/server/signature"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
-	"github.com/tidwall/sjson"
 )
 
-func (ss *MediorumServer) getStatus(c echo.Context) error {
-	return c.JSON(200, ss)
+type cidCursor struct {
+	Host      string    `json:"host"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (ss *MediorumServer) getMyHealth(c echo.Context) error {
-	return c.JSON(200, ss.healthReport())
+type healthCheckResponse struct {
+	Data      healthCheckResponseData `json:"data"`
+	Signer    string                  `json:"signer"`
+	Signature string                  `json:"signature"`
+	Timestamp time.Time               `json:"timestamp"`
+}
+type healthCheckResponseData struct {
+	Healthy                   bool        `json:"healthy"`
+	Version                   string      `json:"version"`
+	Service                   string      `json:"service"` // used by registerWithDelegate()
+	SPID                      int         `json:"spID"`
+	SPOwnerWallet             string      `json:"spOwnerWallet"`
+	Git                       string      `json:"git"`
+	AudiusDockerCompose       string      `json:"audiusDockerCompose"`
+	StoragePathUsed           uint64      `json:"storagePathUsed"` // bytes
+	StoragePathSize           uint64      `json:"storagePathSize"` // bytes
+	DatabaseSize              uint64      `json:"databaseSize"`    // bytes
+	AutoUpgradeEnabled        bool        `json:"autoUpgradeEnabled"`
+	SelectedDiscoveryProvider string      `json:"selectedDiscoveryProvider"`
+	CidCursors                []cidCursor `json:"cidCursors"`
+
+	StartedAt         time.Time                  `json:"startedAt"`
+	TrustedNotifier   *ethcontracts.NotifierInfo `json:"trustedNotifier"`
+	Env               string                     `json:"env"`
+	Self              Peer                       `json:"self"`
+	Peers             []Peer                     `json:"peers"`
+	PeerHealths       []ServerHealth             `json:"peerHealths"`
+	Signers           []Peer                     `json:"signers"`
+	ReplicationFactor int                        `json:"replicationFactor"`
+	Dir               string                     `json:"dir"`
+	ListenPort        string                     `json:"listenPort"`
+	UpstreamCN        string                     `json:"upstreamCN"`
+	TrustedNotifierID int                        `json:"trustedNotifierId"`
+}
+
+type legacyHealth struct {
+	Version                   string `json:"version"`
+	Service                   string `json:"service"`
+	SelectedDiscoveryProvider string `json:"selectedDiscoveryProvider"`
+}
+
+func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
+	legacyHealth, err := ss.fetchCreatorNodeHealth()
+	data := healthCheckResponseData{
+		Healthy:                   err == nil,
+		Version:                   legacyHealth.Version,
+		Service:                   legacyHealth.Service,
+		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
+		SPID:                      ss.Config.SPID,
+		SPOwnerWallet:             ss.Config.SPOwnerWallet,
+		Git:                       ss.Config.GitSHA,
+		AudiusDockerCompose:       ss.Config.AudiusDockerCompose,
+		StoragePathUsed:           ss.storagePathUsed,
+		StoragePathSize:           ss.storagePathSize,
+		DatabaseSize:              ss.databaseSize,
+		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
+		StartedAt:                 ss.StartedAt,
+		TrustedNotifier:           ss.trustedNotifier,
+		Dir:                       ss.Config.Dir,
+		ListenPort:                ss.Config.ListenPort,
+		UpstreamCN:                ss.Config.UpstreamCN,
+		Signers:                   ss.Config.Signers,
+		ReplicationFactor:         ss.Config.ReplicationFactor,
+		Env:                       ss.Config.Env,
+		Self:                      ss.Config.Self,
+	}
+
+	// peer healths
+	if peerHealths, err := ss.allPeers(); err == nil {
+		data.PeerHealths = peerHealths
+	} else {
+		data.Peers = ss.Config.Peers
+	}
+
+	// cursor statuses
+	cidCursors := []cidCursor{}
+	if err := pgxscan.Select(c.Request().Context(), ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
+		data.CidCursors = cidCursors
+	}
+
+	// problem blob count
+	// this might be too expensive for health_check?
+	// problemBlobCount, _ := ss.findProblemBlobsCount(false)
+	// data.ProblemBlobs = problemBlobCount
+
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to marshal health check data: " + err.Error()})
+	}
+	dataBytesSorted, err := jcs.Transform(dataBytes)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to sort health check data: " + err.Error()})
+	}
+	signature, err := signature.SignBytes(dataBytesSorted, ss.Config.privateKey)
+	if err != nil {
+		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
+	}
+
+	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
+	return c.JSON(200, healthCheckResponse{
+		Data:      data,
+		Signer:    ss.Config.Self.Wallet,
+		Signature: signatureHex,
+		Timestamp: time.Now(),
+	})
 }
 
 func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
@@ -30,53 +138,10 @@ func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) serveUnifiedHealthCheck(c echo.Context) error {
-	j := []byte(`{}`)
-
-	// attempt fetch from upstream?
-	cnHealth, err := ss.fetchCreatorNodeHealth()
-	if err != nil {
-		j, _ = sjson.SetBytes(j, "creator_node_error", err)
-	} else {
-		j = cnHealth
-	}
-
-	// annotate with mediorum health
-	mediorumHealth := map[string]any{
-		"self":    ss.healthReport(),
-		"peers":   ss.Config.Peers,
-		"signers": ss.Config.Signers,
-	}
-
-	// peer health
-	if peers, err := ss.allPeers(); err == nil {
-		mediorumHealth["peers"] = peers
-	}
-
-	// problem blob count
-	// this might be too expensive for health_check?
-	// problemBlobCount, _ := ss.findProblemBlobsCount(false)
-	// mediorumHealth["problem_blobs"] = problemBlobCount
-
-	// cursor status
-	cidCursors := []struct {
-		Host      string    `json:"host"`
-		UpdatedAt time.Time `json:"updated_at"`
-	}{}
-	if err := pgxscan.Select(c.Request().Context(), ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
-		mediorumHealth["cid_cursors"] = cidCursors
-	}
-
-	j, _ = sjson.SetBytes(j, "mediorum", mediorumHealth)
-
-	return c.JSONBlob(200, j)
-}
-
-func (ss *MediorumServer) fetchCreatorNodeHealth() (json.RawMessage, error) {
-
+func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth legacyHealth, err error) {
 	upstream, err := url.Parse(ss.Config.UpstreamCN)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	httpClient := http.Client{
@@ -85,9 +150,15 @@ func (ss *MediorumServer) fetchCreatorNodeHealth() (json.RawMessage, error) {
 
 	resp, err := httpClient.Get(upstream.JoinPath("/health_check").String())
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer resp.Body.Close()
 
-	return io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(body, &legacyHealth)
+	return
 }

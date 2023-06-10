@@ -18,7 +18,7 @@ func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {
 	}
 
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
-	signature, err := sign(ts, privateKey)
+	signature, err := Sign(ts, privateKey)
 	if err != nil {
 		panic(err)
 	}
