@@ -13,7 +13,7 @@ from web3.datastructures import AttributeDict
 
 def set_patches(mocker):
     mocker.patch(
-        "src.tasks.entity_manager.user_replica_set.get_endpoint_string_from_sp_ids",
+        "src.tasks.entity_manager.entities.user_replica_set.get_endpoint_string_from_sp_ids",
         return_value="https://cn.io,https://cn2.io,https://cn3.io",
         autospec=True,
     )
@@ -91,7 +91,6 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         # index transactions
         entity_manager_update(
             None,
@@ -105,7 +104,6 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
         )
 
     with db.scoped_session() as session:
-
         # validate db records
         all_users: List[User] = session.query(User).all()
         assert len(all_users) == 2
@@ -177,7 +175,6 @@ def test_index_update_user_replica_set(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         # index transactions
         entity_manager_update(
             None,
@@ -191,7 +188,6 @@ def test_index_update_user_replica_set(app, mocker):
         )
 
     with db.scoped_session() as session:
-
         # validate db records
         all_users: List[User] = session.query(User).all()
         assert len(all_users) == 2

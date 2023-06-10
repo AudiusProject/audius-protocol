@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def set_patches(mocker):
-
     mocker.patch(
-        "src.tasks.entity_manager.notification.get_verifier_address",
+        "src.tasks.entity_manager.entities.notification.get_verifier_address",
         return_value="0x",
         autospec=True,
     )
