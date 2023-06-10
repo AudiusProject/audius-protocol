@@ -19,7 +19,6 @@ import {
   audiusUserReqLimiter,
   metadataReqLimiter,
   imageReqLimiter,
-  URSMRequestForSignatureReqLimiter,
   batchCidsExistReqLimiter,
   getRateLimiterMiddleware
 } from './reqLimiter'
@@ -127,7 +126,6 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
   app.use('/audius_user/', audiusUserReqLimiter)
   app.use('/metadata', metadataReqLimiter)
   app.use('/image_upload', imageReqLimiter)
-  app.use('/ursm_request_for_signature', URSMRequestForSignatureReqLimiter)
   app.use('/batch_cids_exist', batchCidsExistReqLimiter)
   app.use('/batch_image_cids_exist', batchCidsExistReqLimiter)
   app.use(getRateLimiterMiddleware())
