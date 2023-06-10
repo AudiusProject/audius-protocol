@@ -53,8 +53,8 @@
     "prettier-config-standard": "5.0.0"
   },
   "engines": {
-    "node": "10.4.1",
-    "npm": "6.1.0"
+    "node": ">=18.16.0",
+    "npm": ">=9.5.1"
   },
   "standard": {
     "globals": [
