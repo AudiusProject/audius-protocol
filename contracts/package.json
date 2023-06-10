@@ -10,21 +10,16 @@
   },
   "private": true,
   "scripts": {
-    "truffle-test": "./scripts/truffle-test.sh",
-    "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
-    "ganache": "docker run --name audius_ganache_cli -d -p 8545:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json -a 100",
-    "ganache-i": "docker ps",
-    "ganache-q": "docker rm -f audius_ganache_cli > /dev/null",
-    "truffle-compile": "./node_modules/.bin/truffle compile",
-    "truffle-migrate": "npm run truffle-compile && ./node_modules/.bin/truffle migrate --reset --network development",
-    "truffle-console": "./node_modules/.bin/truffle console --network development",
-    "solidity-lint": "./node_modules/.bin/solium -d contracts",
-    "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix",
-    "test": "./scripts/test.sh",
-    "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
-    "test-circle-ci": "./scripts/circleci-test.sh",
-    "discprov-script-t": "./node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -test --ipfs-test-host localhost --ipfs-test-port 6001"
+    "truffle:compile": "truffle compile",
+    "truffle:migrate": "truffle migrate --reset --network development",
+    "truffle:console": "truffle console --network development",
+    "test": "NODE_OPTIONS='--max-old-space-size=8192' truffle test test/*.js --network test",
+    "test:verbose": "NODE_OPTIONS='--max-old-space-size=8192' truffle test test/*.js --network development --verbose-rpc",
+    "coverage": "ENABLE_OPTIMIZER=false NODE_OPTIONS='--max-old-space-size=8192' truffle run coverage --file='test/*.js'",
+    "solidity:lint": "solium -d contracts",
+    "js:lint": "eslint .",
+    "lint": "npm run js:lint && npm run solidity:lint",
+    "lint:fix": "npm run js:lint -- --fix && npm run solidity:lint -- --fix"
   },
   "dependencies": {
     "@openzeppelin/upgrades": "2.8.0",
@@ -47,7 +42,15 @@
     "ganache": "^7.1.0",
     "ipfs-api": "^24.0.1",
     "standard": "^12.0.1",
-    "truffle-plugin-verify": "^0.5.26"
+    "truffle-plugin-verify": "^0.5.26",
+    "eslint": "8.36.0",
+    "eslint-config-prettier": "8.7.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "@typescript-eslint/eslint-plugin": "5.55.0",
+    "@typescript-eslint/parser": "5.55.0",
+    "typescript": "4.6.3",
+    "prettier": "2.8.4",
+    "prettier-config-standard": "5.0.0"
   },
   "engines": {
     "node": "10.4.1",

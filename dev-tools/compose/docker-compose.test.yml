@@ -133,6 +133,14 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+    profiles:
+      - poa
+    volumes:
+      - ${PROJECT_ROOT}/contracts:/usr/src/app
+      - /usr/src/app/node_modules
 
   # eth-contracts
   test-eth-contracts:

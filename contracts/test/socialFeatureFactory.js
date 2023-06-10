@@ -273,7 +273,7 @@ contract('SocialFeatureFactory', async (accounts) => {
       await _lib.addPlaylistRepostAndValidate(socialFeatureFactory, accounts[0], testUserId3, playlistId1)
     } catch (e) {
       // handle expected error
-      if (e.message.indexOf('Caller does not own userId ') >= 0) {
+      if (e.message.indexOf('Caller does not own userId') >= 0) {
         caughtError = true
       } else {
         // unexpected error - throw normally
@@ -305,7 +305,7 @@ contract('SocialFeatureFactory', async (accounts) => {
       await _lib.addPlaylistRepostAndValidate(socialFeatureFactory, accounts[1], testUserId1, playlistId1)
     } catch (e) {
       // handle expected error
-      if (e.message.indexOf('Caller does not own userId ') >= 0) {
+      if (e.message.indexOf('Caller does not own userId') >= 0) {
         caughtError = true
       } else {
         // unexpected error - throw normally
@@ -321,7 +321,7 @@ contract('SocialFeatureFactory', async (accounts) => {
       await _lib.deletePlaylistRepostAndValidate(socialFeatureFactory, accounts[1], testUserId1, playlistId1)
     } catch (e) {
       // handle expected error
-      if (e.message.indexOf('Caller does not own userId ') >= 0) {
+      if (e.message.indexOf('Caller does not own userId') >= 0) {
         caughtError = true
       } else {
         // unexpected error - throw normally

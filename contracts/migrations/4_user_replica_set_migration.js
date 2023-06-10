@@ -19,7 +19,7 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     let registry
     let registryAddress
-    if (network === 'test_local' || network === 'development' || network === 'predeploy') {
+    if (network === 'test' || network === 'development' || network === 'predeploy') {
       registryAddress = process.env.dataContractsRegistryAddress
       registry = await Registry.at(registryAddress)
     } else {
@@ -43,9 +43,9 @@ module.exports = (deployer, network, accounts) => {
     const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
     const invalidBootstrapConfiguration = (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
     if (
-        (network !== 'test_local' && network !== 'development' && network !== 'predeploy') &&
-        (invalidBootstrapConfiguration)
-      ) {
+      (network !== 'test' && network !== 'development' && network !== 'predeploy') &&
+      (invalidBootstrapConfiguration)
+    ) {
       throw new Error(
         `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`
       )
@@ -59,19 +59,19 @@ module.exports = (deployer, network, accounts) => {
     let deployLogicTx = await deployer.deploy(UserReplicaSetManager)
     let logicContractAddress = deployLogicTx.address
     const initializeUserReplicaSetManagerCalldata = encodeCall(
-        'initialize',
-        [
-            'address',
-            'bytes32',
-            'address',
-            'uint'
-        ],
-        [
-          registryAddress,
-          userFactoryKey,
-          userReplicaSetBootstrapAddress,
-          networkId
-        ]
+      'initialize',
+      [
+        'address',
+        'bytes32',
+        'address',
+        'uint'
+      ],
+      [
+        registryAddress,
+        userFactoryKey,
+        userReplicaSetBootstrapAddress,
+        networkId
+      ]
     )
     // Deploy proxy contract with encoded initialize function
     let deployedProxyTx = await deployer.deploy(
