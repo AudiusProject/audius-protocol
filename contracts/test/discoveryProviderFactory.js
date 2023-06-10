@@ -19,10 +19,21 @@ contract('DiscoveryProviderFactory', async (accounts) => {
 
   beforeEach(async () => {
     registry = await Registry.new()
-    discoveryProviderStorage = await DiscoveryProviderStorage.new(registry.address)
-    await registry.addContract(_constants.discoveryProviderStorageKey, discoveryProviderStorage.address)
-    discoveryProviderFactory = await DiscoveryProviderFactory.new(registry.address, _constants.discoveryProviderStorageKey)
-    await registry.addContract(_constants.discoveryProviderFactoryKey, discoveryProviderFactory.address)
+    discoveryProviderStorage = await DiscoveryProviderStorage.new(
+      registry.address
+    )
+    await registry.addContract(
+      _constants.discoveryProviderStorageKey,
+      discoveryProviderStorage.address
+    )
+    discoveryProviderFactory = await DiscoveryProviderFactory.new(
+      registry.address,
+      _constants.discoveryProviderStorageKey
+    )
+    await registry.addContract(
+      _constants.discoveryProviderFactoryKey,
+      discoveryProviderFactory.address
+    )
   })
 
   it('Should register one discovery provider', async () => {
@@ -30,10 +41,18 @@ contract('DiscoveryProviderFactory', async (accounts) => {
     let tx = await discoveryProviderFactory.register(endpoints[3])
 
     // validate event output matches transaction input
-    let event = _validator.validateDiscprovRegisterEvent(tx, discprovId, accounts[0], endpoints[3])
+    let event = _validator.validateDiscprovRegisterEvent(
+      tx,
+      discprovId,
+      accounts[0],
+      endpoints[3]
+    )
 
     // retrieve discprov from contract
-    let discprov = await getDiscprovFromFactory(event.discprovId, discoveryProviderFactory)
+    let discprov = await getDiscprovFromFactory(
+      event.discprovId,
+      discoveryProviderFactory
+    )
 
     // validate retrieved discprov fields match transaction inputs
     _validator.validateRegisteredDiscprov(discprov, accounts[0], endpoints[3])
@@ -58,13 +77,16 @@ contract('DiscoveryProviderFactory', async (accounts) => {
     }
 
     // validate total number of discprovs match input number of endpoints
-    let totalProviders = await discoveryProviderFactory.getTotalNumberOfProviders.call()
+    let totalProviders =
+      await discoveryProviderFactory.getTotalNumberOfProviders.call()
     assert.equal(totalProviders, endpoints.length)
 
     // retrieve all discprovs from file
     let discProvList = []
     for (i = 0; i < totalProviders; i++) {
-      discProvList[i] = await discoveryProviderFactory.getDiscoveryProvider(i + 1)
+      discProvList[i] = await discoveryProviderFactory.getDiscoveryProvider(
+        i + 1
+      )
     }
 
     // validate retrieved discprov list match input list

@@ -7,7 +7,7 @@ import {
   TestContractWithStorage
 } from '../_lib/artifacts.js'
 
-contract('TestStorage', async (accounts) => {
+contract('TestStorage', async () => {
   const key = web3.utils.utf8ToHex('key')
   const val = web3.utils.utf8ToHex('val')
 
@@ -21,14 +21,21 @@ contract('TestStorage', async (accounts) => {
     // deploy & register TestStorage & TestContractWithStorage
     let testStorage = await TestStorage.new(registry.address)
     await registry.addContract(_constants.testStorageKey, testStorage.address)
-    let testContract = await TestContractWithStorage.new(registry.address, _constants.testStorageKey)
+    let testContract = await TestContractWithStorage.new(
+      registry.address,
+      _constants.testStorageKey
+    )
     await registry.addContract(_constants.testContractKey, testContract.address)
 
     // get contract address from registry
-    let regTestContractAddress = await registry.getContract.call(_constants.testContractKey)
+    let regTestContractAddress = await registry.getContract.call(
+      _constants.testContractKey
+    )
 
     // get registered testContract instance
-    let regTestContract = await TestContractWithStorage.at(regTestContractAddress)
+    let regTestContract = await TestContractWithStorage.at(
+      regTestContractAddress
+    )
 
     // addData via registry
     await regTestContract.addData(key, val)

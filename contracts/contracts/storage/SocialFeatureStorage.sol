@@ -39,7 +39,7 @@ contract SocialFeatureStorage is RegistryContract {
         uint _userId,
         uint _trackId
     ) external onlyRegistrant(CALLER_REGISTRY_KEY)
-    {   
+    {
         userTrackReposts[_userId][_trackId] = true;
     }
 
@@ -47,7 +47,7 @@ contract SocialFeatureStorage is RegistryContract {
         uint _userId,
         uint _trackId
     ) external onlyRegistrant(CALLER_REGISTRY_KEY)
-    {   
+    {
         userTrackReposts[_userId][_trackId] = false;
     }
 
@@ -62,7 +62,7 @@ contract SocialFeatureStorage is RegistryContract {
         uint _playlistId
     ) external onlyRegistrant(CALLER_REGISTRY_KEY)
     {
-        userPlaylistReposts[_userId][_playlistId] = true; 
+        userPlaylistReposts[_userId][_playlistId] = true;
     }
 
     function deletePlaylistRepost(

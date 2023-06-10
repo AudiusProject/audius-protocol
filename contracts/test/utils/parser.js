@@ -2,20 +2,20 @@
 /****** TX RECEIPT PARSERS ******/
 
 /** Returns formatted transaction receipt object with event and arg info
-  * @param {object} txReceipt - transaction receipt object
-  * @returns {object} w/event + args array from txReceipt
-  */
+ * @param {object} txReceipt - transaction receipt object
+ * @returns {object} w/event + args array from txReceipt
+ */
 export const parseTx = (txReceipt) => {
   if (!txReceipt.logs.length >= 1) {
     throw new Error('Invalid txReceipt length')
   }
-  if (!(txReceipt.logs[0].hasOwnProperty('event'))) {
+  if (!txReceipt.logs[0].hasOwnProperty('event')) {
     throw new Error('Missing event log in tx receipt')
   }
   return {
-    'event': {
-      'name': txReceipt.logs[0].event,
-      'args': txReceipt.logs[0].args
+    event: {
+      name: txReceipt.logs[0].event,
+      args: txReceipt.logs[0].args
     }
   }
 }
@@ -67,16 +67,23 @@ export const assertEqualValues = (tx, name, properties) => {
       case '_playlistId':
       case '_followeeUserId':
       case '_primaryId':
-        assert.equal(tx.event.args[p].toNumber(), properties[p], 'Expected same ' + p)
+        assert.equal(
+          tx.event.args[p].toNumber(),
+          properties[p],
+          'Expected same ' + p
+        )
         break
-      case '_secondaryIds':
+      case '_secondaryIds': {
         let secondariesFromChain = tx.event.args[p]
         let secondaries = properties[p]
         assert.isTrue(
-          secondariesFromChain.every((replicaId, i) => replicaId.eq(secondaries[i])),
+          secondariesFromChain.every((replicaId, i) =>
+            replicaId.eq(secondaries[i])
+          ),
           'Secondary mismatch'
         )
         break
+      }
       default:
         assert.equal(tx.event.args[p], properties[p], 'Expected same ' + p)
         break
@@ -110,17 +117,16 @@ const buildReturnObj = (tx, properties) => {
 }
 
 /** Returns formatted event params from DiscoveryProvider.register() transaction receipt
-  * @param {object} txReceipt - transaction receipt object
-  * @returns {object} with eventName, discprovId, discprovWallet, discprovEndpoint
-  */
+ * @param {object} txReceipt - transaction receipt object
+ * @returns {object} with eventName, discprovId, discprovWallet, discprovEndpoint
+ */
 export const parseDiscprovRegisterTx = (tx) => {
   tx = parseTx(tx)
   checkPropertiesExist(tx, { _id: true, _wallet: true, _endpoint: true })
   return {
-    'eventName': tx.event.name,
-    'discprovId': tx.event.args._id.toNumber(),
-    'discprovWallet': tx.event.args._wallet,
-    'discprovEndpoint': tx.event.args._endpoint
+    eventName: tx.event.name,
+    discprovId: tx.event.args._id.toNumber(),
+    discprovWallet: tx.event.args._wallet,
+    discprovEndpoint: tx.event.args._endpoint
   }
 }
-  

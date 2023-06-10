@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 interface SocialFeatureStorageInterface {
   function addTrackRepost(
     uint _userId,
-    uint _trackId) external; 
+    uint _trackId) external;
 
   function deleteTrackRepost(
     uint _userId,

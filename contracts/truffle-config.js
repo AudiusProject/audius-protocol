@@ -7,34 +7,45 @@
 // Import babel for ES6 support
 require('babel-register')({
   presets: [
-    ['env', {
-      'targets': {
-        'node': '8.0'
+    [
+      'env',
+      {
+        targets: {
+          node: '8.0'
+        }
       }
-    }]
+    ]
   ]
 })
 
 require('babel-polyfill')
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider')
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
   networks: {
     production: {
-      provider: () => new HDWalletProvider(process.env.NETHERMIND_DEPLOYER_PRIVATE_KEY, liveNetwork),
-      network_id: "31524",
+      provider: () =>
+        new HDWalletProvider(
+          process.env.NETHERMIND_DEPLOYER_PRIVATE_KEY,
+          liveNetwork
+        ),
+      network_id: '31524',
       gas: 0,
       gasPrice: 0,
-      gasLimit: 0,
+      gasLimit: 0
     },
     staging: {
-      provider: () => new HDWalletProvider(process.env.NETHERMIND_DEPLOYER_PRIVATE_KEY, liveNetwork),
-      network_id: "1056801",
+      provider: () =>
+        new HDWalletProvider(
+          process.env.NETHERMIND_DEPLOYER_PRIVATE_KEY,
+          liveNetwork
+        ),
+      network_id: '1056801',
       gas: 0,
       gasPrice: 0,
-      gasLimit: 0,
+      gasLimit: 0
     },
     development: {
       host: '127.0.0.1', // Localhost (default: none)
@@ -58,8 +69,8 @@ module.exports = {
       verify: {
         apiUrl: 'http://poa-blockscout:4000/api',
         apiKey: 'NONE',
-        explorerUrl: 'http://poa-blockscout:4000/address',
-      },
+        explorerUrl: 'http://poa-blockscout:4000/address'
+      }
     },
     audius_private: {
       host: '127.0.0.1',
