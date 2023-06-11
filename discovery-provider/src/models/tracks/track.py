@@ -40,6 +40,8 @@ class Track(Base, RepresentableMixin):
     tags = Column(String)
     genre = Column(String)
     mood = Column(String)
+    key = Column(String)
+    bpm = Column(Integer)
     credits_splits = Column(String)
     create_date = Column(String)
     release_date = Column(String)

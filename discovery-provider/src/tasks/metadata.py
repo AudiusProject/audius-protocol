@@ -65,6 +65,8 @@ class TrackMetadata(TypedDict):
     is_premium: Optional[bool]
     premium_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
+    key: Optional[str]
+    bpm: Optional[int]
 
 
 track_metadata_format: TrackMetadata = {
@@ -97,6 +99,8 @@ track_metadata_format: TrackMetadata = {
     "premium_conditions": None,
     "is_playlist_upload": False,
     "ai_attribution_user_id": None,
+    "key": None,
+    "bpm": None,
 }
 
 # Required format for user metadata retrieved from the content system

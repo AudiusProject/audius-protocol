@@ -154,6 +154,8 @@ export type TrackMetadata = {
   premium_content_signature: Nullable<PremiumContentSignature>
   listenCount?: number
   permalink: string
+  key: Nullable<string>
+  bpm: Nullable<number>
 
   // Optional Fields
   is_invalid?: boolean

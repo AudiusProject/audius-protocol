@@ -143,6 +143,14 @@
         "ai_attribution_user_id": {
           "type": ["integer", "null"],
           "default": null
+        },
+        "key": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "bpm": {
+          "type": ["integer", "null"],
+          "default": null
         }
       },
       "required": [
