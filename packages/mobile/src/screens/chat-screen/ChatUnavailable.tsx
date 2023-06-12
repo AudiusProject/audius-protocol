@@ -4,13 +4,13 @@ import { ChatPermissionAction, useCanSendMessage } from '@audius/common'
 import { View, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { UserBadges } from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 const messages = {
-  noAction: 'You can no longer send messages to ',
+  noAction: (userName: string) =>
+    `You can no longer send messages to ${userName}. `,
   tip1: 'You must send ',
   tip2: ' a tip before you can send them messages.',
   blockee: 'You cannot send messages to users you have blocked. ',
@@ -68,12 +68,7 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
       [ChatPermissionAction.NONE]: () => (
         <>
           <Text style={styles.unavailableText}>
-            {messages.noAction}
-            <UserBadges
-              user={otherUser}
-              as={Text}
-              nameStyle={styles.unavailableText}
-            />{' '}
+            {messages.noAction(otherUser.name)}
             <Text
               style={[styles.unavailableText, styles.link]}
               onPress={handleLearnMorePress}
@@ -92,11 +87,7 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
                 navigation.navigate('Profile', { id: otherUser.user_id })
               }
             >
-              <UserBadges
-                user={otherUser}
-                as={Text}
-                nameStyle={[styles.unavailableText, styles.link]}
-              />
+              {otherUser.name}
             </Text>
             {messages.tip2}
           </Text>
