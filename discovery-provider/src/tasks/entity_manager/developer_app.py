@@ -56,8 +56,8 @@ def is_within_6_hours(timestamp_str):
 
 def get_developer_app_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[Union[CreateDeveloperAppMetadata, DeleteDeveloperAppMetadata]]:
-    metadata: CreateDeveloperAppMetadata = {
+):
+    metadata = {
         "address": None,
         "name": None,
         "is_personal_access": None,
