@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"sync"
 	"testing"
 	"time"
 
@@ -10,6 +11,21 @@ import (
 
 func TestRepair(t *testing.T) {
 	replicationFactor := 5
+	crudrWait := time.Millisecond * 300
+
+	runTestNetworkRepair := func(cleanup bool) {
+		wg := sync.WaitGroup{}
+		wg.Add(len(testNetwork))
+		for _, s := range testNetwork {
+			s := s
+			go func() {
+				err := s.runRepair(cleanup)
+				assert.NoError(t, err)
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
 
 	ss := testNetwork[0]
 
@@ -20,6 +36,8 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
+	time.Sleep(crudrWait)
+
 	// verify it reports as under-replicated
 	{
 		problems, err := ss.findProblemBlobs(false)
@@ -29,13 +47,10 @@ func TestRepair(t *testing.T) {
 	}
 
 	// tell all servers do repair
-	for _, s := range testNetwork {
-		err = s.runRepair(false)
-		assert.NoError(t, err)
-	}
+	runTestNetworkRepair(false)
 
 	// wait for crud replication
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify replicated + not a problem
 	{
@@ -57,7 +72,7 @@ func TestRepair(t *testing.T) {
 	}
 
 	// wait for crud
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify over-replicated
 	{
@@ -71,14 +86,11 @@ func TestRepair(t *testing.T) {
 		assert.True(t, len(blobs) == len(testNetwork))
 	}
 
-	// tell all servers to do cleanup
-	for _, server := range testNetwork {
-		err = server.runRepair(true)
-		assert.NoError(t, err)
-	}
+	// tell all servers do cleanup
+	runTestNetworkRepair(true)
 
 	// wait for crud replication
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify all good
 	{
@@ -91,5 +103,4 @@ func TestRepair(t *testing.T) {
 		assert.Equal(t, replicationFactor, len(blobs))
 	}
 
-	//
 }

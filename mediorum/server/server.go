@@ -76,8 +76,8 @@ type MediorumServer struct {
 	storagePathSize uint64
 	databaseSize    uint64
 
-	mu         sync.Mutex
-	peerHealth map[string]time.Time
+	peerHealthMutex sync.RWMutex
+	peerHealth      map[string]time.Time
 
 	StartedAt time.Time
 	Config    MediorumConfig

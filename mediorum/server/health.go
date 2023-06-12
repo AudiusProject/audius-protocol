@@ -7,10 +7,7 @@ import (
 func (ss *MediorumServer) startHealthBroadcaster() {
 	ss.logger.Debug("starting health broadcaster")
 
-	// broadcast health more often on boot (1s)
-	// and more slowly after (45s)
-	count := 0
-	delay := time.Second
+	delay := time.Second * 45
 
 	for {
 		select {
@@ -19,11 +16,7 @@ func (ss *MediorumServer) startHealthBroadcaster() {
 			return
 		case <-time.After(delay):
 			ss.crud.Patch(ss.healthReport())
-			if count < 10 {
-				count++
-			} else if count == 10 {
-				delay = time.Second * 45
-			}
+
 		}
 	}
 }

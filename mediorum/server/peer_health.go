@@ -23,9 +23,9 @@ func (ss *MediorumServer) startHealthPoller() {
 				if err == nil {
 					if resp.StatusCode == 200 {
 						// mark healthy
-						ss.mu.Lock()
+						ss.peerHealthMutex.Lock()
 						ss.peerHealth[peer.Host] = time.Now()
-						ss.mu.Unlock()
+						ss.peerHealthMutex.Unlock()
 					}
 					resp.Body.Close()
 				}
@@ -34,7 +34,7 @@ func (ss *MediorumServer) startHealthPoller() {
 		}
 		wg.Wait()
 
-		if i < 10 {
+		if i < 2 {
 			time.Sleep(time.Second)
 		} else {
 			time.Sleep(time.Second * 30)
@@ -44,13 +44,13 @@ func (ss *MediorumServer) startHealthPoller() {
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast time.Duration) []string {
 	result := []string{}
-	ss.mu.Lock()
+	ss.peerHealthMutex.RLock()
 	for host, ts := range ss.peerHealth {
 		if time.Since(ts) < aliveInLast {
 			result = append(result, host)
 		}
 	}
-	ss.mu.Unlock()
+	ss.peerHealthMutex.RUnlock()
 
 	return result
 }

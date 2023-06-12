@@ -89,9 +89,9 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	}
 
 	// peer healths
-	ss.mu.Lock()
+	ss.peerHealthMutex.RLock()
 	data.PeerHealths = ss.peerHealth
-	ss.mu.Unlock()
+	ss.peerHealthMutex.RUnlock()
 
 	// cursor statuses
 	cidCursors := []cidCursor{}

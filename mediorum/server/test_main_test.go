@@ -47,7 +47,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 	}
 
 	// give each server time to startup + health check
-	time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 3)
 	log.Printf("started %d servers", serverCount)
 
 	return servers
