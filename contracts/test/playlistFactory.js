@@ -37,22 +37,39 @@ contract('PlaylistFactory', async (accounts) => {
     await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
     await registry.addContract(_constants.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    trackFactory = await TrackFactory.new(
+      registry.address,
+      _constants.trackStorageKey,
+      _constants.userFactoryKey,
+      networkId
+    )
     await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // Deploy playlist related contracts
     playlistStorage = await PlaylistStorage.new(registry.address)
-    await registry.addContract(_constants.playlistStorageKey, playlistStorage.address)
+    await registry.addContract(
+      _constants.playlistStorageKey,
+      playlistStorage.address
+    )
     playlistFactory = await PlaylistFactory.new(
       registry.address,
       _constants.playlistStorageKey,
       _constants.userFactoryKey,
       _constants.trackFactoryKey,
-      networkId)
+      networkId
+    )
 
-    await registry.addContract(_constants.playlistFactoryKey, playlistFactory.address)
+    await registry.addContract(
+      _constants.playlistFactoryKey,
+      playlistFactory.address
+    )
 
     // add two users
     await _lib.addUserAndValidate(
@@ -61,7 +78,8 @@ contract('PlaylistFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      true)
+      true
+    )
 
     await _lib.addUserAndValidate(
       userFactory,
@@ -69,7 +87,8 @@ contract('PlaylistFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle2,
-      true)
+      true
+    )
 
     // add two tracks
     await _lib.addTrackAndValidate(
@@ -79,7 +98,8 @@ contract('PlaylistFactory', async (accounts) => {
       testUserId1,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
@@ -87,7 +107,8 @@ contract('PlaylistFactory', async (accounts) => {
       testUserId2,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
   })
 
   it('Should create a playlist', async () => {
@@ -99,7 +120,8 @@ contract('PlaylistFactory', async (accounts) => {
       playlistName,
       false,
       false,
-      playlistTracks)
+      playlistTracks
+    )
   })
 
   it('Should create a playlist and add a separate track', async () => {
@@ -111,7 +133,8 @@ contract('PlaylistFactory', async (accounts) => {
       testUserId2,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
 
     // Create playlist
     await _lib.addPlaylistAndValidate(
@@ -122,13 +145,15 @@ contract('PlaylistFactory', async (accounts) => {
       playlistName,
       false,
       false,
-      playlistTracks)
+      playlistTracks
+    )
 
     await _lib.addPlaylistTrack(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      testTrackId3)
+      testTrackId3
+    )
   })
 
   it('Should create a playlist and delete a track', async () => {
@@ -141,14 +166,16 @@ contract('PlaylistFactory', async (accounts) => {
       playlistName,
       false,
       false,
-      playlistTracks)
+      playlistTracks
+    )
 
     await _lib.deletePlaylistTrack(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
       testTrackId2,
-      1551912253)
+      1551912253
+    )
   })
 
   it('Should create a playlist and perform update operations', async () => {
@@ -167,7 +194,8 @@ contract('PlaylistFactory', async (accounts) => {
       playlistName,
       false,
       false,
-      playlistTracks)
+      playlistTracks
+    )
 
     let playlistTracksNewOrder = [2, 1]
 
@@ -176,21 +204,24 @@ contract('PlaylistFactory', async (accounts) => {
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      playlistTracksNewOrder)
+      playlistTracksNewOrder
+    )
 
     // 2 - Update playlist name
     await _lib.updatePlaylistNameAndValidate(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      'Updated test playlist name')
+      'Updated test playlist name'
+    )
 
     // 3 - Update playlist privacy
     await _lib.updatePlaylistPrivacyAndValidate(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      true)
+      true
+    )
 
     // Attempt updating a playlist order with an invalid track
     let invalidPlaylistTracksOrder = [2, 3, 1]
@@ -200,7 +231,8 @@ contract('PlaylistFactory', async (accounts) => {
         playlistFactory,
         accounts[0],
         expectedPlaylistId,
-        invalidPlaylistTracksOrder)
+        invalidPlaylistTracksOrder
+      )
 
       updatedTrackOrder = true
     } catch (err) {
@@ -212,21 +244,24 @@ contract('PlaylistFactory', async (accounts) => {
 
     assert.isFalse(
       updatedTrackOrder,
-      'Expect failure with invalid track ID in reorder operation')
+      'Expect failure with invalid track ID in reorder operation'
+    )
 
     // 4 - Update playlist cover photo
     await _lib.updatePlaylistCoverPhotoAndValidate(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      _constants.userMetadata.coverPhotoDigest)
+      _constants.userMetadata.coverPhotoDigest
+    )
 
     // 5 - Update playlist description
     await _lib.updatePlaylistDescriptionAndValidate(
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis')
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis'
+    )
 
     // 6 - Update playlist UPC
     // TODO: Fix these numbas yo
@@ -234,7 +269,8 @@ contract('PlaylistFactory', async (accounts) => {
       playlistFactory,
       accounts[0],
       expectedPlaylistId,
-      web3.utils.utf8ToHex('123456789abc'))
+      web3.utils.utf8ToHex('123456789abc')
+    )
 
     // 7 - Update operations with invalid fields
     let invalidPlaylistId = 50
@@ -244,7 +280,8 @@ contract('PlaylistFactory', async (accounts) => {
         playlistFactory,
         accounts[0],
         invalidPlaylistId,
-        true)
+        true
+      )
     } catch (e) {
       if (e.message.indexOf('Must provide valid playlist ID')) {
         caughtError = true
@@ -258,7 +295,8 @@ contract('PlaylistFactory', async (accounts) => {
         playlistFactory,
         accounts[1], // Incorrect account
         expectedPlaylistId,
-        true)
+        true
+      )
     } catch (e) {
       if (e.message.indexOf('Invalid signature')) {
         caughtError = true

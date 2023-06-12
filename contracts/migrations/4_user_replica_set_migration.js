@@ -4,7 +4,9 @@ const UserReplicaSetManager = artifacts.require('UserReplicaSetManager')
 const AdminUpgradeabilityProxy = artifacts.require('AdminUpgradeabilityProxy')
 const userFactoryKey = web3.utils.utf8ToHex('UserFactory')
 const userReplicaSetManagerKeyString = 'UserReplicaSetManager'
-const userReplicaSetManagerKey = web3.utils.utf8ToHex(userReplicaSetManagerKeyString)
+const userReplicaSetManagerKey = web3.utils.utf8ToHex(
+  userReplicaSetManagerKeyString
+)
 const abi = require('ethereumjs-abi')
 
 // Generate encoded arguments for proxy initialization
@@ -19,12 +21,18 @@ module.exports = (deployer, network, accounts) => {
     const config = contractConfig[network]
     let registry
     let registryAddress
-    if (network === 'test_local' || network === 'development' || network === 'predeploy') {
+    if (
+      network === 'test' ||
+      network === 'development' ||
+      network === 'predeploy'
+    ) {
       registryAddress = process.env.dataContractsRegistryAddress
       registry = await Registry.at(registryAddress)
     } else {
       if (!config.registryAddress) {
-        throw new Error('Invalid configuration, expected registry address to be configured')
+        throw new Error(
+          'Invalid configuration, expected registry address to be configured'
+        )
       }
       registryAddress = config.registryAddress
       registry = await Registry.at(registryAddress)
@@ -35,43 +43,49 @@ module.exports = (deployer, network, accounts) => {
     // This is the blacklist's veriferAddress
     // Incoming proxy admin is identical to currently configured blacklisterAddress
     // If no blacklister is configured, the last known account is used as the proxy admin
-    const proxyAdminAddress = config.blacklisterAddress || accounts[accounts.length - 1]
-    const userReplicaSetBootstrapAddress = config.userReplicaSetBootstrapAddress || accounts[9]
+    const proxyAdminAddress =
+      config.blacklisterAddress || accounts[accounts.length - 1]
+    const userReplicaSetBootstrapAddress =
+      config.userReplicaSetBootstrapAddress || accounts[9]
 
     const bootstrapSPIds = config.bootstrapSPIds
     const bootstrapNodeDelegateWallets = config.bootstrapSPDelegateWallets
     const bootstrapSPOwnerWallets = config.bootstrapSPOwnerWallets
-    const invalidBootstrapConfiguration = (bootstrapSPIds.length === 0 || bootstrapNodeDelegateWallets.length === 0 || bootstrapSPOwnerWallets.length === 0)
+    const invalidBootstrapConfiguration =
+      bootstrapSPIds.length === 0 ||
+      bootstrapNodeDelegateWallets.length === 0 ||
+      bootstrapSPOwnerWallets.length === 0
     if (
-        (network !== 'test_local' && network !== 'development' && network !== 'predeploy') &&
-        (invalidBootstrapConfiguration)
-      ) {
+      network !== 'test' &&
+      network !== 'development' &&
+      network !== 'predeploy' &&
+      invalidBootstrapConfiguration
+    ) {
       throw new Error(
         `UserReplicaSetManager Migration: Invalid configuration provided. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`
       )
     } else if (invalidBootstrapConfiguration) {
-      console.error(`WARNING UserReplicaSetManager Migration: Proceeding with Invalid Bootstrap configuration. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`)
+      console.error(
+        `WARNING UserReplicaSetManager Migration: Proceeding with Invalid Bootstrap configuration. Received bootstrapSPIds=${bootstrapSPIds}, bootstrapNodeDelegateWallets=${bootstrapNodeDelegateWallets}, bootstrapSPOwnerWallets=${bootstrapSPOwnerWallets}`
+      )
     }
 
-    console.log(`Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`)
+    console.log(
+      `Configuration provided. Deploying with ${bootstrapSPIds} and ${bootstrapNodeDelegateWallets}`
+    )
 
     // Deploy logic contract
     let deployLogicTx = await deployer.deploy(UserReplicaSetManager)
     let logicContractAddress = deployLogicTx.address
     const initializeUserReplicaSetManagerCalldata = encodeCall(
-        'initialize',
-        [
-            'address',
-            'bytes32',
-            'address',
-            'uint'
-        ],
-        [
-          registryAddress,
-          userFactoryKey,
-          userReplicaSetBootstrapAddress,
-          networkId
-        ]
+      'initialize',
+      ['address', 'bytes32', 'address', 'uint'],
+      [
+        registryAddress,
+        userFactoryKey,
+        userReplicaSetBootstrapAddress,
+        networkId
+      ]
     )
     // Deploy proxy contract with encoded initialize function
     let deployedProxyTx = await deployer.deploy(
@@ -81,16 +95,29 @@ module.exports = (deployer, network, accounts) => {
       initializeUserReplicaSetManagerCalldata
     )
     let userReplicaSetManagerProxyAddress = deployedProxyTx.address
-    console.log(`UserReplicaSetManager Proxy Contract deployed at ${deployedProxyTx.address}`)
+    console.log(
+      `UserReplicaSetManager Proxy Contract deployed at ${deployedProxyTx.address}`
+    )
     // Register proxy contract against Registry
-    await registry.addContract(userReplicaSetManagerKey, userReplicaSetManagerProxyAddress)
+    await registry.addContract(
+      userReplicaSetManagerKey,
+      userReplicaSetManagerProxyAddress
+    )
     // Confirm registered address matches proxy
-    let retrievedAddressFromRegistry = await registry.getContract(userReplicaSetManagerKey)
-    console.log(`Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`)
+    let retrievedAddressFromRegistry = await registry.getContract(
+      userReplicaSetManagerKey
+    )
+    console.log(
+      `Registered ${retrievedAddressFromRegistry} with key ${userReplicaSetManagerKeyString}/${userReplicaSetManagerKey}`
+    )
 
     // Confirm seed is not yet complete
-    let userReplicaSetManagerInst = await UserReplicaSetManager.at(deployedProxyTx.address)
-    let seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    let userReplicaSetManagerInst = await UserReplicaSetManager.at(
+      deployedProxyTx.address
+    )
+    let seedComplete = await userReplicaSetManagerInst.getSeedComplete({
+      from: userReplicaSetBootstrapAddress
+    })
     console.log(`Seed complete: ${seedComplete}`)
     // Issue seed operation
     // Note - seedBootstrapNodes MUST be called from userReplicaBootstrapAddress
@@ -100,7 +127,9 @@ module.exports = (deployer, network, accounts) => {
       bootstrapSPOwnerWallets,
       { from: userReplicaSetBootstrapAddress }
     )
-    seedComplete = await userReplicaSetManagerInst.getSeedComplete({ from: userReplicaSetBootstrapAddress })
+    seedComplete = await userReplicaSetManagerInst.getSeedComplete({
+      from: userReplicaSetBootstrapAddress
+    })
     console.log(`Seed complete: ${seedComplete}`)
     process.env.dataContractsUrsmAddress = deployedProxyTx.address
   })

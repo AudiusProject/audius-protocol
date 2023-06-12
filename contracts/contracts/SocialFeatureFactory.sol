@@ -35,7 +35,7 @@ contract SocialFeatureFactory is RegistryContract, SigningLogic {
     );
     bytes32 constant DELETE_TRACK_REPOST_REQUEST_TYPEHASH = keccak256(
         "DeleteTrackRepostRequest(uint userId,uint trackId,bytes32 nonce)"
-    );   
+    );
     bytes32 constant USER_FOLLOW_REQUEST_TYPEHASH = keccak256(
         "UserFollowRequest(uint followerUserId,uint followeeUserId,bytes32 nonce)"
     );
@@ -113,7 +113,7 @@ contract SocialFeatureFactory is RegistryContract, SigningLogic {
         uint _playlistId,
         bytes32 _requestNonce,
         bytes calldata _subjectSig
-    ) external 
+    ) external
     {
         bytes32 signatureDigest = generatePlaylistRepostRequestSchemaHash(
             _userId, _playlistId, _requestNonce
@@ -165,7 +165,7 @@ contract SocialFeatureFactory is RegistryContract, SigningLogic {
         bool trackRepostExists = SocialFeatureStorageInterface(
             registry.getContract(socialFeatureStorageRegistryKey)
         ).userRepostedTrack(_userId, _trackId);
-        require(trackRepostExists == true, "track repost does not exist"); 
+        require(trackRepostExists == true, "track repost does not exist");
 
         SocialFeatureStorageInterface(
             registry.getContract(socialFeatureStorageRegistryKey)
@@ -198,7 +198,7 @@ contract SocialFeatureFactory is RegistryContract, SigningLogic {
         bool playlistRepostExists = SocialFeatureStorageInterface(
             registry.getContract(socialFeatureStorageRegistryKey)
         ).userRepostedPlaylist(_userId, _playlistId);
-        require(playlistRepostExists == true, "playlist repost does not exist"); 
+        require(playlistRepostExists == true, "playlist repost does not exist");
 
         SocialFeatureStorageInterface(
             registry.getContract(socialFeatureStorageRegistryKey)
