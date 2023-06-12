@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"sync"
 	"testing"
 	"time"
 
@@ -10,6 +11,21 @@ import (
 
 func TestRepair(t *testing.T) {
 	replicationFactor := 5
+	crudrWait := time.Millisecond * 300
+
+	runTestNetworkRepair := func(cleanup bool) {
+		wg := sync.WaitGroup{}
+		wg.Add(len(testNetwork))
+		for _, s := range testNetwork {
+			s := s
+			go func() {
+				err := s.runRepair(cleanup)
+				assert.NoError(t, err)
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
 
 	ss := testNetwork[0]
 
@@ -20,6 +36,8 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
+	time.Sleep(crudrWait)
+
 	// verify it reports as under-replicated
 	{
 		problems, err := ss.findProblemBlobs(false)
@@ -28,12 +46,11 @@ func TestRepair(t *testing.T) {
 		assert.Equal(t, problems[0].R, 1)
 	}
 
-	// do repair
-	err = ss.repairUnderReplicatedBlobs()
-	assert.NoError(t, err)
+	// tell all servers do repair
+	runTestNetworkRepair(false)
 
 	// wait for crud replication
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify replicated + not a problem
 	{
@@ -51,11 +68,11 @@ func TestRepair(t *testing.T) {
 	// now over-replicate file
 	//
 	for _, server := range testNetwork {
-		ss.replicateFileToHost(server.Config.Self, cid, bytes.NewReader(data))
+		ss.replicateFileToHost(server.Config.Self.Host, cid, bytes.NewReader(data))
 	}
 
 	// wait for crud
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify over-replicated
 	{
@@ -69,14 +86,11 @@ func TestRepair(t *testing.T) {
 		assert.True(t, len(blobs) == len(testNetwork))
 	}
 
-	// tell all servers to do cleanup
-	for _, server := range testNetwork {
-		err = server.cleanupOverReplicatedBlobs()
-		assert.NoError(t, err)
-	}
+	// tell all servers do cleanup
+	runTestNetworkRepair(true)
 
 	// wait for crud replication
-	time.Sleep(time.Millisecond * 100)
+	time.Sleep(crudrWait)
 
 	// verify all good
 	{
@@ -86,6 +100,7 @@ func TestRepair(t *testing.T) {
 
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.True(t, len(blobs) == replicationFactor)
+		assert.Equal(t, replicationFactor, len(blobs))
 	}
+
 }

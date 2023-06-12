@@ -47,7 +47,7 @@ type healthCheckResponseData struct {
 	Env               string                     `json:"env"`
 	Self              Peer                       `json:"self"`
 	Peers             []Peer                     `json:"peers"`
-	PeerHealths       []ServerHealth             `json:"peerHealths"`
+	PeerHealths       map[string]time.Time       `json:"peerHealths"`
 	Signers           []Peer                     `json:"signers"`
 	ReplicationFactor int                        `json:"replicationFactor"`
 	Dir               string                     `json:"dir"`
@@ -89,11 +89,9 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	}
 
 	// peer healths
-	if peerHealths, err := ss.allPeers(); err == nil {
-		data.PeerHealths = peerHealths
-	} else {
-		data.Peers = ss.Config.Peers
-	}
+	ss.peerHealthMutex.RLock()
+	data.PeerHealths = ss.peerHealth
+	ss.peerHealthMutex.RUnlock()
 
 	// cursor statuses
 	cidCursors := []cidCursor{}
@@ -131,7 +129,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
 	peers := []*ServerHealth{}
 	ss.crud.DB.Find(&peers)
-	healthyPeers, _ := ss.findHealthyPeers("2 minutes")
+	healthyPeers := ss.findHealthyPeers(2 * time.Minute)
 	return c.JSON(200, map[string]any{
 		"peers":   peers,
 		"healthy": healthyPeers,

@@ -3,28 +3,23 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"time"
 
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
-	healthyHostNames := ss.findHealthyHostNames("5 minutes")
 	success := []string{}
-	for _, peer := range ss.placement.topAll(fileName) {
-		logger := logger.With("to", peer.Host)
-
-		if !slices.Contains(healthyHostNames, peer.Host) {
-			logger.Info("skipping unhealthy host", "healthy", healthyHostNames)
-			continue
-		}
+	preferred, _ := ss.rendezvous(fileName)
+	for _, peer := range preferred {
+		logger := logger.With("to", peer)
 
 		logger.Info("replicating")
 
@@ -34,7 +29,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 			logger.Error("replication failed", err)
 		} else {
 			logger.Info("replicated")
-			success = append(success, peer.Host)
+			success = append(success, peer)
 			if len(success) == ss.Config.ReplicationFactor {
 				break
 			}
@@ -101,9 +96,9 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	return nil
 }
 
-func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file io.Reader) error {
+func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file io.Reader) error {
 	// logger := ss.logger.With()
-	if peer.Host == ss.Config.Self.Host {
+	if peer == ss.Config.Self.Host {
 		return ss.replicateToMyBucket(fileName, file)
 	}
 
@@ -112,8 +107,9 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}
 
 	// first check if target already has it...
-	if ss.hostHasBlob(peer.Host, fileName, true) {
-		ss.logger.Info(peer.Host + " already has " + fileName)
+	// todo: this should be cheap check... host should be responsible for doing more expensive check
+	if ss.hostHasBlob(peer, fileName, true) {
+		ss.logger.Info(peer + " already has " + fileName)
 		return nil
 	}
 
@@ -137,7 +133,7 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}()
 
 	req := signature.SignedPost(
-		peer.ApiPath("internal/blobs")+"?cid="+fileName,
+		peer+"/internal/blobs?cid="+fileName,
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey)
@@ -173,4 +169,31 @@ func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
 	}
 	defer has.Body.Close()
 	return has.StatusCode == 200
+}
+
+func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
+	if host == ss.Config.Self.Host {
+		return errors.New("should not pull blob from self")
+	}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	u := apiPath(host, "internal/blobs", cid)
+
+	req, err := signature.SignedGet(u, ss.Config.privateKey)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("pull blob: bad status: %d cid: %s host: %s", resp.StatusCode, cid, host)
+	}
+
+	return ss.replicateToMyBucket(cid, resp.Body)
 }
