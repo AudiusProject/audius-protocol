@@ -21,11 +21,9 @@ const { fetchNotifications, markAllAsViewed } = notificationsActions
 const {
   getNotificationHasMore,
   getNotificationStatus,
-  makeGetAllNotifications,
+  selectAllNotifications,
   getNotificationUnviewedCount
 } = notificationsSelectors
-
-const getNotifications = makeGetAllNotifications()
 
 const messages = {
   documentTitle: 'Notifications',
@@ -43,7 +41,7 @@ const SCROLL_THRESHOLD = 300
  * summary of each notification and a link to open the full
  * notification in a modal  */
 export const NotificationPage = () => {
-  const notifications = useSelector(getNotifications)
+  const notifications = useSelector(selectAllNotifications)
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
   const notificationUnviewedCount = useSelector(getNotificationUnviewedCount)

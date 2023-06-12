@@ -1,5 +1,5 @@
 import { CommonState } from 'store/commonStore'
-import { getNotificationById } from 'store/notifications/notificationsSelectors'
+import { getNotificationById } from 'store/notifications/selectors'
 import { NotificationType } from 'store/notifications/types'
 import { formatCount } from 'utils/formatUtil'
 
