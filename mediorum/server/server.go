@@ -226,7 +226,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
-	routes.GET("/status", ss.serveHealthCheck) // TODO: Remove - temporary after all clients update to only use /health_check (/status was used in libs)
+
+	// todo: use `/internal/ok` instead... this is just needed for transition
+	routes.GET("/status", func(c echo.Context) error {
+		return c.String(200, "OK")
+	})
 
 	// -------------------
 	// internal

@@ -19,7 +19,7 @@ func (ss *MediorumServer) startHealthPoller() {
 		for _, peer := range ss.Config.Peers {
 			peer := peer
 			go func() {
-				resp, err := httpClient.Get(peer.ApiPath("/internal/ok"))
+				resp, err := httpClient.Get(peer.ApiPath("/status")) // todo: switch to /internal/ok later
 				if err == nil {
 					if resp.StatusCode == 200 {
 						// mark healthy
