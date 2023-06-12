@@ -37,7 +37,6 @@ describe('test issueSyncRequest job processor', function () {
     syncRequestParameters
 
   beforeEach(async function () {
-    config.set('entityManagerReplicaSetEnabled', true)
     syncType = SyncType.Manual
     syncMode = SYNC_MODES.SyncSecondaryFromPrimary
     primary = 'http://primary_cn.co'

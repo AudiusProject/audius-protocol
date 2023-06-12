@@ -72,7 +72,10 @@ describe('Push Notifications', () => {
       {
         title: 'Message',
         body: `New message from ${user1.name}`,
-        data: {}
+        data: {
+          type: 'Message',
+          chatId
+        }
       }
     )
 
@@ -100,7 +103,11 @@ describe('Push Notifications', () => {
       {
         title: 'Reaction',
         body: `${user2.name} reacted ${reaction} to your message`,
-        data: {}
+        data: {
+          type: 'MessageReaction',
+          chatId,
+          messageId
+        }
       }
     )
   }, 40000)
@@ -152,7 +159,10 @@ describe('Push Notifications', () => {
       {
         title: 'Message',
         body: `New message from ${user1.name}`,
-        data: {}
+        data: {
+          type: 'Message',
+          chatId
+        }
       }
     )
 

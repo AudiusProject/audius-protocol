@@ -103,7 +103,11 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
             {
               title,
               body,
-              data: {}
+              data: {
+                type: 'MessageReaction',
+                chatId: this.notification.chat_id,
+                messageId: this.notification.message_id
+              }
             }
           )
         })

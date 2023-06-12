@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"mediorum/ethcontracts"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -64,22 +65,31 @@ func startStagingOrProd(isProd bool) {
 	if err != nil {
 		slog.Warn("failed to parse trustedNotifierID", "err", err)
 	}
+	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, delegateOwnerWallet)
+	if err != nil || spID == 0 {
+		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
+	}
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   creatorNodeEndpoint,
 			Wallet: delegateOwnerWallet,
 		},
-		ListenPort:        "1991",
-		Peers:             peers,
-		Signers:           signers,
-		ReplicationFactor: 3,
-		PrivateKey:        privateKey,
-		Dir:               "/tmp/mediorum",
-		PostgresDSN:       os.Getenv("dbUrl"),
-		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
-		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
-		TrustedNotifierID: trustedNotifierID,
+		ListenPort:          "1991",
+		Peers:               peers,
+		Signers:             signers,
+		ReplicationFactor:   3,
+		PrivateKey:          privateKey,
+		Dir:                 "/tmp/mediorum",
+		PostgresDSN:         os.Getenv("dbUrl"),
+		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
+		UpstreamCN:          getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
+		TrustedNotifierID:   trustedNotifierID,
+		SPID:                spID,
+		SPOwnerWallet:       os.Getenv("spOwnerWallet"),
+		GitSHA:              os.Getenv("GIT_SHA"),
+		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 	}
 
 	ss, err := server.New(config)
@@ -95,6 +105,10 @@ func startDevInstance() {
 	if v := os.Getenv("IDX"); v != "" {
 		idx = v
 	}
+	spID, err := strconv.Atoi(idx)
+	if err != nil {
+		log.Fatalf("failed to parse spID: %v", err)
+	}
 
 	postgresDSN := fmt.Sprintf("postgres://postgres:example@localhost:5454/m%s", idx)
 	if v := os.Getenv("dbUrl"); v != "" {
@@ -109,11 +123,17 @@ func startDevInstance() {
 			Host:   fmt.Sprintf(hostNameTemplate, idx),
 			Wallet: "0xWallet" + idx,
 		},
-		Peers:             network,
-		ReplicationFactor: 3,
-		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
-		PostgresDSN:       postgresDSN,
-		ListenPort:        "199" + idx,
+		Peers:               network,
+		ReplicationFactor:   3,
+		Dir:                 fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
+		PostgresDSN:         postgresDSN,
+		ListenPort:          "199" + idx,
+		SPID:                spID,
+		SPOwnerWallet:       "0xWallet" + idx,
+		GitSHA:              os.Getenv("GIT_SHA"),
+		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+		LegacyFSRoot:        "/file_storage",
 	}
 
 	ss, err := server.New(config)
@@ -152,18 +172,47 @@ func startDevCluster() {
 
 	for idx, peer := range network {
 		peer := peer
-		config := server.MediorumConfig{
-			Self:              peer,
-			Peers:             network,
-			Signers:           signers,
-			ReplicationFactor: 3,
-			Dir:               fmt.Sprintf(dirTemplate, idx+1),
-			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
-			ListenPort:        fmt.Sprintf("199%d", idx+1),
-			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
+		spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(peer.Host, peer.Wallet)
+		if err != nil || spID == 0 {
+			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), err)
+			spID = idx + 1
 		}
-		if privateKey, found := os.LookupEnv(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)); found {
+		config := server.MediorumConfig{
+			Self:                peer,
+			Peers:               network,
+			Signers:             signers,
+			ReplicationFactor:   3,
+			Dir:                 fmt.Sprintf(dirTemplate, idx+1),
+			PostgresDSN:         fmt.Sprintf(dbUrlTemplate, idx+1),
+			ListenPort:          fmt.Sprintf("199%d", idx+1),
+			UpstreamCN:          fmt.Sprintf(upstreamCNTemplate, idx+1),
+			SPID:                spID,
+			SPOwnerWallet:       peer.Wallet,
+			GitSHA:              os.Getenv("GIT_SHA"),
+			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+			LegacyFSRoot:        "/file_storage",
+		}
+		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
+		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {
+			log.Printf("%s found, using it\n", privKeyEnvVar)
 			config.PrivateKey = privateKey
+		} else {
+			log.Printf("%s not found, using hardcoded key\n", privKeyEnvVar)
+			switch privKeyEnvVar {
+			case "CN1_SP_OWNER_PRIVATE_KEY":
+				config.PrivateKey = "21118f9a6de181061a2abd549511105adb4877cf9026f271092e6813b7cf58ab"
+			case "CN2_SP_OWNER_PRIVATE_KEY":
+				config.PrivateKey = "1166189cdf129cdcb011f2ad0e5be24f967f7b7026d162d7c36073b12020b61c"
+			case "CN3_SP_OWNER_PRIVATE_KEY":
+				config.PrivateKey = "1aa14c63d481dcc1185a654eb52c9c0749d07ac8f30ef17d45c3c391d9bf68eb"
+			case "CN4_SP_OWNER_PRIVATE_KEY":
+				config.PrivateKey = "4a23fe455a34bb47f8f3282a4f6d36c22987275f0bb9aacb251568df7d038385"
+			case "CN5_SP_OWNER_PRIVATE_KEY":
+				config.PrivateKey = "2450bb2893d0bddf92f4ac88cb65a8e94b56e89f7ec3e46c9c88b2b46ebe3ca5"
+			default:
+				log.Printf("CN%d_SP_OWNER_PRIVATE_KEY not found, and no hardcoded option available\n", idx+1)
+			}
 		}
 
 		wg.Add(1)
@@ -184,9 +233,26 @@ func startDevCluster() {
 func devNetwork(hostNameTemplate string, n int) []server.Peer {
 	network := []server.Peer{}
 	for i := 1; i <= n; i++ {
+		addressEnvVar := fmt.Sprintf("CN%d_SP_OWNER_ADDRESS", i)
+		defaultAddress := ""
+		switch addressEnvVar {
+		case "CN1_SP_OWNER_ADDRESS":
+			defaultAddress = "0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c"
+		case "CN2_SP_OWNER_ADDRESS":
+			defaultAddress = "0x1B569e8f1246907518Ff3386D523dcF373e769B6"
+		case "CN3_SP_OWNER_ADDRESS":
+			defaultAddress = "0xCBB025e7933FADfc7C830AE520Fb2FD6D28c1065"
+		case "CN4_SP_OWNER_ADDRESS":
+			defaultAddress = "0xdDEEA4839bBeD92BDAD8Ec79AE4f4Bc2Be1A3974"
+		case "CN5_SP_OWNER_ADDRESS":
+			defaultAddress = "0xBC2cf859f671B78BA42EBB65Deb31Cc7fEc07019"
+		default:
+			defaultAddress = fmt.Sprintf("0xWallet%d", i)
+			fmt.Printf("Invalid address variable, using %s\n", defaultAddress)
+		}
 		network = append(network, server.Peer{
 			Host:   fmt.Sprintf(hostNameTemplate, i),
-			Wallet: getenvWithDefault(fmt.Sprintf("CN%d_SP_OWNER_ADDRESS", i), fmt.Sprintf("0xWallet%d", i)),
+			Wallet: getenvWithDefault(addressEnvVar, defaultAddress),
 		})
 	}
 	return network

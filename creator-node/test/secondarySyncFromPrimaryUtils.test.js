@@ -12,10 +12,6 @@ describe('test secondarySyncFromPrimaryUtils', function () {
   }
   const mockLogContext = { context: 'test' }
 
-  beforeEach(function () {
-    config.set('entityManagerReplicaSetEnabled', true)
-  })
-
   it('if force resync configs are not passed it, will not force resync', async function () {
     assert.deepStrictEqual(
       await shouldForceResync({ libs: mockedLibs, logContext: mockLogContext }),

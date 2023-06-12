@@ -8,7 +8,6 @@ const {
   errorResponseBadRequest
 } = require('../../apiHelpers')
 const {
-  healthCheck,
   healthCheckVerbose,
   healthCheckDuration,
   configCheck
@@ -22,116 +21,13 @@ const { ensureValidSPMiddleware } = require('../../middlewares')
 
 const config = require('../../config')
 
+const path = require('path')
+const versionInfo = require(path.join(process.cwd(), '.version.json'))
+
 const router = express.Router()
 
 const numberOfCPUs = os.cpus().length
 
-const MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
-  'monitorStateJobLastSuccessfulRunDelayMs'
-)
-const FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS = config.get(
-  'findSyncRequestsJobLastSuccessfulRunDelayMs'
-)
-const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
-  config.get('findReplicaSetUpdatesJobLastSuccessfulRunDelayMs')
-
-/**
- * Controller for `health_check` route, calls
- * `healthCheckComponentService`.
- */
-const healthCheckController = async (req) => {
-  const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
-
-  const AsyncProcessingQueue =
-    req.app.get('serviceRegistry').asyncProcessingQueue
-
-  const logger = req.logger
-  const response = await healthCheck(
-    serviceRegistry,
-    logger,
-    getMonitors,
-    TranscodingQueue.getTranscodeQueueJobs,
-    TranscodingQueue.isAvailable,
-    AsyncProcessingQueue.getAsyncProcessingQueueJobs,
-    numberOfCPUs,
-    randomBytesToSign
-  )
-
-  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const storagePathSizeMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.STORAGE_PATH_SIZE_BYTES
-  )
-  storagePathSizeMetric.set({ type: 'total' }, response.storagePathSize)
-  storagePathSizeMetric.set({ type: 'used' }, response.storagePathUsed)
-
-  if (enforceStateMachineQueueHealth) {
-    const { stateMachineJobs } = response
-    const {
-      latestMonitorStateJobSuccess,
-      latestFindSyncRequestsJobSuccess,
-      latestFindReplicaSetUpdatesJobSuccess
-    } = stateMachineJobs
-    const stateMachineErrors = []
-
-    // Enforce time since last successful monitor-state job
-    if (latestMonitorStateJobSuccess) {
-      response.stateMachineJobs.monitorStateJobLastSuccessfulRunDelayMs =
-        MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      const monitorStateDelta =
-        Date.now() - new Date(latestMonitorStateJobSuccess).getTime()
-      if (
-        monitorStateDelta > MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      ) {
-        stateMachineErrors.push(
-          `monitor-state job not healthy - last successful run ${monitorStateDelta}ms ago not within healthy threshold of ${MONITOR_STATE_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
-        )
-      }
-    }
-
-    // Enforce time since last successful find-sync-requests job
-    if (latestFindSyncRequestsJobSuccess) {
-      response.stateMachineJobs.findSyncRequestsJobLastSuccessfulRunDelayMs =
-        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      const findSyncRequestsDelta =
-        Date.now() - new Date(latestFindSyncRequestsJobSuccess).getTime()
-      if (
-        findSyncRequestsDelta >
-        FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      ) {
-        stateMachineErrors.push(
-          `find-sync-requests job not healthy - last successful run ${findSyncRequestsDelta}ms ago not within healthy threshold of ${FIND_SYNC_REQUESTS_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
-        )
-      }
-    }
-
-    // Enforce time since last successful find-replica-set-updates job
-    if (latestFindReplicaSetUpdatesJobSuccess) {
-      response.stateMachineJobs.findReplicaSetUpdatesJobLastSuccessfulRunDelayMs =
-        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      const findReplicaSetUpdatesDelta =
-        Date.now() - new Date(latestFindReplicaSetUpdatesJobSuccess).getTime()
-      if (
-        findReplicaSetUpdatesDelta >
-        FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS
-      ) {
-        stateMachineErrors.push(
-          `find-replica-set-updates job not healthy - last successful run ${findReplicaSetUpdatesDelta}ms ago not within healthy threshold of ${FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS}ms`
-        )
-      }
-    }
-
-    // Return errors
-    if (stateMachineErrors.length) {
-      return errorResponseServerError(JSON.stringify(stateMachineErrors))
-    }
-  }
-
-  if (config.get('isReadOnlyMode')) {
-    return errorResponseServerError(response)
-  } else {
-    return successResponse(response)
-  }
-}
 
 /**
  * Controller for `health_check/sync` route, calls
@@ -219,7 +115,14 @@ const configCheckController = async (_req) => {
 
 // Routes
 
-router.get('/health_check', handleResponse(healthCheckController))
+router.get('/health_check', async (_req, res) => {
+  res.status(200).send({
+    ...versionInfo,
+    selectedDiscoveryProvider:
+      serviceRegistry?.libs?.discoveryProvider?.discoveryProviderEndpoint ||
+      'none'
+  })
+})
 router.get('/health_check/sync', handleResponse(syncHealthCheckController))
 router.get(
   '/health_check/duration',

@@ -45,6 +45,7 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
     apk add openresty=1.19.9.1-r0 openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
+    opm get bsiara/dkjson && \
     mkdir /usr/local/openresty/conf /usr/local/openresty/logs
 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \

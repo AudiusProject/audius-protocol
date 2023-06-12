@@ -87,7 +87,7 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 	timestamp := time.Now().UTC().Format(time.RFC3339)
 	data := fmt.Sprintf("{\"data\":\"listen\",\"timestamp\":\"%s\"}", timestamp)
 
-	signature, err := sign(data, privateKey)
+	signature, err := Sign(data, privateKey)
 	if err != nil {
 		fmt.Println("Error signing message:", err)
 		return nil, err
@@ -101,9 +101,13 @@ func GenerateListenTimestampAndSignature(privateKey *ecdsa.PrivateKey) (*ListenT
 }
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func Sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	return SignBytes([]byte(input), privateKey)
+}
+
+func SignBytes(input []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	// hash the input
-	hash := crypto.Keccak256Hash([]byte(input))
+	hash := crypto.Keccak256Hash(input)
 	// TextHash will prepend Ethereum signed message prefix to the hash
 	// and hash that again
 	hash2 := accounts.TextHash(hash.Bytes())

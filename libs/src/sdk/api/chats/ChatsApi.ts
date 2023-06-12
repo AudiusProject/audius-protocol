@@ -2,8 +2,7 @@ import {
   BaseAPI,
   Configuration,
   HTTPQuery,
-  RequestOpts,
-  RequiredError
+  RequestOpts
 } from '../generated/default'
 import * as aes from 'micro-aes-gcm'
 import { base64 } from '@scure/base'
@@ -18,20 +17,34 @@ import type {
   RPCPayloadRequest,
   ValidatedChatPermissions
 } from './serverTypes'
-import type {
+import {
   ChatBlockRequest,
+  ChatBlockRequestSchema,
   ChatCreateRequest,
+  ChatCreateRequestSchema,
   ChatDeleteRequest,
+  ChatDeleteRequestSchema,
   ChatEvents,
   ChatGetAllRequest,
+  ChatGetAllRequestSchema,
   ChatGetMessagesRequest,
+  ChatGetMessagesRequestSchema,
   ChatGetPermissionRequest,
+  ChatGetPermissionRequestSchema,
   ChatGetRequest,
+  ChatGetRequestSchema,
   ChatInviteRequest,
+  ChatInviteRequestSchema,
   ChatMessageRequest,
+  ChatMessageRequestSchema,
   ChatPermitRequest,
+  ChatPermitRequestSchema,
   ChatReactRequest,
+  ChatReactRequestSchema,
   ChatReadRequest,
+  ChatReadRequestSchema,
+  ChatUnfurlRequest,
+  ChatUnfurlRequestSchema,
   TypedCommsResponse,
   UnfurlResponse
 } from './clientTypes'
@@ -41,6 +54,7 @@ import type TypedEmitter from 'typed-emitter'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
 export class ChatsApi
   extends BaseAPI
@@ -97,12 +111,11 @@ export class ChatsApi
   }
 
   public async get(requestParameters: ChatGetRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'getChat'
-    )
-    const response = await this.getRaw(requestParameters.chatId)
+    const { chatId } = parseRequestParameters(
+      'get',
+      ChatGetRequestSchema
+    )(requestParameters)
+    const response = await this.getRaw(chatId)
     return {
       ...response,
       data: response.data
@@ -116,14 +129,18 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    if (requestParameters?.limit) {
-      query['limit'] = requestParameters.limit
+    const { limit, before, after } = parseRequestParameters(
+      'getAll',
+      ChatGetAllRequestSchema
+    )(requestParameters)
+    if (limit) {
+      query['limit'] = limit
     }
-    if (requestParameters?.before) {
-      query['before'] = requestParameters.before
+    if (before) {
+      query['before'] = before
     }
-    if (requestParameters?.after) {
-      query['after'] = requestParameters.after
+    if (after) {
+      query['after'] = after
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -145,25 +162,24 @@ export class ChatsApi
   public async getMessages(
     requestParameters: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'getMessages'
-    )
+    const { chatId, limit, before, after } = parseRequestParameters(
+      'getMessages',
+      ChatGetMessagesRequestSchema
+    )(requestParameters)
 
-    const sharedSecret = await this.getChatSecret(requestParameters.chatId)
-    const path = `/comms/chats/${requestParameters.chatId}/messages`
+    const sharedSecret = await this.getChatSecret(chatId)
+    const path = `/comms/chats/${chatId}/messages`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    if (requestParameters.limit) {
-      query['limit'] = requestParameters.limit
+    if (limit) {
+      query['limit'] = limit
     }
-    if (requestParameters.before) {
-      query['before'] = requestParameters.before
+    if (before) {
+      query['before'] = before
     }
-    if (requestParameters.after) {
-      query['after'] = requestParameters.after
+    if (after) {
+      query['after'] = after
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -207,21 +223,15 @@ export class ChatsApi
     return (await res.json()) as TypedCommsResponse<number>
   }
 
-  public async getPermissions(requestParameters?: ChatGetPermissionRequest) {
+  public async getPermissions(requestParameters: ChatGetPermissionRequest) {
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    this.assertNotNullOrUndefined(
-      requestParameters?.userIds,
-      'requestParameters.userIds',
-      'getPermissions'
-    )
-    this.assertMinLength(
-      requestParameters?.userIds!,
-      'requestParameters.userIds',
-      'getPermissions'
-    )
-    query['id'] = requestParameters?.userIds!
+    const { userIds } = parseRequestParameters(
+      'getPermissions',
+      ChatGetPermissionRequestSchema
+    )(requestParameters)
+    query['id'] = userIds
 
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -258,19 +268,13 @@ export class ChatsApi
     return (await response.json()) as TypedCommsResponse<string[]>
   }
 
-  public async unfurl(requestParameters: { urls: string[] }) {
-    this.assertNotNullOrUndefined(
-      requestParameters.urls,
-      'requestParameters.urls',
-      'unfurl'
-    )
-    this.assertMinLength(
-      requestParameters.urls,
-      'requestParameters.urls',
-      'unfurl'
-    )
+  public async unfurl(requestParameters: ChatUnfurlRequest) {
+    const { urls } = parseRequestParameters(
+      'unfurl',
+      ChatUnfurlRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
-      content: requestParameters.urls
+      content: urls
     }
     const res = await this.request({
       method: 'GET',
@@ -286,35 +290,15 @@ export class ChatsApi
   // #region MUTATE
 
   public async create(requestParameters: ChatCreateRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.userId,
-      'requestParameters.userId',
-      'create'
-    )
-    this.assertNotNullOrUndefined(
-      requestParameters.invitedUserIds,
-      'requestParameters.invitedUserIds',
-      'create'
-    )
-    this.assertMinLength(
-      requestParameters.invitedUserIds,
-      'requestParameters.invitedUserIds',
-      'create'
-    )
+    const { userId, invitedUserIds } = parseRequestParameters(
+      'create',
+      ChatCreateRequestSchema
+    )(requestParameters)
 
-    const chatId = [
-      requestParameters.userId,
-      ...requestParameters.invitedUserIds
-    ]
-      .sort()
-      .join(':')
+    const chatId = [userId, ...invitedUserIds].sort().join(':')
     const chatSecret = secp.utils.randomPrivateKey()
     this.chatSecrets[chatId] = chatSecret
-    const invites = await this.createInvites(
-      requestParameters.userId,
-      requestParameters.invitedUserIds,
-      chatSecret
-    )
+    const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
     return await this.sendRpc({
       method: 'chat.create',
@@ -326,163 +310,117 @@ export class ChatsApi
   }
 
   public async invite(requestParameters: ChatInviteRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'invite'
-    )
-    this.assertNotNullOrUndefined(
-      requestParameters.userId,
-      'requestParameters.userId',
-      'invite'
-    )
-    this.assertNotNullOrUndefined(
-      requestParameters.invitedUserIds,
-      'requestParameters.invitedUserIds',
-      'invite'
-    )
-    this.assertMinLength(
-      requestParameters.invitedUserIds,
-      'requestParameters.invitedUserIds',
-      'invite'
-    )
+    const { chatId, userId, invitedUserIds } = parseRequestParameters(
+      'invite',
+      ChatInviteRequestSchema
+    )(requestParameters)
 
-    const chatSecret = await this.getChatSecret(requestParameters.chatId)
-    const invites = await this.createInvites(
-      requestParameters.userId,
-      requestParameters.invitedUserIds,
-      chatSecret
-    )
+    const chatSecret = await this.getChatSecret(chatId)
+    const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
     return await this.sendRpc({
       method: 'chat.invite',
       params: {
-        chat_id: requestParameters.chatId,
+        chat_id: chatId,
         invites
       }
     })
   }
 
   public async message(requestParameters: ChatMessageRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'message'
-    )
-    this.assertNotNullOrUndefined(
-      requestParameters.message,
-      'requestParameters.message',
-      'message'
-    )
-
-    const chatSecret = await this.getChatSecret(requestParameters.chatId)
-    const encrypted = await this.encryptString(
-      chatSecret,
-      requestParameters.message
-    )
-    const message = base64.encode(encrypted)
+    const { chatId, message, messageId } = parseRequestParameters(
+      'message',
+      ChatMessageRequestSchema
+    )(requestParameters)
+    const chatSecret = await this.getChatSecret(chatId)
+    const encrypted = await this.encryptString(chatSecret, message)
+    const encodedMessage = base64.encode(encrypted)
 
     return await this.sendRpc({
       method: 'chat.message',
       params: {
-        chat_id: requestParameters.chatId,
-        message_id: requestParameters.messageId ?? ulid(),
-        message
+        chat_id: chatId,
+        message_id: messageId ?? ulid(),
+        message: encodedMessage
       }
     })
   }
 
   public async react(requestParameters: ChatReactRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'react'
-    )
-    this.assertNotNullOrUndefined(
-      requestParameters.messageId,
-      'requestParameters.messageId',
-      'react'
-    )
-    this.assertNotUndefined(
-      requestParameters.reaction,
-      'requestParameters.reaction',
-      'react'
-    )
+    const { chatId, messageId, reaction } = parseRequestParameters(
+      'react',
+      ChatReactRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.react',
       params: {
-        chat_id: requestParameters.chatId,
-        message_id: requestParameters.messageId,
-        reaction: requestParameters.reaction
+        chat_id: chatId,
+        message_id: messageId,
+        reaction: reaction
       }
     })
   }
 
   public async read(requestParameters: ChatReadRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'read'
-    )
+    const { chatId } = parseRequestParameters(
+      'read',
+      ChatReadRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.read',
       params: {
-        chat_id: requestParameters.chatId
+        chat_id: chatId
       }
     })
   }
 
   public async block(requestParameters: ChatBlockRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.userId,
-      'requestParameters.userId',
-      'block'
-    )
+    const { userId } = parseRequestParameters(
+      'block',
+      ChatBlockRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.block',
       params: {
-        user_id: requestParameters.userId
+        user_id: userId
       }
     })
   }
 
   public async unblock(requestParameters: ChatBlockRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.userId,
-      'requestParameters.userId',
-      'unblock'
-    )
+    const { userId } = parseRequestParameters(
+      'unblock',
+      ChatBlockRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.unblock',
       params: {
-        user_id: requestParameters.userId
+        user_id: userId
       }
     })
   }
 
   public async delete(requestParameters: ChatDeleteRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.chatId,
-      'requestParameters.chatId',
-      'delete'
-    )
+    const { chatId } = parseRequestParameters(
+      'delete',
+      ChatDeleteRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.delete',
       params: {
-        chat_id: requestParameters.chatId
+        chat_id: chatId
       }
     })
   }
 
   public async permit(requestParameters: ChatPermitRequest) {
-    this.assertNotNullOrUndefined(
-      requestParameters.permit,
-      'requestParameters.permit',
-      'permit'
-    )
+    const { permit } = parseRequestParameters(
+      'permit',
+      ChatPermitRequestSchema
+    )(requestParameters)
     return await this.sendRpc({
       method: 'chat.permit',
       params: {
-        permit: requestParameters.permit
+        permit
       }
     })
   }
@@ -490,38 +428,6 @@ export class ChatsApi
   // #endregion
 
   // #region PRIVATE
-
-  private assertNotNullOrUndefined(value: any, name: string, method: string) {
-    if (value === null || value === undefined) {
-      throw new RequiredError(
-        name,
-        `Required parameter ${name} was null or undefined when calling ${method}.`
-      )
-    }
-  }
-
-  private assertNotUndefined(value: any, name: string, method: string) {
-    if (value === undefined) {
-      throw new RequiredError(
-        name,
-        `Required parameter ${name} was undefined when calling ${method}.`
-      )
-    }
-  }
-
-  private assertMinLength(
-    value: any[],
-    name: string,
-    method: string,
-    minimumLength: number = 1
-  ) {
-    if (value.length < minimumLength) {
-      throw new RequiredError(
-        name,
-        `Required parameter ${name} requires more than ${minimumLength} element when calling ${method}`
-      )
-    }
-  }
 
   private async createInvites(
     userId: string,

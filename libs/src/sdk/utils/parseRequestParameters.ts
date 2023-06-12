@@ -1,4 +1,11 @@
-import type { z } from 'zod'
+import type { ZodError, z } from 'zod'
+
+export class ParseRequestError extends Error {
+  override name: 'ParseRequestError' = 'ParseRequestError'
+  constructor(public method: string, public innerError: ZodError) {
+    super(`'${method}' => ${innerError.message}`)
+  }
+}
 
 /**
  * @param name Name of the method for which the parameters are being parsed
@@ -6,11 +13,11 @@ import type { z } from 'zod'
  * @returns The parsed data or throws an error
  */
 export const parseRequestParameters =
-  (name: string, schema: z.ZodObject<any>) =>
-  <T>(requestParameters: T) => {
+  <T extends z.AnyZodObject>(name: string, schema: T) =>
+  <J>(requestParameters: J): z.infer<T> => {
     const result = schema.safeParse(requestParameters)
     if (!result.success) {
-      throw new Error(`${name} request parameters not valid: ${result.error}`)
+      throw new ParseRequestError(name, result.error)
     }
     return result.data
   }
