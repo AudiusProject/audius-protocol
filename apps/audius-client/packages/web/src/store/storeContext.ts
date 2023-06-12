@@ -20,6 +20,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
 import { isElectron } from 'utils/clientUtil'
+import { createPlaylistArtwork } from 'utils/imageProcessingUtil'
 import { share } from 'utils/share'
 
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
@@ -62,5 +63,8 @@ export const storeContext: CommonStoreContext = {
   openSeaClient: new OpenSeaClient(
     process.env.REACT_APP_OPENSEA_API_URL as string
   ),
-  audiusSdk
+  audiusSdk,
+  imageUtils: {
+    createPlaylistArtwork
+  }
 }

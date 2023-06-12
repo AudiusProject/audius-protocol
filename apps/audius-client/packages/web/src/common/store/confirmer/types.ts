@@ -36,3 +36,9 @@ export interface ConfirmerState {
    * { [uid] : { [operationId] }: index of latest success call added for that operation id in the `complete` map } */
   operationSuccessCallIdx: { [key: string]: { [key: string]: number } }
 }
+
+export type RequestConfirmationError = {
+  message: string
+  error: Error
+  timeout: boolean
+}

@@ -232,6 +232,7 @@ export type RetrieveCollectionsConfig = {
    * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
    */
   requiresAllTracks?: boolean
+  forceRetrieveFromSource?: boolean
 }
 /**
  * Retrieves collections from the cache or from source. If requesting more than
@@ -244,7 +245,8 @@ export function* retrieveCollections(
   const {
     userId = null,
     fetchTracks = false,
-    requiresAllTracks = false
+    requiresAllTracks = false,
+    forceRetrieveFromSource = false
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield* call(retrieve, {
@@ -310,7 +312,7 @@ export function* retrieveCollections(
     },
     kind: Kind.COLLECTIONS,
     idField: 'playlist_id',
-    forceRetrieveFromSource: false,
+    forceRetrieveFromSource,
     shouldSetLoading: true,
     deleteExistingEntry: false
   })

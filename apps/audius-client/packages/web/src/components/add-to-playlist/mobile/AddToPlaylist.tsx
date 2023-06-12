@@ -125,7 +125,7 @@ function mapStateToProps(state: AppState) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    addTrackToPlaylist: (trackId: ID, playlistId: ID | string) =>
+    addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     createPlaylist: (metadata: Partial<Collection>, trackId: ID) =>
       dispatch(
