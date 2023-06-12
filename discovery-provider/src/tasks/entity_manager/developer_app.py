@@ -57,7 +57,7 @@ def is_within_6_hours(timestamp_str):
 def get_create_developer_app_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[CreateDeveloperAppMetadata]:
-    metadata = {
+    metadata: CreateDeveloperAppMetadata = {
         "name": None,
         "is_personal_access": None,
         "description": None,
@@ -86,7 +86,7 @@ def get_create_developer_app_metadata_from_raw(
 def get_delete_developer_app_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[DeleteDeveloperAppMetadata]:
-    metadata = {
+    metadata: DeleteDeveloperAppMetadata = {
         "address": None,
     }
 
