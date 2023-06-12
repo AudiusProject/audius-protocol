@@ -7,6 +7,8 @@ import (
 )
 
 func (ss *MediorumServer) startHealthPoller() {
+	time.Sleep(time.Second)
+
 	httpClient := http.Client{
 		Timeout: time.Second,
 	}

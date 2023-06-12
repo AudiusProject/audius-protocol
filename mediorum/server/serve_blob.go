@@ -20,10 +20,11 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	locations := []Blob{}
 	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
+	preferred, _ := ss.rendezvous(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"locations": locations,
-		"preferred": ss.placement.topAll(cid),
+		"preferred": preferred,
 	})
 }
 

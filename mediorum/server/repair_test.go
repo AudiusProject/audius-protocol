@@ -53,7 +53,7 @@ func TestRepair(t *testing.T) {
 	// now over-replicate file
 	//
 	for _, server := range testNetwork {
-		ss.replicateFileToHost(server.Config.Self, cid, bytes.NewReader(data))
+		ss.replicateFileToHost(server.Config.Self.Host, cid, bytes.NewReader(data))
 	}
 
 	// wait for crud

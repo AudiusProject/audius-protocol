@@ -67,7 +67,6 @@ type MediorumConfig struct {
 type MediorumServer struct {
 	echo            *echo.Echo
 	bucket          *blob.Bucket
-	placement       *placement
 	logger          *slog.Logger
 	crud            *crudr.Crudr
 	pgPool          *pgxpool.Pool
@@ -181,7 +180,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	ss := &MediorumServer{
 		echo:            echoServer,
 		bucket:          bucket,
-		placement:       newPlacement(config),
 		crud:            crud,
 		pgPool:          pgPool,
 		logger:          logger,

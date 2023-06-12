@@ -10,22 +10,16 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
-	healthyHostNames := ss.findHealthyPeers(5 * time.Minute)
 	success := []string{}
-	for _, peer := range ss.placement.topAll(fileName) {
-		logger := logger.With("to", peer.Host)
-
-		if !slices.Contains(healthyHostNames, peer.Host) {
-			logger.Info("skipping unhealthy host", "healthy", healthyHostNames)
-			continue
-		}
+	preferred, _ := ss.rendezvous(fileName)
+	for _, peer := range preferred {
+		logger := logger.With("to", peer)
 
 		logger.Info("replicating")
 
@@ -35,7 +29,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 			logger.Error("replication failed", err)
 		} else {
 			logger.Info("replicated")
-			success = append(success, peer.Host)
+			success = append(success, peer)
 			if len(success) == ss.Config.ReplicationFactor {
 				break
 			}
@@ -102,9 +96,9 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	return nil
 }
 
-func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file io.Reader) error {
+func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file io.Reader) error {
 	// logger := ss.logger.With()
-	if peer.Host == ss.Config.Self.Host {
+	if peer == ss.Config.Self.Host {
 		return ss.replicateToMyBucket(fileName, file)
 	}
 
@@ -114,8 +108,8 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 
 	// first check if target already has it...
 	// todo: this should be cheap check... host should be responsible for doing more expensive check
-	if ss.hostHasBlob(peer.Host, fileName, true) {
-		ss.logger.Info(peer.Host + " already has " + fileName)
+	if ss.hostHasBlob(peer, fileName, true) {
+		ss.logger.Info(peer + " already has " + fileName)
 		return nil
 	}
 
@@ -139,7 +133,7 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}()
 
 	req := signature.SignedPost(
-		peer.ApiPath("internal/blobs")+"?cid="+fileName,
+		peer+"/internal/blobs?cid="+fileName,
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey)
