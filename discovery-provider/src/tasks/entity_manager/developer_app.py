@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+import time
 from typing import Optional, TypedDict, Union, cast
 
 from eth_account.messages import defunct_hash_message
@@ -44,10 +44,10 @@ def get_app_address_from_signature(app_signature: AppSignature):
 
 
 def is_within_6_hours(timestamp_str):
-    current_time = datetime.now()
-    timestamp = datetime.fromtimestamp(int(timestamp_str))
-    time_difference = current_time - timestamp
-    return time_difference.total_seconds() < 6 * 60 * 60
+    current_timestamp = int(time.time())
+    input_timestamp = int(timestamp_str)
+    time_difference = current_timestamp - input_timestamp
+    return time_difference < 6 * 60 * 60
 
 
 def get_developer_app_metadata_from_raw(
