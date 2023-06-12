@@ -18,7 +18,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     height: spacing(8),
     width: spacing(8),
     marginRight: spacing(2),
-    borderColor: palette.neutralLight4
+    borderColor: palette.neutralLight4,
+    opacity: 0.4
   }
 }))
 
