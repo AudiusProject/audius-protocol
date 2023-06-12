@@ -32,6 +32,8 @@ module.exports = function (app) {
       const user = req.user
       req.logger.info(`asdf relay user ${user}`)
 
+      // TODO for APP flow to fetch user and check if blocked from relays
+
       let optimizelyClient
       let detectAbuseOnRelay = false
       let blockAbuseOnRelay = false
