@@ -27,14 +27,10 @@ class CreateDeveloperAppMetadata(TypedDict):
     name: Union[str, None]
     description: Union[str, None]
     is_personal_access: Union[bool, None]
-    app_signature: AppSignature
+    app_signature: Union[AppSignature, None]
 
 
 class DeleteDeveloperAppMetadata(TypedDict):
-    address: str
-
-
-class RevokeDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
 
 
