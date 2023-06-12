@@ -26,6 +26,7 @@ import {
   selectDraggingId
 } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
+import { BASE_URL } from 'utils/route'
 
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
 
@@ -173,7 +174,13 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
         onDrop={handleDrop}
         disabled={isDisabled}
       >
-        <Draggable id={id} text={name} link={url} kind='library-playlist'>
+        <Draggable
+          id={id}
+          text={name}
+          // Draggables require full URL
+          link={`${BASE_URL}${url}`}
+          kind='library-playlist'
+        >
           <LeftNavLink
             to={url}
             onClick={onClick}

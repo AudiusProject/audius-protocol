@@ -19,6 +19,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
+import { fullTrackPage } from 'utils/route'
 
 import styles from './NowPlayingArtworkTile.module.css'
 
@@ -121,7 +122,7 @@ export const NowPlayingArtworkTile = () => {
       kind='track'
       id={trackId}
       isOwner={isOwner}
-      link={permalink}
+      link={fullTrackPage(permalink)}
     >
       <FadeInUp style={{ boxShadow: coverArtColor }}>
         <Link to={permalink} aria-label={messages.viewTrack}>
