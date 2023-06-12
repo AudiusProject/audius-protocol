@@ -232,7 +232,7 @@ export const InboxUnavailableDrawer = () => {
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <View style={styles.border} />
-        <Text style={styles.callToActionText}>{content}</Text>{' '}
+        <Text style={styles.callToActionText}>{content}</Text>
         {actionToButtonsMap[callToAction].map(
           ({
             buttonTitle,
