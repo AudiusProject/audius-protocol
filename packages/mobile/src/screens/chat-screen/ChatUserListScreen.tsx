@@ -279,7 +279,9 @@ export const ChatUserListScreen = () => {
               onEndReached={handleLoadMore}
               maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               data={users}
-              renderItem={({ item }) => <ChatUserListItem user={item} />}
+              renderItem={({ item }) => (
+                <ChatUserListItem userId={item.user_id} />
+              )}
               keyExtractor={(user: User) => user.handle}
               contentContainerStyle={styles.flatListContainer}
               // Only show empty component if there is no search query
