@@ -19,7 +19,7 @@ app:
     - purpose: icon
       uri: ./media/app_icon.png
 release:
-  address: 9ZiaRZTKer8qgihVwd1sezBGf7axxNHe2dEodFT3N4bb
+  address: APkBBQBUrFn9xL812E5bEgBTbZ3rBTLGHgrpE657rMko
   media:
     - purpose: icon
       uri: ./media/publisher_icon.png
@@ -41,7 +41,7 @@ release:
   catalog:
     en-US:
       name: Audius Music
-      short_description: Discover & stream up-and-coming artists!
+      short_description: Discover & stream new artists
       long_description: >-
         We give everyone the freedom to share & listen. Audius is a brand-new
         streaming platform built for all musicians, not just those signed to
