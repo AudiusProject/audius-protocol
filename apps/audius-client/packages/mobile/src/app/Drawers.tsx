@@ -10,6 +10,7 @@ import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
+import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
@@ -119,6 +120,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   LockedContent: LockedContentDrawer,
   GatedContentUploadPrompt: GatedContentUploadPromptDrawer,
   ChatActions: ChatActionsDrawer,
+  CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,

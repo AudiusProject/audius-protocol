@@ -23,6 +23,7 @@ export type Drawer =
   | 'LockedContent'
   | 'GatedContentUploadPrompt'
   | 'ChatActions'
+  | 'CreateChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
   | 'DeleteChat'
@@ -53,6 +54,7 @@ export type DrawerData = {
   LockedContent: undefined
   GatedContentUploadPrompt: undefined
   ChatActions: { userId: number; chatId: string }
+  CreateChatActions: { userId: number }
   ProfileActions: undefined
   BlockMessages: { userId: number }
   DeleteChat: { chatId: string }
@@ -83,6 +85,7 @@ const initialState: DrawersState = {
   LockedContent: false,
   GatedContentUploadPrompt: false,
   ChatActions: false,
+  CreateChatActions: false,
   ProfileActions: false,
   BlockMessages: false,
   DeleteChat: false,
