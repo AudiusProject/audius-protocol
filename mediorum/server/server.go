@@ -258,7 +258,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 
 	// new info routes
-	internalApi.GET("/blobs/:cid/locaiton", ss.getBlobLocation)
+	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)
 	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
 
 	// internal: blobs between peers

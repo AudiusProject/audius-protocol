@@ -129,9 +129,20 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				continue
 			}
 
-			// todo: in cleanup mode we should do additional check to `isOnDisk`:
-			// todo: validate CID, delete if invalid
-			// todo: check isInDb, create if not
+			// in cleanup mode do some extra checks:
+			// - validate CID, delete if invalid
+			if cleanupMode && isOnDisk {
+				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
+					err := validateCID(cid, r)
+					r.Close()
+					if err != nil {
+						logger.Error("deleting invalid CID", err)
+						ss.bucket.Delete(ctx, cid)
+						isOnDisk = false
+					}
+				}
+
+			}
 
 			if isMine && !isOnDisk {
 				success := false
