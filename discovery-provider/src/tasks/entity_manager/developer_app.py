@@ -30,11 +30,15 @@ class CreateDeveloperAppMetadata(TypedDict):
     app_signature: AppSignature
 
 
+class DeleteDeveloperAppMetadata(TypedDict):
+    address: str
+
+
 class RevokeDeveloperAppMetadata(TypedDict):
     address: Union[str, None]
 
 
-def get_app_address_from_signature(app_signature: AppSignature):
+def get_app_address_from_signature(app_signature):
     web3 = web3_provider.get_eth_web3()
     message_hash = defunct_hash_message(text=app_signature["message"])
     app_address = web3.eth.account.recoverHash(
@@ -52,7 +56,7 @@ def is_within_6_hours(timestamp_str):
 
 def get_developer_app_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[CreateDeveloperAppMetadata]:
+) -> Optional[Union[CreateDeveloperAppMetadata, DeleteDeveloperAppMetadata]]:
     metadata: CreateDeveloperAppMetadata = {
         "address": None,
         "name": None,
