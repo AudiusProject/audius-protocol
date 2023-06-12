@@ -8,14 +8,12 @@ import {
   notificationsActions
 } from '@audius/common'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
-import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
-import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getModalNotification,
   getNotificationModalIsOpen,
@@ -35,16 +33,13 @@ import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
 const { fetchNotifications } = notificationsActions
 const {
-  getNotificationHasLoaded,
   getNotificationHasMore,
   getNotificationStatus,
-  makeGetAllNotifications
+  selectAllNotifications
 } = notificationsSelectors
 
 const { getNotificationUnviewedCount } = notificationsSelectors
 const { markAllAsViewed } = notificationsActions
-
-const getNotifications = makeGetAllNotifications()
 
 const scrollbarId = 'notificationsPanelScroll'
 
@@ -72,8 +67,7 @@ const SCROLL_THRESHOLD = 1000
  * notification in a modal  */
 export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const panelIsOpen = useSelector(getNotificationPanelIsOpen)
-  const notifications = useSelector(getNotifications)
-  const hasLoaded = useSelector(getNotificationHasLoaded)
+  const notifications = useSelector(selectAllNotifications)
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
@@ -90,7 +84,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
     dispatch(closeNotificationModal())
   }, [dispatch])
 
-  const loadMore = useCallback(() => {
+  const handleLoadMore = useCallback(() => {
     if (!hasMore || status === Status.LOADING || status === Status.ERROR) return
     dispatch(fetchNotifications())
   }, [hasMore, status, dispatch])
@@ -124,6 +118,10 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
     }
   }, [panelIsOpen, unviewedNotificationCount, dispatch])
 
+  const userHasNoNotifications =
+    (status === Status.SUCCESS || status === Status.ERROR) &&
+    notifications.length === 0
+
   return (
     <>
       <Popup
@@ -141,55 +139,32 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
             <IconNotification className={styles.iconNotification} />
             <h3 className={styles.title}>{messages.title}</h3>
           </div>
-          {!hasLoaded ? (
-            <div className={cn(styles.notLoaded, styles.spinnerContainer)}>
-              <Lottie
-                options={{
-                  loop: true,
-                  autoplay: true,
-                  animationData: loadingSpinner
-                }}
-              />
-            </div>
-          ) : null}
-          {hasLoaded && notifications.length > 0 ? (
-            <Scrollbar className={styles.scrollContent} id={scrollbarId}>
-              <InfiniteScroll
-                pageStart={0}
-                loadMore={loadMore}
-                hasMore={hasMore}
-                useWindow={false}
-                initialLoad={false}
-                threshold={SCROLL_THRESHOLD}
-                getScrollParent={getScrollParent}
-              >
-                <div className={styles.content}>
-                  {notifications.map((notification: Notifications) => {
-                    return (
-                      <Notification
-                        key={notification.id}
-                        notification={notification}
-                      />
-                    )
-                  })}
-                  {status === Status.LOADING ? (
-                    <div className={styles.spinnerContainer} key={'loading'}>
-                      <Lottie
-                        options={{
-                          loop: true,
-                          autoplay: true,
-                          animationData: loadingSpinner
-                        }}
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              </InfiniteScroll>
-            </Scrollbar>
-          ) : null}
-          {hasLoaded && notifications.length === 0 ? (
-            <EmptyNotifications />
-          ) : null}
+          <Scrollbar className={styles.scrollContent} id={scrollbarId}>
+            <InfiniteScroll
+              loadMore={handleLoadMore}
+              hasMore={hasMore}
+              initialLoad={status === Status.IDLE}
+              useWindow={false}
+              threshold={SCROLL_THRESHOLD}
+              loader={<LoadingSpinner className={styles.spinner} />}
+              getScrollParent={getScrollParent}
+              className={styles.content}
+              element='ul'
+            >
+              {userHasNoNotifications ? (
+                <EmptyNotifications />
+              ) : (
+                notifications.map((notification: Notifications) => {
+                  return (
+                    <Notification
+                      key={notification.id}
+                      notification={notification}
+                    />
+                  )
+                })
+              )}
+            </InfiniteScroll>
+          </Scrollbar>
         </div>
       </Popup>
       <NotificationModal

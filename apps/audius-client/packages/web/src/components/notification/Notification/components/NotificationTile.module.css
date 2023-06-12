@@ -3,7 +3,6 @@
   border: 1px solid var(--neutral-light-6);
   border-radius: var(--unit-2);
   padding: var(--unit-4);
-  margin-bottom: var(--unit-3);
   cursor: pointer;
   transition: all 0.12s ease-in-out;
 }

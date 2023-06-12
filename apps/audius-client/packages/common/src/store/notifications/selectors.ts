@@ -1,5 +1,3 @@
-import { createSelector } from 'reselect'
-
 import { getAccountUser } from 'store/account/selectors'
 import {
   getCollection,
@@ -12,7 +10,7 @@ import { Nullable } from 'utils'
 
 import { Collection, ID, Status, Track } from '../../models'
 
-import { notificationsAdapter } from './notificationsSlice'
+import { notificationsAdapter } from './slice'
 import {
   Entity,
   Notification,
@@ -53,13 +51,6 @@ export const getLastNotification = (state: CommonState) => {
 }
 
 export const getNotificationById = selectNotificationById
-
-export const makeGetAllNotifications = () => {
-  return createSelector(
-    [selectAllNotifications],
-    (notifications) => notifications
-  )
-}
 
 export const getNotificationUser = (
   state: CommonState,
