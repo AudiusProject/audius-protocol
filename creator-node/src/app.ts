@@ -25,7 +25,6 @@ import {
 import config from './config'
 import { exponentialBucketsRange } from './services/prometheusMonitoring/prometheusSetupUtils'
 import healthCheckRoutes from './components/healthCheck/healthCheckController'
-import contentBlacklistRoutes from './components/contentBlacklist/contentBlacklistController'
 import replicaSetRoutes from './components/replicaSet/replicaSetController'
 
 function errorHandler(
@@ -132,12 +131,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
 
   // import routes
   let routers = require('./routes')()
-  routers = [
-    ...routers,
-    healthCheckRoutes,
-    contentBlacklistRoutes,
-    replicaSetRoutes
-  ]
+  routers = [...routers, healthCheckRoutes, replicaSetRoutes]
 
   const { routesWithParams, routes, routesWithoutParams } =
     _setupRouteDurationTracking(routers)
@@ -149,7 +143,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
     routes.map((route) => route.path),
     prometheusMiddleware({
       // Use existing registry for compatibility with custom metrics. Can see
-      // the metrics on /prometheus_metrics_worker
+      // the metrics on /prometheus_metrics
       promRegistry: prometheusRegistry.registry,
       // Override metric name to include namespace prefix
       httpDurationMetricName: `${prometheusRegistry.namespacePrefix}_http_request_duration_seconds`,
@@ -161,7 +155,7 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
       includeUp: false,
       // The buckets in seconds to measure requests
       buckets: [0.2, 0.5, ...(exponentialBucketsRange(1, 60, 4) as number[])],
-      // Do not register the default /metrics route, since we have the /prometheus_metrics_worker
+      // Do not register the default /metrics route, since we have the /prometheus_metrics
       autoregister: false,
       // Function taking express req as an argument and determines whether the given request should be excluded in the metrics
       bypass: function (inputReq) {
@@ -226,8 +220,6 @@ export const initializeApp = (port: number, serviceRegistry: any) => {
   app.set('storagePath', storagePath)
   app.set('redisClient', serviceRegistry.redis)
   app.set('audiusLibs', serviceRegistry.libs)
-  app.set('blacklistManager', serviceRegistry.blacklistManager)
-  app.set('trustedNotifierManager', serviceRegistry.trustedNotifierManager)
 
   // Eventually, all components should pull services off the serviceRegistry
   app.set('serviceRegistry', serviceRegistry)

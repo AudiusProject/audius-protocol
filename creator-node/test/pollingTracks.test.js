@@ -8,7 +8,6 @@ const proxyquire = require('proxyquire')
 const _ = require('lodash')
 
 const config = require('../src/config')
-const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 const FileManager = require('../src/fileManager')
@@ -84,8 +83,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     userWallet = testEthereumConstants.pubKey.toLowerCase()
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock, null, spId)
 
     app = appInfo.app
     server = appInfo.server
@@ -146,7 +144,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
 
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
+    const appInfo = await getApp(libsMock, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -175,7 +173,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     // Reset app
     await server.close()
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
+    const appInfo = await getApp(libsMock, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
@@ -919,15 +917,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
 describe('test Polling Tracks with real files', function () {
   let app2, server, session, libsMock, handleTrackContentRoute, userId
 
-  /** Inits libs mock, web server app, blacklist manager, and creates starter CNodeUser */
+  /** Inits libs mock + web server app, and creates starter CNodeUser */
   beforeEach(async () => {
     libsMock = getLibsMock()
 
     userId = 1
 
     const { getApp } = require('./lib/app')
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock, null, userId)
 
     app2 = appInfo.app
     server = appInfo.server
@@ -1055,29 +1052,6 @@ describe('test Polling Tracks with real files', function () {
       resp.body.error,
       'Metadata object must include owner_id and non-empty track_segments array'
     )
-  })
-
-  it('should not throw an error if segment is blacklisted', async function () {
-    sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
-    const metadata = {
-      test: 'field1',
-      track_cid: 'some-track-cid',
-      track_segments: [
-        {
-          multihash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6',
-          duration: 1000
-        }
-      ],
-      owner_id: 1
-    }
-
-    await request(app2)
-      .post('/tracks/metadata')
-      .set('X-Session-ID', session.sessionToken)
-      .set('User-Id', session.userId)
-      .set('Enforce-Write-Quorum', false)
-      .send({ metadata })
-      .expect(200)
   })
 
   it('successfully adds metadata file to filesystem and db', async function () {
