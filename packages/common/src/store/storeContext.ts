@@ -59,4 +59,9 @@ export type CommonStoreContext = {
   share: (url: string, message?: string) => Promise<void> | void
   openSeaClient: OpenSeaClient
   audiusSdk: () => Promise<AudiusSdk>
+  imageUtils: {
+    createPlaylistArtwork: (
+      urls: string[]
+    ) => Promise<{ file: File; url: string }>
+  }
 }

@@ -22,6 +22,7 @@ import { call, put, select, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
+import { RequestConfirmationError } from 'common/store/confirmer/types'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
@@ -203,13 +204,7 @@ function* createAndConfirmPlaylist(
     return confirmedPlaylist
   }
 
-  type OnErrorResult = {
-    error: Error
-    timeout: number
-    message: string
-  }
-
-  function* onError(result: OnErrorResult) {
+  function* onError(result: RequestConfirmationError) {
     const { message, error, timeout } = result
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {

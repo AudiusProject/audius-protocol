@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ConfirmationOptions } from './types'
+import { ConfirmationOptions, RequestConfirmationError } from './types'
 
 export const REQUEST_CONFIRMATION = 'CONFIRMER/REQUEST_CONFIRMATION'
 
@@ -77,7 +77,9 @@ export const requestConfirmation = createCustomAction(
     uid: string,
     confirmationCall: any,
     successCall: any = function* () {},
-    failCall: any = function* () {},
+    failCall: (
+      _params: RequestConfirmationError
+    ) => Generator = function* () {},
     previousResultSelector: any = () => {},
     timeoutMillis = DEFAULT_TIMEOUT,
     confirmationOptions: ConfirmationOptions = {}

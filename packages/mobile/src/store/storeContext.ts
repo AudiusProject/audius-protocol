@@ -19,6 +19,7 @@ import {
 } from 'app/services/remote-config'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
+import { createPlaylistArtwork } from 'app/utils/createPlaylistArtwork'
 import share from 'app/utils/share'
 
 export const storeContext: CommonStoreContext = {
@@ -49,5 +50,8 @@ export const storeContext: CommonStoreContext = {
   instagramRedirectUrl: Config.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
   openSeaClient: new OpenSeaClient(Config.OPENSEA_API_URL),
-  audiusSdk
+  audiusSdk,
+  imageUtils: {
+    createPlaylistArtwork
+  }
 }

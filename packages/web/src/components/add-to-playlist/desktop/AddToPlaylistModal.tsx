@@ -69,6 +69,7 @@ const AddToPlaylistModal = () => {
   }, [searchValue, account, currentCollectionId])
 
   const handlePlaylistClick = (playlist: Collection) => {
+    if (!trackId) return
     dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
     if (account && trackTitle) {
       toast(

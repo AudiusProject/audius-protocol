@@ -82,10 +82,7 @@ export function editPlaylistFailed(
   return { type: EDIT_PLAYLIST_FAILED, error, params, metadata }
 }
 
-export function addTrackToPlaylist(
-  trackId: ID | null,
-  playlistId: number | string
-) {
+export function addTrackToPlaylist(trackId: ID, playlistId: ID) {
   return { type: ADD_TRACK_TO_PLAYLIST, trackId, playlistId }
 }
 
