@@ -17,7 +17,7 @@ import (
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
-	healthyHostNames := ss.findHealthyHostNames("5 minutes")
+	healthyHostNames := ss.findHealthyPeers(5 * time.Minute)
 	success := []string{}
 	for _, peer := range ss.placement.topAll(fileName) {
 		logger := logger.With("to", peer.Host)

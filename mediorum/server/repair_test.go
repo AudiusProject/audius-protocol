@@ -90,4 +90,6 @@ func TestRepair(t *testing.T) {
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.Equal(t, replicationFactor, len(blobs))
 	}
+
+	//
 }

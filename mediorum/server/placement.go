@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/tysonmote/rendezvous"
 	"golang.org/x/exp/slices"
 )
@@ -40,8 +42,7 @@ func (p *placement) topAll(h string) []Peer {
 }
 
 func (ss *MediorumServer) rendezvous(h string) ([]string, bool) {
-	// TODO: move healthy hosts to in memory
-	hosts := ss.findHealthyHostNames("5 minutes")
+	hosts := ss.findHealthyPeers(5 * time.Minute)
 	hashRing := rendezvous.New()
 	for _, host := range hosts {
 		hashRing.Add(host)

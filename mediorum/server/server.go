@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -67,6 +68,9 @@ type MediorumServer struct {
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+
+	mu         sync.Mutex
+	peerHealth map[string]time.Time
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -176,6 +180,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 
+		peerHealth: map[string]time.Time{},
+
 		StartedAt: time.Now().UTC(),
 		Config:    config,
 	}
@@ -272,9 +278,12 @@ func (ss *MediorumServer) MustStart() {
 		}
 	}()
 
-	go ss.startTranscoder()
-
+	// the crudr health broadcaster is deprecated and replaced by the health poller.
+	// it's kept here for one extra deploy while old hosts are still expecting that.
 	go ss.startHealthBroadcaster()
+	go ss.startHealthPoller()
+
+	go ss.startTranscoder()
 
 	go ss.startRepairer()
 

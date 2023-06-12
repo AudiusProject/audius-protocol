@@ -15,15 +15,15 @@ func (ss *MediorumServer) startRepairer() {
 	// we can add some jitter here to try to ensure nodes are spaced out
 	time.Sleep(time.Minute * 10)
 
-	for i := 0; ; i++ {
-		logger := ss.logger.With("task", "repair", "run", i)
-		repairStart := time.Now()
-
+	for i := 1; ; i++ {
 		// 20% percent of time... clean up over-replicated
 		cleanupMode := false
 		if i%5 == 0 {
 			cleanupMode = true
 		}
+
+		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
+		repairStart := time.Now()
 
 		logger.Info("repair starting")
 		err := ss.runRepair(cleanupMode)
@@ -57,7 +57,7 @@ func (ss *MediorumServer) findProblemBlobsBaseQuery(overReplicated bool) *gorm.D
 		comparator = ">"
 	}
 
-	healthyHosts := ss.findHealthyHostNames("5 minutes")
+	healthyHosts := ss.findHealthyPeers(5 * time.Minute)
 
 	return ss.crud.DB.Model(&Blob{}).
 		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
@@ -88,10 +88,13 @@ func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, err
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
 
-	logger := ss.logger.With("task", "repair")
+	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
 
 	cidCursor := ""
 	for {
+		// scroll over all extant CIDs in batches
+		// atm this uses `blobs` table for sake of repair_test.go
+		// but if we drop blobs, this could also read out CIDs from the upload records
 		var cidBatch []string
 		err := pgxscan.Select(ctx, ss.pgPool, &cidBatch,
 			`select distinct key
@@ -113,6 +116,12 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			logger := logger.With("cid", cid)
 
 			preferredHosts, isMine := ss.rendezvous(cid)
+
+			// fast path if we're not in cleanup mode:
+			// only worry about blobs that we _should_ have
+			if !cleanupMode && !isMine {
+				continue
+			}
 
 			isOnDisk, err := ss.bucket.Exists(ctx, cid)
 			if err != nil {
@@ -141,7 +150,6 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				}
 				if !success {
 					logger.Warn("failed to pull from any host", "hosts", preferredHosts)
-					// creator-node style... go down the list?  rendezvous?
 				}
 			}
 

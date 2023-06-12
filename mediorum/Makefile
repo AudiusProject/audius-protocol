@@ -11,7 +11,7 @@ dev2::
 	LIVE_UI=true goreman -set-ports=false start
 
 test:: pg.bounce
-	go test ./... -count=1 -timeout 60s
+	go test ./... -v -count=1 -timeout 60s
 
 
 tools::

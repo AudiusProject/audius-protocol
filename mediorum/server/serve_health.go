@@ -23,7 +23,7 @@ func (ss *MediorumServer) getMyHealth(c echo.Context) error {
 func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
 	peers := []*ServerHealth{}
 	ss.crud.DB.Find(&peers)
-	healthyPeers, _ := ss.findHealthyPeers("2 minutes")
+	healthyPeers := ss.findHealthyPeers(2 * time.Minute)
 	return c.JSON(200, map[string]any{
 		"peers":   peers,
 		"healthy": healthyPeers,
@@ -49,9 +49,7 @@ func (ss *MediorumServer) serveUnifiedHealthCheck(c echo.Context) error {
 	}
 
 	// peer health
-	if peers, err := ss.allPeers(); err == nil {
-		mediorumHealth["peers"] = peers
-	}
+	mediorumHealth["peers"] = ss.findHealthyPeers(time.Hour * 1000)
 
 	// problem blob count
 	// this might be too expensive for health_check?

@@ -146,7 +146,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 	// redirect to it
 	var blobs []Blob
-	healthyHosts := ss.findHealthyHostNames("2 minutes")
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
 		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
