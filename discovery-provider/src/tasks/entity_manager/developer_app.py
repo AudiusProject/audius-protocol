@@ -54,11 +54,10 @@ def is_within_6_hours(timestamp_str):
     return time_difference < 6 * 60 * 60
 
 
-def get_developer_app_metadata_from_raw(
+def get_create_developer_app_metadata_from_raw(
     raw_metadata: Optional[str],
-):
+) -> Optional[CreateDeveloperAppMetadata]:
     metadata = {
-        "address": None,
         "name": None,
         "is_personal_access": None,
         "description": None,
@@ -68,19 +67,38 @@ def get_developer_app_metadata_from_raw(
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
-            raw_address = json_metadata.get("address", None)
-            if raw_address:
-                metadata["address"] = raw_address.lower()
-            else:
-                metadata["address"] = None
 
-            # CREATE only fields:
             metadata["name"] = json_metadata.get("name", None)
             metadata["description"] = json_metadata.get("description", None)
             metadata["is_personal_access"] = json_metadata.get(
                 "is_personal_access", None
             )
             metadata["app_signature"] = json_metadata.get("app_signature", None)
+            return metadata
+        except Exception as e:
+            logger.error(
+                f"entity_manager | developer_app.py | Unable to parse developer app metadata while indexing: {e}"
+            )
+            return None
+    return metadata
+
+
+def get_delete_developer_app_metadata_from_raw(
+    raw_metadata: Optional[str],
+) -> Optional[DeleteDeveloperAppMetadata]:
+    metadata = {
+        "address": None,
+    }
+
+    if raw_metadata:
+        try:
+            json_metadata = json.loads(raw_metadata)
+
+            raw_address = json_metadata.get("address", None)
+            if raw_address:
+                metadata["address"] = raw_address.lower()
+            else:
+                metadata["address"] = None
             return metadata
         except Exception as e:
             logger.error(
@@ -190,7 +208,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
 
 
 def create_developer_app(params: ManageEntityParameters):
-    metadata = get_developer_app_metadata_from_raw(params.metadata)
+    metadata = get_create_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception("Invalid Developer App Transaction, unable to parse metadata")
     address = validate_developer_app_tx(params, metadata)
@@ -220,7 +238,7 @@ def create_developer_app(params: ManageEntityParameters):
 
 
 def delete_developer_app(params: ManageEntityParameters):
-    metadata = get_developer_app_metadata_from_raw(params.metadata)
+    metadata = get_delete_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception(
             "Invalid Revoke Developer App Transaction, unable to parse metadata"
