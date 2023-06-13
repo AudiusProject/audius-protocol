@@ -10,6 +10,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_TRACK_DESCRIPTION,
     TRACK_ID_OFFSET,
     Action,
     EntityType,
@@ -269,6 +270,11 @@ def validate_track_tx(params: ManageEntityParameters):
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
                 raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
 
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        track_metadata = params.metadata[params.metadata_cid]
+        track_bio = track_metadata["description"]
+        if track_bio is not None and track_bio.len() > CHARACTER_LIMIT_TRACK_DESCRIPTION:
+            raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
     return True
 
 
