@@ -16,7 +16,7 @@ export enum InputV2Variant {
   ELEVATED_PLACEHOLDER
 }
 
-type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
+export type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   size?: InputV2Size
   variant?: InputV2Variant
   showMaxLength?: boolean
@@ -26,12 +26,13 @@ type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   warning?: boolean
   error?: boolean
   inputClassName?: string
+  label?: string
 }
 
 export const InputV2 = (props: InputV2Props) => {
   const {
     required,
-    placeholder: placeholderProp,
+    label: labelProp,
     className,
     maxLength,
     showMaxLength,
@@ -46,22 +47,14 @@ export const InputV2 = (props: InputV2Props) => {
     disabled,
     onFocus: onFocusProp,
     onBlur: onBlurProp,
+    placeholder,
     ...other
   } = props
 
   const characterCount = value ? `${value}`.length : 0
   const nearCharacterLimit = maxLength && characterCount >= 0.9 * maxLength
   const elevatePlaceholder = variant === InputV2Variant.ELEVATED_PLACEHOLDER
-  const placeholder =
-    required && !elevatePlaceholder ? `${placeholderProp} *` : placeholderProp
-
-  const style = {
-    [styles.large]: size === InputV2Size.LARGE,
-    [styles.medium]: size === InputV2Size.MEDIUM,
-    [styles.small]: size === InputV2Size.SMALL,
-    [styles.warning]: warningProp || nearCharacterLimit,
-    [styles.error]: error
-  }
+  const label = required && !elevatePlaceholder ? `${labelProp} *` : labelProp
 
   /**
    * Since Firefox doesn't support the :has() pseudo selector,
@@ -72,40 +65,42 @@ export const InputV2 = (props: InputV2Props) => {
     onBlurProp
   )
 
+  const style = {
+    [styles.large]: size === InputV2Size.LARGE,
+    [styles.medium]: size === InputV2Size.MEDIUM,
+    [styles.small]: size === InputV2Size.SMALL,
+    [styles.warning]: warningProp || nearCharacterLimit,
+    [styles.error]: error,
+    [styles.focused]: isFocused,
+    [styles.disabled]: disabled,
+    [styles.required]: required
+  }
+
   const input = (
     <input
       onFocus={handleFocus}
       onBlur={handleBlur}
       ref={inputRef}
-      placeholder={!elevatePlaceholder ? placeholder : undefined}
       required={required}
       className={inputClassName}
       value={value}
       maxLength={maxLength}
       disabled={disabled}
+      placeholder={isFocused ? placeholder : undefined}
       {...other}
     />
   )
 
   return (
-    <div
-      className={cn(
-        styles.root,
-        { [styles.focused]: isFocused },
-        { [styles.disabled]: disabled },
-        { [styles.required]: required },
-        style,
-        className
-      )}
-    >
+    <div className={cn(styles.root, style, className)}>
       {elevatePlaceholder ? (
-        <label className={styles.elevatedPlaceholderLabel}>
+        <label className={styles.elevatedLabel}>
           <span
-            className={cn(styles.placeholder, {
+            className={cn(styles.label, {
               [styles.hasValue]: characterCount > 0
             })}
           >
-            {placeholder}
+            {label}
           </span>
           {input}
         </label>

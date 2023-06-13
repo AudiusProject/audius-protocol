@@ -38,9 +38,17 @@
 .root.focus {
   border-color: var(--secondary);
 }
-.root.error {
+
+.root.error,
+.root.error.focused {
   border-color: var(--accent-red);
 }
+
+.root.error:hover,
+.root.error:hover.focused {
+  border-color: var(--accent-red-dark-1);
+}
+
 .root > textarea::placeholder {
   color: var(--neutral-light-4);
   font-weight: 500;

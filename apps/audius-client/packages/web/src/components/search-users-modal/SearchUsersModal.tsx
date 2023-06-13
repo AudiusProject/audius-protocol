@@ -130,7 +130,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
           <InputV2
             inputRef={(el) => el?.focus()}
             variant={InputV2Variant.ELEVATED_PLACEHOLDER}
-            placeholder={messages.searchUsers}
+            label={messages.searchUsers}
             size={InputV2Size.LARGE}
             value={query}
             onChange={handleChange}

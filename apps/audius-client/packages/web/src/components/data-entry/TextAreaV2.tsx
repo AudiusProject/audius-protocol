@@ -38,13 +38,14 @@ const getMaxHeight = ({
     ? maxVisibleRows * sizeToLineHeight[size] + sizeToVerticalPadding[size]
     : undefined
 
-type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
+export type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   grows?: boolean
   resize?: boolean
   size?: TextAreaSize
   heightBuffer?: number
   maxVisibleRows?: number
   showMaxLength?: boolean
+  error?: boolean
 }
 
 const CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT = 0.875
@@ -64,6 +65,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
       children,
       onFocus: onFocusProp,
       onBlur: onBlurProp,
+      error,
       ...other
     } = props
 
@@ -113,7 +115,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
         ref={rootRef}
         className={cn(
           styles.root,
-          { [styles.focused]: isFocused },
+          { [styles.focused]: isFocused, [styles.error]: error },
           style,
           className
         )}
