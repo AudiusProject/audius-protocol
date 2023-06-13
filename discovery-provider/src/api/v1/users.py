@@ -1886,7 +1886,7 @@ developer_apps_response = make_response(
 )
 
 
-@ns.route("/<string:id>/developer_apps", doc=False)
+@ns.route("/<string:id>/developer_apps")
 class DeveloperApps(Resource):
     @record_metrics
     @ns.doc(
@@ -1908,7 +1908,7 @@ authorized_apps_response = make_response(
 )
 
 
-@ns.route("/<string:id>/authorized_apps", doc=False)
+@ns.route("/<string:id>/authorized_apps")
 class AuthorizedApps(Resource):
     @record_metrics
     @ns.doc(
