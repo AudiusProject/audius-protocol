@@ -15,7 +15,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   artistBadge: {
     position: 'absolute',
-    top: spacing(5),
+    top: spacing(3),
     right: spacing(3)
   }
 }))

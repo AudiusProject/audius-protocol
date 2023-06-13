@@ -19,7 +19,7 @@ const hitSlop = {
 const useStyles = makeStyles(({ spacing }) => ({
   expandButton: {
     justifyContent: 'center',
-    marginVertical: spacing(3),
+    marginVertical: spacing(4),
     alignSelf: 'center'
   },
   seeLessIcon: {
