@@ -10,7 +10,7 @@
     "start": "craco --max-old-space-size=12288 start",
     "start:dev": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.dev npm start",
     "start:stage": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.stage npm start",
-    "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.prod npm start",
+    "start:prod": "npm run write-sha && npm run publish-scripts && env-cmd ./.env/.env.git env-cmd --no-override ./.env/.env.prod env-cmd ./.env/.env.source-maps npm start",
     "prebuild": "npm run publish-scripts",
     "build": "craco --max-old-space-size=12288 build && cp package.json build/package.json",
     "build:dev": "npm run write-sha && env-cmd ./.env/.env.git env-cmd ./.env/.env.dev npm run build && rm -rf build-development && mv build build-development",
