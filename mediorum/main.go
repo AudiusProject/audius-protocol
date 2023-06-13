@@ -162,6 +162,9 @@ func startDevCluster() {
 			ListenPort:        fmt.Sprintf("199%d", idx+1),
 			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
 		}
+		if privateKey, found := os.LookupEnv(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)); found {
+			config.PrivateKey = privateKey
+		}
 
 		wg.Add(1)
 		go func() {
@@ -183,7 +186,7 @@ func devNetwork(hostNameTemplate string, n int) []server.Peer {
 	for i := 1; i <= n; i++ {
 		network = append(network, server.Peer{
 			Host:   fmt.Sprintf(hostNameTemplate, i),
-			Wallet: fmt.Sprintf("0xWallet%d", i), // todo keypair stuff
+			Wallet: getenvWithDefault(fmt.Sprintf("CN%d_SP_OWNER_ADDRESS", i), fmt.Sprintf("0xWallet%d", i)),
 		})
 	}
 	return network

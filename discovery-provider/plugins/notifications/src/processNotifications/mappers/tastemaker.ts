@@ -45,7 +45,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     this.tastemakerUserId = tastemaker_user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

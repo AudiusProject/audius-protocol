@@ -39,6 +39,7 @@ export type HealthCheckResponseData = DeepPartial<{
   maximum_healthy_block_difference: number
   meets_min_requirements: boolean
   network: {
+    content_nodes: Array<{ endpoint: string; ownerDelegateWallet: string }>
     discovery_nodes: string[]
   }
   num_users_in_immediate_balance_refresh_queue: number

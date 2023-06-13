@@ -19,11 +19,6 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	cid := c.Param("cid")
 	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 
-	// check blacklist
-	if ss.isCidBlacklisted(ctx, cid) {
-		return c.String(403, "cid is blacklisted by this node")
-	}
-
 	// lookup on-disk storage path
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)

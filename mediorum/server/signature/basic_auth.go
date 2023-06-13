@@ -8,25 +8,7 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/crypto"
 )
-
-// From https://github.com/AudiusProject/sig/blob/main/go/index.go
-func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	// hash the input
-	hash := crypto.Keccak256Hash([]byte(input))
-	// TextHash will prepend Ethereum signed message prefix to the hash
-	// and hash that again
-	hash2 := accounts.TextHash(hash.Bytes())
-
-	signature, err := crypto.Sign(hash2, privateKey)
-	if err != nil {
-		return nil, err
-	}
-	return signature, nil
-}
 
 // between mediorum servers, authenticate requests a basic auth
 func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {

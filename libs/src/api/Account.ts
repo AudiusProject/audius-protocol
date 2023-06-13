@@ -134,8 +134,7 @@ export class Account extends Base {
     coverPhotoFile: Nullable<File> = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    generateRecoveryLink = true,
-    writeMetadataThroughChain = false
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -170,16 +169,12 @@ export class Account extends Base {
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
-        await this.User.createEntityManagerUser(
-          { metadata },
-          writeMetadataThroughChain
-        )
+        await this.User.createEntityManagerUser({ metadata })
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(
         profilePictureFile!,
         coverPhotoFile!,
-        newMetadata,
-        writeMetadataThroughChain
+        newMetadata
       )
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
@@ -381,16 +376,13 @@ export class Account extends Base {
    * Updates a user's creator node endpoint. Sets the connected creator node in the libs instance
    * and updates the user's metadata blob.
    */
-  async updateCreatorNodeEndpoint(
-    url: string,
-    writeMetadataThroughChain = false
-  ) {
+  async updateCreatorNodeEndpoint(url: string) {
     this.REQUIRES(Services.CREATOR_NODE)
 
     const user = this.userStateManager.getCurrentUser() as User
     await this.creatorNode.setEndpoint(url)
     user.creator_node_endpoint = url
-    await this.User.updateCreator(user.user_id, user, writeMetadataThroughChain)
+    await this.User.updateCreator(user.user_id, user)
   }
 
   /**

@@ -34,7 +34,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     this.playlistId = notification.data.playlist_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

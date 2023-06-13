@@ -562,7 +562,7 @@ router.post(
         }
 
         // Associate all segment file db records with trackUUID
-        const trackFiles = await models.File.findAll({
+        await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
@@ -572,14 +572,7 @@ router.post(
           },
           transaction
         })
-
-        if (trackFiles.length !== trackSegmentCIDs.length) {
-          req.logger.error(
-            `Did not find files for every track segment CID for user ${cnodeUserUUID} ${trackFiles} ${trackSegmentCIDs}`
-          )
-          throw new Error('Did not find files for every track segment CID.')
-        }
-        const segmentsAssociateNumAffectedRows = await models.File.update(
+        await models.File.update(
           { trackBlockchainId: track.blockchainId },
           {
             where: {
@@ -592,17 +585,6 @@ router.post(
             transaction
           }
         )
-        if (
-          parseInt(segmentsAssociateNumAffectedRows, 10) !==
-          trackSegmentCIDs.length
-        ) {
-          req.logger.error(
-            `Failed to associate files for every track segment CID ${cnodeUserUUID} ${track.blockchainId} ${segmentsAssociateNumAffectedRows} ${trackSegmentCIDs.length}`
-          )
-          throw new Error(
-            'Failed to associate files for every track segment CID.'
-          )
-        }
       } /** updateTrack scenario */ else {
         /**
          * If track updated, ensure files exist with trackBlockchainId
@@ -627,7 +609,7 @@ router.post(
         }
 
         // Ensure segment file db records exist for all CIDs
-        const trackFiles = await models.File.findAll({
+        await models.File.findAll({
           where: {
             multihash: trackSegmentCIDs,
             cnodeUserUUID,
@@ -636,11 +618,6 @@ router.post(
           },
           transaction
         })
-        if (trackFiles.length < trackSegmentCIDs.length) {
-          throw new Error(
-            'Did not find files for every track segment CID with trackBlockchainId.'
-          )
-        }
       }
 
       // Update cnodeUser's latestBlockNumber if higher than previous latestBlockNumber.
@@ -679,58 +656,6 @@ router.post(
   })
 )
 
-/** Returns download status of track and 320kbps CID if ready + downloadable. */
-router.get(
-  '/tracks/download_status/:blockchainId',
-  handleResponse(async (req, _res) => {
-    const blockchainId = req.params.blockchainId
-    if (!blockchainId) {
-      return errorResponseBadRequest('Please provide blockchainId.')
-    }
-
-    const track = await models.Track.findOne({
-      where: { blockchainId },
-      order: [['clock', 'DESC']]
-    })
-    if (!track) {
-      return errorResponseBadRequest(
-        `No track found for blockchainId ${blockchainId}`
-      )
-    }
-
-    // Case: track is not marked as downloadable
-    if (
-      !track.metadataJSON ||
-      !track.metadataJSON.download ||
-      !track.metadataJSON.download.is_downloadable
-    ) {
-      return successResponse({ isDownloadable: false, cid: null })
-    }
-
-    // Case: track is marked as downloadable
-    // - Check if downloadable file exists. Since copyFile may or may not have trackBlockchainId association,
-    //    fetch a segmentFile for trackBlockchainId, and find copyFile for segmentFile's sourceFile.
-    const segmentFile = await models.File.findOne({
-      where: {
-        type: 'track',
-        trackBlockchainId: track.blockchainId
-      }
-    })
-    const copyFile = await models.File.findOne({
-      where: {
-        type: 'copy320',
-        sourceFile: segmentFile.sourceFile
-      }
-    })
-
-    // Serve from file system
-    return successResponse({
-      isDownloadable: true,
-      cid: copyFile ? copyFile.multihash : null
-    })
-  })
-)
-
 /**
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.
@@ -744,6 +669,12 @@ router.get(
     const delegateOwnerWallet = config.get('delegateOwnerWallet')
 
     const encodedId = req.params.encodedId
+
+    req.logger.warn(`The route /tracks/stream/:encodedId is being used with id ${encodedId}.`)
+    /**
+     * DEPRECATE THIS ENDPOINT ONCE WE'RE CONFIDENT NOONE IS USING IT
+     */
+
     if (!encodedId) {
       return sendResponse(
         req,

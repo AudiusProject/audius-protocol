@@ -6,8 +6,8 @@ import type { AuthService } from './types'
  * AuthService for Developer Apps wishing to write on a user's behalf
  */
 export class AppAuth implements AuthService {
-  private apiKey: string
-  private apiSecret: string
+  private readonly apiKey: string
+  private readonly apiSecret: string
 
   constructor(apiKey: string, apiSecret: string) {
     this.apiKey = apiKey

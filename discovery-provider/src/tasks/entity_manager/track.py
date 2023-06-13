@@ -221,31 +221,26 @@ def validate_track_tx(params: ManageEntityParameters):
     if user_id not in params.existing_records[EntityType.USER]:
         raise Exception(f"User {user_id} does not exist")
 
-    # Ensure the signer is either the user or a delegate for the user
+    # Ensure the signer is either the user or authorized to perform action for the user
     # TODO (nkang) - Extract to helper
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer
 
     if not signer_matches_user:
-        is_signer_delegate = (
-            signer in params.existing_records[EntityType.DELEGATION]
-            and params.existing_records[EntityType.DELEGATION][signer].user_id
-            == user_id
-        )
-        if is_signer_delegate:
-            delegation = params.existing_records[EntityType.DELEGATION][signer]
-            app_delegate = params.existing_records[EntityType.APP_DELEGATE][
-                delegation.delegate_address.lower()
-            ]
-            if (
-                (not app_delegate)
-                or (app_delegate.is_delete)
-                or (delegation.is_revoked)
-            ):
-                raise Exception(f"Signer is an invalid delegate for user {user_id}")
+        grant_key = (signer, user_id)
+        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        if is_signer_authorized:
+            grant = params.existing_records[EntityType.GRANT][grant_key]
+            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+                raise Exception(
+                    f"Signer is not authorized to perform action for user {user_id}"
+                )
         else:
-            raise Exception(f"Signer does not match user {user_id} or a valid delegate")
+            raise Exception(
+                f"Signer does not match user {user_id} or an authorized wallet"
+            )
 
     if params.entity_type != EntityType.TRACK:
         raise Exception(f"Entity type {params.entity_type} is not a track")

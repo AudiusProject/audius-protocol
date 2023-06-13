@@ -1,3 +1,4 @@
+import snakecaseKeys from 'snakecase-keys'
 import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {
@@ -6,16 +7,14 @@ import {
   TracksApi as GeneratedTracksApi
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
-import type { UploadTrackRequest } from './types'
+import { createUploadTrackSchema, UploadTrackRequest } from './types'
 import type { StorageService } from '../../services/Storage'
-import { isFileValid } from '../../utils/file'
-import { TRACK_REQUIRED_VALUES } from './constants'
-import { objectMissingValues } from '../../utils/object'
 import { retry3 } from '../../utils/retry'
 import type { EntityManagerService, AuthService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -66,36 +65,42 @@ export class TracksApi extends TracksApiWithoutStream {
    * Upload a track
    */
   async uploadTrack(requestParameters: UploadTrackRequest) {
-    const { trackFile, coverArtFile, metadata, onProgress } = requestParameters
+    // Parse inputs
+    const {
+      userId,
+      trackFile,
+      coverArtFile,
+      metadata: parsedMetadata,
+      onProgress
+    } = parseRequestParameters(
+      'uploadTrack',
+      createUploadTrackSchema()
+    )(requestParameters)
 
-    // Validate inputs
-    if (!isFileValid(trackFile)) {
-      throw new Error('Track file is not valid')
+    // Transform metadata
+    const metadata = {
+      ...parsedMetadata,
+      ownerId: userId
     }
 
-    if (!isFileValid(coverArtFile)) {
-      throw new Error('Cover art file is not valid')
+    const isPremium = metadata.isPremium
+    const isUnlisted = metadata.isUnlisted
+
+    // If track is premium, set remixes to false
+    if (isPremium && metadata.fieldVisibility) {
+      metadata.fieldVisibility.remixes = false
     }
 
-    if (typeof metadata !== 'object') {
-      throw new Error('Metadata object is not valid')
-    }
-
-    const artistId = decodeHashId(requestParameters.artistId)
-    if (artistId === null) {
-      throw new Error('artistId is not valid')
-    }
-
-    requestParameters.metadata.owner_id = artistId
-
-    const metadataMissingValues = objectMissingValues(
-      requestParameters.metadata,
-      TRACK_REQUIRED_VALUES
-    )
-    if (metadataMissingValues?.length) {
-      throw new Error(
-        `Metadata object is missing values: ${metadataMissingValues}`
-      )
+    // If track is public, set required visibility fields to true
+    if (!isUnlisted) {
+      metadata.fieldVisibility = {
+        ...metadata.fieldVisibility,
+        genre: true,
+        mood: true,
+        tags: true,
+        share: true,
+        playCount: true
+      }
     }
 
     // Upload track audio and cover art to storage node
@@ -127,15 +132,15 @@ export class TracksApi extends TracksApiWithoutStream {
     // Update metadata to include uploaded CIDs
     const updatedMetadata = {
       ...metadata,
-      track_segments: [],
-      track_cid: audioResp.results['320'],
-      download: metadata.download?.is_downloadable
+      trackSegments: [],
+      trackCid: audioResp.results['320'],
+      download: metadata.download?.isDownloadable
         ? {
             ...metadata.download,
-            cid: metadata.track_cid
+            cid: audioResp.results['320']
           }
         : metadata.download,
-      cover_art_sizes: coverArtResp.id,
+      coverArtSizes: coverArtResp.id,
       duration: parseInt(audioResp.probe.format.duration, 10)
     }
 
@@ -144,13 +149,13 @@ export class TracksApi extends TracksApiWithoutStream {
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.generateTrackId()
     const response = await this.entityManager.manageEntity({
-      userId: artistId,
+      userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: metadataCid.toString(),
-        data: updatedMetadata
+        data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth
     })
@@ -160,7 +165,7 @@ export class TracksApi extends TracksApiWithoutStream {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
       trackId,
-      transcodedTrackCID: updatedMetadata.track_cid,
+      transcodedTrackCID: updatedMetadata.trackCid,
       error: false
     }
   }

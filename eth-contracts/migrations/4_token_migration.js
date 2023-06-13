@@ -3,12 +3,14 @@ const _lib = require('../utils/lib')
 const assert = require('assert')
 
 const AudiusToken = artifacts.require('AudiusToken')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const Governance = artifacts.require('Governance')
 
 const tokenRegKey = web3.utils.utf8ToHex('Token')
 
-const INITIAL_SUPPLY = Math.pow(10,27)
+const INITIAL_SUPPLY = Math.pow(10, 27)
 
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
@@ -22,7 +24,9 @@ module.exports = (deployer, network, accounts) => {
     const governance = await Governance.at(governanceAddress)
 
     // Deploy AudiusToken logic and proxy contracts
-    const token0 = await deployer.deploy(AudiusToken, { from: proxyDeployerAddress })
+    const token0 = await deployer.deploy(AudiusToken, {
+      from: proxyDeployerAddress
+    })
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
@@ -38,7 +42,12 @@ module.exports = (deployer, network, accounts) => {
     const token = await AudiusToken.at(tokenProxy.address)
 
     // Register token
-    await _lib.registerContract(governance, tokenRegKey, tokenProxy.address, guardianAddress)
+    await _lib.registerContract(
+      governance,
+      tokenRegKey,
+      tokenProxy.address,
+      guardianAddress
+    )
 
     // Confirm initial token supply
     assert.equal(await token.totalSupply.call(), INITIAL_SUPPLY)

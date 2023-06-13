@@ -59,7 +59,6 @@ services:
   eth-ganache:
     build:
       context: ${PROJECT_ROOT}/eth-contracts
-      dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}

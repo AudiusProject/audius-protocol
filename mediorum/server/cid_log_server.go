@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -15,14 +16,19 @@ func (ss *MediorumServer) servePgBeam(c echo.Context) error {
 		after = t
 	}
 
+	batchSize := CidLookupBatchSize
+	if param, err := strconv.Atoi(c.QueryParam("batchSize")); err == nil && param > 0 {
+		batchSize = param
+	}
+
 	query := fmt.Sprintf(`
 		select *
 		from cid_log
 		where updated_at > '%s'
 		order by updated_at
-		limit 100000
+		limit %d
 		`,
-		after.Format(time.RFC3339Nano))
+		after.Format(time.RFC3339Nano), batchSize)
 	copySql := fmt.Sprintf("COPY (%s) TO STDOUT", query)
 
 	// pg COPY TO

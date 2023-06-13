@@ -5,38 +5,42 @@ drop database if exists cid_lookup_test;
 create database cid_lookup_test;
 \c cid_lookup_test
 
+drop table if exists "Files";
+
 -- subset of fields we actually use
 CREATE TABLE IF NOT EXISTS "Files" (
     multihash text NOT NULL,
     "dirMultihash" text,
+    "type" text,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL
 );
 
+
+-- insert an existing row to verify backfill works correctly
+insert into "Files" values
+  ('cid0', NULL, 'track', now(), now()),
+  ('cid1', NULL, 'image', now(), now());
 
 
 -- load code under test
 \i ddl/cid_lookup.sql
 
 
-
-LISTEN cid_log;
-
-
 -- test: insert
 insert into "Files" values
-  ('cid1', NULL, now(), now()),
-  ('cid2', NULL, now(), now());
+  ('cid2', NULL, 'image', now(), now()),
+  -- a track should be ignored
+  ('cid3', NULL, 'track', now(), now());
 
 do $$ begin
   assert (select count(*) from cid_log) = 2;
-  assert (select updated_at from cid_log where multihash = 'cid1') =
-         (select updated_at from cid_log where multihash = 'cid2');
 end; $$;
 
 
 -- test: delete
 delete from "Files" where multihash = 'cid2';
+delete from "Files" where multihash = 'cid3';
 
 do $$ begin
   assert (select count(*) from cid_log) = 2;
@@ -52,10 +56,10 @@ truncate "Files";
 truncate cid_log;
 
 insert into "Files" values
-  ('dir1v1', 'dir1', now(), now()),
-  ('dir1v2', 'dir1', now(), now()),
-  ('dir2v1', 'dir2', now(), now()),
-  ('dir2v2', 'dir2', now(), now())
+  ('dir1v1', 'dir1', 'dir', now(), now()),
+  ('dir1v2', 'dir1', 'dir', now(), now()),
+  ('dir2v1', 'dir2', 'dir', now(), now()),
+  ('dir2v2', 'dir2', 'dir', now(), now())
   ;
 
 do $$ begin

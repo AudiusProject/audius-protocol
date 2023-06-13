@@ -1,5 +1,7 @@
 import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
+import { GrantsApi } from './api/grants/GrantsApi'
+import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
@@ -32,12 +34,21 @@ import {
   EntityManager,
   AppAuth
 } from './services'
+import {
+  StorageNodeSelector,
+  StorageNodeSelectorService
+} from './services/StorageNodeSelector'
 
 type ServicesContainer = {
   /**
    * Service used to choose discovery node
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+
+  /**
+   * Service used to choose storage node
+   */
+  storageNodeSelector: StorageNodeSelectorService
 
   /**
    * Service used to write and update entities on chain
@@ -110,14 +121,21 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
+  const defaultAuthService =
+    config.apiKey && config.apiSecret
+      ? new AppAuth(config.apiKey, config.apiSecret)
+      : new Auth()
+
+  const storageNodeSelector = new StorageNodeSelector({
+    auth: config.services?.auth ?? defaultAuthService
+  })
+
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
+    storageNodeSelector,
     entityManager: new EntityManager(),
-    storage: new Storage(),
-    auth:
-      config.apiKey && config.apiSecret
-        ? new AppAuth(config.apiKey, config.apiSecret)
-        : new Auth()
+    storage: new Storage({ storageNodeSelector }),
+    auth: defaultAuthService
   }
   return { ...defaultServices, ...config.services }
 }
@@ -158,6 +176,17 @@ const initializeApis = ({
     services.auth,
     services.discoveryNodeSelector
   )
+  const grants = new GrantsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
+
+  const developerApps = new DeveloperAppsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
@@ -181,7 +210,9 @@ const initializeApis = ({
     tips,
     resolve,
     full,
-    chats
+    chats,
+    grants,
+    developerApps
   }
 }
 

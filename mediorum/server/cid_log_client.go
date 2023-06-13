@@ -13,26 +13,22 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func (ss *MediorumServer) startBeamClients() {
-	for _, peer := range ss.Config.Peers {
-		if peer.Host == ss.Config.Self.Host {
-			continue
-		}
-		go ss.startBeamClientForPeer(peer)
-	}
-}
+const CidLookupBatchSize = 1000
 
-func (ss *MediorumServer) startBeamClientForPeer(peer Peer) {
+func (ss *MediorumServer) startCidBeamClient() {
 	for {
-		time.Sleep(jitterSeconds(60, 90))
-
-		result, err := ss.beamFromPeer(peer)
-		if err != nil {
-			log.Println("beam failed", peer.Host, err)
-			time.Sleep(time.Minute * 10)
-		} else if result.RowCount > 0 {
-			log.Printf("beam OK %+v \n", result)
+		for _, peer := range ss.Config.Peers {
+			if peer.Host == ss.Config.Self.Host {
+				continue
+			}
+			result, err := ss.beamFromPeer(peer)
+			if err != nil {
+				log.Println("beam failed", peer.Host, err)
+			} else if result.RowCount > 0 {
+				log.Printf("beam OK %+v \n", result)
+			}
 		}
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -47,15 +43,16 @@ type beamResult struct {
 }
 
 func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
 	client := http.Client{
-		Timeout: 5 * time.Minute,
+		Timeout: time.Minute,
 	}
 
 	var cursorBefore time.Time
 	ss.pgPool.QueryRow(ctx, `select updated_at from cid_cursor where host = $1`, peer.Host).Scan(&cursorBefore)
 
-	endpoint := fmt.Sprintf("%s?after=%s", peer.ApiPath("internal/beam/files"), url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
+	endpoint := fmt.Sprintf("%s?batchSize=%d&after=%s", peer.ApiPath("internal/beam/files"), CidLookupBatchSize, url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
 	startedAt := time.Now()
 	logger := slog.With("beam_client", peer.Host)
 	resp, err := client.Get(endpoint)

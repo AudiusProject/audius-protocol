@@ -9,7 +9,7 @@ export function encodeId(id: number | string) {
 }
 
 export function decodeId(id: string) {
-  return parseInt(id) || hasher.decode(id)
+  return hasher.decode(id)
 }
 
 // // helper functions for content node images
@@ -21,14 +21,3 @@ export function buildImageUrls(user: any, cid: string, size: string) {
     .map((u: string) => `${u}/ipfs/${cid}/${size}.jpg`)
   return urls[0]
 }
-
-// // helper functions for content node streams
-// export function buildStreamUrls(user: UserRow, track: TrackRow) {
-//   // when does this happen?
-//   if (!user || !user.creator_node_endpoint) return []
-
-//   const hid = encodeId(track.track_id)
-//   return user.creator_node_endpoint
-//     .split(',')
-//     .map((u) => `${u}/tracks/stream/${hid}`)
-// }

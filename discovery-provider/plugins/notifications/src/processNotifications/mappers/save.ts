@@ -33,7 +33,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     this.saverUserId = this.notification.data.user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

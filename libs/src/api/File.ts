@@ -266,17 +266,12 @@ export class File extends Base {
    * Uploads an image to the connected Content Node.
    * @param file
    */
-  async uploadImage(
-    file: globalThis.File,
-    square: boolean,
-    timeoutMs = null,
-    writeMetadataThroughChain = false
-  ) {
+  async uploadImage(file: globalThis.File, square: boolean, timeoutMs = null) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
 
     // Assign a creator_node_endpoint to the user if necessary
-    await this.User.assignReplicaSetIfNecessary(writeMetadataThroughChain)
+    await this.User.assignReplicaSetIfNecessary()
 
     const resp = await this.creatorNode.uploadImage(
       file,

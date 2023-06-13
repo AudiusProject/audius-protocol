@@ -9,13 +9,14 @@
     "truffle:compile": "truffle compile",
     "truffle:migrate": "truffle migrate --reset --network development",
     "truffle:console": "truffle console --network development",
-    "test": "truffle test test/*.test.js --network test",
-    "test:random": "truffle test test/random/random.test.js --network development",
-    "test:verbose": "truffle test test/*.test.js --network development --verbose-rpc",
-    "coverage": "ENABLE_OPTIMIZER=false node --max-old-space-size=4096 truffle run coverage --file='test/*.js'",
+    "test": "NODE_OPTIONS='--max-old-space-size=8192' truffle test test/*.test.js --network test",
+    "test:random": "NODE_OPTIONS='--max-old-space-size=8192' truffle test test/random/random.test.js --network development",
+    "test:verbose": "NODE_OPTIONS='--max-old-space-size=8192' truffle test test/*.test.js --network development --verbose-rpc",
+    "coverage": "ENABLE_OPTIMIZER=false NODE_OPTIONS='--max-old-space-size=8192' truffle run coverage --file='test/*.js'",
     "solidity:lint": "solium -d contracts",
     "js:lint": "eslint .",
     "lint": "npm run js:lint && npm run solidity:lint",
+    "lint:fix": "npm run js:lint -- --fix && npm run solidity:lint -- --fix",
     "analysis": "slither ."
   },
   "dependencies": {
@@ -61,8 +62,8 @@
     }
   },
   "engines": {
-    "node": ">=10.16.0",
-    "npm": "6.1.0"
+    "node": ">=18.16.0",
+    "npm": ">=9.5.1"
   },
   "standard": {
     "globals": [

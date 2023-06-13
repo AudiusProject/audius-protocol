@@ -7,11 +7,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const PullLimit = 10000
+
 func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	after := c.QueryParam("after")
 	var ops []*crudr.Op
 	ss.crud.DB.
 		Where("host = ? AND ulid >= ?", ss.Config.Self.Host, after).
+		Limit(PullLimit).
 		Find(&ops)
 	return c.JSON(200, ops)
 }

@@ -36,7 +36,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

@@ -61,7 +61,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

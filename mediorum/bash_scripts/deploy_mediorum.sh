@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+docker system prune -a --force
+
 cd audius-docker-compose/creator-node
 git fetch
 git checkout dev

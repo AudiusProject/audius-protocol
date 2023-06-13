@@ -57,10 +57,16 @@ export function useServiceProviders(
   env: string,
   type: 'content-node' | 'discovery-node'
 ) {
-  const shouldIncludeUnregistered = env !== "prod" && type === 'discovery-node'
-  const nodes = unregisteredStageNodes()
-  const { data: sps, error } = useSWR<SP[]>([env, type], theGraphFetcher)
-  if (shouldIncludeUnregistered) sps?.push(...nodes)
+  const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
+    const sps = await theGraphFetcher(env, type)
+    const shouldIncludeUnregistered =
+      env !== 'prod' && type === 'discovery-node'
+    if (shouldIncludeUnregistered) {
+      sps.push(...unregisteredStageNodes())
+      hostSort(sps)
+    }
+    return sps
+  })
   return { data: sps, error }
 }
 
@@ -72,7 +78,6 @@ export function useContentProviders() {
   return useServiceProviders('prod', 'content-node')
 }
 
-
 export function hostSort(sps: SP[]) {
   const hostSortKey = (sp: SP) =>
     new URL(sp.endpoint).hostname.split('.').reverse().join('.')
@@ -80,9 +85,11 @@ export function hostSort(sps: SP[]) {
 }
 
 function unregisteredStageNodes() {
-  return [{
-    endpoint: "https://discoveryprovider4.staging.audius.co",
-    isRegistered: false,
-    type: { id: "discovery-node"}
-  }]
+  return [
+    {
+      endpoint: 'https://discoveryprovider4.staging.audius.co',
+      isRegistered: false,
+      type: { id: 'discovery-node' },
+    },
+  ]
 }

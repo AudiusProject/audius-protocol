@@ -12,8 +12,6 @@ import {
   verifySignature,
   stringifyMap,
   isFqdn,
-  getCharsInRange,
-  getCharsInRanges,
   clearActiveJobs
 } from './utils'
 import {
@@ -44,6 +42,7 @@ import {
 } from './cluster/clusterUtils'
 import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
 import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
+import { isMp3File } from './fileUtils'
 
 export * from './types'
 export {
@@ -76,8 +75,7 @@ export {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
-  getCharsInRange,
-  getCharsInRanges
+  isMp3File
 }
 
 module.exports = {
@@ -111,6 +109,5 @@ module.exports = {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
-  getCharsInRange,
-  getCharsInRanges
+  isMp3File
 }

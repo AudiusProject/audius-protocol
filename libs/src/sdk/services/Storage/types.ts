@@ -1,7 +1,8 @@
 import type { CrossPlatformFile as File } from '../../types/File'
+import type { StorageNodeSelector } from '../StorageNodeSelector'
 
 export type StorageServiceConfig = {
-  contentNodeEndpoint: string
+  storageNodeSelector: StorageNodeSelector
 }
 
 export type ProgressCB = (loaded: number, total: number) => void
@@ -15,7 +16,7 @@ export type StorageService = {
     template
   }: {
     file: File
-    onProgress: ProgressCB
+    onProgress?: ProgressCB
     template: FileTemplate
   }) => Promise<UploadResponse>
 }

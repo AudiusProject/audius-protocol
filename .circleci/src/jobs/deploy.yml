@@ -16,7 +16,7 @@ machine:
 steps:
   - when:
       condition:
-        matches: { pattern: "^true$", value: << parameters.freeze >> }
+        matches: { pattern: "true", value: << parameters.freeze >> }
       steps:
         - run: circleci-agent step halt
   - run:
@@ -113,8 +113,6 @@ steps:
         for host in "${hosts[@]}"; do
           ssh "ubuntu@$host" -- audius-cli pull
           ssh "ubuntu@$host" -- audius-cli set-tag -y "$CIRCLE_SHA1"
-          # ssh "ubuntu@$host" -- audius-cli set-tag -y --comms "$CIRCLE_SHA1"
-          ssh "ubuntu@$host" -- audius-cli set-tag -y --notifications "$CIRCLE_SHA1"
           ssh "ubuntu@$host" -- audius-cli launch -y "<< parameters.service >>"
 
           healthy=false

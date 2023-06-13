@@ -1,12 +1,3 @@
-import {
-  describe,
-  expect,
-  test,
-  beforeAll,
-  afterAll,
-  afterEach,
-  jest
-} from '@jest/globals'
 import { setupServer } from 'msw/node'
 import { rest } from 'msw'
 import { DiscoveryNodeSelector } from './DiscoveryNodeSelector'
@@ -161,7 +152,12 @@ const handlers = [
 const server = setupServer(...handlers)
 
 describe('discoveryNodeSelector', () => {
-  beforeAll(() => server.listen())
+  beforeAll(() => {
+    server.listen()
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'info').mockImplementation(() => {})
+    jest.spyOn(console, 'debug').mockImplementation(() => {})
+  })
 
   afterEach(() => server.resetHandlers())
 

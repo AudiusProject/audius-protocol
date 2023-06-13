@@ -1,10 +1,14 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"mediorum/server/signature"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -40,12 +44,19 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
+	if ss.isCidBlacklisted(ctx, key) {
+		return c.String(403, "cid is blacklisted by this node")
+	}
+
 	// If the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
 		contentDisposition := url.QueryEscape(filenameForDownload)
 		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
+
+	// v1 feature parity
+	go ss.logTrackListen(c)
 
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
@@ -87,6 +98,67 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) logTrackListen(c echo.Context) {
+
+	if os.Getenv("identityService") == "" ||
+		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
+		c.QueryParam("skip_play_count") == "true" {
+		// todo: skip count for trusted notifier requests should be inferred
+		// by the requesting entity and not some query param
+		return
+	}
+
+	httpClient := http.Client{
+		Timeout: 5 * time.Second, // identity svc slow
+	}
+
+	sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+	if err != nil {
+		ss.logger.Warn("unable to parse signature for request", "signature", c.QueryParam("signature"))
+		return
+	}
+
+	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
+	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
+	if err != nil {
+		ss.logger.Error("unable to build request", err)
+		return
+	}
+
+	body := map[string]interface{}{
+		"userId":       ss.Config.Self.Wallet, // as per CN `userId: req.userId ?? delegateOwnerWallet`
+		"solanaListen": false,
+		"timestamp":    signatureData.Timestamp,
+		"signature":    signatureData.Signature,
+	}
+
+	buf, err := json.Marshal(body)
+	if err != nil {
+		ss.logger.Error("unable to build request", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
+	if err != nil {
+		ss.logger.Error("unable to build request", err)
+		return
+	}
+	req.Header.Set("content-type", "application/json")
+	req.Header.Add("x-forwarded-for", c.RealIP())
+
+	res, err := httpClient.Do(req)
+	if err != nil {
+		ss.logger.Error("unable to POST to identity service", err)
+		return
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		resBody, _ := io.ReadAll(res.Body)
+		ss.logger.Warn(fmt.Sprintf("unsuccessful POST [%d] %s", res.StatusCode, resBody))
+	}
 }
 
 // checks signature from discovery node for cidstream endpoint + premium content.

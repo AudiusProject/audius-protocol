@@ -29,7 +29,6 @@ from src.utils import (
 )
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
-from src.utils.helpers import get_final_poa_block
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -210,8 +209,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     else:
         # Get latest blockchain state from web3
         try:
+            final_poa_block = helpers.get_final_poa_block()
             latest_block = web3.eth.get_block("latest", True)
-            latest_block_num = latest_block.number
+            latest_block_num = latest_block.number + (final_poa_block or 0)
             latest_block_hash = latest_block.hash.hex()
         except Exception as e:
             logger.error(f"Could not get latest block from chain: {e}")
@@ -330,8 +330,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
         "audius_db_url", ""
     )
-    discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached(redis)
-    final_poa_block = get_final_poa_block()
+    discovery_nodes = get_all_other_nodes.get_all_other_discovery_nodes_cached(redis)
+    content_nodes = get_all_other_nodes.get_all_other_content_nodes_cached(redis)
+    alive_content_nodes = get_all_other_nodes.get_all_alive_content_nodes_cached(redis)
+    final_poa_block = helpers.get_final_poa_block()
     backfilled_cid_data = get_backfilled_cid_data(redis)
     health_results = {
         "web": {
@@ -371,7 +373,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "network": {"discovery_nodes": discovery_nodes},
+        "network": {
+            "discovery_nodes": discovery_nodes,
+            "content_nodes": content_nodes,
+            "alive_content_nodes": alive_content_nodes,
+        },
         "backfilled_cid_data": backfilled_cid_data,
     }
 
@@ -381,10 +387,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        # adjust latest block if web3 is pointed to ACDC
-        # indicating POA has finished indexing
-        if final_poa_block:
-            latest_block_num += final_poa_block
         block_difference = abs(
             latest_block_num - latest_indexed_block_num
         )  # nethermind offset
@@ -721,8 +723,9 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
     if latest_block_num is None or latest_block_hash is None:
         try:
+            final_poa_block = helpers.get_final_poa_block()
             latest_block = web3.eth.get_block("latest", True)
-            latest_block_num = latest_block.number
+            latest_block_num = latest_block.number + (final_poa_block or 0)
             latest_block_hash = latest_block.hash.hex()
 
             # if we had attempted to use redis cache and the values weren't there, set the values now

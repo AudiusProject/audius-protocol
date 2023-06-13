@@ -1,11 +1,5 @@
 begin;
 
--- cid_lookup is the main table used to determine which host has a given CID
--- multihash column is used for both multihash and dirMultihash
-create table if not exists cid_lookup (
-    "multihash" text,
-    "host" text
-);
 
 -- creator-node creates the Files table, but we need to create it here in case we're running via audius-compose without CNs
 CREATE TABLE IF NOT EXISTS "Files" (
@@ -24,6 +18,15 @@ CREATE TABLE IF NOT EXISTS "Files" (
     -- "trackBlockchainId" integer, -- this is part of the table, but CN migration sets it and breaks if it already exists. initdb/init.sql will create it if running without CNs
     "clock" integer NOT NULL,
     "skipped" boolean DEFAULT false NOT NULL
+);
+
+
+
+-- cid_lookup is the main table used to determine which host has a given CID
+-- multihash column is used for both multihash and dirMultihash
+create table if not exists cid_lookup (
+    "multihash" text,
+    "host" text
 );
 
 create unique index if not exists "idx_multihash" on cid_lookup("multihash", "host");
@@ -46,29 +49,18 @@ create table if not exists cid_cursor (
 
 
 -- initial backfill
--- this sql file runs on boot every time
--- but this backfill is expensive
--- and the index idx_cid_log_updated_at is created after the backfill runs
--- so use the presence of idx_cid_log_updated_at to not re-run this.
-do $$
-declare
-  has_index bool := false;
-begin
-  select count(*) = 1 into has_index from pg_indexes where indexname = 'idx_cid_log_updated_at';
-  if not has_index then
 
-    -- backfill multihash
-    insert into cid_log (multihash, updated_at)
-      select "multihash", "createdAt" from "Files"
-        on conflict do nothing;
+-- backfill multihash
+insert into cid_log (multihash, updated_at)
+  select "multihash", "createdAt" from "Files"
+    where "type" != 'track'
+      on conflict do nothing;
 
-    -- backfill dirMultihash
-    insert into cid_log (multihash, updated_at)
-      select "dirMultihash", "createdAt" from "Files" where "dirMultihash" is not null
-        on conflict do nothing;
+-- backfill dirMultihash
+insert into cid_log (multihash, updated_at)
+  select "dirMultihash", "createdAt" from "Files" where "dirMultihash" is not null
+    on conflict do nothing;
 
-  end if;
-end; $$;
 
 create index if not exists idx_cid_log_updated_at on cid_log(updated_at);
 
@@ -79,9 +71,15 @@ begin
 
     case tg_op
     when 'DELETE' then
+        if old."type" = 'track' then
+          return null;
+        end if;
         update cid_log set is_deleted = true, updated_at = now() where multihash = old.multihash;
         update cid_log set is_deleted = true, updated_at = now() where multihash = old."dirMultihash";
     else
+        if new."type" = 'track' then
+          return null;
+        end if;
         insert into cid_log (multihash, updated_at) values (new.multihash, new."createdAt")
           on conflict do nothing;
         if new."dirMultihash" is not null then

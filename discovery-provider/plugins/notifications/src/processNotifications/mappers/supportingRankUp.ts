@@ -34,7 +34,7 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification({
+  async processNotification({
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {

@@ -1,9 +1,18 @@
 package server
 
 import (
+	"context"
+	"time"
+
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"
 )
+
+type cidCursor struct {
+	Host      string    `json:"host"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func (ss *MediorumServer) getStatus(c echo.Context) error {
 	return c.JSON(200, ss)
@@ -35,4 +44,18 @@ func (ss *MediorumServer) debugPeers(c echo.Context) error {
 		"peers":   ss.Config.Peers,
 		"signers": ss.Config.Signers,
 	})
+}
+
+func (ss *MediorumServer) debugCidCursor(c echo.Context) error {
+	ctx := context.Background()
+	cidCursors := []cidCursor{}
+	sql := `select * from cid_cursor order by host`
+	err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, sql)
+
+	if err != nil {
+		return c.JSON(400, map[string]string{
+			"error": err.Error(),
+		})
+	}
+	return c.JSON(200, cidCursors)
 }

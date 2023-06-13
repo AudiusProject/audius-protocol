@@ -16,7 +16,6 @@ export function DMs() {
 
   return (
     <div style={{ padding: 20 }}>
-      <EnvironmentSelector />
       <h1>DMs</h1>
       <table className="table">
         <thead>
@@ -110,7 +109,7 @@ function DMRow({ sp }: { sp: SP }) {
         )}
       </td>
       <td>
-        {commsStatus?.commit && (
+        {commsStatus?.booted && (
           <>
             <RelTime date={commsStatus.booted} />
           </>

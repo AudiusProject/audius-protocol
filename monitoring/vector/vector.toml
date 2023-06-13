@@ -11,7 +11,9 @@
     "postgres",
     "redis",
     "comms",
-    "notifications"
+    "notifications",
+    "chain",
+    "mediorum"
   ]
   exclude_containers = [
     # System containers
@@ -32,6 +34,10 @@
     if exists(.log) {
       . = parse_json(string!(.log)) ?? .log
     }
+    if !exists(.message) && !exists(.log) && !exists(.msg) {
+      .message = .
+    }
+
     .node = "$node"
     .container_name = container_name
 
