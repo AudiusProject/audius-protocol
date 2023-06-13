@@ -232,6 +232,7 @@ PrometheusRegistry = {
     PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS}",
         "Duration for entity manager updates",
+        ("scope",),
     ),
 }
 

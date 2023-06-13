@@ -40,7 +40,6 @@ from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
-from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
@@ -458,14 +457,6 @@ def configure_celery(celery, test_config=None):
     )
     logger.info("Database instance initialized!")
 
-    # Initialize CIDMetadataClient for celery task context
-    cid_metadata_client = CIDMetadataClient(
-        eth_web3,
-        shared_config,
-        redis_inst,
-        eth_abi_values,
-    )
-
     registry_address = web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -518,7 +509,6 @@ def configure_celery(celery, test_config=None):
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
-                cid_metadata_client=cid_metadata_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 trusted_notifier_manager=trusted_notifier_manager,

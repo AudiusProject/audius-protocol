@@ -260,8 +260,7 @@ def validate_track_tx(params: ManageEntityParameters):
             raise Exception(f"Existing track {track_id} does not match user")
 
     if params.action != Action.DELETE:
-        track_metadata = params.metadata[params.metadata_cid]
-        ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
+        ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
             ai_attribution_user = params.existing_records[EntityType.USER][
                 ai_attribution_user_id
@@ -302,7 +301,6 @@ def create_track(params: ManageEntityParameters):
 
     track_id = params.entity_id
     owner_id = params.user_id
-    track_metadata = params.metadata[params.metadata_cid]
 
     track_record = Track(
         track_id=track_id,
@@ -316,13 +314,13 @@ def create_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, track_record, track_metadata, params.pending_track_routes
+        params.session, track_record, params.metadata, params.pending_track_routes
     )
 
-    update_track_record(params, track_record, track_metadata)
+    update_track_record(params, track_record, params.metadata)
 
-    update_stems_table(params.session, track_record, track_metadata)
-    update_remixes_table(params.session, track_record, track_metadata)
+    update_stems_table(params.session, track_record, params.metadata)
+    update_remixes_table(params.session, track_record, params.metadata)
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
@@ -333,7 +331,6 @@ def create_track(params: ManageEntityParameters):
 def update_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
-    track_metadata = params.metadata[params.metadata_cid]
     track_id = params.entity_id
     existing_track = params.existing_records[EntityType.TRACK][track_id]
     if (
@@ -350,10 +347,10 @@ def update_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, updated_track, track_metadata, params.pending_track_routes
+        params.session, updated_track, params.metadata, params.pending_track_routes
     )
-    update_track_record(params, updated_track, track_metadata)
-    update_remixes_table(params.session, updated_track, track_metadata)
+    update_track_record(params, updated_track, params.metadata)
+    update_remixes_table(params.session, updated_track, params.metadata)
 
     params.add_track_record(track_id, updated_track)
 
