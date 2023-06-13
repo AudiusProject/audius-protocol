@@ -31,7 +31,7 @@ def test_index_valid_track(app, mocker):
         db = get_db()
         web3 = Web3()
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(None, web3, challenge_event_bus)
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     test_metadata = {
         "QmCreateTrack1": {
@@ -257,8 +257,11 @@ def test_index_valid_track(app, mocker):
         },
     }
 
-    track3_json = json.dumps(test_metadata["QmCreateTrack3"])
-    track4_json = json.dumps(test_metadata["QmCreateTrack4"])
+    create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
+    create_track2_json = json.dumps(test_metadata["QmCreateTrack2"])
+    create_track3_json = json.dumps(test_metadata["QmCreateTrack3"])
+    create_track4_json = json.dumps(test_metadata["QmCreateTrack4"])
+    update_track1_json = json.dumps(test_metadata["QmUpdateTrack1"])
     tx_receipts = {
         "CreateTrack1Tx": [
             {
@@ -268,7 +271,7 @@ def test_index_valid_track(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreateTrack1",
+                        "_metadata": f'{{"cid": "QmCreateTrack1", "data": {create_track1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -282,7 +285,7 @@ def test_index_valid_track(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": "QmUpdateTrack1",
+                        "_metadata": f'{{"cid": "QmUpdateTrack1", "data": {update_track1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -310,7 +313,7 @@ def test_index_valid_track(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreateTrack2",
+                        "_metadata": f'{{"cid": "QmCreateTrack2", "data": {create_track2_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -324,7 +327,7 @@ def test_index_valid_track(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreateTrack3", "data": {track3_json}}}',
+                        "_metadata": f'{{"cid": "QmCreateTrack3", "data": {create_track3_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -339,7 +342,7 @@ def test_index_valid_track(app, mocker):
                         "_entityType": "Track",
                         "_userId": 2,
                         "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreateTrack4", "data": {track4_json}}}',
+                        "_metadata": f'{{"cid": "QmCreateTrack4", "data": {create_track4_json}}}',
                         "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
@@ -397,7 +400,6 @@ def test_index_valid_track(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         # validate db records
@@ -486,8 +488,9 @@ def test_index_invalid_tracks(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
     test_metadata = {"QmAIDisabled": {"ai_attribution_user_id": 2}}
+    invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     tx_receipts = {
         # invalid create
         "CreateTrackBelowOffset": [
@@ -554,7 +557,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmAIDisabled",
+                        "_metadata": f'{{"cid": "QmAIDisabled", "data": {invalid_metadata_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -823,7 +826,6 @@ def test_index_invalid_tracks(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         # validate db records

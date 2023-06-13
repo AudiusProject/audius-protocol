@@ -142,8 +142,7 @@ def create_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
     playlist_id = params.entity_id
-    metadata = params.metadata[params.metadata_cid]
-    tracks = metadata["playlist_contents"].get("track_ids", [])
+    tracks = params.metadata["playlist_contents"].get("track_ids", [])
     tracks_with_index_time = []
     last_added_to = None
     for track in tracks:
@@ -159,12 +158,14 @@ def create_playlist(params: ManageEntityParameters):
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
         playlist_owner_id=params.user_id,
-        is_album=metadata.get("is_album", False),
-        description=metadata["description"],
-        playlist_image_multihash=metadata["playlist_image_sizes_multihash"],
-        playlist_image_sizes_multihash=metadata["playlist_image_sizes_multihash"],
-        playlist_name=metadata["playlist_name"],
-        is_private=metadata.get("is_private", False),
+        is_album=params.metadata.get("is_album", False),
+        description=params.metadata["description"],
+        playlist_image_multihash=params.metadata["playlist_image_sizes_multihash"],
+        playlist_image_sizes_multihash=params.metadata[
+            "playlist_image_sizes_multihash"
+        ],
+        playlist_name=params.metadata["playlist_name"],
+        is_private=params.metadata.get("is_private", False),
         playlist_contents={"track_ids": tracks_with_index_time},
         created_at=params.block_datetime,
         updated_at=params.block_datetime,
@@ -202,7 +203,6 @@ def update_playlist(params: ManageEntityParameters):
     # TODO ignore updates on deleted playlists?
 
     playlist_id = params.entity_id
-    metadata = params.metadata[params.metadata_cid]
     existing_playlist = params.existing_records[EntityType.PLAYLIST][playlist_id]
     if (
         playlist_id in params.new_records[EntityType.PLAYLIST]
@@ -218,7 +218,7 @@ def update_playlist(params: ManageEntityParameters):
     )
     process_playlist_data_event(
         updated_playlist,
-        metadata,
+        params.metadata,
         params.block_integer_time,
         params.block_datetime,
         params.metadata_cid,

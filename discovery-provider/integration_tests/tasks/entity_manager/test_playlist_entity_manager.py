@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import List
 
@@ -15,112 +16,7 @@ from web3.datastructures import AttributeDict
 
 @pytest.fixture()
 def tx_receipts():
-    playlist4_json = '{"playlist_contents": {"track_ids": []},"description": "","playlist_image_sizes_multihash": "","playlist_name": "playlist 4"}'
-    return {
-        "CreatePlaylist1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreatePlaylist1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdatePlaylist1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "DeletePlaylist1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Delete",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylist2Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreatePlaylist2",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdatePlaylist3Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 2,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist3",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateAlbumTx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 3,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreateAlbum4",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylist4Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 4,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreatePlaylist4", "data": {playlist4_json}}}',
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
-
-
-@pytest.fixture()
-def test_metadata():
-    return {
+    test_metadata = {
         "QmCreatePlaylist1": {
             "playlist_contents": {"track_ids": []},
             "description": "",
@@ -160,9 +56,13 @@ def test_metadata():
         },
     }
 
+    create_playlist1_json = json.dumps(test_metadata["QmCreatePlaylist1"])
+    create_playlist2_json = json.dumps(test_metadata["QmCreatePlaylist2"])
+    create_playlist4_json = json.dumps(test_metadata["QmCreatePlaylist4"])
+    update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
+    update_playlist3_json = json.dumps(test_metadata["QmUpdatePlaylist3"])
+    create_album4_json = json.dumps(test_metadata["QmCreateAlbum4"])
 
-@pytest.fixture()
-def tx_receipts_update_routes():
     return {
         "CreatePlaylist1Tx": [
             {
@@ -172,7 +72,7 @@ def tx_receipts_update_routes():
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreatePlaylist1",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {create_playlist1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -186,21 +86,21 @@ def tx_receipts_update_routes():
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist1",
+                        "_metadata": f'{{"cid": "QmUpdatePlaylist1", "data": {update_playlist1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "UpdatePlaylist12Tx": [
+        "DeletePlaylist1Tx": [
             {
                 "args": AttributeDict(
                     {
                         "_entityId": PLAYLIST_ID_OFFSET,
                         "_entityType": "Playlist",
                         "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist12",
+                        "_action": "Delete",
+                        "_metadata": "",
                         "_signer": "user1wallet",
                     }
                 )
@@ -214,7 +114,7 @@ def tx_receipts_update_routes():
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreatePlaylist2",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist2", "data": {create_playlist2_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -224,26 +124,25 @@ def tx_receipts_update_routes():
             {
                 "args": AttributeDict(
                     {
-                        # prev + 2, going to break prev tests
-                        "_entityId": PLAYLIST_ID_OFFSET + 4,
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist3",
+                        "_metadata": f'{{"cid": "QmUpdatePlaylist3", "data": {update_playlist3_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-        "CreatePlaylist3Tx": [
+        "CreateAlbumTx": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": PLAYLIST_ID_OFFSET + 4,
+                        "_entityId": PLAYLIST_ID_OFFSET + 3,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreatePlaylist3",
+                        "_metadata": f'{{"cid": "QmCreateAlbum4", "data": {create_album4_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -253,26 +152,12 @@ def tx_receipts_update_routes():
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": PLAYLIST_ID_OFFSET + 5,
+                        "_entityId": PLAYLIST_ID_OFFSET + 4,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "QmCreatePlaylist4",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist4", "data": {create_playlist4_json}}}',
                         "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylistDiffOwnerTx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 6,
-                        "_entityType": "Playlist",
-                        "_userId": 2,
-                        "_action": "Create",
-                        "_metadata": "QmCreatePlaylistDiffOwner",
-                        "_signer": "user2wallet",
                     }
                 )
             },
@@ -281,8 +166,8 @@ def tx_receipts_update_routes():
 
 
 @pytest.fixture()
-def test_route_update_metadata():
-    return {
+def tx_receipts_update_routes():
+    test_metadata = {
         "QmCreatePlaylist1": {
             "playlist_contents": {"track_ids": []},
             "description": "",
@@ -328,6 +213,117 @@ def test_route_update_metadata():
         },
     }
 
+    create_playlist1_json = json.dumps(test_metadata["QmCreatePlaylist1"])
+    create_playlist2_json = json.dumps(test_metadata["QmCreatePlaylist2"])
+    create_playlist3_json = json.dumps(test_metadata["QmCreatePlaylist3"])
+    create_playlist4_json = json.dumps(test_metadata["QmCreatePlaylist4"])
+    update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
+    update_playlist12_json = json.dumps(test_metadata["QmUpdatePlaylist12"])
+    create_playlist_diff_owner_json = json.dumps(
+        test_metadata["QmCreatePlaylistDiffOwner"]
+    )
+
+    return {
+        "CreatePlaylist1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist1", "data": {create_playlist1_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylist1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdatePlaylist1", "data": {update_playlist1_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylist12Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdatePlaylist12", "data": {update_playlist12_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylist2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist2", "data": {create_playlist2_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylist3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 4,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist3", "data": {create_playlist3_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylist4Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 5,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist4", "data": {create_playlist4_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylistDiffOwnerTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 6,
+                        "_entityType": "Playlist",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateDiffOwner", "data": {create_playlist_diff_owner_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
 
 def assert_playlist_route(
     route, slug, title_slug, collision_id, owner_id, playlist_id, is_current
@@ -340,16 +336,14 @@ def assert_playlist_route(
     assert route.is_current == is_current
 
 
-def test_index_valid_playlists_updates_routes(
-    app, mocker, tx_receipts_update_routes, test_route_update_metadata
-):
+def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_routes):
     "Tests valid batch of playlists create/update/delete actions"
 
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -384,7 +378,6 @@ def test_index_valid_playlists_updates_routes(
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_route_update_metadata,
         )
 
         # validate db records
@@ -496,14 +489,14 @@ def test_index_valid_playlists_updates_routes(
         )
 
 
-def test_index_valid_playlists(app, mocker, tx_receipts, test_metadata):
+def test_index_valid_playlists(app, mocker, tx_receipts):
     "Tests valid batch of playlists create/update/delete actions"
 
     # setup db and mocked txs
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -543,7 +536,6 @@ def test_index_valid_playlists(app, mocker, tx_receipts, test_metadata):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         # validate db records
@@ -629,7 +621,7 @@ def test_index_invalid_playlists(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     tx_receipts = {
         # invalid create
@@ -665,7 +657,7 @@ def test_index_invalid_playlists(app, mocker):
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
@@ -684,20 +676,6 @@ def test_index_invalid_playlists(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylistInvalidMetadata": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 1,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreatePlaylist1",
                         "_signer": "user1wallet",
                     }
                 )
@@ -801,14 +779,6 @@ def test_index_invalid_playlists(app, mocker):
         ],
     }
     populate_mock_db(db, entities)
-    test_metadata = {
-        "QmCreatePlaylist1": {
-            # missing playlist_contents, invalid metadata
-            "description": "",
-            "playlist_image_sizes_multihash": "",
-            "playlist_name": "playlist 1",
-        }
-    }
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
@@ -819,7 +789,6 @@ def test_index_invalid_playlists(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         # validate db records
