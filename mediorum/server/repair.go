@@ -3,40 +3,45 @@ package server
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) startRepairer() {
-	for i := 0; ; i++ {
-		time.Sleep(time.Minute)
 
-		// convention based turn taking...
-		// each minute only 1 server should initiate repair process
-		// or, put another way, a server will wait N minutes between repair runs
-		// where N = size of network.
-		// This is to avoid the situation where every server is pushing files to peers at the same time
-		// i.e. avoid self ddos
-		if i%len(ss.Config.Peers) == ss.Config.MyIndex {
-			continue
+	// wait 10m after boot to start repair
+	// we can add some jitter here to try to ensure nodes are spaced out
+	time.Sleep(time.Minute * 10)
+
+	for i := 1; ; i++ {
+		// 20% percent of time... clean up over-replicated
+		cleanupMode := false
+		if i%5 == 0 {
+			cleanupMode = true
 		}
 
-		err := ss.repairUnderReplicatedBlobs()
+		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
+		repairStart := time.Now()
+
+		logger.Info("repair starting")
+		err := ss.runRepair(cleanupMode)
+		took := time.Since(repairStart)
 		if err != nil {
-			ss.logger.Warn("repair failed " + err.Error())
+			logger.Error("repair failed", err, "took", took)
+		} else {
+			logger.Info("repair OK", "took", took)
 		}
 
-		// 33% percent of time... clean up over-replicated
-		if rand.Float32() < 0.33 {
-			err := ss.cleanupOverReplicatedBlobs()
-			if err != nil {
-				ss.logger.Warn("cleanup failed " + err.Error())
-			}
-		}
+		// sleep for as long as the job took
+		// if you wanted to aproximate max(1/5) of network running repair at same time...
+		// you could make this node run repair ~1/5 of the time
+		// (with some bounds)
+		sleep := clampDuration(time.Minute, took*5, time.Hour*12)
+		logger.Info("repair sleeping", "sleep", sleep)
+		time.Sleep(sleep)
+
 	}
 }
 
@@ -52,7 +57,7 @@ func (ss *MediorumServer) findProblemBlobsBaseQuery(overReplicated bool) *gorm.D
 		comparator = ">"
 	}
 
-	healthyHosts := ss.findHealthyHostNames("5 minutes")
+	healthyHosts := ss.findHealthyPeers(5 * time.Minute)
 
 	return ss.crud.DB.Model(&Blob{}).
 		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
@@ -80,51 +85,107 @@ func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, err
 	return count, err
 }
 
-func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
-	// find under-replicated content
+func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
-	logger := ss.logger.With("task", "repair")
 
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
+	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
 
-	logger.Info("starting repair", "problem_blob_count", len(problems))
+	cidCursor := ""
+	for {
+		// scroll over all extant CIDs in batches
+		// atm this uses `blobs` table for sake of repair_test.go
+		// but if we drop blobs, this could also read out CIDs from the upload records
+		var cidBatch []string
+		err := pgxscan.Select(ctx, ss.pgPool, &cidBatch,
+			`select distinct key
+			 from blobs
+			 where key > $1
+			 order by key
+			 limit 1000`, cidCursor)
 
-	for _, problem := range problems {
+		if err != nil {
+			return err
+		}
+		if len(cidBatch) == 0 {
+			break
+		}
 
-		logger := logger.With("cid", problem.Key)
+		for _, cid := range cidBatch {
+			cidCursor = cid
 
-		// if I have the file...
-		// call replicate
-		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
-		if iHave {
-			logger.Info("repairing", "cid", problem.Key)
-			r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
-			if err != nil {
-				logger.Error("failed to read key", err)
+			logger := logger.With("cid", cid)
+
+			preferredHosts, isMine := ss.rendezvous(cid)
+
+			// fast path if we're not in cleanup mode:
+			// only worry about blobs that we _should_ have
+			if !cleanupMode && !isMine {
 				continue
 			}
-			defer r.Close()
 
-			// validate CID matches
-			err = validateCID(problem.Key, r)
+			isOnDisk, err := ss.bucket.Exists(ctx, cid)
 			if err != nil {
-				logger.Error("CID validation failed", err)
-				// nuke this fool
-				err = ss.dropFromMyBucket(problem.Key)
-				if err != nil {
-					logger.Error("unable to drop invalid CID", err)
+				logger.Error("exist check failed", err)
+				continue
+			}
+
+			// in cleanup mode do some extra checks:
+			// - validate CID, delete if invalid
+			if cleanupMode && isOnDisk {
+				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
+					err := validateCID(cid, r)
+					r.Close()
+					if err != nil {
+						logger.Error("deleting invalid CID", err)
+						ss.bucket.Delete(ctx, cid)
+						isOnDisk = false
+					}
 				}
-				continue
+
 			}
 
-			hosts, err := ss.replicateFile(problem.Key, r)
-			if err != nil {
-				logger.Error("failed to replicate", err)
-			} else {
-				logger.Info("repaired", "hosts", hosts)
+			if isMine && !isOnDisk {
+				success := false
+				for _, host := range preferredHosts {
+					if host == ss.Config.Self.Host {
+						continue
+					}
+					err := ss.pullFileFromHost(host, cid)
+					if err != nil {
+						logger.Error("pull failed", err, "host", host)
+					} else {
+						logger.Info("pull OK", "host", host)
+						success = true
+						break
+					}
+				}
+				if !success {
+					logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+				}
+			}
+
+			if cleanupMode && !isMine && isOnDisk {
+				// check all the nodes ahead of me in the preferred order to ensure they have it
+				// before delete
+				depth := 0
+				for _, host := range preferredHosts {
+					if ss.hostHasBlob(host, cid, true) {
+						depth++
+					}
+					if host == ss.Config.Self.Host {
+						break
+					}
+				}
+
+				if depth > ss.Config.ReplicationFactor {
+					logger.Info("deleting", "depth", depth, "hosts", preferredHosts)
+					err = ss.dropFromMyBucket(cid)
+					if err != nil {
+						logger.Error("delete failed", err)
+					} else {
+						logger.Info("delete OK")
+					}
+				}
 			}
 		}
 	}
@@ -132,35 +193,12 @@ func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 	return nil
 }
 
-func (ss *MediorumServer) cleanupOverReplicatedBlobs() error {
-	logger := ss.logger.With("task", "cleanup")
-
-	problems, err := ss.findProblemBlobs(true)
-	if err != nil {
-		return err
+func clampDuration(min time.Duration, val time.Duration, max time.Duration) time.Duration {
+	if val < min {
+		return min
 	}
-
-	logger.Info("starting cleanup", "problem_blob_count", len(problems))
-
-	for _, problem := range problems {
-		iHave := strings.Contains(problem.Hosts, ss.Config.Self.Host)
-		if !iHave {
-			continue
-		}
-
-		logger := logger.With("cid", problem.Key)
-		hosts := strings.Split(problem.Hosts, ",")
-		myIdx := slices.Index(hosts, ss.Config.Self.Host)
-		if myIdx+1 > ss.Config.ReplicationFactor {
-			logger.Info("deleting", "myIdx", myIdx, "hosts", hosts)
-			err = ss.dropFromMyBucket(problem.Key)
-			if err != nil {
-				logger.Error("delete failed", err)
-			} else {
-				logger.Info("delete OK")
-			}
-		}
+	if val > max {
+		return max
 	}
-
-	return nil
+	return val
 }

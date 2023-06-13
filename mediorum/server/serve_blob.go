@@ -20,10 +20,11 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	locations := []Blob{}
 	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
+	preferred, _ := ss.rendezvous(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"locations": locations,
-		"preferred": ss.placement.topAll(cid),
+		"preferred": preferred,
 	})
 }
 
@@ -43,7 +44,8 @@ func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
 	}
 	results := map[string]string{}
 	for _, problem := range problems {
-		if !ss.placement.isMyHash(problem.Key) {
+		_, isMine := ss.rendezvous(problem.Key)
+		if !isMine {
 			continue
 		}
 		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
@@ -84,6 +86,7 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	defer r.Close()
 
 	// verify CID matches
 	err = validateCID(key, r)
@@ -146,7 +149,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 	// redirect to it
 	var blobs []Blob
-	healthyHosts := ss.findHealthyHostNames("2 minutes")
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
 		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
@@ -276,6 +279,19 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 
 		return next(c)
 	}
+}
+
+func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
+	ctx := c.Request().Context()
+	key := c.Param("cid")
+
+	blob, err := ss.bucket.NewReader(ctx, key, nil)
+	if err != nil {
+		return err
+	}
+	defer blob.Close()
+
+	return c.Stream(200, blob.ContentType(), blob)
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
