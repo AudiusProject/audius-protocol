@@ -48,12 +48,6 @@ export interface GetUndergroundTrendingTracksRequest {
     limit?: number;
 }
 
-export interface GetUndergroundTrendingTracksWithVersionRequest {
-    version: string;
-    offset?: number;
-    limit?: number;
-}
-
 export interface SearchTracksRequest {
     query: string;
     onlyDownloadable?: string;
@@ -64,6 +58,8 @@ export interface StreamTrackRequest {
     userSignature?: string;
     userData?: string;
     premiumContentSignature?: string;
+    filename?: string;
+    skipPlayCount?: boolean;
 }
 
 /**
@@ -204,44 +200,6 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
-     */
-    async getUndergroundTrendingTracksWithVersionRaw(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/tracks/trending/underground/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
-     */
-    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
-        const response = await this.getUndergroundTrendingTracksWithVersionRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Search for a track or tracks
      */
     async searchTracksRaw(requestParameters: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackSearch>> {
@@ -300,6 +258,14 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (requestParameters.premiumContentSignature !== undefined) {
             queryParameters['premium_content_signature'] = requestParameters.premiumContentSignature;
+        }
+
+        if (requestParameters.filename !== undefined) {
+            queryParameters['filename'] = requestParameters.filename;
+        }
+
+        if (requestParameters.skipPlayCount !== undefined) {
+            queryParameters['skip_play_count'] = requestParameters.skipPlayCount;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

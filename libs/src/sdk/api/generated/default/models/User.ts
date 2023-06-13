@@ -137,10 +137,16 @@ export interface User {
     isDeactivated: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof User
+     */
+    isAvailable: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof User
      */
-    ercWallet?: string;
+    ercWallet: string;
     /**
      * 
      * @type {string}
@@ -159,6 +165,12 @@ export interface User {
      * @memberof User
      */
     supportingCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    totalAudioBalance: number;
 }
 
 /**
@@ -177,9 +189,12 @@ export function instanceOfUser(value: object): boolean {
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "trackCount" in value;
     isInstance = isInstance && "isDeactivated" in value;
+    isInstance = isInstance && "isAvailable" in value;
+    isInstance = isInstance && "ercWallet" in value;
     isInstance = isInstance && "splWallet" in value;
     isInstance = isInstance && "supporterCount" in value;
     isInstance = isInstance && "supportingCount" in value;
+    isInstance = isInstance && "totalAudioBalance" in value;
 
     return isInstance;
 }
@@ -211,10 +226,12 @@ export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User
         'repostCount': json['repost_count'],
         'trackCount': json['track_count'],
         'isDeactivated': json['is_deactivated'],
-        'ercWallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
+        'isAvailable': json['is_available'],
+        'ercWallet': json['erc_wallet'],
         'splWallet': json['spl_wallet'],
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
+        'totalAudioBalance': json['total_audio_balance'],
     };
 }
 
@@ -244,10 +261,12 @@ export function UserToJSON(value?: User | null): any {
         'repost_count': value.repostCount,
         'track_count': value.trackCount,
         'is_deactivated': value.isDeactivated,
+        'is_available': value.isAvailable,
         'erc_wallet': value.ercWallet,
         'spl_wallet': value.splWallet,
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,
+        'total_audio_balance': value.totalAudioBalance,
     };
 }
 
