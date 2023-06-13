@@ -316,7 +316,6 @@ def entity_manager_update(
 
         # bulk save to metadata to cid_data
         if cid_metadata:
-            print(f"saving cid_metadata: {cid_metadata}")
             save_cid_metadata_time = time.time()
             save_cid_metadata(session, cid_metadata, cid_type)
             metric_latency.save_time(
