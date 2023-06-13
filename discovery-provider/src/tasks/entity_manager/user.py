@@ -38,8 +38,15 @@ def get_verifier_address():
         return shared_config["contracts"]["verified_address"]
 
 
+def validate_user_bio(user_bio: str, user_id: int):
+    if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
+        raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
+
+
 def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
+    user_metadata = params.metadata[params.metadata_cid]
+    user_bio = user_metadata["bio"]
 
     if params.entity_type != EntityType.USER:
         raise Exception(
@@ -53,12 +60,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
             )
-    if params.action == Action.CREATE or params.action == Action.UPDATE:
-        user_metadata = params.metadata[params.metadata_cid]
-        user_bio = user_metadata["bio"]
-        logger.warning(f"user metadata {user_bio}")
-        if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
-            raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
+        validate_user_bio(user_bio=user_bio, user_id=user_id)
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
@@ -68,6 +70,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 "Invalid User Transaction, user wallet signer does not match"
             )
+        validate_user_bio(user_bio=user_bio, user_id=user_id)
     elif params.action == Action.VERIFY:
         verifier_address = get_verifier_address()
         if not verifier_address or verifier_address.lower() != params.signer.lower():
