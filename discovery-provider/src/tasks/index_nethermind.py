@@ -1,7 +1,6 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
-import copy
 import json
 import os
 import time
@@ -73,6 +72,7 @@ from src.utils.redis_constants import (
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.user_event_constants import entity_manager_event_types_arr
 from web3 import Web3
+from web3.datastructures import AttributeDict
 from web3.exceptions import BlockNotFound
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
@@ -514,8 +514,9 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
-        next_block = copy.deepcopy(next_block)
-        next_block.number = next_block.number + final_poa_block
+        next_block = AttributeDict(
+            next_block, number=next_block.number + final_poa_block
+        )
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
         # Return early because we've likely indexed up to the head of the chain
