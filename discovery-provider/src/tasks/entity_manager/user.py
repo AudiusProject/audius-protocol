@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Dict, TypedDict
 
@@ -123,10 +124,35 @@ def create_user(params: ManageEntityParameters):
         is_current=False,
     )
 
-    if params.metadata == "v2":
+    user_metadata = None
+    try:
+        # for single tx signup
+        logger.info(f"asdf parsing json: {params.metadata_cid}")
+        user_metadata = json.loads(params.metadata_cid)
+        logger.info('asdf got single tx')
+        validate_user_metadata(
+            params.session,
+            user_record,
+            user_metadata,
+        )
+
+        user_record = update_user_metadata(
+            params.session,
+            params.redis,
+            user_record,
+            user_metadata,
+            params.web3,
+            params.challenge_bus,
+        )
+    except Exception as e:
+        # fallback to multi tx signup
+        logger.info(f"asdf exception {e}")
+        pass
+
+    if params.metadata_cid == "v2":
         user_record.is_storage_v2 = True
-    else:
-        sp_ids = parse_sp_ids(params.metadata)
+    elif not user_metadata:  # update replica set case
+        sp_ids = parse_sp_ids(params.metadata_cid)
 
         # Update the user's new replica set in the model and save!
         user_record.primary_id = sp_ids[0]
