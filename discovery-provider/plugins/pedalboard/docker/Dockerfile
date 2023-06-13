@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:18-alpine AS base
 
 ARG app_name
 
@@ -13,10 +13,10 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 
 WORKDIR /app
-RUN npm i turbo -g
+RUN yarn global add turbo
 
 COPY . .
-RUN npx turbo prune "--scope=${APP_NAME}" --docker
+RUN turbo prune "--scope=${APP_NAME}" --docker
 
 # I should be able to just use base and copy exactly what I need here
 # Copying files doesn't work as expected though so just composing the build
@@ -30,20 +30,20 @@ RUN apk update
 RUN apk add --no-cache python3 py3-pip make g++
 
 # First install dependencies (as they change less often)
-RUN npm install
+RUN yarn install
 
 # # Build the project and its dependencies
 # COPY --from=builder /app/out/full/ .
 # COPY turbo.json turbo.json
 
 RUN echo "installing deps for ${APP_NAME}"
-RUN npx turbo run build "--filter=${APP_NAME}"...
+RUN yarn turbo run build "--filter=${APP_NAME}"...
 
-FROM installer AS runner
+FROM base AS runner
 WORKDIR /app
 
 COPY --from=installer /app .
 
 WORKDIR /app/apps/${APP_NAME}
 
-CMD npm run start
+CMD yarn run start
