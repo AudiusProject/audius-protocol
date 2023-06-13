@@ -37,7 +37,7 @@ RUN yarn install
 # COPY turbo.json turbo.json
 
 RUN echo "installing deps for ${APP_NAME}"
-RUN yarn turbo run build "--filter=${APP_NAME}"...
+RUN turbo run build "--filter=${APP_NAME}"...
 
 FROM base AS runner
 WORKDIR /app
