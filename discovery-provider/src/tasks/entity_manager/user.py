@@ -60,7 +60,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
             )
-        validate_user_bio(user_bio=user_bio, user_id=user_id)
+        # validate_user_bio(user_bio=user_bio, user_id=user_id)
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
@@ -70,7 +70,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise Exception(
                 "Invalid User Transaction, user wallet signer does not match"
             )
-        validate_user_bio(user_bio=user_bio, user_id=user_id)
+        # validate_user_bio(user_bio=user_bio, user_id=user_id)
     elif params.action == Action.VERIFY:
         verifier_address = get_verifier_address()
         if not verifier_address or verifier_address.lower() != params.signer.lower():
