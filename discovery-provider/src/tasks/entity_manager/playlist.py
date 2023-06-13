@@ -141,7 +141,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
         playlist_metadata = params.metadata[params.metadata_cid]
         playlist_description = playlist_metadata["description"]
         logger.warn(f"playlist metadata {playlist_metadata}")
-        if playlist_description is not None and playlist_description > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
+        if playlist_description is not None and playlist_description.len() > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
             raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
 
 

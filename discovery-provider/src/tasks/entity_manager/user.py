@@ -57,7 +57,7 @@ def validate_user_tx(params: ManageEntityParameters):
         user_metadata = params.metadata[params.metadata_cid]
         user_description = user_metadata["bio"]
         logger.warn(f"user metadata {user_metadata}")
-        if user_description is not None and user_description > CHARACTER_LIMIT_USER_BIO:
+        if user_description is not None and user_description.len() > CHARACTER_LIMIT_USER_BIO:
             raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
     elif params.action == Action.UPDATE:
         # update / delete specific validations
