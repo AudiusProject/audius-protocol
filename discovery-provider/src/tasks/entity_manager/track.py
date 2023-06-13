@@ -260,7 +260,7 @@ def validate_track_tx(params: ManageEntityParameters):
         logger.warn(f"track metadata {track_metadata}")
         if track_genre is not None and track_genre not in GENRE_ALLOWLIST:
             raise Exception(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
-        if track_bio is not None and track_bio.len() > CHARACTER_LIMIT_TRACK_DESCRIPTION:
+        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
             raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
     else:
         # update / delete specific validations
