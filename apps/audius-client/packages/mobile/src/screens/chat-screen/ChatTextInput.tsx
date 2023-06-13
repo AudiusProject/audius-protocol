@@ -89,12 +89,9 @@ export const ChatTextInput = ({
       ]}
     >
       <IconSend
-        style={{ opacity: 1 }}
         width={styles.icon.width}
         height={styles.icon.height}
         fill={styles.icon.fill}
-        color={styles.icon.fill}
-        opacity={1}
       />
     </Pressable>
   )

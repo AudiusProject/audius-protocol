@@ -120,6 +120,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   icon: {
     height: spacing(6),
     width: spacing(6)
+  },
+  footerPadding: {
+    height: spacing(30)
   }
 }))
 
@@ -287,6 +290,7 @@ export const ChatUserListScreen = () => {
               // Only show empty component if there is no search query
               ListEmptyComponent={query ? null : <ListEmpty />}
               keyboardShouldPersistTaps='always'
+              ListFooterComponent={<View style={styles.footerPadding} />}
             />
           )}
         </View>
