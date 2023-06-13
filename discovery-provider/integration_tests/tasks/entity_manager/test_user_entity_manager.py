@@ -261,7 +261,6 @@ def test_index_valid_user(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -603,7 +602,6 @@ def test_index_invalid_users(app, mocker):
 
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -695,7 +693,6 @@ def test_index_verify_users(app, mocker):
         with db.scoped_session() as session:
             # index transactions
             entity_manager_update(
-                None,
                 update_task,
                 session,
                 entity_manager_txs,

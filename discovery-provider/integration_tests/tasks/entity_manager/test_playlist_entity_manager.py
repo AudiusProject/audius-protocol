@@ -377,7 +377,6 @@ def test_index_valid_playlists_updates_routes(
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -536,7 +535,6 @@ def test_index_valid_playlists(app, mocker, tx_receipts, test_metadata):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -812,7 +810,6 @@ def test_index_invalid_playlists(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

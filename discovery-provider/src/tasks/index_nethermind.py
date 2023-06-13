@@ -70,6 +70,8 @@ from src.utils.redis_constants import (
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.user_event_constants import entity_manager_event_types_arr
+from web3 import Web3
+from web3.exceptions import BlockNotFound
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -475,8 +477,8 @@ def get_latest_database_block(session: Session) -> Block:
     """
     latest_database_block_query = session.query(Block).filter(Block.is_current == True)
     latest_database_block_results = latest_database_block_query.all()
-    assert len(
-        latest_database_block_results == 1
+    assert (
+        len(latest_database_block_results) == 1
     ), "Expected a single row with is_current=True"
     latest_database_block = latest_database_block_results[0]
 
@@ -484,14 +486,14 @@ def get_latest_database_block(session: Session) -> Block:
 
 
 @log_duration(logger)
-def is_block_on_chain(block: Block):
+def is_block_on_chain(web3: Web3, block: Block):
     """
     Determines if the provided block is valid on chain by fetching its hash.
     """
     try:
         block_from_chain = web3.eth.get_block(block.blockhash)
         return block_from_chain
-    except web3.exceptions.BlockNotFound:
+    except BlockNotFound:
         return False
     # Raise any other type of exception
 
@@ -1082,7 +1084,7 @@ def update_task(self):
     try:
         with db.scoped_session() as session:
             latest_database_block = get_latest_database_block(session)
-            block_from_chain = is_block_on_chain(latest_database_block)
+            block_from_chain = is_block_on_chain(web3, latest_database_block)
             if block_from_chain:
                 index_next_block(session, latest_database_block)
             else:

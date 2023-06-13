@@ -94,7 +94,6 @@ def test_index_playlist_view(app, mocker):
         timstamp = 1000000000
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -155,7 +154,6 @@ def test_index_playlist_view(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

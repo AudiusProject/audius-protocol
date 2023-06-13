@@ -217,7 +217,6 @@ def test_index_valid_social_features(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -494,7 +493,6 @@ def test_index_invalid_social_features(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -626,7 +624,6 @@ def test_index_entity_update_and_social_feature(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -714,7 +711,6 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -822,7 +818,6 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

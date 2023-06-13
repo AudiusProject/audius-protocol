@@ -390,7 +390,6 @@ def test_index_valid_track(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -816,7 +815,6 @@ def test_index_invalid_tracks(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

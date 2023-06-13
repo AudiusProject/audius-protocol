@@ -93,7 +93,6 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -177,7 +176,6 @@ def test_index_update_user_replica_set(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
