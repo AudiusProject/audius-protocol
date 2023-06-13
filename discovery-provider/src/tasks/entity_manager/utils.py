@@ -312,7 +312,7 @@ def parse_metadata(metadata, action, entity_type):
         return formatted_json, cid
     except Exception as e:
         logger.info(
-            f"index_nethermind.py | error deserializing metadata {metadata}: {e}"
+            f"entity_manager.py | utils.py | error deserializing metadata {metadata}: {e}"
         )
         raise e
 

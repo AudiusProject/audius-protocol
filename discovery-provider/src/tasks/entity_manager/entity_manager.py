@@ -323,7 +323,7 @@ def entity_manager_update(
                 start_time=save_cid_metadata_time,
             )
             logger.debug(
-                f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+                f"entity_manager.py | save_cid_metadata in {time.time() - save_cid_metadata_time}s"
             )
     except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
