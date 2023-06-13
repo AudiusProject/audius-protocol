@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import copy
 import json
 import os
 import time
@@ -513,7 +514,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
-        next_block = next_block.copy()
+        next_block = copy.deepcopy(next_block)
         next_block.number = next_block.number + final_poa_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
