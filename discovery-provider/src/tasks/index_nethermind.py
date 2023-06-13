@@ -510,7 +510,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
     shared_config = update_task.shared_config
 
     # Get next block to index
-    next_block_number = latest_database_block.number + 1 + (final_poa_block or 0)
+    next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
     except BlockNotFound:
