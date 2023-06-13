@@ -177,7 +177,7 @@ export const ChatUserListItem = ({ userId }: ChatUserListItemProps) => {
         setVisibility({
           drawer: 'InboxUnavailable',
           visible: true,
-          data: { userId: user.user_id }
+          data: { userId: user.user_id, shouldOpenChat: true }
         })
       )
     }
