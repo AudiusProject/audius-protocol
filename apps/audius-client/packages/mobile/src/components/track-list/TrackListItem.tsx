@@ -99,7 +99,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   iconContainer: {
     marginLeft: spacing(2)
   },
-  icon: { height: 16, width: 16 },
+  icon: { height: 20, width: 20 },
   removeIcon: { height: 24, width: 24 },
 
   playButtonContainer: {
@@ -431,6 +431,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           {trackItemAction === 'overflow' ? (
             <IconButton
               icon={IconKebabHorizontal}
+              fill={themeColors.neutralLight4}
               styles={{
                 root: styles.iconContainer,
                 icon: styles.icon
