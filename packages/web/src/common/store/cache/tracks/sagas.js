@@ -166,7 +166,12 @@ function* confirmEditTrack(
         const { blockHash, blockNumber } = yield call(
           audiusBackendInstance.updateTrack,
           trackId,
-          { ...formFields }
+          { ...formFields },
+          currentTrack?.track_cid &&
+            !(
+              currentTrack.track_cid?.trim().length === 46 &&
+              currentTrack.track_cid.trim().startsWith('Qm')
+            )
         )
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
