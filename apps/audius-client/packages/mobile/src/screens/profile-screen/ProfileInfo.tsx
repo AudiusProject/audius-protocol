@@ -32,23 +32,22 @@ const { getProfileUserId } = profilePageSelectors
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   name: {
     ...flexRowCentered(),
-    marginRight: spacing(2)
+    marginRight: spacing(2),
+    marginBottom: spacing(1)
   },
   username: {
     ...typography.h1,
     color: palette.neutral,
-    flexShrink: 1
+    marginBottom: 0 // Override h1 bottom margin for this layout to work
   },
   badges: {
-    marginBottom: 6,
+    marginTop: 2,
     marginLeft: 2,
     flexGrow: 1
   },
   handleInfo: {
-    marginTop: -6,
     flexDirection: 'row',
     alignItems: 'center',
-    alignContent: 'center',
     flexShrink: 1
   },
   handle: {
@@ -56,7 +55,6 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     textAlignVertical: 'bottom'
   },
   handleText: {
-    marginTop: 6,
     ...typography.h4,
     color: palette.neutralLight4
   },
@@ -69,30 +67,24 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     paddingVertical: spacing(1),
     paddingHorizontal: spacing(2)
   },
-  followsYouText: {
-    color: palette.neutralLight4,
-    textAlign: 'center',
-    fontFamily: typography.fontByWeight.heavy,
-    fontSize: 10,
-    textTransform: 'uppercase'
-  },
   info: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: spacing(4)
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    marginBottom: spacing(2)
   },
   text: {
+    marginTop: spacing(2),
     flexShrink: 1
   },
   actionButtons: {
     flexDirection: 'row',
     position: 'relative',
     justifyContent: 'flex-end',
-    alignSelf: 'flex-start',
-    flexGrow: 1
+    height: spacing(7)
   },
   followButton: {
-    width: 110
+    width: 110,
+    height: spacing(7)
   }
 }))
 
@@ -171,6 +163,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
+      <View style={styles.actionButtons}>
+        {isReachable ? actionButtons : null}
+      </View>
       <View style={styles.text}>
         <View style={styles.name}>
           <Text
@@ -196,9 +191,6 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
           {does_follow_current_user ? <FollowsYouChip /> : null}
         </View>
       </View>
-      {isReachable ? (
-        <View style={styles.actionButtons}>{actionButtons}</View>
-      ) : null}
     </View>
   )
 }

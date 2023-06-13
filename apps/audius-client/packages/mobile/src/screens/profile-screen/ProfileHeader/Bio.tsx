@@ -11,7 +11,8 @@ const MAX_BIO_LINES = 2
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
-    marginBottom: spacing(2)
+    marginBottom: spacing(2),
+    lineHeight: typography.fontSize.small * 1.5
   },
   bioText: {
     ...typography.body,

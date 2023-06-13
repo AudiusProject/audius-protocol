@@ -28,13 +28,13 @@ const getUserId = accountSelectors.getUserId
 const useStyles = makeStyles(({ palette, spacing }) => ({
   header: {
     backgroundColor: palette.white,
-    paddingTop: spacing(8),
+    paddingTop: spacing(2),
     paddingHorizontal: spacing(3)
   },
   profilePicture: {
     position: 'absolute',
-    top: 37,
-    left: 11,
+    top: spacing(13),
+    left: spacing(3),
     zIndex: 100
   },
   divider: { marginHorizontal: -12, marginBottom: spacing(2) },

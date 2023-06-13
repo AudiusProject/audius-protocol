@@ -22,7 +22,8 @@ const { fetchUserSocials } = cacheUsersActions
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    height: 50
   },
   audioTier: {
     paddingLeft: spacing(3)
