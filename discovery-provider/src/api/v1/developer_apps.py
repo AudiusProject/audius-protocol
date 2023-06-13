@@ -17,7 +17,7 @@ developer_app_response = make_response(
 )
 
 
-@ns.route("/<string:address>", doc=False)
+@ns.route("/<string:address>")
 class GetDeveloperApp(Resource):
     @record_metrics
     @ns.doc(
