@@ -185,7 +185,7 @@ getTrackById: {
 
 ## Debugging
 
-- [createApi.ts](./createApi.ts) contains the implementation of the fetch hooks. You can put breakpoints in `useQuery`. Tip: conditional breakpoints are especially useful since the core logic is shared across every audius-query hook. Try `endpointName === 'myEndpoint && fetchArgs === { ...myArgs }'` to scope down to only your own hook
+- [createApi.ts](./createApi.ts) contains the implementation of the fetch hooks. You can put breakpoints in `useQuery`. Tip: conditional breakpoints are especially useful since the core logic is shared across every audius-query hook. When debugging, set `debug: true` in `hookOptions` at your hook callsite, then set `hookOptions.debug === true` as the breakpoint condition. Can also try `endpointName === 'myEndpoint && fetchArgs === { ...myArgs }'`.
 - Redux debugger - all the data is stored in `state.api['reducerPath']`, and actions are named per endpoint:
   - `fetch${capitalize(endpointName)}Loading`
   - `fetch${capitalize(endpointName)}Succeeded`
