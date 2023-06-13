@@ -42,31 +42,52 @@ contract('UserLibrary', async (accounts) => {
     await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
     await registry.addContract(_constants.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    trackFactory = await TrackFactory.new(
+      registry.address,
+      _constants.trackStorageKey,
+      _constants.userFactoryKey,
+      networkId
+    )
     await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // Deploy playlist related contracts
     playlistStorage = await PlaylistStorage.new(registry.address)
-    await registry.addContract(_constants.playlistStorageKey, playlistStorage.address)
+    await registry.addContract(
+      _constants.playlistStorageKey,
+      playlistStorage.address
+    )
     playlistFactory = await PlaylistFactory.new(
       registry.address,
       _constants.playlistStorageKey,
       _constants.userFactoryKey,
       _constants.trackFactoryKey,
-      networkId)
+      networkId
+    )
 
-    await registry.addContract(_constants.playlistFactoryKey, playlistFactory.address)
+    await registry.addContract(
+      _constants.playlistFactoryKey,
+      playlistFactory.address
+    )
 
     userLibraryFactory = await UserLibraryFactory.new(
       registry.address,
       _constants.userFactoryKey,
       _constants.trackFactoryKey,
       _constants.playlistFactoryKey,
-      networkId)
+      networkId
+    )
 
-    await registry.addContract(_constants.userLibraryFactoryKey, userLibraryFactory.address)
+    await registry.addContract(
+      _constants.userLibraryFactoryKey,
+      userLibraryFactory.address
+    )
 
     // Add two users
     await _lib.addUserAndValidate(
@@ -75,14 +96,16 @@ contract('UserLibrary', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      true)
+      true
+    )
     await _lib.addUserAndValidate(
       userFactory,
       testUserId2,
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle2,
-      true)
+      true
+    )
 
     // Add 2 tracks
     await _lib.addTrackAndValidate(
@@ -92,7 +115,8 @@ contract('UserLibrary', async (accounts) => {
       testUserId1,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
@@ -100,7 +124,8 @@ contract('UserLibrary', async (accounts) => {
       testUserId2,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
 
     // Add a playlist
     await _lib.addPlaylistAndValidate(
@@ -111,7 +136,8 @@ contract('UserLibrary', async (accounts) => {
       playlistName,
       false,
       false,
-      playlistTracks)
+      playlistTracks
+    )
   })
 
   it('Should add one track save', async () => {
@@ -120,7 +146,8 @@ contract('UserLibrary', async (accounts) => {
       userLibraryFactory,
       accounts[0],
       testUserId1,
-      testTrackId1)
+      testTrackId1
+    )
   })
 
   it('Should delete one track save', async () => {
@@ -129,14 +156,16 @@ contract('UserLibrary', async (accounts) => {
       userLibraryFactory,
       accounts[0],
       testUserId1,
-      testTrackId1)
+      testTrackId1
+    )
 
     // delete track save and validate
     await _lib.deleteTrackSaveAndValidate(
       userLibraryFactory,
       accounts[0],
       testUserId1,
-      testTrackId1)
+      testTrackId1
+    )
   })
 
   it('Should add one playlist save', async () => {
@@ -145,7 +174,8 @@ contract('UserLibrary', async (accounts) => {
       userLibraryFactory,
       accounts[0],
       testUserId1,
-      expectedPlaylistId)
+      expectedPlaylistId
+    )
   })
 
   it('Should delete one playlist save', async () => {
@@ -174,7 +204,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         invalidUserId,
-        expectedPlaylistId)
+        expectedPlaylistId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -193,7 +224,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         testUserId1,
-        invalidPlaylistId)
+        invalidPlaylistId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('valid playlist ID') >= 0) {
@@ -215,7 +247,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         invalidUserId,
-        expectedPlaylistId)
+        expectedPlaylistId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -233,7 +266,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         testUserId1,
-        invalidPlaylistId)
+        invalidPlaylistId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('valid playlist ID') >= 0) {
@@ -254,7 +288,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         invalidUserId,
-        testTrackId1)
+        testTrackId1
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -272,7 +307,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         testUserId1,
-        invalidTrackId)
+        invalidTrackId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('must provide valid track ID') >= 0) {
@@ -292,7 +328,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         invalidUserId,
-        testTrackId1)
+        testTrackId1
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -309,7 +346,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[0],
         testUserId1,
-        invalidTrackId)
+        invalidTrackId
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('must provide valid track ID') >= 0) {
@@ -329,7 +367,8 @@ contract('UserLibrary', async (accounts) => {
         userLibraryFactory,
         accounts[8],
         testUserId1,
-        testTrackId1)
+        testTrackId1
+      )
     } catch (e) {
       // handle expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {

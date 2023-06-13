@@ -2,7 +2,6 @@ import logging
 from typing import List
 
 from integration_tests.utils import populate_mock_db
-from sqlalchemy.orm.session import make_transient
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track

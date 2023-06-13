@@ -138,19 +138,6 @@ export async function getReplicaSetSpIdsByUserId({
   selfSpId,
   parentLogger
 }: GetReplicaSetSpIdsByUserIdParams): Promise<ReplicaSetSpIds> {
-  // TODO: This code block can be removed once URSM is fully removed
-  const useUrsm = !config.get('entityManagerReplicaSetEnabled')
-  if (useUrsm) {
-    return _getReplicaSetSpIdsByUserIdUrsm({
-      libs,
-      userId,
-      blockNumber,
-      ensurePrimary,
-      selfSpId,
-      parentLogger
-    })
-  }
-
   const start = Date.now()
   const logger = createChildLogger(parentLogger, {
     function: 'getReplicaSetSpIds',

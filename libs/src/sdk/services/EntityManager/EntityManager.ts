@@ -9,14 +9,18 @@ import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { AuthService } from '../Auth'
 import type { Contract } from 'web3-eth-contract'
-import { defaultEntityManagerConfig, DEFAULT_GAS_LIMIT } from './constants'
-import type {
-  Action,
+import {
+  CONFIRMATION_POLLING_INTERVAL,
+  CONFIRMATION_TIMEOUT,
+  defaultEntityManagerConfig,
+  DEFAULT_GAS_LIMIT
+} from './constants'
+import {
+  BlockConfirmation,
   EntityManagerConfig,
   EntityManagerService,
-  EntityType
+  ManageEntityOptions
 } from './types'
 
 export class EntityManager implements EntityManagerService {
@@ -42,28 +46,18 @@ export class EntityManager implements EntityManagerService {
   }
 
   /**
-   * Calls the manage entity method on chain
-   * @param {number} userId The numeric user id
-   * @param {EntityType} entityType The type of entity being modified
-   * @param {number} entityId The id of the entity
-   * @param {Action} action Action being performed on the entity
-   * @param {string} metadata CID multihash or metadata associated with action
+   * Calls the manage entity method on chain to update some data
    */
-  async manageEntity({
+  public async manageEntity({
     userId,
     entityType,
     entityId,
     action,
-    metadata,
-    auth
-  }: {
-    userId: number
-    entityType: EntityType
-    entityId: number
-    action: Action
-    metadata: string
-    auth: AuthService
-  }): Promise<{ txReceipt: TransactionReceipt }> {
+    metadata = '',
+    auth,
+    confirmationTimeout = CONFIRMATION_TIMEOUT,
+    skipConfirmation = false
+  }: ManageEntityOptions): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const signatureData = signatureSchemas.generators.getManageEntityData(
@@ -107,8 +101,65 @@ export class EntityManager implements EntityManagerService {
 
     const jsonResponse = await response.json()
 
+    if (!skipConfirmation) {
+      await this.confirmWrite({
+        blockHash: jsonResponse.receipt.blockHash,
+        blockNumber: jsonResponse.receipt.blockNumber,
+        confirmationTimeout
+      })
+    }
+
     return {
       txReceipt: jsonResponse.receipt
     }
+  }
+
+  /**
+   * Confirms a write by polling for the block to be indexed by the selected
+   * discovery node
+   */
+  public async confirmWrite({
+    blockHash,
+    blockNumber,
+    confirmationTimeout = CONFIRMATION_TIMEOUT,
+    confirmationPollingInterval = CONFIRMATION_POLLING_INTERVAL
+  }: {
+    blockHash: string
+    blockNumber: number
+    confirmationTimeout?: number
+    confirmationPollingInterval?: number
+  }) {
+    const confirmBlock = async () => {
+      const endpoint =
+        await this.config.discoveryNodeSelector.getSelectedEndpoint()
+      const {
+        data: { block_passed }
+      } = await (
+        await fetch(
+          `${endpoint}/block_confirmation?blocknumber=${blockNumber}&blockhash=${blockHash}`
+        )
+      ).json()
+
+      return block_passed
+        ? BlockConfirmation.CONFIRMED
+        : BlockConfirmation.UNKNOWN
+    }
+
+    let confirmation: BlockConfirmation = await confirmBlock()
+
+    const start = Date.now()
+    while (confirmation === BlockConfirmation.UNKNOWN) {
+      if (Date.now() - start > confirmationTimeout) {
+        throw new Error(
+          `Could not confirm write within ${confirmationTimeout}ms`
+        )
+      }
+      await new Promise((resolve) =>
+        setTimeout(resolve, confirmationPollingInterval)
+      )
+      confirmation = await confirmBlock()
+    }
+
+    return true
   }
 }

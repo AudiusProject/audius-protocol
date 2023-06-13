@@ -1,20 +1,22 @@
-# This Dockerfile exists to allow compiled contracts to be used
-# in multi stage builds for other services
-# i.e.
-# FROM audius-contracts:latest as contracts
-# COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
-
-FROM node:16 as builder
-
+# Uses separate stage for nodejs deps despite caching to avoid installing build tools
+FROM node:18.16 as builder
 COPY package*.json ./
-RUN npm install --loglevel verbose
+RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM node:16-slim
+FROM node:18-slim
+
 WORKDIR /usr/src/app
+
 COPY --from=builder /node_modules ./node_modules
 COPY . .
 
-RUN npx truffle compile
+ARG bootstrapSPIds
+ARG bootstrapSPDelegateWallets
+ARG bootstrapSPOwnerWallets
 
-ARG git_sha
-ENV GIT_SHA=$git_sha
+RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000001
+
+HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
+    CMD node -e "require('http').request('http://localhost:8545').end()" || exit 1
+
+CMD ["npx", "ganache", "--server.host", "0.0.0.0", "--database.dbPath", "/usr/db", "--wallet.deterministic", "--wallet.totalAccounts", "50", "--chain.networkId", "1000000000001"]

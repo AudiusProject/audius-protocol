@@ -6,11 +6,7 @@ const Utils = require('../src/utils')
 
 const networks = new Set([
   'development',
-  'test_local'
-  // disable mainnet keys for now
-  /* 'audius_private',
-  'poa_mainnet',
-  'poa_sokol' */
+  'test'
 ])
 
 let config
@@ -19,7 +15,7 @@ let config
 // From libs root:
 // node scripts/addCIDToIpldBlacklist.js development QmSH5gJPHg9xLzV823ty8BSGyHNP6ty22bgLsv5MLY3kBq
 
-async function run () {
+async function run() {
   try {
     const { network, cid } = parseArgs()
     const decodedCID = decodeCID(cid)
@@ -48,7 +44,7 @@ async function run () {
 }
 
 // get appropriate args from CLI
-function parseArgs () {
+function parseArgs() {
   const args = process.argv.slice(2)
   const network = args[0]
   const cid = args[1]
@@ -64,7 +60,7 @@ function parseArgs () {
 }
 
 // transform CID into a readable digest
-function decodeCID (cid) {
+function decodeCID(cid) {
   let decodedCID
   try {
     decodedCID = Utils.decodeMultihash(cid)
@@ -75,14 +71,14 @@ function decodeCID (cid) {
 }
 
 // get key according to environmnet
-async function getBlacklisterKeys (network) {
+async function getBlacklisterKeys(network) {
   let BLACKLISTER_PUBLIC_KEY
   let BLACKLISTER_PRIVATE_KEY = null // what would this be for mainnet?
 
   // if local dev, grab priv/pub keys from local ganache chain
   // else, grab key from config
   // NOTE: for local dev, wallet[0] is unlocked and does not require a private key
-  if (network === 'development' || network === 'test_local') {
+  if (network === 'development' || network === 'test') {
     const ganacheContractsAccounts = await getDataContractAccounts()
     const keyPairs = ganacheContractsAccounts.private_keys
     BLACKLISTER_PUBLIC_KEY = Object.keys(keyPairs)[0]
@@ -94,7 +90,7 @@ async function getBlacklisterKeys (network) {
 }
 
 // init libs with blacklister public address
-async function createAndInitLibs (blacklisterPublicKey) {
+async function createAndInitLibs(blacklisterPublicKey) {
   let audiusLibs
   try {
     const libsConfig = await initializeLibConfig(blacklisterPublicKey)
@@ -108,7 +104,7 @@ async function createAndInitLibs (blacklisterPublicKey) {
 }
 
 // add cid to ipld blacklist
-async function addIPLDTxToChain (audiusLibs, digest) {
+async function addIPLDTxToChain(audiusLibs, digest) {
   let ipldTxReceipt
   try {
     ipldTxReceipt = await audiusLibs.contracts.IPLDBlacklistFactoryClient.addIPLDToBlacklist(

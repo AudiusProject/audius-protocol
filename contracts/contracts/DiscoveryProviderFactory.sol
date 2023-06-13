@@ -19,7 +19,7 @@ contract DiscoveryProviderFactory is RegistryContract {
         require(
             _registryAddress != address(0x00) &&
             _discoveryProviderStorageRegistryKey.length != 0,
-            "Requires non-zero _registryAddress and non-empty _discoveryProviderStorageRegistryKey"
+            "Requires _registryAddress and _discoveryProviderStorageRegistryKey"
         );
         registry = RegistryInterface(_registryAddress);
         discoveryProviderStorageRegistryKey = _discoveryProviderStorageRegistryKey;

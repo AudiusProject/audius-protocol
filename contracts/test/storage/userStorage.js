@@ -1,9 +1,5 @@
 import * as _lib from '../_lib/lib.js'
-import {
-  Registry,
-  UserStorage,
-  UserFactory
-} from '../_lib/artifacts.js'
+import { Registry, UserStorage, UserFactory } from '../_lib/artifacts.js'
 import * as _constants from '../utils/constants'
 import { getUserFromFactory } from '../utils/getters'
 import { validateObj } from '../utils/validator'
@@ -22,7 +18,12 @@ contract('UserStorage', async (accounts) => {
     networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
     await registry.addContract(_constants.userStorageKey, userStorage.address)
-    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
   })
 
@@ -34,20 +35,40 @@ contract('UserStorage', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     // kill userFactory instance
-    await _lib.unregisterContractAndValidate(registry, _constants.userFactoryKey, userFactory.address)
+    await _lib.unregisterContractAndValidate(
+      registry,
+      _constants.userFactoryKey,
+      userFactory.address
+    )
 
     // deploy new userFactory instance
-    let newUserFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
-    await registry.addContract(_constants.userFactoryKey, newUserFactory.address)
-    assert.notEqual(newUserFactory.address, userFactory.address, 'Expected different contract instance addresses')
+    let newUserFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
+    await registry.addContract(
+      _constants.userFactoryKey,
+      newUserFactory.address
+    )
+    assert.notEqual(
+      newUserFactory.address,
+      userFactory.address,
+      'Expected different contract instance addresses'
+    )
 
     // retrieve original user through new useryFactory instance
     let user = await getUserFromFactory(testUserId, newUserFactory)
 
     // validate retrieved user fields match transaction inputs
-    validateObj(user, { wallet: accounts[0], handle: toStr(_constants.userHandle1) })
+    validateObj(user, {
+      wallet: accounts[0],
+      handle: toStr(_constants.userHandle1)
+    })
   })
 })

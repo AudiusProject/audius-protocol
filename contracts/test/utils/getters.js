@@ -1,10 +1,10 @@
 import { toStr } from './util'
 
 /** Retrieves user from factory contract
-  * @param {number} userId
-  * @param {object} userFactory, deployed UserFactory truffle contract
-  * @returns {object} dictionary with wallet, multihashDigest
-  */
+ * @param {number} userId
+ * @param {object} userFactory, deployed UserFactory truffle contract
+ * @returns {object} dictionary with wallet, multihashDigest
+ */
 export const getUserFromFactory = async (userId, userFactory) => {
   let user = await userFactory.getUser.call(userId)
   return {
@@ -13,10 +13,10 @@ export const getUserFromFactory = async (userId, userFactory) => {
   }
 }
 /** Retrieves track from factory contract
-    * @param {number} trackId
-    * @param {object} trackFactory, deployed TrackFactory truffle contract
-    * @returns {object} dictionary with userId, multihashDigest, multihashHashFn, multihashSize
-    */
+ * @param {number} trackId
+ * @param {object} trackFactory, deployed TrackFactory truffle contract
+ * @returns {object} dictionary with userId, multihashDigest, multihashHashFn, multihashSize
+ */
 export const getTrackFromFactory = async (trackId, trackFactory) => {
   let track = await trackFactory.getTrack.call(trackId)
   return {
@@ -28,10 +28,10 @@ export const getTrackFromFactory = async (trackId, trackFactory) => {
 }
 
 /** Retrieves discovery provider from DiscoveryProviderFactory contract
-    * @param {number} discprovId
-    * @param {object} discprovFactory, deployed DiscoveryProvider truffle contract
-    * @returns {object} dictionary with wallet address, discprov endpoint
-    */
+ * @param {number} discprovId
+ * @param {object} discprovFactory, deployed DiscoveryProvider truffle contract
+ * @returns {object} dictionary with wallet address, discprov endpoint
+ */
 export const getDiscprovFromFactory = async (discprovId, discprovFactory) => {
   let discprov = await discprovFactory.getDiscoveryProvider.call(discprovId)
   return {

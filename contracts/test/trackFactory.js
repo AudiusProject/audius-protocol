@@ -29,9 +29,19 @@ contract('TrackFactory', async (accounts) => {
     await registry.addContract(_constants.userStorageKey, userStorage.address)
     trackStorage = await TrackStorage.new(registry.address)
     await registry.addContract(_constants.trackStorageKey, trackStorage.address)
-    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
-    trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    trackFactory = await TrackFactory.new(
+      registry.address,
+      _constants.trackStorageKey,
+      _constants.userFactoryKey,
+      networkId
+    )
     await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
   })
 
@@ -105,7 +115,8 @@ contract('TrackFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      true)
+      true
+    )
 
     // add two tracks
     await _lib.addTrackAndValidate(
@@ -115,7 +126,8 @@ contract('TrackFactory', async (accounts) => {
       testUserId,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
     await _lib.addTrackAndValidate(
       trackFactory,
       testTrackId2,
@@ -123,7 +135,8 @@ contract('TrackFactory', async (accounts) => {
       testUserId,
       _constants.testMultihash.digest3,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
   })
 
   it('Should upgrade TrackStorage used by TrackFactory', async () => {
@@ -134,7 +147,8 @@ contract('TrackFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      true)
+      true
+    )
 
     // add track and validate transaction
     await _lib.addTrackAndValidate(
@@ -144,13 +158,17 @@ contract('TrackFactory', async (accounts) => {
       testUserId,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
 
     // deploy new TrackStorage contract instance
     let trackStorage2 = await TrackStorage.new(registry.address)
 
     // upgrade registered TrackStorage
-    await registry.upgradeContract(_constants.trackStorageKey, trackStorage2.address)
+    await registry.upgradeContract(
+      _constants.trackStorageKey,
+      trackStorage2.address
+    )
 
     // confirm first TrackStorage instance is dead
     _lib.assertNoContractExists(trackStorage.address)
@@ -163,7 +181,8 @@ contract('TrackFactory', async (accounts) => {
       testUserId,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
   })
 
   it('Should update single track', async () => {
@@ -189,7 +208,8 @@ contract('TrackFactory', async (accounts) => {
       accounts[0],
       initialData.digest,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     // add 2nd user
     await _lib.addUserAndValidate(
@@ -198,7 +218,8 @@ contract('TrackFactory', async (accounts) => {
       accounts[0],
       initialData.digest,
       _constants.userHandle2,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     // Add track
     await _lib.addTrackAndValidate(
@@ -208,7 +229,8 @@ contract('TrackFactory', async (accounts) => {
       initialData.userId,
       _constants.testMultihash.digest1,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
 
     const tx = await _lib.updateTrack(
       trackFactory,
@@ -222,20 +244,42 @@ contract('TrackFactory', async (accounts) => {
 
     // Verify event contents as expected
     let eventArgs = parseTx(tx).event.args
-    assert.isTrue(eventArgs._multihashDigest === updateData.digest, 'Event argument - expect updated digest')
-    assert.isTrue(eventArgs._multihashHashFn.toNumber() === updateData.hashFn, 'Event argument - expect updated hash')
-    assert.isTrue(eventArgs._multihashSize.toNumber() === updateData.size, 'Event argument - expect updated size')
-    assert.isTrue(eventArgs._trackOwnerId.toNumber() === updateData.userId, 'Event argument - expect updated userId')
+    assert.isTrue(
+      eventArgs._multihashDigest === updateData.digest,
+      'Event argument - expect updated digest'
+    )
+    assert.isTrue(
+      eventArgs._multihashHashFn.toNumber() === updateData.hashFn,
+      'Event argument - expect updated hash'
+    )
+    assert.isTrue(
+      eventArgs._multihashSize.toNumber() === updateData.size,
+      'Event argument - expect updated size'
+    )
+    assert.isTrue(
+      eventArgs._trackOwnerId.toNumber() === updateData.userId,
+      'Event argument - expect updated userId'
+    )
 
     // Verify updated contents on chain
-    let trackFromChain = await getTrackFromFactory(
-      testTrackId1,
-      trackFactory)
+    let trackFromChain = await getTrackFromFactory(testTrackId1, trackFactory)
 
-    assert.isTrue(trackFromChain.trackOwnerId.toNumber() === updateData.userId, 'Expect updated userId on chain')
-    assert.isTrue(trackFromChain.multihashDigest === updateData.digest, 'Expect updated digest')
-    assert.isTrue(trackFromChain.multihashHashFn.toNumber() === updateData.hashFn, 'Expect updated hash')
-    assert.isTrue(trackFromChain.multihashSize.toNumber() === updateData.size, 'Expect updated size')
+    assert.isTrue(
+      trackFromChain.trackOwnerId.toNumber() === updateData.userId,
+      'Expect updated userId on chain'
+    )
+    assert.isTrue(
+      trackFromChain.multihashDigest === updateData.digest,
+      'Expect updated digest'
+    )
+    assert.isTrue(
+      trackFromChain.multihashHashFn.toNumber() === updateData.hashFn,
+      'Expect updated hash'
+    )
+    assert.isTrue(
+      trackFromChain.multihashSize.toNumber() === updateData.size,
+      'Expect updated size'
+    )
   })
 
   it('Should fail to update track due to lack of ownership of track', async () => {
@@ -295,7 +339,8 @@ contract('TrackFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      true)
+      true
+    )
 
     // Add track
     await _lib.addTrackAndValidate(
@@ -305,13 +350,11 @@ contract('TrackFactory', async (accounts) => {
       testUserId,
       _constants.testMultihash.digest2,
       _constants.testMultihash.hashFn,
-      _constants.testMultihash.size)
+      _constants.testMultihash.size
+    )
 
     // delete track
-    await _lib.deleteTrackAndValidate(
-      trackFactory,
-      accounts[0],
-      testTrackId1)
+    await _lib.deleteTrackAndValidate(trackFactory, accounts[0], testTrackId1)
   })
 
   it('Should fail to delete non-existent track', async () => {
@@ -328,11 +371,7 @@ contract('TrackFactory', async (accounts) => {
     // attempt to delete non-existent track
     let caughtError = false
     try {
-      await _lib.deleteTrackAndValidate(
-        trackFactory,
-        accounts[0],
-        testTrackId1
-      )
+      await _lib.deleteTrackAndValidate(trackFactory, accounts[0], testTrackId1)
     } catch (e) {
       // expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -373,11 +412,7 @@ contract('TrackFactory', async (accounts) => {
     // attempt to delete track from different account
     let caughtError = false
     try {
-      await _lib.deleteTrackAndValidate(
-        trackFactory,
-        accounts[1],
-        testTrackId1
-      )
+      await _lib.deleteTrackAndValidate(trackFactory, accounts[1], testTrackId1)
     } catch (e) {
       // expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {

@@ -684,12 +684,6 @@ const _issueUpdateReplicaSetOp = async (
         return response
       }
 
-      if (!config.get('entityManagerReplicaSetEnabled')) {
-        throw new Error(
-          `[_issueUpdateReplicaSetOp] entityManagerReplicaSet not enabled`
-        )
-      }
-
       logger.info(
         `[_issueUpdateReplicaSetOp] updating replica set now ${
           Date.now() - startTimeMs
@@ -833,25 +827,15 @@ const _canReconfig = async ({
 }: CanReconfigParams): Promise<CanReconfigReturnValue> => {
   let error
   try {
-    let chainPrimarySpId, chainSecondarySpIds
-    if (config.get('entityManagerReplicaSetEnabled')) {
-      const encodedUserId = libs.Utils.encodeHashId(userId)
-      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
-        encodedUserId
-      })
-      chainPrimarySpId = spResponse?.primarySpID
-      chainSecondarySpIds = [
-        spResponse?.secondary1SpID,
-        spResponse?.secondary2SpID
-      ]
-    } else {
-      const response =
-        await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(
-          userId
-        )
-      chainPrimarySpId = response.primaryId
-      chainSecondarySpIds = response.secondaryIds
-    }
+    const encodedUserId = libs.Utils.encodeHashId(userId)
+    const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+      encodedUserId
+    })
+    const chainPrimarySpId = spResponse?.primarySpID
+    const chainSecondarySpIds = [
+      spResponse?.secondary1SpID,
+      spResponse?.secondary2SpID
+    ]
 
     if (
       !chainPrimarySpId ||

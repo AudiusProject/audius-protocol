@@ -3,35 +3,33 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"time"
 
-	"golang.org/x/exp/slices"
+	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
-	logger := ss.logger.With("key", fileName)
+	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
-	healthyHostNames := ss.findHealthyHostNames("5 minutes")
 	success := []string{}
-	for _, peer := range ss.placement.topAll(fileName) {
-		logger := logger.With("to", peer.Host)
+	preferred, _ := ss.rendezvous(fileName)
+	for _, peer := range preferred {
+		logger := logger.With("to", peer)
 
-		if !slices.Contains(healthyHostNames, peer.Host) {
-			logger.Debug("skipping unhealthy host", "healthy", healthyHostNames)
-			continue
-		}
+		logger.Info("replicating")
 
 		file.Seek(0, 0)
 		err := ss.replicateFileToHost(peer, fileName, file)
 		if err != nil {
-			logger.Warn("replication failed", "err", err)
+			logger.Error("replication failed", err)
 		} else {
-			logger.Debug("replicated")
-			success = append(success, peer.Host)
+			logger.Info("replicated")
+			success = append(success, peer)
 			if len(success) == ss.Config.ReplicationFactor {
 				break
 			}
@@ -43,52 +41,64 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 
 func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) error {
 	ctx := context.Background()
+	logger := ss.logger.With("task", "replicateToMyBucket", "cid", fileName)
+	logger.Info("replicateToMyBucket")
 
-	// already in bucket?
-	_, err := ss.bucket.Attributes(ctx, fileName)
-	if err == nil {
-		return nil
-	}
+	// already have?
+	alreadyHave, _ := ss.bucket.Exists(ctx, fileName)
+	if !alreadyHave {
+		w, err := ss.bucket.NewWriter(ctx, fileName, nil)
+		if err != nil {
+			return err
+		}
 
-	w, err := ss.bucket.NewWriter(ctx, fileName, nil)
-	if err != nil {
-		return err
-	}
+		_, err = io.Copy(w, file)
+		if err != nil {
+			return err
+		}
 
-	_, err = io.Copy(w, file)
-	if err != nil {
-		return err
+		w.Close()
 	}
 
 	// record that we "have" this key
-	err = ss.crud.Create(&Blob{
-		Host:      ss.Config.Self.Host,
-		Key:       fileName,
-		CreatedAt: time.Now().UTC(),
-	})
-	if err != nil {
-		ss.logger.Warn(err.Error())
+	var existingBlob *Blob
+	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
+	if found.Error == gorm.ErrRecordNotFound {
+		logger.Info("creating blob record")
+		return ss.crud.Create(&Blob{
+			Host:      ss.Config.Self.Host,
+			Key:       fileName,
+			CreatedAt: time.Now().UTC(),
+		})
 	}
 
-	return w.Close()
+	return nil
 }
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
+	logger := ss.logger.With("task", "dropFromMyBucket", "cid", fileName)
+
+	logger.Info("deleting blob")
 	ctx := context.Background()
 	err := ss.bucket.Delete(ctx, fileName)
 	if err != nil {
-		return err
+		logger.Error("failed to delete", err)
 	}
 
-	// record that we deleted this key
-	return ss.crud.Delete(&Blob{
-		Host: ss.Config.Self.Host,
-		Key:  fileName,
-	})
+	// if blob record exists... delete it
+	var existingBlob *Blob
+	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
+	if found.Error == nil {
+		logger.Info("deleting blob record")
+		return ss.crud.Delete(existingBlob)
+	}
+
+	return nil
 }
 
-func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file io.Reader) error {
-	if peer.Host == ss.Config.Self.Host {
+func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file io.Reader) error {
+	// logger := ss.logger.With()
+	if peer == ss.Config.Self.Host {
 		return ss.replicateToMyBucket(fileName, file)
 	}
 
@@ -97,8 +107,9 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}
 
 	// first check if target already has it...
-	if ss.hostHasBlob(peer.Host, fileName) {
-		ss.logger.Debug(peer.Host + " already has " + fileName)
+	// todo: this should be cheap check... host should be responsible for doing more expensive check
+	if ss.hostHasBlob(peer, fileName, true) {
+		ss.logger.Info(peer + " already has " + fileName)
 		return nil
 	}
 
@@ -122,7 +133,7 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	}()
 
 	req := signature.SignedPost(
-		peer.ApiPath("internal/blobs"),
+		peer+"/internal/blobs?cid="+fileName,
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey)
@@ -141,15 +152,48 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 	return <-errChan
 }
 
-func (ss *MediorumServer) hostHasBlob(host, key string) bool {
+// this is a "quick check" that a host has a blob
+// used for checking host has blob before redirecting to it
+func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	u := apiPath(host, "internal/blobs/info", key)
+	checkMethod := "info"
+	if doubleCheck {
+		checkMethod = "double_check"
+	}
+	u := apiPath(host, "internal/blobs", checkMethod, key)
 	has, err := client.Get(u)
 	if err != nil {
 		return false
 	}
 	defer has.Body.Close()
 	return has.StatusCode == 200
+}
+
+func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
+	if host == ss.Config.Self.Host {
+		return errors.New("should not pull blob from self")
+	}
+	client := http.Client{
+		Timeout: 10 * time.Second,
+	}
+	u := apiPath(host, "internal/blobs", cid)
+
+	req, err := signature.SignedGet(u, ss.Config.privateKey)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("pull blob: bad status: %d cid: %s host: %s", resp.StatusCode, cid, host)
+	}
+
+	return ss.replicateToMyBucket(cid, resp.Body)
 }

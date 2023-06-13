@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -36,6 +37,11 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	// 	return errors.New("Invalid timestamp")
 	// }
 
+	// banned?
+	if vtor.isBanned(noTx, userId) {
+		return fmt.Errorf("user_id %d is banned from chat", userId)
+	}
+
 	switch methodName {
 	case schema.RPCMethodChatCreate:
 		return vtor.validateChatCreate(noTx, userId, rawRpc)
@@ -58,6 +64,13 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	}
 
 	return nil
+}
+
+func (vtor *Validator) isBanned(tx *sqlx.Tx, userId int32) bool {
+	q := vtor.getQ(tx)
+	isBanned := false
+	q.Get(&isBanned, `select count(user_id) = 1 from chat_ban where user_id = $1`, userId)
+	return isBanned
 }
 
 func (vtor *Validator) validateChatCreate(tx *sqlx.Tx, userId int32, rpc schema.RawRPC) error {

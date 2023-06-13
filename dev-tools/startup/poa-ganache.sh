@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export NODE_OPTIONS=“-—max-old-space-size=8192”
+
 npx ganache \
   --server.host 0.0.0.0 \
   --wallet.deterministic \

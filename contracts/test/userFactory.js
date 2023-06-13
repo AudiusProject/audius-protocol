@@ -1,9 +1,5 @@
 import * as _lib from './_lib/lib.js'
-import {
-  Registry,
-  UserStorage,
-  UserFactory
-} from './_lib/artifacts.js'
+import { Registry, UserStorage, UserFactory } from './_lib/artifacts.js'
 import * as _constants from './utils/constants'
 
 contract('UserFactory', async (accounts) => {
@@ -20,7 +16,12 @@ contract('UserFactory', async (accounts) => {
     const networkId = Registry.network_id
     userStorage = await UserStorage.new(registry.address)
     await registry.addContract(_constants.userStorageKey, userStorage.address)
-    userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
   })
 
@@ -49,7 +50,11 @@ contract('UserFactory', async (accounts) => {
     // attempt to update above user from different account
     let caughtError = false
     try {
-      await _lib.updateUserNameAndValidate(userFactory, testUserId1, accounts[1])
+      await _lib.updateUserNameAndValidate(
+        userFactory,
+        testUserId1,
+        accounts[1]
+      )
     } catch (e) {
       // expected error
       if (e.message.indexOf('Caller does not own userId') >= 0) {
@@ -60,7 +65,10 @@ contract('UserFactory', async (accounts) => {
       }
     }
 
-    assert.isTrue(caughtError, "Failed to handle case where calling address tries to update user it doesn't own")
+    assert.isTrue(
+      caughtError,
+      "Failed to handle case where calling address tries to update user it doesn't own"
+    )
   })
 
   it('Should add multiple users', async () => {
@@ -70,7 +78,8 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     await _lib.addUserAndValidate(
       userFactory,
@@ -78,7 +87,8 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest2,
       _constants.userHandle2,
-      true)
+      true
+    )
   })
 
   it('Should fail to add user if handle is already taken', async () => {
@@ -90,7 +100,8 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandleUC,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     // attempt to add a user with the same error and catch the error
     // Not sure this is the best way to catch this revert, but best way I could think of and backed by SO
@@ -102,12 +113,17 @@ contract('UserFactory', async (accounts) => {
         accounts[0],
         _constants.testMultihash.digest2,
         _constants.userHandleMC,
-        true)
+        true
+      )
     } catch (e) {
       // expected error
       if (e.message.indexOf('Handle is already taken') >= 0) {
         caughtError = true
-      } else if (e.message.indexOf('satisfies all conditions set by Solidity `require` statements.') >= 0) {
+      } else if (
+        e.message.indexOf(
+          'satisfies all conditions set by Solidity `require` statements.'
+        ) >= 0
+      ) {
         // test to satisfy returns from the POA network
         // error message from POA is not explicit about the error
         caughtError = true
@@ -117,7 +133,10 @@ contract('UserFactory', async (accounts) => {
       }
     }
 
-    assert.isTrue(caughtError, 'Failed to handle case where two users use the same handle (case-insensitive)')
+    assert.isTrue(
+      caughtError,
+      'Failed to handle case where two users use the same handle (case-insensitive)'
+    )
   })
 
   it('Should ensure users can only be created with valid handles', async () => {
@@ -160,7 +179,10 @@ contract('UserFactory', async (accounts) => {
       caughtError = true
     }
 
-    assert.isTrue(caughtError, 'Failed to prevent user creation with invalid handle')
+    assert.isTrue(
+      caughtError,
+      'Failed to prevent user creation with invalid handle'
+    )
   })
 
   it('Should mark and unmark user as verified', async () => {
@@ -170,10 +192,21 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
-    const v1event = await _lib.markUserVerifiedAndValidate(userFactory, accounts[5], testUserId1, true)
-    const v2event = await _lib.markUserVerifiedAndValidate(userFactory, accounts[5], testUserId1, false)
+    const v1event = await _lib.markUserVerifiedAndValidate(
+      userFactory,
+      accounts[5],
+      testUserId1,
+      true
+    )
+    const v2event = await _lib.markUserVerifiedAndValidate(
+      userFactory,
+      accounts[5],
+      testUserId1,
+      false
+    )
 
     assert.isTrue(v1event.isVerified, 'Failed to mark user as verified')
     assert.isFalse(v2event.isVerified, 'Failed to mark user as un-verified')
@@ -186,16 +219,25 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     let caughtError = false
     try {
-      await _lib.markUserVerifiedAndValidate(userFactory, accounts[0], testUserId1, true)
+      await _lib.markUserVerifiedAndValidate(
+        userFactory,
+        accounts[0],
+        testUserId1,
+        true
+      )
     } catch (e) {
       caughtError = true
     }
 
-    assert.isTrue(caughtError, 'Failed to prevent verification by invalid address')
+    assert.isTrue(
+      caughtError,
+      'Failed to prevent verification by invalid address'
+    )
   })
 
   it('Should upgrade UserStorage used by UserFactory', async () => {
@@ -206,13 +248,17 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
 
     // deploy new UserStorage instance
     let userStorage2 = await UserStorage.new(registry.address)
 
     // upgrade registered UserStorage
-    await registry.upgradeContract(_constants.userStorageKey, userStorage2.address)
+    await registry.upgradeContract(
+      _constants.userStorageKey,
+      userStorage2.address
+    )
 
     // confirm first UserStorage instance is dead
     _lib.assertNoContractExists(userStorage.address)
@@ -224,6 +270,7 @@ contract('UserFactory', async (accounts) => {
       accounts[0],
       _constants.testMultihash.digest1,
       _constants.userHandle1,
-      _constants.isCreatorTrue)
+      _constants.isCreatorTrue
+    )
   })
 })

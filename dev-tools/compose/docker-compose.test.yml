@@ -34,7 +34,7 @@ services:
   poa-ganache:
     build:
       context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
         bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
@@ -124,7 +124,7 @@ services:
   test-contracts:
     build:
       context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
         bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
@@ -133,6 +133,14 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+    profiles:
+      - poa
+    volumes:
+      - ${PROJECT_ROOT}/contracts:/usr/src/app
+      - /usr/src/app/node_modules
 
   # eth-contracts
   test-eth-contracts:
@@ -387,7 +395,7 @@ services:
       dbUrlTemplate: "postgres://postgres:example@mediorum-db:5432/m%d"
       devNetworkCount: "5"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:1991/internal/health"]
+      test: ["CMD", "curl", "http://localhost:1991/health_check"]
       interval: 3s
       timeout: 3s
     logging: *default-logging

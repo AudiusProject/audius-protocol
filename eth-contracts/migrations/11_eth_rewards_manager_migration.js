@@ -46,7 +46,7 @@ module.exports = (deployer, network, accounts) => {
       accounts[AAO_ACCOUNT_BASE + 2]
     ]
 
-    if (network === 'test_local' || network === 'development') {
+    if (network === 'test' || network === 'development') {
       outputAAOAccounts(aaoAccounts)
     }
 

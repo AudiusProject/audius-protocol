@@ -47,7 +47,11 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
-  const storageNodeSelector = new StorageNodeSelector({ auth })
+  const discoveryNodeSelector = new DiscoveryNodeSelector()
+  const storageNodeSelector = new StorageNodeSelector({
+    auth,
+    discoveryNodeSelector
+  })
 
   beforeAll(() => {
     tracks = new TracksApi(
@@ -57,6 +61,10 @@ describe('TracksApi', () => {
       new EntityManager(),
       auth
     )
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'info').mockImplementation(() => {})
+    jest.spyOn(console, 'debug').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('uploadTrack', () => {
@@ -81,9 +89,7 @@ describe('TracksApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        error: false,
-        trackId: 1,
-        transcodedTrackCID: 'a'
+        trackId: 1
       })
     })
 
@@ -102,6 +108,29 @@ describe('TracksApi', () => {
             buffer: Buffer.from([]),
             name: 'trackArt'
           }
+        })
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('deleteTrack', () => {
+    it('deletes a track if valid metadata is provided', async () => {
+      const result = await tracks.deleteTrack({
+        userId: '7eP5n',
+        trackId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await tracks.deleteTrack({
+          userId: '7eP5n',
+          trackId: 1 as any
         })
       }).rejects.toThrow()
     })

@@ -615,7 +615,7 @@ const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {
     if (line.includes('development')) {
       traversingDevelopmentConfigBlock = true
       output.push(line)
-    } else if (line.includes('test_local')) {
+    } else if (line.includes('test')) {
       traversingDevelopmentConfigBlock = false
       output.push(line)
     } else if (traversingDevelopmentConfigBlock && line.includes('bootstrapSPIds')) {

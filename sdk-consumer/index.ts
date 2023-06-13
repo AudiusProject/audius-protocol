@@ -1,5 +1,9 @@
-import { DiscoveryNodeSelector, sdk } from "@audius/sdk";
-import { UploadTrackRequest } from "@audius/sdk";
+import { DiscoveryNodeSelector, EntityManager, sdk } from "@audius/sdk";
+import {
+  UploadTrackRequest,
+  DeleteTrackRequest,
+  developmentConfig,
+} from "@audius/sdk";
 import express from "express";
 import multer from "multer";
 
@@ -13,11 +17,19 @@ const port = 3000;
 
 // Test/develop sdk functionality here
 
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+});
+
 const audiusSdk = sdk({
   appName: "sdk-consumer",
   services: {
-    discoveryNodeSelector: new DiscoveryNodeSelector({
-      initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+    discoveryNodeSelector,
+    entityManager: new EntityManager({
+      discoveryNodeSelector,
+      web3ProviderUrl: developmentConfig.web3ProviderUrl,
+      contractAddress: developmentConfig.entityManagerContractAddress,
+      identityServiceUrl: developmentConfig.identityServiceUrl,
     }),
   },
   apiKey: "",
@@ -75,3 +87,17 @@ app.post<UploadTrackRequest>(
     }
   }
 );
+
+app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
+  try {
+    const deleteTrackRequest: DeleteTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.tracks.deleteTrack(deleteTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});

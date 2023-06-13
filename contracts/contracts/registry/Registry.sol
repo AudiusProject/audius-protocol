@@ -37,7 +37,7 @@ contract Registry is Ownable {
     function addContract(bytes32 _name, address _address) external onlyOwner {
         require(
             addressStorage[_name] == address(0x00),
-            "Requires that given _name does not already have non-zero registered contract address"
+            "Requires given _name does not already have non-zero contract address"
         );
         require(
             _address != address(0x00),

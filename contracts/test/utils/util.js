@@ -1,12 +1,11 @@
-
 import * as bs58 from 'bs58'
 import * as util from 'util'
 import { web3New } from './web3New'
 
 /** hex to utf8
-  * @param {string} arg - Raw hex-encoded string returned from contract code
-  * @returns {string} utf8 converted string value
-  */
+ * @param {string} arg - Raw hex-encoded string returned from contract code
+ * @returns {string} utf8 converted string value
+ */
 export const toStr = (arg) => {
   return web3New.utils.hexToUtf8(arg)
 }
@@ -15,26 +14,34 @@ export const eth_signTypedData = (userAddress, signatureData) => {
   return new Promise(function (resolve, reject) {
     // fix per https://github.com/ethereum/web3.js/issues/1119
     // truffle uses an outdated version of web3
-    web3New.providers.HttpProvider.prototype.sendAsync = web3New.providers.HttpProvider.prototype.send
-    web3New.currentProvider.sendAsync({
-      method: 'eth_signTypedData',
-      params: [userAddress, signatureData],
-      from: userAddress
-    }, function (err, result) {
-      if (err) {
-        reject(err)
-      } else if (result.error) {
-        reject(result.error)
-      } else {
-        resolve(result.result)
+    web3New.providers.HttpProvider.prototype.sendAsync =
+      web3New.providers.HttpProvider.prototype.send
+    web3New.currentProvider.sendAsync(
+      {
+        method: 'eth_signTypedData',
+        params: [userAddress, signatureData],
+        from: userAddress
+      },
+      function (err, result) {
+        if (err) {
+          reject(err)
+        } else if (result.error) {
+          reject(result.error)
+        } else {
+          resolve(result.result)
+        }
       }
-    })
+    )
   })
 }
 
 /** Customizable console.log wrapper */
 export const deepLog = (msg, val, depth = null, showHidden = false) => {
-  console.log('\n-- ' + msg + ' --\n', util.inspect(val, { colors: true, depth: depth, showHidden: showHidden }), '\n')
+  console.log(
+    '\n-- ' + msg + ' --\n',
+    util.inspect(val, { colors: true, depth: depth, showHidden: showHidden }),
+    '\n'
+  )
 }
 
 /** Returns decoded multihash with digest, hash function, and digest size

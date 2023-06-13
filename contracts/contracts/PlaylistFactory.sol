@@ -122,7 +122,7 @@ contract PlaylistFactory is RegistryContract, SigningLogic {
             _playlistStorageRegistryKey.length != 0 &&
             _userFactoryRegistryKey.length != 0 &&
             _trackFactoryRegistryKey != 0,
-            "requires non-zero registryAddress, non-empty _playlistStorageRegistryKey, non-empty _trackFactoryRegistryKey"
+            "req. registryAddress, _playlistStorageRegistryKey, _trackFactoryRegistryKey"
         );
         registry = RegistryInterface(_registryAddress);
         playlistStorageRegistryKey = _playlistStorageRegistryKey;

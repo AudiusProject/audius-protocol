@@ -21,8 +21,6 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {*} getTranscodeQueueJobs
  * @param {*} getAsyncProcessingQueueJobs
  * @param {number} numberOfCPUs the number of CPUs on this machine
- * @param {string?} randomBytesToSign optional bytes string to be included in response object
- *    and used in signature generation
  */
 const healthCheck = async (
   { libs, snapbackSM, trustedNotifierManager } = {},
@@ -31,8 +29,7 @@ const healthCheck = async (
   getTranscodeQueueJobs,
   transcodingQueueIsAvailable,
   getAsyncProcessingQueueJobs,
-  numberOfCPUs,
-  randomBytesToSign = null
+  numberOfCPUs
 ) => {
   // Location information
   const country = config.get('serviceCountry')
@@ -149,7 +146,6 @@ const healthCheck = async (
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
     spOwnerWallet: config.get('spOwnerWallet'),
-    isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
     autoUpgradeEnabled: config.get('autoUpgradeEnabled'),
@@ -222,11 +218,6 @@ const healthCheck = async (
       id: trustedNotifierManager?.trustedNotifierID
     },
     clusterWorkersCount
-  }
-
-  // If optional `randomBytesToSign` query param provided, node will include string in signed object
-  if (randomBytesToSign) {
-    response.randomBytesToSign = randomBytesToSign
   }
 
   if (libs) {

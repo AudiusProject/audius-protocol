@@ -10,11 +10,11 @@ import type { EIP712TypedData } from 'eth-sig-util'
 
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',
-  ownerDelegateWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54971'
+  delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54971'
 }
 const storageNodeB = {
   endpoint: 'https://node-b.audius.co',
-  ownerDelegateWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
+  delegateOwnerWallet: '0xc0ffee254729296a45a3885639AC7E10F9d54972'
 }
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
@@ -35,6 +35,9 @@ class MockAuth implements AuthService {
 }
 
 const auth = new MockAuth()
+const discoveryNodeSelector = new DiscoveryNodeSelector({
+  initialSelectedNode: discoveryNode
+})
 
 const mswHandlers = [
   rest.get(`${discoveryNode}/health_check`, (_req, res, ctx) => {
@@ -57,11 +60,11 @@ const mswHandlers = [
     )
   }),
 
-  rest.get(`${storageNodeA.endpoint}/status`, (_req, res, ctx) => {
+  rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
     return res(ctx.status(200))
   }),
 
-  rest.get(`${storageNodeB.endpoint}/status`, (_req, res, ctx) => {
+  rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
     return res(ctx.status(200))
   })
 ]
@@ -71,10 +74,10 @@ const server = setupServer(...mswHandlers)
 describe('StorageNodeSelector', () => {
   beforeAll(() => {
     server.listen()
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
-    jest.spyOn(console, 'info').mockImplementation(() => {})
-    jest.spyOn(console, 'debug').mockImplementation(() => {})
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'warn').mockImplementation(() => { })
+    jest.spyOn(console, 'info').mockImplementation(() => { })
+    jest.spyOn(console, 'debug').mockImplementation(() => { })
+    jest.spyOn(console, 'error').mockImplementation(() => { })
   })
 
   afterEach(() => {
@@ -90,7 +93,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth
+      auth,
+      discoveryNodeSelector
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
@@ -100,7 +104,7 @@ describe('StorageNodeSelector', () => {
 
   it('selects the first healthy node', async () => {
     server.use(
-      rest.get(`${storageNodeA.endpoint}/status`, (_req, res, ctx) => {
+      rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
         return res(ctx.status(400))
       })
     )
@@ -108,7 +112,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth
+      auth,
+      discoveryNodeSelector
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(

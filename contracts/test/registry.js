@@ -31,12 +31,24 @@ contract('Registry', async (accounts) => {
 
     // assert event params are as expected
     assert.equal(txInfo.event.name, 'ContractAdded', 'Expected same event name')
-    assert.equal(toStr(txInfo.event.args._name), toStr(contractName), 'Expected same contract name')
-    assert.equal(txInfo.event.args._address, testContractAddress, 'Expected same contract address')
+    assert.equal(
+      toStr(txInfo.event.args._name),
+      toStr(contractName),
+      'Expected same contract name'
+    )
+    assert.equal(
+      txInfo.event.args._address,
+      testContractAddress,
+      'Expected same contract address'
+    )
 
     // ensure registered contract has same address as originally deployed contract
     let regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(regContractAddress, testContractAddress, 'Expected same contract address')
+    assert.equal(
+      regContractAddress,
+      testContractAddress,
+      'Expected same contract address'
+    )
 
     // change data on deployed contract and ensure registered contract instance reflects change
     let regContract = await TestContract.at(regContractAddress)
@@ -49,13 +61,32 @@ contract('Registry', async (accounts) => {
     assert.equal(data1, regData1, 'Expected same contract data')
 
     // ensure previous contract addresses (versions) are being stored
-    let testContractVersionCount = (await registry.getContractVersionCount.call(contractName)).toNumber()
-    assert.equal(testContractVersionCount, 1, 'Expected 1 version(s) of contract')
+    let testContractVersionCount = (
+      await registry.getContractVersionCount.call(contractName)
+    ).toNumber()
+    assert.equal(
+      testContractVersionCount,
+      1,
+      'Expected 1 version(s) of contract'
+    )
     // assert address for each available version
-    let regContractAddressVersion1 = await registry.getContract.call(contractName, testContractVersionCount)
-    let regContractAddressVersionLatest = await registry.getContract.call(contractName)
-    assert.equal(regContractAddressVersion1, testContractAddress, 'Expected same contract address')
-    assert.equal(regContractAddressVersionLatest, regContractAddressVersion1, 'Expected same contract address')
+    let regContractAddressVersion1 = await registry.getContract.call(
+      contractName,
+      testContractVersionCount
+    )
+    let regContractAddressVersionLatest = await registry.getContract.call(
+      contractName
+    )
+    assert.equal(
+      regContractAddressVersion1,
+      testContractAddress,
+      'Expected same contract address'
+    )
+    assert.equal(
+      regContractAddressVersionLatest,
+      regContractAddressVersion1,
+      'Expected same contract address'
+    )
   })
 
   it('Should remove registered contract', async () => {
@@ -65,28 +96,74 @@ contract('Registry', async (accounts) => {
     // register contract and confirm successful registration
     await registry.addContract(contractName, testContractAddress)
     let regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(testContractAddress, regContractAddress, 'Expected same contract address')
+    assert.equal(
+      testContractAddress,
+      regContractAddress,
+      'Expected same contract address'
+    )
 
     // unregister contract and confirm event params as expected and registered address = 0x0
     let removeTx = await registry.removeContract(contractName)
     let removeTxInfo = parseTx(removeTx)
-    assert.equal(removeTxInfo.event.name, 'ContractRemoved', 'Expected same event name')
-    assert.equal(toStr(removeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
-    assert.equal(removeTxInfo.event.args._address, regContractAddress, 'Expected same contract address')
+    assert.equal(
+      removeTxInfo.event.name,
+      'ContractRemoved',
+      'Expected same event name'
+    )
+    assert.equal(
+      toStr(removeTxInfo.event.args._name),
+      toStr(contractName),
+      'Expected same contract name'
+    )
+    assert.equal(
+      removeTxInfo.event.args._address,
+      regContractAddress,
+      'Expected same contract address'
+    )
     regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(parseInt(regContractAddress), 0x0, 'Expected zeroed contract address')
+    assert.equal(
+      parseInt(regContractAddress),
+      0x0,
+      'Expected zeroed contract address'
+    )
 
     // ensure previous contract addresses (versions) are being stored
     // after removing, there should be 2, the original deployment, plus the zeroed out (0x) address
-    let testContractVersionCount = (await registry.getContractVersionCount.call(contractName)).toNumber()
-    assert.equal(testContractVersionCount, 2, 'Expected 2 version(s) of contract')
+    let testContractVersionCount = (
+      await registry.getContractVersionCount.call(contractName)
+    ).toNumber()
+    assert.equal(
+      testContractVersionCount,
+      2,
+      'Expected 2 version(s) of contract'
+    )
     // assert address for each available version
-    let regContractAddressVersion1 = await registry.getContract.call(contractName, 1)
-    let regContractAddressVersion2 = await registry.getContract.call(contractName, 2)
-    let regContractAddressVersionLatest = await registry.getContract.call(contractName)
-    assert.equal(regContractAddressVersion1, testContractAddress, 'Expected same contract address')
-    assert.equal(regContractAddressVersion2, 0x0, 'Expected zeroed contract address')
-    assert.equal(regContractAddressVersionLatest, 0x0, 'Expected zeroed contract address')
+    let regContractAddressVersion1 = await registry.getContract.call(
+      contractName,
+      1
+    )
+    let regContractAddressVersion2 = await registry.getContract.call(
+      contractName,
+      2
+    )
+    let regContractAddressVersionLatest = await registry.getContract.call(
+      contractName
+    )
+    assert.equal(
+      regContractAddressVersion1,
+      testContractAddress,
+      'Expected same contract address'
+    )
+    assert.equal(
+      regContractAddressVersion2,
+      0x0,
+      'Expected zeroed contract address'
+    )
+    assert.equal(
+      regContractAddressVersionLatest,
+      0x0,
+      'Expected zeroed contract address'
+    )
   })
 
   it('Should upgrade registered contract', async () => {
@@ -101,52 +178,135 @@ contract('Registry', async (accounts) => {
     // register testContract1 -> get registered contract -> assert addresses match
     await registry.addContract(contractName, testContract1.address)
     regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(testContract1.address, regContractAddress, 'Expected same contract address')
+    assert.equal(
+      testContract1.address,
+      regContractAddress,
+      'Expected same contract address'
+    )
 
     // upgrade registered contract to testContract2 -> assert event params are as expected
-    upgradeTx = await registry.upgradeContract(contractName, testContract2.address)
+    upgradeTx = await registry.upgradeContract(
+      contractName,
+      testContract2.address
+    )
     upgradeTxInfo = parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(testContract2.address, regContractAddress, 'Expected same contract address')
+    assert.equal(
+      testContract2.address,
+      regContractAddress,
+      'Expected same contract address'
+    )
 
-    assert.equal(upgradeTxInfo.event.name, 'ContractUpgraded', 'Expected same event name')
-    assert.equal(toStr(upgradeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
-    assert.equal(upgradeTxInfo.event.args._oldAddress, testContract1.address, 'Expected same contract address')
-    assert.equal(upgradeTxInfo.event.args._newAddress, testContract2.address, 'Expected same contract address')
+    assert.equal(
+      upgradeTxInfo.event.name,
+      'ContractUpgraded',
+      'Expected same event name'
+    )
+    assert.equal(
+      toStr(upgradeTxInfo.event.args._name),
+      toStr(contractName),
+      'Expected same contract name'
+    )
+    assert.equal(
+      upgradeTxInfo.event.args._oldAddress,
+      testContract1.address,
+      'Expected same contract address'
+    )
+    assert.equal(
+      upgradeTxInfo.event.args._newAddress,
+      testContract2.address,
+      'Expected same contract address'
+    )
 
     // upgrade registered contract from testContract2 to testContract3 -> assert event params are as expected
     // ensures an upgraded contract can be upgraded again
-    upgradeTx = await registry.upgradeContract(contractName, testContract3.address)
+    upgradeTx = await registry.upgradeContract(
+      contractName,
+      testContract3.address
+    )
     upgradeTxInfo = parseTx(upgradeTx)
 
     regContractAddress = await registry.getContract.call(contractName)
-    assert.equal(testContract3.address, regContractAddress, 'Expected same contract address')
+    assert.equal(
+      testContract3.address,
+      regContractAddress,
+      'Expected same contract address'
+    )
 
-    assert.equal(upgradeTxInfo.event.name, 'ContractUpgraded', 'Expected same event name')
-    assert.equal(toStr(upgradeTxInfo.event.args._name), toStr(contractName), 'Expected same contract name')
-    assert.equal(upgradeTxInfo.event.args._oldAddress, testContract2.address, 'Expected same contract address')
-    assert.equal(upgradeTxInfo.event.args._newAddress, testContract3.address, 'Expected same contract address')
+    assert.equal(
+      upgradeTxInfo.event.name,
+      'ContractUpgraded',
+      'Expected same event name'
+    )
+    assert.equal(
+      toStr(upgradeTxInfo.event.args._name),
+      toStr(contractName),
+      'Expected same contract name'
+    )
+    assert.equal(
+      upgradeTxInfo.event.args._oldAddress,
+      testContract2.address,
+      'Expected same contract address'
+    )
+    assert.equal(
+      upgradeTxInfo.event.args._newAddress,
+      testContract3.address,
+      'Expected same contract address'
+    )
 
     // ensure previous contract addresses (versions) are being stored
     // after upgrading (twice), there should be 3 versions (original adding of contract + upgrade + upgrade)
-    let testContractVersionCount = (await registry.getContractVersionCount.call(contractName)).toNumber()
-    assert.equal(testContractVersionCount, 3, 'Expected 3 version(s) of contract')
+    let testContractVersionCount = (
+      await registry.getContractVersionCount.call(contractName)
+    ).toNumber()
+    assert.equal(
+      testContractVersionCount,
+      3,
+      'Expected 3 version(s) of contract'
+    )
     // assert address for each available version
-    let regContractAddressVersion1 = await registry.getContract.call(contractName, 1)
-    let regContractAddressVersion2 = await registry.getContract.call(contractName, 2)
-    let regContractAddressVersion3 = await registry.getContract.call(contractName, 3)
-    let regContractAddressVersionLatest = await registry.getContract.call(contractName)
-    assert.equal(regContractAddressVersion1, testContract1.address, 'Expected same contract address')
-    assert.equal(regContractAddressVersion2, testContract2.address, 'Expected same contract address')
-    assert.equal(regContractAddressVersion3, testContract3.address, 'Expected same contract address')
-    assert.equal(regContractAddressVersionLatest, regContractAddressVersion3, 'Expected same contract address')
+    let regContractAddressVersion1 = await registry.getContract.call(
+      contractName,
+      1
+    )
+    let regContractAddressVersion2 = await registry.getContract.call(
+      contractName,
+      2
+    )
+    let regContractAddressVersion3 = await registry.getContract.call(
+      contractName,
+      3
+    )
+    let regContractAddressVersionLatest = await registry.getContract.call(
+      contractName
+    )
+    assert.equal(
+      regContractAddressVersion1,
+      testContract1.address,
+      'Expected same contract address'
+    )
+    assert.equal(
+      regContractAddressVersion2,
+      testContract2.address,
+      'Expected same contract address'
+    )
+    assert.equal(
+      regContractAddressVersion3,
+      testContract3.address,
+      'Expected same contract address'
+    )
+    assert.equal(
+      regContractAddressVersionLatest,
+      regContractAddressVersion3,
+      'Expected same contract address'
+    )
   })
 
   it('Should upgrade registry and re-point all registry contracts', async () => {
     // register contract
     let testContract = await TestContract.new(registry.address)
-    let tx = await registry.addContract(contractName, testContract.address)
+    await registry.addContract(contractName, testContract.address)
 
     // deploy new registry
     let registry2 = await Registry.new()
@@ -159,7 +319,7 @@ contract('Registry', async (accounts) => {
   it('Should fail when a foreign account tries to re-point registry contracts to new registry', async () => {
     // register contract
     let testContract = await TestContract.new(registry.address)
-    let tx = await registry.addContract(contractName, testContract.address)
+    await registry.addContract(contractName, testContract.address)
 
     // deploy new registry
     let registry2 = await Registry.new()
@@ -171,7 +331,11 @@ contract('Registry', async (accounts) => {
       await registry2.addContract(contractName, testContract.address)
     } catch (e) {
       // handle expected error
-      if (e.message.indexOf('Can only be called if registryAddress is empty, msg.sender or owner') >= 0) {
+      if (
+        e.message.indexOf(
+          'Can only be called if registryAddress is empty, msg.sender or owner'
+        ) >= 0
+      ) {
         caughtError = true
       } else {
         // other unexpected error - throw it normally
@@ -191,9 +355,19 @@ contract('Registry', async (accounts) => {
     await registry.addContract(_constants.userStorageKey, userStorage.address)
     let trackStorage = await TrackStorage.new(registry.address)
     await registry.addContract(_constants.trackStorageKey, trackStorage.address)
-    let userFactory = await UserFactory.new(registry.address, _constants.userStorageKey, networkId, accounts[5])
+    let userFactory = await UserFactory.new(
+      registry.address,
+      _constants.userStorageKey,
+      networkId,
+      accounts[5]
+    )
     await registry.addContract(_constants.userFactoryKey, userFactory.address)
-    let trackFactory = await TrackFactory.new(registry.address, _constants.trackStorageKey, _constants.userFactoryKey, networkId)
+    let trackFactory = await TrackFactory.new(
+      registry.address,
+      _constants.trackStorageKey,
+      _constants.userFactoryKey,
+      networkId
+    )
     await registry.addContract(_constants.trackFactoryKey, trackFactory.address)
 
     // perform expected behavior - add+validate user, add+validate track
@@ -226,15 +400,24 @@ contract('Registry', async (accounts) => {
     await userStorage.setRegistry(registry2.address)
     await registry2.addContract(_constants.userStorageKey, userStorage.address)
     await trackStorage.setRegistry(registry2.address)
-    await registry2.addContract(_constants.trackStorageKey, trackStorage.address)
+    await registry2.addContract(
+      _constants.trackStorageKey,
+      trackStorage.address
+    )
     await userFactory.setRegistry(registry2.address)
     await registry2.addContract(_constants.userFactoryKey, userFactory.address)
     await trackFactory.setRegistry(registry2.address)
-    await registry2.addContract(_constants.trackFactoryKey, trackFactory.address)
+    await registry2.addContract(
+      _constants.trackFactoryKey,
+      trackFactory.address
+    )
 
     // perform expected behavior - retrieve+validate previous user; add+validate new track with previous user
     let user = await getUserFromFactory(userId, userFactory)
-    validateObj(user, { wallet: userWallet, handle: toStr(_constants.userHandle1) })
+    validateObj(user, {
+      wallet: userWallet,
+      handle: toStr(_constants.userHandle1)
+    })
     await _lib.addTrackAndValidate(
       trackFactory,
       trackId2,

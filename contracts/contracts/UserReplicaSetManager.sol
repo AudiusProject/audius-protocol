@@ -324,7 +324,12 @@ contract UserReplicaSetManager is SigningLogicInitializable, RegistryContract {
             secondaryIds: _secondaryIds
         });
 
-        emit UpdateReplicaSet(_userId, _primaryId, _secondaryIds, signer);
+        emit UpdateReplicaSet(
+            _userId,
+            _primaryId,
+            _secondaryIds,
+            signer
+        );
     }
 
     /// @notice Update configured userReplicaSetBootstrapAddress

@@ -208,12 +208,6 @@ const config = convict({
     env: 'rateLimitingBatchCidsExistLimit',
     default: 1
   },
-  URSMRequestForSignatureReqLimit: {
-    doc: 'Total requests per hour rate limit for /ursm_request_for_signature route',
-    format: 'nat',
-    env: 'URSMRequestForSignatureReqLimit',
-    default: 30
-  },
 
   maxAudioFileSizeBytes: {
     doc: 'Maximum file size for audio file uploads in bytes',
@@ -329,12 +323,6 @@ const config = convict({
     env: 'solDelegatePrivateKeyBase64',
     default: '',
     sensitive: true
-  },
-  // `env` property is not defined as this should never be passed in as an envvar and should only be set programatically
-  isRegisteredOnURSM: {
-    doc: 'boolean indicating whether or not node has been registered on dataContracts UserReplicaSetManager contract (URSM)',
-    format: Boolean,
-    default: false
   },
 
   spID: {
@@ -493,12 +481,6 @@ const config = convict({
     format: Boolean,
     env: 'considerNodeUnhealthy',
     default: false
-  },
-  entityManagerReplicaSetEnabled: {
-    doc: 'whether or not to use entity manager to update the replica set',
-    format: Boolean,
-    env: 'entityManagerReplicaSetEnabled',
-    default: true
   },
 
   /** sync / snapback configs */

@@ -11,7 +11,7 @@ type EnvironmentConfig = {
   ETH_PROVIDER_URL: string
   ETH_REGISTRY_ADDRESS: string
   ETH_TOKEN_ADDRESS: string
-  IDENTITY_SERVICE_ENDPOINT: string
+  IDENTITY_SERVICE_URL: string
   WORMHOLE_ADDRESS: string
   ENTITY_MANAGER_CONTRACT_ADDRESS: string
   WEB3_PROVIDER_URL: string
@@ -25,7 +25,7 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
     ETH_PROVIDER_URL: 'https://eth.audius.co',
     ETH_REGISTRY_ADDRESS: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
     ETH_TOKEN_ADDRESS: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
-    IDENTITY_SERVICE_ENDPOINT: 'https://identityservice.audius.co',
+    IDENTITY_SERVICE_URL: 'https://identityservice.audius.co',
     WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
     WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
     ENTITY_MANAGER_CONTRACT_ADDRESS:
@@ -38,7 +38,7 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
     ETH_PROVIDER_URL: 'https://eth.staging.audius.co',
     ETH_REGISTRY_ADDRESS: '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3',
     ETH_TOKEN_ADDRESS: '0x5375BE4c52fA29b26077B0F15ee5254D779676A6',
-    IDENTITY_SERVICE_ENDPOINT: 'https://identityservice.staging.audius.co',
+    IDENTITY_SERVICE_URL: 'https://identityservice.staging.audius.co',
     WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
     WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
     ENTITY_MANAGER_CONTRACT_ADDRESS:
@@ -51,7 +51,7 @@ const devConfig: ServicesConfig = {
   discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
   entityManagerContractAddress: '0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66',
   web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
-  identityServiceEndpoint: 'http://audius-protocol-identity-service-1'
+  identityServiceUrl: 'http://audius-protocol-identity-service-1'
 }
 
 const generateServicesConfig = async (
@@ -60,7 +60,7 @@ const generateServicesConfig = async (
   const contracts = new EthContracts({
     ethWeb3Manager: new EthWeb3Manager({
       identityService: new IdentityService({
-        identityServiceEndpoint: config.IDENTITY_SERVICE_ENDPOINT
+        identityServiceEndpoint: config.IDENTITY_SERVICE_URL
       }),
       web3Config: {
         ownerWallet: config.ETH_OWNER_WALLET,
@@ -92,7 +92,7 @@ const generateServicesConfig = async (
     discoveryNodes: discoveryNodes.map((node) => node.endpoint),
     web3ProviderUrl: config.WEB3_PROVIDER_URL,
     entityManagerContractAddress: config.ENTITY_MANAGER_CONTRACT_ADDRESS,
-    identityServiceEndpoint: config.IDENTITY_SERVICE_ENDPOINT
+    identityServiceUrl: config.IDENTITY_SERVICE_URL
   }
 }
 

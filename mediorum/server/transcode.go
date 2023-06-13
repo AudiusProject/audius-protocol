@@ -181,13 +181,14 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
-	logger := ss.logger.With("template", upload.Template, "hash", fileHash)
+	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
 	onError := func(err error, info ...string) error {
 		errMsg := fmt.Errorf("%s %s", err, strings.Join(info, " "))
 		upload.Error = errMsg.Error()
 		upload.Status = JobStatusError
 		ss.crud.Update(upload)
+		logger.Error("transcode error", err)
 		return errMsg
 	}
 
@@ -315,7 +316,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 		upload.TranscodeResults["320"] = resultKey
 
-		ss.logger.Info("transcode done", "mirrors", mirrors)
+		logger.Info("transcode done", "mirrors", mirrors)
 	}
 
 	upload.TranscodeProgress = 1

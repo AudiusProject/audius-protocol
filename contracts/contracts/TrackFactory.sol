@@ -52,7 +52,7 @@ contract TrackFactory is RegistryContract, SigningLogic {
         require(
             _registryAddress != address(0x00) &&
             _trackStorageRegistryKey.length != 0 && _userFactoryRegistryKey.length != 0,
-            "requires non-zero _registryAddress, non-empty _trackStorageRegistryKey, non-empty _userFactoryRegistryKey"
+            "requires _registryAddress, _trackStorageRegistryKey, _userFactoryRegistryKey"
         );
         registry = RegistryInterface(_registryAddress);
         userFactoryRegistryKey = _userFactoryRegistryKey;
