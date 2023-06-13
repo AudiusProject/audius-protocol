@@ -4,7 +4,6 @@
   border-radius: 8px;
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
   background-color: var(--white);
-  padding-top: 24px;
   overflow: hidden;
 }
 
@@ -23,6 +22,7 @@
 .tableHead {
   position: relative;
   display: block;
+  padding-top: 24px;
   background-color: var(--white);
   color: var(--neutral);
   font-size: 14px;
@@ -47,6 +47,7 @@
   position: relative;
   flex: 0 0 144px;
 }
+
 .cellSectionEnd.menu {
   flex: 0 0 64px;
 }
@@ -59,9 +60,11 @@
   line-height: 41px;
   user-select: none;
 }
+
 .tableHeader.hasSorter .textCell {
   padding-right: 6px;
 }
+
 .titleHeader + .titleHeader::before {
   content: '';
   position: absolute;
@@ -114,9 +117,11 @@
   color: var(--neutral-light-2);
   cursor: pointer;
 }
+
 .pageButton:not(.active):hover {
   color: var(--neutral);
 }
+
 .pageButton.active {
   background-color: var(--secondary);
   color: var(--static-white);
@@ -129,15 +134,19 @@
   margin: 0 8px;
   cursor: pointer;
 }
+
 .pageCaret path {
   fill: var(--neutral-light-4);
 }
+
 .pageCaret:not(.disabled):hover path {
   fill: var(--neutral);
 }
+
 .pageCaret.disabled {
   cursor: default;
 }
+
 .pageCaret.disabled path {
   fill: var(--neutral-light-7);
 }
@@ -152,9 +161,11 @@
   border-top: 1px solid var(--neutral-light-8);
   cursor: pointer;
 }
+
 .showMoreContainer:hover .showMoreText {
   color: var(--neutral);
 }
+
 .showMoreContainer:hover .showMoreCaret path {
   fill: var(--neutral);
 }
@@ -170,6 +181,7 @@
   height: 16px;
   width: 16px;
 }
+
 .showMoreCaret path {
   transition: all 0.07s ease-in-out;
   fill: var(--neutral-light-4);
@@ -191,9 +203,11 @@
   font-weight: 600;
   cursor: pointer;
 }
+
 .tableRow.active {
   color: var(--primary);
 }
+
 .tableRow:hover:not(.skeletonRow) {
   z-index: 1;
   box-shadow: 0 1px 0 0 var(--neutral-light-8),
@@ -201,11 +215,13 @@
   transition: all 0.07s ease-in-out;
   background-color: var(--neutral-light-9);
 }
+
 .tableRow.disabled {
   cursor: default;
   color: var(--neutral-light-4);
   background-color: var(--neutral-light-9);
 }
+
 .tableRow.disabled:hover {
   box-shadow: none;
   background-color: var(--neutral-light-9);

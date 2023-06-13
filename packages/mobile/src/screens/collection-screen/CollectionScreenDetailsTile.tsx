@@ -207,6 +207,7 @@ export const CollectionScreenDetailsTile = ({
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
+        trackItemAction='overflow'
         showDivider
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
