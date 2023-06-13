@@ -2,7 +2,8 @@ import {
   EntityManager,
   developmentConfig,
   productionConfig,
-  stagingConfig
+  stagingConfig,
+  DiscoveryNodeSelectorService
 } from '@audius/sdk'
 
 import { env } from './env'
@@ -14,8 +15,13 @@ const servicesConfig =
     ? stagingConfig
     : productionConfig
 
-export const entityManagerInstance = new EntityManager({
-  contractAddress: servicesConfig.entityManagerContractAddress,
-  web3ProviderUrl: servicesConfig.web3ProviderUrl,
-  identityServiceUrl: servicesConfig.identityServiceEndpoint
-})
+export const makeEntityManagerInstance = (
+  discoveryNodeSelector: DiscoveryNodeSelectorService
+) => {
+  return new EntityManager({
+    contractAddress: servicesConfig.entityManagerContractAddress,
+    web3ProviderUrl: servicesConfig.web3ProviderUrl,
+    identityServiceUrl: servicesConfig.identityServiceUrl,
+    discoveryNodeSelector
+  })
+}

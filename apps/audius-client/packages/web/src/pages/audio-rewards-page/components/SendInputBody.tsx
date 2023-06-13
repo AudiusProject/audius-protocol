@@ -101,11 +101,15 @@ type SendInputBodyProps = {
 
 const isValidEthDestination = (wallet: WalletAddress) => {
   const libs = window.audiusLibs
-  return libs.web3Manager.web3.utils.isAddress(wallet)
+  return libs.web3Manager?.web3?.utils.isAddress(wallet)
 }
 
 const isValidSolDestination = (wallet: SolanaWalletAddress) => {
-  const solanaweb3 = window.audiusLibs.solanaWeb3Manager.solanaWeb3
+  const solanaweb3 = window.audiusLibs.solanaWeb3Manager?.solanaWeb3
+  if (!solanaweb3) {
+    console.error('No solana web3 found')
+    return false
+  }
   try {
     const ignored = new solanaweb3.PublicKey(wallet)
     return true

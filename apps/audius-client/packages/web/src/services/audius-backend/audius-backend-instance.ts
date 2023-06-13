@@ -20,7 +20,7 @@ import { getLibs } from './getLibs'
 
 declare global {
   interface Window {
-    audiusLibs: any
+    audiusLibs: AudiusLibs
   }
 }
 
@@ -51,14 +51,15 @@ export const audiusBackendInstance = audiusBackend({
       ? JSON.parse(useMetaMaskSerialized)
       : false
 
-    if (useMetaMask && window.Web3) {
+    if (useMetaMask && window.ethereum) {
       try {
         return {
           error: false,
           web3Config: await libs.configExternalWeb3(
             registryAddress,
-            window.Web3.currentProvider,
+            window.ethereum,
             web3NetworkId,
+            null,
             entityManagerAddress
           )
         }

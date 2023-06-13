@@ -1,4 +1,4 @@
-import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
+import type { AudiusLibs } from '@audius/sdk'
 
 import {
   ID,
@@ -39,7 +39,7 @@ import {
 // TODO: declare this at the root and use actual audiusLibs type
 declare global {
   interface Window {
-    audiusLibs: any
+    audiusLibs: AudiusLibs
   }
 }
 

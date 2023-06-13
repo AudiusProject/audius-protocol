@@ -61,7 +61,7 @@ const messages = {
 }
 
 const META_MASK_SETUP_URL =
-  'https://medium.com/@audius/configuring-metamask-for-use-with-audius-91e24bf6840'
+  'https://support.audius.co/help/Configuring-MetaMask-For-Use-With-Audius'
 
 type OwnProps = {
   children: ComponentType<MobileSignOnProps> | ComponentType<DesktopSignOnProps>
@@ -419,7 +419,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   render() {
     // Note: Typescript complains that web3 property does not exist on window
-    const showMetaMaskOption = !!(window as any).web3
+    const showMetaMaskOption = !!window.ethereum
     const page = this.props.signIn ? Pages.SIGNIN : this.props.page
 
     const mobileProps = {
