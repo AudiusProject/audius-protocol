@@ -159,7 +159,7 @@ def fetch_tx_receipts(block):
             blocknumber=block_number,
             blockhash=block_hash,
             txhash=None,
-            message=f"index_nethermind.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}",
+            message=f"index_nethermind.py | fetch_tx_receipts Expected {num_submitted_txs} received {num_processed_txs}",
         )
     return block_tx_with_receipts
 
@@ -185,7 +185,6 @@ def fetch_cid_metadata(session, entity_manager_txs):
     # merged with cid_metadata and cid_type before returning
     cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
     cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
-    logger.info(f"raymont {entity_manager_txs}")
 
     # fetch transactions
     for tx_receipt in entity_manager_txs:
@@ -364,23 +363,19 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     )
     if not entity_manager_address:
         entity_manager_address = os.getenv("audius_contracts_entity_manager_address")
-    logger.info(f"raymont tx {tx} {entity_manager_address}")
     tx_target_contract_address = tx.to
-    logger.info(f"raymont target {tx_target_contract_address}")
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
         tx_is_type = tx_target_contract_address == entity_manager_address
         if tx_is_type:
             contract_type = tx_type
             logger.debug(
-                f"index_nethermind.py | {tx_type} contract addr: {tx_target_contract_address}"
+                f"{tx_type} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
 
-    logger.debug(
-        f"index_nethermind.py | checking returned {contract_type} vs {tx_target_contract_address}"
-    )
+    logger.debug(f"checking returned {contract_type} vs {tx_target_contract_address}")
     return contract_type
 
 
@@ -437,14 +432,14 @@ def process_state_changes(
         ) = bulk_processor(*tx_processing_args)
 
         logger.info(
-            f"index_nethermind.py | {bulk_processor.__name__} completed"
+            f"{bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
 
 
 def create_and_raise_indexing_error(err, redis):
     logger.error(
-        f"index_nethermind.py | Error in the indexing task at"
+        f"Error in the indexing task at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
     set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
@@ -527,13 +522,12 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
         or 0
     )
 
-    latest_block_timestamp = None
     metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
     start_time = time.time()
     metric.reset_timer()
 
     logger.set_context("block", next_block_number)
-    logger.info(f"index_nethermind.py | index_forward | block {next_block_number}")
+    logger.info(f"index_forward, block {next_block_number}")
 
     challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
@@ -541,7 +535,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
         skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
         if skip_whole_block:
             logger.warn(
-                f"index_nethermind.py | Skipping all txs in block {next_block.hash} {next_block_number}"
+                f"Skipping all txs in block {next_block.hash} {next_block_number}"
             )
             save_skipped_tx(session, redis)
             add_indexed_block_to_db(session, next_block)
@@ -554,14 +548,14 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 Fetch transaction receipts
                 """
                 fetch_tx_receipts_start_time = time.time()
-                logger.debug(f"index_nethermind.py fetching block {next_block_number}")
+                logger.debug(f"fetching block {next_block_number}")
                 tx_receipt_dict = fetch_tx_receipts(next_block)
                 metric.save_time(
                     {"scope": "fetch_tx_receipts"},
                     start_time=fetch_tx_receipts_start_time,
                 )
                 logger.debug(
-                    f"index_nethermind.py | index_forward - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
+                    f"index_forward - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                 )
 
                 """
@@ -577,7 +571,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
 
                 # Parse tx events in each block
                 for tx in sorted_txs:
-                    logger.info(f"raymont sorted {tx} {tx_receipt_dict}")
                     tx_hash = tx.transactionHash.hex()
                     tx_target_contract_address = tx.to if tx.to else zero_address
                     tx_receipt = tx_receipt_dict[tx_hash]
@@ -587,7 +580,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
 
                     if should_skip_tx:
                         logger.debug(
-                            f"index_nethermind.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                            f"Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                         )
                         save_skipped_tx(session, redis)
                         continue
@@ -601,9 +594,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     {"scope": "parse_tx_receipts"},
                     start_time=parse_tx_receipts_start_time,
                 )
-                logger.debug(
-                    f"index_nethermind.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
-                )
 
                 """
                 Fetch JSON metadata
@@ -615,18 +605,12 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     session,
                     txs_grouped_by_type[ENTITY_MANAGER],
                 )
-                logger.debug(
-                    f"index_nethermind.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
-                )
                 # Record the time this took in redis
                 duration_ms = round((time.time() - fetch_metadata_start_time) * 1000)
                 record_fetch_metadata_ms(redis, duration_ms)
                 metric.save_time(
                     {"scope": "fetch_metadata"},
                     start_time=fetch_metadata_start_time,
-                )
-                logger.debug(
-                    f"index_nethermind.py | index_blocks - fetch_metadata in {duration_ms}ms"
                 )
 
                 """
@@ -642,9 +626,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 metric.save_time(
                     {"scope": "add_indexed_block_to_db"},
                     start_time=add_indexed_block_to_db_start_time,
-                )
-                logger.debug(
-                    f"index_nethermind.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                 )
 
                 """
@@ -664,9 +645,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     {"scope": "process_state_changes"},
                     start_time=process_state_changes_start_time,
                 )
-                logger.debug(
-                    f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
-                )
                 is_save_cid_enabled = (
                     shared_config["discprov"]["enable_save_cid"] == "true"
                 )
@@ -682,9 +660,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     metric.save_time(
                         {"scope": "save_cid_metadata"},
                         start_time=save_cid_metadata_time,
-                    )
-                    logger.debug(
-                        f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
                     )
 
             except Exception as e:
@@ -702,7 +677,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
             session.commit()
             metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
             logger.debug(
-                f"index_nethermind.py | session committed to db for block={next_block.number} in {time.time() - commit_start_time}s"
+                f"Session committed to db for block={next_block.number} in {time.time() - commit_start_time}s"
             )
         except Exception as e:
             # Use 'commit' as the tx hash here.
@@ -719,23 +694,20 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
         try:
             # Check the last block's timestamp for updating the trending challenge
             [should_update, date] = should_trending_challenge_update(
-                session, latest_block_timestamp
+                session, next_block.timestamp
             )
             if should_update:
                 celery.send_task("calculate_trending_challenges", kwargs={"date": date})
         except Exception as e:
             # Do not throw error, as this should not stop indexing
             logger.error(
-                f"index_nethermind.py | Error in calling update trending challenge {e}",
+                f"Error in calling update trending challenge {e}",
                 exc_info=True,
             )
         if skip_tx_hash:
             clear_indexing_error(redis)
 
     add_indexed_block_to_redis(next_block, redis)
-    logger.debug(
-        f"index_nethermind.py | update most recently processed block complete for block=${next_block_number}"
-    )
 
     # Record the time this took in redis
     metric.save_time({"scope": "full"})
@@ -752,7 +724,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
 @log_duration(logger)
 def revert_block(session: Session, revert_block: Block):
     start_time = datetime.now()
-    logger.debug(revert_block)
+    logger.debug(f"Reverting {revert_block_number}")
 
     rebuild_playlist_index = False
     rebuild_track_index = False
@@ -761,7 +733,6 @@ def revert_block(session: Session, revert_block: Block):
     # Cache relevant information about current block
     revert_hash = revert_block.blockhash
     revert_block_number = revert_block.number
-    logger.debug(f"Reverting {revert_block_number}")
     parent_hash = revert_block.parenthash
 
     # Special case for default start block value of 0x0 / 0x0...0
@@ -855,7 +826,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_save_entry:
             previous_save_entry.is_current = True
-        logger.info(f"index_nethermind.py | Reverting save: {save_to_revert}")
+        logger.info(f"Reverting save: {save_to_revert}")
         # Remove outdated save item entry
         session.delete(save_to_revert)
 
@@ -875,7 +846,7 @@ def revert_block(session: Session, revert_block: Block):
         if previous_repost_entry:
             previous_repost_entry.is_current = True
         # Remove outdated repost entry
-        logger.info(f"index_nethermind.py | Reverting repost: {repost_to_revert}")
+        logger.info(f"Reverting repost: {repost_to_revert}")
         session.delete(repost_to_revert)
 
     for follow_to_revert in revert_follow_entries:
@@ -890,7 +861,7 @@ def revert_block(session: Session, revert_block: Block):
         if previous_follow_entry:
             previous_follow_entry.is_current = True
         # remove outdated follow entry
-        logger.info(f"index_nethermind.py | Reverting follow: {follow_to_revert}")
+        logger.info(f"Reverting follow: {follow_to_revert}")
         session.delete(follow_to_revert)
 
     for subscription_to_revert in revert_subscription_entries:
@@ -904,9 +875,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_subscription_entry:
             previous_subscription_entry.is_current = True
-        logger.info(
-            f"index_nethermind.py | Reverting subscription: {subscription_to_revert}"
-        )
+        logger.info(f"Reverting subscription: {subscription_to_revert}")
         session.delete(subscription_to_revert)
 
     for playlist_to_revert in revert_playlist_entries:
@@ -920,7 +889,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_playlist_entry:
             previous_playlist_entry.is_current = True
-        logger.info(f"index_nethermind.py | Reverting playlist: {playlist_to_revert}")
+        logger.info(f"Reverting playlist: {playlist_to_revert}")
         # Remove outdated playlist entry
         session.delete(playlist_to_revert)
 
@@ -937,7 +906,7 @@ def revert_block(session: Session, revert_block: Block):
             # First element in descending order is new current track item
             previous_track_entry.is_current = True
         # Remove track entries
-        logger.info(f"index_nethermind.py | Reverting track: {track_to_revert}")
+        logger.info(f"Reverting track: {track_to_revert}")
         session.delete(track_to_revert)
 
     for ursm_content_node_to_revert in revert_ursm_content_node_entries:
@@ -952,9 +921,7 @@ def revert_block(session: Session, revert_block: Block):
         if previous_ursm_content_node_entry:
             previous_ursm_content_node_entry.is_current = True
         # Remove previous ursm Content Node entires
-        logger.info(
-            f"index_nethermind.py | Reverting ursm Content Node: {ursm_content_node_to_revert}"
-        )
+        logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
         session.delete(ursm_content_node_to_revert)
 
     # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
@@ -976,7 +943,7 @@ def revert_block(session: Session, revert_block: Block):
             # Update previous user row, setting is_current to true
             previous_user_entry.is_current = True
         # Remove outdated user entries
-        logger.info(f"index_nethermind.py | Reverting user: {user_to_revert}")
+        logger.info(f"Reverting user: {user_to_revert}")
         session.delete(user_to_revert)
 
     for associated_wallets_to_revert in revert_associated_wallets:
@@ -998,7 +965,7 @@ def revert_block(session: Session, revert_block: Block):
                 {"is_current": True}
             )
         # Remove outdated associated wallets
-        logger.info(f"index_nethermind.py | Reverting associated Wallet: {user_id}")
+        logger.info(f"Reverting associated Wallet: {user_id}")
         session.delete(associated_wallets_to_revert)
 
     revert_user_events(session, revert_user_events_entries, revert_block_number)
@@ -1016,9 +983,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_track_route_entry:
             previous_track_route_entry.is_current = True
-        logger.info(
-            f"index_nethermind.py | Reverting track route {track_route_to_revert}"
-        )
+        logger.info(f"Reverting track route {track_route_to_revert}")
         session.delete(track_route_to_revert)
 
     for playlist_route_to_revert in revert_playlist_routes:
@@ -1034,9 +999,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_playlist_route_entry:
             previous_playlist_route_entry.is_current = True
-        logger.info(
-            f"index_nethermind.py | Reverting playlist route {playlist_route_to_revert}"
-        )
+        logger.info(f"Reverting playlist route {playlist_route_to_revert}")
         session.delete(playlist_route_to_revert)
 
     for notification_seen_to_revert in revert_notification_seen:
@@ -1056,9 +1019,7 @@ def revert_block(session: Session, revert_block: Block):
         )
         if previous_playlist_seen_entry:
             previous_playlist_seen_entry.is_current = True
-        logger.info(
-            f"index_nethermind.py | Reverting playlist seen {playlist_seen_to_revert}"
-        )
+        logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
         session.delete(playlist_seen_to_revert)
 
     # Remove outdated block entry
@@ -1068,7 +1029,7 @@ def revert_block(session: Session, revert_block: Block):
     rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
     rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     logger.info(
-        f"index_nethermind.py | Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
+        f"Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
     )
 
 
@@ -1108,6 +1069,6 @@ def update_task(self):
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
         raise e
     finally:
-        logger.debug("index_nethermind.py | Processing complete")
+        logger.debug("Processing complete")
         # Resend the task to continue indexing
         celery.send_task("update_discovery_provider_nethermind")
