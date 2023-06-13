@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -25,8 +26,8 @@ import (
 )
 
 type Peer struct {
-	Host   string
-	Wallet string
+	Host   string `json:"host"`
+	Wallet string `json:"wallet"`
 }
 
 func (p Peer) ApiPath(parts ...string) string {
@@ -36,20 +37,24 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
-	Env               string
-	Self              Peer
-	Peers             []Peer
-	Signers           []Peer
-	ReplicationFactor int
-	Dir               string `default:"/tmp/mediorum"`
-	BlobStoreDSN      string `json:"-"`
-	PostgresDSN       string `json:"-"`
-	LegacyFSRoot      string `json:"-"`
-	PrivateKey        string `json:"-"`
-	ListenPort        string
-	UpstreamCN        string
-	TrustedNotifierID int
-	MyIndex           int
+	Env                 string
+	Self                Peer
+	Peers               []Peer
+	Signers             []Peer
+	ReplicationFactor   int
+	Dir                 string `default:"/tmp/mediorum"`
+	BlobStoreDSN        string `json:"-"`
+	PostgresDSN         string `json:"-"`
+	LegacyFSRoot        string `json:"-"`
+	PrivateKey          string `json:"-"`
+	ListenPort          string
+	UpstreamCN          string
+	TrustedNotifierID   int
+	SPID                int
+	SPOwnerWallet       string
+	GitSHA              string
+	AudiusDockerCompose string
+	AutoUpgradeEnabled  bool
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -62,12 +67,17 @@ type MediorumConfig struct {
 type MediorumServer struct {
 	echo            *echo.Echo
 	bucket          *blob.Bucket
-	placement       *placement
 	logger          *slog.Logger
 	crud            *crudr.Crudr
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+	storagePathUsed uint64
+	storagePathSize uint64
+	databaseSize    uint64
+
+	peerHealthMutex sync.RWMutex
+	peerHealth      map[string]time.Time
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -89,16 +99,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		log.Fatal("invalid host: ", err)
 	} else if config.ListenPort == "" {
 		config.ListenPort = hostUrl.Port()
-	}
-
-	// find MyIndex in peers list to enable round-robin turn taking (i.e. in repair.go)
-	// in staging + prod the graph query will order by SP ID,
-	// so every SP should get a consistent MyIndex across restarts
-	for idx, peer := range config.Peers {
-		if peer.Host == config.Self.Host {
-			config.MyIndex = idx
-			break
-		}
 	}
 
 	if config.Dir == "" {
@@ -155,7 +155,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
 	if config.TrustedNotifierID > 0 {
-		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID))
+		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID), config.Self.Wallet)
 		if err == nil {
 			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
@@ -180,12 +180,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	ss := &MediorumServer{
 		echo:            echoServer,
 		bucket:          bucket,
-		placement:       newPlacement(config),
 		crud:            crud,
 		pgPool:          pgPool,
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
+
+		peerHealth: map[string]time.Time{},
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -202,10 +203,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		routes.GET("/", ss.serveUploadUI)
 	} else {
 		routes.GET("", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/status")
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
 		})
 		routes.GET("/", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/status")
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
 		})
 	}
 
@@ -224,19 +225,26 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
+	routes.GET("/health_check", ss.serveHealthCheck)
 
-	// unified health check?
-	routes.GET("/status", ss.getStatus)
-	routes.GET("/health_check", ss.serveUnifiedHealthCheck)
+	// todo: use `/internal/ok` instead... this is just needed for transition
+	routes.GET("/status", func(c echo.Context) error {
+		return c.String(200, "OK")
+	})
 
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
+	// responds to polling requests in peer_health
+	// should do no real work
+	internalApi.GET("/ok", func(c echo.Context) error {
+		return c.String(200, "OK")
+	})
+
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
 	// internal health: used by loadtest tool
-	internalApi.GET("/health", ss.getMyHealth)
 	internalApi.GET("/health/peers", ss.getPeerHealth)
 
 	// internal: crud
@@ -246,9 +254,19 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: blobs
 	internalApi.GET("/blobs/broken", ss.getBlobBroken)
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
+
+	// old info routes
+	// TODO: remove
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
+
+	// new info routes
+	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)
+	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
+
+	// internal: blobs between peers
+	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
@@ -273,9 +291,12 @@ func (ss *MediorumServer) MustStart() {
 		}
 	}()
 
-	go ss.startTranscoder()
-
+	// the crudr health broadcaster is deprecated and replaced by the health poller.
+	// it's kept here for one extra deploy while old hosts are still expecting that.
 	go ss.startHealthBroadcaster()
+	go ss.startHealthPoller()
+
+	go ss.startTranscoder()
 
 	go ss.startRepairer()
 
@@ -284,6 +305,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startCidBeamClient()
 
 	go ss.startPollingDelistStatuses()
+
+	go ss.monitorDiskAndDbStatus()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
