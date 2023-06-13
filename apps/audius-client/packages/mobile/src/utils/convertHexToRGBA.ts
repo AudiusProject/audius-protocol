@@ -14,5 +14,5 @@ export const convertHexToRGBA = (hexCode, opacity = 1) => {
     opacity = opacity / 100
   }
 
-  return `rgba(${r},${g},${b},${1})`
+  return `rgba(${r},${g},${b},${opacity})`
 }
