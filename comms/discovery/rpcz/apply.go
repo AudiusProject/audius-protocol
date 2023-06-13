@@ -65,11 +65,11 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error
 	return proc, nil
 }
 
-func (proc *RPCProcessor) SweeperErrors() []error {
-	var errors []error
+func (proc *RPCProcessor) SweeperErrors() []string {
+	var errors []string
 	for _, p := range proc.peerClients {
 		if p.err != nil {
-			errors = append(errors, fmt.Errorf("%s: %s", p.Host, p.err))
+			errors = append(errors, fmt.Sprintf("%s: %s", p.Host, p.err))
 		}
 	}
 	return errors
