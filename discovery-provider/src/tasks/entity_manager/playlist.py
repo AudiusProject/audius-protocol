@@ -8,6 +8,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
     Action,
     EntityType,
@@ -136,6 +137,11 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise Exception(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        playlist_metadata = params.metadata[params.metadata_cid]
+        playlist_description = playlist_metadata["description"]
+        if playlist_description is not None and playlist_description > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
+            raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
 
 
 def create_playlist(params: ManageEntityParameters):
