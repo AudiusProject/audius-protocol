@@ -59,7 +59,7 @@ def test_index_valid_user(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, bus_mock)
+        update_task = UpdateTask(web3, bus_mock)
 
     test_metadata = {
         "QmUpdateUser2": {
@@ -153,7 +153,9 @@ def test_index_valid_user(app, mocker):
         },
     }
 
-    user1_update_json = json.dumps(test_metadata["QmUpdateArtistPickTrack"])
+    update_artist_pick_json = json.dumps(test_metadata["QmUpdateArtistPickTrack"])
+    update_user1_json = json.dumps(test_metadata["QmUpdateUser1"])
+    update_user2_json = json.dumps(test_metadata["QmUpdateUser2"])
     tx_receipts = {
         "CreateUser1Tx": [
             {
@@ -177,7 +179,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "Track",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Update",
-                        "_metadata": f'{{"cid": "QmUpdateArtistPickTrack", "data": {user1_update_json}}}',
+                        "_metadata": f'{{"cid": "QmUpdateArtistPickTrack", "data": {update_artist_pick_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -191,7 +193,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Update",
-                        "_metadata": "QmUpdateUser1",
+                        "_metadata": f'{{"cid": "QmUpdateUser1", "data": {update_user1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -219,7 +221,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Update",
-                        "_metadata": "QmUpdateUser2",
+                        "_metadata": f'{{"cid": "QmUpdateUser2", "data": {update_user2_json}}}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -269,7 +271,6 @@ def test_index_valid_user(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
     with db.scoped_session() as session:
@@ -314,138 +315,8 @@ def test_index_invalid_users(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
-    tx_receipts = {
-        # invalid create
-        "CreateUserBelowOffset": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,
-                        "_entityType": "User",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateUserWithBadMetadataDoesNotExist": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET + 1,
-                        "_entityType": "User",
-                        "_userId": 2,
-                        "_action": "Create",
-                        "_metadata": "QmInvalidUserMetadata",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateUserDoesNotMatchSigner": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET + 1,
-                        "_entityType": "User",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "",
-                        "_signer": "InvalidWallet",
-                    }
-                )
-            },
-        ],
-        "CreateUser": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Create",
-                        "_metadata": "3,4,5",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateUserAlreadyExists": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Create",
-                        "_metadata": "QmCreateUser1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        # invalid updates
-        "UpdateUserInvalidSigner": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "",
-                        "_signer": "InvalidWallet",
-                    }
-                )
-            },
-        ],
-        "UpdateUserInvalidOwner": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": 2,
-                        "_action": "Update",
-                        "_metadata": "",
-                        "_signer": "User2Wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateUserWithInvalidMetadataFields": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Update",
-                        "_metadata": "QmInvalidUserMetadataFields",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateUserInvalidArtistPick": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,  # existing user
-                        "_entityType": "User",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "QmInvalidArtistPick",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
     test_metadata = {
         "QmCreateUser1": {
             "is_verified": False,
@@ -571,6 +442,141 @@ def test_index_invalid_users(app, mocker):
         },
     }
 
+    create_user1_json = json.dumps(test_metadata["QmCreateUser1"])
+    invalid_update_user_json = json.dumps(test_metadata["QmInvalidUserMetadataFields"])
+    invalid_update_artist_pick_json = json.dumps(test_metadata["QmInvalidArtistPick"])
+
+    tx_receipts = {
+        # invalid create
+        "CreateUserBelowOffset": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUserWithBadMetadataDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": "{}",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUserDoesNotMatchSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "CreateUser": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Create",
+                        "_metadata": "3,4,5",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUserAlreadyExists": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateUser1", "data": {create_user1_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        # invalid updates
+        "UpdateUserInvalidSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUserInvalidOwner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUserWithInvalidMetadataFields": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUserMetadataFields", "data": {invalid_update_user_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUserInvalidArtistPick": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,  # existing user
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidArtistPick", "data": {invalid_update_artist_pick_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
@@ -612,7 +618,6 @@ def test_index_invalid_users(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         # validate db records
@@ -635,7 +640,6 @@ def test_index_verify_users(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(
-            None,
             web3,
             challenge_event_bus=bus_mock,
         )
@@ -704,7 +708,6 @@ def test_index_verify_users(app, mocker):
                 block_number=0,
                 block_timestamp=1585336422,
                 block_hash=0,
-                metadata={},
             )
             # validate db records
             all_users: List[User] = (

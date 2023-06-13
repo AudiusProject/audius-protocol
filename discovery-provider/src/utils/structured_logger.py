@@ -20,7 +20,7 @@ class StructuredLogger:
     def reset_context(self):
         self.context = {}
 
-    def reset_context(self, key):
+    def reset_context(self, key):  # noqa: F811
         if key in self.context:
             self.context.pop(key)
 

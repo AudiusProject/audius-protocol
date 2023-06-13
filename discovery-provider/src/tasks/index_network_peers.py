@@ -22,7 +22,6 @@ CONTENT_PEERS_REDIS_KEY = "content_peers"
 
 # Query the L1 set of audius protocol contracts and retrieve a list of peer endpoints
 def index_content_node_peers(self):
-    cid_metadata_client = update_network_peers.cid_metadata_client
     shared_config = update_network_peers.shared_config
     eth_web3 = update_network_peers.eth_web3
     redis = update_network_peers.redis
@@ -34,7 +33,6 @@ def index_content_node_peers(self):
     content_peers = list(content_nodes)
     # Update creator node url list in CID Metadata Client
     # This list of known nodes is used to traverse and retrieve metadata from gateways
-    cid_metadata_client.update_cnode_urls(content_peers)
     redis.set(CONTENT_PEERS_REDIS_KEY, ",".join(content_peers))
     logger.info(f"index_network_peers.py | All known content peers {content_nodes}")
 
