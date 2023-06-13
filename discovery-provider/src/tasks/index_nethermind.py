@@ -513,6 +513,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
+        next_block.number = next_block.number + final_poa_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
         # Return early because we've likely indexed up to the head of the chain
