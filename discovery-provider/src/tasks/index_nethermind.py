@@ -8,6 +8,7 @@ from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
+from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -118,12 +119,11 @@ def update_latest_block_redis(final_poa_block):
     )
 
 
-def fetch_tx_receipt(transaction):
-    tx_hash = web3.toHex(transaction["hash"])
+def fetch_tx_receipt(tx_hash: HexBytes):
     receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
     response["tx_receipt"] = receipt
-    response["tx_hash"] = tx_hash
+    response["tx_hash"] = tx_hash.hex()
     return response
 
 
@@ -184,6 +184,7 @@ def fetch_cid_metadata(session, entity_manager_txs):
     # merged with cid_metadata and cid_type before returning
     cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
     cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
+    logger.info(f"raymont {entity_manager_txs}")
 
     # fetch transactions
     for tx_receipt in entity_manager_txs:
@@ -276,16 +277,16 @@ def fetch_cid_metadata(session, entity_manager_txs):
                 elif event_type == EntityType.USER:
                     cid_type[cid] = "user"
 
-        # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
-        user_to_replica_set = dict(
-            session.query(User.user_id, User.creator_node_endpoint)
-            .filter(
-                User.is_current == True,
-                User.user_id.in_(cid_to_user_id.values()),
-            )
-            .group_by(User.user_id, User.creator_node_endpoint)
-            .all()
+    # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
+    user_to_replica_set = dict(
+        session.query(User.user_id, User.creator_node_endpoint)
+        .filter(
+            User.is_current == True,
+            User.user_id.in_(cid_to_user_id.values()),
         )
+        .group_by(User.user_id, User.creator_node_endpoint)
+        .all()
+    )
 
     # first attempt - fetch all CIDs from replica set
     try:
@@ -362,7 +363,9 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     )
     if not entity_manager_address:
         entity_manager_address = os.getenv("audius_contracts_entity_manager_address")
-    tx_target_contract_address = tx["to"]
+    logger.info(f"raymont tx {tx} {entity_manager_address}")
+    tx_target_contract_address = tx.to
+    logger.info(f"raymont target {tx_target_contract_address}")
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
         tx_is_type = tx_target_contract_address == entity_manager_address
@@ -508,7 +511,12 @@ def index_next_block(session: Session, latest_database_block: Block):
 
     # Get next block to index
     next_block_number = latest_database_block.number + 1
-    next_block = web3.eth.get_block(next_block_number)
+    try:
+        next_block = web3.eth.get_block(next_block_number)
+    except BlockNotFound:
+        logger.info(f"Block not found {next_block_number}, returning early")
+        # Return early because we've likely indexed up to the head of the chain
+        return
 
     indexing_transaction_index_sort_order_start_block = (
         shared_config["discprov"]["indexing_transaction_index_sort_order_start_block"]
@@ -558,13 +566,16 @@ def index_next_block(session: Session, latest_database_block: Block):
                 parse_tx_receipts_start_time = time.time()
 
                 sorted_txs = sort_block_transactions(
-                    next_block, indexing_transaction_index_sort_order_start_block
+                    next_block,
+                    tx_receipt_dict.values(),
+                    indexing_transaction_index_sort_order_start_block,
                 )
 
                 # Parse tx events in each block
                 for tx in sorted_txs:
-                    tx_hash = web3.toHex(tx["hash"])
-                    tx_target_contract_address = tx["to"] if tx["to"] else zero_address
+                    logger.info(f"raymont sorted {tx} {tx_receipt_dict}")
+                    tx_hash = tx.transactionHash.hex()
+                    tx_target_contract_address = tx.to if tx.to else zero_address
                     tx_receipt = tx_receipt_dict[tx_hash]
                     should_skip_tx = (tx_target_contract_address == zero_address) or (
                         skip_tx_hash is not None and skip_tx_hash == tx_hash
