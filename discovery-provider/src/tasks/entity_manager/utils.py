@@ -230,13 +230,13 @@ class ManageEntityParameters:
 def expect_cid_metadata_json(metadata, action, entity_type):
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
-    # TODO(michelle) validate metadata for notification, delegate,
-    # and delegation types here
+    # TODO(michelle) validate metadata for notification, developer app,
+    # and grant types here
     if entity_type in [
         EntityType.NOTIFICATION,
-        EntityType.DELEGATION,
-        EntityType.APP_DELEGATE,
-        EntityType.USER_REPLICA_SET
+        EntityType.GRANT,
+        EntityType.DEVELOPER_APP,
+        EntityType.USER_REPLICA_SET,
     ]:
         return False
     if action in [

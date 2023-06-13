@@ -1,5 +1,4 @@
 import json
-
 from datetime import datetime
 from typing import List
 
@@ -220,7 +219,9 @@ def tx_receipts_update_routes():
     create_playlist4_json = json.dumps(test_metadata["QmCreatePlaylist4"])
     update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
     update_playlist12_json = json.dumps(test_metadata["QmUpdatePlaylist12"])
-    create_playlist_diff_owner_json = json.dumps(test_metadata["QmCreatePlaylistDiffOwner"])
+    create_playlist_diff_owner_json = json.dumps(
+        test_metadata["QmCreatePlaylistDiffOwner"]
+    )
 
     return {
         "CreatePlaylist1Tx": [
@@ -335,9 +336,7 @@ def assert_playlist_route(
     assert route.is_current == is_current
 
 
-def test_index_valid_playlists_updates_routes(
-    app, mocker, tx_receipts_update_routes
-):
+def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_routes):
     "Tests valid batch of playlists create/update/delete actions"
 
     # setup db and mocked txs

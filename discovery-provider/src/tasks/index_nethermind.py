@@ -1,6 +1,5 @@
 # pylint: disable=C0302
 import concurrent.futures
-import json
 import os
 import time
 from datetime import datetime

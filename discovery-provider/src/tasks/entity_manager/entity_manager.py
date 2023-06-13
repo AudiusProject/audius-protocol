@@ -56,8 +56,8 @@ from src.tasks.entity_manager.utils import (
     expect_cid_metadata_json,
     get_metadata_type_and_format,
     get_record_key,
-    save_cid_metadata,
     parse_metadata,
+    save_cid_metadata,
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
@@ -372,15 +372,15 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 try:
                     json_metadata = json.loads(metadata)
                 except Exception as e:
-                    logger.error(f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}")
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
                     # skip invalid metadata
                     continue
 
                 raw_address = json_metadata.get("address", None)
                 if raw_address:
-                    entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                        raw_address.lower()
-                    )
+                    entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
                 else:
                     logger.error(
                         "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
@@ -389,7 +389,9 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 try:
                     json_metadata = json.loads(metadata)
                 except Exception as e:
-                    logger.error(f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}")
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
                     # skip invalid metadata
                     continue
 

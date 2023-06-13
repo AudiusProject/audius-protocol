@@ -1,5 +1,4 @@
 import json
-
 import logging
 from typing import List
 from unittest import mock
