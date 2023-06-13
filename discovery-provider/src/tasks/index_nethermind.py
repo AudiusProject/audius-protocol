@@ -502,7 +502,7 @@ def is_block_on_chain(web3: Web3, block: Block):
 
 
 @log_duration(logger)
-def index_next_block(session: Session, latest_database_block: Block):
+def index_next_block(session: Session, latest_database_block: Block, final_poa_block=0):
     """
     Given the latest block in the database, index forward one block.
     """
@@ -510,7 +510,7 @@ def index_next_block(session: Session, latest_database_block: Block):
     shared_config = update_task.shared_config
 
     # Get next block to index
-    next_block_number = latest_database_block.number + 1
+    next_block_number = latest_database_block.number + 1 + (final_poa_block or 0)
     try:
         next_block = web3.eth.get_block(next_block_number)
     except BlockNotFound:
@@ -1097,7 +1097,7 @@ def update_task(self):
             latest_database_block = get_latest_database_block(session)
             block_from_chain = is_block_on_chain(web3, latest_database_block)
             if block_from_chain:
-                index_next_block(session, latest_database_block)
+                index_next_block(session, latest_database_block, final_poa_block)
             else:
                 revert_block(session, latest_database_block)
     except Exception as e:
