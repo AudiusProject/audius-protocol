@@ -1,5 +1,9 @@
 import { DiscoveryNodeSelector, EntityManager, sdk } from "@audius/sdk";
-import { UploadTrackRequest, developmentConfig } from "@audius/sdk";
+import {
+  UploadTrackRequest,
+  DeleteTrackRequest,
+  developmentConfig,
+} from "@audius/sdk";
 import express from "express";
 import multer from "multer";
 
@@ -83,3 +87,17 @@ app.post<UploadTrackRequest>(
     }
   }
 );
+
+app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
+  try {
+    const deleteTrackRequest: DeleteTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.tracks.deleteTrack(deleteTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});

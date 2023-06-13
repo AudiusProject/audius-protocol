@@ -53,7 +53,7 @@ export class EntityManager implements EntityManagerService {
     entityType,
     entityId,
     action,
-    metadata,
+    metadata = '',
     auth,
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false

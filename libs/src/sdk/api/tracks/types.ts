@@ -94,7 +94,7 @@ export const createUploadTrackMetadataSchema = () =>
     })
     .strict()
 
-export type TrackMetadataType = z.infer<
+export type TrackMetadataType = z.input<
   ReturnType<typeof createUploadTrackMetadataSchema>
 >
 
@@ -113,10 +113,19 @@ export const createUploadTrackSchema = () =>
     })
     .strict()
 
-export type UploadTrackRequest = {
-  userId: string
-  coverArtFile: File
-  metadata: TrackMetadataType
+export type UploadTrackRequest = z.input<
+  ReturnType<typeof createUploadTrackSchema>
+> & {
+  // Typing function manually because z.function() does not
+  // support argument names
   onProgress?: (progress: number) => void
-  trackFile: File
 }
+
+export const DeleteTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>

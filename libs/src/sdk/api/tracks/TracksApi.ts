@@ -7,11 +7,20 @@ import {
   TracksApi as GeneratedTracksApi
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
-import { createUploadTrackSchema, UploadTrackRequest } from './types'
+import {
+  createUploadTrackSchema,
+  DeleteTrackRequest,
+  DeleteTrackSchema,
+  UploadTrackRequest
+} from './types'
 import type { StorageService } from '../../services/Storage'
 import { retry3 } from '../../utils/retry'
 import type { EntityManagerService, AuthService } from '../../services'
-import { Action, EntityType } from '../../services/EntityManager/types'
+import {
+  Action,
+  EntityType,
+  WriteOptions
+} from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
@@ -64,7 +73,10 @@ export class TracksApi extends TracksApiWithoutStream {
   /**
    * Upload a track
    */
-  async uploadTrack(requestParameters: UploadTrackRequest) {
+  async uploadTrack(
+    requestParameters: UploadTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
     // Parse inputs
     const {
       userId,
@@ -157,17 +169,39 @@ export class TracksApi extends TracksApiWithoutStream {
         cid: metadataCid.toString(),
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth
+      auth: this.auth,
+      ...writeOptions
     })
     const txReceipt = response.txReceipt
 
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
-      trackId,
-      transcodedTrackCID: updatedMetadata.trackCid,
-      error: false
+      trackId
     }
+  }
+
+  async deleteTrack(
+    requestParameters: DeleteTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = parseRequestParameters(
+      'deleteTrack',
+      DeleteTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.DELETE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
   }
 
   private async generateTrackId() {
