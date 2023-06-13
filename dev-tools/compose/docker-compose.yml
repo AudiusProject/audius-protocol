@@ -133,17 +133,17 @@ services:
     <<: *common
 
   # Pedalboard (plugins)
-  app-template:
-    extends:
-      file: docker-compose.pedalboard.yml
-      service: app-template
-    <<: *common
+  # app-template:
+  #   extends:
+  #     file: docker-compose.pedalboard.yml
+  #     service: app-template
+  #   <<: *common
 
-  trending-challenge-rewards:
-    extends:
-      file: docker-compose.pedalboard.yml
-      service: trending-challenge-rewards
-    <<: *common  
+  # trending-challenge-rewards:
+  #   extends:
+  #     file: docker-compose.pedalboard.yml
+  #     service: trending-challenge-rewards
+  #   <<: *common  
 
   # Comms (aka dms)
 
