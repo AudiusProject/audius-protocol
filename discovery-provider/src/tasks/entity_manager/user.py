@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Dict, TypedDict
 
 import base58
@@ -76,7 +77,7 @@ def validate_user_tx(params: ManageEntityParameters):
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
-        handle_lower = user_metadata["handle"].lower()
+        handle_lower = validate_user_handle(user_metadata["handle"])
         user_handle_exists = session.query(
             session.query(User).filter(User.handle_lc == handle_lower).exists()
         ).scalar()
@@ -105,6 +106,67 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             raise Exception(
                 f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
             )
+
+
+RESERVED_HANDLES = [
+    "discover",
+    "account",
+    "collection",
+    "curated",
+    "podcast",
+    "Library",
+    "next",
+    "suggested",
+    "follow",
+    "stats",
+    "radio",
+    "like",
+    "repost",
+    "share",
+    "social",
+    "artist",
+    "options",
+    "billing",
+    "support",
+    "genre",
+    "mood",
+    "collections",
+    "podcasts",
+    "libraries",
+    "suggestions",
+    "following",
+    "stations",
+    "likes",
+    "reposts",
+    "artists",
+    "notification",
+    "message",
+    "inbox",
+    "genres",
+    "moods",
+    "embed",
+    "crypto",
+    "payment",
+    "error",
+    "search",
+    "api",
+    "200",
+    "204",
+    "400",
+    "404",
+]
+
+
+def validate_user_handle(handle: str):
+    handle = handle.lower()
+    if handle != re.sub(r"[^a-z0-9_\.]", "", handle):
+        raise Exception(f"Handle {handle} contains illegal characters")
+    if len(handle) > 32:
+        raise Exception(f"Handle {handle} is too long")
+    if handle in RESERVED_HANDLES:
+        raise Exception(f"User handle {handle} is a reserved word")
+    # todo: check reserved genres + moods
+    return handle
 
 
 def create_user(params: ManageEntityParameters):
