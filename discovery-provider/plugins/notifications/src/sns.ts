@@ -23,7 +23,7 @@ export const publish = async (params: PublishCommandInput) => {
     const data = await snsClient.send(new PublishCommand(params))
     return data
   } catch (err) {
-    console.log('Error', err.stack)
+    logger.warn(`Error publishing push notification: ${err}`)
   }
 }
 
@@ -33,6 +33,7 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
     return data
   } catch (err) {
     console.log('Error', err.stack)
+    logger.warn(`Error publishing push notifications: ${err}`)
   }
 }
 
@@ -119,6 +120,7 @@ export const sendPushNotification = async (
   message: Message
 ) => {
   if (device.type == 'ios') {
+    logger.info(`Processing ios push notification`)
     await sendIOSMessage({
       title: message.title,
       body: message.body,
@@ -128,6 +130,7 @@ export const sendPushNotification = async (
       targetARN: device.targetARN
     })
   } else if (device.type == 'android') {
+    logger.info(`Processing android push notification`)
     await sendAndroidMessage({
       title: message.title,
       body: message.body,
