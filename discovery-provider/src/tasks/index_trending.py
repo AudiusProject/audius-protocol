@@ -45,7 +45,7 @@ UPDATE_TRENDING_DURATION_DIFF_SEC = int(
     shared_config["discprov"]["trending_refresh_seconds"]
 )
 
-genre_allowlist = {
+GENRE_ALLOWLIST = {
     "Acoustic",
     "Alternative",
     "Ambient",
@@ -103,7 +103,7 @@ def get_genres(session: Session) -> List[str]:
     """Returns all genres"""
     genres: List[Tuple[str]] = (session.query(Track.genre).distinct(Track.genre)).all()
     genres = filter(  # type: ignore
-        lambda x: x[0] is not None and x[0] != "" and x[0] in genre_allowlist, genres
+        lambda x: x[0] is not None and x[0] != "" and x[0] in GENRE_ALLOWLIST, genres
     )
     return list(map(lambda x: x[0], genres))
 
