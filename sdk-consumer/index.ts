@@ -94,7 +94,6 @@ app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
       userId: req.body.userId,
       trackId: req.body.trackId,
     };
-    console.log(req.body);
     const result = await audiusSdk.tracks.deleteTrack(deleteTrackRequest);
     res.send(result);
   } catch (e) {
