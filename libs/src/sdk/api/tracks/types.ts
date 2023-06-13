@@ -120,3 +120,10 @@ export type UploadTrackRequest = {
   onProgress?: (progress: number) => void
   trackFile: File
 }
+
+export const DeleteTrackSchema = z.object({
+  userId: HashId,
+  trackId: HashId
+})
+
+export type DeleteTrackRequest = z.infer<typeof DeleteTrackSchema>
