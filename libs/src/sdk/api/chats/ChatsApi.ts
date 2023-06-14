@@ -35,6 +35,8 @@ import {
   ChatGetRequestSchema,
   ChatInviteRequest,
   ChatInviteRequestSchema,
+  ChatListenRequest,
+  ChatListenRequestSchema,
   ChatMessageRequest,
   ChatMessageRequestSchema,
   ChatPermitRequest,
@@ -63,6 +65,10 @@ export class ChatsApi
   private chatSecrets: Record<string, Uint8Array> = {}
   private readonly eventEmitter: TypedEmitter<ChatEvents>
   private websocket: WebSocket | undefined
+  /**
+   * The current user ID to use when connecting/reconnecting the websocket
+   */
+  private listenUserId?: string
 
   /**
    * Proxy to the event emitter addListener
@@ -100,7 +106,16 @@ export class ChatsApi
 
   // #region QUERY
 
-  public async listen() {
+  /**
+   * Establishes a websocket connection for listening to chat events.
+   * @param requestParameters.currentUserId the user to listen for chat events for
+   */
+  public async listen(requestParameters: ChatListenRequest) {
+    const { currentUserId } = parseRequestParameters(
+      'listen',
+      ChatListenRequestSchema
+    )(requestParameters)
+    this.listenUserId = currentUserId
     const endpoint =
       await this.discoveryNodeSelectorService.getSelectedEndpoint()
     if (endpoint) {
@@ -605,7 +620,10 @@ export class ChatsApi
 
   private async createWebsocket(endpoint: string) {
     const timestamp = new Date().getTime()
-    const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    let originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    if (this.listenUserId) {
+      originalUrl = `${originalUrl}&current_user_id=${this.listenUserId}`
+    }
     const signatureHeader = await this.getSignatureHeader(originalUrl)
     const host = endpoint.replace(/http(s?)/g, 'ws$1')
     const url = `${host}${originalUrl}&signature=${encodeURIComponent(
