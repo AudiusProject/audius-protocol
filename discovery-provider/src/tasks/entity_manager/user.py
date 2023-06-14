@@ -47,11 +47,11 @@ def validate_user_tx(params: ManageEntityParameters):
         )
 
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        logger.info("fell into or case")
-        user_metadata = params.metadata[params.metadata_cid]
-        user_bio = user_metadata.get("bio")
-        if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
-            raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
+        user_metadata = params.metadata.get(params.metadata_cid)
+        if user_metadata is not None:
+            user_bio = user_metadata.get("bio")
+            if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
+                raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
