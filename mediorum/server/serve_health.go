@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )
@@ -28,32 +27,31 @@ type healthCheckResponse struct {
 	Timestamp time.Time               `json:"timestamp"`
 }
 type healthCheckResponseData struct {
-	Healthy                   bool        `json:"healthy"`
-	Version                   string      `json:"version"`
-	Service                   string      `json:"service"` // used by registerWithDelegate()
-	SPID                      int         `json:"spID"`
-	SPOwnerWallet             string      `json:"spOwnerWallet"`
-	Git                       string      `json:"git"`
-	AudiusDockerCompose       string      `json:"audiusDockerCompose"`
-	StoragePathUsed           uint64      `json:"storagePathUsed"` // bytes
-	StoragePathSize           uint64      `json:"storagePathSize"` // bytes
-	DatabaseSize              uint64      `json:"databaseSize"`    // bytes
-	AutoUpgradeEnabled        bool        `json:"autoUpgradeEnabled"`
-	SelectedDiscoveryProvider string      `json:"selectedDiscoveryProvider"`
-	CidCursors                []cidCursor `json:"cidCursors"`
-
-	StartedAt         time.Time                  `json:"startedAt"`
-	TrustedNotifier   *ethcontracts.NotifierInfo `json:"trustedNotifier"`
-	Env               string                     `json:"env"`
-	Self              Peer                       `json:"self"`
-	Peers             []Peer                     `json:"peers"`
-	PeerHealths       map[string]time.Time       `json:"peerHealths"`
-	Signers           []Peer                     `json:"signers"`
-	ReplicationFactor int                        `json:"replicationFactor"`
-	Dir               string                     `json:"dir"`
-	ListenPort        string                     `json:"listenPort"`
-	UpstreamCN        string                     `json:"upstreamCN"`
-	TrustedNotifierID int                        `json:"trustedNotifierId"`
+	Healthy                   bool                       `json:"healthy"`
+	Version                   string                     `json:"version"`
+	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	BuiltAt                   string                     `json:"builtAt"`
+	StartedAt                 time.Time                  `json:"startedAt"`
+	SPID                      int                        `json:"spID"`
+	SPOwnerWallet             string                     `json:"spOwnerWallet"`
+	Git                       string                     `json:"git"`
+	AudiusDockerCompose       string                     `json:"audiusDockerCompose"`
+	StoragePathUsed           uint64                     `json:"storagePathUsed"` // bytes
+	StoragePathSize           uint64                     `json:"storagePathSize"` // bytes
+	DatabaseSize              uint64                     `json:"databaseSize"`    // bytes
+	AutoUpgradeEnabled        bool                       `json:"autoUpgradeEnabled"`
+	SelectedDiscoveryProvider string                     `json:"selectedDiscoveryProvider"`
+	TrustedNotifier           *ethcontracts.NotifierInfo `json:"trustedNotifier"`
+	Env                       string                     `json:"env"`
+	Self                      Peer                       `json:"self"`
+	Signers                   []Peer                     `json:"signers"`
+	ReplicationFactor         int                        `json:"replicationFactor"`
+	Dir                       string                     `json:"dir"`
+	ListenPort                string                     `json:"listenPort"`
+	UpstreamCN                string                     `json:"upstreamCN"`
+	TrustedNotifierID         int                        `json:"trustedNotifierId"`
+	CidCursors                []cidCursor                `json:"cidCursors"`
+	PeerHealths               map[string]time.Time       `json:"peerHealths"`
 }
 
 type legacyHealth struct {
@@ -64,10 +62,13 @@ type legacyHealth struct {
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
+	ss.peerHealthMutex.RLock()
 	data := healthCheckResponseData{
 		Healthy:                   err == nil,
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
+		BuiltAt:                   vcsBuildTime,
+		StartedAt:                 ss.StartedAt,
 		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
 		SPID:                      ss.Config.SPID,
 		SPOwnerWallet:             ss.Config.SPOwnerWallet,
@@ -77,32 +78,19 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		StoragePathSize:           ss.storagePathSize,
 		DatabaseSize:              ss.databaseSize,
 		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
-		StartedAt:                 ss.StartedAt,
 		TrustedNotifier:           ss.trustedNotifier,
 		Dir:                       ss.Config.Dir,
 		ListenPort:                ss.Config.ListenPort,
 		UpstreamCN:                ss.Config.UpstreamCN,
-		Signers:                   ss.Config.Signers,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
 		Self:                      ss.Config.Self,
+		TrustedNotifierID:         ss.Config.TrustedNotifierID,
+		CidCursors:                ss.cachedCidCursors,
+		PeerHealths:               ss.peerHealth,
+		Signers:                   ss.Config.Signers,
 	}
-
-	// peer healths
-	ss.peerHealthMutex.RLock()
-	data.PeerHealths = ss.peerHealth
 	ss.peerHealthMutex.RUnlock()
-
-	// cursor statuses
-	cidCursors := []cidCursor{}
-	if err := pgxscan.Select(c.Request().Context(), ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
-		data.CidCursors = cidCursors
-	}
-
-	// problem blob count
-	// this might be too expensive for health_check?
-	// problemBlobCount, _ := ss.findProblemBlobsCount(false)
-	// data.ProblemBlobs = problemBlobCount
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {

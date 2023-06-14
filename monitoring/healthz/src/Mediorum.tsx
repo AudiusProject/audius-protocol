@@ -17,8 +17,9 @@ export function Mediorum() {
             <th>ver</th>
             <th>built at</th>
             <th>started at</th>
-            <th>uploads</th>
-            <th>problem blobs</th>
+            <th># uploads</th>
+            <th># problem blobs</th>
+            <th># peers</th>
           </tr>
         </thead>
         <tbody>
@@ -30,30 +31,48 @@ export function Mediorum() {
     </div>
   )
 }
-
 export function MediorumRow({ sp }: { sp: SP }) {
-  const { data: deets } = useQuery(
-    [sp.endpoint + '/internal/health'],
+  const { data: healthCheckData } = useQuery(
+    [sp.endpoint + '/health_check'],
     fetchUrl
   )
+  const deets = healthCheckData?.data
   const { data: metrics } = useQuery(
     [sp.endpoint + '/internal/metrics'],
     fetchUrl
   )
+
+  // Calculate healthy peers counts
+  const now = new Date()
+  const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000)
+  let healthyPeers = 0
+  let unhealthyPeers = 0
+  if (deets?.peerHealths) {
+    for (const endpoint of Object.keys(deets.peerHealths)) {
+      const healthDate = new Date(deets.peerHealths[endpoint])
+      if (isNaN(healthDate.getTime()) || healthDate <= twoMinutesAgo) { // Peer is unhealthy if healthDate is NaN or if it's more than 2 minutes ago
+        unhealthyPeers++
+      } else {
+        healthyPeers++
+      }
+    }
+  }
+
   return (
     <tr>
       <td>
-        <a href={sp.endpoint + '/internal/health'} target="_blank">
+        <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint}
         </a>
       </td>
       <td>{deets?.version}</td>
-      <td>{deets?.built_at}</td>
+      <td>{deets?.builtAt}</td>
       <td>
-        <RelTime date={deets?.started_at} />
+        <RelTime date={deets?.startedAt} />
       </td>
       <td>{metrics?.uploads}</td>
       <td>{metrics?.problem_blobs}</td>
+      <td><b>{healthyPeers} healthy</b> {'<'}2m ago, <b>{unhealthyPeers}</b> {'>'}=2m ago</td>
     </tr>
   )
 }

@@ -5,9 +5,10 @@ import (
 )
 
 type Metrics struct {
-	Host         string `json:"host"`
-	Uploads      int64  `json:"uploads"`
-	ProblemBlobs int64  `json:"problem_blobs"`
+	Host         string         `json:"host"`
+	Uploads      int64          `json:"uploads"`
+	ProblemBlobs int64          `json:"problem_blobs"`
+	OutboxSizes  map[string]int `json:"outbox_sizes"`
 }
 
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
@@ -23,6 +24,8 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	uploads := []*Upload{}
 	ss.crud.DB.Order("created_at desc").Find(&uploads).Count(&ucount)
 	m.Uploads = ucount
+
+	m.OutboxSizes = ss.crud.GetOutboxSizes()
 
 	return c.JSON(200, m)
 }

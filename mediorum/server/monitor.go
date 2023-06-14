@@ -5,9 +5,21 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/exp/slog"
 )
+
+func (ss *MediorumServer) monitorCidCursors() {
+	ticker := time.NewTicker(10 * time.Second)
+	for range ticker.C {
+		cidCursors := []cidCursor{}
+		ctx := context.Background()
+		if err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
+			ss.cachedCidCursors = cidCursors
+		}
+	}
+}
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()

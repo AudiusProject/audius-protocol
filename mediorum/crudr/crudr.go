@@ -261,3 +261,11 @@ func (c *Crudr) ApplyOp(op *Op) error {
 
 	return nil
 }
+
+func (c *Crudr) GetOutboxSizes() map[string]int {
+	sizes := make(map[string]int)
+	for _, p := range c.peerClients {
+		sizes[p.Host] = len(p.outbox)
+	}
+	return sizes
+}
