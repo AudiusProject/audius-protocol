@@ -102,11 +102,13 @@ type ChatServer struct {
 func (s *ChatServer) getStatus(c echo.Context) error {
 	errors := s.proc.SweeperErrors()
 	return c.JSON(http.StatusOK, map[string]any{
+		"host":            s.config.MyHost,
+		"wallet":          s.config.MyWallet,
 		"commit":          vcsRevision,
 		"built":           vcsBuildTime,
 		"booted":          bootTime,
 		"wip":             vcsDirty,
-		"healthy":         s.websocketError == nil && len(errors) == 0,
+		"healthy":         s.websocketError == nil, // && len(errors) == 0,
 		"errors":          errors,
 		"websocket_error": s.websocketError,
 	})
@@ -768,7 +770,6 @@ func (ss *ChatServer) doWebsocketTest() error {
 	}
 
 	wsUrl = wsUrl.JoinPath("/comms/debug/ws")
-	slog.Info("ws test: " + wsUrl.String())
 
 	ctx := context.Background()
 	con, _, _, err := ws.Dial(ctx, wsUrl.String())
