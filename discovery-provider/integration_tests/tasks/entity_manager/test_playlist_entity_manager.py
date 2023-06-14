@@ -7,7 +7,10 @@ from integration_tests.utils import populate_mock_db
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import PLAYLIST_ID_OFFSET
+from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+    PLAYLIST_ID_OFFSET,
+)
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -114,7 +117,7 @@ def tx_receipts():
                     }
                 )
             },
-        ],
+        ]
     }
 
 
@@ -157,7 +160,7 @@ def test_metadata():
             "playlist_image_sizes_multihash": "",
             "playlist_name": "album",
             "is_album": True,
-        },
+        }
     }
 
 
@@ -826,3 +829,65 @@ def test_index_invalid_playlists(app, mocker):
         all_playlists: List[Playlist] = session.query(Playlist).all()
         assert len(all_playlists) == 1  # no new playlists indexed
         assert all_playlists[0].is_current == True
+
+
+def test_invalid_playlist_description(app, mocker):
+    "Tests that playlists cant have a description that's too long"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(None, web3, None)
+    
+    tx_receipts = {
+        "PlaylistInvalidDescription": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 4,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "PlaylistInvalidDescriptionMetadata",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    metadata = {
+        "PlaylistInvalidDescriptionMetadata": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "xtralargeplz" * CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+            "playlist_image_sizes_multihash": "",
+            "is_album": False,
+        },
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    with db.scoped_session() as session:
+        total_changes, _ = entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=0,
+            metadata=metadata,
+        )
+
+        assert total_changes == 0
