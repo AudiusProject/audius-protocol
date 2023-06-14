@@ -5,6 +5,7 @@ import { routerMiddleware, push as pushRoute } from 'connected-react-router'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
+import thunk from 'redux-thunk'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
@@ -119,7 +120,8 @@ const middlewares = applyMiddleware(
   chatMiddleware(audiusSdk),
   routerMiddleware(history),
   sagaMiddleware,
-  sentryMiddleware
+  sentryMiddleware,
+  thunk
 )
 
 const configureStore = () => {

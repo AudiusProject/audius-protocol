@@ -22,6 +22,7 @@ import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
+import thunk from 'redux-thunk'
 
 import { audiusSdk } from 'app/services/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
@@ -133,7 +134,7 @@ const sagaMiddleware = createSagaMiddleware({
   onError: onSagaError
 })
 
-const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk)]
+const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk), thunk]
 
 if (__DEV__) {
   const createDebugger = require('redux-flipper').default
