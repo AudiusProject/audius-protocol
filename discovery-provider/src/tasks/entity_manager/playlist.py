@@ -138,10 +138,11 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        playlist_metadata = params.metadata[params.metadata_cid]
-        playlist_description = playlist_metadata.get("description")
-        if playlist_description is not None and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
-            raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
+        playlist_metadata = params.metadata.get(params.metadata_cid)
+        if playlist_metadata is not None:
+            playlist_description = playlist_metadata.get("description")
+            if playlist_description is not None and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
+                raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
 
 
 def create_playlist(params: ManageEntityParameters):
