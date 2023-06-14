@@ -138,6 +138,12 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a single chat
+   * @param requestParameters.chatId the chat to get
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the chat response
+   */
   public async get(requestParameters: ChatGetRequest) {
     const { chatId, currentUserId } = parseRequestParameters(
       'get',
@@ -152,6 +158,14 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a list of chats
+   * @param requestParameters.limit the max number of chats to get
+   * @param requestParameters.before a timestamp cursor for pagination
+   * @param requestParameters.after a timestamp cursor for pagination
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the chat list response
+   */
   public async getAll(requestParameters?: ChatGetAllRequest) {
     const { currentUserId, limit, before, after } = parseRequestParameters(
       'getAll',
@@ -190,6 +204,14 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a list of messages
+   * @param requestParameters.chatId the chat to get messages for
+   * @param requestParameters.before a timestamp cursor for pagination
+   * @param requestParameters.after a timestamp cursor for pagination
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the messages list response
+   */
   public async getMessages(
     requestParameters: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
@@ -270,6 +292,12 @@ export class ChatsApi
     return (await res.json()) as TypedCommsResponse<number>
   }
 
+  /**
+   * Gets the permission settings of the given users
+   * @param requestParameters.userIds the users to fetch permissions of
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the permissions response
+   */
   public async getPermissions(requestParameters: ChatGetPermissionRequest) {
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
@@ -342,6 +370,11 @@ export class ChatsApi
     return (await response.json()) as TypedCommsResponse<string[]>
   }
 
+  /**
+   * Gets URL metadata useful for link previews
+   * @param requestParameters.content the urls to get metadata for
+   * @returns the unfurl response
+   */
   public async unfurl(requestParameters: ChatUnfurlRequest) {
     const { urls } = parseRequestParameters(
       'unfurl',
@@ -363,6 +396,13 @@ export class ChatsApi
 
   // #region MUTATE
 
+  /**
+   * Creates a chat between users
+   * @param requestParameters.userId the user id who is creating the chat
+   * @param requestParameters.invitedUserIds the user ids to add to the chat
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async create(requestParameters: ChatCreateRequest) {
     const { currentUserId, userId, invitedUserIds } = parseRequestParameters(
       'create',
@@ -384,6 +424,14 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Invites other users to an existing chat
+   * @param requestParameters.chatId the chat id of the chat to invite to
+   * @param requestParameters.userId the user id who is creating the chat
+   * @param requestParameters.invitedUserIds the user ids to add to the chat
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async invite(requestParameters: ChatInviteRequest) {
     const { currentUserId, chatId, userId, invitedUserIds } =
       parseRequestParameters(
@@ -403,6 +451,14 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Sends a message to a user in a chat
+   * @param requestParameters.message the message
+   * @param requestParameters.chatId the chat to send a message in
+   * @param requestParameters.messageId the id of the message
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async message(requestParameters: ChatMessageRequest) {
     const { currentUserId, chatId, message, messageId } =
       parseRequestParameters(
@@ -424,6 +480,14 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Reacts to a message
+   * @param requestParameters.reaction the reaction
+   * @param requestParameters.chatId the chat to send a reaction in
+   * @param requestParameters.messageId the id of the message to react to
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async react(requestParameters: ChatReactRequest) {
     const { currentUserId, chatId, messageId, reaction } =
       parseRequestParameters('react', ChatReactRequestSchema)(requestParameters)
@@ -438,6 +502,12 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Marks a chat as read
+   * @param requestParameters.chatId the chat to mark as read
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async read(requestParameters: ChatReadRequest) {
     const { currentUserId, chatId } = parseRequestParameters(
       'read',
@@ -452,6 +522,12 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Blocks a user from sending messages to the current user
+   * @param requestParameters.userId the user to block
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async block(requestParameters: ChatBlockRequest) {
     const { currentUserId, userId } = parseRequestParameters(
       'block',
@@ -466,6 +542,12 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Unblocks a user from sending messages to the current user
+   * @param requestParameters.userId the user to unblock
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async unblock(requestParameters: ChatBlockRequest) {
     const { currentUserId, userId } = parseRequestParameters(
       'unblock',
@@ -480,6 +562,12 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Clears a chat's history for the current user
+   * @param requestParameters.chatId the chat to clear
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async delete(requestParameters: ChatDeleteRequest) {
     const { currentUserId, chatId } = parseRequestParameters(
       'delete',
@@ -494,6 +582,12 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Sets the inbox settings permissions of the current user
+   * @param requestParameters.permit the permission to set
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async permit(requestParameters: ChatPermitRequest) {
     const { currentUserId, permit } = parseRequestParameters(
       'permit',
