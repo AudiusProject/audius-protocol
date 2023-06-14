@@ -168,20 +168,25 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
-const windowMapping = {
-  hourly: 60 * 60 * 1000,
-  daily: 24 * 60 * 60 * 1000
+const getRelayBlacklistMiddleware = (req, res, next) => {
+  const blacklist = config.get('blacklistPublicKeyFromRelay')
+  if (blacklist && blacklist.includes(req.body.senderAddress)) {
+    return res.status(429).send('Blocked.')
+  }
+  next()
 }
-const getRelayRateLimiterMiddleware = (window) => {
+
+const getRelayRateLimiterMiddleware = () => {
   return getRateLimiter({
-    windowMs: windowMapping[window],
-    prefix: `relayWalletRateLimiter:${window}`,
+    windowMs: 60 * 60 * 1000, // hourly
+    prefix: `relayWalletRateLimiter`,
     max: async function (req) {
-      req.logger.info('asdf getting rate limiter')
       const decodedABI = AudiusABIDecoder.decodeMethod(
         'EntityManager',
         req.body.encodedABI
       )
+      const whitelist = config.get('whitelistPublicKeyFromRelay')
+
       const action = decodedABI.params.find(
         (param) => param.name === '_action'
       ).value
@@ -192,37 +197,33 @@ const getRelayRateLimiterMiddleware = (window) => {
 
       let limit = config.get(key)
 
-      if (!req.isFromApp && !req.user) {
-        req.logger.info('asdf getting user')
-        req.user = await models.User.findOne({
-          where: { walletAddress: req.body.senderAddress },
-          attributes: [
-            'id',
-            'blockchainUserId',
-            'walletAddress',
-            'handle',
-            'isBlockedFromRelay',
-            'isBlockedFromNotifications',
-            'isBlockedFromEmails',
-            'appliedRules'
-          ]
-        })
-        req.logger.info(`asdf added user ${req.user}`)
+      req.user = await models.User.findOne({
+        where: { walletAddress: req.body.senderAddress },
+        attributes: [
+          'id',
+          'blockchainUserId',
+          'walletAddress',
+          'handle',
+          'isBlockedFromRelay',
+          'isBlockedFromNotifications',
+          'isBlockedFromEmails',
+          'appliedRules'
+        ]
+      })
+
+      if (req.user) {
+        limit = limit['owner']
+        req.isFromApp = false
       } else {
+        if (whitelist && whitelist.includes(req.body.senderAddress)) {
+          limit = limit['whitelist']
+        } else {
+          limit = limit['app']
+        }
         req.isFromApp = true
       }
-      if (req.user) {
-        req.logger.info(
-          `asdf user exists ${req.body.senderAddress} ${req.user}`
-        )
-        limit = limit['owner']
-      } else {
-        req.logger.info(`asdf user does not exist ${req.body.senderAddress}`)
-        limit = limit['app']
-      }
 
-      req.logger.info('asdf isaac max set')
-      return limit[window]
+      return limit
     },
     keyGenerator: function (req) {
       const decodedABI = AudiusABIDecoder.decodeMethod(
@@ -246,5 +247,6 @@ module.exports = {
   isIPWhitelisted,
   getRateLimiter,
   getRateLimiterMiddleware,
+  getRelayBlacklistMiddleware,
   getRelayRateLimiterMiddleware
 }

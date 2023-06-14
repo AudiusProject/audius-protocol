@@ -15,6 +15,7 @@ const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 const { libs } = require('@audius/sdk')
 const config = require('../config.js')
+const { Request } = require('aws-sdk')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -23,14 +24,11 @@ module.exports = function (app) {
     '/relay',
     captchaMiddleware,
     handleResponse(async (req, res, next) => {
-      req.logger.info('asdf in relay')
-
       const body = req.body
       const redis = req.app.get('redis')
 
       // TODO: Use auth middleware to derive this
       const user = req.user
-      req.logger.info(`asdf relay user ${user}`)
 
       // TODO for APP flow to fetch user and check if blocked from relays
 
@@ -39,14 +37,18 @@ module.exports = function (app) {
       let blockAbuseOnRelay = false
       try {
         optimizelyClient = req.app.get('optimizelyClient')
-        detectAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
-        )
-        blockAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
-        )
+
+        // only detect/block abuse from owner wallets
+        detectAbuseOnRelay =
+          getFeatureFlag(
+            optimizelyClient,
+            FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
+          ) && !req.isFromApp
+        blockAbuseOnRelay =
+          getFeatureFlag(
+            optimizelyClient,
+            FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
+          ) && !req.isFromApp
       } catch (error) {
         req.logger.error(
           `failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`
@@ -87,7 +89,7 @@ module.exports = function (app) {
             if (!user) return
 
             const useProvisionalHandle = !user.handle && !user.blockchainUserId
-            if (body.handle && useProvisionalHandle) {
+            if (detectAbuseOnRelay && body.handle && useProvisionalHandle) {
               user.handle = body.handle
               await user.save()
               const reqIP = getIP(req)

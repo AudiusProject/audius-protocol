@@ -174,10 +174,16 @@ const config = convict({
     env: 'blacklisterPublicKey',
     default: null
   },
-  rateLimitingReqLimit: {
-    doc: 'Total request per hour rate limit',
-    format: 'nat',
-    env: 'rateLimitingReqLimit',
+  blacklistPublicKeyFromRelay: {
+    doc: 'Blacklist public keys from relay',
+    format: 'string-array',
+    env: 'blacklistPublicKeyFromRelay',
+    default: null
+  },
+  whitelistPublicKeyFromRelay: {
+    doc: 'Whitelist public keys from relay',
+    format: 'string-array',
+    env: 'whitelistPublicKeyFromRelay',
     default: null
   },
   rateLimitingAuthLimit: {
@@ -873,8 +879,9 @@ const config = convict({
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-const defaultRelayRateLimit = fs.existsSync('default-relay-rate-limit.json')
-if (defaultRelayRateLimit) config.loadFile('default-relay-rate-limit.json')
+const relayRateLimit = fs.existsSync('relay-rate-limit.json')
+if (relayRateLimit) config.loadFile('relay-rate-limit.json')
+
 if (fs.existsSync('eth-contract-config.json')) {
   // eslint isn't smart enought to know this is a conditional require, so this fails
   // on CI where the file doesn't exist.
