@@ -21,7 +21,6 @@ export const chatMiddleware =
     let hasConnected = false
     return (next) => (action) => {
       if (connect.match(action) && !hasConnected) {
-        console.debug('[chats] Listening...')
         hasConnected = true
         const fn = async () => {
           const sdk = await audiusSdk()
@@ -58,6 +57,7 @@ export const chatMiddleware =
           sdk.chats.addEventListener('message', messageListener)
           sdk.chats.addEventListener('reaction', reactionListener)
           sdk.chats.addEventListener('close', closeListener)
+          console.debug('[chats] Listening...')
           return sdk.chats.listen()
         }
         fn()
