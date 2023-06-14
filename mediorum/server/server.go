@@ -76,8 +76,9 @@ type MediorumServer struct {
 	storagePathSize uint64
 	databaseSize    uint64
 
-	peerHealthMutex sync.RWMutex
-	peerHealth      map[string]time.Time
+	peerHealthMutex  sync.RWMutex
+	peerHealth       map[string]time.Time
+	cachedCidCursors []cidCursor
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -307,6 +308,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startPollingDelistStatuses()
 
 	go ss.monitorDiskAndDbStatus()
+
+	go ss.monitorCidCursors()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
