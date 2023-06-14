@@ -1,0 +1,21 @@
+.editForm {
+  width: 100%;
+  background-color: var(--white);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-4);
+  padding: var(--unit-4);
+  border-radius: 8px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.04), 0px 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.continue {
+  margin-top: var(--unit-6);
+  text-align: right;
+}
+
+.continueButton .continueButtonText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+}

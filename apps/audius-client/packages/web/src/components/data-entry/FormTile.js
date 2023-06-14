@@ -46,8 +46,8 @@ import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
+import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
-import { moodMap } from 'utils/moods'
 
 import styles from './FormTile.module.css'
 

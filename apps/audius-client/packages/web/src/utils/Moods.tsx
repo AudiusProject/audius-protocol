@@ -1,4 +1,4 @@
-export const moodMap = {
+export const moodMap: Record<string, JSX.Element> = {
   Peaceful: (
     <div>
       Peaceful <i className='emoji dove-of-peace' />

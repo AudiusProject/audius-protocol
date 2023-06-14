@@ -45,7 +45,7 @@ import TrackBannerIcon, {
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { moodMap } from 'utils/moods'
+import { moodMap } from 'utils/Moods'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'

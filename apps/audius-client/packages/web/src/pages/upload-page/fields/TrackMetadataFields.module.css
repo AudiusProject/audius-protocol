@@ -1,0 +1,34 @@
+.basic {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.artwork {
+  margin-right: var(--unit-6);
+  padding-bottom: var(--unit-4);
+}
+
+.fields {
+  flex: 1 auto;
+  min-width: 335px;
+}
+.fields > div {
+  margin-bottom: var(--unit-4);
+}
+.fields > div.description > .textArea > textarea {
+  min-height: 90px;
+}
+.fields > div.description {
+  margin-bottom: var(--unit-4);
+}
+
+.categorization {
+  display: flex;
+  align-items: center;
+}
+.categorization > div {
+  flex: 1 auto;
+}
+.categorization > div:first-child {
+  margin-right: var(--unit-2);
+}
