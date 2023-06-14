@@ -48,12 +48,12 @@ export const ShareModal = () => {
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
 
-  const handleShareToTwitter = useCallback(() => {
+  const handleShareToTwitter = useCallback(async () => {
     if (!source || !content) return
     const isPlaylistOwner =
       content.type === 'audioNftPlaylist' &&
       account?.user_id === content.user.user_id
-    const { twitterText, link, analyticsEvent } = getTwitterShareText(
+    const { twitterText, link, analyticsEvent } = await getTwitterShareText(
       content,
       isPlaylistOwner
     )

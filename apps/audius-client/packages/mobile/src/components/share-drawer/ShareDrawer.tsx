@@ -102,7 +102,7 @@ export const ShareDrawer = () => {
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return
-    const twitterShareUrl = getTwitterShareUrl(content)
+    const twitterShareUrl = await getTwitterShareUrl(content)
     const isSupported = await Linking.canOpenURL(twitterShareUrl)
     if (isSupported) {
       Linking.openURL(twitterShareUrl)
