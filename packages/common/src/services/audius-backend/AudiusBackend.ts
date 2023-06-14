@@ -694,6 +694,7 @@ export const audiusBackend = ({
       discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
       discoveryNodeSelector.addEventListener('change', (endpoint) => {
+        console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
         discoveryProviderSelectionCallback(endpoint, [])
       })
     }
