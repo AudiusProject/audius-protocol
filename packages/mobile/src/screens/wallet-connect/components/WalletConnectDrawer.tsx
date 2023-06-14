@@ -16,8 +16,6 @@ import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
-import type { AppState } from 'app/store'
-import { getData } from 'app/store/drawers/selectors'
 import { makeStyles } from 'app/styles'
 
 import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
@@ -80,9 +78,7 @@ export const WalletConnectDrawer = () => {
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
   )
-  const data = useSelector((state: AppState) =>
-    getData<'ConnectWallets'>(state)
-  )
+  const { data } = useDrawer('ConnectWallets')
 
   const uri = data?.uri
 

@@ -6,9 +6,9 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppState } from 'app/store'
-import { getData } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
@@ -50,9 +50,8 @@ export const ChatActionsDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { userId, chatId } = useSelector((state: AppState) =>
-    getData<'ChatActions'>(state)
-  )
+  const { data } = useDrawer('ChatActions')
+  const { userId, chatId } = data
   const doesBlockUser = useSelector((state: AppState) =>
     getDoesBlockUser(state, userId)
   )

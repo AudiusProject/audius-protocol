@@ -12,7 +12,9 @@ export const useDrawer = <DrawerType extends Drawer>(
 ) => {
   const dispatch = useDispatch()
   const visibleState = useSelector(getVisibility(drawerName))
-  const data = useSelector((state: AppState) => getData<DrawerType>(state))
+  const data = useSelector((state: AppState) =>
+    getData<DrawerType>(state, drawerName)
+  )
 
   const isOpen = visibleState === true
 
