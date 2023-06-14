@@ -50,7 +50,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 
 	g.GET("", s.getStatus)
 
-	config := unfurlist.WithBlocklistPrefixes(
+	unfurlBlocklist := unfurlist.WithBlocklistPrefixes(
 		[]string{
 			"http://localhost",
 			"http://127",
@@ -62,7 +62,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 			"http://fe80::",
 		},
 	)
-	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(config)))
+	unfurlHeaders := unfurlist.WithExtraHeaders(map[string]string{"User-Agent": "twitterbot"})
+	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(unfurlBlocklist, unfurlHeaders)))
 	g.GET("/pubkey/:id", s.getPubkey)
 	g.GET("/chats", s.getChats)
 	g.GET("/chats/ws", s.chatWebsocket)
