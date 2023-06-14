@@ -10,7 +10,6 @@ from typing import Any, Dict, Tuple
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
-from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -48,24 +47,10 @@ from src.tasks.save_cid_metadata import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
-from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
-from src.utils.index_blocks_performance import (
-    record_add_indexed_block_to_db_ms,
-    record_fetch_metadata_ms,
-    record_index_blocks_ms,
-    sweep_old_add_indexed_block_to_db_ms,
-    sweep_old_fetch_metadata_ms,
-    sweep_old_index_blocks_ms,
-)
+from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError
-from src.utils.prometheus_metric import (
-    PrometheusMetric,
-    PrometheusMetricNames,
-    save_duration_metric,
-)
+from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
-    latest_block_hash_redis_key,
-    latest_block_redis_key,
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
 )
@@ -77,13 +62,14 @@ from web3.exceptions import BlockNotFound
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
-ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
-
 TX_TYPE_TO_HANDLER_MAP = {
     ENTITY_MANAGER: entity_manager_update,
 }
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
+
+FINAL_POA_BLOCK = helpers.get_final_poa_block()
+
 
 logger = StructuredLogger(__name__)
 
@@ -99,25 +85,6 @@ default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
-
-
-def update_latest_block_redis(final_poa_block):
-    latest_block_from_chain = web3.eth.get_block("latest", True)
-    default_indexing_interval_seconds = int(
-        update_task.shared_config["discprov"]["block_processing_interval_sec"]
-    )
-    redis = update_task.redis
-    # these keys have a TTL which is the indexing interval
-    redis.set(
-        latest_block_redis_key,
-        latest_block_from_chain.number + (final_poa_block or 0),
-        ex=default_indexing_interval_seconds,
-    )
-    redis.set(
-        latest_block_hash_redis_key,
-        latest_block_from_chain.hash.hex(),
-        ex=default_indexing_interval_seconds,
-    )
 
 
 def fetch_tx_receipt(tx_hash: HexBytes):
@@ -375,7 +342,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
             )
             break
 
-    logger.debug(f"checking returned {contract_type} vs {tx_target_contract_address}")
     return contract_type
 
 
@@ -517,17 +483,11 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
         # Return early because we've likely indexed up to the head of the chain
         return
 
+    logger.set_context("block", next_block_number)
     indexing_transaction_index_sort_order_start_block = (
         shared_config["discprov"]["indexing_transaction_index_sort_order_start_block"]
         or 0
     )
-
-    metric = PrometheusMetric(PrometheusMetricNames.INDEX_BLOCKS_DURATION_SECONDS)
-    start_time = time.time()
-    metric.reset_timer()
-
-    logger.set_context("block", next_block_number)
-    logger.info(f"index_forward, block {next_block_number}")
 
     challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
@@ -550,10 +510,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 fetch_tx_receipts_start_time = time.time()
                 logger.debug(f"fetching block {next_block_number}")
                 tx_receipt_dict = fetch_tx_receipts(next_block)
-                metric.save_time(
-                    {"scope": "fetch_tx_receipts"},
-                    start_time=fetch_tx_receipts_start_time,
-                )
                 logger.debug(
                     f"index_forward - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                 )
@@ -561,8 +517,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 """
                 Parse transaction receipts
                 """
-                parse_tx_receipts_start_time = time.time()
-
                 sorted_txs = sort_block_transactions(
                     next_block,
                     tx_receipt_dict.values(),
@@ -590,48 +544,25 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                         )
                         if contract_type:
                             txs_grouped_by_type[contract_type].append(tx_receipt)
-                metric.save_time(
-                    {"scope": "parse_tx_receipts"},
-                    start_time=parse_tx_receipts_start_time,
-                )
 
                 """
                 Fetch JSON metadata
                 """
-                fetch_metadata_start_time = time.time()
                 # pre-fetch cids asynchronously to not have it block in user_state_update
                 # and track_state_update
                 cid_metadata, cid_type = fetch_cid_metadata(
                     session,
                     txs_grouped_by_type[ENTITY_MANAGER],
                 )
-                # Record the time this took in redis
-                duration_ms = round((time.time() - fetch_metadata_start_time) * 1000)
-                record_fetch_metadata_ms(redis, duration_ms)
-                metric.save_time(
-                    {"scope": "fetch_metadata"},
-                    start_time=fetch_metadata_start_time,
-                )
 
                 """
                 Add block to db
                 """
-                add_indexed_block_to_db_start_time = time.time()
                 add_indexed_block_to_db(session, next_block)
-                # Record the time this took in redis
-                duration_ms = round(
-                    (time.time() - add_indexed_block_to_db_start_time) * 1000
-                )
-                record_add_indexed_block_to_db_ms(redis, duration_ms)
-                metric.save_time(
-                    {"scope": "add_indexed_block_to_db"},
-                    start_time=add_indexed_block_to_db_start_time,
-                )
 
                 """
                 Add state changes in block to db (users, tracks, etc.)
                 """
-                process_state_changes_start_time = time.time()
                 # bulk process operations once all tx's for block have been parsed
                 # and get changed entity IDs for cache clearing
                 # after session commit
@@ -641,10 +572,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     txs_grouped_by_type,
                     next_block,
                 )
-                metric.save_time(
-                    {"scope": "process_state_changes"},
-                    start_time=process_state_changes_start_time,
-                )
                 is_save_cid_enabled = (
                     shared_config["discprov"]["enable_save_cid"] == "true"
                 )
@@ -652,15 +579,10 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     """
                     Add CID Metadata to db (cid -> json blob, etc.)
                     """
-                    save_cid_metadata_time = time.time()
                     # bulk process operations once all tx's for block have been parsed
                     # and get changed entity IDs for cache clearing
                     # after session commit
                     save_cid_metadata(session, cid_metadata, cid_type)
-                    metric.save_time(
-                        {"scope": "save_cid_metadata"},
-                        start_time=save_cid_metadata_time,
-                    )
 
             except Exception as e:
                 indexing_error = IndexingError(
@@ -673,12 +595,13 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 create_and_raise_indexing_error(indexing_error, redis)
 
         try:
-            commit_start_time = time.time()
-            session.commit()
-            metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
-            logger.debug(
-                f"Session committed to db for block={next_block.number} in {time.time() - commit_start_time}s"
-            )
+
+            @log_duration(logger)
+            def commit():
+                session.commit()
+
+            commit()
+
         except Exception as e:
             # Use 'commit' as the tx hash here.
             # We're at a point where the whole block can't be added to the database, so
@@ -692,12 +615,15 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
             )
             create_and_raise_indexing_error(indexing_error, redis)
         try:
-            # Check the last block's timestamp for updating the trending challenge
-            [should_update, date] = should_trending_challenge_update(
-                session, next_block.timestamp
-            )
-            if should_update:
-                celery.send_task("calculate_trending_challenges", kwargs={"date": date})
+            if next_block.number % 100 == 0:
+                # Check the last block's timestamp for updating the trending challenge
+                [should_update, date] = should_trending_challenge_update(
+                    session, next_block.timestamp
+                )
+                if should_update:
+                    celery.send_task(
+                        "calculate_trending_challenges", kwargs={"date": date}
+                    )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
             logger.error(
@@ -709,22 +635,10 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
 
     add_indexed_block_to_redis(next_block, redis)
 
-    # Record the time this took in redis
-    metric.save_time({"scope": "full"})
-    duration_ms = round(time.time() - start_time * 1000)
-    record_index_blocks_ms(redis, duration_ms)
-
-    # Sweep records older than 30 days every day
-    if next_block.number % BLOCKS_PER_DAY == 0:
-        sweep_old_index_blocks_ms(redis, 30)
-        sweep_old_fetch_metadata_ms(redis, 30)
-        sweep_old_add_indexed_block_to_db_ms(redis, 30)
-
 
 @log_duration(logger)
 def revert_block(session: Session, revert_block: Block):
     start_time = datetime.now()
-    logger.debug(f"Reverting {revert_block_number}")
 
     rebuild_playlist_index = False
     rebuild_track_index = False
@@ -734,6 +648,7 @@ def revert_block(session: Session, revert_block: Block):
     revert_hash = revert_block.blockhash
     revert_block_number = revert_block.number
     parent_hash = revert_block.parenthash
+    logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0
     if revert_block.parenthash == default_padded_start_hash:
@@ -1034,35 +949,19 @@ def revert_block(session: Session, revert_block: Block):
 
 
 # CELERY TASKS
-@celery.task(name="update_discovery_provider_nethermind", bind=True)
+@celery.task(name="index_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
 def update_task(self):
-    # Cache custom task class properties
-    # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/app.py
-    db = update_task.db
-    final_poa_block = helpers.get_final_poa_block()
-    # Initialize contracts and attach to the task singleton
-    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
-        "abi"
-    ]
-    entity_manager_contract = update_task.web3.eth.contract(
-        address=get_contract_addresses()[ENTITY_MANAGER],
-        abi=entity_manager_contract_abi,
-    )
-    update_task.entity_manager_contract = entity_manager_contract
-
-    # Update redis cache for health check queries
-    update_latest_block_redis(final_poa_block)
-
     logger.set_context("request_id", self.request.id)
+    db = update_task.db
+
     try:
         with db.scoped_session() as session:
             latest_database_block = get_latest_database_block(session)
             block_from_chain = is_block_on_chain(web3, latest_database_block)
             if block_from_chain:
-                index_next_block(session, latest_database_block, final_poa_block)
+                index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
             else:
                 revert_block(session, latest_database_block)
     except Exception as e:
@@ -1071,4 +970,4 @@ def update_task(self):
     finally:
         logger.debug("Processing complete")
         # Resend the task to continue indexing
-        celery.send_task("update_discovery_provider_nethermind")
+        celery.send_task("index_nethermind")
