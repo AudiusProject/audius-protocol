@@ -270,11 +270,14 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { userIds } = parseRequestParameters(
+    const { userIds, currentUserId } = parseRequestParameters(
       'getPermissions',
       ChatGetPermissionRequestSchema
     )(requestParameters)
     query['id'] = userIds
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
+    }
 
     const res = await this.signAndSendRequest({
       method: 'GET',
