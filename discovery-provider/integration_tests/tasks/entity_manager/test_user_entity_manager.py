@@ -761,7 +761,7 @@ def test_invalid_user_bio(app, mocker):
     ]
 
     with db.scoped_session() as session:
-        entity_manager_update(
+        total_changes, _ = entity_manager_update(
             None,
             update_task,
             session,
@@ -771,6 +771,8 @@ def test_invalid_user_bio(app, mocker):
             block_hash=0,
             metadata=metadata,
         )
+
+        assert total_changes == 0
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
