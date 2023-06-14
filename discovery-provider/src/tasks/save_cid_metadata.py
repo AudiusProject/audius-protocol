@@ -2,7 +2,7 @@ import json
 from typing import Dict
 
 from sqlalchemy.orm.session import Session
-from src.models.indexing import CIDData
+from src.models.indexing.cid_data import CIDData
 
 
 def save_cid_metadata(

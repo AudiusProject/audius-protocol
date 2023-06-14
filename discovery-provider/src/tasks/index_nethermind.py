@@ -47,7 +47,7 @@ from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
 from src.utils.constants import CONTRACT_TYPES
-from src.utils.indexing_errors import IndexingError
+from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     most_recent_indexed_block_hash_redis_key,
@@ -96,8 +96,6 @@ def fetch_tx_receipt(tx_hash: HexBytes):
 
 @log_duration(logger)
 def fetch_tx_receipts(block):
-    block_hash = web3.toHex(block.hash)
-    block_number = block.number
     block_transactions = block.transactions
     block_tx_with_receipts = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -120,11 +118,7 @@ def fetch_tx_receipts(block):
         f"index_nethermind.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
     )
     if num_processed_txs != num_submitted_txs:
-        raise IndexingError(
-            type="tx",
-            blocknumber=block_number,
-            blockhash=block_hash,
-            txhash=None,
+        raise NotAllTransactionsFetched(
             message=f"index_nethermind.py | fetch_tx_receipts Expected {num_submitted_txs} received {num_processed_txs}",
         )
     return block_tx_with_receipts
@@ -572,6 +566,9 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                     # after session commit
                     save_cid_metadata(session, cid_metadata, cid_type)
 
+            except NotAllTransactionsFetched as e:
+                raise e
+
             except Exception as e:
                 indexing_error = IndexingError(
                     "prefetch-cids",
@@ -954,7 +951,7 @@ def update_task(self):
                 revert_block(session, latest_database_block)
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
-        raise e
+        session.rollback()
     finally:
         logger.debug("Processing complete")
         # Resend the task to continue indexing
