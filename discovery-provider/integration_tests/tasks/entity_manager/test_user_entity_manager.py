@@ -726,11 +726,11 @@ def test_index_verify_users(app, mocker):
 
 def test_invalid_user_bio(app, mocker):
     "Tests that users cant add a bio that's too long"
-    set_patches(mocker)
+    bus_mock = set_patches(mocker)
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(None, web3, bus_mock)
     
     tx_receipts = {
         "CreateUserInvalidBio": [
