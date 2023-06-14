@@ -62,8 +62,17 @@ export class ChatsApi
   extends BaseAPI
   implements EventEmitterTarget<ChatEvents>
 {
+  /**
+   * A map of chatId => chatSecret so we don't have to repeatedly fetch it
+   */
   private chatSecrets: Record<string, Uint8Array> = {}
+  /**
+   * An event emitter that's used for consumers to listen for chat events
+   */
   private readonly eventEmitter: TypedEmitter<ChatEvents>
+  /**
+   * The websocket currently in use
+   */
   private websocket: WebSocket | undefined
   /**
    * The current user ID to use when connecting/reconnecting the websocket
