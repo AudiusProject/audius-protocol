@@ -269,7 +269,7 @@ export const getCanCreateChat = createSelector(
         action = ChatPermissionAction.NONE
       } else if (
         userPermissions.permits === ChatPermission.FOLLOWEES &&
-        !user?.does_current_user_follow
+        !user?.does_follow_current_user
       ) {
         action = ChatPermissionAction.NONE
       } else if (blockees.includes(user.user_id)) {
