@@ -38,6 +38,7 @@ export function DiscoveryHealth() {
             <th>Producing</th>
             <th>ACDC Block</th>
             <th>ACDC Block Hash</th>
+            <th>Registered Wallet</th>
           </tr>
         </thead>
         <tbody>
@@ -157,7 +158,12 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>{getPeers(chainDescription)}</td>
       <td>{getProducing(chainDescription)}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td>{health.chain_health?.hash}</td>
+      <td>
+        <pre>{health.chain_health?.hash}</pre>
+      </td>
+      <td>
+        <pre>{sp.delegateOwnerWallet}</pre>
+      </td>
     </tr>
   )
 }
