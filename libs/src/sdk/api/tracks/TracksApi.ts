@@ -8,9 +8,11 @@ import {
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
+  createUpdateTrackSchema,
   createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
+  UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
 import type { StorageService } from '../../services/Storage'
@@ -181,6 +183,66 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
+  /**
+   * Update a track
+   */
+  async updateTrack(
+    requestParameters: UpdateTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId, coverArtFile, metadata, onProgress } =
+      parseRequestParameters(
+        'updateTrack',
+        createUpdateTrackSchema()
+      )(requestParameters)
+
+    // Upload track cover art to storage node
+    const coverArtResp = await retry3(
+      async () =>
+        await this.storage.uploadFile({
+          file: coverArtFile,
+          onProgress,
+          template: 'img_square'
+        }),
+      (e) => {
+        console.log('Retrying uploadTrackCoverArt', e)
+      }
+    )
+
+    // Update metadata to include uploaded CIDs
+    const updatedMetadata = {
+      ...metadata,
+      coverArtSizes: coverArtResp.id
+    }
+
+    // Write metadata to chain
+
+    // TODO: maybe generalize this
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber
+    }
+  }
+
+  /**
+   * Delete a track
+   */
   async deleteTrack(
     requestParameters: DeleteTrackRequest,
     writeOptions?: WriteOptions
