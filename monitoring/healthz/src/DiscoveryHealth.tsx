@@ -98,7 +98,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isSigner = (nodeAddr?: string, signerAddrs?: string[]) => {
     if (nodeAddr === undefined) return 'node address not found'
     if (signerAddrs === undefined) return 'clique signers not found'
-    return signerAddrs.includes(nodeAddr).toString()
+    return signerAddrs.includes(nodeAddr.toLowerCase()).toString()
   }
   const chainDescription: string =
     health.chain_health?.entries['node-health'].description
