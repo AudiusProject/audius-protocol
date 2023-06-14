@@ -29,7 +29,6 @@ func TestHealthCheck(t *testing.T) {
 		TrustedNotifier:   &ethcontracts.NotifierInfo{Wallet: "0xnotifier", Endpoint: "http://notifier.com", Email: "dmca@notifier.com"},
 		Env:               "DEV",
 		Self:              Peer{Host: "test1.com", Wallet: "0xtest1"},
-		Peers:             []Peer{{Host: "test2.com", Wallet: "0xtest2"}},
 		Signers:           []Peer{{Host: "test2.com", Wallet: "0xtest2"}},
 		ReplicationFactor: 3,
 		Dir:               "/dir",
@@ -38,7 +37,7 @@ func TestHealthCheck(t *testing.T) {
 		TrustedNotifierID: 1,
 	}
 
-	expected := `{"audiusDockerCompose":"123456","autoUpgradeEnabled":true,"cidCursors":null,"databaseSize":99999,"dir":"/dir","env":"DEV","git":"123456","healthy":true,"listenPort":"1991","peerHealths":null,"peers":[{"host":"test2.com","wallet":"0xtest2"}],"replicationFactor":3,"selectedDiscoveryProvider":"","self":{"host":"test1.com","wallet":"0xtest1"},"service":"content-node","signers":[{"host":"test2.com","wallet":"0xtest2"}],"spID":1,"spOwnerWallet":"0xtest1","startedAt":"2023-06-07T08:25:30Z","storagePathSize":999999999,"storagePathUsed":99999,"trustedNotifier":{"email":"dmca@notifier.com","endpoint":"http://notifier.com","wallet":"0xnotifier"},"trustedNotifierId":1,"upstreamCN":"4001","version":"1.0.0"}`
+	expected := `{"audiusDockerCompose":"123456","autoUpgradeEnabled":true,"builtAt":"","cidCursors":null,"databaseSize":99999,"dir":"/dir","env":"DEV","git":"123456","healthy":true,"listenPort":"1991","peerHealths":null,"replicationFactor":3,"selectedDiscoveryProvider":"","self":{"host":"test1.com","wallet":"0xtest1"},"service":"content-node","signers":[{"host":"test2.com","wallet":"0xtest2"}],"spID":1,"spOwnerWallet":"0xtest1","startedAt":"2023-06-07T08:25:30Z","storagePathSize":999999999,"storagePathUsed":99999,"trustedNotifier":{"email":"dmca@notifier.com","endpoint":"http://notifier.com","wallet":"0xnotifier"},"trustedNotifierId":1,"upstreamCN":"4001","version":"1.0.0"}`
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		t.Error(err)
