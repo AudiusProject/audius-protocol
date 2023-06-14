@@ -1,4 +1,3 @@
-import json
 from typing import Dict
 
 from sqlalchemy.orm.session import Session
@@ -12,5 +11,5 @@ def save_cid_metadata(
         return
 
     for cid, val in cid_metadata.items():
-        cid_data = CIDData(cid=cid, type=cid_type[cid], data=json.dumps(val))
+        cid_data = CIDData(cid=cid, type=cid_type[cid], data=val)
         session.merge(cid_data)

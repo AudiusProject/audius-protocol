@@ -3,6 +3,7 @@ import asyncio
 import concurrent.futures
 import json
 import os
+import uuid
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
@@ -339,7 +340,9 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 @log_duration(logger)
-def add_indexed_block_to_db(session: Session, next_block: Block, current_block: Block):
+def add_indexed_block_to_db(
+    session: Session, next_block: web3.eth.Block, current_block: Block
+):
     block_model = Block(
         blockhash=web3.toHex(next_block.hash),
         parenthash=web3.toHex(next_block.parentHash),
@@ -938,21 +941,18 @@ def revert_block(session: Session, revert_block: Block):
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
 def update_task(self):
-    logger.set_context("request_id", self.request.id)
     db = update_task.db
 
-    try:
-        with db.scoped_session() as session:
-            latest_database_block = get_latest_database_block(session)
-            block_from_chain = is_block_on_chain(web3, latest_database_block)
-            if block_from_chain:
-                index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
-            else:
-                revert_block(session, latest_database_block)
-    except Exception as e:
-        logger.error(f"Error in indexing blocks {e}", exc_info=True)
-        session.rollback()
-    finally:
-        logger.debug("Processing complete")
-        # Resend the task to continue indexing
-        celery.send_task("index_nethermind")
+    while True:
+        logger.set_context("request_id", uuid.uuid1())
+        try:
+            with db.scoped_session() as session:
+                latest_database_block = get_latest_database_block(session)
+                block_from_chain = is_block_on_chain(web3, latest_database_block)
+                if block_from_chain:
+                    index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
+                else:
+                    revert_block(session, latest_database_block)
+        except Exception as e:
+            logger.error(f"Error in indexing blocks {e}", exc_info=True)
+            session.rollback()
