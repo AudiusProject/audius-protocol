@@ -1,5 +1,6 @@
 import { ShareToTwitter, ShareModalContent } from '@audius/common'
 
+import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {
   fullAlbumPage,
   fullPlaylistPage,
@@ -12,7 +13,12 @@ import { messages } from './messages'
 
 type ShareToTwitterEvent = Omit<ShareToTwitter, 'eventName' | 'source'>
 
-export const getTwitterShareText = (
+const getShareHandle = async (handle: string) => {
+  const twitterHandle = await getTwitterHandleByUserHandle(handle)
+  return twitterHandle ? `@${twitterHandle}` : handle
+}
+
+export const getTwitterShareText = async (
   content: ShareModalContent,
   isPlaylistOwner = false
 ) => {
@@ -25,7 +31,7 @@ export const getTwitterShareText = (
         track: { title, permalink, track_id },
         artist: { handle }
       } = content
-      twitterText = messages.trackShareText(title, handle)
+      twitterText = messages.trackShareText(title, await getShareHandle(handle))
       link = fullTrackPage(permalink)
       analyticsEvent = { kind: 'track', id: track_id, url: link }
       break
@@ -34,7 +40,7 @@ export const getTwitterShareText = (
       const {
         profile: { handle, user_id }
       } = content
-      twitterText = messages.profileShareText(handle)
+      twitterText = messages.profileShareText(await getShareHandle(handle))
       link = fullProfilePage(handle)
       analyticsEvent = { kind: 'profile', id: user_id, url: link }
       break
@@ -44,7 +50,10 @@ export const getTwitterShareText = (
         album: { playlist_name, playlist_id },
         artist: { handle }
       } = content
-      twitterText = messages.albumShareText(playlist_name, handle)
+      twitterText = messages.albumShareText(
+        playlist_name,
+        await getShareHandle(handle)
+      )
       link = fullAlbumPage(handle, playlist_name, playlist_id)
       analyticsEvent = { kind: 'album', id: playlist_id, url: link }
       break
@@ -54,7 +63,10 @@ export const getTwitterShareText = (
         playlist: { playlist_name, playlist_id },
         creator: { handle }
       } = content
-      twitterText = messages.playlistShareText(playlist_name, handle)
+      twitterText = messages.playlistShareText(
+        playlist_name,
+        await getShareHandle(handle)
+      )
       link = fullPlaylistPage(handle, playlist_name, playlist_id)
       analyticsEvent = { kind: 'playlist', id: playlist_id, url: link }
       break

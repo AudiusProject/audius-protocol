@@ -1,6 +1,7 @@
 import type { ShareModalContent } from '@audius/common'
 import { makeTwitterShareUrl } from '@audius/common'
 
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getCollectionRoute,
   getTrackRoute,
@@ -34,34 +35,45 @@ export const getContentUrl = (content: ShareModalContent) => {
   }
 }
 
-export const getTwitterShareText = (content: ShareModalContent) => {
+const getShareHandle = async (handle: string) => {
+  const { twitterHandle } = await audiusBackendInstance.getSocialHandles(handle)
+  return twitterHandle ? `@${twitterHandle}` : handle
+}
+
+export const getTwitterShareText = async (content: ShareModalContent) => {
   switch (content.type) {
     case 'track': {
       const {
         track: { title },
         artist: { handle }
       } = content
-      return messages.trackShareText(title, handle)
+      return messages.trackShareText(title, await getShareHandle(handle))
     }
     case 'profile': {
       const {
         profile: { handle }
       } = content
-      return messages.profileShareText(handle)
+      return messages.profileShareText(await getShareHandle(handle))
     }
     case 'album': {
       const {
         album: { playlist_name },
         artist: { handle }
       } = content
-      return messages.albumShareText(playlist_name, handle)
+      return messages.albumShareText(
+        playlist_name,
+        await getShareHandle(handle)
+      )
     }
     case 'playlist': {
       const {
         playlist: { playlist_name },
         creator: { handle }
       } = content
-      return messages.playlistShareText(playlist_name, handle)
+      return messages.playlistShareText(
+        playlist_name,
+        await getShareHandle(handle)
+      )
     }
     case 'audioNftPlaylist': {
       return messages.nftPlaylistShareText
@@ -69,8 +81,8 @@ export const getTwitterShareText = (content: ShareModalContent) => {
   }
 }
 
-export const getTwitterShareUrl = (content: ShareModalContent) => {
+export const getTwitterShareUrl = async (content: ShareModalContent) => {
   const url = getContentUrl(content)
-  const shareText = getTwitterShareText(content)
+  const shareText = await getTwitterShareText(content)
   return makeTwitterShareUrl(url ?? null, shareText)
 }
