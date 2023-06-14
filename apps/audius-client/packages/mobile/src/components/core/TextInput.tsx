@@ -272,7 +272,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             {
               borderColor: borderFocusAnimation.current.interpolate({
                 inputRange: [0, 1],
-                outputRange: [neutralLight7, secondary].map(convertHexToRGBA)
+                outputRange: [
+                  convertHexToRGBA(neutralLight7),
+                  convertHexToRGBA(secondary)
+                ]
               })
             }
           ]}
@@ -292,9 +295,10 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
                     fontSize: labelAnimation.current,
                     color: labelAnimation.current.interpolate({
                       inputRange: [16, 18],
-                      outputRange: [neutralLight4, neutral].map(
-                        convertHexToRGBA
-                      )
+                      outputRange: [
+                        convertHexToRGBA(neutralLight4),
+                        convertHexToRGBA(neutral)
+                      ]
                     })
                   }
                 ]}
