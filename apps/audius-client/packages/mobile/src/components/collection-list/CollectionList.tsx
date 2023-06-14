@@ -18,21 +18,26 @@ type IDCardListItem = {
 type IDListProps = Omit<CardListProps<IDCardListItem>, 'data' | 'renderItem'>
 type CreateCard = { _create: boolean }
 
+// Props to show and setup tile for creating new playlists
+type CreateCollectionTileProps = {
+  showCreatePlaylistTile?: boolean
+  createPlaylistSource?: CreatePlaylistSource | null
+  createPlaylistTrackId?: ID | null
+  createPlaylistCallback?: () => void
+}
+
 type FullCollectionListProps = {
   collection?: Collection[]
   /** Optional mapping of collection ids to the number that should be shown as the # of tracks in the collection's info card. Added this because im offline mode, the number of tracks downloaded may not yet match the actual number of tracks in the collection. */
   collectionIdsToNumTracks?: Record<number, number>
   renderItem?: ListRenderItem<Collection | CreateCard> | null
-  // Props to show and setup tile for creating new playlists
-  showCreatePlaylistTile?: boolean
-  createPlaylistSource?: CreatePlaylistSource | null
-  createPlaylistTrackId?: ID | null
-  createPlaylistCallback?: () => void
-} & FullListProps
+} & FullListProps &
+  CreateCollectionTileProps
 
 type CollectionIdListProps = {
   collectionIds: ID[]
-} & IDListProps
+} & IDListProps &
+  CreateCollectionTileProps
 
 type CollectionListProps = FullCollectionListProps | CollectionIdListProps
 
@@ -91,12 +96,27 @@ function isIdListProps(
 }
 
 const CollectionIDList = (props: CollectionIdListProps) => {
-  const { collectionIds, ...other } = props
+  const {
+    collectionIds,
+    showCreatePlaylistTile = false,
+    createPlaylistSource = CreatePlaylistSource.FAVORITES_PAGE,
+    createPlaylistTrackId,
+    createPlaylistCallback,
+    ...other
+  } = props
+
   const renderCard = useCallback(
-    ({ item }: { item: IDCardListItem }) => (
-      <CollectionCard collectionId={item.id} />
-    ),
-    []
+    ({ item }: { item: IDCardListItem | CreateCard }) =>
+      '_create' in item ? (
+        <AddCollectionCard
+          source={createPlaylistSource!}
+          sourceTrackId={createPlaylistTrackId}
+          onCreate={createPlaylistCallback}
+        />
+      ) : (
+        <CollectionCard collectionId={item.id} />
+      ),
+    [createPlaylistCallback, createPlaylistSource, createPlaylistTrackId]
   )
 
   const idList: IDCardListItem[] = useMemo(
@@ -104,9 +124,13 @@ const CollectionIDList = (props: CollectionIdListProps) => {
     [collectionIds]
   )
 
+  const updatedList = showCreatePlaylistTile
+    ? [{ _create: true }, ...idList]
+    : idList
+
   return (
     <CardList
-      data={idList}
+      data={updatedList}
       renderItem={renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
       {...other}
