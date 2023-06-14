@@ -1,9 +1,13 @@
 import {
   Action,
   CreateSliceOptions,
+  Draft,
   PayloadAction,
-  Reducer
+  Reducer,
+  ThunkAction,
+  ThunkDispatch
 } from '@reduxjs/toolkit'
+import { Dispatch } from 'redux'
 
 import { Kind, Status } from 'models'
 
@@ -18,12 +22,33 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
   hooks: {
     [Property in keyof EndpointDefinitions as `use${Capitalize<
       string & Property
-    >}`]: (
-      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-      options?: QueryHookOptions
-    ) => QueryHookResults<
-      Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
-    >
+    >}`]: EndpointDefinitions[Property]['options']['type'] extends 'mutation'
+      ? () => [
+          (
+            fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+            options?: QueryHookOptions
+          ) => void,
+          QueryHookResults<
+            Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+          >
+        ]
+      : (
+          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+          options?: QueryHookOptions
+        ) => QueryHookResults<
+          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+        >
+  }
+  util: {
+    updateQueryData: <EndpointName extends keyof EndpointDefinitions>(
+      endpointName: EndpointName,
+      fetchArgs: Parameters<EndpointDefinitions[EndpointName]['fetch']>[0],
+      updateRecipe: (
+        state: Draft<
+          Awaited<ReturnType<EndpointDefinitions[EndpointName]['fetch']>>
+        >
+      ) => void
+    ) => ThunkAction<any, any, any, any>
   }
 }
 
@@ -38,13 +63,20 @@ type EndpointOptions = {
   idArgKey?: string
   idListArgKey?: string
   permalinkArgKey?: string
-  schemaKey: string
+  schemaKey?: string
   kind?: Kind
+  type?: 'query' | 'mutation'
 }
 
 export type EndpointConfig<Args, Data> = {
   fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
   options: EndpointOptions
+  onQueryStarted?: (fetchArgs: Args, context: { dispatch: Dispatch }) => void
+  onQuerySuccess?: (
+    data: Data,
+    fetchArgs: Args,
+    context: { dispatch: ThunkDispatch<any, any, any> }
+  ) => void
 }
 
 export type EntityMap = {

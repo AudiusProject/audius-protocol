@@ -2,18 +2,24 @@
 
 ## Table of Contents
 
-- [Why audius-query](#why-audius-query)
-- [Usage](#usage)
-  - [Making an Api](#making-an-api)
-  - [Adding an endpoint](#adding-an-endpoint)
-  - [Calling the endpoint](#calling-the-endpoint)
-- [Cacheing](#cacheing)
-  - [Endpoint response cacheing](#endpoint-response-cacheing)
-  - [Entity cacheing](#entity-cacheing)
-  - [Enable single entity cache hits](#enable-single-entity-cache-hits)
-- [Debugging](#debugging)
-- [Experimental features](#experimental-features)
-  - [Pagination (beta)](#pagination-beta)
+- [audius-query](#audius-query)
+  - [Table of Contents](#table-of-contents)
+  - [Why audius-query](#why-audius-query)
+  - [Usage](#usage)
+  - [Make an api](#make-an-api)
+  - [Add a query endpoint](#add-a-query-endpoint)
+  - [Adding a mutation endpoint](#adding-a-mutation-endpoint)
+  - [Adding optimistic updates to your mutation endpoint](#adding-optimistic-updates-to-your-mutation-endpoint)
+  - [Query Hook options](#query-hook-options)
+  - [Cacheing](#cacheing)
+    - [Endpoint response cacheing](#endpoint-response-cacheing)
+    - [Entity cacheing](#entity-cacheing)
+    - [Enable entity cacheing on an endpoint](#enable-entity-cacheing-on-an-endpoint)
+    - [Enable single-entity cache hits](#enable-single-entity-cache-hits)
+      - [Example (useGetTrackById)](#example-usegettrackbyid)
+  - [Debugging](#debugging)
+  - [Experimental features](#experimental-features)
+    - [Pagination (beta)](#pagination-beta)
 
 ## Why audius-query
 
@@ -23,7 +29,7 @@
 
 ## Usage
 
-## Making an api
+## Make an api
 
 1. Call `createApi` which will automatically create a slice with scoped data and status for each endpoint
 
@@ -43,7 +49,7 @@
 
 1. Add the reducer export to [reducer.ts](reducer.ts)
 
-### Adding an endpoint
+## Add a query endpoint
 
 1.  Implement the fetch function
 
@@ -51,34 +57,36 @@
 
     ```typescript
     endpoints: {
-        getSomeData: {
-            fetch: async (
-                    { id } /* fetch args */,
-                    { apiClient, audiusBackend } /* context */
-                ) => {
-                    return await apiClient.getSomeData({ id })
-                },
-            options: {
-                // see below
-            }
+      getSomeData: {
+        fetch: async (
+          { id } /* fetch args */,
+          { apiClient, audiusBackend } /* context */
+        ) => {
+          return await apiClient.getSomeData({ id })
+        },
+        options: {
+          // see below
         }
+      }
     }
     ```
 
-1.  Endpoint options
+1.  Add relevant endpoint options
 
     - **`schemaKey`** - the corresponding key in `apiResponseSchema` see [schema.ts](./schema.ts). See [enable entity cachineg on an endpoint](#enable-entity-cacheing-on-an-endpoint) below
 
       _Note: A schema key is required, though any unreserved key can be used if the data does not contain any of the entities stored in the entity cache (i.e. any of the `Kinds` from [Kind.ts](/packages/common/src/models/Kind.ts))_
 
     - **`kind`** - in combination with either `idArgKey` or `permalinkArgKey`, allows local cache hits for single entities. If an entity with the matching `kind` and the `id` or `permalink` exists in cache, we will return that instead of calling the fetch function. See [enable single entity cache hits](#enable-single-entity-cache-hits) below
-      - **`idArgKey`** - `fetchArgs[idArgKey]` must contain the id of the entity
-      - **`permalinkArgKey`** - `fetchArgs[permalinkArgKey]` must contain the permalink of the entity
-      - **`idListArgKey`** - works like `idArgKey` but for endpoints that return a list entities
+    - **`idArgKey`** - `fetchArgs[idArgKey]` must contain the id of the entity
+    - **`permalinkArgKey`** - `fetchArgs[permalinkArgKey]` must contain the permalink of the entity
+    - **`idListArgKey`** - works like `idArgKey` but for endpoints that return a list entities
+    - **`type`** - by default endpoint additions are viewed as "queries" ie methods that fetch data. Specifying `type: 'mutation'` tells audius-query you are implementing a method that will write data to the server.
 
-1.  Export hooks
 
-    A Hooks will automatically be generated for each endpoint, using the naming convention `` [`use${capitalize(endpointName)}`] `` (e.g. `getSomeData` -> `useGetSomeData`)
+1.  Export the query hook
+
+    A Hook will automatically be generated for each endpoint, using the naming convention `` [`use${capitalize(endpointName)}`] `` (e.g. `getSomeData` -> `useGetSomeData`)
 
     ```typescript
     const userApi = createApi({
@@ -94,9 +102,8 @@
     export default userApi.reducer
     ```
 
-### Calling the endpoint
-
-1.  Generated fetch hooks take the same args as the fetch function plus an options object. They return the same type returned by the fetch function.
+1. Use the query hook
+- Generated fetch hooks take the same args as the fetch function plus an options object. They return the same type returned by the fetch function.
 
     ```typescript
     type QueryHook = (
@@ -109,7 +116,7 @@
     }
     ```
 
-1.  In your component
+- In your component:
 
     ```typescript
     const {
@@ -128,9 +135,84 @@
     )
     ```
 
-### Hook options
+## Adding a mutation endpoint
 
-Hooks accept an options object as the optional second argument
+1.  Implement the fetch function
+
+    ```typescript
+    endpoints: {
+      updateSomeData: {
+        fetch: async (
+          { id } /* fetch args */,
+          { apiClient, audiusBackend } /* context */
+        ) => {
+          return await apiClient.updateSomeData({ id })
+        },
+        options: {
+          type: 'mutation', // This turns endpoint into a mutation
+          // Same additional options as query endpoint
+        }
+      }
+    }
+    ```
+1. Export hooks (same process as query endpoints)
+
+1. Use hook in your component  
+    ```typescript
+    const [updateSomeData, result] = useUpdateSomeData()
+    const { data: someData, status, errorMessage } = result
+    
+
+    return (
+      <Button text="Update some data" onClick={updateSomeData} />
+      {status === Status.LOADING ? (
+        <Loading />
+      ) : (
+        someData ? <DisplayComponent data={someData} /> : null
+      )}
+    )
+    ```
+## Adding optimistic updates to your mutation endpoint
+ In some cases, you may want to update the cache manually. When you wish to update cache data that already exists for query endpoints, you can do so using the updateQueryData thunk action available on the util object of your created API.
+
+```typescript
+const api = createApi({
+  reducerPath: 'someData',
+  endpoints: {
+    getSomeData: {
+      fetch: async ({ id }, { apiClient }) => {
+        return await apiClient.getSomeData({ id })
+      }
+    }
+    updateSomeData: {
+      fetch: async ( { id } { apiClient }) => {
+        return await apiClient.updateSomeData({ id })
+      },
+      options: {
+        type: 'mutation',
+      },
+      onQueryStarted: async (updatedData, { id }, { dispatch }) => {
+        dispatch(
+          api.util.updateQueryData(
+            'getSomeData',
+            { id },
+            (draft) => {
+              Object.assign(draft, updatedData)
+            }
+          )
+        )
+      }
+    }
+  }
+})
+```
+
+
+
+
+## Query Hook options
+
+Query Hooks accept an options object as the optional second argument
 
 - `disabled` - prevents calling the remote fetch function while disabled is false. This is useful if some arguments may not be loaded yet
 - `shallow` - skips pulling subentities out of the cache. (e.g. get a track but not the full user inside `track.user`). Omitted subentities will be replaced by id references.
