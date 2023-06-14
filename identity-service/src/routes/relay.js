@@ -15,7 +15,6 @@ const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 const { libs } = require('@audius/sdk')
 const config = require('../config.js')
-const { Request } = require('aws-sdk')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
@@ -29,9 +28,6 @@ module.exports = function (app) {
 
       // TODO: Use auth middleware to derive this
       const user = req.user
-
-      // TODO for APP flow to fetch user and check if blocked from relays
-
       let optimizelyClient
       let detectAbuseOnRelay = false
       let blockAbuseOnRelay = false

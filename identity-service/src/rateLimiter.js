@@ -168,10 +168,12 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
+
+const rateLimitMessage = 'Too many requests, please try again later'
 const getRelayBlacklistMiddleware = (req, res, next) => {
   const blacklist = config.get('blacklistPublicKeyFromRelay')
   if (blacklist && blacklist.includes(req.body.senderAddress)) {
-    return res.status(429).send('Blocked.')
+    return res.status(429).send(rateLimitMessage)
   }
   next()
 }
@@ -185,8 +187,6 @@ const getRelayRateLimiterMiddleware = () => {
         'EntityManager',
         req.body.encodedABI
       )
-      const whitelist = config.get('whitelistPublicKeyFromRelay')
-
       const action = decodedABI.params.find(
         (param) => param.name === '_action'
       ).value
@@ -196,7 +196,6 @@ const getRelayRateLimiterMiddleware = () => {
       let key = action + entityType
 
       let limit = config.get(key)
-
       req.user = await models.User.findOne({
         where: { walletAddress: req.body.senderAddress },
         attributes: [
@@ -210,7 +209,8 @@ const getRelayRateLimiterMiddleware = () => {
           'appliedRules'
         ]
       })
-
+      const whitelist = config.get('whitelistPublicKeyFromRelay')
+      req.logger.info(`asdf req.user ${req.user}`)
       if (req.user) {
         limit = limit['owner']
         req.isFromApp = false
@@ -220,6 +220,7 @@ const getRelayRateLimiterMiddleware = () => {
         } else {
           limit = limit['app']
         }
+        req.logger.info(`asdf limit ${limit}`)
         req.isFromApp = true
       }
 
@@ -238,6 +239,14 @@ const getRelayRateLimiterMiddleware = () => {
       ).value
       const key = action + entityType
       return ':::' + key + ':' + req.body.senderAddress
+    },
+    handler: (req, res, options) => {
+      try {
+        req.logger.error(`Rate limited sender ${req.body.senderAddress}`)
+      } catch (error) {
+        req.logger.error(`Cannot relay without sender address`)
+      }
+      res.status(options.statusCode).send(options.message)
     }
   })
 }
