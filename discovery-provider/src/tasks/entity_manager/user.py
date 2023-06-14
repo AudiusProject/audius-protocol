@@ -45,8 +45,8 @@ def validate_user_bio(user_bio: str, user_id: int):
 
 def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
-    user_metadata = params.metadata[params.metadata_cid]
-    user_bio = user_metadata["bio"]
+    # user_metadata = params.metadata[params.metadata_cid]
+    # user_bio = user_metadata["bio"]
 
     if params.entity_type != EntityType.USER:
         raise Exception(
