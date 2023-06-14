@@ -265,9 +265,6 @@ def entity_manager_update(
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
-                    metric_num_errors.save_time(
-                        {"entity_type": params.entity_type}, start_time=start_time_tx
-                    )
         # compile records_to_save
         records_to_save = []
         for record_type, record_dict in new_records.items():
