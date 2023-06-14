@@ -13,7 +13,7 @@ from src.utils.redis_metrics import record_metrics
 ns = Namespace("developer_apps", description="Developer app related operations")
 
 developer_app_response = make_response(
-    "developer_app", ns, fields.Nested(developer_app)
+    "developer_app_response", ns, fields.Nested(developer_app)
 )
 
 
