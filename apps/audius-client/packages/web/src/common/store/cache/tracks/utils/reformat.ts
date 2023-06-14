@@ -71,7 +71,9 @@ export const reformat = <T extends TrackMetadata>(
 ): Track => {
   const t = track
   const withoutUser = omit(t, 'user')
-  const withImages = audiusBackendInstance.getTrackImages(withoutUser)
+  // audius-query denormalization expects track.user to contain the id of the owner.
+  const withUserIdAsUser = { ...withoutUser, user: t.owner_id }
+  const withImages = audiusBackendInstance.getTrackImages(withUserIdAsUser)
   const withCosign = setIsCoSigned(withImages)
   const withFieldVisibility = setFieldVisibility(withCosign)
 

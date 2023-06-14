@@ -117,6 +117,7 @@ export type PerKeyState<NormalizedData> = {
 export type QueryHookOptions = {
   disabled?: boolean
   shallow?: boolean
+  debug?: boolean
 }
 
 export type QueryHookResults<Data> = {
