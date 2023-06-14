@@ -76,6 +76,7 @@ def validate_user_tx(params: ManageEntityParameters):
 
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
+    logger.info("asdf checking user record handle")
     if not user_record.handle:
         handle_lower = user_metadata["handle"].lower()
         user_handle_exists = session.query(
@@ -86,6 +87,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             raise Exception(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = handle_lower
+    logger.info("asdf set handle")
 
     # If an artist pick track id is specified, validate that it is a valid track id
     if (
@@ -127,8 +129,8 @@ def create_user(params: ManageEntityParameters):
     user_metadata = None
     try:
         # for single tx signup
-        logger.info(f"asdf parsing json: {params.metadata_cid}")
-        user_metadata = json.loads(params.metadata_cid)
+        logger.info(f"asdf parsing json: {params.metadata}")
+        user_metadata = json.loads(params.metadata)["data"]
         logger.info('asdf got single tx')
         validate_user_metadata(
             params.session,
