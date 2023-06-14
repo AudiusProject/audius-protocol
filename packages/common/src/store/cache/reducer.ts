@@ -85,8 +85,7 @@ const unwrapEntry = (entry: { metadata: any }) => {
 const forceUpdateKeys = new Set([
   'field_visibility',
   'followee_reposts',
-  'followee_saves',
-  'playlist_library'
+  'followee_saves'
 ])
 
 // Customize lodash recursive merge to never merge
@@ -98,6 +97,12 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
   }
   if (key === 'is_verified') {
     return srcValue || objValue
+  }
+
+  // Not every user request provides playlist_library,
+  // so always prefer it's existence, starting with latest
+  if (key === 'playlist_library') {
+    return objValue || srcValue
   }
 
   // Delete is unidirectional (after marked deleted, future updates are not reflected)
