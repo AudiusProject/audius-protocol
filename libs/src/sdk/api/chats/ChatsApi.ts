@@ -125,14 +125,14 @@ export class ChatsApi
   }
 
   public async getAll(requestParameters?: ChatGetAllRequest) {
+    const { currentUserId, limit, before, after } = parseRequestParameters(
+      'getAll',
+      ChatGetAllRequestSchema
+    )(requestParameters)
     const path = `/comms/chats`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { limit, before, after } = parseRequestParameters(
-      'getAll',
-      ChatGetAllRequestSchema
-    )(requestParameters)
     if (limit) {
       query['limit'] = limit
     }
@@ -141,6 +141,9 @@ export class ChatsApi
     }
     if (after) {
       query['after'] = after
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -162,10 +165,11 @@ export class ChatsApi
   public async getMessages(
     requestParameters: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
-    const { chatId, limit, before, after } = parseRequestParameters(
-      'getMessages',
-      ChatGetMessagesRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, limit, before, after } =
+      parseRequestParameters(
+        'getMessages',
+        ChatGetMessagesRequestSchema
+      )(requestParameters)
 
     const sharedSecret = await this.getChatSecret(chatId)
     const path = `/comms/chats/${chatId}/messages`
@@ -180,6 +184,9 @@ export class ChatsApi
     }
     if (after) {
       query['after'] = after
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -290,7 +297,7 @@ export class ChatsApi
   // #region MUTATE
 
   public async create(requestParameters: ChatCreateRequest) {
-    const { userId, invitedUserIds } = parseRequestParameters(
+    const { currentUserId, userId, invitedUserIds } = parseRequestParameters(
       'create',
       ChatCreateRequestSchema
     )(requestParameters)
@@ -301,6 +308,7 @@ export class ChatsApi
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.create',
       params: {
         chat_id: chatId,
@@ -310,14 +318,16 @@ export class ChatsApi
   }
 
   public async invite(requestParameters: ChatInviteRequest) {
-    const { chatId, userId, invitedUserIds } = parseRequestParameters(
-      'invite',
-      ChatInviteRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, userId, invitedUserIds } =
+      parseRequestParameters(
+        'invite',
+        ChatInviteRequestSchema
+      )(requestParameters)
 
     const chatSecret = await this.getChatSecret(chatId)
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.invite',
       params: {
         chat_id: chatId,
@@ -327,15 +337,17 @@ export class ChatsApi
   }
 
   public async message(requestParameters: ChatMessageRequest) {
-    const { chatId, message, messageId } = parseRequestParameters(
-      'message',
-      ChatMessageRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, message, messageId } =
+      parseRequestParameters(
+        'message',
+        ChatMessageRequestSchema
+      )(requestParameters)
     const chatSecret = await this.getChatSecret(chatId)
     const encrypted = await this.encryptString(chatSecret, message)
     const encodedMessage = base64.encode(encrypted)
 
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.message',
       params: {
         chat_id: chatId,
@@ -346,11 +358,10 @@ export class ChatsApi
   }
 
   public async react(requestParameters: ChatReactRequest) {
-    const { chatId, messageId, reaction } = parseRequestParameters(
-      'react',
-      ChatReactRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, messageId, reaction } =
+      parseRequestParameters('react', ChatReactRequestSchema)(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.react',
       params: {
         chat_id: chatId,
@@ -361,11 +372,12 @@ export class ChatsApi
   }
 
   public async read(requestParameters: ChatReadRequest) {
-    const { chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = parseRequestParameters(
       'read',
       ChatReadRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.read',
       params: {
         chat_id: chatId
@@ -374,11 +386,12 @@ export class ChatsApi
   }
 
   public async block(requestParameters: ChatBlockRequest) {
-    const { userId } = parseRequestParameters(
+    const { currentUserId, userId } = parseRequestParameters(
       'block',
       ChatBlockRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.block',
       params: {
         user_id: userId
@@ -387,11 +400,12 @@ export class ChatsApi
   }
 
   public async unblock(requestParameters: ChatBlockRequest) {
-    const { userId } = parseRequestParameters(
+    const { currentUserId, userId } = parseRequestParameters(
       'unblock',
       ChatBlockRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.unblock',
       params: {
         user_id: userId
@@ -400,11 +414,12 @@ export class ChatsApi
   }
 
   public async delete(requestParameters: ChatDeleteRequest) {
-    const { chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = parseRequestParameters(
       'delete',
       ChatDeleteRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.delete',
       params: {
         chat_id: chatId
@@ -413,11 +428,12 @@ export class ChatsApi
   }
 
   public async permit(requestParameters: ChatPermitRequest) {
-    const { permit } = parseRequestParameters(
+    const { currentUserId, permit } = parseRequestParameters(
       'permit',
       ChatPermitRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.permit',
       params: {
         permit
@@ -574,7 +590,9 @@ export class ChatsApi
     })
   }
 
-  private async sendRpc(args: RPCPayloadRequest) {
+  private async sendRpc(
+    args: RPCPayloadRequest & { current_user_id?: string }
+  ) {
     const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
     await this.signAndSendRequest({
       method: 'POST',
