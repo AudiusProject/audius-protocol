@@ -151,11 +151,33 @@ def test_index_valid_user(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmCreateUser3": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Isaac",
+            "handle": "isaac",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmIsaacProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmIsaacCoverPhoto",
+            "bio": "this is isaac",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {
+                "contents": []
+            },
+            "events": None,
+            "user_id": USER_ID_OFFSET + 3,
+        },
     }
 
     update_artist_pick_json = json.dumps(test_metadata["QmUpdateArtistPickTrack"])
     update_user1_json = json.dumps(test_metadata["QmUpdateUser1"])
     update_user2_json = json.dumps(test_metadata["QmUpdateUser2"])
+    create_user3_json = json.dumps(test_metadata["QmCreateUser3"])
+
     tx_receipts = {
         "CreateUser1Tx": [
             {
@@ -227,6 +249,20 @@ def test_index_valid_user(app, mocker):
                 )
             },
         ],
+        "CreateUser3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 3,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 3,
+                        "_action": "Create",
+                        "_metadata": f'{{"data": {create_user3_json}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -277,7 +313,7 @@ def test_index_valid_user(app, mocker):
 
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 6
+        assert len(all_users) == 7
 
         user_1: User = (
             session.query(User)
@@ -299,6 +335,18 @@ def test_index_valid_user(app, mocker):
         )
         assert user_2.name == "Forrest"
         assert user_2.handle == "forrest"
+
+        user_3: User = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 3,
+            )
+            .first()
+        )
+        assert user_3.name == "Isaac"
+        assert user_3.handle == "isaac"
+
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),

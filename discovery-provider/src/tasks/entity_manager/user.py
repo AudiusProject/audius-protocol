@@ -149,7 +149,7 @@ def create_user(params: ManageEntityParameters):
     if params.metadata_cid == "v2":
         user_record.is_storage_v2 = True
     elif not user_metadata:  # update replica set case
-        sp_ids = parse_sp_ids(params.metadata_cid)
+        sp_ids = parse_sp_ids(params.metadata)
 
         # Update the user's new replica set in the model and save!
         user_record.primary_id = sp_ids[0]
