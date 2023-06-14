@@ -63,7 +63,7 @@ export type DrawerData = {
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
-  data: Nullable<BaseDrawerData>
+  data: { [drawerData in Drawer]?: Nullable<DrawerData[Drawer]> }
 }
 
 const initialState: DrawersState = {
@@ -91,7 +91,7 @@ const initialState: DrawersState = {
   DeleteChat: false,
   SupportersInfo: false,
   InboxUnavailable: false,
-  data: null
+  data: {}
 }
 
 type SetVisibilityAction = PayloadAction<{
@@ -108,9 +108,9 @@ const slice = createSlice({
       const { drawer, visible, data } = action.payload
       state[drawer] = visible
       if (visible && data) {
-        state.data = data
+        state.data[drawer] = data
       } else if (!visible) {
-        state.data = null
+        state.data[drawer] = null
       }
     }
   }

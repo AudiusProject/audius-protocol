@@ -8,8 +8,7 @@ import IconBlockMessages from 'app/assets/images/iconBlockMessages.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
-import type { AppState } from 'app/store'
-import { getData } from 'app/store/drawers/selectors'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -106,9 +105,8 @@ export const BlockMessagesDrawer = () => {
   const neutralLight2 = useColor('neutralLight2')
   const neutral = useColor('neutral')
   const dispatch = useDispatch()
-  const { userId, shouldOpenChat } = useSelector((state: AppState) =>
-    getData<'BlockMessages'>(state)
-  )
+  const { data } = useDrawer('BlockMessages')
+  const { userId, shouldOpenChat } = data
   const user = useSelector((state) => getUser(state, { id: userId }))
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))

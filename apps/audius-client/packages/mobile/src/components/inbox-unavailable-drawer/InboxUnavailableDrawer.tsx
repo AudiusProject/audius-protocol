@@ -16,8 +16,8 @@ import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { getData } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -151,9 +151,8 @@ export const InboxUnavailableDrawer = () => {
   const styles = useStyles()
   const neutralLight2 = useColor('neutralLight2')
 
-  const { userId, shouldOpenChat } = useSelector((state) =>
-    getData<'InboxUnavailable'>(state)
-  )
+  const { data } = useDrawer('InboxUnavailable')
+  const { userId, shouldOpenChat } = data
   const user = useSelector((state) => getUser(state, { id: userId }))
   const { callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId })
