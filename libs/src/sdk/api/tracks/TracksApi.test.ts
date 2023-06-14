@@ -1,13 +1,15 @@
 import { TracksApi } from './TracksApi'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { Storage } from '../../services/Storage'
-import { EntityManager } from '../../services/EntityManager'
+import {
+  DiscoveryNodeSelector,
+  EntityManager,
+  StorageNodeSelector,
+  Storage
+} from '../../services'
 import { Auth } from '../../services/Auth/Auth'
 import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { Genre } from '../../types/Genre'
 import { Mood } from '../../types/Mood'
-import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 
 jest.mock('../../services')
 
@@ -108,6 +110,45 @@ describe('TracksApi', () => {
             buffer: Buffer.from([]),
             name: 'trackArt'
           }
+        })
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('updateTrack', () => {
+    it('updates a track if valid metadata is provided', async () => {
+      const result = await tracks.updateTrack({
+        userId: '7eP5n',
+        trackId: 'ogRRByg',
+        coverArtFile: {
+          buffer: Buffer.from([]),
+          name: 'coverArt'
+        },
+        metadata: {
+          title: 'BachGavotte',
+          genre: Genre.ELECTRONIC,
+          mood: Mood.TENDER
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await tracks.updateTrack({
+          userId: '7eP5n',
+          trackId: 'ogRRByg',
+          coverArtFile: {
+            buffer: Buffer.from([]),
+            name: 'coverArt'
+          },
+          metadata: {
+            title: 'BachGavotte'
+          } as any
         })
       }).rejects.toThrow()
     })

@@ -217,8 +217,6 @@ export class TracksApi extends TracksApiWithoutStream {
     }
 
     // Write metadata to chain
-
-    // TODO: maybe generalize this
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const response = await this.entityManager.manageEntity({
       userId,
