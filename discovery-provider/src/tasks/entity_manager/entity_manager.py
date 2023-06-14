@@ -263,7 +263,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process {params.action} {params.entity_type} tx error {e} | with event {event}"
+                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
                     metric_num_errors.save_time(
                         {"entity_type": params.entity_type}, start_time=start_time_tx
