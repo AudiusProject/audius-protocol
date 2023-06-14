@@ -273,15 +273,15 @@ export class ChatsApi
    * @returns the unread count response
    */
   public async getUnreadCount(requestParameters: ChatGetUnreadCountRequest) {
-    const { currentUserId } = parseRequestParameters(
+    const parsedArgs = parseRequestParameters(
       'getUnreadCount',
       ChatGetUnreadCountRequestSchema
     )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    if (currentUserId) {
-      query['current_user_id'] = currentUserId
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -325,16 +325,16 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to act on behalf of
    * @returns the blockers response
    */
-  public async getBlockers(requestParameters: ChatGetBlockersRequest) {
-    const { currentUserId } = parseRequestParameters(
+  public async getBlockers(requestParameters?: ChatGetBlockersRequest) {
+    const parsedArgs = parseRequestParameters(
       'getBlockers',
       ChatGetBlockersRequestSchema
     )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    if (currentUserId) {
-      query['current_user_id'] = currentUserId
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -350,16 +350,16 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to act on behalf of
    * @returns
    */
-  public async getBlockees(requestParameters: ChatGetBlockersRequest) {
-    const { currentUserId } = parseRequestParameters(
+  public async getBlockees(requestParameters?: ChatGetBlockersRequest) {
+    const parsedArgs = parseRequestParameters(
       'getBlockees',
       ChatGetBlockersRequestSchema
     )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    if (currentUserId) {
-      query['current_user_id'] = currentUserId
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
