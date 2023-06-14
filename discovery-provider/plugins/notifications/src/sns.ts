@@ -121,7 +121,6 @@ export const sendPushNotification = async (
   message: Message
 ) => {
   if (device.type == 'ios') {
-    logger.info(`Processing ios push notification`)
     await sendIOSMessage({
       title: message.title,
       body: message.body,
@@ -131,7 +130,6 @@ export const sendPushNotification = async (
       targetARN: device.targetARN
     })
   } else if (device.type == 'android') {
-    logger.info(`Processing android push notification`)
     await sendAndroidMessage({
       title: message.title,
       body: message.body,
