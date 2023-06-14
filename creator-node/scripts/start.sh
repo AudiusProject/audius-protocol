@@ -65,9 +65,7 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
     openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
-# index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 if [[ "$devMode" == "true" ]]; then
-    export clusterModeEnabled="false"
     if [ "$link_libs" = true ]; then
         cd ../audius-libs
         npm link

@@ -4,7 +4,7 @@ import type { SpanContext } from '@opentelemetry/api'
 
 import { Queue, Worker } from 'bullmq'
 import { logger } from './logging'
-import { getConcurrencyPerWorker, ValuesOf, LogContext } from './utils'
+import { ValuesOf, LogContext } from './utils'
 
 // Processing fns
 import {
@@ -105,7 +105,7 @@ export class AsyncProcessingQueue {
       },
       {
         connection,
-        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: MAX_CONCURRENCY
       }
     )
     prometheusRegistry.startQueueMetrics(this.queue, worker)

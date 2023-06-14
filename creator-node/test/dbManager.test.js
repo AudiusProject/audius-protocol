@@ -9,9 +9,7 @@ const sinon = require('sinon')
 
 const models = require('../src/models')
 const DBManager = require('../src/dbManager')
-const BlacklistManager = require('../src/blacklistManager')
 const FileManager = require('../src/fileManager')
-const DiskManager = require('../src/diskManager')
 const utils = require('../src/utils')
 const {
   createStarterCNodeUser,
@@ -41,7 +39,7 @@ describe('Test createNewDataRecord()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock())
     server = appInfo.server
   })
 
@@ -389,7 +387,7 @@ describe('Test ClockRecord model', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock())
     server = appInfo.server
   })
 
@@ -599,7 +597,7 @@ describe('Test deleteSessionTokensFromDB() when provided an Array of SessionToke
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock())
     server = appInfo.server
   })
 
@@ -653,7 +651,7 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
   before(async function () {
     const spId = 1
     libsMock = getLibsMock()
-    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
+    const appInfo = await getApp(libsMock, null, spId)
     server = appInfo.server
     app = appInfo.app
   })
@@ -879,7 +877,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getLibsMock())
     server = appInfo.server
   })
 

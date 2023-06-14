@@ -40,19 +40,6 @@ export const getRequestRange = (req: Request) => {
 }
 
 /**
- * Gets whether the first byte is being returned in the range request
- * @param {Request} req express request object
- *
- * @returns true or false
- */
-export const isFirstByteRequest = (req: Request) => {
-  const requestRange = getRequestRange(req)
-  if (!requestRange) return true
-  const { start, end } = requestRange
-  return start === 0 && (!end || end >= 1)
-}
-
-/**
  * Formats a Content-Range header response
  * @returns {string} Content-Range header value
  */
@@ -66,6 +53,5 @@ export const formatContentRange = (
 
 module.exports = {
   getRequestRange,
-  isFirstByteRequest,
   formatContentRange
 }

@@ -3,7 +3,7 @@ import Sequelize from 'sequelize'
 
 import { deleteSessions } from '../sessionManager'
 import { logger } from '../logging'
-import { clusterUtilsForWorker, clearActiveJobs } from '../utils'
+import { clearActiveJobs } from '../utils'
 const config = require('../config')
 const { SessionToken } = require('../models')
 
@@ -64,10 +64,8 @@ export class SessionExpirationQueue {
     }
 
     // Clean up anything that might be still stuck in the queue on restart
-    if (clusterUtilsForWorker.isThisWorkerFirst()) {
-      await this.queue.obliterate({ force: true })
-      await clearActiveJobs(this.queue, logger)
-    }
+    await this.queue.obliterate({ force: true })
+    await clearActiveJobs(this.queue, logger)
 
     const _worker = new Worker(
       'session-expiration-queue',
@@ -108,19 +106,17 @@ export class SessionExpirationQueue {
     )
 
     try {
-      if (clusterUtilsForWorker.isThisWorkerSpecial()) {
-        // Run the job immediately
-        await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+      // Run the job immediately
+      await this.queue.add(PROCESS_NAMES.expire_sessions, {})
 
-        // Then enqueue the job to run on a regular interval
-        setInterval(async () => {
-          try {
-            await this.queue.add(PROCESS_NAMES.expire_sessions, {})
-          } catch (e) {
-            this._logStatus('Failed to enqueue!')
-          }
-        }, this.runInterval)
-      }
+      // Then enqueue the job to run on a regular interval
+      setInterval(async () => {
+        try {
+          await this.queue.add(PROCESS_NAMES.expire_sessions, {})
+        } catch (e) {
+          this._logStatus('Failed to enqueue!')
+        }
+      }, this.runInterval)
     } catch (e) {
       this._logStatus('Startup failed!')
     }

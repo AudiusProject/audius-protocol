@@ -5,7 +5,6 @@ const { ExpressAdapter } = require('@bull-board/express')
 
 const initAudiusLibs = require('./services/initAudiusLibs')
 const redisClient = require('./redis')
-const BlacklistManager = require('./blacklistManager')
 const {
   logger: genericLogger,
   getStartTime,
@@ -19,7 +18,6 @@ const SyncImmediateQueue = require('./services/sync/syncImmediateQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 const { AsyncProcessingQueue } = require('./AsyncProcessingQueue')
 const { SessionExpirationQueue } = require('./services/SessionExpirationQueue')
-const { TrustedNotifierManager } = require('./services/TrustedNotifierManager')
 const { ImageProcessingQueue } = require('./ImageProcessingQueue')
 const TranscodingQueue = require('./TranscodingQueue')
 const StateMachineManager = require('./services/stateMachineManager')
@@ -40,10 +38,8 @@ class ServiceRegistry {
     this.redis = redisClient // Redis Client
     this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
     this.libs = null // instance of Audius Libs
-    this.blacklistManager = BlacklistManager // Service that handles blacklisted content
     this.stateMachineManager = null // Service that manages user states
     this.snapbackSM = null // Responsible for recurring sync and reconfig operations
-    this.trustedNotifierManager = null // Service that blacklists content on behalf of Content Nodes
 
     // Queues
     this.monitoringQueue = null // Recurring job to monitor node state & performance metrics
@@ -85,10 +81,6 @@ class ServiceRegistry {
       this.prometheusRegistry
     )
 
-    this.trustedNotifierManager = new TrustedNotifierManager(config, this.libs)
-
-    await this.trustedNotifierManager.init()
-
     this.synchronousServicesInitialized = true
 
     this.monitoringQueue = new MonitoringQueue()
@@ -110,7 +102,6 @@ class ServiceRegistry {
     try {
       await this.monitoringQueue.start()
       await this.sessionExpirationQueue.start()
-      await this.blacklistManager.init()
     } catch (e) {
       this.logError(e.message)
       // eslint-disable-next-line no-process-exit
@@ -123,18 +114,6 @@ class ServiceRegistry {
       { logger: genericLogger, startTime: start },
       'ServiceRegistry || Initialized asynchronous services'
     )
-  }
-
-  /**
-   * Initializes the blacklistManager if it is not already initialized, and then returns it
-   * @returns initialized blacklistManager instance
-   */
-  async getBlacklistManager() {
-    if (!this.blacklistManager.initialized) {
-      await this.blacklistManager.init()
-    }
-
-    return this.blacklistManager
   }
 
   _setupBullMonitoring(app) {

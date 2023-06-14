@@ -5,8 +5,6 @@ const fs = require('fs-extra')
 
 const models = require('../src/models')
 
-const BlacklistManager = require('../src/blacklistManager')
-const DiskManager = require('../src/diskManager')
 const { computeFilePathAndEnsureItExists } = require('../src/utils')
 
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -24,8 +22,7 @@ describe('Test AudiusUsers', function () {
 
     const { getApp } = require('./lib/app')
 
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock, null, userId)
 
     app = appInfo.app
     server = appInfo.server

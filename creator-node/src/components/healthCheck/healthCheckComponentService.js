@@ -4,7 +4,6 @@ const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
 const utils = require('../../utils')
-const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -23,7 +22,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {number} numberOfCPUs the number of CPUs on this machine
  */
 const healthCheck = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
+  { libs, snapbackSM } = {},
   logger,
   getMonitors,
   getTranscodeQueueJobs,
@@ -128,8 +127,6 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
-  const clusterWorkersCount = getNumWorkers()
-
   const healthy = !config.get('considerNodeUnhealthy')
   const databaseIsLocalhost =
     config.get('dbUrl') ===
@@ -212,12 +209,7 @@ const healthCheck = async (
       latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
         latestFindReplicaSetUpdatesJobSuccess
       )
-    },
-    trustedNotifier: {
-      ...trustedNotifierManager?.getTrustedNotifierData(),
-      id: trustedNotifierManager?.trustedNotifierID
-    },
-    clusterWorkersCount
+    }
   }
 
   if (libs) {
@@ -249,7 +241,7 @@ const parseDateOrNull = (date) => {
 
 // TODO remove verbose health check after fully deprecated
 const healthCheckVerbose = async (
-  { libs, snapbackSM, trustedNotifierManager } = {},
+  { libs, snapbackSM } = {},
   logger,
   getMonitors,
   numberOfCPUs,
@@ -258,7 +250,7 @@ const healthCheckVerbose = async (
   getAsyncProcessingQueueJobs
 ) => {
   return healthCheck(
-    { libs, snapbackSM, trustedNotifierManager },
+    { libs, snapbackSM },
     logger,
     getMonitors,
     getTranscodeQueueJobs,

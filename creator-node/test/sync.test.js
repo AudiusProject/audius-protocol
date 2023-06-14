@@ -20,7 +20,6 @@ const {
   destroyUsers
 } = require('./lib/dataSeeds')
 const { uploadTrack } = require('./lib/helpers')
-const BlacklistManager = require('../src/blacklistManager')
 const sessionManager = require('../src/sessionManager')
 
 const redisClient = require('../src/redis')
@@ -71,7 +70,7 @@ describe('Test secondarySyncFromPrimary()', function () {
   let sandbox
   const setupDepsAndApp = async function () {
     sandbox = sinon.createSandbox()
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
+    const appInfo = await getApp(libsMock, null, userId)
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
@@ -177,8 +176,7 @@ describe('Test secondarySyncFromPrimary()', function () {
       /** Upload a track */
       const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
-        cnodeUserUUID,
-        mockServiceRegistry.blacklistManager
+        cnodeUserUUID
       )
 
       transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
@@ -1111,14 +1109,11 @@ describe('Test secondarySyncFromPrimary()', function () {
 
       originalContentNodeEndpoint = config.get('creatorNodeEndpoint')
 
-      const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
+      const appInfo = await getApp(libsMock, null, userId)
       server = appInfo.server
       app = appInfo.app
 
-      serviceRegistryMock = await getServiceRegistryMock(
-        libsMock,
-        BlacklistManager
-      )
+      serviceRegistryMock = await getServiceRegistryMock(libsMock)
     })
 
     afterEach(function () {
@@ -1848,7 +1843,7 @@ describe('Test primarySyncFromSecondary() with mocked export', () => {
     await fs.emptyDir(path.resolve(absoluteStoragePath))
 
     // Start server
-    const appInfo = await getApp(libsMock, BlacklistManager, null, SP_ID_1)
+    const appInfo = await getApp(libsMock, null, SP_ID_1)
     server = appInfo.server
     app = appInfo.app
 
@@ -1857,10 +1852,7 @@ describe('Test primarySyncFromSecondary() with mocked export', () => {
 
     // Define mocks
 
-    serviceRegistryMock = await getServiceRegistryMock(
-      libsMock,
-      BlacklistManager
-    )
+    serviceRegistryMock = await getServiceRegistryMock(libsMock)
 
     primarySyncFromSecondaryStub = proxyquire(
       '../src/services/sync/primarySyncFromSecondary',

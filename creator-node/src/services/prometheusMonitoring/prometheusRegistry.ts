@@ -17,17 +17,10 @@ enum JOB_STATUS {
   FAILED = 'failed'
 }
 
-type MetricsDataAndType = {
-  metricsData: any
-  contentType: any
-}
-
 export class PrometheusRegistry {
   registry: any
   metricNames: Record<string, string>
   namespacePrefix: string
-  resolvePromiseToGetAggregatedMetrics?: (data: MetricsDataAndType) => void
-  promiseToGetAggregatedMetrics?: Promise<any>
 
   public constructor() {
     // Use default global registry to register metrics
@@ -161,70 +154,6 @@ export class PrometheusRegistry {
     return {
       stop: () => clearInterval(metricInterval)
     }
-  }
-
-  /**
-   * Entry point to the flow:
-   * 1. This worker sends `requestAggregatedPrometheusMetrics` IPC message to primary process
-   * 2. Primary aggregates metrics and sends `receiveAggregatePrometheusMetrics` IPC message back to this worker
-   * 3. This worker calls this.resolvePromiseToGetAggregatedMetrics() with the aggregate metrics from primary
-   */
-  async getCustomAggregateMetricData() {
-    // Only initiate the flow if there's not already a promise in flight to get aggregate metrics data.
-    // A previous /prometheus_metrics request could've already initiated a promise
-    if (this.promiseToGetAggregatedMetrics === undefined) {
-      this.promiseToGetAggregatedMetrics = this.makePromiseToGetMetrics()
-    }
-
-    const metricsDataAndType = await this.promiseToGetAggregatedMetrics
-    return metricsDataAndType
-  }
-
-  /**
-   * @returns a Promise that will:
-   *   * send a `requestAggregatedPrometheusMetrics` message to the primary process to aggregate metrics
-   *   * resolve when the primary process sends back a `receiveAggregatePrometheusMetrics` message to this worker
-   *   * timeout and reject after 10 seconds if it's not resolved first
-   */
-  makePromiseToGetMetrics() {
-    return new Promise((resolve, reject) => {
-      // Timeout and reject after 10 seconds
-      const timeout = setTimeout(() => {
-        this.resetInFlightPromiseVariables()
-        reject(
-          new Error(
-            'Took too long to get aggregated metrics. This can happen if not all workers have initialized yet.'
-          )
-        )
-      }, 10_000)
-
-      // Set the function that will get called to resolve the promise when this worker
-      // receives a `receiveAggregatePrometheusMetrics` IPC message
-      this.resolvePromiseToGetAggregatedMetrics = (
-        aggregateMetricsDataAndType: MetricsDataAndType
-      ) => {
-        if (timeout) {
-          clearTimeout(timeout)
-        }
-        this.resetInFlightPromiseVariables()
-        resolve(aggregateMetricsDataAndType)
-      }
-
-      // Send `requestAggregatedPrometheusMetrics` IPC message to the primary process to aggregate data
-      // from all workers. This worker listens for a `receiveAggregatePrometheusMetrics` message, at which point
-      // it will call this.resolvePromiseToGetAggregatedMetrics()
-      if (process.send) {
-        process.send({ cmd: 'requestAggregatedPrometheusMetrics' })
-      } else {
-        this.resetInFlightPromiseVariables()
-        reject(new Error('This process is somehow not a worker'))
-      }
-    })
-  }
-
-  resetInFlightPromiseVariables() {
-    this.resolvePromiseToGetAggregatedMetrics = undefined
-    this.promiseToGetAggregatedMetrics = undefined
   }
 }
 

@@ -2,7 +2,6 @@ import type { Request, Response, NextFunction } from 'express'
 import type { WriteFn, Stream } from 'bunyan'
 import type { CustomRequest } from './utils'
 import bunyan, { createLogger, nameFromLevel, safeCycles } from 'bunyan'
-import cluster from 'cluster'
 import shortid from 'shortid'
 import config from './config'
 
@@ -30,7 +29,6 @@ function RawStdOutWithLevelName(): WriteFn {
 const logLevel = config.get('logLevel') || 'info'
 export const logger = createLogger({
   name: 'audius_creator_node',
-  clusterWorker: cluster.isMaster ? 'master' : `Worker ${cluster.worker?.id}`,
   streams: [
     {
       level: logLevel,
