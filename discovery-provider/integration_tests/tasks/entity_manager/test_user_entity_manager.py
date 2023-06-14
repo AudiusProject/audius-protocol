@@ -760,6 +760,15 @@ def test_invalid_user_bio(app, mocker):
         for tx_receipt in tx_receipts
     ]
 
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
     with db.scoped_session() as session:
         total_changes, _ = entity_manager_update(
             None,
