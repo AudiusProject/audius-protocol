@@ -38,20 +38,20 @@ def get_verifier_address():
         return shared_config["contracts"]["verified_address"]
 
 
-def validate_user_bio(user_bio: str, user_id: int):
-    if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
-        raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
-
-
 def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
-    # user_metadata = params.metadata[params.metadata_cid]
-    # user_bio = user_metadata["bio"]
 
     if params.entity_type != EntityType.USER:
         raise Exception(
             f"Invalid User Transaction, wrong entity type {params.entity_type}"
         )
+
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        logger.info("fell into or case")
+        user_metadata = params.metadata[params.metadata_cid]
+        user_bio = user_metadata["bio"]
+        if user_bio is not None and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
+            raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
