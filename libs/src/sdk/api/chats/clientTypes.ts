@@ -43,6 +43,22 @@ export type ChatGetMessagesRequest = z.infer<
   typeof ChatGetMessagesRequestSchema
 >
 
+export const ChatGetUnreadCountRequestSchema = z.object({
+  currentUserId: z.optional(z.string())
+})
+
+export type ChatGetUnreadCountRequest = z.infer<
+  typeof ChatGetUnreadCountRequestSchema
+>
+
+export const ChatGetBlockersRequestSchema = z.object({
+  currentUserId: z.optional(z.string())
+})
+
+export type ChatGetBlockersRequest = z.infer<
+  typeof ChatGetBlockersRequestSchema
+>
+
 export const ChatCreateRequestSchema = z.object({
   currentUserId: z.optional(z.string()),
   userId: z.string(),

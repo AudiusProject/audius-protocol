@@ -27,12 +27,16 @@ import {
   ChatEvents,
   ChatGetAllRequest,
   ChatGetAllRequestSchema,
+  ChatGetBlockersRequest,
+  ChatGetBlockersRequestSchema,
   ChatGetMessagesRequest,
   ChatGetMessagesRequestSchema,
   ChatGetPermissionRequest,
   ChatGetPermissionRequestSchema,
   ChatGetRequest,
   ChatGetRequestSchema,
+  ChatGetUnreadCountRequest,
+  ChatGetUnreadCountRequestSchema,
   ChatInviteRequest,
   ChatInviteRequestSchema,
   ChatListenRequest,
@@ -246,10 +250,10 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to act on behalf of
    * @returns the unread count response
    */
-  public async getUnreadCount(requestParameters: ChatUnreadCountRequest) {
+  public async getUnreadCount(requestParameters: ChatGetUnreadCountRequest) {
     const { currentUserId } = parseRequestParameters(
       'getUnreadCount',
-      ChatUnreadCountRequestSchema
+      ChatGetUnreadCountRequestSchema
     )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
@@ -288,9 +292,21 @@ export class ChatsApi
     return (await res.json()) as TypedCommsResponse<ValidatedChatPermissions[]>
   }
 
-  public async getBlockers() {
+  /**
+   * Gets the user ids that have blocked the current user
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the blockers response
+   */
+  public async getBlockers(requestParameters: ChatGetBlockersRequest) {
+    const { currentUserId } = parseRequestParameters(
+      'getBlockers',
+      ChatGetBlockersRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -301,9 +317,21 @@ export class ChatsApi
     return (await response.json()) as TypedCommsResponse<string[]>
   }
 
-  public async getBlockees() {
+  /**
+   * Gets the user ids the current user has blocked
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns
+   */
+  public async getBlockees(requestParameters: ChatGetBlockersRequest) {
+    const { currentUserId } = parseRequestParameters(
+      'getBlockees',
+      ChatGetBlockersRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
