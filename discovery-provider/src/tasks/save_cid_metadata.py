@@ -2,6 +2,7 @@ import json
 from typing import Dict
 
 from sqlalchemy.orm.session import Session
+from src.models.indexing import CIDData
 
 
 def save_cid_metadata(
@@ -10,15 +11,6 @@ def save_cid_metadata(
     if not cid_metadata:
         return
 
-    vals = []
     for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
-
-    session.execute(
-        """
-            INSERT INTO cid_data (cid, type, data)
-            VALUES (:cid, :type, :data)
-            ON CONFLICT DO NOTHING;
-        """,
-        vals,
-    )
+        cid_data = CIDData(cid=cid, type=cid_type[cid], data=json.dumps(val))
+        session.merge(cid_data)

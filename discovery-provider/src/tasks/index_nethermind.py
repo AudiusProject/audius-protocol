@@ -3,7 +3,6 @@ import asyncio
 import concurrent.futures
 import json
 import os
-import time
 from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
@@ -346,22 +345,16 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 @log_duration(logger)
-def add_indexed_block_to_db(db_session, block):
-    current_block_query = db_session.query(Block).filter_by(is_current=True)
-
+def add_indexed_block_to_db(session: Session, next_block: Block, current_block: Block):
     block_model = Block(
-        blockhash=web3.toHex(block.hash),
-        parenthash=web3.toHex(block.parentHash),
-        number=block.number,
+        blockhash=web3.toHex(next_block.hash),
+        parenthash=web3.toHex(next_block.parentHash),
+        number=next_block.number,
         is_current=True,
     )
 
-    # Update blocks table after
-    assert current_block_query.count() == 1, "Expected single row marked as current"
-
-    previous_block = current_block_query.first()
-    previous_block.is_current = False
-    db_session.add(block_model)
+    current_block.is_current = False
+    session.add(block_model)
 
 
 def add_indexed_block_to_redis(block, redis):
@@ -498,7 +491,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 f"Skipping all txs in block {next_block.hash} {next_block_number}"
             )
             save_skipped_tx(session, redis)
-            add_indexed_block_to_db(session, next_block)
+            add_indexed_block_to_db(session, next_block, latest_database_block)
         else:
             txs_grouped_by_type = {
                 ENTITY_MANAGER: [],
@@ -507,12 +500,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 """
                 Fetch transaction receipts
                 """
-                fetch_tx_receipts_start_time = time.time()
-                logger.debug(f"fetching block {next_block_number}")
                 tx_receipt_dict = fetch_tx_receipts(next_block)
-                logger.debug(
-                    f"index_forward - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
-                )
 
                 """
                 Parse transaction receipts
@@ -558,7 +546,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 """
                 Add block to db
                 """
-                add_indexed_block_to_db(session, next_block)
+                add_indexed_block_to_db(session, next_block, latest_database_block)
 
                 """
                 Add state changes in block to db (users, tracks, etc.)
