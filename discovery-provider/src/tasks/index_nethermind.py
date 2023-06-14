@@ -341,7 +341,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 @log_duration(logger)
 def add_indexed_block_to_db(
-    session: Session, next_block: web3.eth.Block, current_block: Block
+    session: Session, next_block: AttributeDict, current_block: Block
 ):
     block_model = Block(
         blockhash=web3.toHex(next_block.hash),
