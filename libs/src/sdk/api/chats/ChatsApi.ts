@@ -135,11 +135,11 @@ export class ChatsApi
   }
 
   public async get(requestParameters: ChatGetRequest) {
-    const { chatId } = parseRequestParameters(
+    const { chatId, currentUserId } = parseRequestParameters(
       'get',
       ChatGetRequestSchema
     )(requestParameters)
-    const response = await this.getRaw(chatId)
+    const response = await this.getRaw(chatId, currentUserId)
     return {
       ...response,
       data: response.data
@@ -551,10 +551,13 @@ export class ChatsApi
     }
   }
 
-  private async getRaw(chatId: string) {
+  private async getRaw(chatId: string, currentUserId?: string) {
     const path = `/comms/chats/${chatId}`
     const queryParameters: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (currentUserId) {
+      queryParameters['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',

@@ -25,6 +25,7 @@ export const ChatGetAllRequestSchema = z.object({
 export type ChatGetAllRequest = z.infer<typeof ChatGetAllRequestSchema>
 
 export const ChatGetRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string()
 })
 
