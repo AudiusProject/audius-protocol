@@ -35,7 +35,7 @@ import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
-import { moodMap } from 'utils/moods'
+import { moodMap } from 'utils/Moods'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'

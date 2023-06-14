@@ -1,6 +1,6 @@
 import { GENRES } from '@audius/common'
 
-import { moodMap } from 'utils/moods'
+import { moodMap } from 'utils/Moods'
 import { orderedRoutes } from 'utils/route'
 
 const restrictedRoutes = orderedRoutes

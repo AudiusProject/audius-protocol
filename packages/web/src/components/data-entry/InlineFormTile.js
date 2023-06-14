@@ -15,7 +15,7 @@ import DropdownInput from 'components/data-entry/DropdownInput'
 import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import PreviewButton from 'components/upload/PreviewButton'
-import { moodMap } from 'utils/moods'
+import { moodMap } from 'utils/Moods'
 
 import styles from './InlineFormTile.module.css'
 
