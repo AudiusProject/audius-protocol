@@ -2,7 +2,10 @@ version: "3.9"
 
 services:
   storagev2:
-    build: ${PROJECT_ROOT}/mediorum
+    build:
+      context: ${PROJECT_ROOT}/mediorum
+      args:
+        git_sha: "${GIT_COMMIT}"
     restart: unless-stopped
     entrypoint: /bin/sh
     command: /tmp/dev-tools/startup/storagev2.sh 3 # Change 3 to number of nodes if you want more or fewer (up to 5)
@@ -14,7 +17,6 @@ services:
       - web3EthProviderUrl=http://eth-ganache:8545 # Used only in register script
       - ethProviderUrl=http://eth-ganache:8545
       - ethRegistryAddress=${ETH_REGISTRY_ADDRESS}
-      - GIT_SHA=${GIT_COMMIT}
     env_file: .env # Used in register script to get wallets
     ports:
       - 1991:1991
