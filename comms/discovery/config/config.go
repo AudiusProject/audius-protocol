@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"os"
+	"strings"
 	"sync"
 
 	"comms.audius.co/discovery/the_graph"
@@ -39,7 +40,7 @@ func Parse() *DiscoveryConfig {
 
 	c.MyPrivateKeyHex = os.Getenv("audius_delegate_private_key")
 	c.MyWallet = os.Getenv("audius_delegate_owner_wallet")
-	c.MyHost = os.Getenv("audius_discprov_url")
+	c.MyHost = strings.TrimRight(strings.TrimSpace(os.Getenv("audius_discprov_url")), "/") // trim any trailing /
 	c.IsStaging = os.Getenv("AUDIUS_IS_STAGING") == "true"
 
 	pk, err := parsePrivateKey(c.MyPrivateKeyHex)
