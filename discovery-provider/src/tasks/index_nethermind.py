@@ -936,23 +936,25 @@ def revert_block(session: Session, revert_block: Block):
     )
 
 
+@log_duration(logger)
+def run():
+    db = update_task.db
+    logger.set_context("request_id", uuid.uuid1())
+    try:
+        with db.scoped_session() as session:
+            latest_database_block = get_latest_database_block(session)
+            block_from_chain = is_block_on_chain(web3, latest_database_block)
+            if block_from_chain:
+                index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
+            else:
+                revert_block(session, latest_database_block)
+    except Exception as e:
+        logger.error(f"Error in indexing blocks {e}", exc_info=True)
+        session.rollback()
+
+
 # CELERY TASKS
 @celery.task(name="index_nethermind", bind=True)
-@save_duration_metric(metric_group="celery_task")
-@log_duration(logger)
 def update_task(self):
-    db = update_task.db
-
     while True:
-        logger.set_context("request_id", uuid.uuid1())
-        try:
-            with db.scoped_session() as session:
-                latest_database_block = get_latest_database_block(session)
-                block_from_chain = is_block_on_chain(web3, latest_database_block)
-                if block_from_chain:
-                    index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
-                else:
-                    revert_block(session, latest_database_block)
-        except Exception as e:
-            logger.error(f"Error in indexing blocks {e}", exc_info=True)
-            session.rollback()
+        run()
