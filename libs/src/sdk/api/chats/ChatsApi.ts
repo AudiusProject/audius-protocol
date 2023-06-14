@@ -241,9 +241,21 @@ export class ChatsApi
     }
   }
 
-  public async getUnreadCount() {
+  /**
+   * Gets the total unread message count for a user
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the unread count response
+   */
+  public async getUnreadCount(requestParameters: ChatUnreadCountRequest) {
+    const { currentUserId } = parseRequestParameters(
+      'getUnreadCount',
+      ChatUnreadCountRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const res = await this.signAndSendRequest({
       method: 'GET',
