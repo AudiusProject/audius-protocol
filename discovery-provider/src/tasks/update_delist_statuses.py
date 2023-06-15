@@ -16,8 +16,7 @@ logger = StructuredLogger(__name__)
 
 UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
-DELIST_BATCH_SIZE = 5000
-DN_QUERY_BATCH_SIZE = 1000
+DELIST_BATCH_SIZE = 500
 
 
 def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[User]:
@@ -58,28 +57,24 @@ def update_user_is_available_statuses(session, users):
         delisted = user["delisted"]
         user_id_to_delisted_map[user_id] = delisted
     user_ids = list(user_id_to_delisted_map.keys())
-    for i in range(0, len(user_ids), DN_QUERY_BATCH_SIZE):
-        user_ids_batch = user_ids[
-            i : i + DN_QUERY_BATCH_SIZE
-        ]
-        try:
-            users_to_update = query_users_by_user_ids(session, user_ids_batch)
-            for user in users_to_update:
-                delisted = user_id_to_delisted_map[user.user_id]
-                if delisted:
-                    # Deactivate active users that have been delisted
-                    if user.is_available:
-                        user.is_available = False
-                        user.is_deactivated = True
-                else:
-                    # Re-activate deactivated users that have been un-delisted
-                    if not user.is_available:
-                        user.is_available = True
-                        user.is_deactivated = False
-        except Exception as e:
-            logger.warn(
-                f"update_delist_statuses.py | Could not process user id batch {user_ids_batch}: {e}\nContinuing..."
-            )
+    try:
+        users_to_update = query_users_by_user_ids(session, user_ids)
+        for user in users_to_update:
+            delisted = user_id_to_delisted_map[user.user_id]
+            if delisted:
+                # Deactivate active users that have been delisted
+                if user.is_available:
+                    user.is_available = False
+                    user.is_deactivated = True
+            else:
+                # Re-activate deactivated users that have been un-delisted
+                if not user.is_available:
+                    user.is_available = True
+                    user.is_deactivated = False
+    except Exception as e:
+        logger.warn(
+            f"update_delist_statuses.py | Could not process user id batch {user_ids}: {e}\nContinuing..."
+        )
 
 
 def update_track_is_available_statuses(session, tracks):
@@ -92,28 +87,24 @@ def update_track_is_available_statuses(session, tracks):
         delisted = track["delisted"]
         track_id_to_delisted_map[track_id] = delisted
     track_ids = list(track_id_to_delisted_map.keys())
-    for i in range(0, len(track_ids), DN_QUERY_BATCH_SIZE):
-        track_ids_batch = track_ids[
-            i : i + DN_QUERY_BATCH_SIZE
-        ]
-        try:
-            tracks_to_update = query_tracks_by_track_ids(session, track_ids_batch)
-            for track in tracks_to_update:
-                delisted = track_id_to_delisted_map[track.track_id]
-                if delisted:
-                    # Deactivate active tracks that have been delisted
-                    if track.is_available:
-                        track.is_available = False
-                        track.is_delete = True
-                else:
-                    # Re-activate deactivated tracks that have been un-delisted
-                    if not track.is_available:
-                        track.is_available = True
-                        track.is_delete = False
-        except Exception as e:
-            logger.warn(
-                f"update_delist_statuses.py | Could not process track id batch {track_ids_batch}: {e}\nContinuing..."
-            )
+    try:
+        tracks_to_update = query_tracks_by_track_ids(session, track_ids)
+        for track in tracks_to_update:
+            delisted = track_id_to_delisted_map[track.track_id]
+            if delisted:
+                # Deactivate active tracks that have been delisted
+                if track.is_available:
+                    track.is_available = False
+                    track.is_delete = True
+            else:
+                # Re-activate deactivated tracks that have been un-delisted
+                if not track.is_available:
+                    track.is_available = True
+                    track.is_delete = False
+    except Exception as e:
+        logger.warn(
+            f"update_delist_statuses.py | Could not process track id batch {track_ids}: {e}\nContinuing..."
+        )
 
 
 def insert_user_delist_statuses(session, users):
