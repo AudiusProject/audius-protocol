@@ -17,7 +17,6 @@ export type Modals =
   | 'FeedFilter'
   | 'TrendingGenreSelection'
   | 'SocialProof'
-  | 'MobileUpload'
   | 'EditFolder'
   | 'SignOutConfirmation'
   | 'Overflow'

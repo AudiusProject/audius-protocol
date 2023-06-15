@@ -164,7 +164,7 @@ import Notice from '../components/notice/Notice'
 import { getFeatureEnabled } from '../services/remote-config/featureFlagHelpers'
 
 import styles from './App.module.css'
-import { ChatPage } from './chat-page'
+import { ChatPageProvider } from './chat-page/ChatPageProvider'
 import { CollectiblesPlaylistPage } from './collectibles-playlist-page'
 import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
@@ -768,7 +768,7 @@ class App extends Component {
                   exact
                   path={CHAT_PAGE}
                   isMobile={isMobileClient}
-                  component={ChatPage}
+                  component={ChatPageProvider}
                 />
                 <Route
                   exact

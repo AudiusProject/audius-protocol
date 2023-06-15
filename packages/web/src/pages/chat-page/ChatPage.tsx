@@ -4,7 +4,6 @@ import { chatActions, FeatureFlags, useCanSendMessage } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
-import { RouteComponentProps } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 
 import Page from 'components/page/Page'
@@ -24,8 +23,7 @@ const messages = {
   messages: 'Messages'
 }
 
-export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
-  const currentChatId = match.params.id
+export const ChatPage = ({ currentChatId }: { currentChatId?: string }) => {
   const dispatch = useDispatch()
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const { firstOtherUser, canSendMessage } = useCanSendMessage(currentChatId)
