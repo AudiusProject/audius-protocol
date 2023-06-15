@@ -21,6 +21,9 @@ const {
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES,
   SYNC_MONITORING_RETRY_DELAY_MS
 } = require('./StateMachineConstants')
+const {
+  getMapOfCNodeEndpointToSpId
+} = require('../services/ContentNodeInfoManager')
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 10000 // 10s
@@ -161,9 +164,9 @@ class SnapbackSM {
       // Rate limit to 1 job every 3 minutes locally to prevent log spam during development
       this.nodeConfig.get('creatorNodeIsDebug')
         ? {
-            max: 1,
-            duration: 3000 * 60
-          }
+          max: 1,
+          duration: 3000 * 60
+        }
         : null
     )
 
@@ -340,7 +343,7 @@ class SnapbackSM {
   }
 
   // Initialize bull queue instance with provided name and settings
-  createBullQueue(queueName, settings = {}, limiter = null) {}
+  createBullQueue(queueName, settings = {}, limiter = null) { }
 
   // Randomly select an initial slice
   randomStartingSlice() {
@@ -684,7 +687,7 @@ class SnapbackSM {
     if (unhealthyReplicasSet.has(primary)) {
       const [newPrimary, currentHealthySecondary] =
         replicaSetNodesToUserClockStatusesMap[secondary1][wallet] >=
-        replicaSetNodesToUserClockStatusesMap[secondary2][wallet]
+          replicaSetNodesToUserClockStatusesMap[secondary2][wallet]
           ? [secondary1, secondary2]
           : [secondary2, secondary1]
       return {
@@ -774,9 +777,8 @@ class SnapbackSM {
   ) {
     const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[
       ...healthyReplicaSet
-    ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${
-      healthyNodes.length
-    } ||`
+    ]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${healthyNodes.length
+      } ||`
 
     const newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
@@ -1065,9 +1067,7 @@ class SnapbackSM {
 
       // Setup the mapping of Content Node endpoint to service provider id
       try {
-        await this.peerSetManager.updateEndpointToSpIdMap(
-          this.audiusLibs.ethContracts
-        )
+        await this.peerSetManager.updateEndpointToSpIdMap()
 
         // Update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
         this.updateEnabledReconfigModesSet()
@@ -1229,11 +1229,14 @@ class SnapbackSM {
          * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
          * There will be an explicit clock value check on the newly selected replica set nodes instead.
          */
+        const spInfoMap = await getMapOfCNodeEndpointToSpId(logger)
         const { services: healthyServicesMap } =
           await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
             performSyncCheck: false,
             whitelist: this.reconfigNodeWhitelist,
-            log: true
+            log: true,
+            getServices: () =>
+              Array.from(spInfoMap.values()).map((c) => c.endpoint)
           })
 
         const healthyNodes = Object.keys(healthyServicesMap)
@@ -1269,12 +1272,9 @@ class SnapbackSM {
             if (issuedReconfig) numUpdateReplicaOpsIssued++
           } catch (e) {
             this.logError(
-              `ERROR issuing update replica set op: userId=${
-                userInfo.user_id
-              } wallet=${userInfo.wallet} old replica set=[${
-                userInfo.primary
-              },${userInfo.secondary1},${
-                userInfo.secondary2
+              `ERROR issuing update replica set op: userId=${userInfo.user_id
+              } wallet=${userInfo.wallet} old replica set=[${userInfo.primary
+              },${userInfo.secondary1},${userInfo.secondary2
               }] | Error: ${e.toString()}`
             )
           }
@@ -1375,8 +1375,7 @@ class SnapbackSM {
     }
     try {
       this.log(
-        `processStateMachineOperation() ${jobId} Decision Tree${
-          msg ? ` - ${msg} - ` : ''
+        `processStateMachineOperation() ${jobId} Decision Tree${msg ? ` - ${msg} - ` : ''
         }${JSON.stringify(decisionTree)}`
       )
     } catch (e) {
@@ -1462,8 +1461,7 @@ class SnapbackSM {
       } = promiseResult
       if (promiseStatus !== 'fulfilled') {
         logger.error(
-          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${
-            promiseError.message || promiseError
+          `aggregateReconfigAndPotentialSyncOps() encountered unexpected failure: ${promiseError.message || promiseError
           }`
         )
         continue
