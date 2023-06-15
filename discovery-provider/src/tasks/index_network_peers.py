@@ -24,7 +24,7 @@ def clique_propose(wallet: str, vote: bool):
     return response.json()
 
 
-def update_signers(self):
+def update_signers(self, redis):
     shared_config = update_clique_signers.shared_config
     current_wallet = shared_config["delegate"]["owner_wallet"].lower()
 
@@ -32,7 +32,7 @@ def update_signers(self):
     max_signers = int(shared_config["discprov"]["max_signers"])
 
     other_wallets = set(
-        [wallet.lower() for wallet in get_all_other_discovery_nodes_cached()[1]]
+        [wallet.lower() for wallet in get_all_other_discovery_nodes_cached(redis)[1]]
     )
     logger.info(
         f"update_clique_signers.py | Other registered discovery addresses: {other_wallets}"
@@ -94,7 +94,7 @@ def update_clique_signers(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             if not os.getenv("audius_discprov_dev_mode"):
-                update_signers(self)
+                update_signers(self, redis)
         else:
             logger.info(
                 "update_clique_signers.py | Failed to acquire update_clique_signers"

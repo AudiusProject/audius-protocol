@@ -75,7 +75,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     and merge with this node's metrics so that this node will be aware
     of all the metrics across users hitting different providers
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached()[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached(redis)[0]
 
     visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
@@ -224,7 +224,7 @@ def update_historical_metrics(
     update_historical_monthly_app_metrics(db, monthly_app_metrics)
 
 
-def synchronize_all_node_metrics(self, db):
+def synchronize_all_node_metrics(self, db, redis):
     """
     Get historical monthly metrics and last month's daily metrics
     to periodically synchronize metrics across all nodes
@@ -233,7 +233,7 @@ def synchronize_all_node_metrics(self, db):
     monthly_route_metrics = {}
     daily_app_metrics = {}
     monthly_app_metrics = {}
-    all_other_nodes = get_all_other_discovery_nodes_cached()[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached(redis)[0]
     for node in all_other_nodes:
         historical_metrics = get_historical_metrics(node)
         logger.debug(f"got historical metrics from {node}: {historical_metrics}")
@@ -338,7 +338,7 @@ def synchronize_metrics(self):
             metric = PrometheusMetric(
                 PrometheusMetricNames.INDEX_METRICS_DURATION_SECONDS
             )
-            synchronize_all_node_metrics(self, db)
+            synchronize_all_node_metrics(self, db, redis)
             metric.save_time({"task_name": "synchronize_metrics"})
             logger.info(
                 f"index_metrics.py | synchronize_metrics | {self.request.id} | Processing complete within session"
