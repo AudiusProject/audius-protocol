@@ -24,7 +24,7 @@ const { logger, loggingMiddleware } = require('./logging')
 const {
   getRateLimiter,
   getRateLimiterMiddleware,
-  getRelayBlacklistMiddleware,
+  getRelayBlocklistMiddleware,
   getRelayRateLimiterMiddleware,
   isIPWhitelisted,
   getIP
@@ -398,7 +398,7 @@ class App {
 
     this.express.use(
       '/relay',
-      getRelayBlacklistMiddleware,
+      getRelayBlocklistMiddleware,
       getRelayRateLimiterMiddleware()
     )
 

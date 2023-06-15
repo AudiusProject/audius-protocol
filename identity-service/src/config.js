@@ -174,16 +174,16 @@ const config = convict({
     env: 'blacklisterPublicKey',
     default: null
   },
-  blacklistPublicKeyFromRelay: {
-    doc: 'Blacklist public keys from relay',
+  blocklistPublicKeyFromRelay: {
+    doc: 'Blocklist public keys from relay',
     format: 'string-array',
-    env: 'blacklistPublicKeyFromRelay',
+    env: 'blocklistPublicKeyFromRelay',
     default: null
   },
-  whitelistPublicKeyFromRelay: {
-    doc: 'Whitelist public keys from relay',
+  allowlistPublicKeyFromRelay: {
+    doc: 'Allowlist public keys from relay',
     format: 'string-array',
-    env: 'whitelistPublicKeyFromRelay',
+    env: 'AllowlistPublicKeyFromRelay',
     default: null
   },
   rateLimitingAuthLimit: {

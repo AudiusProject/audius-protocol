@@ -170,12 +170,24 @@ const getRateLimiterMiddleware = () => {
 
 
 const rateLimitMessage = 'Too many requests, please try again later'
-const getRelayBlacklistMiddleware = (req, res, next) => {
-  const blacklist = config.get('blacklistPublicKeyFromRelay')
-  if (blacklist && blacklist.includes(req.body.senderAddress)) {
+const getRelayBlocklistMiddleware = (req, res, next) => {
+  const blocklist = config.get('blocklistPublicKeyFromRelay')
+  if (blocklist && blocklist.includes(req.body.senderAddress)) {
     return res.status(429).send(rateLimitMessage)
   }
   next()
+}
+
+const getEntityManagerActionKey = (encodedABI) => {
+  const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
+  const action = decodedABI.params.find(
+    (param) => param.name === '_action'
+  ).value
+  const entityType = decodedABI.params.find(
+    (param) => param.name === '_entityType'
+  ).value
+  let key = action + entityType
+  return key
 }
 
 const getRelayRateLimiterMiddleware = () => {
@@ -183,17 +195,7 @@ const getRelayRateLimiterMiddleware = () => {
     windowMs: 60 * 60 * 1000, // hourly
     prefix: `relayWalletRateLimiter`,
     max: async function (req) {
-      const decodedABI = AudiusABIDecoder.decodeMethod(
-        'EntityManager',
-        req.body.encodedABI
-      )
-      const action = decodedABI.params.find(
-        (param) => param.name === '_action'
-      ).value
-      const entityType = decodedABI.params.find(
-        (param) => param.name === '_entityType'
-      ).value
-      let key = action + entityType
+      const key = getEntityManagerActionKey(req.body.encodedABI)
 
       let limit = config.get(key)
       req.user = await models.User.findOne({
@@ -209,13 +211,13 @@ const getRelayRateLimiterMiddleware = () => {
           'appliedRules'
         ]
       })
-      const whitelist = config.get('whitelistPublicKeyFromRelay')
+      const allowlist = config.get('allowlistPublicKeyFromRelay')
       if (req.user) {
         limit = limit['owner']
         req.isFromApp = false
       } else {
-        if (whitelist && whitelist.includes(req.body.senderAddress)) {
-          limit = limit['whitelist']
+        if (allowlist && allowlist.includes(req.body.senderAddress)) {
+          limit = limit['allowlist']
         } else {
           limit = limit['app']
         }
@@ -225,17 +227,7 @@ const getRelayRateLimiterMiddleware = () => {
       return limit
     },
     keyGenerator: function (req) {
-      const decodedABI = AudiusABIDecoder.decodeMethod(
-        'EntityManager',
-        req.body.encodedABI
-      )
-      const action = decodedABI.params.find(
-        (param) => param.name === '_action'
-      ).value
-      const entityType = decodedABI.params.find(
-        (param) => param.name === '_entityType'
-      ).value
-      const key = action + entityType
+      const key = getEntityManagerActionKey(req.body.encodedABI)
       return ':::' + key + ':' + req.body.senderAddress
     },
     handler: (req, res, options) => {
@@ -254,6 +246,6 @@ module.exports = {
   isIPWhitelisted,
   getRateLimiter,
   getRateLimiterMiddleware,
-  getRelayBlacklistMiddleware,
+  getRelayBlocklistMiddleware,
   getRelayRateLimiterMiddleware
 }
