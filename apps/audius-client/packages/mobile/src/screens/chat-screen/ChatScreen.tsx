@@ -607,6 +607,7 @@ export const ChatScreen = () => {
                   onScroll={handleScroll}
                   onScrollToIndexFailed={handleScrollToIndexFailed}
                   refreshing={chat?.messagesStatus === Status.LOADING}
+                  keyboardShouldPersistTaps='always'
                   maintainVisibleContentPosition={
                     maintainVisibleContentPosition
                   }
