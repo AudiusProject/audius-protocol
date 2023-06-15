@@ -837,7 +837,7 @@ def test_invalid_playlist_description(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(None, web3, None)
-    
+
     tx_receipts = {
         "PlaylistInvalidDescription": [
             {

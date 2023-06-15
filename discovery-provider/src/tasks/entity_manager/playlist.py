@@ -10,6 +10,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
+    PLAYLIST_TRACK_LIMIT,
     Action,
     EntityType,
     ManageEntityParameters,
@@ -266,10 +267,14 @@ def delete_playlist(params: ManageEntityParameters):
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
+    playlist_id = playlist_record.playlist_id
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
-        for track in playlist_record.playlist_contents["track_ids"]:
+        playlist_tracks = playlist_record.playlist_contents["track_ids"]
+        if (len(playlist_tracks) >= PLAYLIST_TRACK_LIMIT):
+            raise Exception(f"playlist {playlist_id} exceeds track limit")
+        for track in playlist_tracks:
             track_id = track["track"]
             metadata_time = track["metadata_time"]
             metadata_index_time_dict[track_id][metadata_time] = track["time"]
@@ -298,7 +303,10 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         # upgrade legacy playlist to include metadata
         # assume metadata and indexing timestamp is the same
         track_id_index_times: Set = set()
-        for track in playlist_record.playlist_contents["track_ids"]:
+        playlist_tracks = playlist_record.playlist_contents["track_ids"]
+        if (len(playlist_tracks) >= PLAYLIST_TRACK_LIMIT):
+            raise Exception(f"playlist {playlist_id} (legacy) exceeds track limit")
+        for track in playlist_tracks:
             track_id = track["track"]
             index_time = track["time"]
             track_id_index_times.add((track_id, index_time))
