@@ -10,6 +10,7 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
+	"comms.audius.co/discovery/the_graph"
 	"github.com/spf13/cobra"
 )
 
@@ -76,6 +77,13 @@ func sendInternalRpc(method string, params any) error {
 	if err != nil {
 		panic(err)
 	}
+
+	peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
+	if err != nil {
+		panic(err)
+	}
+
+	discoveryConfig.SetPeers(peers)
 
 	proc, err := rpcz.NewProcessor(discoveryConfig)
 	if err != nil {

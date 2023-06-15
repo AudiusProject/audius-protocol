@@ -89,6 +89,8 @@ func (c *PeerClient) startSweeper() {
 		c.err = c.doSweep(i)
 		if c.err != nil {
 			c.logger.Error("sweep error", c.err)
+			// if broken... add extra sleep
+			time.Sleep(time.Minute * 2)
 		}
 		time.Sleep(time.Minute)
 	}
