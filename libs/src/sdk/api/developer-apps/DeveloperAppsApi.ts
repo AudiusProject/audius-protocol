@@ -1,23 +1,26 @@
 import * as secp from '@noble/secp256k1'
+import { keccak_256 } from '@noble/hashes/sha3'
+
 import {
   Configuration,
   DeveloperAppsApi as GeneratedDeveloperAppsApi
 } from '../generated/default'
+import { pubToAddress } from 'ethereumjs-util'
 import type { AuthService, EntityManagerService } from '../../services'
-import { Action, EntityType } from '../../services/EntityManager/types'
-
-import { decodeHashId } from '../../utils/hashId'
-import { objectMissingValues } from '../../utils/object'
 import {
-  CREATE_DEVELOPER_APP_REQUIRED_VALUES,
-  DELETE_DEVELOPER_APP_REQUIRED_VALUES
-} from './constants'
-import type {
+  Action,
+  EntityType,
+  WriteOptions
+} from '../../services/EntityManager/types'
+
+import {
+  CreateDeveloperAppSchema,
   CreateDeveloperAppRequest,
+  DeleteDeveloperAppSchema,
   DeleteDeveloperAppRequest
 } from './types'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
-// Note (nkang): Eventually this will extend the generated DeveloperAppsApi
 export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
   constructor(
     config: Configuration,
@@ -30,40 +33,53 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
   /**
    * Create a developer app
    */
-  async createDeveloperApp(requestParameters: CreateDeveloperAppRequest) {
-    const { name, userId, isPersonalAccess } = requestParameters
-    // TODO (nkang + seabass): Use Zod for validation
-    const metadataMissingValues = objectMissingValues(
-      requestParameters,
-      CREATE_DEVELOPER_APP_REQUIRED_VALUES
-    )
-    if (metadataMissingValues?.length) {
-      throw new Error(
-        `Create Developer App error - Metadata object is missing values: ${metadataMissingValues}`
-      )
-    }
+  async createDeveloperApp(
+    requestParameters: CreateDeveloperAppRequest,
+    writeOptions?: WriteOptions
+  ) {
+    const { name, userId, description } = parseRequestParameters(
+      'createDeveloperApp',
+      CreateDeveloperAppSchema
+    )(requestParameters)
 
-    const decodedUserId = decodeHashId(userId)
-    if (decodedUserId == null) {
-      throw new Error(`Create Developer App error - user id is invalid`)
-    }
     const apiSecretRaw = secp.utils.randomPrivateKey()
-    const apiKeyRaw = secp.getPublicKey(apiSecretRaw, true)
+    const walletPubKey = secp.getPublicKey(
+      apiSecretRaw,
+      /** compressed = */ false
+    )
+    const apiKeyRaw = pubToAddress(Buffer.from(walletPubKey))
+
     const apiSecret = Buffer.from(apiSecretRaw).toString('hex')
-    const apiKey = Buffer.from(apiKeyRaw).toString('hex')
+    const apiKey = apiKeyRaw.toString('hex')
+
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Creating Audius developer app at ${unixTs}`
+    const signature = await secp.sign(
+      keccak_256(message),
+      Buffer.from(apiSecretRaw),
+      {
+        recovered: true,
+        der: false
+      }
+    )
+
     const response = await this.entityManager.manageEntity({
-      userId: decodedUserId,
+      userId,
       entityType: EntityType.DEVELOPER_APP,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.CREATE,
       metadata: JSON.stringify({
         name,
-        address: apiKey,
-        is_personal_access: isPersonalAccess ?? false
+        description,
+        app_signature: {
+          message,
+          signature
+        }
       }),
-      auth: this.auth
+      auth: this.auth,
+      ...writeOptions
     })
-    // TODO(nkang): If is_personal_access is true, create the grant from user to developer app. Waiting until SDK confirmer is implemented, so for now we can trigger the grant creation in client.
+
     const txReceipt = response.txReceipt
     return {
       blockHash: txReceipt.blockHash,
@@ -77,29 +93,18 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    * Delete a developer app
    */
   async deleteDeveloperApp(requestParameters: DeleteDeveloperAppRequest) {
-    const { userId, appApiKey } = requestParameters
-    const metadataMissingValues = objectMissingValues(
-      requestParameters,
-      DELETE_DEVELOPER_APP_REQUIRED_VALUES
-    )
-    if (metadataMissingValues?.length) {
-      throw new Error(
-        `Delete Developer App error - Metadata object is missing values: ${metadataMissingValues}`
-      )
-    }
-
-    const decodedUserId = decodeHashId(userId)
-    if (decodedUserId == null) {
-      throw new Error(`Delete Developer App error - user id is invalid`)
-    }
+    const { userId, appApiKey } = parseRequestParameters(
+      'deleteDeveloperApp',
+      DeleteDeveloperAppSchema
+    )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
-      userId: decodedUserId,
+      userId,
       entityType: EntityType.DEVELOPER_APP,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.DELETE,
       metadata: JSON.stringify({
-        address: appApiKey
+        address: `0x${appApiKey}`
       }),
       auth: this.auth
     })
