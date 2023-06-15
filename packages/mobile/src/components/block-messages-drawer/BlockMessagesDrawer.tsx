@@ -15,7 +15,7 @@ import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
-const { getDoesBlockUser } = chatSelectors
+const { getDoesBlockUser, getCanCreateChat } = chatSelectors
 const { blockUser, unblockUser, createChat } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
@@ -110,11 +110,14 @@ export const BlockMessagesDrawer = () => {
   const user = useSelector((state) => getUser(state, { id: userId }))
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
+  const { canCreateChat } = useSelector((state) =>
+    getCanCreateChat(state, { userId })
+  )
 
   const handleConfirmPress = useCallback(() => {
     if (doesBlockUser) {
       dispatch(unblockUser({ userId }))
-      if (shouldOpenChat) {
+      if (shouldOpenChat && canCreateChat) {
         dispatch(createChat({ userIds: [userId] }))
       }
     } else {
@@ -126,7 +129,7 @@ export const BlockMessagesDrawer = () => {
         visible: false
       })
     )
-  }, [dispatch, doesBlockUser, shouldOpenChat, userId])
+  }, [canCreateChat, dispatch, doesBlockUser, shouldOpenChat, userId])
 
   const handleCancelPress = useCallback(() => {
     dispatch(
