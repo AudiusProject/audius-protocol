@@ -44,7 +44,7 @@ const developerAppsApi = createApi({
             ({ address, name, description }): DeveloperApp => ({
               name,
               description,
-              apiKey: address
+              apiKey: address.slice(2)
             })
           )
         }
@@ -62,8 +62,7 @@ const developerAppsApi = createApi({
           await sdk.developerApps.createDeveloperApp({
             name,
             description,
-            userId: encodedUserId,
-            isPersonalAccess: false
+            userId: encodedUserId
           })
 
         return { name, description, apiKey, apiSecret }
