@@ -1,7 +1,9 @@
 package server
 
 import (
+	"mediorum/httputil"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -24,7 +26,7 @@ func (ss *MediorumServer) startHealthPoller() {
 					if resp.StatusCode == 200 {
 						// mark healthy
 						ss.peerHealthMutex.Lock()
-						ss.peerHealth[peer.Host] = time.Now()
+						ss.peerHealth[httputil.RemoveTrailingSlash(strings.ToLower(peer.Host))] = time.Now()
 						ss.peerHealthMutex.Unlock()
 					}
 					resp.Body.Close()

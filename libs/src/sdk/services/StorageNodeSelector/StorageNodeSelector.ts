@@ -15,7 +15,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
   private readonly auth: AuthService
   private nodes: StorageNode[]
-  private orderedNodes?: StorageNode[]
+  private orderedNodes?: string[] // endpoints (lowercase)
   private selectedNode?: string | null
   private selectedDiscoveryNode?: string | null
   private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
@@ -86,9 +86,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     const currentNodeIndex = this.selectedNode
-      ? this.orderedNodes
-          .map((node) => node.endpoint)
-          .indexOf(this.selectedNode)
+      ? this.orderedNodes.indexOf(this.selectedNode)
       : -1
 
     let selectedNode: Maybe<string>
@@ -97,7 +95,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     while (!selectedNode) {
       nextNodeIndex = (nextNodeIndex + 1) % this.orderedNodes.length
       if (nextNodeIndex === currentNodeIndex) break
-      const nextNode = this.orderedNodes[nextNodeIndex]?.endpoint
+      const nextNode = this.orderedNodes[nextNodeIndex]
       if (!nextNode) continue
       if (await isNodeHealthy(nextNode)) {
         selectedNode = nextNode
@@ -111,14 +109,9 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
 
   private async orderNodes() {
     const userAddress = await this.auth.getAddress()
-    const nodeOwnerWallets = this.nodes.map((node) => node.delegateOwnerWallet)
-    const hash = new RendezvousHash(...nodeOwnerWallets)
-    const orderedOwnerWallets = hash.getN(this.nodes.length, userAddress)
-    const orderedNodes = orderedOwnerWallets.map((ownerWallet) => {
-      const index = nodeOwnerWallets.indexOf(ownerWallet)
-      return this.nodes[index] as StorageNode
-    })
-    return orderedNodes
+    const endpoints = this.nodes.map((node) => node.endpoint.toLowerCase())
+    const hash = new RendezvousHash(...endpoints)
+    return hash.getN(this.nodes.length, userAddress.toLowerCase())
   }
 
   /** console.info proxy utility to add a prefix */
