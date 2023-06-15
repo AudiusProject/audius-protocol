@@ -1,4 +1,5 @@
 import CRC32C from 'crc-32/crc32c'
+import { Buffer } from 'buffer'
 
 class NodeScore {
   node: Buffer

@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mediorum/httputil"
 	"mediorum/server"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -79,7 +81,7 @@ func (p *graphProvider) query(isContent bool) ([]server.Peer, error) {
 
 		for _, node := range output.Data.ServiceNodes {
 			result = append(result, server.Peer{
-				Host:   node.Endpoint,
+				Host:   httputil.RemoveTrailingSlash(strings.ToLower(node.Endpoint)),
 				Wallet: node.DelegateOwnerWallet,
 			})
 		}
