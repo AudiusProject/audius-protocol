@@ -45,7 +45,7 @@ const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
   newMessages: (count: number) => `${count} New Message${count > 1 ? 's' : ''}`,
-  endOfMessages: 'End of Message History'
+  endOfMessages: 'Beginning of Conversation'
 }
 
 type ChatMessageListProps = ComponentPropsWithoutRef<'div'> & {
