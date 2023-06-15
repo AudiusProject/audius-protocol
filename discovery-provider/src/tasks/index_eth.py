@@ -29,7 +29,7 @@ web3 = Web3(provider)
 eth_abi_values = load_eth_abi_values()
 AUDIO_TOKEN_CONTRACT = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"])
 
-AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
+AUDIO_CHECKSUM_ADDRESS = get_token_address(web3)
 
 
 # This implementation follows the example outlined in the link below
