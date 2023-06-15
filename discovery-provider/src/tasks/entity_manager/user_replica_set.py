@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 # Reconstruct endpoint string from primary and secondary IDs
-# Attempt to retrieve from cached values populated in index_network_peers.py
+# Attempt to retrieve from cached values populated in update_clique_signers.py
 # If unavailable, then a fallback to ethereum mainnet contracts will occur
 # Note that in the case of an invalid spID - one that is not yet registered on
 # the ethereum mainnet contracts, there will be an empty value in the returned

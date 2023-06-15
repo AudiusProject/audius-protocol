@@ -132,7 +132,6 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
-                    start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
                         update_task.redis,

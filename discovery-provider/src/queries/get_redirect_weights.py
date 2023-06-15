@@ -3,7 +3,7 @@ import logging
 import requests
 from flask import Blueprint
 from src.api_helpers import success_response
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes
+from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 from src.utils.redis_cache import cache, internal_api_cache_prefix
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ bp = Blueprint("redirect_weights", __name__)
 @bp.route("/redirect_weights", methods=["GET"])
 @cache(ttl_sec=10 * 60, cache_prefix_override=internal_api_cache_prefix)
 def redirect_weights():
-    endpoints, _ = get_all_other_discovery_nodes()
+    endpoints, _ = get_all_other_discovery_nodes_cached()
     loads = {}
     for endpoint in endpoints:
         try:

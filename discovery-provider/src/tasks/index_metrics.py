@@ -10,7 +10,7 @@ from src.queries.update_historical_metrics import (
     update_historical_monthly_route_metrics,
 )
 from src.tasks.celery_app import celery
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes
+from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -75,7 +75,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     and merge with this node's metrics so that this node will be aware
     of all the metrics across users hitting different providers
     """
-    all_other_nodes = get_all_other_discovery_nodes()[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached()[0]
 
     visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
@@ -233,7 +233,7 @@ def synchronize_all_node_metrics(self, db):
     monthly_route_metrics = {}
     daily_app_metrics = {}
     monthly_app_metrics = {}
-    all_other_nodes = get_all_other_discovery_nodes()[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached()[0]
     for node in all_other_nodes:
         historical_metrics = get_historical_metrics(node)
         logger.debug(f"got historical metrics from {node}: {historical_metrics}")
