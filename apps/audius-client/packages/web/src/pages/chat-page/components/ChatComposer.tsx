@@ -96,7 +96,6 @@ export const ChatComposer = (props: ChatComposerProps) => {
         <TextAreaV2
           ref={ref}
           rows={1}
-          className={styles.input}
           placeholder={messages.sendMessagePlaceholder}
           onKeyDown={handleKeyDown}
           onChange={handleChange}
