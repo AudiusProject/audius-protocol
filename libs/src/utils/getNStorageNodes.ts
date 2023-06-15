@@ -13,34 +13,31 @@ export type StorageNode = {
 
 /**
  * Selects numNodes storage nodes from the given list of allNodes, optionally ordering them (descending) by rendezvous score.
+ * @dev This makes the wallet lowercase - not suitable for use with CIDs because they're case sensitive (use RendezvousHash directly instead).
  */
 export const getNStorageNodes = async (
   allNodes: StorageNode[],
   numNodes = 0,
-  rendezvousKey = '',
+  wallet = '',
   logger: Logger = console
 ): Promise<string[]> => {
   try {
     if (numNodes === 0) numNodes = allNodes.length
-    const nodeOwnerWallets = allNodes.map((n) => n.delegateOwnerWallet)
-    let endpoints: string[]
+    let sortedEndpoints: string[]
 
     // Sort endpoints by rendezvous score if a rendezvous key is provided
-    if (rendezvousKey?.length) {
-      const hash = new RendezvousHash(...nodeOwnerWallets)
-      const orderedOwnerWallets = hash.getN(numNodes, rendezvousKey)
-      endpoints = orderedOwnerWallets.map((ownerWallet) => {
-        return allNodes.find((n) => n.delegateOwnerWallet === ownerWallet)!
-          .endpoint
-      })
+    if (wallet?.length) {
+      const endpoints = allNodes.map((n) => n.endpoint.toLowerCase())
+      const hash = new RendezvousHash(...endpoints)
+      sortedEndpoints = hash.getN(numNodes, wallet.toLowerCase())
     } else {
-      endpoints = allNodes.map((n) => n.endpoint)
+      sortedEndpoints = allNodes.map((n) => n.endpoint)
     }
 
     // Check multiple nodes at a time for health until we have numNodes healthy nodes
     const healthyEndpoints: string[] = []
-    for (let i = 0; i < endpoints.length; i += numNodes) {
-      const batch = endpoints.slice(i, i + numNodes)
+    for (let i = 0; i < sortedEndpoints.length; i += numNodes) {
+      const batch = sortedEndpoints.slice(i, i + numNodes)
       const healthCheckPromises = batch.map(
         async (endpoint) => await isNodeHealthy(endpoint, logger)
       )
@@ -53,7 +50,7 @@ export const getNStorageNodes = async (
       }
     }
 
-    if (numNodes !== allNodes.length && endpoints.length < numNodes) {
+    if (numNodes !== allNodes.length && sortedEndpoints.length < numNodes) {
       logger.error(
         `getNStorageNodes: Could not select ${numNodes} healthy nodes from ${allNodes.length} nodes`
       )

@@ -98,7 +98,7 @@ describe('StorageNodeSelector', () => {
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
-      storageNodeA.endpoint
+      storageNodeB.endpoint
     )
   })
 
@@ -136,7 +136,7 @@ describe('StorageNodeSelector', () => {
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
+        storageNodeB.endpoint
       )
     })
   })
@@ -157,7 +157,7 @@ describe('StorageNodeSelector', () => {
 
     await waitForExpect(async () => {
       expect(await storageNodeSelector.getSelectedNode()).toEqual(
-        storageNodeA.endpoint
+        storageNodeB.endpoint
       )
     })
   })
