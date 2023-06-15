@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -455,7 +456,7 @@ class TrackStream(Resource):
                 abort_not_found(track_id, ns)
 
             rendezvous = RendezvousHash(
-                *[node["endpoint"].lower() for node in healthy_nodes]
+                *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
             )
             content_node = rendezvous.get(track_cid)
         elif info["creator_nodes"]:
