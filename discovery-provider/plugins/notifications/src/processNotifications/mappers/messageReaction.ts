@@ -61,16 +61,16 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     let reaction = null
     switch (this.notification.reaction) {
       case 'fire':
-        reaction = '\u1F525'
+        reaction = '\u{1F525}'
         break
       case 'explode':
-        reaction = '\u1F92F'
+        reaction = '\u{1F92F}'
         break
       case 'heart':
-        reaction = '\u1F60D'
+        reaction = '\u{1F60D}'
         break
       case 'party':
-        reaction = '\u1F973'
+        reaction = '\u{1F973}'
         break
       default:
         reaction = 'to your message'
