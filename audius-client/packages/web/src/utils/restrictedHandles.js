@@ -21,7 +21,7 @@ export const restrictedHandles = new Set(
     'collection',
     'curated',
     'podcast',
-    'Library',
+    'library',
     'next',
     'suggested',
     'follow',
