@@ -9,7 +9,14 @@ import {
 
 // REQUEST PARAMETERS
 
+export const ChatListenRequestSchema = z.object({
+  currentUserId: z.optional(z.string())
+})
+
+export type ChatListenRequest = z.infer<typeof ChatListenRequestSchema>
+
 export const ChatGetAllRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
   after: z.optional(z.string())
@@ -18,12 +25,14 @@ export const ChatGetAllRequestSchema = z.object({
 export type ChatGetAllRequest = z.infer<typeof ChatGetAllRequestSchema>
 
 export const ChatGetRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string()
 })
 
 export type ChatGetRequest = z.infer<typeof ChatGetRequestSchema>
 
 export const ChatGetMessagesRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string(),
   limit: z.optional(z.number()),
   before: z.optional(z.string()),
@@ -34,7 +43,28 @@ export type ChatGetMessagesRequest = z.infer<
   typeof ChatGetMessagesRequestSchema
 >
 
+export const ChatGetUnreadCountRequestSchema = z.optional(
+  z.object({
+    currentUserId: z.optional(z.string())
+  })
+)
+
+export type ChatGetUnreadCountRequest = z.infer<
+  typeof ChatGetUnreadCountRequestSchema
+>
+
+export const ChatGetBlockersRequestSchema = z.optional(
+  z.object({
+    currentUserId: z.optional(z.string())
+  })
+)
+
+export type ChatGetBlockersRequest = z.infer<
+  typeof ChatGetBlockersRequestSchema
+>
+
 export const ChatCreateRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   userId: z.string(),
   invitedUserIds: z.array(z.string()).min(1)
 })
@@ -42,6 +72,7 @@ export const ChatCreateRequestSchema = z.object({
 export type ChatCreateRequest = z.infer<typeof ChatCreateRequestSchema>
 
 export const ChatInviteRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string(),
   userId: z.string(),
   invitedUserIds: z.array(z.string()).min(1)
@@ -50,6 +81,7 @@ export const ChatInviteRequestSchema = z.object({
 export type ChatInviteRequest = z.infer<typeof ChatInviteRequestSchema>
 
 export const ChatMessageRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string(),
   messageId: z.optional(z.string()),
   message: z.string()
@@ -58,6 +90,7 @@ export const ChatMessageRequestSchema = z.object({
 export type ChatMessageRequest = z.infer<typeof ChatMessageRequestSchema>
 
 export const ChatReactRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   chatId: z.string(),
   messageId: z.string(),
   reaction: z.nullable(z.string())
@@ -65,27 +98,36 @@ export const ChatReactRequestSchema = z.object({
 
 export type ChatReactRequest = z.infer<typeof ChatReactRequestSchema>
 
-export const ChatReadRequestSchema = z.object({ chatId: z.string() })
+export const ChatReadRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
+  chatId: z.string()
+})
 
 export type ChatReadRequest = z.infer<typeof ChatReadRequestSchema>
 
 export const ChatBlockRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   userId: z.string()
 })
 
 export type ChatBlockRequest = z.infer<typeof ChatBlockRequestSchema>
 
-export const ChatDeleteRequestSchema = z.object({ chatId: z.string() })
+export const ChatDeleteRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
+  chatId: z.string()
+})
 
 export type ChatDeleteRequest = z.infer<typeof ChatDeleteRequestSchema>
 
 export const ChatPermitRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   permit: z.nativeEnum(ChatPermission)
 })
 
 export type ChatPermitRequest = z.infer<typeof ChatPermitRequestSchema>
 
 export const ChatValidateCanCreateRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   userIds: z.array(z.string()).min(1)
 })
 
@@ -94,6 +136,7 @@ export type ChatValidateCanCreateRequest = z.infer<
 >
 
 export const ChatGetPermissionRequestSchema = z.object({
+  currentUserId: z.optional(z.string()),
   userIds: z.array(z.string()).min(1)
 })
 
