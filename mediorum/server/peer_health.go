@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -47,7 +48,7 @@ func (ss *MediorumServer) findHealthyPeers(aliveInLast time.Duration) []string {
 	ss.peerHealthMutex.RLock()
 	for host, ts := range ss.peerHealth {
 		if time.Since(ts) < aliveInLast {
-			result = append(result, host)
+			result = append(result, strings.ToLower(host))
 		}
 	}
 	ss.peerHealthMutex.RUnlock()

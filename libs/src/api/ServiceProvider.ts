@@ -148,7 +148,7 @@ export class ServiceProvider extends Base {
    */
   async autoSelectStorageV2Nodes(
     numNodes = 0,
-    rendezvousKey = '',
+    userWallet = '',
     logger = console
   ): Promise<string[]> {
     if (!this.cachedStorageNodes.length) {
@@ -157,7 +157,7 @@ export class ServiceProvider extends Base {
     return await getNStorageNodes(
       this.cachedStorageNodes,
       numNodes,
-      rendezvousKey,
+      userWallet,
       logger
     )
   }

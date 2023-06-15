@@ -16,6 +16,7 @@ import { DMs } from './DMs'
 import { Mediorum } from './Mediorum'
 import { EnvironmentSelector } from './components/EnvironmentSelector'
 import { DMMatrix } from './DMMatrix'
+import { Rendezvous } from './Rendezvous'
 
 const routeList: RouteObject[] = [
   {
@@ -51,6 +52,7 @@ const routeList: RouteObject[] = [
           { path: 'dm_matrix', element: <DMMatrix /> },
           { path: 'mediorum', element: <Mediorum /> },
           { path: 'plugins', element: <DiscoveryPlugins /> },
+          { path: 'rendezvous', element: <Rendezvous /> },
         ],
       },
 

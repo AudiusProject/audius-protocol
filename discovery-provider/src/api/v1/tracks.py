@@ -455,17 +455,9 @@ class TrackStream(Resource):
                 abort_not_found(track_id, ns)
 
             rendezvous = RendezvousHash(
-                *[node["delegateOwnerWallet"] for node in healthy_nodes]
+                *[node["endpoint"].lower() for node in healthy_nodes]
             )
-            content_node_wallet = rendezvous.get(track_cid)
-            content_node = next(
-                (
-                    node["endpoint"]
-                    for node in healthy_nodes
-                    if node["delegateOwnerWallet"] == content_node_wallet
-                ),
-                healthy_nodes[0]["endpoint"],
-            )
+            content_node = rendezvous.get(track_cid)
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
             content_node = content_nodes[0]
