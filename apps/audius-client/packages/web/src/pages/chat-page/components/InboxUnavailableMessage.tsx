@@ -17,7 +17,7 @@ const messages = {
   unblock: 'You cannot send messages to users you have blocked.',
   default: (user: User) => (
     <>
-      You can no longer send messages to <UserNameAndBadges user={user} />
+      You can&apos;t send messages to <UserNameAndBadges user={user} />
     </>
   ),
   learnMore: 'Learn More.',

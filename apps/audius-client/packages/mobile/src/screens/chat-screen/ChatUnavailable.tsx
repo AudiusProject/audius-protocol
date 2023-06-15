@@ -9,8 +9,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 const messages = {
-  noAction: (userName: string) =>
-    `You can no longer send messages to ${userName}. `,
+  noAction: (userName: string) => `You can't send messages to ${userName}. `,
   tip1: 'You must send ',
   tip2: ' a tip before you can send them messages.',
   blockee: 'You cannot send messages to users you have blocked. ',

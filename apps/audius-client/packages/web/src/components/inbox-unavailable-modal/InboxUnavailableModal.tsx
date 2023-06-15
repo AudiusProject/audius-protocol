@@ -30,7 +30,7 @@ const { unblockUser, createChat } = chatActions
 
 const messages = {
   title: 'Inbox Unavailable',
-  content: 'You can no longer send messages to this person.',
+  content: "You can't send messages to this person.",
   button: 'Learn More',
   tipContent: (displayName: ReactNode) => (
     <>

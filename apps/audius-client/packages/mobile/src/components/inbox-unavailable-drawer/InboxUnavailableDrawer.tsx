@@ -40,7 +40,7 @@ const messages = {
       {' a tip before you can send them messages.'}
     </>
   ),
-  noAction: 'You can no longer send messages to ',
+  noAction: "You can't send messages to ",
   info: 'This will not affect their ability to view your profile or interact with your content.',
   unblockUser: 'Unblock User',
   learnMore: 'Learn More',
