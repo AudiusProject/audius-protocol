@@ -21,7 +21,6 @@ const initialState: ModalsState = {
   FeedFilter: false,
   TrendingGenreSelection: false,
   SocialProof: false,
-  MobileUpload: false,
   EditFolder: false,
   SignOutConfirmation: false,
   Overflow: false,

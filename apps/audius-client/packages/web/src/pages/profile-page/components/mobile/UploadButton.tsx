@@ -1,20 +1,20 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
-import { modalsActions } from '@audius/common'
 import { Button, ButtonType, IconUpload } from '@audius/stems'
-import { useDispatch } from 'react-redux'
 
-import MobileUploadDrawer from 'components/mobile-upload-drawer/MobileUploadDrawer'
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 
 import styles from './UploadButton.module.css'
-const { setVisibility } = modalsActions
 
 const UploadButton = () => {
-  const dispatch = useDispatch()
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const handleDrawerClose = useCallback(() => {
+    setIsDrawerOpen(false)
+  }, [setIsDrawerOpen])
 
-  const onClick = useCallback(() => {
-    dispatch(setVisibility({ modal: 'MobileUpload', visible: true }))
-  }, [dispatch])
+  const handleClick = useCallback(() => {
+    setIsDrawerOpen(true)
+  }, [setIsDrawerOpen])
 
   return (
     <>
@@ -22,14 +22,17 @@ const UploadButton = () => {
         <Button
           className={styles.button}
           textClassName={styles.buttonText}
-          onClick={onClick}
+          onClick={handleClick}
           text='Upload Track'
           type={ButtonType.COMMON_ALT}
           leftIcon={<IconUpload />}
           iconClassName={styles.icon}
         />
       </div>
-      <MobileUploadDrawer />
+      <DownloadMobileAppDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleDrawerClose}
+      />
     </>
   )
 }
