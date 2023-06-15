@@ -50,7 +50,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 
 	g.GET("", s.getStatus)
 
-	config := unfurlist.WithBlocklistPrefixes(
+	unfurlBlocklist := unfurlist.WithBlocklistPrefixes(
 		[]string{
 			"http://localhost",
 			"http://127",
@@ -62,7 +62,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 			"http://fe80::",
 		},
 	)
-	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(config)))
+	unfurlHeaders := unfurlist.WithExtraHeaders(map[string]string{"User-Agent": "twitterbot"})
+	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(unfurlBlocklist, unfurlHeaders)))
 	g.GET("/pubkey/:id", s.getPubkey)
 	g.GET("/chats", s.getChats)
 	g.GET("/chats/ws", s.chatWebsocket)
@@ -102,11 +103,12 @@ type ChatServer struct {
 func (s *ChatServer) getStatus(c echo.Context) error {
 	errors := s.proc.SweeperErrors()
 	return c.JSON(http.StatusOK, map[string]any{
+		"host":            s.config.MyHost,
+		"wallet":          s.config.MyWallet,
 		"commit":          vcsRevision,
 		"built":           vcsBuildTime,
 		"booted":          bootTime,
-		"wip":             vcsDirty,
-		"healthy":         s.websocketError == nil && len(errors) == 0,
+		"healthy":         s.websocketError == nil, // && len(errors) == 0,
 		"errors":          errors,
 		"websocket_error": s.websocketError,
 	})
@@ -768,7 +770,6 @@ func (ss *ChatServer) doWebsocketTest() error {
 	}
 
 	wsUrl = wsUrl.JoinPath("/comms/debug/ws")
-	slog.Info("ws test: " + wsUrl.String())
 
 	ctx := context.Background()
 	con, _, _, err := ws.Dial(ctx, wsUrl.String())

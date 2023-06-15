@@ -127,7 +127,7 @@ def get_attribute_from_record_metadata(attribute, metadata):
 
 def create_save(params):
     is_save_of_repost = get_attribute_from_record_metadata(
-        "is_save_of_repost", params.metadata_cid
+        "is_save_of_repost", params.metadata
     )
     record = Save(
         blockhash=params.event_blockhash,
@@ -146,7 +146,7 @@ def create_save(params):
 
 def create_repost(params):
     is_repost_of_repost = get_attribute_from_record_metadata(
-        "is_repost_of_repost", params.metadata_cid
+        "is_repost_of_repost", params.metadata
     )
     create_record = Repost(
         blockhash=params.event_blockhash,

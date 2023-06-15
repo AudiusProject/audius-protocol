@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './DeveloperAppsApi';
 export * from './PlaylistsApi';
 export * from './ResolveApi';
 export * from './TipsApi';

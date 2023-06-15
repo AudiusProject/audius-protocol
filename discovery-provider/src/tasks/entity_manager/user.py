@@ -131,10 +131,10 @@ def create_user(params: ManageEntityParameters):
         is_current=False,
     )
 
-    if params.metadata_cid == "v2":
+    if params.metadata == "v2":
         user_record.is_storage_v2 = True
     else:
-        sp_ids = parse_sp_ids(params.metadata_cid)
+        sp_ids = parse_sp_ids(params.metadata)
 
         # Update the user's new replica set in the model and save!
         user_record.primary_id = sp_ids[0]
@@ -154,7 +154,6 @@ def create_user(params: ManageEntityParameters):
 def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
-    user_metadata = params.metadata[params.metadata_cid]
     user_id = params.entity_id
     existing_user = params.existing_records[EntityType.USER][user_id]
     if (
@@ -174,14 +173,14 @@ def update_user(params: ManageEntityParameters):
     validate_user_metadata(
         params.session,
         user_record,
-        user_metadata,
+        params.metadata,
     )
 
     user_record = update_user_metadata(
         params.session,
         params.redis,
         user_record,
-        user_metadata,
+        params.metadata,
         params.web3,
         params.challenge_bus,
     )

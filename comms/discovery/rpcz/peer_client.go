@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -35,7 +36,7 @@ func NewPeerClient(host string, proc *RPCProcessor) *PeerClient {
 		Host:   host,
 		proc:   proc,
 		outbox: make(chan []byte, outboxBufferSize),
-		logger: slog.With("cruder_client", host),
+		logger: slog.With("peer", host),
 	}
 }
 
@@ -87,7 +88,9 @@ func (c *PeerClient) startSweeper() {
 	for i := 0; ; i++ {
 		c.err = c.doSweep(i)
 		if c.err != nil {
-			c.logger.Error("sweep error", c.err, "host")
+			c.logger.Error("sweep error", c.err)
+			// if broken... add extra sleep
+			time.Sleep(time.Minute * 2)
 		}
 		time.Sleep(time.Minute)
 	}
@@ -106,8 +109,8 @@ func (c *PeerClient) doSweep(i int) error {
 	// todo: remove the `i` counter and simply resume from cursor
 	if i > 0 {
 		err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
-		if err != nil {
-			slog.Error("backfill failed to get cursor: ", err)
+		if err != nil && err != sql.ErrNoRows {
+			c.logger.Error("backfill failed to get cursor: ", err)
 		}
 	}
 
@@ -158,7 +161,7 @@ func (c *PeerClient) doSweep(i int) error {
 		// if apply error stop here (don't advance cursor)
 		// will restart here on next doSeep loop
 		if err != nil {
-			slog.Error("sweep error", err)
+			c.logger.Error("sweep apply error", err)
 			break
 		}
 
@@ -166,7 +169,7 @@ func (c *PeerClient) doSweep(i int) error {
 	}
 
 	if !cursor.IsZero() {
-		slog.Info("sweep done", "host", host, "took", time.Since(started), "count", len(ops), "cursor", cursor)
+		c.logger.Info("sweep done", "took", time.Since(started).String(), "count", len(ops), "cursor", cursor)
 		q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
 		_, err = db.Conn.Exec(q, host, cursor)
 		return err

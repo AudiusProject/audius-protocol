@@ -4,11 +4,7 @@ import type { LogContext } from '../../utils'
 import { Job, Queue, Worker } from 'bullmq'
 import { Redis } from 'ioredis'
 
-import {
-  clusterUtilsForWorker,
-  getConcurrencyPerWorker,
-  clearActiveJobs
-} from '../../utils'
+import { clearActiveJobs } from '../../utils'
 import { instrumentTracing, tracing } from '../../tracer'
 import {
   logger,
@@ -69,9 +65,7 @@ export class SyncQueue {
 
     // any leftover active jobs need to be deleted when a new queue
     // is created since they'll never get processed
-    if (clusterUtilsForWorker.isThisWorkerFirst()) {
-      await clearActiveJobs(this.queue, logger)
-    }
+    await clearActiveJobs(this.queue, logger)
 
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
@@ -110,9 +104,7 @@ export class SyncQueue {
       },
       {
         connection,
-        concurrency: getConcurrencyPerWorker(
-          this.nodeConfig.get('syncQueueMaxConcurrency')
-        )
+        concurrency: this.nodeConfig.get('syncQueueMaxConcurrency')
       }
     )
     const prometheusRegistry = serviceRegistry?.prometheusRegistry

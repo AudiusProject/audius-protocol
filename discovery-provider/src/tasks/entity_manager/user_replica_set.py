@@ -26,8 +26,7 @@ from src.utils.redis_cache import (
 logger = logging.getLogger(__name__)
 
 
-# Reconstruct endpoint string from primary and secondary IDs
-# Attempt to retrieve from cached values populated in index_network_peers.py
+# Fetch content node endpoint info from cache or from mainnet eth.
 # If unavailable, then a fallback to ethereum mainnet contracts will occur
 # Note that in the case of an invalid spID - one that is not yet registered on
 # the ethereum mainnet contracts, there will be an empty value in the returned
@@ -124,7 +123,7 @@ def get_sp_factory_inst():
 
 
 def parse_update_sp_id(params) -> Tuple[List[int], List[int]]:
-    sp_ids = params.metadata_cid.split(":")
+    sp_ids = params.metadata.split(":")
     if len(sp_ids) != 2:
         raise Exception('Invalid format entity_id should be ":" separated')
     return parse_sp_ids(sp_ids[0]), parse_sp_ids(sp_ids[1])

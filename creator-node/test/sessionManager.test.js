@@ -5,7 +5,6 @@ const models = require('../src/models')
 const { SessionToken } = models
 const DBManager = require('../src/dbManager')
 const SessionManager = require('../src/sessionManager')
-const BlacklistManager = require('../src/blacklistManager')
 const redisClient = require('../src/redis')
 const { createStarterCNodeUser, getCNodeUser, destroyUsers, createSession } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
@@ -18,7 +17,7 @@ describe('SessionManager', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    appInfo = await getApp(getLibsMock(), BlacklistManager)
+    appInfo = await getApp(getLibsMock())
     server = appInfo.server
   })
 

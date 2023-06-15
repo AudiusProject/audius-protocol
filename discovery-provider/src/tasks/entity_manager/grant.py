@@ -148,7 +148,7 @@ def validate_grant_record(grant_record):
 
 
 def create_grant(params: ManageEntityParameters):
-    metadata = get_grant_metadata_from_raw(params.metadata_cid)
+    metadata = get_grant_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception("Invalid Grant Transaction, unable to parse metadata")
     grant_key = validate_grant_tx(params, metadata)
@@ -177,7 +177,7 @@ def create_grant(params: ManageEntityParameters):
 
 
 def revoke_grant(params: ManageEntityParameters):
-    metadata = get_grant_metadata_from_raw(params.metadata_cid)
+    metadata = get_grant_metadata_from_raw(params.metadata)
     if not metadata:
         raise Exception("Invalid Revoke Grant Transaction, unable to parse metadata")
     grant_key = validate_grant_tx(params, metadata)

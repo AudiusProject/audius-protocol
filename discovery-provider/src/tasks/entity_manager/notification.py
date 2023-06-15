@@ -42,7 +42,7 @@ def validate_notification_tx(params: ManageEntityParameters):
                 "Invalid Notificaiton Creation Transaction, signer does not match notification address"
             )
         try:
-            json.loads(params.metadata_cid)
+            json.loads(params.metadata)
         except:
             raise Exception("Invalid Notificaiton Metadata Json, unable to parse")
     else:
@@ -67,7 +67,7 @@ def view_notification(params: ManageEntityParameters):
 def create_notification(params: ManageEntityParameters):
     validate_notification_tx(params)
     # Get data from cid blob
-    data = json.loads(params.metadata_cid)
+    data = json.loads(params.metadata)
     # Get all user ids
     user_ids: list[int] = []  # get_notification_user_ids(params, data["userGroup"])
     notification = Notification(

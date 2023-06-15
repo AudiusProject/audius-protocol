@@ -27,14 +27,20 @@ import {
   ChatEvents,
   ChatGetAllRequest,
   ChatGetAllRequestSchema,
+  ChatGetBlockersRequest,
+  ChatGetBlockersRequestSchema,
   ChatGetMessagesRequest,
   ChatGetMessagesRequestSchema,
   ChatGetPermissionRequest,
   ChatGetPermissionRequestSchema,
   ChatGetRequest,
   ChatGetRequestSchema,
+  ChatGetUnreadCountRequest,
+  ChatGetUnreadCountRequestSchema,
   ChatInviteRequest,
   ChatInviteRequestSchema,
+  ChatListenRequest,
+  ChatListenRequestSchema,
   ChatMessageRequest,
   ChatMessageRequestSchema,
   ChatPermitRequest,
@@ -60,9 +66,22 @@ export class ChatsApi
   extends BaseAPI
   implements EventEmitterTarget<ChatEvents>
 {
+  /**
+   * A map of chatId => chatSecret so we don't have to repeatedly fetch it
+   */
   private chatSecrets: Record<string, Uint8Array> = {}
+  /**
+   * An event emitter that's used for consumers to listen for chat events
+   */
   private readonly eventEmitter: TypedEmitter<ChatEvents>
+  /**
+   * The websocket currently in use
+   */
   private websocket: WebSocket | undefined
+  /**
+   * The current user ID to use when connecting/reconnecting the websocket
+   */
+  private listenUserId?: string
 
   /**
    * Proxy to the event emitter addListener
@@ -100,7 +119,16 @@ export class ChatsApi
 
   // #region QUERY
 
-  public async listen() {
+  /**
+   * Establishes a websocket connection for listening to chat events.
+   * @param requestParameters.currentUserId the user to listen for chat events for
+   */
+  public async listen(requestParameters?: ChatListenRequest) {
+    const parsedArgs = parseRequestParameters(
+      'listen',
+      ChatListenRequestSchema
+    )(requestParameters)
+    this.listenUserId = parsedArgs?.currentUserId
     const endpoint =
       await this.discoveryNodeSelectorService.getSelectedEndpoint()
     if (endpoint) {
@@ -110,12 +138,18 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a single chat
+   * @param requestParameters.chatId the chat to get
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the chat response
+   */
   public async get(requestParameters: ChatGetRequest) {
-    const { chatId } = parseRequestParameters(
+    const { chatId, currentUserId } = parseRequestParameters(
       'get',
       ChatGetRequestSchema
     )(requestParameters)
-    const response = await this.getRaw(chatId)
+    const response = await this.getRaw(chatId, currentUserId)
     return {
       ...response,
       data: response.data
@@ -124,15 +158,23 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a list of chats
+   * @param requestParameters.limit the max number of chats to get
+   * @param requestParameters.before a timestamp cursor for pagination
+   * @param requestParameters.after a timestamp cursor for pagination
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the chat list response
+   */
   public async getAll(requestParameters?: ChatGetAllRequest) {
+    const { currentUserId, limit, before, after } = parseRequestParameters(
+      'getAll',
+      ChatGetAllRequestSchema
+    )(requestParameters)
     const path = `/comms/chats`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { limit, before, after } = parseRequestParameters(
-      'getAll',
-      ChatGetAllRequestSchema
-    )(requestParameters)
     if (limit) {
       query['limit'] = limit
     }
@@ -141,6 +183,9 @@ export class ChatsApi
     }
     if (after) {
       query['after'] = after
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -159,13 +204,22 @@ export class ChatsApi
     }
   }
 
+  /**
+   * Gets a list of messages
+   * @param requestParameters.chatId the chat to get messages for
+   * @param requestParameters.before a timestamp cursor for pagination
+   * @param requestParameters.after a timestamp cursor for pagination
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the messages list response
+   */
   public async getMessages(
     requestParameters: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
-    const { chatId, limit, before, after } = parseRequestParameters(
-      'getMessages',
-      ChatGetMessagesRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, limit, before, after } =
+      parseRequestParameters(
+        'getMessages',
+        ChatGetMessagesRequestSchema
+      )(requestParameters)
 
     const sharedSecret = await this.getChatSecret(chatId)
     const path = `/comms/chats/${chatId}/messages`
@@ -180,6 +234,9 @@ export class ChatsApi
     }
     if (after) {
       query['after'] = after
+    }
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -210,9 +267,21 @@ export class ChatsApi
     }
   }
 
-  public async getUnreadCount() {
+  /**
+   * Gets the total unread message count for a user
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the unread count response
+   */
+  public async getUnreadCount(requestParameters?: ChatGetUnreadCountRequest) {
+    const parsedArgs = parseRequestParameters(
+      'getUnreadCount',
+      ChatGetUnreadCountRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -223,15 +292,24 @@ export class ChatsApi
     return (await res.json()) as TypedCommsResponse<number>
   }
 
+  /**
+   * Gets the permission settings of the given users
+   * @param requestParameters.userIds the users to fetch permissions of
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the permissions response
+   */
   public async getPermissions(requestParameters: ChatGetPermissionRequest) {
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { userIds } = parseRequestParameters(
+    const { userIds, currentUserId } = parseRequestParameters(
       'getPermissions',
       ChatGetPermissionRequestSchema
     )(requestParameters)
     query['id'] = userIds
+    if (currentUserId) {
+      query['current_user_id'] = currentUserId
+    }
 
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -242,9 +320,21 @@ export class ChatsApi
     return (await res.json()) as TypedCommsResponse<ValidatedChatPermissions[]>
   }
 
-  public async getBlockers() {
+  /**
+   * Gets the user ids that have blocked the current user
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the blockers response
+   */
+  public async getBlockers(requestParameters?: ChatGetBlockersRequest) {
+    const parsedArgs = parseRequestParameters(
+      'getBlockers',
+      ChatGetBlockersRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -255,9 +345,21 @@ export class ChatsApi
     return (await response.json()) as TypedCommsResponse<string[]>
   }
 
-  public async getBlockees() {
+  /**
+   * Gets the user ids the current user has blocked
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns
+   */
+  public async getBlockees(requestParameters?: ChatGetBlockersRequest) {
+    const parsedArgs = parseRequestParameters(
+      'getBlockees',
+      ChatGetBlockersRequestSchema
+    )(requestParameters)
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (parsedArgs?.currentUserId) {
+      query['current_user_id'] = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -268,6 +370,11 @@ export class ChatsApi
     return (await response.json()) as TypedCommsResponse<string[]>
   }
 
+  /**
+   * Gets URL metadata useful for link previews
+   * @param requestParameters.content the urls to get metadata for
+   * @returns the unfurl response
+   */
   public async unfurl(requestParameters: ChatUnfurlRequest) {
     const { urls } = parseRequestParameters(
       'unfurl',
@@ -289,8 +396,15 @@ export class ChatsApi
 
   // #region MUTATE
 
+  /**
+   * Creates a chat between users
+   * @param requestParameters.userId the user id who is creating the chat
+   * @param requestParameters.invitedUserIds the user ids to add to the chat
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async create(requestParameters: ChatCreateRequest) {
-    const { userId, invitedUserIds } = parseRequestParameters(
+    const { currentUserId, userId, invitedUserIds } = parseRequestParameters(
       'create',
       ChatCreateRequestSchema
     )(requestParameters)
@@ -301,6 +415,7 @@ export class ChatsApi
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.create',
       params: {
         chat_id: chatId,
@@ -309,15 +424,25 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Invites other users to an existing chat
+   * @param requestParameters.chatId the chat id of the chat to invite to
+   * @param requestParameters.userId the user id who is creating the chat
+   * @param requestParameters.invitedUserIds the user ids to add to the chat
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async invite(requestParameters: ChatInviteRequest) {
-    const { chatId, userId, invitedUserIds } = parseRequestParameters(
-      'invite',
-      ChatInviteRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, userId, invitedUserIds } =
+      parseRequestParameters(
+        'invite',
+        ChatInviteRequestSchema
+      )(requestParameters)
 
     const chatSecret = await this.getChatSecret(chatId)
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.invite',
       params: {
         chat_id: chatId,
@@ -326,16 +451,26 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Sends a message to a user in a chat
+   * @param requestParameters.message the message
+   * @param requestParameters.chatId the chat to send a message in
+   * @param requestParameters.messageId the id of the message
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async message(requestParameters: ChatMessageRequest) {
-    const { chatId, message, messageId } = parseRequestParameters(
-      'message',
-      ChatMessageRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, message, messageId } =
+      parseRequestParameters(
+        'message',
+        ChatMessageRequestSchema
+      )(requestParameters)
     const chatSecret = await this.getChatSecret(chatId)
     const encrypted = await this.encryptString(chatSecret, message)
     const encodedMessage = base64.encode(encrypted)
 
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.message',
       params: {
         chat_id: chatId,
@@ -345,12 +480,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Reacts to a message
+   * @param requestParameters.reaction the reaction
+   * @param requestParameters.chatId the chat to send a reaction in
+   * @param requestParameters.messageId the id of the message to react to
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async react(requestParameters: ChatReactRequest) {
-    const { chatId, messageId, reaction } = parseRequestParameters(
-      'react',
-      ChatReactRequestSchema
-    )(requestParameters)
+    const { currentUserId, chatId, messageId, reaction } =
+      parseRequestParameters('react', ChatReactRequestSchema)(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.react',
       params: {
         chat_id: chatId,
@@ -360,12 +502,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Marks a chat as read
+   * @param requestParameters.chatId the chat to mark as read
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async read(requestParameters: ChatReadRequest) {
-    const { chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = parseRequestParameters(
       'read',
       ChatReadRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.read',
       params: {
         chat_id: chatId
@@ -373,12 +522,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Blocks a user from sending messages to the current user
+   * @param requestParameters.userId the user to block
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async block(requestParameters: ChatBlockRequest) {
-    const { userId } = parseRequestParameters(
+    const { currentUserId, userId } = parseRequestParameters(
       'block',
       ChatBlockRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.block',
       params: {
         user_id: userId
@@ -386,12 +542,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Unblocks a user from sending messages to the current user
+   * @param requestParameters.userId the user to unblock
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async unblock(requestParameters: ChatBlockRequest) {
-    const { userId } = parseRequestParameters(
+    const { currentUserId, userId } = parseRequestParameters(
       'unblock',
       ChatBlockRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.unblock',
       params: {
         user_id: userId
@@ -399,12 +562,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Clears a chat's history for the current user
+   * @param requestParameters.chatId the chat to clear
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async delete(requestParameters: ChatDeleteRequest) {
-    const { chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = parseRequestParameters(
       'delete',
       ChatDeleteRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.delete',
       params: {
         chat_id: chatId
@@ -412,12 +582,19 @@ export class ChatsApi
     })
   }
 
+  /**
+   * Sets the inbox settings permissions of the current user
+   * @param requestParameters.permit the permission to set
+   * @param requestParameters.currentUserId the user to act on behalf of
+   * @returns the rpc object
+   */
   public async permit(requestParameters: ChatPermitRequest) {
-    const { permit } = parseRequestParameters(
+    const { currentUserId, permit } = parseRequestParameters(
       'permit',
       ChatPermitRequestSchema
     )(requestParameters)
     return await this.sendRpc({
+      current_user_id: currentUserId,
       method: 'chat.permit',
       params: {
         permit
@@ -511,10 +688,13 @@ export class ChatsApi
     }
   }
 
-  private async getRaw(chatId: string) {
+  private async getRaw(chatId: string, currentUserId?: string) {
     const path = `/comms/chats/${chatId}`
     const queryParameters: HTTPQuery = {
       timestamp: new Date().getTime()
+    }
+    if (currentUserId) {
+      queryParameters['current_user_id'] = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -574,7 +754,9 @@ export class ChatsApi
     })
   }
 
-  private async sendRpc(args: RPCPayloadRequest) {
+  private async sendRpc(
+    args: RPCPayloadRequest & { current_user_id?: string }
+  ) {
     const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
     await this.signAndSendRequest({
       method: 'POST',
@@ -587,7 +769,10 @@ export class ChatsApi
 
   private async createWebsocket(endpoint: string) {
     const timestamp = new Date().getTime()
-    const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    let originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    if (this.listenUserId) {
+      originalUrl = `${originalUrl}&current_user_id=${this.listenUserId}`
+    }
     const signatureHeader = await this.getSignatureHeader(originalUrl)
     const host = endpoint.replace(/http(s?)/g, 'ws$1')
     const url = `${host}${originalUrl}&signature=${encodeURIComponent(

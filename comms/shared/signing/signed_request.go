@@ -16,7 +16,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	var payload []byte
 	var err error
 	if c.Request().Method == "GET" {
-		// Check that timestamp is less than 5 seconds old
+		// Check that timestamp is not too old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
 		if err != nil || time.Now().UnixMilli()-timestamp > SignatureTimeToLiveMs {
 			slog.Error("", err)

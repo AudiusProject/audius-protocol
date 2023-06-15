@@ -29,11 +29,11 @@ import { AbortController as AbortControllerPolyfill } from 'node-abort-controlle
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
 const getPathFromUrl = (url: string) => {
-  const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^\/]+)?(.*)$/
+  const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/
 
   const match = url.match(pathRegex)
 
-  if (match && match[3]) {
+  if (match?.[3]) {
     const path = match[3]
     return path
   } else {
@@ -374,10 +374,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         attemptedServicesCount
       })
       this.isBehind = false
+      return this.selectedNode
     } finally {
       this.reselectLock = false
       this.eventEmitter.emit('reselectAttemptComplete')
-      return this.selectedNode
     }
   }
 

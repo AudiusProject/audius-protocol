@@ -8,7 +8,7 @@ const {
   getMonitorRedisKey
 } = require('./monitors')
 const { logger } = require('../logging')
-const { clusterUtilsForWorker, clearActiveJobs } = require('../utils')
+const { clearActiveJobs } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -44,36 +44,33 @@ class MonitoringQueue {
     this.prometheusRegistry = prometheusRegistry
 
     // Clean up anything that might be still stuck in the queue on restart and run once instantly
-    if (clusterUtilsForWorker.isThisWorkerFirst()) {
-      await this.queue.obliterate({ force: true })
-      await clearActiveJobs(this.queue, logger)
-      await this.seedInitialValues()
-    }
-    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
-      const _worker = new Worker(
-        'monitoring-queue',
-        async (_job) => {
-          try {
-            await this._logStatus('Starting')
+    await this.queue.obliterate({ force: true })
+    await clearActiveJobs(this.queue, logger)
+    await this.seedInitialValues()
 
-            // Iterate over each monitor and set a new value if the cached
-            // value is not fresh.
-            Object.entries(MONITORS).forEach(
-              async ([monitorKey, monitorProps]) => {
-                try {
-                  await this.refresh(monitorProps, monitorKey)
-                } catch (e) {
-                  this._logError(`Error on ${monitorProps.name} ${e}`)
-                }
+    const _worker = new Worker(
+      'monitoring-queue',
+      async (_job) => {
+        try {
+          await this._logStatus('Starting')
+
+          // Iterate over each monitor and set a new value if the cached
+          // value is not fresh.
+          Object.entries(MONITORS).forEach(
+            async ([monitorKey, monitorProps]) => {
+              try {
+                await this.refresh(monitorProps, monitorKey)
+              } catch (e) {
+                this._logError(`Error on ${monitorProps.name} ${e}`)
               }
-            )
-          } catch (e) {
-            this._logError(`Error ${e}`)
-          }
-        },
-        { connection }
-      )
-    }
+            }
+          )
+        } catch (e) {
+          this._logError(`Error ${e}`)
+        }
+      },
+      { connection }
+    )
   }
 
   /**
@@ -143,22 +140,20 @@ class MonitoringQueue {
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
-    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
-      try {
-        // Run the job immediately
-        await this.queue.add(PROCESS_NAMES.monitor, {})
+    try {
+      // Run the job immediately
+      await this.queue.add(PROCESS_NAMES.monitor, {})
 
-        // Then enqueue the job to run on a regular interval
-        setInterval(async () => {
-          try {
-            await this.queue.add(PROCESS_NAMES.monitor, {})
-          } catch (e) {
-            this._logError('Failed to enqueue!')
-          }
-        }, QUEUE_INTERVAL_MS)
-      } catch (e) {
-        this._logError('Startup failed!')
-      }
+      // Then enqueue the job to run on a regular interval
+      setInterval(async () => {
+        try {
+          await this.queue.add(PROCESS_NAMES.monitor, {})
+        } catch (e) {
+          this._logError('Failed to enqueue!')
+        }
+      }, QUEUE_INTERVAL_MS)
+    } catch (e) {
+      this._logError('Startup failed!')
     }
   }
 }

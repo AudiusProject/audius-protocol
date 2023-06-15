@@ -345,6 +345,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     premiumContentSignature?: PremiumContentSignature;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFull
+     */
+    aiAttributionUserId?: number;
 }
 
 /**
@@ -425,6 +431,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'isPremium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
         'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
         'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
+        'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
     };
 }
 
@@ -481,6 +488,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'is_premium': value.isPremium,
         'premium_conditions': value.premiumConditions,
         'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
+        'ai_attribution_user_id': value.aiAttributionUserId,
     };
 }
 

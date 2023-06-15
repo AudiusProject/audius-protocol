@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mediorum/httputil"
 	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/oklog/ulid/v2"
@@ -44,6 +46,7 @@ type Crudr struct {
 }
 
 func New(host string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
+	host = httputil.RemoveTrailingSlash(strings.ToLower(host))
 
 	opDDL := `
 	create table if not exists ops (
@@ -260,4 +263,12 @@ func (c *Crudr) ApplyOp(op *Op) error {
 	c.callOpCallbacks(op, records)
 
 	return nil
+}
+
+func (c *Crudr) GetOutboxSizes() map[string]int {
+	sizes := make(map[string]int)
+	for _, p := range c.peerClients {
+		sizes[p.Host] = len(p.outbox)
+	}
+	return sizes
 }

@@ -143,10 +143,16 @@ export interface UserFull {
     isDeactivated: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    isAvailable: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof UserFull
      */
-    ercWallet?: string;
+    ercWallet: string;
     /**
      * 
      * @type {string}
@@ -165,6 +171,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     supportingCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof UserFull
+     */
+    totalAudioBalance: number;
     /**
      * 
      * @type {string}
@@ -213,6 +225,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     createdAt: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    isStorageV2: boolean;
     /**
      * 
      * @type {string}
@@ -285,6 +303,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     playlistLibrary?: PlaylistLibrary;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    allowAiAttribution: boolean;
 }
 
 /**
@@ -303,9 +327,12 @@ export function instanceOfUserFull(value: object): boolean {
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "trackCount" in value;
     isInstance = isInstance && "isDeactivated" in value;
+    isInstance = isInstance && "isAvailable" in value;
+    isInstance = isInstance && "ercWallet" in value;
     isInstance = isInstance && "splWallet" in value;
     isInstance = isInstance && "supporterCount" in value;
     isInstance = isInstance && "supportingCount" in value;
+    isInstance = isInstance && "totalAudioBalance" in value;
     isInstance = isInstance && "balance" in value;
     isInstance = isInstance && "associatedWalletsBalance" in value;
     isInstance = isInstance && "totalBalance" in value;
@@ -314,11 +341,13 @@ export function instanceOfUserFull(value: object): boolean {
     isInstance = isInstance && "blocknumber" in value;
     isInstance = isInstance && "wallet" in value;
     isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "isStorageV2" in value;
     isInstance = isInstance && "currentUserFolloweeFollowCount" in value;
     isInstance = isInstance && "doesCurrentUserFollow" in value;
     isInstance = isInstance && "handleLc" in value;
     isInstance = isInstance && "updatedAt" in value;
     isInstance = isInstance && "hasCollectibles" in value;
+    isInstance = isInstance && "allowAiAttribution" in value;
 
     return isInstance;
 }
@@ -350,10 +379,12 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'repostCount': json['repost_count'],
         'trackCount': json['track_count'],
         'isDeactivated': json['is_deactivated'],
-        'ercWallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
+        'isAvailable': json['is_available'],
+        'ercWallet': json['erc_wallet'],
         'splWallet': json['spl_wallet'],
         'supporterCount': json['supporter_count'],
         'supportingCount': json['supporting_count'],
+        'totalAudioBalance': json['total_audio_balance'],
         'balance': json['balance'],
         'associatedWalletsBalance': json['associated_wallets_balance'],
         'totalBalance': json['total_balance'],
@@ -362,6 +393,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'blocknumber': json['blocknumber'],
         'wallet': json['wallet'],
         'createdAt': json['created_at'],
+        'isStorageV2': json['is_storage_v2'],
         'creatorNodeEndpoint': !exists(json, 'creator_node_endpoint') ? undefined : json['creator_node_endpoint'],
         'currentUserFolloweeFollowCount': json['current_user_followee_follow_count'],
         'doesCurrentUserFollow': json['does_current_user_follow'],
@@ -374,6 +406,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'metadataMultihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
         'hasCollectibles': json['has_collectibles'],
         'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
+        'allowAiAttribution': json['allow_ai_attribution'],
     };
 }
 
@@ -403,10 +436,12 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'repost_count': value.repostCount,
         'track_count': value.trackCount,
         'is_deactivated': value.isDeactivated,
+        'is_available': value.isAvailable,
         'erc_wallet': value.ercWallet,
         'spl_wallet': value.splWallet,
         'supporter_count': value.supporterCount,
         'supporting_count': value.supportingCount,
+        'total_audio_balance': value.totalAudioBalance,
         'balance': value.balance,
         'associated_wallets_balance': value.associatedWalletsBalance,
         'total_balance': value.totalBalance,
@@ -415,6 +450,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'blocknumber': value.blocknumber,
         'wallet': value.wallet,
         'created_at': value.createdAt,
+        'is_storage_v2': value.isStorageV2,
         'creator_node_endpoint': value.creatorNodeEndpoint,
         'current_user_followee_follow_count': value.currentUserFolloweeFollowCount,
         'does_current_user_follow': value.doesCurrentUserFollow,
@@ -427,6 +463,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'metadata_multihash': value.metadataMultihash,
         'has_collectibles': value.hasCollectibles,
         'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
+        'allow_ai_attribution': value.allowAiAttribution,
     };
 }
 
