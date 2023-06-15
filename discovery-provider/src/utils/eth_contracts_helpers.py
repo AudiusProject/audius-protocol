@@ -14,8 +14,7 @@ sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
 trusted_notifier_manager_registry_key = bytes("TrustedNotifierManagerProxy", "utf-8")
 content_node_service_type = bytes("content-node", "utf-8")
 
-# 30 minutes = 60 sec * 30 min
-cnode_info_redis_ttl_s = 1800
+cnode_info_redis_ttl_s = 3600
 
 
 def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict:

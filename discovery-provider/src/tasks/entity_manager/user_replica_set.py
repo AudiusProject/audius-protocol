@@ -26,8 +26,7 @@ from src.utils.redis_cache import (
 logger = logging.getLogger(__name__)
 
 
-# Reconstruct endpoint string from primary and secondary IDs
-# Attempt to retrieve from cached values populated in update_clique_signers.py
+# Fetch content node endpoint info from cache or from mainnet eth.
 # If unavailable, then a fallback to ethereum mainnet contracts will occur
 # Note that in the case of an invalid spID - one that is not yet registered on
 # the ethereum mainnet contracts, there will be an empty value in the returned
