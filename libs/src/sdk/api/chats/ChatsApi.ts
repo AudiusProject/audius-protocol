@@ -272,7 +272,7 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to act on behalf of
    * @returns the unread count response
    */
-  public async getUnreadCount(requestParameters: ChatGetUnreadCountRequest) {
+  public async getUnreadCount(requestParameters?: ChatGetUnreadCountRequest) {
     const parsedArgs = parseRequestParameters(
       'getUnreadCount',
       ChatGetUnreadCountRequestSchema
