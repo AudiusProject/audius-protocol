@@ -629,6 +629,8 @@ export const ChatScreen = () => {
                     ) : null
                   }
                   scrollEnabled={popupMessageId == null}
+                  removeClippedSubviews
+                  windowSize={5}
                 />
               </View>
             )}
