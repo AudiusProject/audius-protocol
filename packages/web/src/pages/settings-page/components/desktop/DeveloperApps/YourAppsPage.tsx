@@ -78,7 +78,7 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
           <ol>
             {data?.apps.map((app, index) => (
               <DeveloperAppListItem
-                key={app.name}
+                key={app.apiKey}
                 index={index + 1}
                 app={app}
                 setPage={setPage}

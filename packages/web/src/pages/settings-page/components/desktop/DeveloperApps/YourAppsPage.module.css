@@ -31,3 +31,9 @@
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }
+
+.spinner {
+  margin: 0 auto;
+  width: 80px;
+  height: 80px;
+}

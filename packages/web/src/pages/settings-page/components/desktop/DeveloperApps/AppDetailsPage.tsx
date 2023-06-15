@@ -7,6 +7,7 @@ import { ReactComponent as IconWarning } from 'assets/img/iconWarning.svg'
 import { Divider } from 'components/divider'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'
+import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './AppDetailsPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
@@ -35,8 +36,18 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
     setPage(CreateAppsPages.YOUR_APPS)
   }, [setPage])
 
+  const { name, description, apiKey, apiSecret } = params || {}
+  const copyApiKey = useCallback(() => {
+    if (!apiKey) return
+    copyToClipboard(apiKey)
+  }, [apiKey])
+
+  const copySecret = useCallback(() => {
+    if (!apiSecret) return
+    copyToClipboard(apiSecret)
+  }, [apiSecret])
+
   if (!params) return null
-  const { name, description, apiKey, apiSecret } = params
 
   return (
     <div className={styles.root}>
@@ -71,6 +82,7 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
         <span>
           <Toast text={messages.copied} mount={MountPlacement.PARENT}>
             <IconButton
+              onClick={copyApiKey}
               aria-label={messages.copyApiKeyLabel}
               icon={<IconCopyPlain />}
             />
@@ -86,6 +98,7 @@ export const AppDetailsPage = (props: AppDetailsPageProps) => {
           <span>
             <Toast text={messages.copied} mount={MountPlacement.PARENT}>
               <IconButton
+                onClick={copySecret}
                 aria-label={messages.copyApiKeyLabel}
                 icon={<IconCopyPlain />}
               />
