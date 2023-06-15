@@ -8,6 +8,7 @@ types-python-dateutil==0.1.4
 types-redis==3.5.4
 types-requests==2.25.0
 types-pytz==2021.1.2
+types-freezegun==1.1.10
 
 # the only version that supports websockets v10.1 (needed for solana py + anchor py)
 web3==6.0.0b1
