@@ -48,6 +48,7 @@ import { useSelector } from 'utils/reducer'
 
 import packageInfo from '../../../../../package.json'
 
+import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import NotificationSettings from './NotificationSettings'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -275,9 +276,16 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const { isEnabled: isAiAttributionEnabled } = useFlag(
     FeatureFlags.AI_ATTRIBUTION
   )
+  const { isEnabled: areDeveloperAppsEnabled } = useFlag(
+    FeatureFlags.DEVELOPER_APPS_PAGE
+  )
+
+  const isDownloadDesktopEnabled = !isMobile() && !isElectron()
 
   const hasOddCardCount = Boolean(
-    [isChatEnabled, isAiAttributionEnabled].filter(removeNullable).length % 2
+    [isChatEnabled, isAiAttributionEnabled, areDeveloperAppsEnabled].filter(
+      removeNullable
+    ).length % 2
   )
 
   const header = <Header primary={messages.pageTitle} />
@@ -405,7 +413,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             onTikTokLogin={onTikTokLogin}
           />
         </SettingsCard>
-        {!isMobile() && !isElectron() && (
+        {isDownloadDesktopEnabled ? (
           <SettingsCard
             icon={<IconDesktop />}
             title={messages.desktopAppCardTitle}
@@ -419,7 +427,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
               text={messages.desktopAppButtonText}
             />
           </SettingsCard>
-        )}
+        ) : null}
+        {areDeveloperAppsEnabled ? <DeveloperAppsSettingsCard /> : null}
       </div>
       <div className={styles.version}>
         <Button
