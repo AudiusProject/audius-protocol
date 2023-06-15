@@ -123,12 +123,12 @@ export class ChatsApi
    * Establishes a websocket connection for listening to chat events.
    * @param requestParameters.currentUserId the user to listen for chat events for
    */
-  public async listen(requestParameters: ChatListenRequest) {
-    const { currentUserId } = parseRequestParameters(
+  public async listen(requestParameters?: ChatListenRequest) {
+    const parsedArgs = parseRequestParameters(
       'listen',
       ChatListenRequestSchema
     )(requestParameters)
-    this.listenUserId = currentUserId
+    this.listenUserId = parsedArgs?.currentUserId
     const endpoint =
       await this.discoveryNodeSelectorService.getSelectedEndpoint()
     if (endpoint) {
@@ -272,7 +272,7 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to act on behalf of
    * @returns the unread count response
    */
-  public async getUnreadCount(requestParameters: ChatGetUnreadCountRequest) {
+  public async getUnreadCount(requestParameters?: ChatGetUnreadCountRequest) {
     const parsedArgs = parseRequestParameters(
       'getUnreadCount',
       ChatGetUnreadCountRequestSchema

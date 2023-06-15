@@ -9,9 +9,11 @@ import {
 
 // REQUEST PARAMETERS
 
-export const ChatListenRequestSchema = z.object({
-  currentUserId: z.optional(z.string())
-})
+export const ChatListenRequestSchema = z.optional(
+  z.object({
+    currentUserId: z.optional(z.string())
+  })
+)
 
 export type ChatListenRequest = z.infer<typeof ChatListenRequestSchema>
 
