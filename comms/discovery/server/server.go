@@ -108,7 +108,6 @@ func (s *ChatServer) getStatus(c echo.Context) error {
 		"commit":          vcsRevision,
 		"built":           vcsBuildTime,
 		"booted":          bootTime,
-		"wip":             vcsDirty,
 		"healthy":         s.websocketError == nil, // && len(errors) == 0,
 		"errors":          errors,
 		"websocket_error": s.websocketError,
