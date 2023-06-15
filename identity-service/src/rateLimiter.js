@@ -210,7 +210,6 @@ const getRelayRateLimiterMiddleware = () => {
         ]
       })
       const whitelist = config.get('whitelistPublicKeyFromRelay')
-      req.logger.info(`asdf req.user ${req.user}`)
       if (req.user) {
         limit = limit['owner']
         req.isFromApp = false
@@ -220,7 +219,6 @@ const getRelayRateLimiterMiddleware = () => {
         } else {
           limit = limit['app']
         }
-        req.logger.info(`asdf limit ${limit}`)
         req.isFromApp = true
       }
 
