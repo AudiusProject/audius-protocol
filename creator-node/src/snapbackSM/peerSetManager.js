@@ -12,7 +12,7 @@ const {
 const { hasEnoughStorageSpace } = require('../fileManager')
 const {
   getMapOfCNodeEndpointToSpId
-} = require('services/ContentNodeInfoManager')
+} = require('../services/ContentNodeInfoManager')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
