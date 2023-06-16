@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import snakecaseKeys from 'snakecase-keys'
 import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -71,7 +72,6 @@ export class TracksApi extends TracksApiWithoutStream {
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
   }
-
   /**
    * Upload a track
    */
@@ -92,30 +92,7 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = {
-      ...parsedMetadata,
-      ownerId: userId
-    }
-
-    const isPremium = metadata.isPremium
-    const isUnlisted = metadata.isUnlisted
-
-    // If track is premium, set remixes to false
-    if (isPremium && metadata.fieldVisibility) {
-      metadata.fieldVisibility.remixes = false
-    }
-
-    // If track is public, set required visibility fields to true
-    if (!isUnlisted) {
-      metadata.fieldVisibility = {
-        ...metadata.fieldVisibility,
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        playCount: true
-      }
-    }
+    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
 
     // Upload track audio and cover art to storage node
     const [audioResp, coverArtResp] = await Promise.all([
@@ -191,11 +168,19 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, coverArtFile, metadata, onProgress } =
-      parseRequestParameters(
-        'updateTrack',
-        createUpdateTrackSchema()
-      )(requestParameters)
+    const {
+      userId,
+      trackId,
+      coverArtFile,
+      metadata: parsedMetadata,
+      onProgress
+    } = parseRequestParameters(
+      'updateTrack',
+      createUpdateTrackSchema()
+    )(requestParameters)
+
+    // Transform metadata
+    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
 
     // Upload track cover art to storage node
     const coverArtResp = await retry3(
@@ -262,6 +247,39 @@ export class TracksApi extends TracksApiWithoutStream {
     const txReceipt = response.txReceipt
 
     return txReceipt
+  }
+
+  private transformTrackUploadMetadata(
+    inputMetadata: z.output<
+      ReturnType<typeof createUploadTrackSchema>
+    >['metadata'],
+    userId: number
+  ) {
+    const metadata = {
+      ...inputMetadata,
+      ownerId: userId
+    }
+
+    const isPremium = metadata.isPremium
+    const isUnlisted = metadata.isUnlisted
+
+    // If track is premium, set remixes to false
+    if (isPremium && metadata.fieldVisibility) {
+      metadata.fieldVisibility.remixes = false
+    }
+
+    // If track is public, set required visibility fields to true
+    if (!isUnlisted) {
+      metadata.fieldVisibility = {
+        ...metadata.fieldVisibility,
+        genre: true,
+        mood: true,
+        tags: true,
+        share: true,
+        playCount: true
+      }
+    }
+    return metadata
   }
 
   private async generateTrackId() {
