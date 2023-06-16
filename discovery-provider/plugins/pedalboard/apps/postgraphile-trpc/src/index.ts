@@ -10,7 +10,7 @@ export type SharedData = {
 
 const main = async () => {
   const config = {
-    databaseUrl: "",
+    databaseUrl: "postgresql://postgres:postgres@localhost:5432/audius_discovery",
     postgraphilePort: 8998,
     trpcPort: 8999
   }

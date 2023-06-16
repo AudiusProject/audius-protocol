@@ -25,6 +25,7 @@
     "knex": "^2.4.2",
     "moment": "^2.29.4",
     "node-fetch": "^3.3.1",
+    "prisma-trpc-generator": "^1.4.1",
     "storage": "^0.0.0",
     "ts-results": "^3.3.0",
     "web3": "^1.10.0"

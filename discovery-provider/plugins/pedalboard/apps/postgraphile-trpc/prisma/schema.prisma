@@ -1,0 +1,1009 @@
+generator gen {
+  provider = "prisma-client-js"
+}
+
+generator trpc {
+  provider        = "prisma-trpc-generator"
+  withMiddleware  = "false"
+  contextPath     = "../src/context"
+  trpcOptionsPath = "../src/trpcOptions"
+  output          = "../src/prisma"
+  withZod         = "true"
+  withShield      = "false"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@localhost:5432/audius_discovery"
+}
+
+model SequelizeMeta {
+  name String @id @db.VarChar(255)
+}
+
+model aggregate_daily_app_name_metrics {
+  id               Int      @id @default(autoincrement())
+  application_name String   @db.VarChar
+  count            Int
+  timestamp        DateTime @db.Date
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+}
+
+model aggregate_daily_total_users_metrics {
+  id         Int      @id @default(autoincrement())
+  count      Int
+  timestamp  DateTime @db.Date
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+}
+
+model aggregate_daily_unique_users_metrics {
+  id           Int      @id @default(autoincrement())
+  count        Int
+  timestamp    DateTime @db.Date
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @db.Timestamp(6)
+  summed_count Int?
+}
+
+model aggregate_monthly_app_name_metrics {
+  id               Int      @id @default(autoincrement())
+  application_name String   @db.VarChar
+  count            Int
+  timestamp        DateTime @db.Date
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+}
+
+model aggregate_monthly_plays {
+  play_item_id Int
+  timestamp    DateTime @default(now()) @db.Date
+  count        Int
+
+  @@id([play_item_id, timestamp])
+}
+
+model aggregate_monthly_total_users_metrics {
+  id         Int      @id @default(autoincrement())
+  count      Int
+  timestamp  DateTime @db.Date
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+}
+
+model aggregate_monthly_unique_users_metrics {
+  id           Int      @id @default(autoincrement())
+  count        Int
+  timestamp    DateTime @db.Date
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @db.Timestamp(6)
+  summed_count Int?
+}
+
+model aggregate_playlist {
+  playlist_id  Int      @id
+  is_album     Boolean?
+  repost_count Int?     @default(0)
+  save_count   Int?     @default(0)
+}
+
+model aggregate_plays {
+  play_item_id Int     @id(map: "play_item_id_pkey")
+  count        BigInt?
+}
+
+model aggregate_track {
+  track_id     Int @id(map: "aggregate_track_table_pkey")
+  repost_count Int @default(0)
+  save_count   Int @default(0)
+}
+
+model aggregate_user {
+  user_id          Int     @id(map: "aggregate_user_table_pkey")
+  track_count      BigInt? @default(0)
+  playlist_count   BigInt? @default(0)
+  album_count      BigInt? @default(0)
+  follower_count   BigInt? @default(0)
+  following_count  BigInt? @default(0)
+  repost_count     BigInt? @default(0)
+  track_save_count BigInt? @default(0)
+  supporter_count  Int     @default(0)
+  supporting_count Int     @default(0)
+}
+
+model aggregate_user_tips {
+  sender_user_id   Int
+  receiver_user_id Int
+  amount           BigInt
+
+  @@id([sender_user_id, receiver_user_id])
+  @@index([receiver_user_id], map: "ix_aggregate_user_tips_receiver_user_id")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}
+
+model app_name_metrics {
+  application_name String   @db.VarChar
+  count            Int
+  timestamp        DateTime @default(now()) @db.Timestamp(6)
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+  id               BigInt   @id @default(autoincrement())
+  ip               String?  @db.VarChar
+}
+
+model associated_wallets {
+  id          Int          @id @default(autoincrement())
+  user_id     Int
+  wallet      String       @db.VarChar
+  blockhash   String       @db.VarChar
+  blocknumber Int
+  is_current  Boolean
+  is_delete   Boolean
+  chain       wallet_chain
+
+  @@index([user_id, is_current], map: "ix_associated_wallets_user_id")
+  @@index([wallet, is_current], map: "ix_associated_wallets_wallet")
+}
+
+model audio_transactions_history {
+  user_bank              String   @db.VarChar
+  slot                   Int
+  signature              String   @db.VarChar
+  transaction_type       String   @db.VarChar
+  method                 String   @db.VarChar
+  created_at             DateTime @default(now()) @db.Timestamp(6)
+  updated_at             DateTime @default(now()) @db.Timestamp(6)
+  transaction_created_at DateTime @db.Timestamp(6)
+  change                 Decimal  @db.Decimal
+  balance                Decimal  @db.Decimal
+  tx_metadata            String?  @db.VarChar
+
+  @@id([user_bank, signature])
+  @@index([slot], map: "ix_audio_transactions_history_slot")
+  @@index([transaction_type], map: "ix_audio_transactions_history_transaction_type")
+}
+
+model audius_data_txs {
+  signature String @id @db.VarChar
+  slot      Int
+}
+
+model blocks {
+  blockhash                                         String           @id @db.VarChar
+  parenthash                                        String?          @db.VarChar
+  is_current                                        Boolean?
+  number                                            Int?             @unique
+  developer_apps_developer_apps_blockhashToblocks   developer_apps[] @relation("developer_apps_blockhashToblocks")
+  developer_apps_developer_apps_blocknumberToblocks developer_apps[] @relation("developer_apps_blocknumberToblocks")
+  grants_grants_blockhashToblocks                   grants[]         @relation("grants_blockhashToblocks")
+  grants_grants_blocknumberToblocks                 grants[]         @relation("grants_blocknumberToblocks")
+
+  @@index([is_current], map: "is_current_blocks_idx")
+}
+
+model challenge_disbursements {
+  challenge_id String @db.VarChar
+  user_id      Int
+  specifier    String @db.VarChar
+  signature    String @db.VarChar
+  slot         Int
+  amount       String @db.VarChar
+
+  @@id([challenge_id, specifier])
+  @@index([slot], map: "idx_challenge_disbursements_slot")
+}
+
+model challenge_listen_streak {
+  user_id          Int       @id @default(autoincrement())
+  last_listen_date DateTime? @db.Timestamp(6)
+  listen_streak    Int
+}
+
+model challenge_profile_completion {
+  user_id             Int     @id @default(autoincrement())
+  profile_description Boolean
+  profile_name        Boolean
+  profile_picture     Boolean
+  profile_cover_photo Boolean
+  follows             Boolean
+  favorites           Boolean
+  reposts             Boolean
+}
+
+model challenges {
+  id              String            @id @db.VarChar
+  type            challengetype
+  amount          String            @db.VarChar
+  active          Boolean
+  step_count      Int?
+  starting_block  Int?
+  user_challenges user_challenges[]
+}
+
+model chat {
+  chat_id         String        @id
+  created_at      DateTime      @db.Timestamp(6)
+  last_message_at DateTime      @db.Timestamp(6)
+  last_message    String?
+  chat_member     chat_member[]
+
+  @@index([chat_id])
+}
+
+model chat_ban {
+  user_id Int @id
+}
+
+model chat_blocked_users {
+  blocker_user_id Int
+  blockee_user_id Int
+  created_at      DateTime @default(now()) @db.Timestamp(6)
+
+  @@id([blocker_user_id, blockee_user_id])
+}
+
+model chat_member {
+  chat_id            String
+  user_id            Int
+  cleared_history_at DateTime?      @db.Timestamp(6)
+  invited_by_user_id Int
+  invite_code        String
+  last_active_at     DateTime?      @db.Timestamp(6)
+  unread_count       Int            @default(0)
+  chat               chat           @relation(fields: [chat_id], references: [chat_id], onDelete: NoAction, onUpdate: NoAction)
+  chat_message       chat_message[]
+
+  @@id([chat_id, user_id])
+  @@index([user_id], map: "chat_member_user_idx")
+}
+
+model chat_message {
+  message_id             String                   @id
+  chat_id                String
+  user_id                Int
+  created_at             DateTime                 @db.Timestamp(6)
+  ciphertext             String
+  chat_member            chat_member              @relation(fields: [chat_id, user_id], references: [chat_id, user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chat_member")
+  chat_message_reactions chat_message_reactions[]
+
+  @@index([chat_id], map: "idx_chat_message_chat_id")
+  @@index([user_id], map: "idx_chat_message_user_id")
+}
+
+model chat_message_reactions {
+  user_id      Int
+  message_id   String
+  reaction     String
+  created_at   DateTime     @default(now()) @db.Timestamp(6)
+  updated_at   DateTime     @default(now()) @db.Timestamp(6)
+  chat_message chat_message @relation(fields: [message_id], references: [message_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, message_id])
+  @@index([message_id], map: "idx_chat_message_reactions_message_id")
+}
+
+model chat_permissions {
+  user_id Int     @id
+  permits String? @default("all")
+}
+
+model cid_data {
+  cid  String  @id @db.VarChar
+  type String? @db.VarChar
+  data Json?
+}
+
+model delist_status_cursor {
+  host       String
+  entity     delist_entity
+  created_at DateTime      @db.Timestamptz(6)
+
+  @@id([host, entity])
+}
+
+model developer_apps {
+  address                                   String   @db.VarChar
+  blockhash                                 String?  @db.VarChar
+  blocknumber                               Int?
+  user_id                                   Int?
+  name                                      String   @db.VarChar
+  is_personal_access                        Boolean  @default(false)
+  is_delete                                 Boolean  @default(false)
+  created_at                                DateTime @db.Timestamp(6)
+  txhash                                    String   @db.VarChar
+  is_current                                Boolean
+  updated_at                                DateTime @db.Timestamp(6)
+  description                               String?  @db.VarChar(255)
+  blocks_developer_apps_blockhashToblocks   blocks?  @relation("developer_apps_blockhashToblocks", fields: [blockhash], references: [blockhash], onDelete: NoAction, onUpdate: NoAction, map: "app_delegates_blockhash_fkey")
+  blocks_developer_apps_blocknumberToblocks blocks?  @relation("developer_apps_blocknumberToblocks", fields: [blocknumber], references: [number], onDelete: NoAction, onUpdate: NoAction, map: "app_delegates_blocknumber_fkey")
+
+  @@id([address, is_current, txhash])
+}
+
+model eth_blocks {
+  last_scanned_block Int      @id @default(autoincrement())
+  created_at         DateTime @default(now()) @db.Timestamp(6)
+  updated_at         DateTime @default(now()) @db.Timestamp(6)
+}
+
+model follows {
+  blockhash        String?  @db.VarChar
+  blocknumber      Int?
+  follower_user_id Int
+  followee_user_id Int
+  is_current       Boolean
+  is_delete        Boolean
+  created_at       DateTime @db.Timestamp(6)
+  txhash           String   @default("") @db.VarChar
+  slot             Int?
+
+  @@id([is_current, follower_user_id, followee_user_id, txhash])
+  @@index([blocknumber])
+  @@index([followee_user_id, follower_user_id, is_current, is_delete], map: "follows_inbound_idx")
+  @@index([followee_user_id], map: "ix_follows_followee_user_id")
+  @@index([follower_user_id], map: "ix_follows_follower_user_id")
+}
+
+model grants {
+  blockhash                         String?  @db.VarChar
+  blocknumber                       Int?
+  grantee_address                   String   @db.VarChar
+  user_id                           Int
+  is_revoked                        Boolean  @default(false)
+  is_current                        Boolean
+  is_approved                       Boolean  @default(false)
+  updated_at                        DateTime @db.Timestamp(6)
+  created_at                        DateTime @db.Timestamp(6)
+  txhash                            String   @db.VarChar
+  blocks_grants_blockhashToblocks   blocks?  @relation("grants_blockhashToblocks", fields: [blockhash], references: [blockhash], onDelete: NoAction, onUpdate: NoAction, map: "delegations_blockhash_fkey")
+  blocks_grants_blocknumberToblocks blocks?  @relation("grants_blocknumberToblocks", fields: [blocknumber], references: [number], onDelete: NoAction, onUpdate: NoAction, map: "delegations_blocknumber_fkey")
+
+  @@id([grantee_address, user_id, is_current, txhash])
+}
+
+model hourly_play_counts {
+  hourly_timestamp DateTime @id @db.Timestamp(6)
+  play_count       Int
+}
+
+model indexing_checkpoints {
+  tablename       String  @id @db.VarChar
+  last_checkpoint Int
+  signature       String? @db.VarChar
+}
+
+model milestones {
+  id          Int
+  name        String   @db.VarChar
+  threshold   Int
+  blocknumber Int?
+  slot        Int?
+  timestamp   DateTime @db.Timestamp(6)
+
+  @@id([id, name, threshold])
+  @@index([name, id], map: "milestones_name_idx")
+}
+
+model notification {
+  id          Int      @id @default(autoincrement())
+  specifier   String   @db.VarChar
+  group_id    String   @db.VarChar
+  type        String   @db.VarChar
+  slot        Int?
+  blocknumber Int?
+  timestamp   DateTime @db.Timestamp(6)
+  data        Json?
+  user_ids    Int[]
+  type_v2     String?  @db.VarChar
+
+  @@unique([group_id, specifier], map: "uq_notification")
+  @@index([user_ids], map: "ix_notification", type: Gin)
+}
+
+model notification_seen {
+  user_id     Int
+  seen_at     DateTime @db.Timestamp(6)
+  blocknumber Int?
+  blockhash   String?  @db.VarChar
+  txhash      String?  @db.VarChar
+
+  @@id([user_id, seen_at])
+  @@index([blocknumber])
+}
+
+model playlist_routes {
+  slug         String  @db.VarChar
+  title_slug   String  @db.VarChar
+  collision_id Int
+  owner_id     Int
+  playlist_id  Int
+  is_current   Boolean
+  blockhash    String  @db.VarChar
+  blocknumber  Int
+  txhash       String  @db.VarChar
+
+  @@id([owner_id, slug])
+  @@index([playlist_id, is_current], map: "playlist_routes_playlist_id_idx")
+}
+
+model playlist_seen {
+  user_id     Int
+  playlist_id Int
+  seen_at     DateTime @db.Timestamp(6)
+  is_current  Boolean
+  blocknumber Int?
+  blockhash   String?  @db.VarChar
+  txhash      String?  @db.VarChar
+
+  @@id([is_current, user_id, playlist_id, seen_at])
+}
+
+model playlists {
+  blockhash                      String?   @db.VarChar
+  blocknumber                    Int?
+  playlist_id                    Int
+  playlist_owner_id              Int
+  is_album                       Boolean
+  is_private                     Boolean
+  playlist_name                  String?   @db.VarChar
+  playlist_contents              Json
+  playlist_image_multihash       String?   @db.VarChar
+  is_current                     Boolean
+  is_delete                      Boolean
+  description                    String?   @db.VarChar
+  created_at                     DateTime  @db.Timestamp(6)
+  upc                            String?   @db.VarChar
+  updated_at                     DateTime  @db.Timestamp(6)
+  playlist_image_sizes_multihash String?   @db.VarChar
+  txhash                         String    @default("") @db.VarChar
+  last_added_to                  DateTime? @db.Timestamp(6)
+  slot                           Int?
+  metadata_multihash             String?   @db.VarChar
+
+  @@id([is_current, playlist_id, txhash])
+  @@index([created_at], map: "playlist_created_at_idx")
+  @@index([playlist_owner_id], map: "playlist_owner_id_idx")
+  @@index([blocknumber])
+}
+
+model plays {
+  id           Int      @id @default(autoincrement())
+  user_id      Int?
+  source       String?  @db.VarChar
+  play_item_id Int
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @db.Timestamp(6)
+  slot         Int?
+  signature    String?  @db.VarChar
+  city         String?  @db.VarChar
+  region       String?  @db.VarChar
+  country      String?  @db.VarChar
+
+  @@index([created_at], map: "ix_plays_created_at")
+  @@index([slot], map: "ix_plays_slot")
+  @@index([signature], map: "ix_plays_sol_signature")
+  @@index([play_item_id, user_id], map: "ix_plays_user_play_item")
+  @@index([play_item_id, user_id, created_at], map: "ix_plays_user_play_item_date")
+  @@index([play_item_id], map: "play_item_idx")
+  @@index([updated_at], map: "play_updated_at_idx")
+}
+
+model pubkeys {
+  wallet String  @id
+  pubkey String?
+}
+
+model reactions {
+  id             Int      @id @default(autoincrement())
+  slot           Int
+  reaction_value Int
+  sender_wallet  String   @db.VarChar
+  reaction_type  String   @db.VarChar
+  reacted_to     String   @db.VarChar
+  timestamp      DateTime @db.Timestamp(6)
+  tx_signature   String?  @db.VarChar
+
+  @@index([reacted_to, reaction_type], map: "ix_reactions_reacted_to_reaction_type")
+  @@index([slot], map: "ix_reactions_slot")
+}
+
+model related_artists {
+  user_id                Int
+  related_artist_user_id Int
+  score                  Float
+  created_at             DateTime @default(now()) @db.Timestamp(6)
+
+  @@id([user_id, related_artist_user_id])
+  @@index([related_artist_user_id, user_id], map: "related_artists_related_artist_id_idx")
+}
+
+model remixes {
+  parent_track_id Int
+  child_track_id  Int
+
+  @@id([parent_track_id, child_track_id])
+}
+
+model reposts {
+  blockhash           String?    @db.VarChar
+  blocknumber         Int?
+  user_id             Int
+  repost_item_id      Int
+  repost_type         reposttype
+  is_current          Boolean
+  is_delete           Boolean
+  created_at          DateTime   @db.Timestamp(6)
+  txhash              String     @default("") @db.VarChar
+  slot                Int?
+  is_repost_of_repost Boolean    @default(false)
+
+  @@id([is_current, user_id, repost_item_id, repost_type, txhash])
+  @@index([created_at], map: "repost_created_at_idx")
+  @@index([repost_item_id, repost_type], map: "repost_item_id_idx")
+  @@index([user_id, repost_type], map: "repost_user_id_idx")
+  @@index([blocknumber])
+}
+
+model reward_manager_txs {
+  signature  String   @id @db.VarChar
+  slot       Int
+  created_at DateTime @db.Timestamp(6)
+
+  @@index([slot], map: "idx_reward_manager_txs_slot")
+}
+
+model rewards_manager_backfill_txs {
+  signature  String   @id @db.VarChar
+  slot       Int
+  created_at DateTime @db.Timestamp(6)
+
+  @@index([slot], map: "idx_rewards_manager_backfill_txs_slot")
+}
+
+model route_metrics {
+  route_path   String   @db.VarChar
+  version      String   @db.VarChar
+  query_string String   @default("") @db.VarChar
+  count        Int
+  timestamp    DateTime @default(now()) @db.Timestamp(6)
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  updated_at   DateTime @default(now()) @db.Timestamp(6)
+  id           BigInt   @id @default(autoincrement())
+  ip           String?  @db.VarChar
+}
+
+model rpc_cursor {
+  relayed_by String   @id
+  relayed_at DateTime @db.Timestamp(6)
+}
+
+model rpc_log {
+  relayed_at  DateTime @db.Timestamp(6)
+  from_wallet String
+  rpc         Json     @db.Json
+  sig         String   @id
+  relayed_by  String
+  applied_at  DateTime @db.Timestamp(6)
+
+  @@index([relayed_at], map: "idx_rpc_relayed_at")
+  @@index([relayed_by, relayed_at], map: "idx_rpc_relayed_by")
+}
+
+model rpclog {
+  cuid          String  @id
+  wallet        String?
+  method        String?
+  params        Json?
+  jetstream_seq Int?
+
+  @@index([method])
+  @@index([wallet])
+}
+
+model saves {
+  blockhash         String?  @db.VarChar
+  blocknumber       Int?
+  user_id           Int
+  save_item_id      Int
+  save_type         savetype
+  is_current        Boolean
+  is_delete         Boolean
+  created_at        DateTime @db.Timestamp(6)
+  txhash            String   @default("") @db.VarChar
+  slot              Int?
+  is_save_of_repost Boolean  @default(false)
+
+  @@id([is_current, user_id, save_item_id, save_type, txhash])
+  @@index([save_item_id, save_type], map: "save_item_id_idx")
+  @@index([user_id, save_type], map: "save_user_id_idx")
+  @@index([blocknumber])
+}
+
+model schema_migrations {
+  version String @id @db.VarChar(255)
+}
+
+model schema_version {
+  file_name  String   @id
+  md5        String?
+  applied_at DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model skipped_transactions {
+  id          Int                      @id @default(autoincrement())
+  blocknumber Int
+  blockhash   String                   @db.VarChar
+  txhash      String                   @db.VarChar
+  created_at  DateTime                 @default(now()) @db.Timestamp(6)
+  updated_at  DateTime                 @default(now()) @db.Timestamp(6)
+  level       skippedtransactionlevel? @default(node)
+}
+
+model spl_token_backfill_txs {
+  last_scanned_slot Int      @id @default(autoincrement())
+  signature         String   @db.VarChar
+  created_at        DateTime @db.Timestamp(6)
+  updated_at        DateTime @db.Timestamp(6)
+}
+
+model spl_token_tx {
+  last_scanned_slot Int      @id
+  signature         String   @db.VarChar
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model stems {
+  parent_track_id Int
+  child_track_id  Int
+
+  @@id([parent_track_id, child_track_id])
+}
+
+model subscriptions {
+  blockhash     String?  @db.VarChar
+  blocknumber   Int?
+  subscriber_id Int
+  user_id       Int
+  is_current    Boolean
+  is_delete     Boolean
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  txhash        String   @default("") @db.VarChar
+
+  @@id([subscriber_id, user_id, is_current, txhash])
+  @@index([blocknumber], map: "ix_subscriptions_blocknumber")
+  @@index([user_id], map: "ix_subscriptions_user_id")
+}
+
+model supporter_rank_ups {
+  slot             Int
+  sender_user_id   Int
+  receiver_user_id Int
+  rank             Int
+
+  @@id([slot, sender_user_id, receiver_user_id])
+  @@index([receiver_user_id], map: "ix_supporter_rank_ups_receiver_user_id")
+  @@index([sender_user_id], map: "ix_supporter_rank_ups_sender_user_id")
+  @@index([slot], map: "ix_supporter_rank_ups_slot")
+}
+
+model track_delist_statuses {
+  created_at DateTime            @db.Timestamptz(6)
+  track_id   Int
+  owner_id   Int
+  track_cid  String              @db.VarChar
+  delisted   Boolean
+  reason     delist_track_reason
+
+  @@id([created_at, track_id, delisted])
+  @@index([owner_id, created_at], map: "track_delist_statuses_owner_id_created_at")
+  @@index([track_cid, created_at], map: "track_delist_statuses_track_cid_created_at")
+}
+
+model track_routes {
+  slug         String  @db.VarChar
+  title_slug   String  @db.VarChar
+  collision_id Int
+  owner_id     Int
+  track_id     Int
+  is_current   Boolean
+  blockhash    String  @db.VarChar
+  blocknumber  Int
+  txhash       String  @db.VarChar
+
+  @@id([owner_id, slug])
+  @@index([track_id, is_current], map: "track_routes_track_id_idx")
+}
+
+model track_trending_scores {
+  track_id   Int
+  type       String   @db.VarChar
+  genre      String?  @db.VarChar
+  version    String   @db.VarChar
+  time_range String   @db.VarChar
+  score      Float
+  created_at DateTime @db.Timestamp(6)
+
+  @@id([track_id, type, version, time_range])
+  @@index([genre], map: "ix_track_trending_scores_genre")
+  @@index([score], map: "ix_track_trending_scores_score")
+  @@index([track_id], map: "ix_track_trending_scores_track_id")
+  @@index([type], map: "ix_track_trending_scores_type")
+}
+
+model tracks {
+  blockhash              String?  @db.VarChar
+  track_id               Int
+  is_current             Boolean
+  is_delete              Boolean
+  owner_id               Int
+  title                  String?
+  length                 Int?
+  cover_art              String?  @db.VarChar
+  tags                   String?  @db.VarChar
+  genre                  String?  @db.VarChar
+  mood                   String?  @db.VarChar
+  credits_splits         String?  @db.VarChar
+  create_date            String?  @db.VarChar
+  release_date           String?  @db.VarChar
+  file_type              String?  @db.VarChar
+  metadata_multihash     String?  @db.VarChar
+  blocknumber            Int?
+  track_segments         Json
+  created_at             DateTime @db.Timestamp(6)
+  description            String?  @db.VarChar
+  isrc                   String?  @db.VarChar
+  iswc                   String?  @db.VarChar
+  license                String?  @db.VarChar
+  updated_at             DateTime @db.Timestamp(6)
+  cover_art_sizes        String?  @db.VarChar
+  download               Json?
+  is_unlisted            Boolean  @default(false)
+  field_visibility       Json?
+  route_id               String?  @db.VarChar
+  stem_of                Json?
+  remix_of               Json?
+  txhash                 String   @default("") @db.VarChar
+  slot                   Int?
+  is_available           Boolean  @default(true)
+  is_premium             Boolean  @default(false)
+  premium_conditions     Json?
+  track_cid              String?  @db.VarChar
+  is_playlist_upload     Boolean  @default(false)
+  duration               Int?     @default(0)
+  ai_attribution_user_id Int?
+
+  @@id([is_current, track_id, txhash])
+  @@index([created_at], map: "track_created_at_idx")
+  @@index([is_premium, is_current, is_delete], map: "track_is_premium_idx")
+  @@index([owner_id], map: "track_owner_id_idx")
+  @@index([blocknumber])
+  @@index([track_cid, is_current, is_delete], map: "tracks_track_cid_idx")
+}
+
+model trending_results {
+  user_id Int
+  id      String?  @db.VarChar
+  rank    Int
+  type    String   @db.VarChar
+  version String   @db.VarChar
+  week    DateTime @db.Date
+
+  @@id([rank, type, version, week])
+}
+
+model ursm_content_nodes {
+  blockhash                        String?  @db.VarChar
+  blocknumber                      Int?
+  created_at                       DateTime @db.Timestamp(6)
+  is_current                       Boolean
+  cnode_sp_id                      Int
+  delegate_owner_wallet            String   @db.VarChar
+  owner_wallet                     String   @db.VarChar
+  proposer_sp_ids                  Int[]
+  proposer_1_delegate_owner_wallet String   @db.VarChar
+  proposer_2_delegate_owner_wallet String   @db.VarChar
+  proposer_3_delegate_owner_wallet String   @db.VarChar
+  endpoint                         String?  @db.VarChar
+  txhash                           String   @default("") @db.VarChar
+  slot                             Int?
+
+  @@id([is_current, cnode_sp_id, txhash])
+}
+
+model user_balance_changes {
+  user_id          Int      @id @default(autoincrement())
+  blocknumber      Int
+  current_balance  String   @db.VarChar
+  previous_balance String   @db.VarChar
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+}
+
+model user_balances {
+  user_id                        Int      @id @default(autoincrement())
+  balance                        String   @db.VarChar
+  created_at                     DateTime @default(now()) @db.Timestamp(6)
+  updated_at                     DateTime @default(now()) @db.Timestamp(6)
+  associated_wallets_balance     String   @default("0") @db.VarChar
+  waudio                         String?  @default("0") @db.VarChar
+  associated_sol_wallets_balance String   @default("0") @db.VarChar
+}
+
+model user_bank_accounts {
+  signature        String   @id @db.VarChar
+  ethereum_address String   @db.VarChar
+  created_at       DateTime @db.Timestamp(6)
+  bank_account     String   @db.VarChar
+
+  @@index([ethereum_address], map: "idx_user_bank_eth_address")
+}
+
+model user_bank_backfill_txs {
+  signature  String   @id @db.VarChar
+  slot       Int
+  created_at DateTime @db.Timestamp(6)
+
+  @@index([slot], map: "idx_user_bank_backfill_txs_slot")
+}
+
+model user_bank_txs {
+  signature  String   @id @db.VarChar
+  slot       Int
+  created_at DateTime @db.Timestamp(6)
+
+  @@index([slot], map: "idx_user_bank_txs_slot")
+}
+
+model user_challenges {
+  challenge_id          String     @db.VarChar
+  user_id               Int
+  specifier             String     @db.VarChar
+  is_complete           Boolean
+  current_step_count    Int?
+  completed_blocknumber Int?
+  challenges            challenges @relation(fields: [challenge_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([challenge_id, specifier])
+  @@index([challenge_id], map: "user_challenges_challenge_idx")
+}
+
+model user_delist_statuses {
+  created_at DateTime           @db.Timestamptz(6)
+  user_id    Int
+  delisted   Boolean
+  reason     delist_user_reason
+
+  @@id([created_at, user_id, delisted])
+}
+
+model user_events {
+  id             Int     @id @default(autoincrement())
+  blockhash      String? @db.VarChar
+  blocknumber    Int?
+  is_current     Boolean
+  user_id        Int
+  referrer       Int?
+  is_mobile_user Boolean @default(false)
+  slot           Int?
+
+  @@index([user_id, is_current], map: "user_events_user_id_idx")
+}
+
+model user_listening_history {
+  user_id           Int  @id @default(autoincrement())
+  listening_history Json
+}
+
+model user_pubkeys {
+  user_id       Int    @id
+  pubkey_base64 String
+}
+
+model user_tips {
+  slot             Int
+  signature        String   @db.VarChar
+  sender_user_id   Int
+  receiver_user_id Int
+  amount           BigInt
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+
+  @@id([slot, signature])
+  @@index([receiver_user_id], map: "ix_user_tips_receiver_user_id")
+  @@index([sender_user_id], map: "ix_user_tips_sender_user_id")
+  @@index([slot], map: "ix_user_tips_slot")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model users {
+  blockhash                 String?  @db.VarChar
+  user_id                   Int
+  is_current                Boolean
+  handle                    String?  @db.VarChar
+  wallet                    String?  @db.VarChar
+  name                      String?
+  profile_picture           String?  @db.VarChar
+  cover_photo               String?  @db.VarChar
+  bio                       String?  @db.VarChar
+  location                  String?  @db.VarChar
+  metadata_multihash        String?  @db.VarChar
+  creator_node_endpoint     String?  @db.VarChar
+  blocknumber               Int?
+  is_verified               Boolean  @default(false)
+  created_at                DateTime @default(now()) @db.Timestamp(6)
+  updated_at                DateTime @default(now()) @db.Timestamp(6)
+  handle_lc                 String?  @db.VarChar
+  cover_photo_sizes         String?  @db.VarChar
+  profile_picture_sizes     String?  @db.VarChar
+  primary_id                Int?
+  secondary_ids             Int[]
+  replica_set_update_signer String?  @db.VarChar
+  has_collectibles          Boolean  @default(false)
+  txhash                    String   @default("") @db.VarChar
+  playlist_library          Json?
+  is_deactivated            Boolean  @default(false)
+  slot                      Int?
+  user_storage_account      String?  @db.VarChar
+  user_authority_account    String?  @db.VarChar
+  artist_pick_track_id      Int?
+  is_available              Boolean  @default(true)
+  is_storage_v2             Boolean  @default(false)
+  allow_ai_attribution      Boolean  @default(false)
+
+  @@id([is_current, user_id, txhash])
+  @@index([handle_lc], map: "ix_users_handle_lc")
+  @@index([is_deactivated], map: "ix_users_is_deactivated")
+  @@index([wallet], map: "ix_users_wallet")
+  @@index([blocknumber])
+}
+
+enum challengetype {
+  boolean
+  numeric
+  aggregate
+  trending
+}
+
+enum delist_entity {
+  TRACKS
+  USERS
+}
+
+enum delist_track_reason {
+  DMCA
+  ACR
+  MANUAL
+}
+
+enum delist_user_reason {
+  STRIKE_THRESHOLD
+  COPYRIGHT_SCHOOL
+  MANUAL
+}
+
+enum reposttype {
+  track
+  playlist
+  album
+}
+
+enum savetype {
+  track
+  playlist
+  album
+}
+
+enum skippedtransactionlevel {
+  node
+  network
+}
+
+enum wallet_chain {
+  eth
+  sol
+}
