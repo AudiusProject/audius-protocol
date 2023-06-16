@@ -855,8 +855,7 @@ def test_invalid_playlist_description(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
-            metadata=metadata,
+            block_hash=0
         )
 
         assert total_changes == 0
