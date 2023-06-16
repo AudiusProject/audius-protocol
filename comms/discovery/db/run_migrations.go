@@ -9,6 +9,7 @@ import (
 func RunMigrations() error {
 	cmd := exec.Command("sh", "pg_migrate.sh")
 
+	// n.b. this won't work in docker-land
 	cmd.Dir = "../discovery-provider/ddl"
 
 	cmd.Env = append(os.Environ(),

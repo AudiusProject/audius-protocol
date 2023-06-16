@@ -16,5 +16,5 @@ alter table chat_message_reactions add constraint chat_message_reactions_message
 
 
 -- add timestamp for permissions updates
-alter table chat_permissions add column if not exists updated_at timestamp without time zone;
+alter table chat_permissions add column if not exists updated_at timestamp without time zone not null default to_timestamp(0);
 
