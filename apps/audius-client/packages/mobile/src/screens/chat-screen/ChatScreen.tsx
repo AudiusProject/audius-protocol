@@ -88,7 +88,7 @@ const { getHasTrack } = playerSelectors
 
 const messages = {
   title: 'Messages',
-  endReached: 'End of Message History',
+  beginningReached: 'Beginning of Conversation',
   newMessage: (numMessages: number) =>
     `${numMessages} New Message${numMessages > 1 ? 's' : ''}`,
   newMessageReceived: 'New Message!'
@@ -626,7 +626,9 @@ export const ChatScreen = () => {
                   }
                   ListFooterComponent={
                     shouldShowEndReachedIndicator ? (
-                      <ChatMessageSeparator content={messages.endReached} />
+                      <ChatMessageSeparator
+                        content={messages.beginningReached}
+                      />
                     ) : null
                   }
                   scrollEnabled={popupMessageId == null}
