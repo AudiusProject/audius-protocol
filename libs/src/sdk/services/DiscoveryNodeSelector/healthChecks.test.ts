@@ -9,6 +9,7 @@ describe('health_check', () => {
   test('no data is unhealthy', () => {
     const { health, reason } = parseHealthStatusReason({
       data: null,
+      comms: null,
       healthCheckThresholds: {
         maxSlotDiffPlays: 10,
         maxBlockDiff: 10,
@@ -32,6 +33,9 @@ describe('health_check', () => {
           }
         }
       },
+      comms: {
+        healthy: true
+      },
       healthCheckThresholds: {
         maxSlotDiffPlays: 10,
         maxBlockDiff: 10,
@@ -40,6 +44,32 @@ describe('health_check', () => {
     })
     expect(health).toBe(HealthCheckStatus.BEHIND)
     expect(reason).toBe('slot diff')
+  })
+
+  test('comms unhealthy', () => {
+    const { health, reason } = parseHealthStatusReason({
+      data: {
+        version: '1.2.3',
+        service: 'discovery-node',
+        block_difference: 100,
+        plays: {
+          is_unhealthy: false,
+          tx_info: {
+            slot_diff: 100
+          }
+        }
+      },
+      comms: {
+        healthy: false
+      },
+      healthCheckThresholds: {
+        maxSlotDiffPlays: 10,
+        maxBlockDiff: 10,
+        minVersion: '1.2.3'
+      }
+    })
+    expect(health).toBe(HealthCheckStatus.UNHEALTHY)
+    expect(reason).toBe('comms')
   })
 
   describe('api response', () => {
@@ -117,6 +147,41 @@ describe('health_check', () => {
       })
       expect(health).toBe(HealthCheckStatus.BEHIND)
       expect(reason).toBe('slot diff')
+    })
+
+    test('comms unhealthy', () => {
+      const { health, reason } = parseApiHealthStatusReason({
+        data: {
+          health: {
+            is_healthy: false
+          },
+          data: null
+        },
+        healthCheckThresholds: {
+          maxSlotDiffPlays: 10,
+          maxBlockDiff: 10,
+          minVersion: '1.2.3'
+        }
+      })
+      expect(health).toBe(HealthCheckStatus.UNHEALTHY)
+      expect(reason).toBe('comms')
+    })
+
+    test('comms healthy', () => {
+      const { health } = parseApiHealthStatusReason({
+        data: {
+          health: {
+            is_healthy: true
+          },
+          data: null
+        },
+        healthCheckThresholds: {
+          maxSlotDiffPlays: 10,
+          maxBlockDiff: 10,
+          minVersion: '1.2.3'
+        }
+      })
+      expect(health).toBe(HealthCheckStatus.HEALTHY)
     })
   })
 })

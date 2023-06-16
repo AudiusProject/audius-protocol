@@ -1,6 +1,7 @@
+import type { CommsResponse } from '../../api/chats/serverTypes'
 import type { DeepPartial } from '../../utils/deepPartial'
 
-export type ApiHealthResponseData = Partial<{
+export type FlaskFullResponse = Partial<{
   latest_chain_block: number
   latest_indexed_block: number
   latest_chain_slot_plays: number
@@ -12,6 +13,21 @@ export type ApiHealthResponseData = Partial<{
     version: string
   }
   data: unknown
+}>
+
+export type ApiHealthResponseData =
+  | FlaskFullResponse
+  | CommsResponse
+  | { data: unknown } // V1 non-full has no health fields
+
+export type HealthCheckComms = Partial<{
+  healthy: boolean
+  errors: unknown
+  websocket_error: unknown
+  commit: string
+  booted: string
+  built: string
+  wip: boolean
 }>
 
 export type HealthCheckResponseData = DeepPartial<{
