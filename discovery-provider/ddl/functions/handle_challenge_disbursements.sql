@@ -24,7 +24,10 @@ begin
   return null;
 
 exception
-  when others then return null;
+  when others then
+    raise notice 'An error occurred in %: %', tg_name, sqlerrm;
+    return null;
+
 end;
 $$ language plpgsql;
 
