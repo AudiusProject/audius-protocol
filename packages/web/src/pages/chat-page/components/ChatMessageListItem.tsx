@@ -181,7 +181,8 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   return (
     <div
       className={cn(styles.root, {
-        [styles.isAuthor]: isAuthor
+        [styles.isAuthor]: isAuthor,
+        [styles.hasReaction]: !hasTail && message.reactions?.length > 0
       })}
     >
       <div
