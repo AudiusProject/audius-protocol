@@ -103,8 +103,8 @@ func chatReadMessages(tx *sqlx.Tx, userId int32, chatId string, readTimestamp ti
 	return err
 }
 
-func chatSetPermissions(tx *sqlx.Tx, userId int32, permit schema.ChatPermission) error {
-	_, err := tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2) on conflict (user_id) do update set permits = $2", userId, permit)
+func chatSetPermissions(tx *sqlx.Tx, userId int32, permit schema.ChatPermission, messageTimestamp time.Time) error {
+	_, err := tx.Exec("insert into chat_permissions (user_id, permits, updated_at) values ($1, $2, $3) on conflict (user_id) do update set permits = $2 where chat_permissions.updated_at < $3", userId, permit, messageTimestamp)
 	return err
 }
 
@@ -113,7 +113,7 @@ func chatBlock(tx *sqlx.Tx, userId int32, blockeeUserId int32, messageTimestamp 
 	return err
 }
 
-func chatUnblock(tx *sqlx.Tx, userId int32, unblockedUserId int32) error {
-	_, err := tx.Exec("delete from chat_blocked_users where blocker_user_id = $1 and blockee_user_id = $2", userId, unblockedUserId)
+func chatUnblock(tx *sqlx.Tx, userId int32, unblockedUserId int32, messageTimestamp time.Time) error {
+	_, err := tx.Exec("delete from chat_blocked_users where blocker_user_id = $1 and blockee_user_id = $2 and created_at < $3", userId, unblockedUserId, messageTimestamp)
 	return err
 }

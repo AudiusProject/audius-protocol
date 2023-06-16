@@ -13,3 +13,8 @@ alter table chat_message add constraint chat_message_chat_member_fkey foreign ke
 
 alter table chat_message_reactions drop constraint if exists chat_message_reactions_message_id_fkey;
 alter table chat_message_reactions add constraint chat_message_reactions_message_id_fkey foreign key (message_id) references chat_message(message_id) on delete cascade;
+
+
+-- add timestamp for permissions updates
+alter table chat_permissions add column if not exists updated_at timestamp without time zone;
+
