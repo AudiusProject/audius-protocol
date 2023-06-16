@@ -52,6 +52,10 @@
   --bubble-color: var(--secondary-light-1);
 }
 
+.unfurl {
+  border-radius: 0;
+}
+
 .bubble .unfurl:not(:last-child) {
   border-bottom: 1px solid var(--neutral-light-7);
 }
