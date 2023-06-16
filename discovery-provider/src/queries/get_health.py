@@ -122,7 +122,7 @@ def _get_query_insights():
 def get_user_delist_discrepancies(redis: Redis):
     try:
         if redis is None:
-            raise Exception("Invalid arguments for _get_user_delist_discrepancies")
+            raise Exception("Invalid arguments for get_user_delist_discrepancies")
         user_delist_discrepancies_timestamp = redis.get(
             USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY
         )
@@ -175,7 +175,7 @@ def get_user_delist_discrepancies(redis: Redis):
 def get_track_delist_discrepancies(redis: Redis):
     try:
         if redis is None:
-            raise Exception("Invalid arguments for _get_track_delist_discrepancies")
+            raise Exception("Invalid arguments for get_track_delist_discrepancies")
         track_delist_discrepancies_timestamp = redis.get(
             TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY
         )
