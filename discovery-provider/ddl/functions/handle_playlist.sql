@@ -67,7 +67,6 @@ begin
 	exception
     when others then
       raise notice 'An error occurred in %: %', tg_name, sqlerrm;
-      return null;
   end;
 
   begin

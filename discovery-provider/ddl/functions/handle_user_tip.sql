@@ -34,7 +34,8 @@ begin
       )
     )
     on conflict do nothing;
-  return null;
+
+return null;
 
 exception
   when others then

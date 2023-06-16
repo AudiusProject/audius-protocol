@@ -177,6 +177,7 @@ begin
   end;
 
   return null;
+
 exception
     when others then
       raise notice 'An error occurred in %: %', tg_name, sqlerrm;

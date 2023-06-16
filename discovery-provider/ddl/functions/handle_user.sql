@@ -3,10 +3,12 @@ declare
 begin
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   return null;
+
 exception
   when others then
     raise notice 'An error occurred in %: %', tg_name, sqlerrm;
     raise;
+
 end;
 $$ language plpgsql;
 
