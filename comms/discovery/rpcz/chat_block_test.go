@@ -61,10 +61,6 @@ func TestChatBlocking(t *testing.T) {
 	assertBlocked(user1Id, user2Id, messageTs, 1)
 	assertBlocked(user1Id, user2Id, duplicateMessageTs, 0)
 
-	// assert a "late" unblock message is ignored
-	err = chatBlock(tx, user1Id, user2Id, time.Now().Add(-time.Hour))
-	assertBlocked(user1Id, user2Id, messageTs, 1)
-
 	// validate user1Id and user2Id cannot create a chat with each other
 	{
 		chatId := strconv.Itoa(seededRand.Int())
@@ -96,7 +92,7 @@ func TestChatBlocking(t *testing.T) {
 	}
 
 	// user1Id unblocks user2Id
-	err = chatUnblock(tx, user1Id, user2Id, time.Now())
+	err = chatUnblock(tx, user1Id, user2Id)
 	assert.NoError(t, err)
 	assertBlocked(user1Id, user2Id, messageTs, 0)
 

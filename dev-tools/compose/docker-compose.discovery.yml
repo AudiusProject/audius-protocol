@@ -32,7 +32,7 @@ services:
     build:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
-    command: discovery
+    command: discovery-migrations
     environment:
       audius_db_url: "postgresql://postgres:postgres@db:5432/audius_discovery"
     depends_on:

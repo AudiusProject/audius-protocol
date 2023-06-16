@@ -64,7 +64,7 @@ func TestChatPermissions(t *testing.T) {
 	}
 
 	// user 1 sets chat permissions to followees only
-	err = chatSetPermissions(tx, int32(user1Id), schema.Followees, time.Now())
+	err = chatSetPermissions(tx, int32(user1Id), schema.Followees)
 	assert.NoError(t, err)
 	// user 2 can message user 1 since 1 follows 2
 	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, false)
@@ -72,7 +72,7 @@ func TestChatPermissions(t *testing.T) {
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, true)
 
 	// user 1 sets chat permissions to tippers only
-	err = chatSetPermissions(tx, int32(user1Id), schema.Tippers, time.Now())
+	err = chatSetPermissions(tx, int32(user1Id), schema.Tippers)
 	assert.NoError(t, err)
 	// user 2 cannot message user 1 since 2 has never tipped 1
 	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, true)
@@ -80,21 +80,15 @@ func TestChatPermissions(t *testing.T) {
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, false)
 
 	// user 1 changes chat permissions to none
-	err = chatSetPermissions(tx, int32(user1Id), schema.None, time.Now())
+	err = chatSetPermissions(tx, int32(user1Id), schema.None)
 	assert.NoError(t, err)
 	// no one can message user 1
 	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, true)
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, true)
 
 	// user 1 changes chat permissions to all
-	err = chatSetPermissions(tx, int32(user1Id), schema.All, time.Now())
+	err = chatSetPermissions(tx, int32(user1Id), schema.All)
 	assert.NoError(t, err)
-
-	// meanwhile... a "late" permission update is ignored
-	// the "all" setting should prevail
-	err = chatSetPermissions(tx, int32(user1Id), schema.None, time.Now().Add(-time.Hour))
-	assert.NoError(t, err)
-
 	// anyone can message user 1
 	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, false)
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, false)

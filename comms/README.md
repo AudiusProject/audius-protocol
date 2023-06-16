@@ -13,6 +13,8 @@ You need:
 Verify setup:
 
 * Ensure you have `~/go/bin` in your path
+* Run `make tools`
+* verify `dbmate -h` works
 
 ### Run + test
 
@@ -22,6 +24,13 @@ Verify setup:
 
 Re-run make after code changes
 
+### Migrations
+
+Use [dbmate](https://github.com/amacneil/dbmate):
+
+* `cd discovery && dbmate new create_cool_table`
+* edit migration file
+* running `make` will run migration
 
 ### Typings
 

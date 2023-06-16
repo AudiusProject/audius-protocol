@@ -12,6 +12,7 @@ ENV GOARCH=${GOARCH}
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
+RUN go install github.com/amacneil/dbmate@latest
 
 WORKDIR /app
 
@@ -27,6 +28,7 @@ FROM alpine AS final
 
 COPY --from=builder /go/bin/* /bin
 
+COPY ./discovery/db/migrations /discovery/db/migrations
 COPY ./build/comms-amd64 /bin/comms
 
 VOLUME ["/tmp"]
