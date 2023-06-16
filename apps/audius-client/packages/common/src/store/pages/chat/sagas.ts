@@ -19,7 +19,6 @@ import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import { getAccountUser, getUserId } from 'store/account/selectors'
 import { toastActions } from 'store/index'
-import { setVisibility } from 'store/ui/modals/slice'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
@@ -222,7 +221,6 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
 
     // Optimistically navigate - if we fail we'll toast
     yield* put(goToChat({ chatId }))
-    yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
 
     try {
       yield* call(doFetchChatIfNecessary, { chatId })
@@ -230,7 +228,6 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
     const existingChat = yield* select((state) => getChat(state, chatId))
     if (existingChat) {
       // Simply navigate to the existing chat
-      yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
       yield* put(goToChat({ chatId: existingChat.chat_id }))
     } else {
       // Create new chat and navigate to it
