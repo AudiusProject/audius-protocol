@@ -138,7 +138,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	logger.Debug("recovered wallet", "took", takeSplit())
 
 	if wallet != rpcLog.FromWallet {
-		fmt.Println("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
+		logger.Warn("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
 		return nil
 	}
 

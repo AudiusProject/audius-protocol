@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@audius/sdk": "2.0.3-beta.46",
     "@tanstack/react-query": "^4.10.3",
     "hashids": "^2.2.10",
     "react": "^18.2.0",
@@ -19,6 +20,7 @@
     "swr": "^1.3.0"
   },
   "devDependencies": {
+    "@audius/sdk": "2.0.3-beta.46",
     "@cloudflare/workers-types": "^3.14.1",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
@@ -26,6 +28,7 @@
     "typescript": "^4.6.4",
     "vite": "^3.0.0",
     "vite-node": "^0.24.1",
+    "vite-plugin-node-polyfills": "^0.9.0",
     "wrangler": "^2.0.25"
   }
 }

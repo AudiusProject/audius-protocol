@@ -301,7 +301,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
-            "src.tasks.index_network_peers",
+            "src.tasks.update_clique_signers",
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
@@ -345,8 +345,8 @@ def configure_celery(celery, test_config=None):
                 "task": "vacuum_db",
                 "schedule": timedelta(days=1),
             },
-            "update_network_peers": {
-                "task": "update_network_peers",
+            "update_clique_signers": {
+                "task": "update_clique_signers",
                 "schedule": timedelta(seconds=10),
             },
             "index_trending": {
@@ -379,7 +379,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_eth": {
                 "task": "index_eth",
-                "schedule": timedelta(seconds=10),
+                "schedule": timedelta(seconds=30),
             },
             "index_oracles": {
                 "task": "index_oracles",

@@ -44,16 +44,20 @@ export function MediorumRow({ sp }: { sp: SP }) {
 
   // Calculate healthy peers counts
   const now = new Date()
+  const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
   const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000)
-  let healthyPeers = 0
+  let healthyPeers2m = 0
+  let healthyPeers5m = 0
   let unhealthyPeers = 0
   if (deets?.peerHealths) {
     for (const endpoint of Object.keys(deets.peerHealths)) {
       const healthDate = new Date(deets.peerHealths[endpoint])
-      if (isNaN(healthDate.getTime()) || healthDate <= twoMinutesAgo) { // Peer is unhealthy if healthDate is NaN or if it's more than 2 minutes ago
+      if (isNaN(healthDate.getTime()) || healthDate <= fiveMinutesAgo) { // Peer is unhealthy if healthDate is NaN or if it's more than 5 minutes ago
         unhealthyPeers++
+      } else if (healthDate <= twoMinutesAgo){
+        healthyPeers5m++
       } else {
-        healthyPeers++
+        healthyPeers2m++
       }
     }
   }
@@ -72,7 +76,7 @@ export function MediorumRow({ sp }: { sp: SP }) {
       </td>
       <td>{metrics?.uploads}</td>
       <td>{metrics?.problem_blobs}</td>
-      <td><b>{healthyPeers} healthy</b> {'<'}2m ago, <b>{unhealthyPeers}</b> {'>'}=2m ago</td>
+      <td><b>{healthyPeers2m}</b> healthy {'<'}2m ago, <b>{healthyPeers5m}</b> healthy {'<'}5m ago, <b>{unhealthyPeers}</b> unhealthy</td>
     </tr>
   )
 }

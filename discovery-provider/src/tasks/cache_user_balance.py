@@ -22,6 +22,7 @@ from src.queries.get_balances import (
 )
 from src.solana.solana_helpers import ASSOCIATED_TOKEN_PROGRAM_ID_PK, SPL_TOKEN_ID_PK
 from src.tasks.celery_app import celery
+from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
@@ -39,6 +40,9 @@ WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
+
+
+eth_web3 = web3_provider.get_eth_web3()
 
 
 class AssociatedWallets(TypedDict):
@@ -388,9 +392,9 @@ def refresh_user_ids(
             redis.srem(IMMEDIATE_REFRESH_REDIS_PREFIX, *immediate_refresh_user_ids)
 
 
-def get_token_address(eth_web3, config):
+def get_token_address(eth_web3):
     eth_registry_address = eth_web3.toChecksumAddress(
-        config["eth_contracts"]["registry"]
+        shared_config["eth_contracts"]["registry"]
     )
 
     eth_registry_instance = eth_web3.eth.contract(
@@ -404,8 +408,8 @@ def get_token_address(eth_web3, config):
     return token_address
 
 
-def get_token_contract(eth_web3, config):
-    token_address = get_token_address(eth_web3, config)
+def get_token_contract(eth_web3):
+    token_address = get_token_address(eth_web3)
 
     audius_token_instance = eth_web3.eth.contract(
         address=token_address, abi=get_eth_abi_values()["AudiusToken"]["abi"]
@@ -475,10 +479,14 @@ def get_audio_token(solana_client: Client):
 @save_duration_metric(metric_group="celery_task")
 def update_user_balances_task(self):
     """Caches user Audio balances, in wei."""
-
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
-    eth_web3 = update_user_balances_task.eth_web3
+    if not self.delegate_manager_inst:
+        self.delegate_manager_inst = get_delegate_manager_contract(eth_web3)
+    if not self.staking_inst:
+        self.staking_inst = get_staking_contract(eth_web3)
+    if not self.token_inst:
+        self.token_inst = get_token_contract(eth_web3)
     solana_client_manager = update_user_balances_task.solana_client_manager
 
     have_lock = False
@@ -490,11 +498,6 @@ def update_user_balances_task(self):
         if have_lock:
             start_time = time.time()
 
-            delegate_manager_inst = get_delegate_manager_contract(eth_web3)
-            staking_inst = get_staking_contract(eth_web3)
-            token_inst = get_token_contract(
-                eth_web3, update_user_balances_task.shared_config
-            )
             waudio_token = get_audio_token(solana_client_manager.get_client())
             refresh_user_ids(
                 redis,

@@ -33,7 +33,7 @@ class EthManager:
     sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
     sp_type = ServiceProviderType
 
-    cnode_info_redis_ttl = 1800
+    cnode_info_redis_ttl = 3600
 
     def __init__(self, eth_web3: Web3, eth_abi_values: Any, registry_address: str):
         self.eth_web3 = eth_web3
@@ -92,36 +92,3 @@ class EthManager:
             "delegator_wallet": endpoint_info[3],
         }
         return sp_info
-
-    def fetch_all_registered_content_nodes(
-        self, sp_type: ServiceProviderType, redis: Redis
-    ) -> set:
-        total_providers = self.sp_factory.functions.getTotalServiceTypeProviders(
-            sp_type
-        ).call()
-        ids_list = list(range(1, total_providers + 1))
-        eth_endpoints_set = set()
-
-        # Given the total number of nodes in the network we can now fetch node info in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            fetch_cnode_futures = {
-                executor.submit(self.fetch_node_info, i, sp_type, redis): i
-                for i in ids_list
-            }
-            for future in concurrent.futures.as_completed(fetch_cnode_futures):
-                single_node_fetch_op = fetch_cnode_futures[future]
-                try:
-                    endpoint_info = future.result()
-                    # Validate the endpoint on chain
-                    # As endpoints get deregistered, this peering system must not slow down with failed connections
-                    #   or unanticipated load
-                    eth_sp_endpoint = endpoint_info["endpoint"]
-                    valid_endpoint = is_fqdn(eth_sp_endpoint)
-                    # Only valid FQDN strings are worth validating
-                    if valid_endpoint:
-                        eth_endpoints_set.add(eth_sp_endpoint)
-                except Exception as exc:
-                    logger.error(
-                        f"eth_contract_helpers.py | ERROR in fetch_node_futures {single_node_fetch_op} generated {exc}"
-                    )
-        return eth_endpoints_set
