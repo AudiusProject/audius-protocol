@@ -107,11 +107,18 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
 
   const handleComposeClicked = useCallback(() => {
     if (canCreateChat) {
+      closeParentModal()
       dispatch(createChat({ userIds: [user.user_id] }))
     } else {
       openInboxUnavailableModal(user)
     }
-  }, [dispatch, user, canCreateChat, openInboxUnavailableModal])
+  }, [
+    dispatch,
+    user,
+    canCreateChat,
+    openInboxUnavailableModal,
+    closeParentModal
+  ])
 
   const handleVisitClicked = useCallback(() => {
     dispatch(pushRoute(profilePage(user.handle)))
