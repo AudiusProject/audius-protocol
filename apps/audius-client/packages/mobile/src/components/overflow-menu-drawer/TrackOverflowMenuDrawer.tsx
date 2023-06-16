@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
+  shareModalUIActions,
   playbackPositionActions,
   FavoriteSource,
   FollowSource,
@@ -25,11 +26,12 @@ import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 
 const { getUserId } = accountSelectors
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { setTrackPosition, clearTrackPosition } = playbackPositionActions
-const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack, shareTrack } =
+const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
   tracksSocialActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
@@ -79,7 +81,13 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.UNFAVORITE]: () =>
       dispatch(unsaveTrack(id, FavoriteSource.OVERFLOW)),
     [OverflowAction.SHARE]: () =>
-      dispatch(shareTrack(id, ShareSource.OVERFLOW)),
+      dispatch(
+        requestOpenShareModal({
+          type: 'track',
+          trackId: id,
+          source: ShareSource.OVERFLOW
+        })
+      ),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatch(openAddToPlaylistModal(id, title, is_unlisted)),
     [OverflowAction.VIEW_TRACK_PAGE]: () => {

@@ -207,10 +207,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const {
     has_current_user_saved,
+    has_current_user_reposted,
     is_delete,
     is_unlisted,
     title,
     track_id,
+    owner_id,
     is_premium: isPremium
   } = track
   const { is_deactivated, name } = user
@@ -264,6 +266,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const currentUserId = useSelector(getUserId)
+  const isOwner = currentUserId === owner_id
 
   const isLongFormContent =
     track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
@@ -273,6 +276,17 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
+      OverflowAction.SHARE,
+      !isOwner
+        ? has_current_user_saved
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE
+        : null,
+      !isOwner
+        ? has_current_user_reposted
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST
+        : null,
       !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null,
@@ -284,6 +298,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
+      isOwner ? OverflowAction.EDIT_TRACK : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(removeNullable)
 
@@ -295,12 +310,15 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       })
     )
   }, [
-    dispatch,
+    isOwner,
+    has_current_user_reposted,
+    has_current_user_saved,
+    isGatedContentEnabled,
+    isPremium,
     isNewPodcastControlsEnabled,
     isLongFormContent,
     playbackPositionInfo?.status,
-    isGatedContentEnabled,
-    isPremium,
+    dispatch,
     track_id
   ])
 
