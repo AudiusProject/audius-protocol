@@ -19,7 +19,7 @@ export const establishSlackConnection = async (app: App<SharedData>) => {
   const port = process.env.SLACK_SOCKET_PORT || 3008;
   await slack.start(port);
   console.log("slack connection established ⚡️");
-}
+};
 
 export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
   const botToken = process.env.SLACK_BOT_TOKEN;
