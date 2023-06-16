@@ -6,10 +6,20 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/exp/slog"
 )
 
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
+
+	// if this chat exists... and created_at is newer... nuke it!
+	nuked, err := tx.Exec("delete from chat where chat_id = $1 and created_at > $2", params.ChatID, ts)
+	if err != nil {
+		return err
+	}
+	if c, _ := nuked.RowsAffected(); c > 0 {
+		slog.Warn("deleted conflicting chat", "chat_id", params.ChatID, "ts", ts)
+	}
 
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", params.ChatID, ts)
 	if err != nil {
