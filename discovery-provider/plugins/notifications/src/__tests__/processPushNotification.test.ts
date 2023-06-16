@@ -82,7 +82,7 @@ describe('Push Notifications', () => {
     jest.clearAllMocks()
 
     // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
-    const reaction = 'fire'
+    const reaction = '🔥'
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(
       processor.discoveryDB,
@@ -102,7 +102,7 @@ describe('Push Notifications', () => {
       },
       {
         title: 'Reaction',
-        body: `${user2.name} reacted ${reaction} to your message`,
+        body: `${user2.name} reacted ${reaction}`,
         data: {
           type: 'MessageReaction',
           chatId,
@@ -169,7 +169,7 @@ describe('Push Notifications', () => {
     jest.clearAllMocks()
 
     // User 1 reacted to user 1's message config.dmNotificationDelay ms ago
-    const reaction = 'fire'
+    const reaction = '🔥'
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(
       processor.discoveryDB,
@@ -252,7 +252,7 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 2 reacts to user 1's message now
-    const reaction = 'fire'
+    const reaction = '🔥'
     await insertReaction(
       processor.discoveryDB,
       user2.userId,
@@ -311,7 +311,7 @@ describe('Push Notifications', () => {
     jest.clearAllMocks()
 
     // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
-    const reaction = 'fire'
+    const reaction = '🔥'
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(
       processor.discoveryDB,
