@@ -17,7 +17,6 @@ test::
 
 
 
-STEVE_TEST_DB="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable"
 steve.test::
 	docker compose -f docker-compose.test.yml up -d
 

@@ -5,9 +5,5 @@ services:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=password
-      # - POSTGRES_DB=biz
     ports:
       - 25432:5432
-    # volumes:
-    #   - ./sql/initdb:/docker-entrypoint-initdb.d
-    #   - ./sql:/sql
