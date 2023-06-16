@@ -26,7 +26,7 @@ steve.test::
 
 	audius_delegate_private_key="c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" \
 	audius_db_url="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable" \
-	go test ./...
+	go test ./... -count=1
 
 
 # formerly build.fast but uses qemu - slow

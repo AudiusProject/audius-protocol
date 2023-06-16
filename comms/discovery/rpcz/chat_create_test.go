@@ -24,8 +24,6 @@ func TestChatCreate(t *testing.T) {
 	tsEarly := time.Now().Add(-time.Second)
 	tsLate := time.Now()
 
-	db.Conn.MustExec("truncate table chat cascade")
-
 	tx := db.Conn.MustBegin()
 
 	// create a chat with a later timestamp
