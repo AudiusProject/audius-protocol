@@ -61,12 +61,10 @@ latest_sol_rewards_manager_backfill_slot_key = (
 LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
 LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
 
-# Track unavailability worker job keys
-UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY = "update_track_is_available:start"
-UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY = "update_track_is_available:finish"
-ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "update_track_is_available:unavailable_tracks_all"
+# User delist discrepancy keys
+USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "user_delist_discrepancies_timestamp_key"
+USER_DELIST_DISCREPANCIES_KEY = "user_delist_discrepancies_key"
 
-# User unavailability worker job keys
-UPDATE_USER_IS_AVAILABLE_START_REDIS_KEY = "update_user_is_available:start"
-UPDATE_USER_IS_AVAILABLE_FINISH_REDIS_KEY = "update_user_is_available:finish"
-ALL_UNAVAILABLE_USERS_REDIS_KEY = "update_user_is_available:unavailable_user_all"
+# Track delist discrepancy keys
+TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "track_delist_discrepancies_timestamp_key"
+TRACK_DELIST_DISCREPANCIES_KEY = "track_delist_discrepancies_key"
