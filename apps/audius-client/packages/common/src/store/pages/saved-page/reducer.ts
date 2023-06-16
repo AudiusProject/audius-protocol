@@ -16,6 +16,7 @@ import {
 import tracksReducer, {
   initialState as initialLineupState
 } from 'store/pages/saved-page/lineups/tracks/reducer'
+import { signOut } from 'store/sign-out/slice'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
@@ -99,6 +100,9 @@ const actionsMap = {
       ({ save_item_id: id }) => id !== action.trackId
     )
     return newState
+  },
+  [signOut.type](state) {
+    return initialState
   }
 }
 
