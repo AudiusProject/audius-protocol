@@ -9,6 +9,10 @@
   align-items: flex-end;
 }
 
+.root.hasReaction {
+  margin-bottom: var(--unit-2);
+}
+
 .bubble {
   --bubble-color: var(--white);
   position: relative;
