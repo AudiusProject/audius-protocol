@@ -17,7 +17,6 @@ FROM alpine AS final
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/comms /bin/comms
-COPY --from=builder /app/discovery/db/migrations /discovery/db/migrations
 
 EXPOSE 4222
 VOLUME ["/tmp"]
