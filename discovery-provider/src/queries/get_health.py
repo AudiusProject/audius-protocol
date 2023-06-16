@@ -1,14 +1,14 @@
-import logging
 import json
+import logging
 import os
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
 import requests
 from elasticsearch import Elasticsearch
-from sqlalchemy.sql import text
 from redis import Redis
+from sqlalchemy.sql import text
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -33,12 +33,12 @@ from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
-    USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
-    USER_DELIST_DISCREPANCIES_KEY,
-    TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
-    TRACK_DELIST_DISCREPANCIES_KEY,
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
+    TRACK_DELIST_DISCREPANCIES_KEY,
+    TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+    USER_DELIST_DISCREPANCIES_KEY,
+    USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
     latest_block_hash_redis_key,
@@ -123,9 +123,13 @@ def get_user_delist_discrepancies(redis: Redis):
     try:
         if redis is None:
             raise Exception("Invalid arguments for _get_user_delist_discrepancies")
-        user_delist_discrepancies_timestamp = redis.get(USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY)
+        user_delist_discrepancies_timestamp = redis.get(
+            USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY
+        )
         if user_delist_discrepancies_timestamp:
-            latest_check = datetime.utcfromtimestamp(float(user_delist_discrepancies_timestamp.decode())).replace(tzinfo=timezone.utc)
+            latest_check = datetime.utcfromtimestamp(
+                float(user_delist_discrepancies_timestamp.decode())
+            ).replace(tzinfo=timezone.utc)
             # Only run query once a day
             if latest_check > datetime.now(timezone.utc) - timedelta(days=1):
                 user_delist_discrepancies = redis.get(USER_DELIST_DISCREPANCIES_KEY)
@@ -154,8 +158,13 @@ def get_user_delist_discrepancies(redis: Redis):
                 """
             )
             result = session.execute(sql).fetchall()
-            user_delist_discrepancies = json.dumps([dict(row) for row in result], default=str)
-            redis.set(USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY, datetime.now(timezone.utc).timestamp())
+            user_delist_discrepancies = json.dumps(
+                [dict(row) for row in result], default=str
+            )
+            redis.set(
+                USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+                datetime.now(timezone.utc).timestamp(),
+            )
             redis.set(USER_DELIST_DISCREPANCIES_KEY, user_delist_discrepancies)
             return user_delist_discrepancies
     except Exception as e:
@@ -167,9 +176,13 @@ def get_track_delist_discrepancies(redis: Redis):
     try:
         if redis is None:
             raise Exception("Invalid arguments for _get_track_delist_discrepancies")
-        track_delist_discrepancies_timestamp = redis.get(TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY)
+        track_delist_discrepancies_timestamp = redis.get(
+            TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY
+        )
         if track_delist_discrepancies_timestamp:
-            latest_check = datetime.utcfromtimestamp(float(track_delist_discrepancies_timestamp.decode())).replace(tzinfo=timezone.utc)
+            latest_check = datetime.utcfromtimestamp(
+                float(track_delist_discrepancies_timestamp.decode())
+            ).replace(tzinfo=timezone.utc)
             # Only run query once a day
             if latest_check > datetime.now(timezone.utc) - timedelta(days=1):
                 track_delist_discrepancies = redis.get(TRACK_DELIST_DISCREPANCIES_KEY)
@@ -198,8 +211,13 @@ def get_track_delist_discrepancies(redis: Redis):
                 """
             )
             result = session.execute(sql).fetchall()
-            track_delist_discrepancies = json.dumps([dict(row) for row in result], default=str)
-            redis.set(TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY, datetime.now(timezone.utc).timestamp())
+            track_delist_discrepancies = json.dumps(
+                [dict(row) for row in result], default=str
+            )
+            redis.set(
+                TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+                datetime.now(timezone.utc).timestamp(),
+            )
             redis.set(TRACK_DELIST_DISCREPANCIES_KEY, track_delist_discrepancies)
             return track_delist_discrepancies
     except Exception as e:
