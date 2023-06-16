@@ -153,17 +153,6 @@ module.exports = function (app) {
   )
 
   app.get(
-    '/health_check/entity_manager_replica_set_enabled',
-    handleResponse(async (req, res) => {
-      return successResponse({
-        entityManagerReplicaSetEnabled: config.get(
-          'entityManagerReplicaSetEnabled'
-        )
-      })
-    })
-  )
-
-  app.get(
     '/balance_check',
     handleResponse(async (req, res) => {
       let { minimumBalance, minimumRelayerBalance } = req.query
