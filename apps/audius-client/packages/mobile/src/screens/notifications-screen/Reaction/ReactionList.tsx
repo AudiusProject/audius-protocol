@@ -36,10 +36,10 @@ type ReactionListProps = {
 }
 
 const initialPositions = {
-  fire: { x: 0, width: 0 },
-  heart: { x: 0, width: 0 },
-  party: { x: 0, width: 0 },
-  explode: { x: 0, width: 0 }
+  '🔥': { x: 0, width: 0 },
+  '😍': { x: 0, width: 0 },
+  '🥳': { x: 0, width: 0 },
+  '🤯': { x: 0, width: 0 }
 }
 
 type Positions = { [k in ReactionTypes]: { x: number; width: number } }
