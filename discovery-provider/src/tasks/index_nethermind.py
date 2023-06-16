@@ -34,7 +34,6 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.save_cid_metadata import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
@@ -358,16 +357,6 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                             txs_grouped_by_type[contract_type].append(tx_receipt)
 
                 """
-                Fetch JSON metadata
-                """
-                # pre-fetch cids asynchronously to not have it block in user_state_update
-                # and track_state_update
-                cid_metadata, cid_type = fetch_cid_metadata(
-                    session,
-                    txs_grouped_by_type[ENTITY_MANAGER],
-                )
-
-                """
                 Add block to db
                 """
                 add_indexed_block_to_db(session, next_block, latest_database_block)
@@ -380,21 +369,9 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
                 # after session commit
                 process_state_changes(
                     session,
-                    cid_metadata,
                     txs_grouped_by_type,
                     next_block,
                 )
-                is_save_cid_enabled = (
-                    shared_config["discprov"]["enable_save_cid"] == "true"
-                )
-                if is_save_cid_enabled:
-                    """
-                    Add CID Metadata to db (cid -> json blob, etc.)
-                    """
-                    # bulk process operations once all tx's for block have been parsed
-                    # and get changed entity IDs for cache clearing
-                    # after session commit
-                    save_cid_metadata(session, cid_metadata, cid_type)
 
             except NotAllTransactionsFetched as e:
                 raise e

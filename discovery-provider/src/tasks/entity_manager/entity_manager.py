@@ -103,9 +103,6 @@ def entity_manager_update(
         metric_num_changed = PrometheusMetric(
             PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
         )
-        metric_num_errors = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS
-        )
 
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)

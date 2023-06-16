@@ -30,6 +30,10 @@ def steal_stdout():
 
 
 def test_migration_idempotency():
+    if database_exists(DB_URL):
+        drop_database(DB_URL)
+
+    create_database(DB_URL)
     subprocess.run(
         ["./pg_migrate.sh", "test"],
         shell=True,
