@@ -7,7 +7,7 @@ import type {
 } from '@audius/common'
 import { chatActions, encodeHashId, accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Dimensions, Pressable, Animated, Platform } from 'react-native'
+import { Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { usePopupAnimation } from 'app/hooks/usePopupAnimation'
@@ -21,7 +21,6 @@ import { ReactionList } from '../notifications-screen/Reaction'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { CopyMessagesButton } from './CopyMessagesButton'
 import {
-  REACTION_ANDROID_OFFSET,
   REACTION_CONTAINER_HEIGHT,
   REACTION_CONTAINER_TOP_OFFSET
 } from './constants'
@@ -109,13 +108,11 @@ type ReactionPopupProps = {
   onClose: () => void
 }
 
-const addAndroidOffset = (value: number) => value + REACTION_ANDROID_OFFSET
-
 export const ReactionPopup = ({
   chatId,
-  containerTop: containerTopProp,
-  containerBottom: containerBottomProp,
-  messageTop: messageTopProp,
+  containerTop,
+  containerBottom,
+  messageTop,
   messageHeight,
   isAuthor,
   message,
@@ -131,18 +128,6 @@ export const ReactionPopup = ({
   const selectedReaction = message.reactions?.find(
     (r) => r.user_id === userIdEncoded
   )?.reaction
-  const messageTop =
-    Platform.OS === 'android'
-      ? addAndroidOffset(messageTopProp)
-      : messageTopProp
-  const containerBottom =
-    Platform.OS === 'android'
-      ? addAndroidOffset(containerBottomProp)
-      : containerBottomProp
-  const containerTop =
-    Platform.OS === 'android'
-      ? addAndroidOffset(containerTopProp)
-      : containerTopProp
 
   const handleClose = useCallback(() => {
     // If the user selected a new reaction, dispatch with that reaction before closing
