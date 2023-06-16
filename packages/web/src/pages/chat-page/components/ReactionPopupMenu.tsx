@@ -10,8 +10,10 @@ import {
 
 import styles from './ReactionPopupMenu.module.css'
 
+const Empty = () => null
+
 const reactionList: [ReactionTypes, ComponentType<ReactionProps>][] =
-  reactionOrder.map((r) => [r, reactionMap[r]])
+  reactionOrder.map((r) => [r, reactionMap[r] ?? Empty])
 
 export const ReactionPopupMenu = ({
   containerRef,
