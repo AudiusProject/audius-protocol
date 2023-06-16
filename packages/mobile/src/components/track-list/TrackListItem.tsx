@@ -1,7 +1,8 @@
 import { memo, useCallback, useMemo, useState } from 'react'
 
-import type { ID, Track, UID, User } from '@audius/common'
+import type { Collection, ID, Track, UID, User } from '@audius/common'
 import {
+  cacheCollectionsSelectors,
   usePremiumContentAccess,
   FeatureFlags,
   playbackPositionSelectors,
@@ -40,6 +41,7 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { getUserId } = accountSelectors
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
 const { getPlaying, getUid } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -151,6 +153,7 @@ export type TrackListItemProps = {
   drag?: () => void
   hideArt?: boolean
   id?: ID
+  contextPlaylistId?: ID
   index: number
   isReorderable?: boolean
   noDividerMargin?: boolean
@@ -167,9 +170,12 @@ export type TrackListItemProps = {
 // Using `memo` because FlatList renders these items
 // And we want to avoid a full render when the props haven't changed
 export const TrackListItem = memo((props: TrackListItemProps) => {
-  const { id, uid } = props
+  const { id, uid, contextPlaylistId } = props
 
   const track = useSelector((state) => getTrack(state, { id, uid }))
+  const contextPlaylist = useSelector((state) =>
+    getCollection(state, { id: contextPlaylistId })
+  )
   const user = useSelector((state) => getUserFromTrack(state, { id, uid }))
 
   if (!track || !user) {
@@ -177,17 +183,27 @@ export const TrackListItem = memo((props: TrackListItemProps) => {
     return null
   }
 
-  return <TrackListItemComponent {...props} track={track} user={user} />
+  return (
+    <TrackListItemComponent
+      {...props}
+      track={track}
+      user={user}
+      contextPlaylist={contextPlaylist}
+    />
+  )
 })
 
 type TrackListItemComponentProps = TrackListItemProps & {
   track: Track
   user: User
+  contextPlaylist: Collection | null
 }
 
 const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const {
+    contextPlaylistId,
+    contextPlaylist,
     drag,
     hideArt,
     index,
@@ -266,7 +282,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const currentUserId = useSelector(getUserId)
-  const isOwner = currentUserId === owner_id
+  const isTrackOwner = currentUserId && currentUserId === owner_id
+  const isContextPlaylistOwner =
+    currentUserId && contextPlaylist?.playlist_owner_id === currentUserId
 
   const isLongFormContent =
     track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
@@ -277,12 +295,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.SHARE,
-      !isOwner
+      !isTrackOwner
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null,
-      !isOwner
+      !isTrackOwner
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
@@ -298,19 +316,23 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      isOwner ? OverflowAction.EDIT_TRACK : null,
-      OverflowAction.VIEW_ARTIST_PAGE
+      isTrackOwner ? OverflowAction.EDIT_TRACK : null,
+      !isTrackOwner ? OverflowAction.VIEW_ARTIST_PAGE : null,
+      isContextPlaylistOwner ? OverflowAction.REMOVE_FROM_PLAYLIST : null
     ].filter(removeNullable)
 
     dispatch(
       openOverflowMenu({
         source: OverflowSource.TRACKS,
         id: track_id,
+        contextPlaylistId,
         overflowActions
       })
     )
   }, [
-    isOwner,
+    contextPlaylistId,
+    isContextPlaylistOwner,
+    isTrackOwner,
     has_current_user_reposted,
     has_current_user_saved,
     isGatedContentEnabled,

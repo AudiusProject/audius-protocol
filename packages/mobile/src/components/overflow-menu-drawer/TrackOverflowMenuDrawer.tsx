@@ -2,6 +2,9 @@ import { useContext } from 'react'
 
 import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
+  cacheCollectionsActions,
+  cacheCollectionsSelectors,
+  collectionPageLineupActions as tracksActions,
   shareModalUIActions,
   playbackPositionActions,
   FavoriteSource,
@@ -35,6 +38,8 @@ const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
   tracksSocialActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
+const { removeTrackFromPlaylist } = cacheCollectionsActions
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -52,10 +57,16 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
   const { toast } = useToast()
-  const { id: modalId } = useSelector(getMobileOverflowModal)
+  const { id: modalId, contextPlaylistId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 
   const track = useSelector((state: CommonState) => getTrack(state, { id }))
+  const playlist = useSelector((state: CommonState) =>
+    getCollection(state, { id: contextPlaylistId })
+  )
+  const playlistTrackInfo = playlist?.playlist_contents.track_ids.find(
+    (t) => t.track === track?.track_id
+  )
 
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
@@ -90,6 +101,19 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       ),
     [OverflowAction.ADD_TO_PLAYLIST]: () =>
       dispatch(openAddToPlaylistModal(id, title, is_unlisted)),
+    [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {
+      if (playlist && playlistTrackInfo) {
+        const { metadata_time, time } = playlistTrackInfo
+        dispatch(
+          removeTrackFromPlaylist(
+            track.track_id,
+            playlist.playlist_id,
+            metadata_time ?? time
+          )
+        )
+        dispatch(tracksActions.fetchLineupMetadatas())
+      }
+    },
     [OverflowAction.VIEW_TRACK_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation?.push('Track', { id })

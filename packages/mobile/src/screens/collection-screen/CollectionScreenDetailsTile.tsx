@@ -204,9 +204,13 @@ export const CollectionScreenDetailsTile = ({
     [collectionId]
   )
 
+  const numericCollectionId =
+    typeof collectionId === 'number' ? collectionId : undefined
+
   const renderTrackList = useCallback(() => {
     return (
       <TrackList
+        contextPlaylistId={!isAlbum ? numericCollectionId : undefined}
         trackItemAction='overflow'
         showDivider
         showSkeleton={isLineupLoading}
@@ -219,6 +223,8 @@ export const CollectionScreenDetailsTile = ({
       />
     )
   }, [
+    numericCollectionId,
+    isAlbum,
     handlePressTrackListItemPlay,
     isLineupLoading,
     styles,
@@ -231,7 +237,7 @@ export const CollectionScreenDetailsTile = ({
   return (
     <DetailsTile
       {...detailsTileProps}
-      collectionId={typeof collectionId === 'number' ? collectionId : undefined}
+      collectionId={numericCollectionId}
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}
