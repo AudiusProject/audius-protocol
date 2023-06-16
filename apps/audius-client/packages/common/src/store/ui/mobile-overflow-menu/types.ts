@@ -8,6 +8,7 @@ export enum OverflowAction {
   UNFAVORITE = 'UNFAVORITE',
   SHARE = 'SHARE',
   ADD_TO_PLAYLIST = 'ADD_TO_PLAYLIST',
+  REMOVE_FROM_PLAYLIST = 'REMOVE_FROM_PLAYLIST',
   EDIT_PLAYLIST = 'EDIT_PLAYLIST',
   DELETE_PLAYLIST = 'DELETE_PLAYLIST',
   PUBLISH_PLAYLIST = 'PUBLISH_PLAYLIST',
@@ -36,6 +37,7 @@ export enum OverflowSource {
 export type OpenOverflowMenuPayload = {
   source: OverflowSource
   id: ID | string
+  contextPlaylistId?: ID
   overflowActions: OverflowAction[]
   overflowActionCallbacks?: OverflowActionCallbacks
 }
@@ -46,6 +48,8 @@ export type OverflowActionCallbacks = {
 
 export type MobileOverflowModalState = {
   id: ID | string | null /* Notification IDs can be strings */
+  /** For track overflow menus to be able to remove from playlist */
+  contextPlaylistId: ID | null
   source: OverflowSource
   overflowActions: OverflowAction[]
   overflowActionCallbacks: OverflowActionCallbacks

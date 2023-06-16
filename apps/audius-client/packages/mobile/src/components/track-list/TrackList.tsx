@@ -18,6 +18,7 @@ type TrackListProps = {
   // Accept ids as well as uids because some use cases don't have uids available
   // For example the EditPlaylist track list
   ids?: ID[]
+  contextPlaylistId?: ID
   isReorderable?: boolean
   onRemove?: (index: number) => void
   onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
@@ -39,6 +40,7 @@ const keyExtractor = (item: string | number) => String(item)
  * otherwise certain features like auto scroll while dragging will not work
  */
 export const TrackList = ({
+  contextPlaylistId,
   hideArt,
   ids,
   isReorderable,
@@ -74,6 +76,7 @@ export const TrackList = ({
         return (
           <TrackListItem
             id={ids && (item as ID)}
+            contextPlaylistId={contextPlaylistId}
             index={index}
             drag={drag}
             hideArt={hideArt}
@@ -92,6 +95,7 @@ export const TrackList = ({
         )
       },
       [
+        contextPlaylistId,
         hideArt,
         ids,
         isReorderable,

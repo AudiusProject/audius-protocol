@@ -21,6 +21,10 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.UNFAVORITE]: { text: 'Unfavorite' },
   [OverflowAction.SHARE]: { text: 'Share' },
   [OverflowAction.ADD_TO_PLAYLIST]: { text: 'Add To Playlist' },
+  [OverflowAction.REMOVE_FROM_PLAYLIST]: {
+    text: 'Remove From This Playlist',
+    isDestructive: true
+  },
   [OverflowAction.EDIT_PLAYLIST]: { text: 'Edit Playlist' },
   [OverflowAction.DELETE_PLAYLIST]: {
     text: 'Delete Playlist',

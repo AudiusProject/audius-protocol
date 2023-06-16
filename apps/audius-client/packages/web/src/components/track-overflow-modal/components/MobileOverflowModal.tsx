@@ -33,6 +33,7 @@ const rowMessageMap = {
   [OverflowAction.UNFAVORITE]: 'Unfavorite',
   [OverflowAction.SHARE]: 'Share',
   [OverflowAction.ADD_TO_PLAYLIST]: 'Add To Playlist',
+  [OverflowAction.REMOVE_FROM_PLAYLIST]: 'Remove From This Playlist',
   [OverflowAction.EDIT_PLAYLIST]: 'Edit Playlist',
   [OverflowAction.DELETE_PLAYLIST]: 'Delete Playlist',
   [OverflowAction.PUBLISH_PLAYLIST]: 'Publish Playlist',
@@ -98,6 +99,7 @@ const MobileOverflowModal = ({
     [OverflowAction.UNFOLLOW]: onUnfollow,
     // These are implement in native mobile,
     // but not mobile web
+    [OverflowAction.REMOVE_FROM_PLAYLIST]: () => {},
     [OverflowAction.EDIT_TRACK]: () => {},
     [OverflowAction.DELETE_TRACK]: () => {},
     [OverflowAction.MARK_AS_PLAYED]: () => {},
