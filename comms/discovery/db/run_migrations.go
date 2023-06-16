@@ -2,15 +2,20 @@ package db
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 )
 
 func RunMigrations() error {
-	out, err := exec.Command("dbmate",
-		"--no-dump-schema",
-		"--migrations-dir", "./discovery/db/migrations",
-		"--url", MustGetAudiusDbUrl(),
-		"up").CombinedOutput()
-	fmt.Println("dbmate: ", string(out))
+	cmd := exec.Command("sh", "pg_migrate.sh")
+
+	cmd.Dir = "../discovery-provider/ddl"
+
+	cmd.Env = append(os.Environ(),
+		"DB_URL="+MustGetAudiusDbUrl(),
+	)
+
+	out, err := cmd.CombinedOutput()
+	fmt.Println("pg_migrate.sh: ", string(out))
 	return err
 }
