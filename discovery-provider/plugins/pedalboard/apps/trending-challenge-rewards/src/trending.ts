@@ -17,7 +17,7 @@ type TrendingEntry = {
   rank: number;
 };
 
-export const announceTopFiveTrending = async (app: App<SharedData>) => {
+export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: string) => {
   const identityDbRes = await intoResult(async () => app.getIdDb());
   if (identityDbRes.err) {
     console.error("Identity connection error: ", identityDbRes);
@@ -26,30 +26,53 @@ export const announceTopFiveTrending = async (app: App<SharedData>) => {
   const identityDb = identityDbRes.unwrap();
   const discoveryDb = app.getDnDb();
 
+  const week = maybeWeek || moment().format("YYYY-MM-DD")
+
   const [tracks, playlists, undergroundTracks] = await queryTopFiveTrending(
-    discoveryDb
+    discoveryDb,
+    week
   );
 
-  const trackHandles = await queryHandles(identityDb, tracks)
-  const playlistHandles = await queryHandles(identityDb, playlists)
-  const undergroundHandles = await queryHandles(identityDb, undergroundTracks)
+  const trackHandles = await queryHandles(identityDb, tracks);
+  const playlistHandles = await queryHandles(identityDb, playlists);
+  const undergroundHandles = await queryHandles(identityDb, undergroundTracks);
 
-  const trackEntries = assembleEntries(trackHandles, tracks)
-  const playlistEntries = assembleEntries(playlistHandles, playlists)
-  const undergroundEntries = assembleEntries(undergroundHandles, undergroundTracks)
+  const trackEntries = assembleEntries(trackHandles, tracks);
+  const playlistEntries = assembleEntries(playlistHandles, playlists);
+  const undergroundEntries = assembleEntries(
+    undergroundHandles,
+    undergroundTracks
+  );
 
-  const trendingTracksTweet = composeTweet("Top 5 Trending Tracks 🔥", trackEntries)
-  const trendingPlaylistTweet = composeTweet("Top 5 Trending Playlists 🎚️", playlistEntries)
-  const trendingUndergroundTweet = composeTweet("Top 5 Trending Underground 🎵", undergroundEntries)
+  const trendingTracksTweet = composeTweet(
+    "Top 5 Trending Tracks 🔥",
+    week,
+    trackEntries
+  );
+  const trendingPlaylistTweet = composeTweet(
+    "Top 5 Trending Playlists 🎚️",
+    week,
+    playlistEntries
+  );
+  const trendingUndergroundTweet = composeTweet(
+    "Top 5 Trending Underground 🎵",
+    week,
+    undergroundEntries
+  );
 
-  // TODO: send slack msg
+  const webClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+  await sendTweet(webClient, [
+    trendingTracksTweet,
+    trendingPlaylistTweet,
+    trendingUndergroundTweet,
+  ]);
 };
 
-const queryTopFiveTrending = async (
-  discoveryDb: Knex
+export const queryTopFiveTrending = async (
+  discoveryDb: Knex,
+  week: string
 ): Promise<TrendingResults[][]> => {
   // 2023-06-09
-  const week = moment().format("YYYY-MM-DD");
   const tracks = await discoveryDb<TrendingResults>(Table.TrendingResults)
     .where("type", "=", TrendingTypes.Tracks)
     .where("week", "=", week)
@@ -73,30 +96,75 @@ const queryTopFiveTrending = async (
   return [tracks, playlists, undergroundTracks];
 };
 
-const queryHandles = async (identityDb: Knex, trendingResults: TrendingResults[]): Promise<Map<number, string>> => {
-    const blockchainUserIds = trendingResults.map((res) => res.user_id)
-    // join SocialHandles and Users tables in identity
-    // select 'handle' from users table by blockchainUserId
-    // select 'twitterHandle' from social handles table by handle
-    // after query, if twitter handle undefined, add `@/` to handle
-    // otherwise just add `@`
-    return new Map()
-}
-
-const assembleEntries = (userIdToHandle: Map<number, string>, trendingResults: TrendingResults[]): TrendingEntry[] => {
-    return []
-}
-
-const composeTweet = (title: string, entries: TrendingEntry[]): string => {
-  // order by rank in case db queries reordered in some way
-  const orderedEntries = entries.sort((a, b) => {
-    if (a.rank < b.rank) return 1 // a has a lower number, thus a higher rank
-    if (a.rank > b.rank) return -1 // a has a higher number, thus a lower rank
-    return 0 // ranks are equal, no sort to be done
-  })
-  const newLine = "\n"
-  const handles = entries.map((entry) => `${entry.handle}${newLine}`)
-  return "```" + title + newLine + handles + "```"
+export const queryHandles = async (
+  identityDb: Knex,
+  trendingResults: TrendingResults[]
+): Promise<Map<number, string>> => {
+  const blockchainUserIds = trendingResults.map((res) => res.user_id);
+  const userHandles = await identityDb("Users")
+    .select("handle", "blockchainUserId")
+    .whereIn("blockchainUserId", blockchainUserIds);
+  const handles = userHandles.map((handle) => handle.handle);
+  const twitterHandles = await identityDb("SocialHandles")
+    .select("handle", "twitterHandle")
+    .whereIn("handle", handles);
+  const handleMap = new Map<number, string>();
+  for (const userId of blockchainUserIds) {
+    const userHandle = userHandles.find(
+      (handle) => handle.blockchainUserId === userId
+    );
+    const twitterHandle = twitterHandles.find(
+      (handle) =>
+        handle.handle === userHandle.handle && handle.twitterHandle !== null
+    );
+    if (twitterHandle === undefined)
+      handleMap.set(userId, `@/${userHandle.handle}`);
+    else {
+      handleMap.set(userId, `@${twitterHandle.twitterHandle}`);
+    }
+  }
+  return handleMap;
 };
 
-const sendTweet = async (slack: WebClient, tweets: string[]) => {};
+export const assembleEntries = (
+  userIdToHandle: Map<number, string>,
+  trendingResults: TrendingResults[]
+): TrendingEntry[] => {
+  const trendingEntries = [];
+  for (const result of trendingResults) {
+    const { rank, user_id } = result;
+    const handle = userIdToHandle.get(user_id)!;
+    trendingEntries.push({
+      handle,
+      rank,
+    });
+  }
+  return trendingEntries;
+};
+
+export const composeTweet = (
+  title: string,
+  week: string,
+  entries: TrendingEntry[]
+): string => {
+  // order by rank in case db queries reordered in some way
+  const orderedEntries = entries.sort((a, b) => {
+    if (a.rank < b.rank) return -1; // a has a lower number, thus a higher rank
+    if (a.rank > b.rank) return 1; // a has a higher number, thus a lower rank
+    return 0; // ranks are equal, no sort to be done
+  });
+  const newLine = "\n";
+  const handles = orderedEntries.map((entry) => `${entry.handle}${newLine}`).join("");
+  return "```\n" + `${title} (${week})` + newLine + handles + "```";
+};
+
+const sendTweet = async (slack: WebClient, tweets: string[]) => {
+  const channel = process.env.SLACK_CHANNEL;
+  if (channel === undefined) throw Error("SLACK_CHANNEL not defined");
+  for (const tweet of tweets) {
+    await slack.chat.postMessage({
+      channel,
+      text: tweet,
+    });
+  }
+};
