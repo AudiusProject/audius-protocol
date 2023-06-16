@@ -48,12 +48,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   bubble: {
     marginTop: spacing(2),
-    backgroundColor: palette.white,
     borderRadius: spacing(3),
     overflow: 'hidden'
-  },
-  isAuthor: {
-    backgroundColor: palette.secondaryLight2
   },
   pressed: {
     backgroundColor: palette.neutralLight10
@@ -61,16 +57,21 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   pressedIsAuthor: {
     backgroundColor: palette.secondaryLight1
   },
-  message: {
-    marginHorizontal: spacing(4),
-    marginTop: spacing(3),
-    marginBottom: spacing(3),
+  messageContainer: {
+    paddingHorizontal: spacing(4),
+    paddingVertical: spacing(3),
+    backgroundColor: palette.white
+  },
+  messageContainerAuthor: {
+    backgroundColor: palette.secondaryLight2
+  },
+  messageText: {
     fontSize: typography.fontSize.medium,
     fontFamily: typography.fontByWeight.medium,
     lineHeight: spacing(6),
     color: palette.neutral
   },
-  messageIsAuthor: {
+  messageTextIsAuthor: {
     color: palette.white
   },
   dateContainer: {
@@ -150,8 +151,8 @@ const useGetTailColor = (
       ? styles.pressedIsAuthor.backgroundColor
       : styles.pressed.backgroundColor
     : isAuthor && !hideMessage
-    ? styles.isAuthor.backgroundColor
-    : styles.bubble.backgroundColor
+    ? styles.messageContainerAuthor.backgroundColor
+    : styles.messageContainer.backgroundColor
 }
 
 type ChatReactionProps = {
@@ -272,7 +273,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                 <View
                   style={[
                     styles.bubble,
-                    isAuthor ? styles.isAuthor : null,
                     isPressed
                       ? isAuthor
                         ? styles.pressedIsAuthor
@@ -315,20 +315,27 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                     />
                   ) : null}
                   {!hideMessage ? (
-                    <Hyperlink
-                      text={message.message}
-                      styles={{
-                        root: [
-                          styles.message,
-                          isAuthor && styles.messageIsAuthor
-                        ],
-                        link: [
-                          styles.message,
-                          styles.link,
-                          isAuthor && styles.messageIsAuthor
-                        ]
-                      }}
-                    />
+                    <View
+                      style={[
+                        styles.messageContainer,
+                        isAuthor && styles.messageContainerAuthor
+                      ]}
+                    >
+                      <Hyperlink
+                        text={message.message}
+                        styles={{
+                          root: [
+                            styles.messageText,
+                            isAuthor && styles.messageTextIsAuthor
+                          ],
+                          link: [
+                            styles.messageText,
+                            styles.link,
+                            isAuthor && styles.messageTextIsAuthor
+                          ]
+                        }}
+                      />
+                    </View>
                   ) : null}
                 </View>
                 {message.hasTail ? (
