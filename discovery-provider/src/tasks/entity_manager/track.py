@@ -156,11 +156,7 @@ def is_valid_json_field(metadata, field):
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
     track_record.title = track_metadata["title"]
-    track_record.duration = track_metadata.get("duration", 0) or 0
-    track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]
-    if track_metadata["cover_art_sizes"]:
-        track_record.cover_art = track_metadata["cover_art_sizes"]
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]
     track_record.mood = track_metadata["mood"]
@@ -173,11 +169,24 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.isrc = track_metadata["isrc"]
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
-    track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
-
     track_record.is_premium = track_metadata["is_premium"]
     track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+
+    if track_metadata["cover_art_sizes"]:
+        track_record.cover_art = track_metadata["cover_art_sizes"]
+
+    # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
+    # made unlisted again
+    if track_record.is_unlisted:
+        track_record.is_unlisted = track_metadata["is_unlisted"]
+
+    # Only update `duration` if it's provided,
+    # otherwise fall back to the original value. This will allow for replacing
+    # audio files in the future
+    track_record.duration = track_metadata["duration"] or track_record.duration or 0
+    track_record.length = track_metadata["length"] or track_record.length or 0
+
     if is_valid_json_field(track_metadata, "premium_conditions"):
         track_record.premium_conditions = track_metadata["premium_conditions"]
     else:
