@@ -11,16 +11,16 @@ import (
 
 func (ss *MediorumServer) startRepairer() {
 
-	// wait 10m after boot to start repair
+	// wait 30s after boot to start repair
 	// we can add some jitter here to try to ensure nodes are spaced out
-	time.Sleep(time.Minute * 10)
+	time.Sleep(time.Minute * 1)
 
 	for i := 1; ; i++ {
 		// 20% percent of time... clean up over-replicated
 		cleanupMode := false
-		if i%5 == 0 {
-			cleanupMode = true
-		}
+		// if i%5 == 0 {
+		// 	cleanupMode = true
+		// }
 
 		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
 		repairStart := time.Now()
@@ -38,10 +38,9 @@ func (ss *MediorumServer) startRepairer() {
 		// if you wanted to aproximate max(1/5) of network running repair at same time...
 		// you could make this node run repair ~1/5 of the time
 		// (with some bounds)
-		sleep := clampDuration(time.Minute, took*5, time.Hour*12)
-		logger.Info("repair sleeping", "sleep", sleep)
-		time.Sleep(sleep)
-
+		// sleep := clampDuration(time.Minute, took*5, time.Hour*12)
+		logger.Info("repair sleeping")
+		time.Sleep(time.Minute * 1)
 	}
 }
 
