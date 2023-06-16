@@ -89,7 +89,7 @@ module.exports = function (app) {
         body.encodedABI
       ) {
         // fire and forget update handle if necessary for early anti-abuse measures
-        ;(async () => {
+        ; (async () => {
           try {
             if (!user) return
 
@@ -128,10 +128,7 @@ module.exports = function (app) {
 
           // When EntityManager is enabled for replica sets, throw error for URSM
           // Fallback to EntityManager
-          if (
-            config.get('entityManagerReplicaSetEnabled') &&
-            txProps.contractRegistryKey === 'UserReplicaSetManager'
-          ) {
+          if (txProps.contractRegistryKey === 'UserReplicaSetManager') {
             const decodedABI = libs.AudiusABIDecoder.decodeMethod(
               txProps.contractRegistryKey,
               txProps.encodedABI
