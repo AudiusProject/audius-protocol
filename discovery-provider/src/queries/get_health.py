@@ -130,8 +130,8 @@ def get_user_delist_discrepancies(redis: Redis):
             latest_check = datetime.utcfromtimestamp(
                 float(user_delist_discrepancies_timestamp.decode())
             ).replace(tzinfo=timezone.utc)
-            # Only run query once a day
-            if latest_check > datetime.now(timezone.utc) - timedelta(days=1):
+            # Only run query every 12h
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 user_delist_discrepancies = redis.get(USER_DELIST_DISCREPANCIES_KEY)
                 return user_delist_discrepancies.decode()
 
@@ -183,8 +183,8 @@ def get_track_delist_discrepancies(redis: Redis):
             latest_check = datetime.utcfromtimestamp(
                 float(track_delist_discrepancies_timestamp.decode())
             ).replace(tzinfo=timezone.utc)
-            # Only run query once a day
-            if latest_check > datetime.now(timezone.utc) - timedelta(days=1):
+            # Only run query every 12h
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 track_delist_discrepancies = redis.get(TRACK_DELIST_DISCREPANCIES_KEY)
                 return track_delist_discrepancies.decode()
 

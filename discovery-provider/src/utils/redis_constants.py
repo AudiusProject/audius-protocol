@@ -62,9 +62,9 @@ LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
 LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
 
 # User delist discrepancy keys
-USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "user_delist_discrepancies_timestamp_key"
-USER_DELIST_DISCREPANCIES_KEY = "user_delist_discrepancies_key"
+USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "user_delist_discrepancies_timestamp"
+USER_DELIST_DISCREPANCIES_KEY = "user_delist_discrepancies"
 
 # Track delist discrepancy keys
-TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "track_delist_discrepancies_timestamp_key"
-TRACK_DELIST_DISCREPANCIES_KEY = "track_delist_discrepancies_key"
+TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY = "track_delist_discrepancies_timestamp"
+TRACK_DELIST_DISCREPANCIES_KEY = "track_delist_discrepancies"
