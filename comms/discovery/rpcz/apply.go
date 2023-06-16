@@ -65,11 +65,11 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error
 	return proc, nil
 }
 
-func (proc *RPCProcessor) SweeperErrors() []error {
-	var errors []error
+func (proc *RPCProcessor) SweeperErrors() []string {
+	var errors []string
 	for _, p := range proc.peerClients {
 		if p.err != nil {
-			errors = append(errors, fmt.Errorf("%s: %s", p.Host, p.err))
+			errors = append(errors, fmt.Sprintf("%s: %s", p.Host, p.err))
 		}
 	}
 	return errors
@@ -138,7 +138,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	logger.Debug("recovered wallet", "took", takeSplit())
 
 	if wallet != rpcLog.FromWallet {
-		fmt.Println("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
+		logger.Warn("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
 		return nil
 	}
 

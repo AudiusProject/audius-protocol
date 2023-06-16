@@ -1,8 +1,9 @@
-import type { Configuration } from '../generated/default'
-
 import * as secp from '@noble/secp256k1'
+import {
+  Configuration,
+  DeveloperAppsApi as GeneratedDeveloperAppsApi
+} from '../generated/default'
 import type { AuthService, EntityManagerService } from '../../services'
-
 import { Action, EntityType } from '../../services/EntityManager/types'
 
 import { decodeHashId } from '../../utils/hashId'
@@ -17,12 +18,14 @@ import type {
 } from './types'
 
 // Note (nkang): Eventually this will extend the generated DeveloperAppsApi
-export class DeveloperAppsApi {
+export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
   constructor(
-    _config: Configuration,
+    config: Configuration,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService
-  ) {}
+  ) {
+    super(config)
+  }
 
   /**
    * Create a developer app

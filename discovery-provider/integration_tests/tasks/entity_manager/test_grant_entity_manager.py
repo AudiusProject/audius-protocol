@@ -35,7 +35,7 @@ def test_index_grant(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     tx_receipts = {
         "CreateGrantTx1": [
@@ -131,7 +131,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
@@ -233,7 +232,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
@@ -303,7 +301,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
@@ -370,7 +367,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
@@ -429,7 +425,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
@@ -469,7 +464,6 @@ def test_index_grant(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records

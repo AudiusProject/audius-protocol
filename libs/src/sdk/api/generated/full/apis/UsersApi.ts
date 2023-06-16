@@ -76,6 +76,18 @@ export interface BulkGetSubscribersViaJSONRequestRequest {
     ids: Array<string>;
 }
 
+export interface GetAIAttributedTracksByUserHandleRequest {
+    handle: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sort?: GetAIAttributedTracksByUserHandleSortEnum;
+    query?: string;
+    sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
+    sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
+    filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+}
+
 export interface GetFavoritesRequest {
     id: string;
     offset?: number;
@@ -93,7 +105,7 @@ export interface GetFollowersRequest {
     userId?: string;
 }
 
-export interface GetFollowingsRequest {
+export interface GetFollowingRequest {
     id: string;
     offset?: number;
     limit?: number;
@@ -102,6 +114,7 @@ export interface GetFollowingsRequest {
 
 export interface GetRelatedUsersRequest {
     id: string;
+    offset?: number;
     limit?: number;
     userId?: string;
 }
@@ -288,6 +301,68 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets the AI generated tracks attributed to a user using the user\'s handle
+     */
+    async getAIAttributedTracksByUserHandleRaw(requestParameters: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
+        if (requestParameters.handle === null || requestParameters.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getAIAttributedTracksByUserHandle.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.sort !== undefined) {
+            queryParameters['sort'] = requestParameters.sort;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the AI generated tracks attributed to a user using the user\'s handle
+     */
+    async getAIAttributedTracksByUserHandle(requestParameters: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
+        const response = await this.getAIAttributedTracksByUserHandleRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Gets a user\'s favorite tracks
      */
     async getFavoritesRaw(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
@@ -386,9 +461,9 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that the provided user follows
      */
-    async getFollowingsRaw(requestParameters: GetFollowingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
+    async getFollowingRaw(requestParameters: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
         if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowings.');
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowing.');
         }
 
         const queryParameters: any = {};
@@ -420,8 +495,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that the provided user follows
      */
-    async getFollowings(requestParameters: GetFollowingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
-        const response = await this.getFollowingsRaw(requestParameters, initOverrides);
+    async getFollowing(requestParameters: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
+        const response = await this.getFollowingRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -434,6 +509,10 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
 
         if (requestParameters.limit !== undefined) {
             queryParameters['limit'] = requestParameters.limit;
@@ -1110,6 +1189,47 @@ export class UsersApi extends runtime.BaseAPI {
 /**
  * @export
  */
+export const GetAIAttributedTracksByUserHandleSortEnum = {
+    Date: 'date',
+    Plays: 'plays'
+} as const;
+export type GetAIAttributedTracksByUserHandleSortEnum = typeof GetAIAttributedTracksByUserHandleSortEnum[keyof typeof GetAIAttributedTracksByUserHandleSortEnum];
+/**
+ * @export
+ */
+export const GetAIAttributedTracksByUserHandleSortMethodEnum = {
+    Title: 'title',
+    ArtistName: 'artist_name',
+    ReleaseDate: 'release_date',
+    LastListenDate: 'last_listen_date',
+    AddedDate: 'added_date',
+    Length: 'length',
+    Plays: 'plays',
+    Reposts: 'reposts',
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
+} as const;
+export type GetAIAttributedTracksByUserHandleSortMethodEnum = typeof GetAIAttributedTracksByUserHandleSortMethodEnum[keyof typeof GetAIAttributedTracksByUserHandleSortMethodEnum];
+/**
+ * @export
+ */
+export const GetAIAttributedTracksByUserHandleSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetAIAttributedTracksByUserHandleSortDirectionEnum = typeof GetAIAttributedTracksByUserHandleSortDirectionEnum[keyof typeof GetAIAttributedTracksByUserHandleSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetAIAttributedTracksByUserHandleFilterTracksEnum = {
+    All: 'all',
+    Public: 'public',
+    Unlisted: 'unlisted'
+} as const;
+export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttributedTracksByUserHandleFilterTracksEnum[keyof typeof GetAIAttributedTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
 export const GetFavoritesSortMethodEnum = {
     Title: 'title',
     ArtistName: 'artist_name',
@@ -1119,7 +1239,8 @@ export const GetFavoritesSortMethodEnum = {
     Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
-    Saves: 'saves'
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetFavoritesSortMethodEnum = typeof GetFavoritesSortMethodEnum[keyof typeof GetFavoritesSortMethodEnum];
 /**
@@ -1150,7 +1271,8 @@ export const GetTracksByUserSortMethodEnum = {
     Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
-    Saves: 'saves'
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetTracksByUserSortMethodEnum = typeof GetTracksByUserSortMethodEnum[keyof typeof GetTracksByUserSortMethodEnum];
 /**
@@ -1190,7 +1312,8 @@ export const GetTracksByUserHandleSortMethodEnum = {
     Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
-    Saves: 'saves'
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetTracksByUserHandleSortMethodEnum = typeof GetTracksByUserHandleSortMethodEnum[keyof typeof GetTracksByUserHandleSortMethodEnum];
 /**
@@ -1222,7 +1345,8 @@ export const GetUsersTrackHistorySortMethodEnum = {
     Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
-    Saves: 'saves'
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
 } as const;
 export type GetUsersTrackHistorySortMethodEnum = typeof GetUsersTrackHistorySortMethodEnum[keyof typeof GetUsersTrackHistorySortMethodEnum];
 /**

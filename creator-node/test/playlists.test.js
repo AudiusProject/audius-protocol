@@ -5,9 +5,6 @@ const fs = require('fs-extra')
 
 const models = require('../src/models')
 
-const BlacklistManager = require('../src/blacklistManager')
-const DiskManager = require('../src/diskManager')
-
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
@@ -24,8 +21,7 @@ describe('Test Playlists', function () {
 
     const { getApp } = require('./lib/app')
 
-    const appInfo = await getApp(libsMock, BlacklistManager, null, spId)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock, null, spId)
 
     app = appInfo.app
     server = appInfo.server

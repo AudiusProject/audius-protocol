@@ -10,15 +10,10 @@ const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
 const { SyncQueue } = require('../../src/services/sync/syncQueue')
-const {
-  TrustedNotifierManager
-} = require('../../src/services/TrustedNotifierManager')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
-const BlacklistManager = require('../../src/blacklistManager')
 
 export async function getApp(
   libsClient,
-  blacklistManager = BlacklistManager,
   setMockFn = null,
   spId = 1,
   mockContentNodeInfoManager = false
@@ -41,14 +36,12 @@ export async function getApp(
   syncQueue.init(nodeConfig, redisClient)
   const mockServiceRegistry = {
     libs: libsClient,
-    blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     asyncProcessingQueue: apq,
     imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
     syncQueue: syncQueue,
-    trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
     prometheusRegistry
   }
 
@@ -103,12 +96,11 @@ export async function getApp(
   return appInfo
 }
 
-export async function getServiceRegistryMock(libsClient, blacklistManager) {
+export async function getServiceRegistryMock(libsClient) {
   const syncQueue = new SyncQueue()
   await syncQueue.init(nodeConfig, redisClient)
   return {
     libs: libsClient,
-    blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
     syncQueue: syncQueue,

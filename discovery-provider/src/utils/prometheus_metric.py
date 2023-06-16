@@ -102,12 +102,6 @@ class PrometheusMetricNames:
     INDEX_METRICS_DURATION_SECONDS = "index_metrics_duration_seconds"
     INDEX_TRENDING_DURATION_SECONDS = "index_trending_duration_seconds"
     UPDATE_AGGREGATE_TABLE_DURATION_SECONDS = "update_aggregate_table_duration_seconds"
-    UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS = (
-        "update_track_is_available_duration_seconds"
-    )
-    UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS = (
-        "update_user_is_available_duration_seconds"
-    )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
     ENTITY_MANAGER_UPDATE_DURATION_SECONDS = "entity_manager_update_duration_seconds"
@@ -203,16 +197,6 @@ PrometheusRegistry = {
             "task_name",
         ),
     ),
-    PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS}",
-        "Runtimes for src.task.update_track_is_available:celery.task()",
-        ("success",),
-    ),
-    PrometheusMetricNames.UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS: Histogram(
-        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS}",
-        "Runtimes for src.task.update_user_is_available:celery.task()",
-        ("success",),
-    ),
     PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS}",
         "Runtimes for src.task.index_trending:update_view()",
@@ -232,6 +216,7 @@ PrometheusRegistry = {
     PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.ENTITY_MANAGER_UPDATE_DURATION_SECONDS}",
         "Duration for entity manager updates",
+        ("scope",),
     ),
 }
 

@@ -35,14 +35,6 @@ import {
 } from './fsUtils'
 import { runShellCommand, execShellCommand } from './runShellCommand'
 import { currentNodeShouldHandleTranscode } from './contentNodeUtils'
-import {
-  isClusterEnabled,
-  getNumWorkers,
-  getConcurrencyPerWorker
-} from './cluster/clusterUtils'
-import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
-import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
-import { isMp3File } from './fileUtils'
 
 export * from './types'
 export {
@@ -62,11 +54,6 @@ export {
   validateAssociatedWallets,
   validateMetadata,
   stringifyMap,
-  isClusterEnabled,
-  getNumWorkers,
-  getConcurrencyPerWorker,
-  clusterUtilsForPrimary,
-  clusterUtilsForWorker,
   clearActiveJobs,
   verifyCIDMatchesExpected,
   ensureDirPathExists,
@@ -74,8 +61,7 @@ export {
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
-  computeLegacyFilePath,
-  isMp3File
+  computeLegacyFilePath
 }
 
 module.exports = {
@@ -97,17 +83,11 @@ module.exports = {
   stringifyMap,
   verifyCIDMatchesExpected,
   EMPTY_FILE_CID,
-  isClusterEnabled,
-  getNumWorkers,
-  getConcurrencyPerWorker,
-  clusterUtilsForPrimary,
-  clusterUtilsForWorker,
   clearActiveJobs,
   ensureDirPathExists,
   computeFilePath,
   computeFilePathInDir,
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists,
-  computeLegacyFilePath,
-  isMp3File
+  computeLegacyFilePath
 }

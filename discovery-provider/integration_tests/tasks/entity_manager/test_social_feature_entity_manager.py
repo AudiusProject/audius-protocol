@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import List
 from unittest import mock
@@ -32,7 +33,7 @@ def test_index_valid_social_features(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -223,7 +224,6 @@ def test_index_valid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
 
         # Verify follows
@@ -360,7 +360,7 @@ def test_index_invalid_social_features(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     tx_receipts = {
         "UserDoesNotExistTx1": [
@@ -499,7 +499,6 @@ def test_index_invalid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
 
         # Verify follows
@@ -529,7 +528,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -540,6 +539,16 @@ def test_index_entity_update_and_social_feature(app, mocker):
         metadataMultihash: ''
       })
     """
+    test_metadata = {
+        "QmUpdatePlaylist1": {
+            "playlist_contents": {"track_ids": []},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "playlist updated",
+        }
+    }
+    update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
+
     tx_receipts = {
         "RepostPlaylistTx1": [
             {
@@ -563,7 +572,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 10,
                         "_action": "Update",
-                        "_metadata": "QmUpdatePlaylist1",
+                        "_metadata": f'{{"cid": "QmUpdatePlaylist1", "data": {update_playlist1_json}}}',
                         "_signer": "user10wallet",
                     }
                 )
@@ -612,15 +621,6 @@ def test_index_entity_update_and_social_feature(app, mocker):
     }
     populate_mock_db(db, entities)
 
-    test_metadata = {
-        "QmUpdatePlaylist1": {
-            "playlist_contents": {"track_ids": []},
-            "description": "",
-            "playlist_image_sizes_multihash": "",
-            "playlist_name": "playlist updated",
-        }
-    }
-
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
@@ -630,7 +630,6 @@ def test_index_entity_update_and_social_feature(app, mocker):
             block_number=2,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=test_metadata,
         )
 
         all_playlists: List[Playlist] = session.query(Playlist).all()
@@ -656,7 +655,7 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -717,7 +716,6 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
             block_number=2,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 1
@@ -734,7 +732,7 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
 
     """
     const resp = await this.manageEntity({
@@ -824,7 +822,6 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
             block_number=2,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
         )
         all_saves: List[Save] = session.query(Save).all()
         assert len(all_saves) == 3

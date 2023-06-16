@@ -42,6 +42,17 @@ export enum EntityType {
   GRANT = 'Grant'
 }
 
+export type WriteOptions = {
+  /**
+   * Timeout confirmation of the write
+   */
+  confirmationTimeout?: number
+  /**
+   * Skip confirmation of the write
+   */
+  skipConfirmation?: boolean
+}
+
 export type ManageEntityOptions = {
   /**
    * The numeric user id
@@ -62,27 +73,15 @@ export type ManageEntityOptions = {
   /**
    * Metadata associated with the action
    */
-  metadata: string
+  metadata?: string
   /**
    * An instance of AuthService
    */
   auth: AuthService
-  /**
-   * Timeout confirmation of the write
-   */
-  confirmationTimeout?: number
-  /**
-   * Skip confirmation of the write
-   */
-  skipConfirmation?: boolean
-}
+} & WriteOptions
 
 export enum BlockConfirmation {
   CONFIRMED = 'CONFIRMED',
   DENIED = 'DENIED',
   UNKNOWN = 'UNKNOWN'
-}
-
-export type WriteOptions = {
-  confirmationTimeout?: number
 }

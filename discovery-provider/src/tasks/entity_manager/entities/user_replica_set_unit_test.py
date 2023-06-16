@@ -2,8 +2,8 @@ from src.tasks.entity_manager.entities.user_replica_set import parse_update_sp_i
 
 
 class Params:
-    def __init__(self, metadata_cid):
-        self.metadata_cid = metadata_cid
+    def __init__(self, metadata):
+        self.metadata = metadata
 
 
 def test_parse_update_sp_id():

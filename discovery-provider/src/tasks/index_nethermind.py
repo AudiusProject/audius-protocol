@@ -1,12 +1,9 @@
 # pylint: disable=C0302
-import asyncio
 import concurrent.futures
-import json
 import os
 import uuid
 from datetime import datetime
 from operator import itemgetter, or_
-from typing import Any, Dict, Tuple
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
@@ -37,25 +34,16 @@ from src.queries.get_skipped_transactions import (
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import Action, EntityType
-from src.tasks.metadata import (
-    playlist_metadata_format,
-    track_metadata_format,
-    user_metadata_format,
-)
 from src.tasks.save_cid_metadata import save_cid_metadata
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
-from src.utils.cid_metadata_client import get_metadata_from_json, sanitize_json
 from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched
-from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
-from src.utils.user_event_constants import entity_manager_event_types_arr
 from web3 import Web3
 from web3.datastructures import AttributeDict
 from web3.exceptions import BlockNotFound
@@ -131,165 +119,6 @@ def get_entity_manager_events_tx(update_task, event_type, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-@log_duration(logger)
-def fetch_cid_metadata(session, entity_manager_txs):
-    start_time = datetime.now()
-
-    cids_txhash_set: Tuple[str, Any] = set()
-    cid_type: Dict[str, str] = {}  # cid -> entity type track / user
-
-    # cid -> user_id lookup to make fetching replica set more efficient
-    cid_to_user_id: Dict[str, int] = {}
-    cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
-
-    # metadata blobs sent through chain
-    # merged with cid_metadata and cid_type before returning
-    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
-    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
-
-    # fetch transactions
-    for tx_receipt in entity_manager_txs:
-        txhash = web3.toHex(tx_receipt.transactionHash)
-        for event_type in entity_manager_event_types_arr:
-            entity_manager_events_tx = get_entity_manager_events_tx(
-                update_task, event_type, tx_receipt
-            )
-            for entry in entity_manager_events_tx:
-                event_args = entry["args"]
-                user_id = event_args._userId
-                cid = event_args._metadata
-                event_type = event_args._entityType
-                action = event_args._action
-                if action == Action.CREATE and event_type == EntityType.USER:
-                    continue
-                if action == Action.CREATE and event_type == EntityType.NOTIFICATION:
-                    continue
-                if (
-                    not cid
-                    or event_type == EntityType.USER_REPLICA_SET
-                    or action
-                    in [
-                        Action.REPOST,
-                        Action.UNREPOST,
-                        Action.SAVE,
-                        Action.UNSAVE,
-                        Action.FOLLOW,
-                        Action.UNFOLLOW,
-                        Action.SUBSCRIBE,
-                        Action.UNSUBSCRIBE,
-                    ]
-                ):
-                    continue
-
-                # Check if metadata blob was passed directly.
-                # If so, add to cid_metadata_from_chain and cid_type_from_chain
-                # dicts and do not query CNs for these CIDs.
-                # TODO remove legacy CN path after CID metadata migration.
-                if len(cid) > 0 and cid[0] == "{" and cid[-1] == "}":
-                    try:
-                        data = sanitize_json(json.loads(cid))
-
-                        # If metadata blob does not contain the required keys, skip
-                        if "cid" not in data.keys() or "data" not in data.keys():
-                            logger.info(
-                                f"index_nethermind.py | required keys missing in metadata {cid}"
-                            )
-                            continue
-                        cid = data["cid"]
-                        metadata_json = data["data"]
-
-                        metadata_format: Any = None
-                        metadata_type = None
-                        if event_type == EntityType.PLAYLIST:
-                            metadata_type = "playlist_data"
-                            metadata_format = playlist_metadata_format
-                        elif event_type == EntityType.TRACK:
-                            metadata_type = "track"
-                            metadata_format = track_metadata_format
-                        elif event_type == EntityType.USER:
-                            metadata_type = "user"
-                            metadata_format = user_metadata_format
-
-                        formatted_json = get_metadata_from_json(
-                            metadata_format, metadata_json
-                        )
-                        # Only index valid changes
-                        if formatted_json != metadata_format:
-                            # Do not add to cid_metadata or cid_type yet to avoid
-                            # interfering with the retry conditions
-                            cid_type_from_chain[cid] = metadata_type
-                            cid_metadata_from_chain[cid] = formatted_json
-                    except Exception as e:
-                        logger.info(
-                            f"index_nethermind.py | error deserializing metadata {cid}: {e}"
-                        )
-                    continue
-
-                logger.info(
-                    f"index_nethermind.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}"
-                )
-
-                cids_txhash_set.add((cid, txhash))
-                cid_to_user_id[cid] = user_id
-                if event_type == EntityType.PLAYLIST:
-                    cid_type[cid] = "playlist_data"
-                elif event_type == EntityType.TRACK:
-                    cid_type[cid] = "track"
-                elif event_type == EntityType.USER:
-                    cid_type[cid] = "user"
-
-    # user -> replica set string lookup, used to make user and track cid get_metadata fetches faster
-    user_to_replica_set = dict(
-        session.query(User.user_id, User.creator_node_endpoint)
-        .filter(
-            User.is_current == True,
-            User.user_id.in_(cid_to_user_id.values()),
-        )
-        .group_by(User.user_id, User.creator_node_endpoint)
-        .all()
-    )
-
-    # first attempt - fetch all CIDs from replica set
-    try:
-        cid_metadata.update(
-            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-                cid_metadata.keys(),
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set=True,
-            )
-        )
-    except asyncio.TimeoutError:
-        # swallow exception on first attempt fetching from replica set
-        pass
-
-    # second attempt - fetch missing CIDs from other cnodes
-    if len(cid_metadata) != len(cids_txhash_set):
-        cid_metadata.update(
-            update_task.cid_metadata_client.fetch_metadata_from_gateway_endpoints(
-                cid_metadata.keys(),
-                cids_txhash_set,
-                cid_to_user_id,
-                user_to_replica_set,
-                cid_type,
-                should_fetch_from_replica_set=False,
-            )
-        )
-
-    if cid_type and len(cid_metadata) != len(cid_type.keys()):
-        missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
-        raise Exception(missing_cids_msg)
-
-    logger.debug(
-        f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
-    )
-    cid_metadata.update(cid_metadata_from_chain)
-    cid_type.update(cid_type_from_chain)
-    return cid_metadata, cid_type
-
-
 def get_tx_hash_to_skip(session, redis):
     """Fetch if there is a tx_hash to be skipped because of continuous errors"""
     indexing_error = get_indexing_error(redis)
@@ -362,7 +191,6 @@ def add_indexed_block_to_redis(block, redis):
 @log_duration(logger)
 def process_state_changes(
     session,
-    cid_metadata,
     tx_type_to_grouped_lists_map,
     block,
 ):
@@ -379,7 +207,6 @@ def process_state_changes(
             block_number,
             block_timestamp,
             block_hash,
-            cid_metadata,
         ]
 
         (

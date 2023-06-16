@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  app-template:
+    container_name: app-template
+    build:
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: app-template
+    restart: always
+
+  trending-challenge-rewards:
+    container_name: trending-challenge-rewards
+    build:
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: trending-challenge-rewards
+    restart: always

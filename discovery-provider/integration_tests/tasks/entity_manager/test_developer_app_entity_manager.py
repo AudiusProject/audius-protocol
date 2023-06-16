@@ -1,5 +1,6 @@
 from typing import List
 
+from freezegun import freeze_time
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.grants.developer_app import DeveloperApp
@@ -14,24 +15,37 @@ new_apps_data = [
         "user_id": 1,
         "name": "My App",
         "description": "My app description",
-        "address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+        "address": "0xec923d132cda1e003b237c968422349854f14e25",
+        "app_signature": {
+            "signature": "6c54d37aabd7788727de21b556e54536311e1f00eff6a12a355bf6f1a80afc1f53b75f88f098e60e3d8f76e68a17071126ea66a1ae18d8193e8b7cc367f6121d1b",
+            "message": "Creating Audius developer app at 1686252026",
+        },
         "is_personal_access": False,
     },
     {
         "user_id": 1,
         "name": "My Other App",
         "description": "",
-        "address": "0x7Be50316dCD27a224E82F80bB154C1ea70D57f19",
+        "address": "0x52007fcc1ef9e436be0b0aa8201d1f28b7303b13",
+        "app_signature": {
+            "signature": "314ff529493c4b85d3a863c9836d2f6e1fccf26692f9c7fbcb6df992aa96610761ab621f89dfdcf3251178b683f3456dc60091e0192ef47912a7a224b609eda01b",
+            "message": "Creating Audius developer app at 1686252026",
+        },
         "is_personal_access": True,
     },
     {
         "user_id": 2,
         "name": "User 2 App",
-        "address": "0x1A3a04F77Eca3BBae35d79FC4B48a783D382AC63",
+        "address": "0x1f590ded56a693ee4dd986d820236f82d3659b96",
+        "app_signature": {
+            "signature": "47944289d41c8c4051987a69cda73f3099064b0a5b2e32e03b620911ead1a37e59daaa5c0323ddc42c9da0c34c1c842a2c302e1e27dae971118e57de255e7db51b",
+            "message": "Creating Audius developer app at 1686252026",
+        },
     },
 ]
 
 
+@freeze_time("2023-06-08")
 def test_index_app(app, mocker):
     "Tests app action"
 
@@ -39,7 +53,7 @@ def test_index_app(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, None)
+        update_task = UpdateTask(web3, None)
 
     """"
     const resp = await this.manageEntity({
@@ -58,7 +72,7 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "description": "{new_apps_data[0]["description"]}", "address": "{new_apps_data[0]["address"]}", "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "description": "{new_apps_data[0]["description"]}", "app_signature": {{"signature": "{new_apps_data[0]["app_signature"]["signature"]}", "message": "{new_apps_data[0]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
@@ -73,7 +87,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[1]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "description": "{new_apps_data[1]["description"]}", "address": "{new_apps_data[1]["address"]}", "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "description": "{new_apps_data[1]["description"]}", "app_signature": {{"signature": "{new_apps_data[1]["app_signature"]["signature"]}", "message": "{new_apps_data[1]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -87,7 +101,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": new_apps_data[2]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "address": "{new_apps_data[2]["address"]}"}}""",
+                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "app_signature": {{"signature": "{new_apps_data[2]["app_signature"]["signature"]}", "message": "{new_apps_data[2]["app_signature"]["message"]}"}}}}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -133,13 +147,11 @@ def test_index_app(app, mocker):
             block_number=0,
             block_timestamp=1000000000,
             block_hash=0,
-            metadata={},
         )
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         assert len(all_apps) == 4
-
         for expected_app in new_apps_data:
             found_matches = [
                 item
@@ -158,7 +170,7 @@ def test_index_app(app, mocker):
             )
             assert res.blocknumber == 0
 
-    # Test invalid create app txs
+    # # Test invalid create app txs
     tx_receipts = {
         "CreateAppInvalidTx1": [
             {
@@ -169,7 +181,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 4,
                         "_action": Action.CREATE,
-                        "_metadata": '{"name": "Wrong Signer", "address": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055", "is_personal_access": false}',
+                        "_metadata": '{"name": "Wrong Signer", "app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "is_personal_access": false}',
                         "_signer": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055",
                     }
                 )
@@ -184,7 +196,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"name": "Dupe address", "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4", "is_personal_access": false}',
+                        "_metadata": '{"name": "Dupe address", "app_signature": {"signature": "f5a13e71d33d38c35966d4ebbbabc82d7f148fd206336e3136337c97947c9a946421248b999e8945a5830349d3b7129f83ac3827fb0b4191b56ae6ce4f26ac3a1b", "message": "Creating Audius developer app at 1686252028"}, "is_personal_access": false}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -199,7 +211,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 0,
                         "_action": Action.CREATE,
-                        "_metadata": '{"name": "Missing user id", "address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
+                        "_metadata": '{"name": "Missing user id", "app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "is_personal_access": false}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -214,7 +226,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5"}',
+                        "_metadata": """{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -229,7 +241,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "name": "My app", "description": "The picket fence had stood for years without any issue. That was all it was. A simple, white, picket fence. Why it had all of a sudden become a lightning rod within the community was still unbelievable to most."}',
+                        "_metadata": '{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My app", "description": "The picket fence had stood for years without any issue. That was all it was. A simple, white, picket fence. Why it had all of a sudden become a lightning rod within the community was still unbelievable to most."}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -244,7 +256,52 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "name": "My app", "description": false}',
+                        "_metadata": '{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My app", "description": false}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx7": [
+            {
+                # Not the right message in signature
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": {"signature": "0x517e1a2b3c6a7a33ef22b8e6054825b435b18247e70200c757d3e5e64ec417f852a8efbe3cf882b39868dc9eb1f1439230145b9ec7cd3206e30f35e63948fb781b", "message": "Hey There"}, "name": "My app"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx8": [
+            {
+                # Bad signature format
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "name": "My app"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx9": [
+            {
+                # Timestamp in signature message too old
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": {"signature": "7d53b3f50640b1c64062fea565119e673611e0763778a087c34e8882115d28dc614896874dedb83124a3aa91007595675882537bd6b21444dd94b73ba61c573e1b", "message": "Creating Audius developer app at 1686233691"}, "name": "My app", "description": false}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -267,7 +324,6 @@ def test_index_app(app, mocker):
             block_number=1,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -338,7 +394,6 @@ def test_index_app(app, mocker):
             block_number=0,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -406,7 +461,6 @@ def test_index_app(app, mocker):
             block_number=1,
             block_timestamp=timestamp,
             block_hash=0,
-            metadata={},
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()

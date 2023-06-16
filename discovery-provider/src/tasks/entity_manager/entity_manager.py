@@ -23,6 +23,7 @@ from src.models.users.user import User
 from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
+    get_app_address_from_signature,
 )
 from src.tasks.entity_manager.entities.grant import create_grant, revoke_grant
 from src.tasks.entity_manager.entities.notification import (
@@ -57,7 +58,11 @@ from src.tasks.entity_manager.utils import (
     ExistingRecordDict,
     ManageEntityParameters,
     RecordDict,
+    expect_cid_metadata_json,
+    get_metadata_type_and_format,
     get_record_key,
+    parse_metadata,
+    save_cid_metadata,
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
@@ -80,9 +85,9 @@ def entity_manager_update(
     block_number: int,
     block_timestamp,
     block_hash: str,
-    metadata: Dict,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
     try:
+        update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
@@ -103,9 +108,7 @@ def entity_manager_update(
         )
 
         # collect events by entity type and action
-        entities_to_fetch = collect_entities_to_fetch(
-            update_task, entity_manager_txs, metadata
-        )
+        entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
         # fetch existing tracks and playlists
         existing_records: ExistingRecordDict = fetch_existing_entities(
@@ -120,6 +123,11 @@ def entity_manager_update(
         pending_track_routes: List[TrackRoute] = []
         pending_playlist_routes: List[PlaylistRoute] = []
 
+        # cid -> metadata type
+        cid_type: Dict[str, str] = {}
+        # cid -> metadata
+        cid_metadata: Dict[str, Dict] = {}
+
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -128,7 +136,6 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
-                    start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
                         update_task.redis,
@@ -138,7 +145,6 @@ def entity_manager_update(
                         existing_records,
                         pending_track_routes,
                         pending_playlist_routes,
-                        metadata,
                         update_task.eth_manager,
                         update_task.web3,
                         block_timestamp,
@@ -146,6 +152,17 @@ def entity_manager_update(
                         event_blockhash,
                         txhash,
                     )
+                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
+                    # later
+                    if expect_cid_metadata_json(
+                        params.metadata, params.action, params.entity_type
+                    ):
+                        metadata_type, _ = get_metadata_type_and_format(
+                            params.entity_type
+                        )
+                        cid_type[params.metadata_cid] = metadata_type
+                        cid_metadata[params.metadata_cid] = params.metadata
+
                     if (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
@@ -249,10 +266,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process {params.action} {params.entity_type} tx error {e} | with event {event}"
-                    )
-                    metric_num_errors.save_time(
-                        {"entity_type": params.entity_type}, start_time=start_time_tx
+                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
         # compile records_to_save
         records_to_save = []
@@ -285,7 +299,10 @@ def entity_manager_update(
         num_total_changes += len(records_to_save)
 
         # update metrics
-        metric_latency.save_time()
+        metric_latency.save_time(
+            {"scope": "entity_manager_update"},
+            start_time=update_start_time,
+        )
         metric_num_changed.save(
             len(new_records["playlists"]), {"entity_type": EntityType.PLAYLIST.value}
         )
@@ -296,6 +313,18 @@ def entity_manager_update(
         logger.info(
             f"entity_manager.py | Completed with {num_total_changes} total changes"
         )
+
+        # bulk save to metadata to cid_data
+        if cid_metadata:
+            save_cid_metadata_time = time.time()
+            save_cid_metadata(session, cid_metadata, cid_type)
+            metric_latency.save_time(
+                {"scope": "save_cid_metadata"},
+                start_time=save_cid_metadata_time,
+            )
+            logger.debug(
+                f"entity_manager.py | save_cid_metadata in {time.time() - save_cid_metadata_time}s"
+            )
     except Exception as e:
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
@@ -314,7 +343,7 @@ def copy_original_records(existing_records):
 entity_types_to_fetch = set([EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST])
 
 
-def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
+def collect_entities_to_fetch(update_task, entity_manager_txs):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
@@ -324,16 +353,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             entity_type = helpers.get_tx_arg(event, "_entityType")
             action = helpers.get_tx_arg(event, "_action")
             user_id = helpers.get_tx_arg(event, "_userId")
-            cid = helpers.get_tx_arg(event, "_metadata")
+            metadata = helpers.get_tx_arg(event, "_metadata")
             signer = helpers.get_tx_arg(event, "_signer")
-
-            json_metadata = None
-            # Check if metadata blob was passed directly and use if so.
-            try:
-                json_metadata = json.loads(cid)
-                cid = json_metadata["cid"]
-            except Exception:
-                pass
 
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
@@ -343,53 +364,59 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             ):
                 entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
                 entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
-            if entity_type == EntityType.DEVELOPER_APP:
-                if json_metadata and isinstance(json_metadata, dict):
-                    raw_address = json_metadata.get("address", None)
-                    if raw_address:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            raw_address.lower()
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
-                        )
-                else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing metadata required for add developer app tx"
-                    )
-            if entity_type == EntityType.GRANT:
-                if json_metadata and isinstance(json_metadata, dict):
-                    raw_grantee_address = json_metadata.get("grantee_address", None)
-                    if raw_grantee_address:
-                        entities_to_fetch[EntityType.GRANT].add(
-                            (raw_grantee_address.lower(), user_id)
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
-                        )
-                    raw_grantee_address = json_metadata.get("grantee_address", None)
-                    if raw_grantee_address:
-                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
-                            raw_grantee_address.lower()
-                        )
-                        entities_to_fetch[EntityType.USER_WALLET].add(
-                            raw_grantee_address.lower()
-                        )
-                    else:
-                        logger.error(
-                            "tasks | entity_manager.py | Missing developer app address in metadata required for add grant tx"
-                        )
-                else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing metadata required for add grant tx"
-                    )
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
             if signer:
                 entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
-            action = helpers.get_tx_arg(event, "_action")
+            if entity_type == EntityType.DEVELOPER_APP:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                raw_address = json_metadata.get("address", None)
+                if raw_address:
+                    entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
+                else:
+                    try:
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            get_app_address_from_signature(
+                                json_metadata.get("app_signature", {})
+                            )
+                        )
+                    except:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
+                        )
+            if entity_type == EntityType.GRANT:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                raw_grantee_address = json_metadata.get("grantee_address", None)
+                if raw_grantee_address:
+                    entities_to_fetch[EntityType.GRANT].add(
+                        (raw_grantee_address.lower(), user_id)
+                    )
+                    entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                        raw_grantee_address.lower()
+                    )
+                    entities_to_fetch[EntityType.USER_WALLET].add(
+                        raw_grantee_address.lower()
+                    )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
+                    )
 
             # Query social operations as needed
             if action in action_to_record_types.keys():
@@ -398,15 +425,21 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                     entity_key = get_record_key(user_id, entity_type, entity_id)
                     entities_to_fetch[record_type].add(entity_key)
 
-            # Add playlist track ids in entities to fetch
-            # to prevent playlists from including premium tracks
-            if cid in metadata:
-                tracks = metadata[cid].get("playlist_contents", {}).get("track_ids", [])
+            if expect_cid_metadata_json(metadata, action, entity_type):
+                try:
+                    json_metadata, _ = parse_metadata(metadata, action, entity_type)
+                except Exception:
+                    # skip invalid metadata
+                    continue
+
+                # Add playlist track ids in entities to fetch
+                # to prevent playlists from including premium tracks
+                tracks = json_metadata.get("playlist_contents", {}).get("track_ids", [])
                 for track in tracks:
                     entities_to_fetch[EntityType.TRACK].add(track["track"])
 
                 if entity_type == EntityType.TRACK and action == Action.CREATE:
-                    user_id = metadata[cid].get("ai_attribution_user_id")
+                    user_id = json_metadata.get("ai_attribution_user_id")
                     if user_id:
                         entities_to_fetch[EntityType.USER].add(user_id)
 

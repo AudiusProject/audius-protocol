@@ -12,7 +12,6 @@ const models = require('./models')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { verifyRequesterIsValidSP } = require('./apiSigning')
-const BlacklistManager = require('./blacklistManager')
 const {
   issueSyncRequestsUntilSynced
 } = require('./services/stateMachineManager/stateReconciliation/stateReconciliationUtils')
@@ -72,15 +71,6 @@ async function authMiddleware(req, res, next) {
     if (resp && resp.blockchainId) {
       userId = parseInt(resp.blockchainId)
     }
-  }
-
-  const userBlacklisted = await BlacklistManager.userIdIsInBlacklist(userId)
-  if (userBlacklisted) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseUnauthorized('User not allowed to make changes on node')
-    )
   }
 
   // Attach session object to request

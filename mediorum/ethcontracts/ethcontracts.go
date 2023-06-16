@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"regexp"
+
+	"mediorum/httputil"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -61,8 +62,8 @@ func GetNotifierForID(ID string, delegateOwnerWallet string) (NotifierInfo, erro
 
 	return NotifierInfo{
 		Wallet:   output.Wallet.Hex(),
-		Endpoint: removeTrailingSlash(output.Endpoint),
-		Email:    removeTrailingSlash(output.Email),
+		Endpoint: httputil.RemoveTrailingSlash(output.Endpoint),
+		Email:    httputil.RemoveTrailingSlash(output.Email),
 	}, nil
 }
 
@@ -131,9 +132,4 @@ func GetContractAddr(client *ethclient.Client, ethRegistryAddr common.Address, c
 	}
 
 	return contractAddr, nil
-}
-
-func removeTrailingSlash(s string) string {
-	re := regexp.MustCompile("/$")
-	return re.ReplaceAllString(s, "")
 }

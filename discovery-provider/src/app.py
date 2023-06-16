@@ -39,7 +39,6 @@ from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
-from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
@@ -302,7 +301,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
-            "src.tasks.index_network_peers",
+            "src.tasks.update_clique_signers",
             "src.tasks.index_trending",
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
@@ -342,8 +341,8 @@ def configure_celery(celery, test_config=None):
                 "task": "vacuum_db",
                 "schedule": timedelta(days=1),
             },
-            "update_network_peers": {
-                "task": "update_network_peers",
+            "update_clique_signers": {
+                "task": "update_clique_signers",
                 "schedule": timedelta(seconds=10),
             },
             "index_trending": {
@@ -376,7 +375,7 @@ def configure_celery(celery, test_config=None):
             },
             "index_eth": {
                 "task": "index_eth",
-                "schedule": timedelta(seconds=10),
+                "schedule": timedelta(seconds=30),
             },
             "index_oracles": {
                 "task": "index_oracles",
@@ -458,14 +457,6 @@ def configure_celery(celery, test_config=None):
     )
     logger.info("Database instance initialized!")
 
-    # Initialize CIDMetadataClient for celery task context
-    cid_metadata_client = CIDMetadataClient(
-        eth_web3,
-        shared_config,
-        redis_inst,
-        eth_abi_values,
-    )
-
     registry_address = web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -527,7 +518,6 @@ def configure_celery(celery, test_config=None):
                 abi_values=abi_values,
                 eth_abi_values=eth_abi_values,
                 shared_config=shared_config,
-                cid_metadata_client=cid_metadata_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 trusted_notifier_manager=trusted_notifier_manager,
