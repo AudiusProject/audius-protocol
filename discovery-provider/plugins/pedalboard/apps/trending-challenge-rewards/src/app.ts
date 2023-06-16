@@ -17,7 +17,7 @@ import { WebClient } from "@slack/web-api";
 import { formatDisbursementTable } from "./slack";
 
 // TODO: move something like this into App so results are commonplace for handlers
-export const onCondition = async (app: App<SharedData>): Promise<void> => {
+export const disburseTrendingRewards = async (app: App<SharedData>): Promise<void> => {
   const { dryRun } = app.viewAppData();
   const disburse = await onDisburse(app, dryRun);
   disburse.mapErr(console.error);

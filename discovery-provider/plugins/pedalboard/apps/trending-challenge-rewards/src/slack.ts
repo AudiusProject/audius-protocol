@@ -14,6 +14,13 @@ import { onDisburse } from "./app";
 import { WebClient } from "@slack/web-api";
 import { ChallengeDisbursementUserbankFriendly } from "./queries";
 
+export const establishSlackConnection = async (app: App<SharedData>) => {
+  const slack = initSlack(app).unwrap();
+  const port = process.env.SLACK_SOCKET_PORT || 3008;
+  await slack.start(port);
+  console.log("slack connection established ⚡️");
+}
+
 export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
   const botToken = process.env.SLACK_BOT_TOKEN;
   const signingSecret = process.env.SLACK_SIGNING_SECRET;

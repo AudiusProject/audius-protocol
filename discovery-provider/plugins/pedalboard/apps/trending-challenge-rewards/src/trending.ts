@@ -1,16 +1,22 @@
+import App from "basekit/src/app"
 import { Knex } from "knex"
+import { SharedData } from "./config"
 
-export const queryTopFiveTrending = async (discoveryDb: Knex): Promise<void> => {
+export const announceTopFiveTrending = async (app: App<SharedData>) => {
     
 }
 
-export const gatherTwitterHandles = async (identityDb: Knex, discoveryDb: Knex, blockchainUserIds: number[]): Promise<Map<number, string>> => {
+const queryTopFiveTrending = async (discoveryDb: Knex): Promise<void> => {
+
+}
+
+const gatherTwitterHandles = async (identityDb: Knex, discoveryDb: Knex, blockchainUserIds: number[]): Promise<Map<number, string>> => {
     // check identity for twitter handle
     // if not found, get audius handle from discovery
     // insert into map of blockchainUserId => display handle
     return new Map()
 }
 
-export const composeTweet = (): string[] => {
+const composeTweet = (): string[] => {
     return []
 }
