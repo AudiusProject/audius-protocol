@@ -21,7 +21,7 @@ const messages = {
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   composeTextContainer: {
     display: 'flex',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     backgroundColor: palette.neutralLight10,
     paddingLeft: spacing(4),
     paddingVertical: spacing(1),
@@ -75,6 +75,7 @@ export const ChatTextInput = ({
   const renderIcon = () => (
     <Pressable
       onPress={handleSubmit}
+      hitSlop={spacing(2)}
       style={({ pressed }) => [
         styles.iconCircle,
         {
