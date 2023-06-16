@@ -733,7 +733,7 @@ def test_invalid_user_bio(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(None, web3, bus_mock)
+        update_task = UpdateTask(web3, bus_mock, None, None)
     
     tx_receipts = {
         "CreateUserInvalidBio": [
