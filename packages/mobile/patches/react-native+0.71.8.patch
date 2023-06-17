@@ -40,6 +40,35 @@ index e948a85..0814a98 100644
    horizontallyInverted: {
      transform: [{scaleX: -1}],
    },
+diff --git a/node_modules/react-native/Libraries/Text/TextInput/RCTBackedTextInputDelegateAdapter.m b/node_modules/react-native/Libraries/Text/TextInput/RCTBackedTextInputDelegateAdapter.m
+index 1c8f8e0..0542362 100644
+--- a/node_modules/react-native/Libraries/Text/TextInput/RCTBackedTextInputDelegateAdapter.m
++++ b/node_modules/react-native/Libraries/Text/TextInput/RCTBackedTextInputDelegateAdapter.m
+@@ -256,21 +256,21 @@ - (BOOL)textView:(__unused UITextView *)textView shouldChangeTextInRange:(NSRang
+ 
+ - (void)textViewDidChange:(__unused UITextView *)textView
+ {
+-  if (_ignoreNextTextInputCall) {
++  if (_ignoreNextTextInputCall && [_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
+     _ignoreNextTextInputCall = NO;
+     return;
+   }
++  _lastStringStateWasUpdatedWith = _backedTextInputView.attributedText;
+   _textDidChangeIsComing = NO;
+   [_backedTextInputView.textInputDelegate textInputDidChange];
+ }
+ 
+ - (void)textViewDidChangeSelection:(__unused UITextView *)textView
+ {
+-  if (_lastStringStateWasUpdatedWith && ![_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
++  if (![_lastStringStateWasUpdatedWith isEqual:_backedTextInputView.attributedText]) {
+     [self textViewDidChange:_backedTextInputView];
+     _ignoreNextTextInputCall = YES;
+   }
+-  _lastStringStateWasUpdatedWith = _backedTextInputView.attributedText;
+   [self textViewProbablyDidChangeSelection];
+ }
+ 
 diff --git a/node_modules/react-native/scripts/.packager.env b/node_modules/react-native/scripts/.packager.env
 new file mode 100644
 index 0000000..361f5fb
