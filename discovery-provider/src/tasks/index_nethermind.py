@@ -778,8 +778,9 @@ def index_nethermind(self):
                 in_valid_state, next_block = get_relevant_blocks(
                     web3, latest_database_block, FINAL_POA_BLOCK
                 )
-                if in_valid_state and next_block:
-                    index_next_block(session, latest_database_block, next_block)
+                if in_valid_state:
+                    if next_block:
+                        index_next_block(session, latest_database_block, next_block)
                 else:
                     revert_block(session, latest_database_block)
             except Exception as e:
