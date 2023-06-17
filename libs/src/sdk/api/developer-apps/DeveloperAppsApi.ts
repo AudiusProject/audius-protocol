@@ -1,11 +1,10 @@
-import * as secp from '@noble/secp256k1'
-import { keccak_256 } from '@noble/hashes/sha3'
-
+import type Web3Type from 'web3'
+import Web3 from '../../utils/web3'
 import {
   Configuration,
   DeveloperAppsApi as GeneratedDeveloperAppsApi
 } from '../generated/default'
-import { pubToAddress } from 'ethereumjs-util'
+
 import type { AuthService, EntityManagerService } from '../../services'
 import {
   Action,
@@ -13,21 +12,25 @@ import {
   WriteOptions
 } from '../../services/EntityManager/types'
 
-import {
-  CreateDeveloperAppSchema,
-  CreateDeveloperAppRequest,
-  DeleteDeveloperAppSchema,
-  DeleteDeveloperAppRequest
-} from './types'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import {
+  CreateDeveloperAppRequest,
+  CreateDeveloperAppSchema,
+  DeleteDeveloperAppRequest,
+  DeleteDeveloperAppSchema
+} from './types'
 
 export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
+  private readonly web3: Web3Type
+
   constructor(
     config: Configuration,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService
   ) {
     super(config)
+
+    this.web3 = new Web3()
   }
 
   /**
@@ -42,27 +45,14 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       CreateDeveloperAppSchema
     )(requestParameters)
 
-    const apiSecretRaw = secp.utils.randomPrivateKey()
-    const walletPubKey = secp.getPublicKey(
-      apiSecretRaw,
-      /** compressed = */ false
-    )
-    const apiKeyRaw = pubToAddress(Buffer.from(walletPubKey))
-
-    const apiSecret = Buffer.from(apiSecretRaw).toString('hex')
-    const apiKey = apiKeyRaw.toString('hex')
+    const wallet = this.web3.eth.accounts.create()
+    const privateKey = wallet.privateKey
+    const address = wallet.address
 
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Creating Audius developer app at ${unixTs}`
-    const signature = await secp.sign(
-      keccak_256(message),
-      Buffer.from(apiSecretRaw),
-      {
-        recovered: true,
-        der: false
-      }
-    )
 
+    const signature = wallet.sign(message).signature
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.DEVELOPER_APP,
@@ -81,6 +71,8 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     })
 
     const txReceipt = response.txReceipt
+    const apiKey = address.slice(2).toLowerCase()
+    const apiSecret = privateKey.slice(2).toLowerCase()
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
