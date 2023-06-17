@@ -465,8 +465,7 @@ def configure_celery(celery, test_config=None):
 
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    redis_inst.delete("disc_prov_lock_nethermind")
-
+    redis_inst.delete("index_nethermind_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")

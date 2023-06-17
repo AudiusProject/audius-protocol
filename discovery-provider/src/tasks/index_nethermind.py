@@ -265,7 +265,6 @@ def get_latest_database_block(session: Session) -> Block:
     return latest_database_block
 
 
-@log_duration(logger)
 def is_block_on_chain(web3: Web3, block: Block):
     """
     Determines if the provided block is valid on chain by fetching its hash.
@@ -310,26 +309,18 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
 
 @log_duration(logger)
-def index_next_block(session: Session, latest_database_block: Block, final_poa_block=0):
+def index_next_block(
+    session: Session, latest_database_block: Block, next_block: AttributeDict
+):
     """
     Given the latest block in the database, index forward one block.
     """
     redis = index_nethermind.redis
     shared_config = index_nethermind.shared_config
 
-    # Get next block to index
-    next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
-    try:
-        next_block = web3.eth.get_block(next_block_number)
-        next_block = AttributeDict(
-            next_block, number=next_block.number + final_poa_block
-        )
-    except BlockNotFound:
-        logger.info(f"Block not found {next_block_number}, returning early")
-        # Return early because we've likely indexed up to the head of the chain
-        return
-
+    next_block_number = next_block.number
     logger.set_context("block", next_block_number)
+
     indexing_transaction_index_sort_order_start_block = (
         shared_config["discprov"]["indexing_transaction_index_sort_order_start_block"]
         or 0
@@ -777,31 +768,22 @@ def index_nethermind(self):
 
     redis = index_nethermind.redis
     db = index_nethermind.db
-    update_lock = redis.lock("index_nethermind", blocking_timeout=25, timeout=600)
+    update_lock = redis.lock("index_nethermind_lock", blocking_timeout=25, timeout=600)
     have_lock = update_lock.acquire(blocking=False)
 
-    try:
-        if have_lock:
-            with db.scoped_session() as session:
+    if have_lock:
+        with db.scoped_session() as session:
+            try:
                 latest_database_block = get_latest_database_block(session)
                 in_valid_state, next_block = get_relevant_blocks(
                     web3, latest_database_block, FINAL_POA_BLOCK
                 )
-                if in_valid_state:
-                    index_next_block(session, next_block)
+                if in_valid_state and next_block:
+                    index_next_block(session, latest_database_block, next_block)
                 else:
                     revert_block(session, latest_database_block)
-
-                # latest_database_block = get_latest_database_block(session)
-                # block_from_chain = is_block_on_chain(web3, latest_database_block)
-                # if block_from_chain:
-                #     index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
-                # else:
-                #     revert_block(session, latest_database_block)
-    except Exception as e:
-        logger.error(f"Error in indexing blocks {e}", exc_info=True)
-        session.rollback()
-    finally:
-        if have_lock:
-            update_lock.release()
-            celery.send_task("index_nethermind")
+            except Exception as e:
+                logger.error(f"Error in indexing blocks {e}", exc_info=True)
+                session.rollback()
+        update_lock.release()
+        celery.send_task("index_nethermind")
