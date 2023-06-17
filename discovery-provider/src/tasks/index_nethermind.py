@@ -278,6 +278,37 @@ def is_block_on_chain(web3: Web3, block: Block):
     # Raise any other type of exception
 
 
+def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
+    # Get next block to index
+    next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
+    try:
+        next_block = web3.eth.get_block(next_block_number)
+        next_block = AttributeDict(
+            next_block, number=next_block.number + final_poa_block
+        )
+        return next_block
+    except BlockNotFound:
+        logger.info(f"Block not found {next_block_number}, returning early")
+        # Return early because we've likely indexed up to the head of the chain
+        return False
+
+
+@log_duration(logger)
+def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_block=0):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        is_block_on_chain_future = executor.submit(
+            is_block_on_chain, web3, latest_database_block
+        )
+        next_block_future = executor.submit(
+            get_next_block, web3, latest_database_block, final_poa_block
+        )
+
+        block_on_chain = is_block_on_chain_future.result()
+        next_block = next_block_future.result()
+
+        return block_on_chain, next_block
+
+
 @log_duration(logger)
 def index_next_block(session: Session, latest_database_block: Block, final_poa_block=0):
     """
@@ -753,11 +784,20 @@ def index_nethermind(self):
         if have_lock:
             with db.scoped_session() as session:
                 latest_database_block = get_latest_database_block(session)
-                block_from_chain = is_block_on_chain(web3, latest_database_block)
-                if block_from_chain:
-                    index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
+                in_valid_state, next_block = get_relevant_blocks(
+                    web3, latest_database_block, FINAL_POA_BLOCK
+                )
+                if in_valid_state:
+                    index_next_block(session, next_block)
                 else:
                     revert_block(session, latest_database_block)
+
+                # latest_database_block = get_latest_database_block(session)
+                # block_from_chain = is_block_on_chain(web3, latest_database_block)
+                # if block_from_chain:
+                #     index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
+                # else:
+                #     revert_block(session, latest_database_block)
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
         session.rollback()
