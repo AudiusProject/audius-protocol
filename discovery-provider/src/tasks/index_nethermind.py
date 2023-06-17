@@ -1,7 +1,6 @@
 # pylint: disable=C0302
 import concurrent.futures
 import os
-import uuid
 from datetime import datetime
 from operator import itemgetter, or_
 
@@ -112,9 +111,9 @@ def fetch_tx_receipts(block):
     return block_tx_with_receipts
 
 
-def get_entity_manager_events_tx(update_task, event_type, tx_receipt):
+def get_entity_manager_events_tx(index_nethermind, event_type, tx_receipt):
     return getattr(
-        update_task.entity_manager_contract.events, event_type
+        index_nethermind.entity_manager_contract.events, event_type
     )().processReceipt(tx_receipt)
 
 
@@ -200,7 +199,7 @@ def process_state_changes(
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
-            update_task,
+            index_nethermind,
             session,
             txs_to_process,
             block_number,
@@ -284,8 +283,8 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
     """
     Given the latest block in the database, index forward one block.
     """
-    redis = update_task.redis
-    shared_config = update_task.shared_config
+    redis = index_nethermind.redis
+    shared_config = index_nethermind.shared_config
 
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
@@ -305,7 +304,7 @@ def index_next_block(session: Session, latest_database_block: Block, final_poa_b
         or 0
     )
 
-    challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
+    challenge_bus: ChallengeEventBus = index_nethermind.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
         skip_tx_hash = get_tx_hash_to_skip(session, redis)
         skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
@@ -740,25 +739,29 @@ def revert_block(session: Session, revert_block: Block):
     )
 
 
+@celery.task(name="index_nethermind", bind=True)
 @log_duration(logger)
-def run():
-    db = update_task.db
-    logger.set_context("request_id", uuid.uuid1())
+def index_nethermind(self):
+    logger.set_context("request_id", self.request.id)
+
+    redis = index_nethermind.redis
+    db = index_nethermind.db
+    update_lock = redis.lock("index_nethermind", blocking_timeout=25, timeout=600)
+    have_lock = update_lock.acquire(blocking=False)
+
     try:
-        with db.scoped_session() as session:
-            latest_database_block = get_latest_database_block(session)
-            block_from_chain = is_block_on_chain(web3, latest_database_block)
-            if block_from_chain:
-                index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
-            else:
-                revert_block(session, latest_database_block)
+        if have_lock:
+            with db.scoped_session() as session:
+                latest_database_block = get_latest_database_block(session)
+                block_from_chain = is_block_on_chain(web3, latest_database_block)
+                if block_from_chain:
+                    index_next_block(session, latest_database_block, FINAL_POA_BLOCK)
+                else:
+                    revert_block(session, latest_database_block)
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
         session.rollback()
-
-
-# CELERY TASKS
-@celery.task(name="index_nethermind", bind=True)
-def update_task(self):
-    while True:
-        run()
+    finally:
+        if have_lock:
+            update_lock.release()
+            celery.send_task("index_nethermind")
