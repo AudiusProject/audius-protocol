@@ -21,3 +21,5 @@ Patch to support full screen swipe gestures in native stack. and navigation draw
 ## react-native+0.71.8.patch
 
 Patch to prevent a freezing issue on some Android 13 devices when using an inverted FlatList with a lot of text or any animations. See https://github.com/facebook/react-native/issues/35350 and https://github.com/facebook/react-native/issues/30034
+
+Patch to fix an issue with TextInput not sending onChange events on the first character entered, when multiline is set to true. See https://github.com/facebook/react-native/issues/37784
