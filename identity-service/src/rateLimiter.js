@@ -10,7 +10,9 @@ const redisClient = new Redis(
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
 const sigUtil = require('eth-sig-util')
-const { signatureSchemas } = require('@audius/sdk/src/data-contracts')
+const {
+  generators
+} = require('@audius/sdk/src/data-contracts/signatureSchemas.js')
 
 const models = require('./models')
 const { libs } = require('@audius/sdk')
@@ -173,7 +175,7 @@ const getRateLimiterMiddleware = () => {
 
 const getEntityManagerActionKey = (encodedABI) => {
   const decodedABI = decodeABI(encodedABI)
-  let key = decodedABI[''] + entityType
+  let key = decodedABI.action + decodedABI.entityType
   return key
 }
 
@@ -254,6 +256,7 @@ const getRelayRateLimiterMiddleware = () => {
     },
     keyGenerator: function (req) {
       const key = getEntityManagerActionKey(req.body.encodedABI)
+      const signer = recoverSigner(req.body.encodedABI)
       return ':::' + key + ':' + signer
     },
     handler: (req, res, options) => {

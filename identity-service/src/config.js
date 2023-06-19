@@ -43,7 +43,7 @@ const config = convict({
     doc: 'the chain ID for ACDC',
     format: Number,
     env: 'acdcChainId',
-    default: null // TODO make local
+    default: 1000000000001
   },
   nethermindEnabled: {
     doc: 'writing to ACDC chain feature flag',
