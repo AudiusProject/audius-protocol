@@ -194,7 +194,7 @@ const decodeABI = (encodedABI) => {
 const recoverSigner = (encodedABI) => {
   const decodedABI = decodeABI(encodedABI)
 
-  const data = signatureSchemas.generators.getManageEntityData(
+  const data = generators.getManageEntityData(
     config.get('acdcChainId'),
     config.get('entityManagerAddress'),
     decodedABI.userId,
