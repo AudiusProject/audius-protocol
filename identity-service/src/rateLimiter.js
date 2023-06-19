@@ -9,6 +9,9 @@ const redisClient = new Redis(
   config.get('redisHost'),
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
+const sigUtil = require('eth-sig-util')
+const { signatureSchemas } = require('@audius/sdk/src/data-contracts')
+
 const models = require('./models')
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
@@ -168,26 +171,48 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
+const getEntityManagerActionKey = (encodedABI) => {
+  const decodedABI = decodeABI(encodedABI)
+  let key = decodedABI[''] + entityType
+  return key
+}
+
+const decodeABI = (encodedABI) => {
+  const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
+  const mapping = {}
+
+  // map without leading underscore in _userId
+  decodedABI.params.forEach((param) => {
+    mapping[param.name.substring(1)] = param.value
+  })
+
+  return mapping
+}
+
+const recoverSigner = (encodedABI) => {
+  const decodedABI = decodeABI(encodedABI)
+
+  const data = signatureSchemas.generators.getManageEntityData(
+    config.get('acdcChainId'),
+    config.get('entityManagerAddress'),
+    decodedABI.userId,
+    decodedABI.entityType,
+    decodedABI.entityId,
+    decodedABI.action,
+    decodedABI.metadata,
+    decodedABI.nonce
+  )
+  return sigUtil.recoverTypedSignature({ data, sig: decodedABI.subjectSig })
+}
 
 const rateLimitMessage = 'Too many requests, please try again later'
 const getRelayBlocklistMiddleware = (req, res, next) => {
+  const signer = recoverSigner(req.body.encodedABI)
   const blocklist = config.get('blocklistPublicKeyFromRelay')
-  if (blocklist && blocklist.includes(req.body.senderAddress)) {
+  if (blocklist && blocklist.includes(signer)) {
     return res.status(429).send(rateLimitMessage)
   }
   next()
-}
-
-const getEntityManagerActionKey = (encodedABI) => {
-  const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
-  const action = decodedABI.params.find(
-    (param) => param.name === '_action'
-  ).value
-  const entityType = decodedABI.params.find(
-    (param) => param.name === '_entityType'
-  ).value
-  let key = action + entityType
-  return key
 }
 
 const getRelayRateLimiterMiddleware = () => {
@@ -196,10 +221,11 @@ const getRelayRateLimiterMiddleware = () => {
     prefix: `relayWalletRateLimiter`,
     max: async function (req) {
       const key = getEntityManagerActionKey(req.body.encodedABI)
+      const signer = recoverSigner(req.body.encodedABI)
 
       let limit = config.get(key)
       req.user = await models.User.findOne({
-        where: { walletAddress: req.body.senderAddress },
+        where: { walletAddress: signer },
         attributes: [
           'id',
           'blockchainUserId',
@@ -216,7 +242,7 @@ const getRelayRateLimiterMiddleware = () => {
         limit = limit['owner']
         req.isFromApp = false
       } else {
-        if (allowlist && allowlist.includes(req.body.senderAddress)) {
+        if (allowlist && allowlist.includes(signer)) {
           limit = limit['allowlist']
         } else {
           limit = limit['app']
@@ -228,11 +254,12 @@ const getRelayRateLimiterMiddleware = () => {
     },
     keyGenerator: function (req) {
       const key = getEntityManagerActionKey(req.body.encodedABI)
-      return ':::' + key + ':' + req.body.senderAddress
+      return ':::' + key + ':' + signer
     },
     handler: (req, res, options) => {
+      const signer = recoverSigner(req.body.encodedABI)
       try {
-        req.logger.error(`Rate limited sender ${req.body.senderAddress}`)
+        req.logger.error(`Rate limited sender ${signer}`)
       } catch (error) {
         req.logger.error(`Cannot relay without sender address`)
       }
