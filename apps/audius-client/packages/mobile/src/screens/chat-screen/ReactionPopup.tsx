@@ -42,7 +42,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   popupContainer: {
     position: 'absolute',
-    display: 'flex',
     zIndex: zIndex.CHAT_REACTIONS_POPUP_CLOSE_PRESSABLES,
     overflow: 'hidden'
   },
@@ -75,25 +74,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   emoji: {
     height: spacing(17)
   },
-  copyPressableContainer: {
-    position: 'absolute',
-    dipslay: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing(1.5),
+  copyContainer: {
     zIndex: zIndex.CHAT_REACTIONS_POPUP_CONTENT
-  },
-  copyAnimatedContainer: {
-    dipslay: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing(1.5),
-    zIndex: zIndex.CHAT_REACTIONS_POPUP_CONTENT
-  },
-  copyText: {
-    fontSize: typography.fontSize.xs,
-    fontFamily: typography.fontByWeight.bold,
-    color: palette.white
   }
 }))
 
@@ -217,7 +199,9 @@ export const ReactionPopup = ({
           ]}
           handleClosePopup={handleClosePopup}
         />
-        <Animated.View style={{ opacity: otherOpacityAnim }}>
+        <Animated.View
+          style={[styles.copyContainer, { opacity: otherOpacityAnim }]}
+        >
           <CopyMessagesButton
             isAuthor={isAuthor}
             messageTop={messageTop}
