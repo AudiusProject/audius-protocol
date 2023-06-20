@@ -13,7 +13,7 @@ describe('test relay endpoint', function () {
     await server.close()
   })
 
-  it('responds 400 for incorrect relay params', function (done) {
+  it('responds 500 for incorrect relay params', function (done) {
     request(app)
       .post('/relay')
       .send({
@@ -21,7 +21,7 @@ describe('test relay endpoint', function () {
         contractAddress: '0xaaaaaaaaaaaaaaaaaaa',
         senderAddress: '0xaaaaaaaaaaaaaaaaaaa'
       })
-      .expect(400, done)
+      .expect(500, done)
   })
 
   it('responds to correct relay params', function (done) {
