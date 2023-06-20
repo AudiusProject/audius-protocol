@@ -272,7 +272,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatSetPermissions(tx, userId, params.Permit)
+			err = chatSetPermissions(tx, userId, params.Permit, messageTs)
 			if err != nil {
 				return err
 			}
@@ -300,7 +300,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatUnblock(tx, userId, int32(unblockedUserId))
+			err = chatUnblock(tx, userId, int32(unblockedUserId), messageTs)
 			if err != nil {
 				return err
 			}

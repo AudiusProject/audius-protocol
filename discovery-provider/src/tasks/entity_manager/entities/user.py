@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Dict, TypedDict
 
 import base58
@@ -25,6 +26,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
 )
 from src.utils.config import shared_config
+from src.utils.hardcoded_data import reserved_handles_lower, genres_lower, moods_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from web3 import Web3
@@ -76,7 +78,7 @@ def validate_user_tx(params: ManageEntityParameters):
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
-        handle_lower = user_metadata["handle"].lower()
+        handle_lower = validate_user_handle(user_metadata["handle"])
         user_handle_exists = session.query(
             session.query(User).filter(User.handle_lc == handle_lower).exists()
         ).scalar()
@@ -105,6 +107,21 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             raise Exception(
                 f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
             )
+
+
+def validate_user_handle(handle: str):
+    handle = handle.lower()
+    if handle != re.sub(r"[^a-z0-9_\.]", "", handle):
+        raise Exception(f"Handle {handle} contains illegal characters")
+    if len(handle) > 30:
+        raise Exception(f"Handle {handle} is too long")
+    if handle in reserved_handles_lower:
+        raise Exception(f"Handle {handle} is a reserved word")
+    if handle in genres_lower:
+        raise Exception(f"Handle {handle} is a genre name")
+    if handle in moods_lower:
+        raise Exception(f"Handle {handle} is a mood name")
+    return handle
 
 
 def create_user(params: ManageEntityParameters):
