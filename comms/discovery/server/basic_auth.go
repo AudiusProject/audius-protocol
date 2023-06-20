@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"comms.audius.co/discovery/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 )
@@ -42,7 +43,7 @@ func (ss *ChatServer) checkRegisteredNodeBasicAuth(user, pass string, c echo.Con
 	wallet := crypto.PubkeyToAddress(*pubkey).Hex()
 
 	// add discovery 4 as an "honorary" peer
-	if strings.EqualFold(wallet, "0x32bF5092890bb03A45bd03AaeFAd11d4afC9a851") {
+	if config.IsHonoraryNode(wallet) {
 		return true, nil
 	}
 
