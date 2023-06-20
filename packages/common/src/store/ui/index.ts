@@ -28,6 +28,14 @@ export {
 export { default as deletePlaylistConfirmationModalUISagas } from './delete-playlist-confirmation-modal/sagas'
 export * from './delete-playlist-confirmation-modal/types'
 
+export * as duplicateAddConfirmationModalUISelectors from './duplicate-add-confirmation-modal/selectors'
+export {
+  default as duplicateAddConfirmationModalUIReducer,
+  actions as duplicateAddConfirmationModalUIActions
+} from './duplicate-add-confirmation-modal/slice'
+export { default as duplicateAddConfirmationModalUISagas } from './duplicate-add-confirmation-modal/sagas'
+export * from './duplicate-add-confirmation-modal/types'
+
 export * as mobileOverflowMenuUISelectors from './mobile-overflow-menu/selectors'
 export {
   default as mobileOverflowMenuUIReducer,

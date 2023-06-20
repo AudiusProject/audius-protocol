@@ -35,5 +35,6 @@ export type Modals =
   | 'ProfileActions'
   | 'PublishPlaylistConfirmation'
   | 'AiAttributionSettings'
+  | 'DuplicateAddConfirmation'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

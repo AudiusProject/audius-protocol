@@ -7,7 +7,9 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
-  addToPlaylistUISelectors
+  addToPlaylistUISelectors,
+  duplicateAddConfirmationModalUIActions,
+  FeatureFlags
 } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
@@ -21,6 +23,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 
@@ -30,6 +33,8 @@ const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
+const { requestOpen: openDuplicateAddConfirmation } =
+  duplicateAddConfirmationModalUIActions
 
 const messages = {
   title: 'Add to Playlist',
@@ -54,6 +59,9 @@ const AddToPlaylistModal = () => {
     getAccountWithOwnPlaylists(state)
   )
   const [searchValue, setSearchValue] = useState('')
+  const { isEnabled: isPlaylistUpdatesEnabled } = useFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
 
   const filteredPlaylists = useMemo(() => {
     return (account?.playlists ?? []).filter(
@@ -68,18 +76,45 @@ const AddToPlaylistModal = () => {
     )
   }, [searchValue, account, currentCollectionId])
 
+  const playlistTrackIdMap = filteredPlaylists.reduce<Record<number, number[]>>(
+    (acc, playlist) => {
+      const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
+      acc[playlist.playlist_id] = trackIds
+      return acc
+    },
+    {}
+  )
+
   const handlePlaylistClick = (playlist: Collection) => {
     if (!trackId) return
-    dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
-    if (account && trackTitle) {
-      toast(
-        <ToastLinkContent
-          text={messages.addedToast}
-          linkText={messages.view}
-          link={playlistPage(account.handle, trackTitle, playlist.playlist_id)}
-        />
+
+    const doesPlaylistContainTrack =
+      playlistTrackIdMap[playlist.playlist_id]?.includes(trackId)
+
+    if (isPlaylistUpdatesEnabled && doesPlaylistContainTrack) {
+      dispatch(
+        openDuplicateAddConfirmation({
+          playlistId: playlist.playlist_id,
+          trackId
+        })
       )
+    } else {
+      dispatch(addTrackToPlaylist(trackId, playlist.playlist_id))
+      if (account && trackTitle) {
+        toast(
+          <ToastLinkContent
+            text={messages.addedToast}
+            linkText={messages.view}
+            link={playlistPage(
+              account.handle,
+              trackTitle,
+              playlist.playlist_id
+            )}
+          />
+        )
+      }
     }
+
     setIsOpen(false)
   }
 

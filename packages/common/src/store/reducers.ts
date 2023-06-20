@@ -89,6 +89,8 @@ import createPlaylistModalReducer from './ui/createPlaylistModal/reducer'
 import { CreatePlaylistModalState } from './ui/createPlaylistModal/types'
 import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation-modal/slice'
 import { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
+import duplicateAddConfirmationReducer from './ui/duplicate-add-confirmation-modal/slice'
+import { DuplicateAddConfirmationModalState } from './ui/duplicate-add-confirmation-modal/types'
 import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import modalsReducer from './ui/modals/slice'
@@ -180,6 +182,7 @@ export const reducers = () => ({
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
+    duplicateAddConfirmationModal: duplicateAddConfirmationReducer,
     publishPlaylistConfirmationModal: publishPlaylistConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
@@ -298,6 +301,7 @@ export type CommonState = {
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
+    duplicateAddConfirmationModal: DuplicateAddConfirmationModalState
     publishPlaylistConfirmationModal: PublishPlaylistConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState

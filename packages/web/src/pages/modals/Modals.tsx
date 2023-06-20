@@ -13,6 +13,7 @@ import CollectibleDetailsModal from 'components/collectibles/components/Collecti
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
+import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
 import EditTrackModal from 'components/edit-track/EditTrackModal'
@@ -55,6 +56,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AddToPlaylist: AddToPlaylistModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
+  DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
