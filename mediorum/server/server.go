@@ -239,7 +239,15 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// todo: use `/internal/ok` instead... this is just needed for transition
 	routes.GET("/status", func(c echo.Context) error {
-		return c.String(200, "OK")
+		status := 200
+		if !ss.Config.WalletIsRegistered {
+			status = 506
+		}
+		return c.JSON(status, map[string]any{
+			"host":                 ss.Config.Self.Host,
+			"wallet":               ss.Config.Self.Wallet,
+			"wallet_is_registered": ss.Config.WalletIsRegistered,
+		})
 	})
 
 	// -------------------
@@ -309,6 +317,7 @@ func (ss *MediorumServer) MustStart() {
 		// the crudr health broadcaster is deprecated and replaced by the health poller.
 		// it's kept here for one extra deploy while old hosts are still expecting that.
 		go ss.startHealthBroadcaster()
+
 		go ss.startHealthPoller()
 
 		go ss.startRepairer()
