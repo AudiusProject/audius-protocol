@@ -7,6 +7,7 @@ from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.user import UserEventMetadata, update_user_events
@@ -257,7 +258,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 3,
                         "_action": "Create",
-                        "_metadata": f'{{"data": {create_user3_json}}}',
+                        "_metadata": f'{{"cid":"QmCreateUser3", "data": {create_user3_json}}}',
                         "_signer": "user3wallet",
                     }
                 )
@@ -347,6 +348,9 @@ def test_index_valid_user(app, mocker):
         assert user_3.name == "Isaac"
         assert user_3.handle == "isaac"
 
+        all_cid: List[CIDData] = session.query(CIDData).all()
+        assert len(all_cid) == 4
+               
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),
