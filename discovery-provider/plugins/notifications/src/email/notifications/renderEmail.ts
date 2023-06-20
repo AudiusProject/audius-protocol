@@ -85,6 +85,9 @@ const DEFAULT_TRACK_COVER_ART_URL = ''
 const DEFAULT_PLAYLIST_IMAGE_IRL = ''
 
 const getUserProfileUrl = (user: UserResource) => {
+  if (!user.creator_node_endpoint) {
+    return null
+  }
   const contentNodes = user.creator_node_endpoint.split(',')
   const primaryEndpoint = contentNodes[0]
   let profilePictureUrl = DEFAULT_PROFILE_IMG

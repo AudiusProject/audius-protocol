@@ -3,7 +3,6 @@ const assert = require('assert')
 
 const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
-const BlacklistManager = require('../src/blacklistManager')
 
 describe('Test health checks', () => {
   let app, server
@@ -11,8 +10,7 @@ describe('Test health checks', () => {
   beforeEach(async () => {
     const libsMock = getLibsMock()
 
-    await BlacklistManager.init()
-    const appInfo = await getApp(libsMock, BlacklistManager)
+    const appInfo = await getApp(libsMock)
 
     app = appInfo.app
     server = appInfo.server

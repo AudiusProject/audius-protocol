@@ -20,6 +20,22 @@ ALL_CONTENT_NODES_CACHE_KEY = "all-content-nodes"
 ALL_HEALTHY_CONTENT_NODES_CACHE_KEY = "all-healthy-content-nodes"
 
 
+eth_web3 = web3_provider.get_eth_web3()
+
+eth_registry_address = eth_web3.toChecksumAddress(
+    shared_config["eth_contracts"]["registry"]
+)
+eth_registry_instance = eth_web3.eth.contract(
+    address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+)
+sp_factory_address = eth_registry_instance.functions.getContract(
+    SP_FACTORY_REGISTRY_KEY
+).call()
+sp_factory_inst = eth_web3.eth.contract(
+    address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+)
+
+
 # Perform eth web3 call to fetch endpoint info
 def fetch_node_info(sp_id, sp_factory_instance, service_type):
     return sp_factory_instance.functions.getServiceEndpointInfo(
@@ -47,20 +63,6 @@ async def get_async_node(sp_id, sp_factory_instance, service_type):
 
 
 def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
-    eth_web3 = web3_provider.get_eth_web3()
-
-    eth_registry_address = eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-    )
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        SP_FACTORY_REGISTRY_KEY
-    ).call()
-    sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
-    )
     num_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
         service_type
     ).call()

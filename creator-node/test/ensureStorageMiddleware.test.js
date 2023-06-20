@@ -3,7 +3,6 @@ const assert = require('assert')
 const path = require('path')
 const fs = require('fs-extra')
 
-const BlacklistManager = require('../src/blacklistManager')
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
@@ -19,8 +18,7 @@ describe('test ensureStorageMiddleware', () => {
 
     userId = 1
 
-    const appInfo = await getApp(libsMock, BlacklistManager, null, userId)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock, null, userId)
 
     app = appInfo.app
     server = appInfo.server

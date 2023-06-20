@@ -99,3 +99,5 @@ export async function fetchUrl({ queryKey }: { queryKey: string[] }) {
   const data = await resp.json()
   return data
 }
+
+export const fetcher = (url: string) => fetch(url).then((res) => res.json())

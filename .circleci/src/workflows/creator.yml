@@ -24,7 +24,6 @@ jobs:
   # Release
   - deploy-prod-creator-node-trigger:
       requires:
-        - test-creator-node
         - test-mediorum
         - push-creator-node
         - push-mediorum
@@ -50,7 +49,6 @@ jobs:
   - deploy:
       name: deploy-stage-creator-node
       requires:
-        - test-creator-node
         - test-mediorum
         - push-creator-node
         - push-mediorum

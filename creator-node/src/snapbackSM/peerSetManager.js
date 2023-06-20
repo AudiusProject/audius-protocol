@@ -10,6 +10,9 @@ const {
   GET_NODE_USERS_DEFAULT_PAGE_SIZE
 } = require('./StateMachineConstants')
 const { hasEnoughStorageSpace } = require('../fileManager')
+const {
+  getMapOfCNodeEndpointToSpId
+} = require('../services/ContentNodeInfoManager')
 
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT_MS = config.get(
   'peerHealthCheckRequestTimeout'
@@ -170,8 +173,7 @@ class PeerSetManager {
         logger.error(`getNodeUsers request canceled: ${e.message}`)
       }
       throw new Error(
-        `getNodeUsers() Error: ${e.toString()} - connected discprov [${
-          this.discoveryProviderEndpoint
+        `getNodeUsers() Error: ${e.toString()} - connected discprov [${this.discoveryProviderEndpoint
         }]`
       )
     } finally {
@@ -267,8 +269,7 @@ class PeerSetManager {
       })
     ) {
       throw new Error(
-        `Almost out of storage=${
-          storagePathSize - storagePathUsed
+        `Almost out of storage=${storagePathSize - storagePathUsed
         }bytes remaining out of ${storagePathSize}. Requires less than ${MAX_STORAGE_USED_PERCENT}% used`
       )
     }
@@ -281,8 +282,7 @@ class PeerSetManager {
       totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE
     ) {
       throw new Error(
-        `Running low on memory=${
-          totalMemory - usedMemory
+        `Running low on memory=${totalMemory - usedMemory
         }bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`
       )
     }
@@ -294,13 +294,11 @@ class PeerSetManager {
       allocatedFileDescriptors &&
       maxFileDescriptors &&
       allocatedFileDescriptors / maxFileDescriptors >=
-        MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE
+      MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE
     ) {
       throw new Error(
-        `Running low on file descriptors availability=${
-          (allocatedFileDescriptors / maxFileDescriptors) * 100
-        }% used. Max file descriptors allocated percentage allowed=${
-          MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE * 100
+        `Running low on file descriptors availability=${(allocatedFileDescriptors / maxFileDescriptors) * 100
+        }% used. Max file descriptors allocated percentage allowed=${MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE * 100
         }%`
       )
     }
@@ -312,11 +310,10 @@ class PeerSetManager {
       dailySyncFailCount &&
       dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
       dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) <
-        MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
+      MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
     ) {
       throw new Error(
-        `Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}. Minimum successful sync percentage=${
-          MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
+        `Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
         }%`
       )
     }
@@ -328,14 +325,13 @@ class PeerSetManager {
       thirtyDayRollingSyncSuccessCount &&
       thirtyDayRollingSyncFailCount &&
       thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount >
-        MINIMUM_ROLLING_SYNC_COUNT &&
+      MINIMUM_ROLLING_SYNC_COUNT &&
       thirtyDayRollingSyncSuccessCount /
-        (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) <
-        MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
+      (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) <
+      MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
     ) {
       throw new Error(
-        `Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}. Minimum successful sync percentage=${
-          MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
+        `Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
         }%`
       )
     }
@@ -344,29 +340,9 @@ class PeerSetManager {
   /**
    * Updates `this.endpointToSPIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
    * `this.endpointToSPIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
-   * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
    */
-  async updateEndpointToSpIdMap(ethContracts) {
-    const endpointToSPIdMap = {}
-    try {
-      const contentNodes = await ethContracts.getServiceProviderList(
-        'content-node'
-      )
-      contentNodes.forEach((cn) => {
-        endpointToSPIdMap[cn.endpoint] = cn.spID
-      })
-    } catch (e) {
-      this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
-    }
-
-    if (Object.keys(endpointToSPIdMap).length > 0)
-      this.endpointToSPIdMap = endpointToSPIdMap
-    if (Object.keys(this.endpointToSPIdMap).length === 0) {
-      const errorMsg =
-        '[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap'
-      this.logError(errorMsg)
-      throw new Error(errorMsg)
-    }
+  async updateEndpointToSpIdMap() {
+    this.endpointToSPIdMap = await getMapOfCNodeEndpointToSpId()
   }
 
   /**
@@ -418,7 +394,7 @@ class PeerSetManager {
         const failedTimestampPlusThreshold = new Date(failedTimestamp)
         failedTimestampPlusThreshold.setSeconds(
           failedTimestamp.getSeconds() +
-            this.maxNumberSecondsPrimaryRemainsUnhealthy
+          this.maxNumberSecondsPrimaryRemainsUnhealthy
         )
 
         // Determine if the failed timestamp + max hours threshold surpasses our allowed time threshold

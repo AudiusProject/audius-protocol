@@ -138,7 +138,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	logger.Debug("recovered wallet", "took", takeSplit())
 
 	if wallet != rpcLog.FromWallet {
-		fmt.Println("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
+		logger.Warn("recovered wallet no match", "recovered", wallet, "expected", rpcLog.FromWallet, "realeyd_by", rpcLog.RelayedBy)
 		return nil
 	}
 
@@ -272,7 +272,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatSetPermissions(tx, userId, params.Permit)
+			err = chatSetPermissions(tx, userId, params.Permit, messageTs)
 			if err != nil {
 				return err
 			}
@@ -300,7 +300,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			if err != nil {
 				return err
 			}
-			err = chatUnblock(tx, userId, int32(unblockedUserId))
+			err = chatUnblock(tx, userId, int32(unblockedUserId), messageTs)
 			if err != nil {
 				return err
 			}

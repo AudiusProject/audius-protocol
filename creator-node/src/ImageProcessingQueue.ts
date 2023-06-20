@@ -7,7 +7,6 @@ import os from 'os'
 
 import config from './config'
 import { logger as genericLogger } from './logging'
-import { getConcurrencyPerWorker } from './utils'
 import resizeImageProcessor from './resizeImage'
 
 const imageProcessingMaxConcurrency = config.get(
@@ -63,12 +62,12 @@ export class ImageProcessingQueue {
       // See https://github.com/OptimalBits/bull/issues/2150#issuecomment-911930714 and https://github.com/taskforcesh/bullmq/issues/1274#issuecomment-1148154485
       worker = new Worker('image-processing-queue', resizeImageProcessor, {
         connection,
-        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: MAX_CONCURRENCY
       })
     } else {
       worker = new Worker('image-processing-queue', processorFile, {
         connection,
-        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
+        concurrency: MAX_CONCURRENCY
       })
     }
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {

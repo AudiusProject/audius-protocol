@@ -22,10 +22,28 @@ import { exists, mapValues } from '../runtime';
 export interface DeveloperApp {
     /**
      * 
-     * @type {DeveloperApp}
+     * @type {string}
      * @memberof DeveloperApp
      */
-    data?: DeveloperApp;
+    address: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeveloperApp
+     */
+    userId: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeveloperApp
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeveloperApp
+     */
+    description?: string;
 }
 
 /**
@@ -33,6 +51,9 @@ export interface DeveloperApp {
  */
 export function instanceOfDeveloperApp(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "address" in value;
+    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "name" in value;
 
     return isInstance;
 }
@@ -47,7 +68,10 @@ export function DeveloperAppFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'data': !exists(json, 'data') ? undefined : DeveloperAppFromJSON(json['data']),
+        'address': json['address'],
+        'userId': json['user_id'],
+        'name': json['name'],
+        'description': !exists(json, 'description') ? undefined : json['description'],
     };
 }
 
@@ -60,7 +84,10 @@ export function DeveloperAppToJSON(value?: DeveloperApp | null): any {
     }
     return {
         
-        'data': DeveloperAppToJSON(value.data),
+        'address': value.address,
+        'user_id': value.userId,
+        'name': value.name,
+        'description': value.description,
     };
 }
 

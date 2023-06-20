@@ -15,7 +15,6 @@ const {
 const makeOnCompleteCallback = require('./makeOnCompleteCallback')
 const { updateContentNodeChainInfo } = require('../ContentNodeInfoManager')
 const SyncRequestDeDuplicator = require('./stateReconciliation/SyncRequestDeDuplicator')
-const { clusterUtilsForWorker } = require('../../utils')
 const { clearSyncStatuses } = require('../sync/syncUtil')
 
 /**
@@ -26,17 +25,11 @@ class StateMachineManager {
   async init(audiusLibs, prometheusRegistry) {
     this.updateEnabledReconfigModesSet()
 
-    if (clusterUtilsForWorker.isThisWorkerFirst()) {
-      await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
-      await clearSyncStatuses()
+    await this.ensureCleanFilterOutAlreadyPresentDBEntriesRedisState()
+    await clearSyncStatuses()
 
-      // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
-      await updateContentNodeChainInfo(
-        baseLogger,
-        redis,
-        audiusLibs.ethContracts
-      )
-    }
+    // Cache Content Node info immediately since it'll be needed before the first Bull job runs to fetch it
+    await updateContentNodeChainInfo(baseLogger, redis, audiusLibs.ethContracts)
 
     // Initialize queues
     const stateMonitoringManager = new StateMonitoringManager()
@@ -54,131 +47,127 @@ class StateMachineManager {
       recoverOrphanedDataQueue
     } = await stateReconciliationManager.init(prometheusRegistry)
 
-    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
-      // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
-      const queueNameToQueueMap = {
-        [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
-          queue: cNodeEndpointToSpIdMapQueue,
-          maxWaitingJobs: 10
-        },
-        [QUEUE_NAMES.MONITOR_STATE]: {
-          queue: monitorStateQueue,
-          maxWaitingJobs: 10
-        },
-        [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
-          queue: findSyncRequestsQueue,
-          maxWaitingJobs: 10
-        },
-        [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
-          queue: findReplicaSetUpdatesQueue,
-          maxWaitingJobs: 10
-        },
-        [QUEUE_NAMES.MANUAL_SYNC]: {
-          queue: manualSyncQueue,
-          maxWaitingJobs: 1000
-        },
-        [QUEUE_NAMES.RECURRING_SYNC]: {
-          queue: recurringSyncQueue,
-          maxWaitingJobs: 10000
-        },
-        [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
-          queue: updateReplicaSetQueue,
-          maxWaitingJobs: 1000
-        },
-        [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
-          queue: recoverOrphanedDataQueue,
-          maxWaitingJobs: 10
-        }
+    // Upon completion, make queue jobs record metrics and enqueue other jobs as necessary
+    const queueNameToQueueMap = {
+      [QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP]: {
+        queue: cNodeEndpointToSpIdMapQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.MONITOR_STATE]: {
+        queue: monitorStateQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.FIND_SYNC_REQUESTS]: {
+        queue: findSyncRequestsQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.FIND_REPLICA_SET_UPDATES]: {
+        queue: findReplicaSetUpdatesQueue,
+        maxWaitingJobs: 10
+      },
+      [QUEUE_NAMES.MANUAL_SYNC]: {
+        queue: manualSyncQueue,
+        maxWaitingJobs: 1000
+      },
+      [QUEUE_NAMES.RECURRING_SYNC]: {
+        queue: recurringSyncQueue,
+        maxWaitingJobs: 10000
+      },
+      [QUEUE_NAMES.UPDATE_REPLICA_SET]: {
+        queue: updateReplicaSetQueue,
+        maxWaitingJobs: 1000
+      },
+      [QUEUE_NAMES.RECOVER_ORPHANED_DATA]: {
+        queue: recoverOrphanedDataQueue,
+        maxWaitingJobs: 10
       }
-      for (const queueName of Object.keys(queueNameToQueueMap)) {
-        const queueEvents = new QueueEvents(queueName, {
-          connection: {
-            host: config.get('redisHost'),
-            port: config.get('redisPort')
-          }
-        })
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        queueEvents.on('completed', async ({ jobId, returnvalue }, id) => {
-          try {
-            await makeOnCompleteCallback(
-              queueName,
-              queueNameToQueueMap,
-              prometheusRegistry
-            ).bind(this)({ jobId, returnvalue }, id)
-          } catch (e) {
-            baseLogger.error(
-              'Fatal: onComplete errored. Cron queues may be broken.'
-            )
-          }
-        })
-
-        // Update the mapping in this StateMachineManager whenever a job successfully fetches it
-        if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
-          queueEvents.on(
-            'completed',
-            this.updateMapOnMapFetchJobComplete.bind(this)
+    }
+    for (const queueName of Object.keys(queueNameToQueueMap)) {
+      const queueEvents = new QueueEvents(queueName, {
+        connection: {
+          host: config.get('redisHost'),
+          port: config.get('redisPort')
+        }
+      })
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      queueEvents.on('completed', async ({ jobId, returnvalue }, id) => {
+        try {
+          await makeOnCompleteCallback(
+            queueName,
+            queueNameToQueueMap,
+            prometheusRegistry
+          ).bind(this)({ jobId, returnvalue }, id)
+        } catch (e) {
+          baseLogger.error(
+            'Fatal: onComplete errored. Cron queues may be broken.'
           )
-          queueEvents.on('failed', (_args, _id) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
-          })
-          queueEvents.on('error', (_args) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            cNodeEndpointToSpIdMapQueue.add('retry-after-error', {})
-          })
         }
+      })
 
-        // Recurring queues need to re-enqueue jobs when they fail/error
-        else if (queueName === QUEUE_NAMES.MONITOR_STATE) {
-          queueEvents.on('failed', (_args, _id) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            stateMonitoringManager.recoverFromJobFailure(
-              monitorStateQueue,
+      // Update the mapping in this StateMachineManager whenever a job successfully fetches it
+      if (queueName === QUEUE_NAMES.FETCH_C_NODE_ENDPOINT_TO_SP_ID_MAP) {
+        queueEvents.on(
+          'completed',
+          this.updateMapOnMapFetchJobComplete.bind(this)
+        )
+        queueEvents.on('failed', (_args, _id) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          cNodeEndpointToSpIdMapQueue.add('retry-after-fail', {})
+        })
+        queueEvents.on('error', (_args) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          cNodeEndpointToSpIdMapQueue.add('retry-after-error', {})
+        })
+      }
+
+      // Recurring queues need to re-enqueue jobs when they fail/error
+      else if (queueName === QUEUE_NAMES.MONITOR_STATE) {
+        queueEvents.on('failed', (_args, _id) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          stateMonitoringManager.recoverFromJobFailure(
+            monitorStateQueue,
+            audiusLibs.discoveryProvider.discoveryProviderEndpoint
+          )
+        })
+        queueEvents.on('error', (_args) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          stateMonitoringManager.recoverFromJobFailure(
+            monitorStateQueue,
+            audiusLibs.discoveryProvider.discoveryProviderEndpoint
+          )
+        })
+      } else if (queueName === QUEUE_NAMES.RECOVER_ORPHANED_DATA) {
+        queueEvents.on('failed', (_args, _id) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          recoverOrphanedDataQueue.add('retry-after-fail', {
+            discoveryNodeEndpoint:
               audiusLibs.discoveryProvider.discoveryProviderEndpoint
-            )
           })
-          queueEvents.on('error', (_args) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            stateMonitoringManager.recoverFromJobFailure(
-              monitorStateQueue,
+        })
+        queueEvents.on('error', (_args) => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          recoverOrphanedDataQueue.add('retry-after-error', {
+            discoveryNodeEndpoint:
               audiusLibs.discoveryProvider.discoveryProviderEndpoint
-            )
           })
-        } else if (queueName === QUEUE_NAMES.RECOVER_ORPHANED_DATA) {
-          queueEvents.on('failed', (_args, _id) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            recoverOrphanedDataQueue.add('retry-after-fail', {
-              discoveryNodeEndpoint:
-                audiusLibs.discoveryProvider.discoveryProviderEndpoint
-            })
-          })
-          queueEvents.on('error', (_args) => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            recoverOrphanedDataQueue.add('retry-after-error', {
-              discoveryNodeEndpoint:
-                audiusLibs.discoveryProvider.discoveryProviderEndpoint
-            })
-          })
-        }
+        })
       }
     }
 
-    if (clusterUtilsForWorker.isThisWorkerFirst()) {
-      await SyncRequestDeDuplicator.clear()
+    await SyncRequestDeDuplicator.clear()
 
-      // Start queues that need an initial job to get started and then re-add jobs to themselves
-      await stateMonitoringManager.startEndpointToSpIdMapQueue(
-        cNodeEndpointToSpIdMapQueue
-      )
-      await stateMonitoringManager.startMonitorStateQueue(
-        monitorStateQueue,
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint
-      )
-      await stateReconciliationManager.startRecoverOrphanedDataQueue(
-        recoverOrphanedDataQueue,
-        audiusLibs.discoveryProvider.discoveryProviderEndpoint
-      )
-    }
+    // Start queues that need an initial job to get started and then re-add jobs to themselves
+    await stateMonitoringManager.startEndpointToSpIdMapQueue(
+      cNodeEndpointToSpIdMapQueue
+    )
+    await stateMonitoringManager.startMonitorStateQueue(
+      monitorStateQueue,
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    )
+    await stateReconciliationManager.startRecoverOrphanedDataQueue(
+      recoverOrphanedDataQueue,
+      audiusLibs.discoveryProvider.discoveryProviderEndpoint
+    )
 
     return {
       monitorStateQueue,

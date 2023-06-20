@@ -147,7 +147,9 @@ const updateReplicaSetJobProcessor = async function ({
           performSyncCheck: false,
           whitelist: reconfigNodeWhitelist,
           blacklist: reconfigNodeBlacklist,
-          log: true
+          log: true,
+          getServices: () =>
+            Array.from(spInfoMap.values()).map((c) => c.endpoint)
         })
 
       healthyNodes = Object.keys(healthyServicesMap || {})

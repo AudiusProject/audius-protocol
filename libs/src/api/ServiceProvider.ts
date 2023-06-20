@@ -32,6 +32,8 @@ type AutoSelectCreatorNodesConfig = {
   preferHigherPatchForPrimary?: boolean
   preferHigherPatchForSecondaries?: boolean
   log?: boolean
+  // override going to chain to generate a list of all service endpoints
+  getServices?: () => Promise<string[]>
 }
 
 /**
@@ -121,7 +123,8 @@ export class ServiceProvider extends Base {
     equivalencyDelta = CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
-    log = true
+    log = true,
+    getServices
   }: AutoSelectCreatorNodesConfig) {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
@@ -133,7 +136,8 @@ export class ServiceProvider extends Base {
       timeout,
       equivalencyDelta,
       preferHigherPatchForPrimary,
-      preferHigherPatchForSecondaries
+      preferHigherPatchForSecondaries,
+      getServices
     })
 
     const { primary, secondaries, services } =
@@ -148,7 +152,7 @@ export class ServiceProvider extends Base {
    */
   async autoSelectStorageV2Nodes(
     numNodes = 0,
-    rendezvousKey = '',
+    userWallet = '',
     logger = console
   ): Promise<string[]> {
     if (!this.cachedStorageNodes.length) {
@@ -157,7 +161,7 @@ export class ServiceProvider extends Base {
     return await getNStorageNodes(
       this.cachedStorageNodes,
       numNodes,
-      rendezvousKey,
+      userWallet,
       logger
     )
   }

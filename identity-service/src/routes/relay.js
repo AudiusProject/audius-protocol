@@ -27,33 +27,24 @@ module.exports = function (app) {
       const redis = req.app.get('redis')
 
       // TODO: Use auth middleware to derive this
-      const user = await models.User.findOne({
-        where: { walletAddress: body.senderAddress },
-        attributes: [
-          'id',
-          'blockchainUserId',
-          'walletAddress',
-          'handle',
-          'isBlockedFromRelay',
-          'isBlockedFromNotifications',
-          'isBlockedFromEmails',
-          'appliedRules'
-        ]
-      })
-
+      const user = req.user
       let optimizelyClient
       let detectAbuseOnRelay = false
       let blockAbuseOnRelay = false
       try {
         optimizelyClient = req.app.get('optimizelyClient')
-        detectAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
-        )
-        blockAbuseOnRelay = getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
-        )
+
+        // only detect/block abuse from owner wallets
+        detectAbuseOnRelay =
+          getFeatureFlag(
+            optimizelyClient,
+            FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY
+          ) && !req.isFromApp
+        blockAbuseOnRelay =
+          getFeatureFlag(
+            optimizelyClient,
+            FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY
+          ) && !req.isFromApp
       } catch (error) {
         req.logger.error(
           `failed to retrieve optimizely feature flag for ${FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY} or ${FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY}: ${error}`
@@ -89,12 +80,12 @@ module.exports = function (app) {
         body.encodedABI
       ) {
         // fire and forget update handle if necessary for early anti-abuse measures
-        ;(async () => {
+        ; (async () => {
           try {
             if (!user) return
 
             const useProvisionalHandle = !user.handle && !user.blockchainUserId
-            if (body.handle && useProvisionalHandle) {
+            if (detectAbuseOnRelay && body.handle && useProvisionalHandle) {
               user.handle = body.handle
               await user.save()
               const reqIP = getIP(req)
@@ -128,10 +119,7 @@ module.exports = function (app) {
 
           // When EntityManager is enabled for replica sets, throw error for URSM
           // Fallback to EntityManager
-          if (
-            config.get('entityManagerReplicaSetEnabled') &&
-            txProps.contractRegistryKey === 'UserReplicaSetManager'
-          ) {
+          if (txProps.contractRegistryKey === 'UserReplicaSetManager') {
             const decodedABI = libs.AudiusABIDecoder.decodeMethod(
               txProps.contractRegistryKey,
               txProps.encodedABI

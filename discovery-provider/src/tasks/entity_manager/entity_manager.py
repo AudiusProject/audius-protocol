@@ -23,6 +23,7 @@ from src.models.users.user import User
 from src.tasks.entity_manager.developer_app import (
     create_developer_app,
     delete_developer_app,
+    get_app_address_from_signature,
 )
 from src.tasks.entity_manager.grant import create_grant, revoke_grant
 from src.tasks.entity_manager.notification import (
@@ -132,7 +133,6 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
-                    start_time_tx = time.time()
                     params = ManageEntityParameters(
                         session,
                         update_task.redis,
@@ -263,10 +263,7 @@ def entity_manager_update(
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process {params.action} {params.entity_type} tx error {e} | with event {event}"
-                    )
-                    metric_num_errors.save_time(
-                        {"entity_type": params.entity_type}, start_time=start_time_tx
+                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
                     )
         # compile records_to_save
         records_to_save = []
@@ -382,9 +379,16 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 if raw_address:
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(raw_address.lower())
                 else:
-                    logger.error(
-                        "tasks | entity_manager.py | Missing address in metadata required for add developer app tx"
-                    )
+                    try:
+                        entities_to_fetch[EntityType.DEVELOPER_APP].add(
+                            get_app_address_from_signature(
+                                json_metadata.get("app_signature", {})
+                            )
+                        )
+                    except:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing address or valid app signature in metadata required for add developer app tx"
+                        )
             if entity_type == EntityType.GRANT:
                 try:
                     json_metadata = json.loads(metadata)

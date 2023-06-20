@@ -1,6 +1,6 @@
 GIT_HASH ?= $(shell git rev-parse --verify HEAD)
 
-up:: down migrate
+up:: down
 	audius-compose up --comms comms-test
 
 down::
@@ -15,11 +15,17 @@ fmt::
 test::
 	docker logs -f comms-test
 
-migrate::
-	audius-compose up db && \
-	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	(docker exec -it audius-protocol-db-1 psql -U postgres -c "create database comms_test WITH TEMPLATE audius_discovery" || true)
+
+
+steve.test::
+	docker compose -f docker-compose.test.yml up -d
+
+	audius_db_url="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable" \
+	go run main.go discovery-migrations
+
+	audius_delegate_private_key="c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" \
+	audius_db_url="postgresql://postgres:password@localhost:25432/postgres?sslmode=disable" \
+	go test ./... -count=1
 
 
 # formerly build.fast but uses qemu - slow
@@ -36,9 +42,6 @@ build.push.fast::
 	docker push audius/comms:a1
 	docker push audius/comms:${GIT_HASH}
 
-tools::
-	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
-	go install github.com/rakyll/hey@latest
 
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
