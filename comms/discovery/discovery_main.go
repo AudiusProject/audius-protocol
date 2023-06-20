@@ -85,9 +85,6 @@ func DiscoveryMain() {
 		return nil
 
 	})
-	g.Go(func() error {
-		return db.RunMigrations()
-	})
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
 	}
