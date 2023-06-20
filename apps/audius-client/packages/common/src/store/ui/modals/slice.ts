@@ -26,6 +26,7 @@ const initialState: ModalsState = {
   Overflow: false,
   AddToPlaylist: false,
   DeletePlaylistConfirmation: false,
+  DuplicateAddConfirmation: false,
   FeatureFlagOverride: false,
   BuyAudio: false,
   BuyAudioRecovery: false,

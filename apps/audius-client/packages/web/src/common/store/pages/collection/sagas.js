@@ -22,7 +22,8 @@ import {
 
 import tracksSagas from './lineups/sagas'
 const { getCollectionUid, getUserUid } = collectionPageSelectors
-const { fetchCollection } = collectionActions
+const { fetchCollection, fetchCollectionSucceeded, fetchCollectionFailed } =
+  collectionActions
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
@@ -42,7 +43,7 @@ function* watchFetchCollection() {
     const { collections, uids: collectionUids } = retrievedCollections
 
     if (Object.values(collections).length === 0) {
-      yield put(collectionActions.fetchCollectionFailed())
+      yield put(fetchCollectionFailed())
       return
     }
     const collection = collections[collectionId]
@@ -55,7 +56,7 @@ function* watchFetchCollection() {
         ])
       )
       yield put(
-        collectionActions.fetchCollectionSucceeded(
+        fetchCollectionSucceeded(
           collection.playlist_id,
           collectionUid,
           userUid,
@@ -104,7 +105,7 @@ function* watchResetAndFetchCollectionTracks() {
         yield put(fetchCollection(action.collectionId))
       }
 
-      yield take(collectionActions.fetchCollectionSucceeded)
+      yield take(fetchCollectionSucceeded)
 
       yield put(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
     }

@@ -17,6 +17,7 @@ import {
   searchUsersModalSagas,
   toastSagas,
   deletePlaylistConfirmationModalUISagas,
+  duplicateAddConfirmationModalUISagas,
   publishPlaylistConfirmationModalUISagas,
   mobileOverflowMenuUISagas,
   shareModalUISagas
@@ -48,6 +49,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
+  duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   publishPlaylistConfirmationModalUI: publishPlaylistConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,

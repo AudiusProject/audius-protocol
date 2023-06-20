@@ -15,6 +15,7 @@ import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-a
 import { DeleteChatDrawer } from 'app/components/delete-chat-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
+import { DuplicateAddConfirmationDrawer } from 'app/components/duplicate-add-confirmation-drawer'
 import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
@@ -100,6 +101,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   AddToPlaylist: AddToPlaylistDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
+  DuplicateAddConfirmation: DuplicateAddConfirmationDrawer,
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
