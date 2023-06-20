@@ -48,7 +48,7 @@ export const MoodCollectionScreen = ({
         <WithLoader loading={status === Status.LOADING}>
           <CollectionList
             collection={exploreData}
-            style={{ marginBottom: spacing(12) }}
+            style={{ paddingTop: spacing(3), marginBottom: spacing(10) }}
           />
         </WithLoader>
       </ScreenContent>

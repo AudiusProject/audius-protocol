@@ -23,7 +23,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     flexDirection: 'row',
     flexWrap: 'wrap',
     padding: spacing(3),
-    paddingVertical: spacing(6)
+    paddingBottom: spacing(6)
   }
 }))
 

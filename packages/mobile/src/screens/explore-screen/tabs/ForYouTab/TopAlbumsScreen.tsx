@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { spacing } from 'app/styles/spacing'
 
 import { TOP_ALBUMS } from '../../collections'
 const { getCollections, getStatus } = explorePageCollectionsSelectors
@@ -36,7 +37,10 @@ export const TopAlbumsScreen = () => {
       <ScreenHeader text={TOP_ALBUMS.title} />
       <ScreenContent>
         <WithLoader loading={status === Status.LOADING}>
-          <CollectionList collection={exploreData} />
+          <CollectionList
+            style={{ paddingTop: spacing(3) }}
+            collection={exploreData}
+          />
         </WithLoader>
       </ScreenContent>
     </Screen>

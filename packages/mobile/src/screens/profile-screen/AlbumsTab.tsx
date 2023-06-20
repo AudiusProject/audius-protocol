@@ -35,6 +35,7 @@ export const AlbumsTab = () => {
   return (
     <CollectionList
       collection={album_count > 0 ? albums : emptyAlbums}
+      style={{ paddingTop: album_count > 0 ? 12 : 0 }}
       ListEmptyComponent={<EmptyProfileTile tab='albums' />}
       disableTopTabScroll
       showsVerticalScrollIndicator={false}

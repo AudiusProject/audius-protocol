@@ -13,6 +13,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.white,
     padding: spacing(4),
     paddingHorizontal: spacing(7),
+    marginBottom: spacing(3),
     ...shadow()
   },
   header: {
