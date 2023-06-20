@@ -16,11 +16,11 @@
 
 import * as runtime from '../runtime';
 import type {
-  DeveloperApp,
+  DeveloperAppResponse,
 } from '../models';
 import {
-    DeveloperAppFromJSON,
-    DeveloperAppToJSON,
+    DeveloperAppResponseFromJSON,
+    DeveloperAppResponseToJSON,
 } from '../models';
 
 export interface GetDeveloperAppRequest {
@@ -35,7 +35,7 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
     /**
      * Gets developer app matching given address (API key)
      */
-    async getDeveloperAppRaw(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperApp>> {
+    async getDeveloperAppRaw(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperAppResponse>> {
         if (requestParameters.address === null || requestParameters.address === undefined) {
             throw new runtime.RequiredError('address','Required parameter requestParameters.address was null or undefined when calling getDeveloperApp.');
         }
@@ -51,13 +51,13 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => DeveloperAppFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => DeveloperAppResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets developer app matching given address (API key)
      */
-    async getDeveloperApp(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeveloperApp> {
+    async getDeveloperApp(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeveloperAppResponse> {
         const response = await this.getDeveloperAppRaw(requestParameters, initOverrides);
         return await response.value();
     }

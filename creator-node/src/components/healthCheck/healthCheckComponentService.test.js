@@ -9,7 +9,6 @@ const {
 const version = require('../../../.version.json')
 const config = require('../../../src/config')
 const { MONITORS } = require('../../monitors/monitors')
-const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 
 const TEST_ENDPOINT = 'test_endpoint'
 
@@ -35,17 +34,6 @@ const libsMock = {
   discoveryProvider: {
     discoveryProviderEndpoint: TEST_ENDPOINT
   }
-}
-
-const trustedNotifierManagerMock = {
-  getTrustedNotifierData: () => {
-    return {
-      email: 'trusted@notifier.com',
-      wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-      endpoint: 'default.trustednotifier'
-    }
-  },
-  trustedNotifierID: 12
 }
 
 const getMonitorsMock = async (monitors) => {
@@ -161,8 +149,7 @@ describe('Test Health Check', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -253,14 +240,7 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
-      },
-      clusterWorkersCount: getNumWorkers()
+      }
     })
   })
 
@@ -281,8 +261,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -373,14 +352,7 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
-      },
-      clusterWorkersCount: getNumWorkers()
+      }
     })
   })
 
@@ -388,8 +360,7 @@ describe('Test Health Check', function () {
     const res = await healthCheck(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -480,14 +451,7 @@ describe('Test Health Check', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
-      },
-      clusterWorkersCount: getNumWorkers()
+      }
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -527,8 +491,7 @@ describe('Test Health Check', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -562,8 +525,7 @@ describe('Test Health Check Verbose', function () {
     const res = await healthCheckVerbose(
       {
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -654,14 +616,7 @@ describe('Test Health Check Verbose', function () {
         latestFindSyncRequestsJobSuccess: null,
         latestFindReplicaSetUpdatesJobStart: null,
         latestFindReplicaSetUpdatesJobSuccess: null
-      },
-      trustedNotifier: {
-        email: 'trusted@notifier.com',
-        wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49AAAAA',
-        endpoint: 'default.trustednotifier',
-        id: 12
-      },
-      clusterWorkersCount: getNumWorkers()
+      }
     })
   })
 
@@ -682,8 +637,7 @@ describe('Test Health Check Verbose', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,
@@ -696,8 +650,7 @@ describe('Test Health Check Verbose', function () {
       {
         libs: libsMock,
         snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2)
       },
       mockLogger,
       getMonitorsMock,

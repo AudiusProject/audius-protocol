@@ -3,7 +3,6 @@ const { Queue, Worker } = require('bullmq')
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
-const { clusterUtilsForWorker } = require('../../utils')
 const {
   getAllRegisteredCNodes
 } = require('../../services/ContentNodeInfoManager')
@@ -57,9 +56,7 @@ class SkippedCIDsRetryQueue {
       }
 
       // Clean up anything that might be still stuck in the queue on restart
-      if (clusterUtilsForWorker.isThisWorkerFirst()) {
-        await this.queue.drain(true)
-      }
+      await this.queue.drain(true)
 
       const SkippedCIDsRetryQueueJobIntervalMs = this.nodeConfig.get(
         'skippedCIDsRetryQueueJobIntervalMs'

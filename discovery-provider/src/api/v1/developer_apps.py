@@ -13,7 +13,7 @@ from src.utils.redis_metrics import record_metrics
 ns = Namespace("developer_apps", description="Developer app related operations")
 
 developer_app_response = make_response(
-    "developer_app", ns, fields.Nested(developer_app)
+    "developer_app_response", ns, fields.Nested(developer_app)
 )
 
 
@@ -36,7 +36,7 @@ class GetDeveloperApp(Resource):
         raw_developer_app = get_developer_app_by_address(
             get_prefixed_eth_address(address)
         )
-        developer_app = format_developer_app(raw_developer_app)
-        if not developer_app:
+        if not raw_developer_app:
             abort_not_found(address, ns)
+        developer_app = format_developer_app(raw_developer_app)
         return success_response(developer_app)

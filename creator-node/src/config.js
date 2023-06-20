@@ -269,19 +269,6 @@ const config = convict({
     env: 'printSequelizeLogs',
     default: false
   },
-  expressAppConcurrency: {
-    doc: 'Number of processes to spawn, where each process runs its own Content Node. Default 0 to run one process per core (auto-detected). Note that clusterModeEnabled must also be true for this to take effect',
-    format: 'nat',
-    env: 'expressAppConcurrency',
-    default: 0
-  },
-  // Set this to false when trying to use the debugger
-  clusterModeEnabled: {
-    doc: 'Whether or not cluster logic should be enabled (running multiple instances of the app to better utuilize multiple logical cores)',
-    format: Boolean,
-    env: 'clusterModeEnabled',
-    default: true
-  },
 
   /** Upload settings */
   transcodingMaxConcurrency: {
@@ -468,12 +455,6 @@ const config = convict({
     doc: 'Array of comma separated CIDs to pin',
     format: String,
     env: 'pinAddCIDs',
-    default: ''
-  },
-  cidWhitelist: {
-    doc: 'Array of comma separated CIDs to whitelist. Takes precedent over blacklist',
-    format: String,
-    env: 'cidWhitelist',
     default: ''
   },
   considerNodeUnhealthy: {
@@ -726,18 +707,6 @@ const config = convict({
     env: 'maximumTranscodingWaitingJobs',
     default: os.cpus().length
   },
-  trustedNotifierID: {
-    doc: 'To select a trusted notifier, set to a value >= 1 corresponding to the index of the notifier on chain. 0 means no trusted notifier selected and self manage notifications',
-    format: 'nat',
-    env: 'trustedNotifierID',
-    default: 1
-  },
-  nodeOperatorEmailAddress: {
-    doc: 'Email address for the node operator where they will respond in a timely manner. Must be defined if trustedNotifierID is set to 0',
-    format: String,
-    env: 'nodeOperatorEmailAddress',
-    default: ''
-  },
   maxBatchClockStatusBatchSize: {
     doc: 'Maximum number of wallets the /users/batch_clock_status route will accept at one time',
     format: 'nat',
@@ -877,9 +846,5 @@ const asyncConfig = async () => {
 }
 
 config.asyncConfig = asyncConfig
-
-// Disable cluster for tests because they only have 1 process
-const isInTest = typeof global.it === 'function'
-if (isInTest) config.set('clusterModeEnabled', false)
 
 module.exports = config

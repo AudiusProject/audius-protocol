@@ -22,7 +22,6 @@ export logLevel="debug"
 export devMode="true"
 export creatorNodeIsDebug="true"
 export debuggerPort=10000
-export expressAppConcurrency=2
 
 export identityService="http://identity-service:7000"
 

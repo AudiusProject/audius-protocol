@@ -8,6 +8,7 @@ export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';
 export * from './DecodedUserToken';
 export * from './DeveloperApp';
+export * from './DeveloperAppResponse';
 export * from './DeveloperApps';
 export * from './EncodedUserId';
 export * from './Favorite';

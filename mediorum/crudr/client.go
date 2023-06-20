@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"mediorum/httputil"
 	"mediorum/server/signature"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/exp/slog"
@@ -27,10 +29,10 @@ func NewPeerClient(host string, crudr *Crudr) *PeerClient {
 	outboxBufferSize := 8
 
 	return &PeerClient{
-		Host:   host,
+		Host:   httputil.RemoveTrailingSlash(strings.ToLower(host)),
 		outbox: make(chan []byte, outboxBufferSize),
 		crudr:  crudr,
-		logger: slog.With("cruder_client", host),
+		logger: slog.With("crudr_client", httputil.RemoveTrailingSlash(strings.ToLower(host))),
 	}
 }
 

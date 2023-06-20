@@ -16,7 +16,7 @@ from src.tasks.index_oracles import (
     oracle_addresses_key,
 )
 from src.utils.config import shared_config
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes
+from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 from src.utils.redis_connection import get_redis
 from web3 import Web3
 
@@ -189,7 +189,8 @@ ADD_SENDER_MESSAGE_PREFIX = "add"
 
 
 def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
-    other_nodes_addresses = set(get_all_other_discovery_nodes()[1])
+    redis = get_redis()
+    other_nodes_addresses = set(get_all_other_discovery_nodes_cached(redis)[1])
     return new_sender_address in other_nodes_addresses
 
 

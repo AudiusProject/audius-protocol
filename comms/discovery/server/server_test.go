@@ -69,7 +69,7 @@ func TestGetChats(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	seededRand := rand.New(rand.NewSource(1))
 	user1Id := seededRand.Int31()
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
@@ -121,6 +121,7 @@ func TestGetChats(t *testing.T) {
 	expectedHealth := schema.Health{
 		IsHealthy: true,
 	}
+
 	encodedUser1, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
 	encodedUser2, err := misc.EncodeHashId(int(user2Id))

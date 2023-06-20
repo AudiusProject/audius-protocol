@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"mediorum/ethcontracts"
+	"mediorum/httputil"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"golang.org/x/exp/slog"
@@ -72,7 +74,7 @@ func startStagingOrProd(isProd bool) {
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
-			Host:   creatorNodeEndpoint,
+			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
 			Wallet: delegateOwnerWallet,
 		},
 		ListenPort:          "1991",

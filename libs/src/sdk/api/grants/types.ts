@@ -1,11 +1,21 @@
-export type CreateGrantRequest = {
-  userId: string
-  appApiKey: string
-  /** Permissions to be added later, just implied "all except wallet actions" for now */
-  // permissions: {}
-}
+import { z } from 'zod'
+import { HashId } from '../../types/HashId'
+import { isApiKeyValid } from '../../utils/file'
 
-export type RevokeGrantRequest = {
-  userId: string
-  appApiKey: string
-}
+export const CreateGrantSchema = z.object({
+  userId: HashId,
+  appApiKey: z.custom<string>((data: unknown) => {
+    return isApiKeyValid(data as string)
+  })
+})
+
+export type CreateGrantRequest = z.input<typeof CreateGrantSchema>
+
+export const RevokeGrantSchema = z.object({
+  userId: HashId,
+  appApiKey: z.custom<string>((data: unknown) => {
+    return isApiKeyValid(data as string)
+  })
+})
+
+export type RevokeGrantRequest = z.input<typeof RevokeGrantSchema>

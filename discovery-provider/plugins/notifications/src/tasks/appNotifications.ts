@@ -9,11 +9,11 @@ export async function sendAppNotifications(
   const pending = listener.takePending()
   if (pending) {
     logger.info(
-      `Processing ${pending.appNotifications.length} app notification `
+      `Processing ${pending.appNotifications.length} app notifications`
     )
     await Promise.all([
       appNotificationsProcessor.process(pending.appNotifications)
     ])
-    logger.info('processed new app updates')
+    logger.info('Processed new app updates')
   }
 }

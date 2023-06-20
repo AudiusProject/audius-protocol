@@ -247,16 +247,12 @@ const METRIC_LABEL_NAMES = Object.freeze(
   )
 )
 
-type AggregatorType = 'sum' | 'first' | 'min' | 'max' | 'average' | 'omit'
 type Metric = {
   metricType: any
   metricConfig: {
     name: string
     help: string
     labelNames: string[]
-    // Function to aggregate metrics across workers.
-    // See https://github.com/siimon/prom-client/blob/96f7495d66b1a21755f745b1367d3e530668a957/lib/metricAggregators.js#L50
-    aggregator: AggregatorType
   }
 }
 
@@ -266,8 +262,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.RECOVER_ORPHANED_DATA_WALLET_COUNTS_GAUGE,
       help: 'Number of wallets found with data orphaned on this node',
-      labelNames: [],
-      aggregator: 'max' as AggregatorType
+      labelNames: []
     }
   },
   [METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE]: {
@@ -275,8 +270,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.RECOVER_ORPHANED_DATA_SYNC_COUNTS_GAUGE,
       help: 'Number of syncs enqueued to recover data orphaned on this node',
-      labelNames: [],
-      aggregator: 'max' as AggregatorType
+      labelNames: []
     }
   },
   [METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE]: {
@@ -284,8 +278,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_COMPLETED_TOTAL_GAUGE,
       help: 'Number of completed jobs',
-      labelNames: ['queue_name', 'job_name'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE]: {
@@ -293,8 +286,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_FAILED_TOTAL_GAUGE,
       help: 'Number of failed jobs',
-      labelNames: ['queue_name', 'job_name'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE]: {
@@ -302,8 +294,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_DELAYED_TOTAL_GAUGE,
       help: 'Number of delayed jobs',
-      labelNames: ['queue_name', 'job_name'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE]: {
@@ -311,8 +302,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_ACTIVE_TOTAL_GAUGE,
       help: 'Number of active jobs',
-      labelNames: ['queue_name', 'job_name'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE]: {
@@ -320,8 +310,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.JOBS_WAITING_TOTAL_GAUGE,
       help: 'Number of waiting jobs',
-      labelNames: ['queue_name', 'job_name'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['queue_name', 'job_name']
     }
   },
   [METRIC_NAMES.JOBS_DURATION_SECONDS_HISTOGRAM]: {
@@ -331,8 +320,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: 'Time to complete jobs',
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'average' as AggregatorType
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
   [METRIC_NAMES.JOBS_WAITING_DURATION_SECONDS_HISTOGRAM]: {
@@ -342,8 +330,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: 'Time spent waiting for jobs to run',
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'average' as AggregatorType
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
   [METRIC_NAMES.JOBS_ATTEMPTS_HISTOGRAM]: {
@@ -353,8 +340,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       help: 'Job attempts made',
       labelNames: ['queue_name', 'job_name', 'status'],
       // 10 buckets in the range of 1 seconds to max to 10 minutes
-      buckets: exponentialBucketsRange(1, 600, 10),
-      aggregator: 'average' as AggregatorType
+      buckets: exponentialBucketsRange(1, 600, 10)
     }
   },
   [METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM]: {
@@ -365,8 +351,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       labelNames:
         METRIC_LABEL_NAMES[
           METRIC_NAMES.SECONDARY_SYNC_FROM_PRIMARY_DURATION_SECONDS_HISTOGRAM
-        ],
-      aggregator: 'average' as AggregatorType
+        ]
     }
   },
   // TODO: This isn't used anywhere
@@ -375,8 +360,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.SYNC_QUEUE_JOBS_TOTAL_GAUGE,
       help: 'Current job counts for SyncQueue by status',
-      labelNames: ['status'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['status']
     }
   },
 
@@ -394,8 +378,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         1,
         config.get('maxSyncMonitoringDurationInMs') / 1000,
         4
-      ),
-      aggregator: 'max' as AggregatorType
+      )
     }
   },
 
@@ -420,8 +403,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
               ]
             ] || [])
           ],
-          buckets: [1, 5, 10, 30, 60, 120], // 1 second to 2 minutes
-          aggregator: 'average' as AggregatorType
+          buckets: [1, 5, 10, 30, 60, 120] // 1 second to 2 minutes
         }
       }
     ])
@@ -436,8 +418,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
           metricConfig: {
             name: METRIC_NAMES[`MONITOR_${monitor}`],
             help: `Record monitor: ${monitor}`,
-            labelNames: [],
-            aggregator: 'max' as AggregatorType
+            labelNames: []
           }
         }
       ]
@@ -449,8 +430,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE,
       help: 'Number of total files migrated from a legacy storage path to a non legacy storage path',
       labelNames:
-        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE],
-      aggregator: 'sum' as AggregatorType // Only runs on primary process
+        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_LEGACY_PATH_GAUGE]
     }
   },
   [METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]: {
@@ -459,8 +439,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE,
       help: 'Number of total files migrated from a custom storage path to the standard storage path',
       labelNames:
-        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE],
-      aggregator: 'sum' as AggregatorType // Only runs on primary process
+        METRIC_LABEL_NAMES[METRIC_NAMES.FILES_MIGRATED_FROM_CUSTOM_PATH_GAUGE]
     }
   },
   [METRIC_NAMES.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE]: {
@@ -469,8 +448,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE,
       help: 'Number of total entries in the Files table that have a legacy or custom storagePath column',
       labelNames:
-        METRIC_LABEL_NAMES[METRIC_NAMES.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE],
-      aggregator: 'sum' as AggregatorType // Only runs on primary process
+        METRIC_LABEL_NAMES[METRIC_NAMES.TOTAL_UNMIGRATED_STORAGE_PATHS_GAUGE]
     }
   },
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
@@ -479,8 +457,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
       name: METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE,
       help: "Counts for each find-sync-requests job's result when looking for syncs that should be requested from a primary to a secondary",
       labelNames:
-        METRIC_LABEL_NAMES[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE],
-      aggregator: 'max' as AggregatorType
+        METRIC_LABEL_NAMES[METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]
     }
   },
   [METRIC_NAMES.WRITE_QUORUM_DURATION_SECONDS_HISTOGRAM]: {
@@ -498,8 +475,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
         config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs') /
           1000,
         5
-      ),
-      aggregator: 'average' as AggregatorType
+      )
     }
   },
   [METRIC_NAMES.STORAGE_PATH_SIZE_BYTES]: {
@@ -507,8 +483,7 @@ export const METRICS: Record<string, Metric> = Object.freeze({
     metricConfig: {
       name: METRIC_NAMES.STORAGE_PATH_SIZE_BYTES,
       help: 'Disk storage size',
-      labelNames: ['type'],
-      aggregator: 'first' as AggregatorType
+      labelNames: ['type']
     }
   }
 })

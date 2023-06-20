@@ -1,8 +1,6 @@
 const request = require('supertest')
 const sigUtil = require('eth-sig-util')
 
-const BlacklistManager = require('../src/blacklistManager')
-
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
@@ -14,8 +12,7 @@ describe('test Users', async function () {
   beforeEach(async () => {
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(libsMock, BlacklistManager)
-    await BlacklistManager.init()
+    const appInfo = await getApp(libsMock)
 
     app = appInfo.app
     server = appInfo.server

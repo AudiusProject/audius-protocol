@@ -23,7 +23,9 @@ export const publish = async (params: PublishCommandInput) => {
     const data = await snsClient.send(new PublishCommand(params))
     return data
   } catch (err) {
-    console.log('Error', err.stack)
+    logger.warn(
+      `Error publishing push notification for awsARN ${params.TargetArn}: ${err.stack}`
+    )
   }
 }
 
@@ -32,7 +34,7 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
     const data = await snsClient.send(new PublishBatchCommand(params))
     return data
   } catch (err) {
-    console.log('Error', err.stack)
+    logger.warn(`Error publishing push notifications: ${err.stack}`)
   }
 }
 

@@ -19,7 +19,6 @@ import { createChildLogger } from '../logging'
 import defaultRedisClient from '../redis'
 import { timeout } from '../utils'
 import { asyncRetry } from '../utils/asyncRetry'
-import config from '../config'
 
 const SP_ID_TO_CHAIN_INFO_MAP_KEY = 'contentNodeInfoManagerSpIdMap'
 
