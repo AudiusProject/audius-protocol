@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { ExtendedTrackMetadata, Nullable } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import { Formik } from 'formik'
+import moment from 'moment'
 import * as Yup from 'yup'
 
 import PreviewButton from 'components/upload/PreviewButton'
@@ -10,6 +11,7 @@ import PreviewButton from 'components/upload/PreviewButton'
 import TrackMetadataFields from '../fields/TrackMetadataFields'
 
 import styles from './EditPageNew.module.css'
+import { TrackModalArray } from './TrackModalArray'
 import { TrackForUpload } from './types'
 
 type EditPageProps = {
@@ -18,12 +20,12 @@ type EditPageProps = {
   onContinue: () => void
 }
 export type FormValues = ExtendedTrackMetadata & {
+  releaseDate: moment.Moment
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>
     derivativeWorks: Nullable<boolean>
   }
-  trackArtwork?: string
 }
 
 const EditTrackSchema = Yup.object().shape({
@@ -48,6 +50,7 @@ export const EditPageNew = (props: EditPageProps) => {
   const initialValues: FormValues = {
     ...tracks[0].metadata,
     artwork: null,
+    releaseDate: moment().startOf('day'),
     licenseType: {
       allowAttribution: null,
       commercialUse: null,
@@ -73,6 +76,7 @@ export const EditPageNew = (props: EditPageProps) => {
         <>
           <div className={styles.editForm}>
             <TrackMetadataFields playing={false} type='track' />
+            <TrackModalArray />
             <PreviewButton playing={false} onClick={() => {}} />
           </div>
           <div className={styles.continue}>

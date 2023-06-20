@@ -1,0 +1,108 @@
+/* Form display component */
+.displayTile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--unit-4) var(--unit-6);
+  gap: var(--unit-4);
+
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 8px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-extra-bold);
+  font-size: var(--font-l);
+  line-height: 20px;
+}
+
+.caret {
+  color: var(--neutral-light-4);
+  height: 14px;
+  width: 14px;
+}
+
+.description {
+  font-weight: var(--font-medium);
+}
+
+.valueDisplay {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px;
+  gap: 4px;
+  background: var(--neutral-light-8);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 2px;
+
+  font-family: 'Avenir Next LT Pro';
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  text-transform: uppercase;
+}
+
+.calendarIcon {
+  height: 14px;
+  width: 14px;
+}
+
+/* Modal styles */
+.modalHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.modalTitle {
+  font-weight: var(--font-heavy);
+  font-size: var(--font-xl);
+  line-height: 25px;
+
+  text-align: center;
+  text-transform: uppercase;
+
+  color: var(--neutral-light-2);
+}
+
+/* TODO: figure out how to do this as .modal .title */
+.modalHeading {
+  margin-bottom: var(--unit-2);
+}
+
+.titleIcon {
+  height: 18px;
+  width: 18px;
+}
+
+.datePicker {
+  margin-top: var(--unit-4);
+  background-color: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-9);
+  border-radius: 4px;
+  width: 100%;
+  padding: var(--unit-3) var(--unit-4);
+}
+
+.datePicker :global(.DateInput_input) {
+  background-color: var(--neutral-light-10);
+  border: none;
+  color: var(--neutral);
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 18px;
+  width: 200px;
+  padding: 0;
+}
