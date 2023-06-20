@@ -125,12 +125,12 @@
     "whitelist": 1000
   },
   "CreateDeveloperApp": {
-    "owner": 5,
+    "owner": 3,
     "app": 0,
     "whitelist": 1000
   },
   "DeleteDeveloperApp": {
-    "owner": 5,
+    "owner": 3,
     "app": 0,
     "whitelist": 1000
   },
