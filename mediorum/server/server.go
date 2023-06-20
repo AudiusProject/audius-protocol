@@ -55,6 +55,7 @@ type MediorumConfig struct {
 	GitSHA              string
 	AudiusDockerCompose string
 	AutoUpgradeEnabled  bool
+	WalletIsRegistered  bool
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -110,10 +111,18 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
 	}
 
-	if pk, err := parsePrivateKey(config.PrivateKey); err != nil {
+	if pk, err := ethcontracts.ParsePrivateKeyHex(config.PrivateKey); err != nil {
 		log.Println("invalid private key: ", err)
 	} else {
 		config.privateKey = pk
+	}
+
+	// check that we're registered...
+	for _, peer := range config.Peers {
+		if strings.EqualFold(config.Self.Wallet, peer.Wallet) {
+			config.WalletIsRegistered = true
+			break
+		}
 	}
 
 	// ensure dir
@@ -230,7 +239,15 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// todo: use `/internal/ok` instead... this is just needed for transition
 	routes.GET("/status", func(c echo.Context) error {
-		return c.String(200, "OK")
+		status := 200
+		if !ss.Config.WalletIsRegistered {
+			status = 506
+		}
+		return c.JSON(status, map[string]any{
+			"host":                 ss.Config.Self.Host,
+			"wallet":               ss.Config.Self.Wallet,
+			"wallet_is_registered": ss.Config.WalletIsRegistered,
+		})
 	})
 
 	// -------------------
@@ -292,20 +309,26 @@ func (ss *MediorumServer) MustStart() {
 		}
 	}()
 
-	// the crudr health broadcaster is deprecated and replaced by the health poller.
-	// it's kept here for one extra deploy while old hosts are still expecting that.
-	go ss.startHealthBroadcaster()
-	go ss.startHealthPoller()
-
 	go ss.startTranscoder()
 
-	go ss.startRepairer()
+	// for any background task that make authenticated peer requests
+	// only start if we have a valid registered wallet
+	if ss.Config.WalletIsRegistered {
+		// the crudr health broadcaster is deprecated and replaced by the health poller.
+		// it's kept here for one extra deploy while old hosts are still expecting that.
+		go ss.startHealthBroadcaster()
 
-	ss.crud.StartClients()
+		go ss.startHealthPoller()
 
-	go ss.startCidBeamClient()
+		go ss.startRepairer()
 
-	go ss.startPollingDelistStatuses()
+		ss.crud.StartClients()
+
+		go ss.startCidBeamClient()
+
+		go ss.startPollingDelistStatuses()
+
+	}
 
 	go ss.monitorDiskAndDbStatus()
 
