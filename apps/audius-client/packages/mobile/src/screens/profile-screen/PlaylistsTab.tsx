@@ -45,6 +45,7 @@ export const PlaylistsTab = () => {
   return (
     <CollectionList
       collection={playlist_count > 0 ? playlists : emptyPlaylists}
+      style={{ paddingTop: playlist_count > 0 ? 12 : 0 }}
       ListEmptyComponent={<EmptyProfileTile tab='playlists' />}
       disableTopTabScroll
       showsVerticalScrollIndicator={false}

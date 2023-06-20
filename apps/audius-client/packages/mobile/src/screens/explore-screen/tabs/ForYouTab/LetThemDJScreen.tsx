@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CollectionList } from 'app/components/collection-list'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { spacing } from 'app/styles/spacing'
 
 import { LET_THEM_DJ } from '../../collections'
 const { getCollections, getStatus } = explorePageCollectionsSelectors
@@ -38,7 +39,10 @@ export const LetThemDJScreen = () => {
       <ScreenContent>
         <View style={{ flex: 1 }}>
           <WithLoader loading={status === Status.LOADING}>
-            <CollectionList collection={exploreData} />
+            <CollectionList
+              style={{ paddingTop: spacing(3) }}
+              collection={exploreData}
+            />
           </WithLoader>
         </View>
       </ScreenContent>

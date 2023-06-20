@@ -36,7 +36,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   contentContainer: {
     padding: spacing(3),
-    paddingVertical: spacing(6),
+    paddingBottom: spacing(6),
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between'

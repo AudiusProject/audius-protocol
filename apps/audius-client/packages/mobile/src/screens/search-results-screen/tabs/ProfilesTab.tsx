@@ -7,6 +7,7 @@ import {
 } from '@audius/common'
 
 import { ProfileList } from 'app/components/profile-list'
+import { spacing } from 'app/styles/spacing'
 
 import { EmptyResults } from '../EmptyResults'
 
@@ -30,6 +31,7 @@ export const ProfilesTab = () => {
 
   return (
     <ProfileList
+      style={{ paddingTop: spacing(3) }}
       isLoading={!users}
       profiles={users}
       ListEmptyComponent={<EmptyResults />}

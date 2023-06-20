@@ -35,8 +35,10 @@ const DefaultLoadingCard = () => null
 
 const useStyles = makeStyles(({ spacing }) => ({
   cardList: {
-    padding: spacing(3),
     paddingRight: 0
+  },
+  columnWrapper: {
+    paddingLeft: spacing(3)
   },
   card: {
     width: '50%',
@@ -90,6 +92,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   return (
     <FlatListComponent
       style={styles.cardList}
+      columnWrapperStyle={styles.columnWrapper}
       ref={ref}
       data={data}
       renderItem={handleRenderItem}

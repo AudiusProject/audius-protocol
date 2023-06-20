@@ -37,8 +37,8 @@ export const ArtistsTab = () => {
       isLoading={
         exploreStatus === Status.LOADING || artistsStatus !== Status.SUCCESS
       }
-      profiles={artists}
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
+      profiles={artists}
     />
   )
 }

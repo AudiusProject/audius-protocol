@@ -7,6 +7,7 @@ import {
 } from '@audius/common'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
+import { spacing } from 'app/styles/spacing'
 
 import { EmptyResults } from '../EmptyResults'
 
@@ -34,6 +35,7 @@ export const PlaylistsTab = () => {
 
   return (
     <CollectionList
+      style={{ paddingTop: spacing(3) }}
       isLoading={!playlists}
       collection={playlists}
       ListEmptyComponent={<EmptyResults />}
