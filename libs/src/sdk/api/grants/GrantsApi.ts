@@ -4,12 +4,14 @@ import type { AuthService, EntityManagerService } from '../../services'
 
 import { Action, EntityType } from '../../services/EntityManager/types'
 
-import { decodeHashId } from '../../utils/hashId'
-import { objectMissingValues } from '../../utils/object'
-import { GRANT_REQUIRED_VALUES } from './constants'
-import type { CreateGrantRequest, RevokeGrantRequest } from './types'
+import {
+  CreateGrantRequest,
+  CreateGrantSchema,
+  RevokeGrantRequest,
+  RevokeGrantSchema
+} from './types'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
-// Note (nkang): Eventually this will extend the generated GrantsAPI
 export class GrantsApi {
   constructor(
     _config: Configuration,
@@ -21,31 +23,18 @@ export class GrantsApi {
    * When user authorizes app to perform actions on their behalf
    */
   async createGrant(requestParameters: CreateGrantRequest) {
-    const { appApiKey, userId } = requestParameters
-    const metadataMissingValues = objectMissingValues(
-      requestParameters,
-      GRANT_REQUIRED_VALUES
-    )
-    if (metadataMissingValues?.length) {
-      throw new Error(
-        `Create Authorization error - Metadata object is missing values: ${metadataMissingValues}`
-      )
-    }
-
-    const decodedUserId = decodeHashId(userId)
-    if (decodedUserId == null) {
-      throw new Error(`Create Authorization error - user id is invalid`)
-    }
-
-    // TODO(nkang): Format appApiKey into compressed, non-0x-prefixed pub key
+    const { userId, appApiKey } = parseRequestParameters(
+      'createGrant',
+      CreateGrantSchema
+    )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
-      userId: decodedUserId,
+      userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.CREATE,
       metadata: JSON.stringify({
-        grantee_address: appApiKey
+        grantee_address: `0x${appApiKey}`
       }),
       auth: this.auth
     })
@@ -62,31 +51,18 @@ export class GrantsApi {
    * When user revokes an app's authorization to perform actions on their behalf
    */
   async revokeGrant(requestParameters: RevokeGrantRequest) {
-    const { appApiKey, userId } = requestParameters
-    const metadataMissingValues = objectMissingValues(
-      requestParameters,
-      GRANT_REQUIRED_VALUES
-    )
-    if (metadataMissingValues?.length) {
-      throw new Error(
-        `Revoke Grant error - Metadata object is missing values: ${metadataMissingValues}`
-      )
-    }
-
-    const decodedUserId = decodeHashId(userId)
-    if (decodedUserId == null) {
-      throw new Error(`Revoke Grant error - user id is invalid`)
-    }
-
-    // TODO(nkang): Format appApiKey into compressed, non-0x-prefixed pub key
+    const { userId, appApiKey } = parseRequestParameters(
+      'revokeGrant',
+      RevokeGrantSchema
+    )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
-      userId: decodedUserId,
+      userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
       action: Action.DELETE,
       metadata: JSON.stringify({
-        grantee_address: appApiKey
+        grantee_address: `0x${appApiKey}`
       }),
       auth: this.auth
     })
