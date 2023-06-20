@@ -61,13 +61,25 @@ func startStagingOrProd(isProd bool) {
 	slog.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
-	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
-	privateKey := mustGetenv("delegatePrivateKey")
+	privateKeyHex := mustGetenv("delegatePrivateKey")
+
+	privateKey, err := ethcontracts.ParsePrivateKeyHex(privateKeyHex)
+	if err != nil {
+		log.Fatal("invalid private key", err)
+	}
+
+	// compute wallet address
+	walletAddress := ethcontracts.ComputeAddressFromPrivateKey(privateKey)
+	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
+	if !strings.EqualFold(walletAddress, delegateOwnerWallet) {
+		slog.Warn("incorrect delegateOwnerWallet env config", "incorrect", delegateOwnerWallet, "computed", walletAddress)
+	}
+
 	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
 	if err != nil {
 		slog.Warn("failed to parse trustedNotifierID", "err", err)
 	}
-	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, delegateOwnerWallet)
+	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
 	if err != nil || spID == 0 {
 		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
 	}
@@ -75,13 +87,13 @@ func startStagingOrProd(isProd bool) {
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-			Wallet: delegateOwnerWallet,
+			Wallet: walletAddress,
 		},
 		ListenPort:          "1991",
 		Peers:               peers,
 		Signers:             signers,
 		ReplicationFactor:   3,
-		PrivateKey:          privateKey,
+		PrivateKey:          privateKeyHex,
 		Dir:                 "/tmp/mediorum",
 		PostgresDSN:         os.Getenv("dbUrl"),
 		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
