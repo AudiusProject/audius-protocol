@@ -5,7 +5,7 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("edit-track")
   .description("Update an existing track")
-  .argument("[track_id]", "current slug of track to update")
+  .argument("[track_id]", "id of track to update")
   .option("-t, --title <title>", "Title of track")
   .option("-a, --tags <tags>", "Tags of track")
   .option("-d, --description <description>", "Description of track ")
@@ -41,7 +41,7 @@ program.command("edit-track")
 
       const updatedTrack = (await audiusLibs.Track.getTracks(100, 0, [track_id]))[0]
       delete updatedTrack.user
-      console.log(chalk.green("Successfully updated user!"));
+      console.log(chalk.green("Successfully updated track!"));
       console.log(chalk.yellow.bold("Track after update: "), updatedTrack);
     } catch (err) {
       program.error(err.message);
