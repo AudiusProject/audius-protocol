@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"log"
 	"os"
 	"strings"
 
@@ -84,6 +85,9 @@ func DiscoveryMain() {
 		return nil
 
 	})
+	if err := g.Wait(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Start server
 	port := os.Getenv("PORT")
