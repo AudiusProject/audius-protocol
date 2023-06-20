@@ -15,6 +15,7 @@ import "./tip-audio.mjs";
 import "./unfollow.mjs";
 import "./auth-headers.mjs";
 import "./upload-track.mjs";
+import "./edit-track.mjs";
 
 async function main() {
   program.parseAsync(process.argv);
