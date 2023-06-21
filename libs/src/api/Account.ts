@@ -254,7 +254,6 @@ export class Account extends Base {
           coverPhotoFile
         })
 
-      // Upload user's profile images, if any
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {

@@ -168,6 +168,8 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
         )
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = params.metadata
+        user_record.metadata_multihash = metadata_cid
+        user_record = update_legacy_user_images(user_record)
     except Exception:
         # fallback to multi tx signup
         pass

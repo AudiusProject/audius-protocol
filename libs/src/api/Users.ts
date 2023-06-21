@@ -622,7 +622,7 @@ export class Users extends Base {
         repost_count: 0
       })
 
-      // TODO upload in parallel
+      // Upload images
       if (profilePictureFile) {
         const resp = await this.creatorNode.uploadProfilePictureV2(
           profilePictureFile
