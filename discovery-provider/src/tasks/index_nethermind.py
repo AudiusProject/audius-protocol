@@ -166,7 +166,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     return contract_type
 
 
-@log_duration(logger)
 def add_indexed_block_to_db(
     session: Session, next_block: AttributeDict, current_block: Block
 ):
@@ -186,7 +185,6 @@ def add_indexed_block_to_redis(block, redis):
     redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
 
-@log_duration(logger)
 def process_state_changes(
     session,
     tx_type_to_grouped_lists_map,
@@ -249,7 +247,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
         session.delete(user_events_to_revert)
 
 
-@log_duration(logger)
 def get_latest_database_block(session: Session) -> Block:
     """
     Gets the latest block in the database.
@@ -292,7 +289,6 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         return False
 
 
-@log_duration(logger)
 def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_block=0):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         is_block_on_chain_future = executor.submit(
@@ -304,6 +300,9 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
         block_on_chain = is_block_on_chain_future.result()
         next_block = next_block_future.result()
+
+        if next_block.parentHash != latest_database_block.blockhash:
+            block_on_chain = False
 
         return block_on_chain, next_block
 
@@ -354,6 +353,7 @@ def index_next_block(
                     tx_receipt_dict.values(),
                     indexing_transaction_index_sort_order_start_block,
                 )
+                logger.set_context("tx_count", len(sorted_txs))
 
                 # Parse tx events in each block
                 for tx in sorted_txs:
@@ -408,12 +408,7 @@ def index_next_block(
                 create_and_raise_indexing_error(indexing_error, redis)
 
         try:
-
-            @log_duration(logger)
-            def commit():
-                session.commit()
-
-            commit()
+            session.commit()
 
         except Exception as e:
             # Use 'commit' as the tx hash here.
@@ -772,21 +767,24 @@ def index_nethermind(self):
     update_lock = redis.lock("index_nethermind_lock", blocking_timeout=25, timeout=600)
     have_lock = update_lock.acquire(blocking=False)
 
-    if have_lock:
-        try:
-            with db.scoped_session() as session:
-                latest_database_block = get_latest_database_block(session)
+    if not have_lock:
+        logger.disable()
+        return
 
-                in_valid_state, next_block = get_relevant_blocks(
-                    web3, latest_database_block, FINAL_POA_BLOCK
-                )
+    try:
+        with db.scoped_session() as session:
+            latest_database_block = get_latest_database_block(session)
 
-                if in_valid_state:
-                    if next_block:
-                        index_next_block(session, latest_database_block, next_block)
-                else:
-                    revert_block(session, latest_database_block)
-        except Exception as e:
-            logger.error(f"Error in indexing blocks {e}", exc_info=True)
-        update_lock.release()
-        celery.send_task("index_nethermind")
+            in_valid_state, next_block = get_relevant_blocks(
+                web3, latest_database_block, FINAL_POA_BLOCK
+            )
+
+            if in_valid_state:
+                if next_block:
+                    index_next_block(session, latest_database_block, next_block)
+            else:
+                revert_block(session, latest_database_block)
+    except Exception as e:
+        logger.error(f"Error in indexing blocks {e}", exc_info=True)
+    update_lock.release()
+    celery.send_task("index_nethermind")
