@@ -63,7 +63,11 @@ type legacyHealth struct {
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
+
+	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
+	defer ss.peerHealthMutex.RUnlock()
+
 	data := healthCheckResponseData{
 		Healthy:                   err == nil,
 		Version:                   legacyHealth.Version,
@@ -92,7 +96,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		PeerHealths:               ss.peerHealth,
 		Signers:                   ss.Config.Signers,
 	}
-	ss.peerHealthMutex.RUnlock()
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
