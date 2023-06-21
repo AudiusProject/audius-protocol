@@ -6,7 +6,7 @@ import {
   SlackCommandMiddlewareArgs,
   SlackEventMiddlewareArgs,
 } from "@slack/bolt";
-import { AsciiTable3 } from "ascii-table3";
+import { AlignmentEnum, AsciiTable3 } from "ascii-table3";
 import App from "basekit/src/app";
 import { Err, Ok, Result } from "ts-results";
 import { SharedData } from "./config";
@@ -34,10 +34,10 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
 
   // register callbacks
   slackApp.command("/echo", async (args) => await echo(app, args));
-  slackApp.command(
-    "/disburse",
-    async (args) => await disburse(app, args, false)
-  );
+  // slackApp.command(
+  //   "/disburse",
+  //   async (args) => await disburse(app, args, false)
+  // );
   slackApp.command(
     "/disbursetest",
     async (args) => await disburse(app, args, true)
@@ -67,17 +67,12 @@ const disburse = async (
 
 export const formatDisbursementTable = (
   challenges: ChallengeDisbursementUserbankFriendly[]
-): string =>
-  challenges
-    .reduce(
-      (acc: AsciiTable3, curr) =>
-        acc
-          .addRow([curr.challenge_id, curr.handle, curr.slot])
-          .setWidths([30, 30, 30]),
-      new AsciiTable3("Challenge Disbursements").setHeading(
-        "Challenge",
-        "Handle",
-        "Slot"
-      )
-    )
-    .toString();
+): string => {
+  const matrix = challenges.map((challenge) => [challenge.challenge_id, challenge.handle, challenge.slot])
+  console.log(matrix)
+  return new AsciiTable3("Challenge Disbursements").setHeading(
+    "Challenge",
+    "Handle",
+    "Slot"
+  ).setAlign(3, AlignmentEnum.CENTER).addRowMatrix(matrix).toString()
+      }
