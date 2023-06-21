@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { isApiKeyValid } from '../utils/file'
+import { isApiKeyValid } from '../utils/apiKey'
 
 export const IsWriteAccessGrantedSchema = z.object({
   userId: z.string(),
