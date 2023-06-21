@@ -126,7 +126,10 @@ const slice = createSlice({
   name: 'application/pages/chat',
   initialState,
   reducers: {
-    createChat: (_state, _action: PayloadAction<{ userIds: ID[] }>) => {
+    createChat: (
+      _state,
+      _action: PayloadAction<{ userIds: ID[]; skipNavigation?: boolean }>
+    ) => {
       // triggers saga
     },
     createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
