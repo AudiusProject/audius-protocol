@@ -55,6 +55,7 @@ type CreatorNodeSelectionConfig = Omit<
   preferHigherPatchForPrimary?: boolean
   preferHigherPatchForSecondaries?: boolean
   logger?: Logger
+  getServices?: () => Promise<string[]>
 }
 
 interface Decision {
@@ -89,21 +90,24 @@ export class CreatorNodeSelection extends ServiceSelection {
     timeout = null,
     equivalencyDelta = null,
     preferHigherPatchForPrimary = true,
-    preferHigherPatchForSecondaries = true
+    preferHigherPatchForSecondaries = true,
+    getServices
   }: CreatorNodeSelectionConfig) {
     super({
-      getServices: async () => {
-        this.currentVersion = await ethContracts.getCurrentVersion(
-          CREATOR_NODE_SERVICE_NAME
-        )
-        const services = await this.ethContracts.getServiceProviderList(
-          CREATOR_NODE_SERVICE_NAME
-        )
-        return services.map((e) => {
-          setSpIDForEndpoint(e.endpoint, e.spID)
-          return e.endpoint
-        })
-      },
+      getServices: getServices
+        ? getServices
+        : async () => {
+            this.currentVersion = await ethContracts.getCurrentVersion(
+              CREATOR_NODE_SERVICE_NAME
+            )
+            const services = await this.ethContracts.getServiceProviderList(
+              CREATOR_NODE_SERVICE_NAME
+            )
+            return services.map((e) => {
+              setSpIDForEndpoint(e.endpoint, e.spID)
+              return e.endpoint
+            })
+          },
       // Use the content node's configured whitelist if not provided
       whitelist: whitelist ?? creatorNode?.passList,
       blacklist: blacklist ?? creatorNode?.blockList
