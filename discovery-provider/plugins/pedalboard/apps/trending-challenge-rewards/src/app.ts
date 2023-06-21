@@ -52,10 +52,10 @@ export const onDisburse = async (
 
   const channel = process.env.SLACK_CHANNEL
   if (channel === undefined) return new Err("SLACK_CHANNEL not defined")
-  // await client.chat.postMessage({
-  //   channel,
-  //   text: "```" + formattedResults + "```",
-  // });
+  await client.chat.postMessage({
+    channel,
+    text: "```" + formattedResults + "```",
+  });
 
   return new Ok(undefined);
 };
