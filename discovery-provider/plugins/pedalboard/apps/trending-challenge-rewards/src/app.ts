@@ -41,7 +41,6 @@ export const onDisburse = async (
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
   const nodeGroups = await assembleNodeGroups(libs);
-  console.log('node group res = ', nodeGroups)
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
