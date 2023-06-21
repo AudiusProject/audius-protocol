@@ -591,25 +591,20 @@ export class Users extends Base {
     }
   }
 
-  async createEntityManagerUserV2({ metadata }: { metadata: UserMetadata }) {
+  async createEntityManagerUserV2({
+    metadata,
+    profilePictureFile,
+    coverPhotoFile
+  }: {
+    metadata: UserMetadata
+    profilePictureFile: Nullable<File>
+    coverPhotoFile: Nullable<File>
+  }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
 
     try {
       // Create the user with EntityMananer
       const userId = await this._generateUserId()
-      const manageEntityResponse =
-        await this.contracts.EntityManagerClient!.manageEntity(
-          userId,
-          EntityManagerClient.EntityType.USER,
-          userId,
-          EntityManagerClient.Action.CREATE,
-          'v2'
-        )
-      await this._waitForDiscoveryToIndexUser(
-        userId,
-        manageEntityResponse.txReceipt.blockNumber
-      )
-
       // Ensure metadata has expected properties
       const newMetadata = this.cleanUserMetadata({ ...metadata })
       this._validateUserMetadata(newMetadata)
@@ -627,13 +622,42 @@ export class Users extends Base {
         repost_count: 0
       })
 
-      // Update metadata on chain to include wallet
-      const { blockHash, blockNumber } = await this.updateMetadataV2({
-        newMetadata,
-        userId
-      })
+      // Upload images
+      if (profilePictureFile) {
+        const resp = await this.creatorNode.uploadProfilePictureV2(
+          profilePictureFile
+        )
+        newMetadata.profile_picture_sizes = resp.id
+      }
+      if (coverPhotoFile) {
+        const resp = await this.creatorNode.uploadCoverPhotoV2(coverPhotoFile)
+        newMetadata.cover_photo_sizes = resp.id
+      }
 
-      return { newMetadata, blockHash, blockNumber }
+      const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          JSON.stringify({
+            cid: cid.toString(),
+            data: newMetadata
+          })
+        )
+      await this._waitForDiscoveryToIndexUser(
+        userId,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+      // Update libs instance with new user metadata object
+      this.userStateManager.setCurrentUser({ ...newMetadata })
+
+      return {
+        newMetadata,
+        blockHash: manageEntityResponse.txReceipt.blockHash,
+        blockNumber: manageEntityResponse.txReceipt.blockNumber
+      }
     } catch (e) {
       const errorMsg = `createEntityManagerUserV2() error: ${e}`
       if (e instanceof Error) {
