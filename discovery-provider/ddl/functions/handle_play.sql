@@ -40,7 +40,13 @@ begin
         end if;
     end if;
     return null;
-end; 
+
+exception
+  when others then
+    raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+    raise;
+
+end;
 $$ language plpgsql;
 
 do $$ begin

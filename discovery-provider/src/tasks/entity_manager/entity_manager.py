@@ -203,7 +203,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_user(params)
+                        create_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.USER

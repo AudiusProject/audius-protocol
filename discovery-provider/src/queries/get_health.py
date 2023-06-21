@@ -35,10 +35,6 @@ from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
-    TRACK_DELIST_DISCREPANCIES_KEY,
-    TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
-    USER_DELIST_DISCREPANCIES_KEY,
-    USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
     challenges_last_processed_event_redis_key,
     index_eth_last_completion_redis_key,
     latest_block_hash_redis_key,
@@ -117,112 +113,6 @@ def _get_query_insights():
     )
 
     return query_insights, False
-
-
-def get_user_delist_discrepancies(redis: Redis):
-    try:
-        if redis is None:
-            raise Exception("Invalid arguments for get_user_delist_discrepancies")
-        user_delist_discrepancies_timestamp = redis.get(
-            USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY
-        )
-        if user_delist_discrepancies_timestamp:
-            latest_check = datetime.utcfromtimestamp(
-                float(user_delist_discrepancies_timestamp.decode())
-            ).replace(tzinfo=timezone.utc)
-            # Only run query every 12h
-            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
-                user_delist_discrepancies = redis.get(USER_DELIST_DISCREPANCIES_KEY)
-                return user_delist_discrepancies.decode()
-
-        db = db_session.get_db_read_replica()
-        with db.scoped_session() as session:
-            sql = text(
-                """
-                with user_delists as (
-                select distinct on (user_id)
-                    user_id,
-                    delisted,
-                    created_at
-                    from user_delist_statuses
-                    order by user_id, created_at desc
-                )
-                select
-                    users.user_id,
-                    users.is_available,
-                    user_delists.delisted,
-                    user_delists.created_at as delist_created_at
-                from users
-                join user_delists on users.user_id = user_delists.user_id
-                where users.is_current and users.is_available = user_delists.delisted;
-                """
-            )
-            result = session.execute(sql).fetchall()
-            user_delist_discrepancies = json.dumps(
-                [dict(row) for row in result], default=str
-            )
-            redis.set(
-                USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
-                datetime.now(timezone.utc).timestamp(),
-            )
-            redis.set(USER_DELIST_DISCREPANCIES_KEY, user_delist_discrepancies)
-            return user_delist_discrepancies
-    except Exception as e:
-        logging.error("issue with user delist discrepancies %s", exc_info=e)
-        pass
-
-
-def get_track_delist_discrepancies(redis: Redis):
-    try:
-        if redis is None:
-            raise Exception("Invalid arguments for get_track_delist_discrepancies")
-        track_delist_discrepancies_timestamp = redis.get(
-            TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY
-        )
-        if track_delist_discrepancies_timestamp:
-            latest_check = datetime.utcfromtimestamp(
-                float(track_delist_discrepancies_timestamp.decode())
-            ).replace(tzinfo=timezone.utc)
-            # Only run query every 12h
-            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
-                track_delist_discrepancies = redis.get(TRACK_DELIST_DISCREPANCIES_KEY)
-                return track_delist_discrepancies.decode()
-
-        db = db_session.get_db_read_replica()
-        with db.scoped_session() as session:
-            sql = text(
-                """
-                with track_delists as (
-                select distinct on (track_id)
-                    track_id,
-                    delisted,
-                    created_at
-                    from track_delist_statuses
-                    order by track_id, created_at desc
-                )
-                select
-                    tracks.track_id,
-                    tracks.is_available,
-                    track_delists.delisted,
-                    track_delists.created_at as delist_created_at
-                from tracks
-                join track_delists on tracks.track_id = track_delists.track_id
-                where tracks.is_current and tracks.is_available = track_delists.delisted;
-                """
-            )
-            result = session.execute(sql).fetchall()
-            track_delist_discrepancies = json.dumps(
-                [dict(row) for row in result], default=str
-            )
-            redis.set(
-                TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
-                datetime.now(timezone.utc).timestamp(),
-            )
-            redis.set(TRACK_DELIST_DISCREPANCIES_KEY, track_delist_discrepancies)
-            return track_delist_discrepancies
-    except Exception as e:
-        logging.error("issue with track delist discrepancies %s", exc_info=e)
-        pass
 
 
 def _get_chain_health():
@@ -403,8 +293,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     backfilled_cid_data = get_backfilled_cid_data(redis)
-    user_delist_discrepancies = get_user_delist_discrepancies(redis)
-    track_delist_discrepancies = get_track_delist_discrepancies(redis)
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -441,8 +329,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
         "backfilled_cid_data": backfilled_cid_data,
-        "user_delist_discrepancies": user_delist_discrepancies,
-        "track_delist_discrepancies": track_delist_discrepancies,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:

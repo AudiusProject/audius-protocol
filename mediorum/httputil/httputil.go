@@ -2,7 +2,10 @@ package httputil
 
 import "regexp"
 
+var (
+	trailingSlash = regexp.MustCompile("/$")
+)
+
 func RemoveTrailingSlash(s string) string {
-	re := regexp.MustCompile("/$")
-	return re.ReplaceAllString(s, "")
+	return trailingSlash.ReplaceAllString(s, "")
 }
