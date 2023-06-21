@@ -843,23 +843,6 @@ def test_invalid_track_description(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-    tx_receipts = {
-        "CreateInvalidTrackDescription": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "CreateInvalidTrackDescriptionMetadata",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
-
     metadata = {
         "CreateInvalidTrackDescriptionMetadata": {
             "owner_id": 1,
@@ -915,6 +898,25 @@ def test_invalid_track_description(app, mocker):
         },
     }
 
+    track_metadata = json.dumps(metadata["CreateInvalidTrackDescriptionMetadata"])
+
+    tx_receipts = {
+        "CreateInvalidTrackDescription": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {track_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
@@ -937,8 +939,7 @@ def test_invalid_track_description(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
-            metadata=metadata,
+            block_hash=0
         )
 
         assert total_changes == 0

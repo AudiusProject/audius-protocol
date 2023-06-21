@@ -734,57 +734,56 @@ def test_invalid_user_bio(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(web3, bus_mock, None, None)
-    
-    tx_receipts = {
-        "CreateUserInvalidBio": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": 1,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET + 1,
-                        "_action": "Create",
-                        "_metadata": "CreateUserInvalidBioMetadata",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
-
-    metadata = {
-        "CreateUserInvalidBioMetadata": {
-            "bio": "xtralarge" * CHARACTER_LIMIT_USER_BIO
+        metadata = {
+            "CreateUserInvalidBioMetadata": {
+                "bio": "xtralarge" * CHARACTER_LIMIT_USER_BIO
+            }
         }
-    }
 
-    entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-        for tx_receipt in tx_receipts
-    ]
+        user_metadata = json.dumps(metadata["CreateUserInvalidBioMetadata"])
+        tx_receipts = {
+            "CreateUserInvalidBio": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": 1,
+                            "_entityType": "User",
+                            "_userId": USER_ID_OFFSET + 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {user_metadata}}}',
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+        }
 
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        entity_manager_txs = [
+            AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+            for tx_receipt in tx_receipts
+        ]
 
-    mocker.patch(
-        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-        side_effect=get_events_side_effect,
-        autospec=True,
-    )
+        def get_events_side_effect(_, tx_receipt):
+            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
-    with db.scoped_session() as session:
-        total_changes, _ = entity_manager_update(
-            None,
-            update_task,
-            session,
-            entity_manager_txs,
-            block_number=0,
-            block_timestamp=1585336422,
-            block_hash=0,
-            metadata=metadata,
+        mocker.patch(
+            "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+            side_effect=get_events_side_effect,
+            autospec=True,
         )
 
-        assert total_changes == 0
+        with db.scoped_session() as session:
+            total_changes, _ = entity_manager_update(
+                None,
+                update_task,
+                session,
+                entity_manager_txs,
+                block_number=0,
+                block_timestamp=1585336422,
+                block_hash=0
+            )
+
+            assert total_changes == 0
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
