@@ -1,12 +1,12 @@
 # Uses separate stage for nodejs deps despite caching to avoid installing build tools
-FROM node:14.16 AS builder
+FROM node:18.16 AS builder
 RUN apt-get install make
 WORKDIR /app
 COPY package*.json ./
 COPY patches ./patches
 RUN --mount=type=cache,target=/root/.npm npm ci && npm run postinstall
 
-FROM node:14.16-alpine as base
+FROM node:18.16-alpine as base
 
 WORKDIR /usr/src/app
 

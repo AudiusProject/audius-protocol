@@ -1,4 +1,4 @@
-FROM node:14.16-alpine
+FROM node:18.16-alpine
 RUN apk add --no-cache --virtual .gyp python make g++ 
 
 WORKDIR /notifications
