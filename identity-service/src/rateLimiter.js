@@ -16,6 +16,7 @@ const {
 
 const models = require('./models')
 const { libs } = require('@audius/sdk')
+const { errorResponseRateLimited } = require('apiHelpers.js')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
@@ -217,7 +218,11 @@ const getRelayBlocklistMiddleware = (req, res, next) => {
   req.body.signer = signer
   const blocklist = config.get('blocklistPublicKeyFromRelay')
   if (blocklist && blocklist.includes(signer)) {
-    return res.status(429).send(rateLimitMessage)
+    errorResponseServerError(
+      errorResponseRateLimited({
+        message: rateLimitMessage
+      })
+    )
   }
   next()
 }
@@ -271,7 +276,11 @@ const getRelayRateLimiterMiddleware = () => {
       } catch (error) {
         req.logger.error(`Cannot relay without sender address`)
       }
-      res.status(429).send(rateLimitMessage)
+      errorResponseServerError(
+        errorResponseRateLimited({
+          message: rateLimitMessage
+        })
+      )
     }
   })
 }
