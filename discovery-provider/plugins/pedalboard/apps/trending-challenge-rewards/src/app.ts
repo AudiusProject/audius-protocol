@@ -17,8 +17,10 @@ import { WebClient } from "@slack/web-api";
 import { formatDisbursementTable } from "./slack";
 
 // TODO: move something like this into App so results are commonplace for handlers
-export const onCondition = async (app: App<SharedData>): Promise<void> => {
-  const { dryRun } = app.viewAppData()
+export const disburseTrendingRewards = async (
+  app: App<SharedData>
+): Promise<void> => {
+  const { dryRun } = app.viewAppData();
   const disburse = await onDisburse(app, dryRun);
   disburse.mapErr(console.error);
 };
@@ -30,9 +32,9 @@ export const onDisburse = async (
 ): Promise<Result<undefined, string>> => {
   const db = app.getDnDb();
   const libs = app.viewAppData().libs;
-  const token = process.env.SLACK_BOT_TOKEN
-  if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined")
-  const client = new WebClient(token)
+  const token = process.env.SLACK_BOT_TOKEN;
+  if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined");
+  const client = new WebClient(token);
 
   const completedBlockRes = await findStartingBlock(db);
   if (completedBlockRes.err) return completedBlockRes;
@@ -44,13 +46,16 @@ export const onDisburse = async (
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
-  const friendly = await getChallengesDisbursementsUserbanksFriendly(db, specifier)
-  console.log('friendly = ', JSON.stringify(friendly))
+  const friendly = await getChallengesDisbursementsUserbanksFriendly(
+    db,
+    specifier
+  );
+  console.log("friendly = ", JSON.stringify(friendly));
   const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
 
-  const channel = process.env.SLACK_CHANNEL
-  if (channel === undefined) return new Err("SLACK_CHANNEL not defined")
+  const channel = process.env.SLACK_CHANNEL;
+  if (channel === undefined) return new Err("SLACK_CHANNEL not defined");
   await client.chat.postMessage({
     channel,
     text: "```" + formattedResults + "```",
@@ -63,7 +68,7 @@ export const findStartingBlock = async (
   db: Knex
 ): Promise<Result<[number, string], string>> => {
   const challenges = await getTrendingChallenges(db);
-  console.log('challenges = ', JSON.stringify(challenges))
+  console.log("challenges = ", JSON.stringify(challenges));
   const firstChallenge = challenges[0];
   if (firstChallenge === undefined)
     return new Err(`no challenges found ${challenges}`);
@@ -152,8 +157,13 @@ const getAllChallenges = async (
   startBlock: number,
   dryRun: boolean
 ) => {
-  const { AAOEndpoint, oracleEthAddress, feePayerOverride, libs, localEndpoint } =
-    app.viewAppData();
+  const {
+    AAOEndpoint,
+    oracleEthAddress,
+    feePayerOverride,
+    libs,
+    localEndpoint,
+  } = app.viewAppData();
   if (libs === null) return undefined;
   const res = await axios.get(
     `${localEndpoint}/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
@@ -265,7 +275,7 @@ const getAllChallenges = async (
         feePayerOverride,
         logger: console,
       });
-  
+
       if (error) {
         console.log(
           "Challenge was unattestable despite new nodes, aborting..." +
@@ -273,7 +283,7 @@ const getAllChallenges = async (
         );
       }
     } else {
-      console.log('running dry run')
+      console.log("running dry run");
     }
   }
   console.log(JSON.stringify(setToChallengeMap, null, 2));

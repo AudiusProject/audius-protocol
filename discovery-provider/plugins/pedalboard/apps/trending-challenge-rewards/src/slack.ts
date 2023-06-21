@@ -13,6 +13,14 @@ import { SharedData } from "./config";
 import { onDisburse } from "./app";
 import { WebClient } from "@slack/web-api";
 import { ChallengeDisbursementUserbankFriendly } from "./queries";
+import { announceTopFiveTrending } from "./trending";
+
+export const establishSlackConnection = async (app: App<SharedData>) => {
+  const slack = initSlack(app).unwrap();
+  const port = process.env.SLACK_SOCKET_PORT || 3008;
+  await slack.start(port);
+  console.log("slack connection established ⚡️");
+};
 
 export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
   const botToken = process.env.SLACK_BOT_TOKEN;
@@ -30,8 +38,6 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
     appToken,
   });
 
-  const client = slackApp.client;
-
   // register callbacks
   slackApp.command("/echo", async (args) => await echo(app, args));
   slackApp.command(
@@ -42,6 +48,10 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
     "/disbursetest",
     async (args) => await disburse(app, args, true)
   );
+  slackApp.command(
+    "/trending",
+    async (args) => await trending(app, args)
+  )
 
   return new Ok(slackApp);
 };
@@ -64,6 +74,17 @@ const disburse = async (
   await ack();
   await onDisburse(app, dryRun);
 };
+
+const trending = async (
+  app: App<SharedData>,
+  args: SlackCommandMiddlewareArgs
+): Promise<void> => {
+  const { command, ack, respond } = args;
+  await ack();
+  const text = command.text
+  if (text !== undefined && text.trim() !== "") await announceTopFiveTrending(app, text)
+  else { await announceTopFiveTrending(app) }
+}
 
 export const formatDisbursementTable = (
   challenges: ChallengeDisbursementUserbankFriendly[]
