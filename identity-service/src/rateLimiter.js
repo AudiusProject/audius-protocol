@@ -269,7 +269,7 @@ const getRelayRateLimiterMiddleware = () => {
         const signer = recoverSigner(req.body.encodedABI)
         req.logger.error(`Rate limited sender ${signer}`)
       } catch (error) {
-        req.logger.info(`Cannot relay without sender address`)
+        req.logger.error(`Cannot relay without sender address`)
       }
       res.status(429).send(rateLimitMessage)
     }
