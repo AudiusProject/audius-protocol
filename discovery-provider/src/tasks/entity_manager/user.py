@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from typing import Dict, TypedDict
@@ -24,9 +25,11 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    get_metadata_type_and_format,
+    parse_metadata,
 )
 from src.utils.config import shared_config
-from src.utils.hardcoded_data import reserved_handles_lower, genres_lower, moods_lower
+from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from web3 import Web3
@@ -124,7 +127,7 @@ def validate_user_handle(handle: str):
     return handle
 
 
-def create_user(params: ManageEntityParameters):
+def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_metadata: Dict[str, Dict]):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -140,9 +143,38 @@ def create_user(params: ManageEntityParameters):
         is_current=False,
     )
 
+    user_metadata = None
+    try:
+        # for single tx signup
+        # TODO move metadata parsing and saving after v2 upgrade
+        # Override with Update User to parse metadata
+        user_metadata, metadata_cid = parse_metadata(params.metadata, Action.UPDATE, EntityType.USER)
+        validate_user_metadata(
+            params.session,
+            user_record,
+            user_metadata,
+        )
+
+        user_record = update_user_metadata(
+            params.session,
+            params.redis,
+            user_record,
+            user_metadata,
+            params.web3,
+            params.challenge_bus,
+        )
+        metadata_type, _ = get_metadata_type_and_format(
+            params.entity_type
+        )
+        cid_type[metadata_cid] = metadata_type
+        cid_metadata[metadata_cid] = params.metadata
+    except Exception:
+        # fallback to multi tx signup
+        pass
+
     if params.metadata == "v2":
         user_record.is_storage_v2 = True
-    else:
+    elif not user_metadata:  # update replica set case
         sp_ids = parse_sp_ids(params.metadata)
 
         # Update the user's new replica set in the model and save!

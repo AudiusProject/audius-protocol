@@ -36,13 +36,13 @@ export const onDisburse = async (
   if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined");
   const client = new WebClient(token);
 
+  console.log(`doing ${dryRun ? "a dry run" : "the real deal"}`)
+
   const completedBlockRes = await findStartingBlock(db);
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
-  const nodeGroupsRes = await assembleNodeGroups(libs);
-  if (nodeGroupsRes.err) return nodeGroupsRes;
-  const nodeGroups = nodeGroupsRes.unwrap();
+  const nodeGroups = await assembleNodeGroups(libs);
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
@@ -91,24 +91,36 @@ type Node = {
 
 const assembleNodeGroups = async (
   libs: AudiusLibs
-): Promise<Result<Map<string, Node[]>, string>> => {
+): Promise<Map<string, Node[]>> => {
   const nodes =
     await libs.ServiceProvider?.discoveryProvider.serviceSelector.getServices({
       verbose: true,
     });
   if (nodes === undefined)
-    return new Err("no nodes returned from libs service provider");
+    throw new Error("no nodes returned from libs service provider");
+
   const groups = new Map<string, Node[]>();
   for (const node of nodes) {
-    const ownerNodes = groups.get(node.owner);
-    if (ownerNodes === undefined) {
-      groups.set(node.owner, [node]);
-    } else {
-      ownerNodes.push(node);
+      const ownerNodes = groups.get(node.owner);
+      if (ownerNodes === undefined) {
+      groups.set(node.owner, [{
+          endpoint: node.endpoint,
+          spID: node.spID,
+          owner: node.owner,
+          delegateOwnerWallet: node.delegateOwnerWallet,
+      }]);
+      } else {
+      ownerNodes.push({
+          endpoint: node.endpoint,
+          spID: node.spID,
+          owner: node.owner,
+          delegateOwnerWallet: node.delegateOwnerWallet,
+      });
       groups.set(node.owner, ownerNodes);
-    }
+      }
   }
-  return new Ok(groups);
+
+  return groups;
 };
 
 const canSuccessfullyAttest = async (
@@ -117,7 +129,7 @@ const canSuccessfullyAttest = async (
   userId: number,
   challengeId: string,
   oracleEthAddress: string
-): Promise<Result<boolean, string>> => {
+): Promise<boolean> => {
   const url = makeAttestationEndpoint(
     endpoint,
     specifier,
@@ -125,9 +137,8 @@ const canSuccessfullyAttest = async (
     challengeId,
     oracleEthAddress
   );
-  console.log({ url });
   const res = await fetch(url);
-  return new Ok(res && res.ok);
+  return res && res.ok;
 };
 
 const makeAttestationEndpoint = (
@@ -168,6 +179,7 @@ const getAllChallenges = async (
   const res = await axios.get(
     `${localEndpoint}/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
+
   const data: Challenge[] = res.data.data;
 
   const toDisburse = data.filter((c) =>
@@ -207,13 +219,14 @@ const getAllChallenges = async (
     if (!isValidNodeSet) {
       possibleNodeSet = [];
       console.log("Node set not valid. Selecting nodes...");
-      for (const nodeGroup of Object.values(groups)) {
+      for (const nodeGroup of groups.values()) {
         if (possibleNodeSet.length === 3) {
           console.log(`Got 3 nodes!: ${JSON.stringify(possibleNodeSet)}`);
           break;
         }
 
         for (const node of nodeGroup) {
+          console.log("attesting node ", node)
           const canAttest = await canSuccessfullyAttest(
             node.endpoint,
             challenge.specifier,
