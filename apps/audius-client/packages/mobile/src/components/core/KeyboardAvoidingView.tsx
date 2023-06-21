@@ -37,8 +37,8 @@ export const KeyboardAvoidingView = ({
   style,
   // 0.75 seems to work well but need to test on more screen sizes.
   heightOffsetRatio = 0.75,
-  keyboardShowingDuration = 100,
-  keyboardHidingDuration = 100,
+  keyboardShowingDuration = 350,
+  keyboardHidingDuration = 250,
   keyboardShowingOffset = 0,
   onKeyboardShow,
   onKeyboardHide,
@@ -54,7 +54,8 @@ export const KeyboardAvoidingView = ({
           -event.endCoordinates.height * heightOffsetRatio +
           keyboardShowingOffset,
         duration: keyboardShowingDuration,
-        easing: Easing.inOut(Easing.quad),
+        // Ease out to start animation fast and settle slowly
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true
       }).start(onKeyboardShow)
     },
@@ -71,7 +72,7 @@ export const KeyboardAvoidingView = ({
       Animated.timing(keyboardHeight.current, {
         toValue: 0,
         duration: keyboardHidingDuration,
-        easing: Easing.inOut(Easing.quad),
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true
       }).start(onKeyboardHide)
     },
