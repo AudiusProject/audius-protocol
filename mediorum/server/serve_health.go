@@ -107,8 +107,13 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
 	}
 
+	status := 200
+	if !ss.Config.WalletIsRegistered {
+		status = 506
+	}
+
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
-	return c.JSON(200, healthCheckResponse{
+	return c.JSON(status, healthCheckResponse{
 		Data:      data,
 		Signer:    ss.Config.Self.Wallet,
 		Signature: signatureHex,
