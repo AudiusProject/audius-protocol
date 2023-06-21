@@ -429,7 +429,7 @@ def configure_celery(celery, test_config=None):
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
             },
-            "update_aggregates": {
+            "index_latest_block": {
                 "task": "index_latest_block",
                 "schedule": timedelta(seconds=5),
             },
@@ -496,9 +496,6 @@ def configure_celery(celery, test_config=None):
 
     logger.info("Redis instance initialized!")
 
-    # Start main indexer
-    celery.send_task("index_nethermind")
-
     # Initialize entity manager
     entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
     entity_manager_contract = web3.eth.contract(
@@ -531,3 +528,6 @@ def configure_celery(celery, test_config=None):
     celery.Task = WrappedDatabaseTask
 
     celery.finalize()
+
+    # Start main indexer
+    celery.send_task("index_nethermind")
