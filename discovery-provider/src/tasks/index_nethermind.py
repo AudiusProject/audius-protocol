@@ -764,6 +764,7 @@ def revert_block(session: Session, revert_block: Block):
 @celery.task(name="index_nethermind", bind=True)
 @log_duration(logger)
 def index_nethermind(self):
+    logger.reset_context()
     logger.set_context("request_id", self.request.id)
 
     redis = index_nethermind.redis
@@ -772,19 +773,20 @@ def index_nethermind(self):
     have_lock = update_lock.acquire(blocking=False)
 
     if have_lock:
-        with db.scoped_session() as session:
-            try:
+        try:
+            with db.scoped_session() as session:
                 latest_database_block = get_latest_database_block(session)
+
                 in_valid_state, next_block = get_relevant_blocks(
                     web3, latest_database_block, FINAL_POA_BLOCK
                 )
+
                 if in_valid_state:
                     if next_block:
                         index_next_block(session, latest_database_block, next_block)
                 else:
                     revert_block(session, latest_database_block)
-            except Exception as e:
-                logger.error(f"Error in indexing blocks {e}", exc_info=True)
-                session.rollback()
+        except Exception as e:
+            logger.error(f"Error in indexing blocks {e}", exc_info=True)
         update_lock.release()
         celery.send_task("index_nethermind")
