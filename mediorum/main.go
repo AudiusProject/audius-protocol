@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
@@ -275,6 +276,9 @@ func devNetwork(hostNameTemplate string, n int) []server.Peer {
 func mustGetenv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
+		log.Println("missing required env variable: ", key, " sleeping ...")
+		// if config is incorrect, sleep a bit to prevent container from restarting constantly
+		time.Sleep(time.Hour)
 		log.Fatal("missing required env variable: ", key)
 	}
 	return val
