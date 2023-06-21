@@ -16,7 +16,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	gocloud.dev v0.28.0
-	golang.org/x/exp v0.0.0-20230223210539-50820d90acfd
+	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11
 )
