@@ -2,6 +2,11 @@ const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
 
+// allow foundation nodes to specify creatorNodeVersionOverride via ENV
+if (process.env.creatorNodeVersionOverride) {
+  versionInfo.version = process.env.creatorNodeVersionOverride
+}
+
 const config = require('../../config')
 const utils = require('../../utils')
 const { MONITORS } = require('../../monitors/monitors')
