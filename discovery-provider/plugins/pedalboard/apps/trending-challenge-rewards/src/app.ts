@@ -116,8 +116,6 @@ const assembleNodeGroups = async (
       }
   }
 
-  console.log("GROUPS! = ", groups)
-
   return groups;
 };
 

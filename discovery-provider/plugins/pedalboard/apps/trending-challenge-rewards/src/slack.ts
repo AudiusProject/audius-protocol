@@ -34,10 +34,10 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
 
   // register callbacks
   slackApp.command("/echo", async (args) => await echo(app, args));
-  // slackApp.command(
-  //   "/disburse",
-  //   async (args) => await disburse(app, args, false)
-  // );
+  slackApp.command(
+    "/disburse",
+    async (args) => await disburse(app, args, false)
+  );
   slackApp.command(
     "/disbursetest",
     async (args) => await disburse(app, args, true)
