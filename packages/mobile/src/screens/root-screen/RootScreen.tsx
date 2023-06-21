@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors, chatActions, Status } from '@audius/common'
+import {
+  accountSelectors,
+  chatActions,
+  playerActions,
+  Status
+} from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
@@ -24,6 +29,7 @@ import { StatusBar } from './StatusBar'
 const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
+const { reset } = playerActions
 
 export type RootScreenParamList = {
   HomeStack: NavigatorScreenParams<{
@@ -61,9 +67,12 @@ export const RootScreen = ({
       !isLoaded &&
       (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR)
     ) {
+      // Reset the player when the app is loaded for the first time. Fixes an issue
+      // where after a crash, the player would persist the previous state. PAY-1412.
+      dispatch(reset({ shouldAutoplay: false }))
       setIsLoaded(true)
     }
-  }, [accountStatus, setIsLoaded, isLoaded])
+  }, [accountStatus, setIsLoaded, isLoaded, dispatch])
 
   // Connect to chats websockets and prefetch chats
   useEffect(() => {
