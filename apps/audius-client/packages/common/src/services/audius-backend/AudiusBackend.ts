@@ -2548,13 +2548,7 @@ export const audiusBackend = ({
       console.error(e)
     }
     try {
-      if (
-        await getFeatureEnabled(
-          FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED
-        )
-      ) {
-        await audiusLibs.Notifications.viewNotification({})
-      }
+      await audiusLibs.Notifications.viewNotification({})
     } catch (err) {
       console.error(err)
     }
