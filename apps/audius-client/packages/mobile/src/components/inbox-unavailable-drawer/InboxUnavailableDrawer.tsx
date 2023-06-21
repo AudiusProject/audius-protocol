@@ -91,12 +91,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     height: spacing(12)
   },
   buttonText: {
-    color: palette.neutral,
     fontSize: typography.fontSize.large,
     fontFamily: typography.fontByWeight.bold
-  },
-  buttonTextWhite: {
-    color: palette.white
   },
   border: {
     borderBottomWidth: 1,
@@ -104,12 +100,15 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
-const DrawerContent = () => {
+type DrawerContentProps = {
+  data: ReturnType<typeof useDrawer<'InboxUnavailable'>>['data']
+}
+
+const DrawerContent = ({ data }: DrawerContentProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
-  const { data } = useDrawer('InboxUnavailable')
   const { userId, shouldOpenChat } = data
   const user = useSelector((state) => getUser(state, { id: userId }))
   const { canCreateChat, callToAction } = useSelector((state) =>
@@ -194,7 +193,7 @@ const DrawerContent = () => {
             iconPosition='left'
             styles={{
               root: styles.button,
-              text: [styles.buttonText, styles.buttonTextWhite]
+              text: styles.buttonText
             }}
             fullWidth
           />
@@ -211,7 +210,7 @@ const DrawerContent = () => {
             variant={'primary'}
             styles={{
               root: styles.button,
-              text: [styles.buttonText, styles.buttonTextWhite]
+              text: styles.buttonText
             }}
             fullWidth
           />
@@ -237,6 +236,11 @@ export const InboxUnavailableDrawer = () => {
   const styles = useStyles()
   const neutralLight2 = useColor('neutralLight2')
 
+  // Select data outside of drawer and use it to conditionally render content,
+  // preventing a race condition with the store clears before drawer
+  // is dismissed
+  const { data } = useDrawer('InboxUnavailable')
+
   return (
     <NativeDrawer drawerName={INBOX_UNAVAILABLE_MODAL_NAME}>
       <View style={styles.drawer}>
@@ -245,7 +249,7 @@ export const InboxUnavailableDrawer = () => {
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <View style={styles.border} />
-        <DrawerContent />
+        {data ? <DrawerContent data={data} /> : null}
       </View>
     </NativeDrawer>
   )
