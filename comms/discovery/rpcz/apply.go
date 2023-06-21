@@ -91,6 +91,13 @@ func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
 //   - pushes to peers.
 func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog, error) {
 
+	if rpcLog.RelayedBy == "" {
+		rpcLog.RelayedBy = proc.discoveryConfig.MyHost
+	}
+	if rpcLog.RelayedAt.IsZero() {
+		rpcLog.RelayedAt = time.Now()
+	}
+
 	// apply
 	err := proc.Apply(rpcLog)
 	if err != nil {
