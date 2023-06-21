@@ -39,7 +39,7 @@ return null;
 
 exception
   when others then
-    raise notice 'An error occurred in %: %', tg_name, sqlerrm;
+    raise warning 'An error occurred in %: %', tg_name, sqlerrm;
     return null;
 
 end;
