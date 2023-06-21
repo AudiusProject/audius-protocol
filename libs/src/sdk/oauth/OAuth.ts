@@ -1,4 +1,10 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
+import { parseRequestParameters } from '../utils/parseRequestParameters'
+import {
+  OAuthScope,
+  IsWriteAccessGrantedSchema,
+  IsWriteAccessGrantedRequest
+} from './types'
 
 export type LoginSuccessCallback = (profile: DecodedUserToken) => void
 export type LoginErrorCallback = (errorMessage: string) => void
@@ -102,7 +108,8 @@ const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
 
 type OAuthConfig = {
-  appName: string
+  appName?: string
+  apiKey?: string
   usersApi: UsersApi
 }
 
@@ -111,14 +118,15 @@ export class OAuth {
   popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
+  apiKey: string | null
 
   constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
-      // TODO(nkang): Add link to documentation once written
       throw new Error(
-        'Audius OAuth SDK functions are only available in browser. Refer to our documentation to learn how to implement Audius OAuth manually.'
+        'Audius OAuth SDK functions are only available in browser. Refer to our documentation to learn how to implement Audius OAuth manually: https://docs.audius.org/developers/log-in-with-audius#manual-implementation.'
       )
     }
+    this.apiKey = config.apiKey ?? null
     this.activePopupWindow = null
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
@@ -140,15 +148,46 @@ export class OAuth {
     )
   }
 
-  login() {
-    if (!this.config.appName) {
+  async isWriteAccessGranted(params: IsWriteAccessGrantedRequest) {
+    const { userId, apiKey } = parseRequestParameters(
+      'isWriteAccessGranted',
+      IsWriteAccessGrantedSchema
+    )(params)
+    if (!this.apiKey && !apiKey) {
+      this._surfaceError(
+        'Need to init Audius SDK with API key or pass in API Key directly to oauth.isWriteAccessGranted.'
+      )
+    }
+    const authorizedApps = await this.config.usersApi.getAuthorizedApps({
+      id: userId
+    })
+
+    const foundIndex = authorizedApps.data?.findIndex(
+      (a) =>
+        a.address.toLowerCase() ===
+        `0x${(apiKey || this.apiKey)!.toLowerCase()}`
+    )
+    return foundIndex !== undefined && foundIndex > -1
+  }
+
+  login(scope: OAuthScope = 'read') {
+    if (!this.config.appName && !this.apiKey) {
       this._surfaceError('App name not set (set with `init` method).')
       return
+    }
+    if (scope === 'write' && !this.apiKey) {
+      this._surfaceError(
+        'Need to init Audius SDK with API key in order to use oauth.login with scope = write'
+      )
     }
     if (!this.loginSuccessCallback) {
       this._surfaceError(
         'Login success callback not set (set with `init` method).'
       )
+      return
+    }
+    if (scope !== 'read' && scope !== 'write') {
+      this._surfaceError('Scope must be `read` or `write`.')
       return
     }
 
@@ -157,8 +196,13 @@ export class OAuth {
     const windowOptions =
       'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=720, top=100, left=100'
     const originURISafe = encodeURIComponent(window.location.origin)
-    const appNameURISafe = encodeURI(this.config.appName)
-    const fullOauthUrl = `${OAUTH_URL}?scope=read&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&app_name=${appNameURISafe}`
+    const appIdURISafe = encodeURIComponent(
+      (this.apiKey || this.config.appName)!
+    )
+    const appIdURIParam = `${
+      this.apiKey ? 'api_key' : 'app_name'
+    }=${appIdURISafe}`
+    const fullOauthUrl = `${OAUTH_URL}?scope=${scope}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
     this.popupCheckInterval = setInterval(() => {
@@ -171,7 +215,15 @@ export class OAuth {
     }, 500)
   }
 
-  renderButton(element: HTMLElement, options?: ButtonOptions) {
+  renderButton({
+    element,
+    scope = 'read',
+    buttonOptions
+  }: {
+    element: HTMLElement
+    scope: OAuthScope
+    buttonOptions?: ButtonOptions
+  }) {
     if (!element) {
       console.error('Target element for Audius OAuth button is empty.')
     }
@@ -181,26 +233,26 @@ export class OAuth {
     const button = document.createElement('button')
     button.id = 'audius-login-button'
     button.classList.add('audiusLoginButton')
-    if (options?.corners === 'pill') {
+    if (buttonOptions?.corners === 'pill') {
       button.classList.add('pill')
     }
-    if (options?.size === 'small') {
+    if (buttonOptions?.size === 'small') {
       button.classList.add('small')
     }
-    if (options?.size === 'large') {
+    if (buttonOptions?.size === 'large') {
       button.classList.add('large')
     }
-    if (options?.fullWidth) {
+    if (buttonOptions?.fullWidth) {
       button.classList.add('fullWidth')
     }
-    if (options?.disableHoverGrow) {
+    if (buttonOptions?.disableHoverGrow) {
       button.classList.add('disableHoverGrow')
     }
-    button.innerHTML = `${generateAudiusLogoSvg(options?.size ?? 'medium')} ${
-      options?.customText ?? 'Continue With Audius'
-    }`
+    button.innerHTML = `${generateAudiusLogoSvg(
+      buttonOptions?.size ?? 'medium'
+    )} ${buttonOptions?.customText ?? 'Continue With Audius'}`
     button.onclick = () => {
-      this.login()
+      this.login(scope)
     }
     element.replaceWith(button)
   }
