@@ -65,6 +65,11 @@ const developerAppsApi = createApi({
             userId: encodedUserId
           })
 
+        await sdk.grants.createGrant({
+          userId: encodedUserId,
+          appApiKey: apiKey
+        })
+
         return { name, description, apiKey, apiSecret }
       },
       options: {
