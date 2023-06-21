@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 from typing import Dict, TypedDict
@@ -27,7 +26,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
 )
 from src.utils.config import shared_config
-from src.utils.hardcoded_data import reserved_handles_lower, genres_lower, moods_lower
+from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from web3 import Web3
@@ -78,7 +77,6 @@ def validate_user_tx(params: ManageEntityParameters):
 
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
     # If the user's handle is not set, validate that it is unique
-    logger.info("asdf checking user record handle")
     if not user_record.handle:
         handle_lower = validate_user_handle(user_metadata["handle"])
         user_handle_exists = session.query(
@@ -89,7 +87,6 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             raise Exception(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = handle_lower
-    logger.info("asdf set handle")
 
     # If an artist pick track id is specified, validate that it is a valid track id
     if (
@@ -143,35 +140,10 @@ def create_user(params: ManageEntityParameters):
         is_current=False,
     )
 
-    user_metadata = None
-    try:
-        # for single tx signup
-        logger.info(f"asdf parsing json: {params.metadata}")
-        user_metadata = json.loads(params.metadata)["data"]
-        logger.info('asdf got single tx')
-        validate_user_metadata(
-            params.session,
-            user_record,
-            user_metadata,
-        )
-
-        user_record = update_user_metadata(
-            params.session,
-            params.redis,
-            user_record,
-            user_metadata,
-            params.web3,
-            params.challenge_bus,
-        )
-    except Exception as e:
-        # fallback to multi tx signup
-        logger.info(f"asdf exception {e}")
-        pass
-
-    if params.metadata_cid == "v2":
+    if params.metadata == "v2":
         user_record.is_storage_v2 = True
-    elif not user_metadata:  # update replica set case
-        sp_ids = parse_sp_ids(params.metadata_cid)
+    else:
+        sp_ids = parse_sp_ids(params.metadata)
 
         # Update the user's new replica set in the model and save!
         user_record.primary_id = sp_ids[0]

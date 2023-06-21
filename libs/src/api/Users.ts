@@ -476,15 +476,7 @@ export class Users extends Base {
     return metadata
   }
 
-  async createEntityManagerUser({
-    metadata,
-    profilePictureFile,
-    coverPhotoFile
-  }: {
-    metadata: UserMetadata
-    profilePictureFile: File
-    coverPhotoFile: File
-  }) {
+  async createEntityManagerUser({ metadata }: { metadata: UserMetadata }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
       CLEAN_AND_VALIDATE_METADATA: 'CLEAN_AND_VALIDATE_METADATA',
@@ -641,14 +633,8 @@ export class Users extends Base {
         const resp = await this.creatorNode.uploadCoverPhotoV2(coverPhotoFile)
         newMetadata.cover_photo_sizes = resp.id
       }
-      console.log('uploaded file ', newMetadata)
 
-      // // Update metadata on chain to include wallet
-      // const { blockHash, blockNumber } = await this.updateMetadataV2({
-      //   newMetadata,
-      //   userId
-      // })
-      console.log('asdf newMetadata ', newMetadata)
+      const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
       const manageEntityResponse =
         await this.contracts.EntityManagerClient!.manageEntity(
           userId,
@@ -656,10 +642,10 @@ export class Users extends Base {
           userId,
           EntityManagerClient.Action.CREATE,
           JSON.stringify({
+            cid: cid.toString(),
             data: newMetadata
           })
         )
-      console.log('asdf manageEntityResponse: ', manageEntityResponse)
       await this._waitForDiscoveryToIndexUser(
         userId,
         manageEntityResponse.txReceipt.blockNumber
@@ -667,7 +653,11 @@ export class Users extends Base {
       // Update libs instance with new user metadata object
       this.userStateManager.setCurrentUser({ ...newMetadata })
 
-      return { newMetadata }
+      return {
+        newMetadata,
+        blockHash: manageEntityResponse.txReceipt.blockHash,
+        blockNumber: manageEntityResponse.txReceipt.blockNumber
+      }
     } catch (e) {
       const errorMsg = `createEntityManagerUserV2() error: ${e}`
       if (e instanceof Error) {

@@ -291,8 +291,6 @@ def sanitize_json(json_resp):
 
 # Returns metadata, cid
 def parse_metadata(metadata, action, entity_type):
-    logger.info(f"asdf parse metadata : {metadata} {action} {entity_type}")
-
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
 

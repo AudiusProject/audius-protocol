@@ -169,17 +169,13 @@ export class Account extends Base {
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
-        await this.User.createEntityManagerUser({
-          metadata,
-          profilePictureFile: profilePictureFile!,
-          coverPhotoFile: coverPhotoFile!
-        })
-
-      // await this.User.uploadProfileImages(
-      //   profilePictureFile!,
-      //   coverPhotoFile!,
-      //   newMetadata
-      // )
+        await this.User.createEntityManagerUser({ metadata })
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImages(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
@@ -220,7 +216,6 @@ export class Account extends Base {
     }
     let phase = ''
     try {
-      console.log('asdf sign up')
       this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
       if (this.web3Manager.web3IsExternal()) {
@@ -241,7 +236,6 @@ export class Account extends Base {
           }
         }
       }
-      console.log('created identity user record')
 
       // Select a storage node to send future requests to
       phase = phases.SELECT_STORAGE_NODE
@@ -250,7 +244,6 @@ export class Account extends Base {
         this.web3Manager.getWalletAddress()
       )
       await this.creatorNode.setEndpoint(randomNodes[0]!)
-      console.log('selected cn')
 
       // Add user to chain
       phase = phases.ADD_USER
@@ -262,7 +255,6 @@ export class Account extends Base {
         })
 
       // Upload user's profile images, if any
-      console.log('asdf finished signup')
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
