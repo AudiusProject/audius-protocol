@@ -27,6 +27,9 @@ func Migrate(db *sql.DB) {
 	mustExec(db, mediorumMigrationTable)
 	runMigration(db, cidLookupDDL)
 	runMigration(db, delistStatusesDDL)
+
+	// delete legacy blobs
+	shouldExec(db, `delete from blobs where key not like 'ba%'`)
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -48,6 +51,13 @@ func mustExec(db *sql.DB, ddl string, va ...interface{}) {
 	if err != nil {
 		fmt.Println(ddl)
 		log.Fatal(err)
+	}
+}
+
+func shouldExec(db *sql.DB, ddl string, va ...interface{}) {
+	_, err := db.Exec(ddl, va...)
+	if err != nil {
+		fmt.Println("ddl shouldExec failed", ddl, err)
 	}
 }
 
