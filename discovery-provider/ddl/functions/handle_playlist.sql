@@ -65,8 +65,9 @@ begin
       end if;
     end if;
 	exception
-		when others then null;
-	end;
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+  end;
 
   begin
     if new.is_delete IS FALSE and new.is_private IS FALSE then
@@ -92,11 +93,17 @@ begin
         end if;
       end loop;
     end if;
-   exception
-     when others then null;
-   end;
+  exception
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+  end;
 
   return null;
+
+exception
+  when others then
+    raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+    raise;
 end;
 $$ language plpgsql;
 
