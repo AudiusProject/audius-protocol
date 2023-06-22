@@ -1,4 +1,4 @@
-import { ReleaseDateModalField } from './ReleaseDateModalField'
+import { ReleaseDateModalField } from '../fields/ReleaseDateModalField'
 
 export const TrackModalArray = () => {
   return (
