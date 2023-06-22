@@ -14,7 +14,8 @@ import {
   TrackPlayback,
   ChatMessageTileProps,
   cacheTracksActions,
-  SquareSizes
+  SquareSizes,
+  Name
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -76,11 +77,12 @@ export const ChatMessageTrack = ({
 
   useEffect(() => {
     if (track && uid) {
+      dispatch(make(Name.MESSAGE_UNFURL_TRACK, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [track, uid, onSuccess, onEmpty])
+  }, [track, uid, onSuccess, onEmpty, dispatch])
 
   return track && uid ? (
     // You may wonder why we use the mobile web track tile here.

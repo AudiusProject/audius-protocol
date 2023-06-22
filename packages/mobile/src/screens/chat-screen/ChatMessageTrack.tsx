@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import type { ChatMessageTileProps, ID, TrackPlayback } from '@audius/common'
 import {
+  Name,
   Kind,
   PlaybackSource,
   QueueSource,
@@ -65,6 +66,11 @@ export const ChatMessageTrack = ({
 
   useEffect(() => {
     if (track && user && uid) {
+      trackEvent(
+        make({
+          eventName: Name.MESSAGE_UNFURL_TRACK
+        })
+      )
       onSuccess?.()
     } else {
       onEmpty?.()

@@ -1,4 +1,9 @@
-import { AnalyticsEvent, Nullable, BooleanKeys } from '@audius/common'
+import {
+  AnalyticsEvent,
+  Nullable,
+  BooleanKeys,
+  AllTrackingEvents
+} from '@audius/common'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
@@ -103,5 +108,19 @@ export const identify = async (
     return segment.identify(handle, traits, options, callback)
   } catch (err) {
     console.error(err)
+  }
+}
+
+/**
+ * NOTE: Do not use as an action creator. This is to be in parity with mobile for sagas in common
+ * Use:
+ * `import { make } from 'common/store/analytics/actions'`
+ * to dispatch actions
+ */
+export const make = (event: AllTrackingEvents) => {
+  const { eventName, ...props } = event
+  return {
+    eventName,
+    properties: props as any
   }
 }

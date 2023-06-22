@@ -18,10 +18,12 @@ import {
   SquareSizes,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
-  CommonState
+  CommonState,
+  Name
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
 const { getUserId } = accountSelectors
@@ -122,11 +124,12 @@ export const ChatMessagePlaylist = ({
 
   useEffect(() => {
     if (collection && uid) {
+      dispatch(make(Name.MESSAGE_UNFURL_PLAYLIST, {}))
       onSuccess?.()
     } else {
       onEmpty?.()
     }
-  }, [collection, uid, onSuccess, onEmpty])
+  }, [collection, uid, onSuccess, onEmpty, dispatch])
 
   return collection && uid ? (
     // You may wonder why we use the mobile web playlist tile here.

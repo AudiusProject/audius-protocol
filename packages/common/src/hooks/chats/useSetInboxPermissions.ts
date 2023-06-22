@@ -4,7 +4,9 @@ import type { AudiusSdk } from '@audius/sdk'
 import { ChatPermission } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { Name } from 'models/Analytics'
 import { Status } from 'models/Status'
+import { useAppContext } from 'src/context/appContext'
 import { accountSelectors } from 'store/account'
 import { chatActions, chatSelectors } from 'store/pages'
 
@@ -22,6 +24,9 @@ export const useSetInboxPermissions = ({
   audiusSdk
 }: useSetInboxPermissionsProps) => {
   const dispatch = useDispatch()
+  const {
+    analytics: { track, make }
+  } = useAppContext()
   const permissions = useSelector(getUserChatPermissions)
   const userId = useSelector(getUserId)
   const currentPermission = permissions?.permits
@@ -57,13 +62,25 @@ export const useSetInboxPermissions = ({
           const sdk = await audiusSdk()
           await sdk.chats.permit({ permit: permission })
           setPermissionStatus(Status.SUCCESS)
+          track(
+            make({
+              eventName: Name.CHANGE_INBOX_SETTINGS_SUCCESS,
+              permission
+            })
+          )
         } catch (e) {
           console.error('Error saving chat permissions:', e)
           setPermissionStatus(Status.ERROR)
+          track(
+            make({
+              eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE,
+              permission
+            })
+          )
         }
       }
     },
-    [audiusSdk, permissionStatus]
+    [audiusSdk, track, make, permissionStatus]
   )
 
   // Save local permission state to backend. Useful in scenarios where we

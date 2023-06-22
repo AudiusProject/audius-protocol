@@ -20,6 +20,7 @@ import {
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import { createPlaylistArtwork } from 'app/utils/createPlaylistArtwork'
+import { reportToSentry } from 'app/utils/reportToSentry'
 import share from 'app/utils/share'
 
 export const storeContext: CommonStoreContext = {
@@ -43,6 +44,7 @@ export const storeContext: CommonStoreContext = {
     metadataProgramId: Config.METADATA_PROGRAM_ID
   }),
   sentry: Sentry,
+  reportToSentry,
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
   trackDownload,

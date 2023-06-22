@@ -3,6 +3,7 @@ import { createSelector } from 'reselect'
 
 import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
+import { User } from 'models/User'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
@@ -160,7 +161,10 @@ export const getOtherChatUsers = (state: CommonState, chatId?: string) => {
   return getOtherChatUsersFromChat(state, chat)
 }
 
-export const getSingleOtherChatUser = (state: CommonState, chatId?: string) => {
+export const getSingleOtherChatUser = (
+  state: CommonState,
+  chatId?: string
+): User | undefined => {
   return getOtherChatUsers(state, chatId)[0]
 }
 

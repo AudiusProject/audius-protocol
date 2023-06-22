@@ -8,8 +8,8 @@ import { LastLocationProvider } from 'react-router-last-location'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import App from 'pages/App'
-import AppContext from 'pages/AppContext'
 import { AppErrorBoundary } from 'pages/AppErrorBoundary'
+import AppProviders from 'pages/AppProviders'
 import { MainContentContext } from 'pages/MainContentContext'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
@@ -31,7 +31,7 @@ const AudiusApp = () => {
       >
         <ConnectedRouter history={history}>
           <LastLocationProvider>
-            <AppContext>
+            <AppProviders>
               <MainContentContext.Consumer>
                 {({ mainContentRef }) => (
                   <Switch>
@@ -53,7 +53,7 @@ const AudiusApp = () => {
                   </Switch>
                 )}
               </MainContentContext.Consumer>
-            </AppContext>
+            </AppProviders>
           </LastLocationProvider>
         </ConnectedRouter>
       </AudiusQueryContext.Provider>

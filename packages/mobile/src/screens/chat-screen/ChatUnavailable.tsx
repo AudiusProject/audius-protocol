@@ -9,7 +9,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 const messages = {
-  noAction: (userName: string) => `You can't send messages to ${userName}. `,
+  noAction: (userName?: string) => `You can't send messages to ${userName}. `,
   tip1: 'You must send ',
   tip2: ' a tip before you can send them messages.',
   blockee: 'You cannot send messages to users you have blocked. ',
@@ -53,13 +53,15 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
   const handleLearnMorePress = useCallback(() => {}, [])
 
   const handleUnblockPress = useCallback(() => {
-    dispatch(
-      setVisibility({
-        drawer: 'BlockMessages',
-        visible: true,
-        data: { userId: otherUser.user_id }
-      })
-    )
+    if (otherUser) {
+      dispatch(
+        setVisibility({
+          drawer: 'BlockMessages',
+          visible: true,
+          data: { userId: otherUser.user_id }
+        })
+      )
+    }
   }, [dispatch, otherUser])
 
   const mapChatPermissionActionToContent = useMemo(() => {
@@ -67,7 +69,7 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
       [ChatPermissionAction.NONE]: () => (
         <>
           <Text style={styles.unavailableText}>
-            {messages.noAction(otherUser.name)}
+            {messages.noAction(otherUser?.name)}
             <Text
               style={[styles.unavailableText, styles.link]}
               onPress={handleLearnMorePress}
@@ -83,10 +85,10 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
             {messages.tip1}
             <Text
               onPress={() =>
-                navigation.navigate('Profile', { id: otherUser.user_id })
+                navigation.navigate('Profile', { id: otherUser?.user_id })
               }
             >
-              {otherUser.name}
+              {otherUser?.name}
             </Text>
             {messages.tip2}
           </Text>

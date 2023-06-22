@@ -1,6 +1,12 @@
 import type { AudiusSdk } from '@audius/sdk'
 
-import { AnalyticsEvent, LineupState, Track } from '../models'
+import {
+  AllTrackingEvents,
+  AnalyticsEvent,
+  LineupState,
+  ReportToSentryArgs,
+  Track
+} from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
@@ -33,6 +39,12 @@ export type CommonStoreContext = {
       options?: Record<string, unknown>,
       callback?: () => void
     ) => Promise<void>
+    make: <T extends AllTrackingEvents>(
+      event: T
+    ) => {
+      eventName: string
+      properties: any
+    }
   }
   remoteConfigInstance: RemoteConfigInstance
   audiusBackendInstance: AudiusBackend
@@ -53,6 +65,7 @@ export type CommonStoreContext = {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void
   }
+  reportToSentry: (args: ReportToSentryArgs) => void
   trackDownload: TrackDownload
   instagramAppId?: string
   instagramRedirectUrl?: string

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useEffect } from 'react'
 
 import type { ChatMessageTileProps, ID, TrackPlayback } from '@audius/common'
 import {
+  Name,
   Kind,
   PlaybackSource,
   QueueSource,
@@ -150,6 +151,11 @@ export const ChatMessagePlaylist = ({
 
   useEffect(() => {
     if (collection && uid) {
+      trackEvent(
+        make({
+          eventName: Name.MESSAGE_UNFURL_PLAYLIST
+        })
+      )
       onSuccess?.()
     } else {
       onEmpty?.()
