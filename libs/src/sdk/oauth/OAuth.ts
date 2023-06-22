@@ -1,4 +1,5 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
+import { isOAuthScopeValid } from '../utils/oauthScope'
 import { parseRequestParameters } from '../utils/parseRequestParameters'
 import {
   OAuthScope,
@@ -133,10 +134,13 @@ export class OAuth {
     this.popupCheckInterval = null
   }
 
-  init(
-    successCallback: LoginSuccessCallback,
+  init({
+    successCallback,
+    errorCallback
+  }: {
+    successCallback: LoginSuccessCallback
     errorCallback?: LoginErrorCallback
-  ) {
+  }) {
     this.loginSuccessCallback = successCallback
     this.loginErrorCallback = errorCallback ?? null
     window.addEventListener(
@@ -170,14 +174,15 @@ export class OAuth {
     return foundIndex !== undefined && foundIndex > -1
   }
 
-  login(scope: OAuthScope = 'read') {
+  login({ scope = 'read' }: { scope?: OAuthScope }) {
+    const scopeFormatted = typeof scope === 'string' ? [scope] : scope
     if (!this.config.appName && !this.apiKey) {
       this._surfaceError('App name not set (set with `init` method).')
       return
     }
-    if (scope === 'write' && !this.apiKey) {
+    if (scope.includes('write') && !this.apiKey) {
       this._surfaceError(
-        'Need to init Audius SDK with API key in order to use oauth.login with scope = write'
+        "The 'write' scope requires Audius SDK to be initialized with an API key"
       )
     }
     if (!this.loginSuccessCallback) {
@@ -186,7 +191,7 @@ export class OAuth {
       )
       return
     }
-    if (scope !== 'read' && scope !== 'write') {
+    if (isOAuthScopeValid(scopeFormatted)) {
       this._surfaceError('Scope must be `read` or `write`.')
       return
     }
@@ -202,7 +207,8 @@ export class OAuth {
     const appIdURIParam = `${
       this.apiKey ? 'api_key' : 'app_name'
     }=${appIdURISafe}`
-    const fullOauthUrl = `${OAUTH_URL}?scope=${scope}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
+    const scopeUriParam = scope.includes('write') ? 'write' : 'read'
+    const fullOauthUrl = `${OAUTH_URL}?scope=${scopeUriParam}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
     this.popupCheckInterval = setInterval(() => {
@@ -221,7 +227,7 @@ export class OAuth {
     buttonOptions
   }: {
     element: HTMLElement
-    scope: OAuthScope
+    scope?: OAuthScope
     buttonOptions?: ButtonOptions
   }) {
     if (!element) {
@@ -252,7 +258,7 @@ export class OAuth {
       buttonOptions?.size ?? 'medium'
     )} ${buttonOptions?.customText ?? 'Continue With Audius'}`
     button.onclick = () => {
-      this.login(scope)
+      this.login({ scope })
     }
     element.replaceWith(button)
   }
