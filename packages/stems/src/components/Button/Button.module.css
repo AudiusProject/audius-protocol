@@ -59,7 +59,7 @@
 }
 
 .button .icon.left.noText {
-  margin: 0;
+  margin: 0 !important;
 }
 
 .button .icon.right {
@@ -67,7 +67,7 @@
 }
 
 .button .icon.right.noText {
-  margin: 0;
+  margin: 0 !important;
 }
 
 .button .icon {

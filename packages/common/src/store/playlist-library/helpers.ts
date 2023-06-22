@@ -310,7 +310,7 @@ export const addFolderToLibrary = (
 ): PlaylistLibrary => {
   return {
     ...(library || {}),
-    contents: [...(library?.contents || []), folder]
+    contents: [folder, ...(library?.contents || [])]
   }
 }
 

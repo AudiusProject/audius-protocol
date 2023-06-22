@@ -27,11 +27,18 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
     <>
       <EditButton
         collectionId={collectionId}
+        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+      />
+      <ShareButton
+        collectionId={collectionId}
+        disabled={track_count === 0}
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
-      <ShareButton collectionId={collectionId} disabled={track_count === 0} />
       {is_private && !is_album ? (
-        <PublishButton collectionId={collectionId} />
+        <PublishButton
+          collectionId={collectionId}
+          widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
+        />
       ) : null}
 
       {!is_private ? (

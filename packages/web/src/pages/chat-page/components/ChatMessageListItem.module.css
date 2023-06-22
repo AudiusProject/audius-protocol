@@ -21,7 +21,7 @@
   max-width: 448px;
   filter: var(--drop-shadow-near);
   color: var(--static-netural);
-  transition: background-color var(--calm), filter var(--calm);
+  transition: background-color var(--expressive), filter var(--expressive);
 }
 
 .bubbleCorners {

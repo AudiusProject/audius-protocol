@@ -15,8 +15,6 @@ import { Tooltip } from 'components/tooltip'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-
 const { getCollection } = collectionPageSelectors
 const { repostCollection, undoRepostCollection } = collectionsSocialActions
 
@@ -59,7 +57,6 @@ export const RepostButton = (props: RepostButtonProps) => {
         text={has_current_user_reposted ? messages.reposted : messages.repost}
         leftIcon={<IconRepost />}
         onClick={handleRepost}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
         {...other}
       />
     </Tooltip>

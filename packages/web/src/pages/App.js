@@ -822,12 +822,18 @@ class App extends Component {
                 <Route
                   exact
                   path={PLAYLIST_PAGE}
-                  render={() => <CollectionPage type='playlist' />}
+                  render={({ location }) => {
+                    return (
+                      <CollectionPage key={location.pathname} type='playlist' />
+                    )
+                  }}
                 />
                 <Route
                   exact
                   path={ALBUM_PAGE}
-                  render={() => <CollectionPage type='album' />}
+                  render={({ location }) => (
+                    <CollectionPage key={location.pathname} type='album' />
+                  )}
                 />
 
                 {/* Hash id routes */}

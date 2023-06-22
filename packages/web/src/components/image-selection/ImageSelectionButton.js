@@ -18,6 +18,7 @@ const messages = {
 }
 
 const ImageSelectionButton = ({
+  anchorRef: anchorRefProp,
   wrapperClassName,
   buttonClassName,
   hasImage,
@@ -32,7 +33,7 @@ const ImageSelectionButton = ({
   source,
   defaultPopupOpen = false
 }) => {
-  const anchorRef = useRef()
+  const anchorRefInner = useRef()
   const [showModal, setShowModal] = useState(defaultPopupOpen)
 
   const closeModal = () => {
@@ -65,7 +66,7 @@ const ImageSelectionButton = ({
       {includePopup ? (
         <>
           <Button
-            ref={anchorRef}
+            ref={anchorRefProp ? undefined : anchorRefInner}
             className={cn(styles.button, buttonClassName, {
               [styles.hide]: showModal
             })}
@@ -75,7 +76,7 @@ const ImageSelectionButton = ({
             onClick={handleClick}
           />
           <ImageSelectionPopup
-            anchorRef={anchorRef}
+            anchorRef={anchorRefProp ?? anchorRefInner}
             className={styles.popup}
             error={error}
             isVisible={showModal}
@@ -113,6 +114,7 @@ const ImageSelectionButton = ({
 }
 
 ImageSelectionButton.propTypes = {
+  anchorRef: PropTypes.any,
   wrapperClassName: PropTypes.string,
   buttonClassName: PropTypes.string,
   hasImage: PropTypes.bool.isRequired,

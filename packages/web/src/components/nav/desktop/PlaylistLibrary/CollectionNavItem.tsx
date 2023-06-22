@@ -1,4 +1,4 @@
-import { useCallback, useState, MouseEvent } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   Name,
@@ -90,18 +90,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     setIsHovering(false)
   }, [])
 
-  const handleClickEdit = useCallback(
-    (event: MouseEvent) => {
-      event.preventDefault()
-      event.stopPropagation()
-      // Can only edit user owned playlists
-      if (typeof id === 'number') {
-        dispatch(openEditPlaylistModal({ collectionId: id }))
-        record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
-      }
-    },
-    [dispatch, id, record]
-  )
+  const handleEdit = useCallback(() => {
+    if (typeof id === 'number') {
+      dispatch(openEditPlaylistModal({ collectionId: id }))
+      record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
+    }
+  }, [dispatch, id, record])
 
   const handleShare = useCallback(() => {
     if (typeof id === 'number') {
@@ -122,7 +116,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const kebabItems: PopupMenuItem[] = [
     {
       text: messages.edit,
-      onClick: handleClickEdit
+      onClick: handleEdit
     },
     { text: messages.share, onClick: handleShare },
     { text: messages.delete, onClick: handleDelete }
@@ -201,7 +195,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
-                onClick={handleClickEdit}
                 items={kebabItems}
               />
             </span>
