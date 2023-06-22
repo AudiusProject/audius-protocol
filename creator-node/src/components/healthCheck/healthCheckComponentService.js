@@ -4,6 +4,7 @@ const { Keypair } = require('@solana/web3.js')
 
 // allow foundation nodes to specify creatorNodeVersionOverride via ENV
 if (process.env.creatorNodeVersionOverride) {
+  versionInfo.version_real = versionInfo.version
   versionInfo.version = process.env.creatorNodeVersionOverride
 }
 
