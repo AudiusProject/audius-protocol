@@ -44,12 +44,18 @@ func DiscoveryMain() {
 			// correct hostname if configured incorrectly
 			for _, peer := range peers {
 				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+					discoveryConfig.IsRegisteredWallet = true
 					if discoveryConfig.MyHost != peer.Host {
 						slog.Warn("incorrect hostname", "incorrect", discoveryConfig.MyHost, "correct", peer.Host)
 						discoveryConfig.MyHost = peer.Host
 					}
 					break
 				}
+			}
+
+			// special case read only nodes
+			if config.IsHonoraryNode(discoveryConfig.MyWallet) {
+				discoveryConfig.IsRegisteredWallet = true
 			}
 
 			// fix any relayed_by records that have (incorrect) trailing slash
@@ -72,8 +78,10 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// start sweepers
-		proc.StartPeerClients()
+		// only start sweepers if registered...
+		if discoveryConfig.IsRegisteredWallet {
+			proc.StartPeerClients()
+		}
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {
@@ -84,9 +92,6 @@ func DiscoveryMain() {
 
 		return nil
 
-	})
-	g.Go(func() error {
-		return db.RunMigrations()
 	})
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)

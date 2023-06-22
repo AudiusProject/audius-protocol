@@ -25,6 +25,7 @@ from src.tasks.index_tastemaker_notifications import index_tastemaker_notificati
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
+from src.utils.hardcoded_data import genre_allowlist
 from src.utils.helpers import get_adjusted_block
 from src.utils.prometheus_metric import (
     PrometheusMetric,
@@ -45,65 +46,12 @@ UPDATE_TRENDING_DURATION_DIFF_SEC = int(
     shared_config["discprov"]["trending_refresh_seconds"]
 )
 
-GENRE_ALLOWLIST = {
-    "Acoustic",
-    "Alternative",
-    "Ambient",
-    "Audiobooks",
-    "Blues",
-    "Classical",
-    "Comedy",
-    "Country",
-    "Deep House",
-    "Devotional",
-    "Disco",
-    "Downtempo",
-    "Drum & Bass",
-    "Dubstep",
-    "Electro",
-    "Electronic",
-    "Experimental",
-    "Folk",
-    "Funk",
-    "Future Bass",
-    "Future House",
-    "Glitch Hop",
-    "Hardstyle",
-    "Hip-Hop/Rap",
-    "House",
-    "Hyperpop",
-    "Jazz",
-    "Jersey Club",
-    "Jungle",
-    "Kids",
-    "Latin",
-    "Lo-Fi",
-    "Metal",
-    "Moombahton",
-    "Podcasts",
-    "Pop",
-    "Progressive House",
-    "Punk",
-    "R&B/Soul",
-    "Reggae",
-    "Rock",
-    "Soundtrack",
-    "Spoken Word",
-    "Tech House",
-    "Techno",
-    "Trance",
-    "Trap",
-    "Tropical House",
-    "Vaporwave",
-    "World",
-}
-
 
 def get_genres(session: Session) -> List[str]:
     """Returns all genres"""
     genres: List[Tuple[str]] = (session.query(Track.genre).distinct(Track.genre)).all()
     genres = filter(  # type: ignore
-        lambda x: x[0] is not None and x[0] != "" and x[0] in GENRE_ALLOWLIST, genres
+        lambda x: x[0] is not None and x[0] != "" and x[0] in genre_allowlist, genres
     )
     return list(map(lambda x: x[0], genres))
 

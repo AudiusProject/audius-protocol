@@ -60,7 +60,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     const title = 'Reaction'
     const body = `${users[this.senderUserId].name} reacted ${
       this.notification.reaction
-    } to your message`
+    }`
 
     if (
       userNotificationSettings.isNotificationTypeBrowserEnabled(

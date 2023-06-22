@@ -24,6 +24,8 @@ const { logger, loggingMiddleware } = require('./logging')
 const {
   getRateLimiter,
   getRateLimiterMiddleware,
+  getRelayBlocklistMiddleware,
+  getRelayRateLimiterMiddleware,
   isIPWhitelisted,
   getIP
 } = require('./rateLimiter.js')
@@ -319,12 +321,6 @@ class App {
   }
 
   setRateLimiters() {
-    const requestRateLimiter = getRateLimiter({
-      prefix: 'reqLimiter',
-      max: config.get('rateLimitingReqLimit')
-    })
-    this.express.use(requestRateLimiter)
-
     const authRequestRateLimiter = getRateLimiter({
       prefix: 'authLimiter',
       max: config.get('rateLimitingAuthLimit')
@@ -399,6 +395,13 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
+
+    this.express.use(
+      '/relay',
+      getRelayBlocklistMiddleware,
+      getRelayRateLimiterMiddleware()
+    )
+
     this.express.use(getRateLimiterMiddleware())
   }
 

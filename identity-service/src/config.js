@@ -39,6 +39,12 @@ const config = convict({
     env: 'web3Provider',
     default: null
   },
+  acdcChainId: {
+    doc: 'the chain ID for ACDC',
+    format: Number,
+    env: 'acdcChainId',
+    default: 1000000000001
+  },
   nethermindEnabled: {
     doc: 'writing to ACDC chain feature flag',
     format: Boolean,
@@ -174,10 +180,16 @@ const config = convict({
     env: 'blacklisterPublicKey',
     default: null
   },
-  rateLimitingReqLimit: {
-    doc: 'Total request per hour rate limit',
-    format: 'nat',
-    env: 'rateLimitingReqLimit',
+  blocklistPublicKeyFromRelay: {
+    doc: 'Blocklist public keys from relay',
+    format: 'string-array',
+    env: 'blocklistPublicKeyFromRelay',
+    default: null
+  },
+  allowlistPublicKeyFromRelay: {
+    doc: 'Allowlist public keys from relay',
+    format: 'string-array',
+    env: 'AllowlistPublicKeyFromRelay',
     default: null
   },
   rateLimitingAuthLimit: {
@@ -839,12 +851,6 @@ const config = convict({
     env: 'skipAbuseCheck',
     default: false
   },
-  entityManagerReplicaSetEnabled: {
-    doc: 'Enable replica set updates with Entity Manager',
-    format: Boolean,
-    env: 'entityManagerReplicaSetEnabled',
-    default: true
-  },
   updateReplicaSetReconfigurationLimit: {
     doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds. This limit is per cluster worker, not service wide',
     format: Number,
@@ -872,6 +878,9 @@ const config = convict({
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
+
+const relayRateLimit = fs.existsSync('relay-rate-limit.json')
+if (relayRateLimit) config.loadFile('relay-rate-limit.json')
 
 if (fs.existsSync('eth-contract-config.json')) {
   // eslint isn't smart enought to know this is a conditional require, so this fails

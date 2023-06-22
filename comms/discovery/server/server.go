@@ -103,14 +103,15 @@ type ChatServer struct {
 func (s *ChatServer) getStatus(c echo.Context) error {
 	errors := s.proc.SweeperErrors()
 	return c.JSON(http.StatusOK, map[string]any{
-		"host":            s.config.MyHost,
-		"wallet":          s.config.MyWallet,
-		"commit":          vcsRevision,
-		"built":           vcsBuildTime,
-		"booted":          bootTime,
-		"healthy":         s.websocketError == nil, // && len(errors) == 0,
-		"errors":          errors,
-		"websocket_error": s.websocketError,
+		"host":                 s.config.MyHost,
+		"wallet":               s.config.MyWallet,
+		"is_registered_wallet": s.config.IsRegisteredWallet,
+		"commit":               vcsRevision,
+		"built":                vcsBuildTime,
+		"booted":               bootTime,
+		"healthy":              s.config.IsRegisteredWallet && s.websocketError == nil, // && len(errors) == 0,
+		"errors":               errors,
+		"websocket_error":      s.websocketError,
 	})
 }
 

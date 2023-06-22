@@ -44,6 +44,7 @@ type healthCheckResponseData struct {
 	TrustedNotifier           *ethcontracts.NotifierInfo `json:"trustedNotifier"`
 	Env                       string                     `json:"env"`
 	Self                      Peer                       `json:"self"`
+	WalletIsRegistered        bool                       `json:"wallet_is_registered"`
 	Signers                   []Peer                     `json:"signers"`
 	ReplicationFactor         int                        `json:"replicationFactor"`
 	Dir                       string                     `json:"dir"`
@@ -85,6 +86,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
 		Self:                      ss.Config.Self,
+		WalletIsRegistered:        ss.Config.WalletIsRegistered,
 		TrustedNotifierID:         ss.Config.TrustedNotifierID,
 		CidCursors:                ss.cachedCidCursors,
 		PeerHealths:               ss.peerHealth,
@@ -105,8 +107,13 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
 	}
 
+	status := 200
+	if !ss.Config.WalletIsRegistered {
+		status = 506
+	}
+
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
-	return c.JSON(200, healthCheckResponse{
+	return c.JSON(status, healthCheckResponse{
 		Data:      data,
 		Signer:    ss.Config.Self.Wallet,
 		Signature: signatureHex,

@@ -1,7 +1,6 @@
 package server
 
 import (
-	"crypto/ecdsa"
 	"encoding/hex"
 	"net/http"
 	"strconv"
@@ -13,14 +12,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/storyicon/sigverify"
 )
-
-func parsePrivateKey(pk string) (*ecdsa.PrivateKey, error) {
-	privateBytes, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	return crypto.ToECDSA(privateBytes)
-}
 
 // From https://github.com/AudiusProject/sig/blob/main/go/index.go
 func recover(input string, signature []byte) (common.Address, error) {
