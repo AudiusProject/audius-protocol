@@ -26,6 +26,7 @@ import PropTypes from 'prop-types'
 import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
+import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -67,7 +68,8 @@ const messages = {
   unplayed: 'Unplayed',
   timeLeft: 'left',
   played: 'Played',
-  generatedWithAi: 'Generated With AI'
+  generatedWithAi: 'Generated With AI',
+  actionGroupLabel: 'collection actions'
 }
 
 class GiantTrackTile extends PureComponent {
@@ -95,11 +97,9 @@ class GiantTrackTile extends PureComponent {
     const shouldShow = (!isUnlisted && !isPublishing) || fieldVisibility.share
     return (
       shouldShow && (
-        <Button
-          className={styles.buttonFormatting}
-          textClassName={styles.buttonTextFormatting}
+        <EntityActionButton
           type={ButtonType.COMMON}
-          text='SHARE'
+          text='share'
           leftIcon={<IconShare />}
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
           onClick={onShare}
@@ -114,9 +114,7 @@ class GiantTrackTile extends PureComponent {
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
-        <Button
-          className={cn(styles.buttonFormatting, styles.makePublicButton)}
-          textClassName={styles.buttonTextFormatting}
+        <EntityActionButton
           type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
           text={isPublishing ? messages.isPublishing : messages.makePublic}
           leftIcon={
@@ -127,7 +125,7 @@ class GiantTrackTile extends PureComponent {
             )
           }
           widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-          onClick={isPublishing ? () => {} : () => makePublic(trackId)}
+          onClick={isPublishing ? undefined : () => makePublic(trackId)}
         />
       )
     )
@@ -158,10 +156,8 @@ class GiantTrackTile extends PureComponent {
             text={isReposted ? 'Unrepost' : 'Repost'}
           >
             <div>
-              <Button
+              <EntityActionButton
                 name='repost'
-                className={styles.buttonFormatting}
-                textClassName={styles.buttonTextFormatting}
                 type={
                   isOwner
                     ? ButtonType.DISABLED
@@ -202,10 +198,8 @@ class GiantTrackTile extends PureComponent {
             text={isSaved ? 'Unfavorite' : 'Favorite'}
           >
             <div>
-              <Button
+              <EntityActionButton
                 name='favorite'
-                className={styles.buttonFormatting}
-                textClassName={styles.buttonTextFormatting}
                 type={
                   isOwner
                     ? ButtonType.DISABLED
@@ -216,7 +210,7 @@ class GiantTrackTile extends PureComponent {
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
                 leftIcon={<IconHeart />}
-                onClick={isOwner ? () => {} : onSave}
+                onClick={isOwner ? undefined : onSave}
               />
             </div>
           </Tooltip>
@@ -512,9 +506,9 @@ class GiantTrackTile extends PureComponent {
             </div>
 
             <div
-              className={cn(styles.commonButtonSection, fadeIn)}
+              className={cn(styles.actionButtons, fadeIn)}
               role='group'
-              aria-label='track actions'
+              aria-label={messages.actionGroupLabel}
             >
               {this.renderShareButton()}
               {this.renderMakePublicButton()}

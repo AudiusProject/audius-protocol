@@ -11,7 +11,8 @@ import { useToggle } from 'react-use'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tooltip } from 'components/tooltip'
 
-import { CollectionActionButton } from './CollectionActionButton'
+import { EntityActionButton } from '../../entity-page/EntityActionButton'
+
 import styles from './CollectionHeader.module.css'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
@@ -45,7 +46,7 @@ export const PublishButton = (props: PublishButtonProps) => {
   const isDisabled = track_count === 0 || hasHiddenTracks
 
   const publishButtonElement = (
-    <CollectionActionButton
+    <EntityActionButton
       type={_is_publishing ? ButtonType.DISABLED : ButtonType.COMMON}
       text={
         _is_publishing ? (

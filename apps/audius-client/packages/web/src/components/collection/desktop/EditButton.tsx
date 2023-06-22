@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
-import { CollectionActionButton } from './CollectionActionButton'
+import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
 const messages = {
   edit: 'Edit'
@@ -25,7 +25,7 @@ export const EditButton = (props: EditButtonProps) => {
   )
 
   return (
-    <CollectionActionButton
+    <EntityActionButton
       type={ButtonType.COMMON}
       text={messages.edit}
       leftIcon={<IconPencil />}

@@ -7,6 +7,10 @@ import { PlayButton } from './PlayButton'
 import { SmartCollectionActionButtons } from './SmartCollectionActionButtons'
 import { ViewerActionButtons } from './ViewerActionButtons'
 
+const messages = {
+  actionGroupLabel: 'collection actions'
+}
+
 type CollectionActionButtonProps = {
   collectionId: ID | SmartCollectionVariant
   variant?: Variant
@@ -53,6 +57,8 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
         [styles.show]: !tracksLoading,
         [styles.hide]: tracksLoading
       })}
+      role='group'
+      aria-label={messages.actionGroupLabel}
     >
       {isEmptyPlaylist ? null : (
         <PlayButton onPlay={onPlay} playing={playing} />

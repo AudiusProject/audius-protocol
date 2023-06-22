@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-import { CollectionActionButton } from './CollectionActionButton'
+import { EntityActionButton } from '../../entity-page/EntityActionButton'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
@@ -50,7 +50,7 @@ export const RepostButton = (props: RepostButtonProps) => {
     <Tooltip
       text={has_current_user_reposted ? messages.unrepost : messages.repost}
     >
-      <CollectionActionButton
+      <EntityActionButton
         type={
           type ??
           (has_current_user_reposted ? ButtonType.SECONDARY : ButtonType.COMMON)

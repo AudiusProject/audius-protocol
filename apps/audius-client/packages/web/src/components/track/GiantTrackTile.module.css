@@ -194,6 +194,13 @@
   fill: var(--neutral-light-4);
 }
 
+.actionButtons {
+  display: flex;
+  align-items: center;
+  column-gap: var(--unit-2);
+  margin-top: var(--unit-4);
+}
+
 .commonButtonSection {
   display: flex;
   flex-direction: row;
@@ -203,17 +210,6 @@
 
 .commonButtonSection > * {
   margin-right: 16px;
-}
-
-.buttonFormatting {
-  padding: 0 16px;
-  text-transform: uppercase;
-}
-
-.buttonFormatting .buttonTextFormatting {
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.5px;
 }
 
 .menuKebabContainer {
