@@ -15,6 +15,7 @@ import {
   useCanSendMessage
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
+import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
@@ -25,10 +26,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
+import { BOTTOM_BAR_HEIGHT } from 'app/components/bottom-tab-bar'
 import {
   KeyboardAvoidingView,
   Screen,
@@ -215,6 +218,8 @@ export const ChatScreen = () => {
   const scrollPosition = useRef(0)
   const latestMessageId = useRef('')
   const flatListInnerHeight = useRef(0)
+  const { keyboardShown } = useKeyboard()
+  const insets = useSafeAreaInsets()
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
   const userId = useSelector(getUserId)
@@ -516,6 +521,21 @@ export const ChatScreen = () => {
     }, 0)
   }, [flatListRef])
 
+  // For some reason the bottom padding behavior is different between the platforms.
+  const getKeyboardAvoidingPlaybarAwareStyle = useCallback(() => {
+    const style = {
+      paddingTop: hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0,
+      bottom: 0
+    }
+    if (Platform.OS === 'ios') {
+      style.bottom = hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
+    } else if (Platform.OS === 'android') {
+      style.bottom =
+        hasCurrentlyPlayingTrack && !keyboardShown ? PLAY_BAR_HEIGHT : 0
+    }
+    return style
+  }, [hasCurrentlyPlayingTrack, keyboardShown])
+
   return (
     <Screen
       url={url}
@@ -563,13 +583,13 @@ export const ChatScreen = () => {
         <View ref={chatContainerRef} onLayout={measureChatContainerTop}>
           <KeyboardAvoidingView
             keyboardShowingOffset={
-              hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
+              hasCurrentlyPlayingTrack
+                ? PLAY_BAR_HEIGHT + BOTTOM_BAR_HEIGHT + insets.bottom
+                : BOTTOM_BAR_HEIGHT + insets.bottom
             }
             style={[
               styles.keyboardAvoiding,
-              hasCurrentlyPlayingTrack
-                ? { bottom: PLAY_BAR_HEIGHT, paddingTop: PLAY_BAR_HEIGHT }
-                : null
+              getKeyboardAvoidingPlaybarAwareStyle()
             ]}
             onKeyboardHide={measureChatContainerBottom}
           >

@@ -15,7 +15,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type KeyboardAvoidingViewProps = {
   style: StyleProp<ViewStyle>
-  heightOffsetRatio?: number
   keyboardShowingDuration?: number
   keyboardHidingDuration?: number
   // Offset is subtracted from the desired height when the keyboard is showing.
@@ -35,8 +34,6 @@ type KeyboardAvoidingViewProps = {
  */
 export const KeyboardAvoidingView = ({
   style,
-  // 0.75 seems to work well but need to test on more screen sizes.
-  heightOffsetRatio = 0.75,
   keyboardShowingDuration = 350,
   keyboardHidingDuration = 250,
   keyboardShowingOffset = 0,
@@ -50,21 +47,14 @@ export const KeyboardAvoidingView = ({
   const handleKeyboardWillShow = useCallback(
     (event) => {
       Animated.timing(keyboardHeight.current, {
-        toValue:
-          -event.endCoordinates.height * heightOffsetRatio +
-          keyboardShowingOffset,
+        toValue: -event.endCoordinates.height + keyboardShowingOffset,
         duration: keyboardShowingDuration,
         // Ease out to start animation fast and settle slowly
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true
       }).start(onKeyboardShow)
     },
-    [
-      heightOffsetRatio,
-      keyboardShowingDuration,
-      keyboardShowingOffset,
-      onKeyboardShow
-    ]
+    [keyboardShowingDuration, keyboardShowingOffset, onKeyboardShow]
   )
 
   const handleKeyboardWillHide = useCallback(
