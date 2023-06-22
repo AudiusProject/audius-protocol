@@ -39,6 +39,7 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+// todo: get rid of ServerHealth model + drop table after all nodes have stopped crudr broadcast
 type ServerHealth struct {
 	Host      string    `json:"host" gorm:"primaryKey;not null;default:null"`
 	StartedAt time.Time `json:"started_at"`
