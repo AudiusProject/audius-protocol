@@ -36,7 +36,6 @@
 }
 
 .version {
-  width: 168px;
   align-self: center;
   flex: 0 1;
   margin-top: 80px;
@@ -52,6 +51,14 @@
 
 .version span {
   line-height: 20px;
+}
+
+.terms {
+  color: var(--neutral-light-5);
+}
+
+.terms:hover {
+  color: var(--neutral-light-2);
 }
 
 .modalBody {

@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Tooltip } from 'components/tooltip'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
+
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors

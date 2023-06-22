@@ -31,6 +31,7 @@ import {
   IconRobot
 } from '@audius/stems'
 import cn from 'classnames'
+import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
@@ -45,6 +46,7 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
+import { TERMS_OF_SERVICE } from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -68,6 +70,7 @@ const messages = {
   pageTitle: 'Settings',
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT,
+  terms: 'Terms of Service',
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
   darkModeOn: 'Dark',
@@ -442,7 +445,17 @@ export const SettingsPage = (props: SettingsPageProps) => {
           onClick={openSignOutModal}
         />
         <span>{`${messages.version} ${version}`}</span>
-        <span>{messages.copyright}</span>
+        <span>
+          {messages.copyright} -{' '}
+          <Link
+            className={styles.terms}
+            to={TERMS_OF_SERVICE}
+            target='_blank'
+            rel='noreferrer'
+          >
+            {messages.terms}
+          </Link>
+        </span>
       </div>
       <Modal
         title={
