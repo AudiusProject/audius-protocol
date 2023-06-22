@@ -33,7 +33,7 @@ function generateWhiteNoise(duration, outFile) {
 
 program.command("upload-track")
   .description("Upload a new track")
-  .argument("[track]", "track to upload (can be :/path/to/track or %<size>m)", "%1m")
+  .argument("<track>", "track to upload (can be :/path/to/track or %<size>m)", "%1m")
   .option("-t, --title <title>", "Title of track (chosen randomly if not specified)")
   .option("-a, --tags <tags>", "Tags of track", null)
   .option("-d, --description <description>", "Description of track (chosen randomly if not specified)")

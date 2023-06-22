@@ -11,9 +11,12 @@ program.command("repost-playlist")
     const audiusLibs = await initializeAudiusLibs(from);
 
     try {
-      const { transactionHash } = await audiusLibs.Playlist.addPlaylistRepost(playlistId);
+      const response = await audiusLibs.EntityManager.repostPlaylist(playlistId)
+
+      if (response.error) {
+        program.error(chalk.red(response.error));
+      }
       console.log(chalk.green("Successfully reposted playlist"));
-      console.log(chalk.yellow("Transaction Hash:"), transactionHash);
     } catch (err) {
       program.error(err.message);
     }
