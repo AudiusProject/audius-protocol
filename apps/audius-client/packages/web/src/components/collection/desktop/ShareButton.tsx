@@ -13,8 +13,6 @@ import { Tooltip } from 'components/tooltip'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const messages = {
@@ -61,7 +59,6 @@ export const ShareButton = (props: ShareButtonProps) => {
       type={type ?? ButtonType.COMMON}
       text={messages.share}
       leftIcon={<IconShare />}
-      widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
       onClick={handleShare}
       {...other}
     />

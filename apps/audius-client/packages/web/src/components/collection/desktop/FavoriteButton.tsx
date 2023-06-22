@@ -17,8 +17,6 @@ import { Tooltip } from 'components/tooltip'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
-
 const { getCollection } = collectionPageSelectors
 const { getAccountCollections } = accountSelectors
 const {
@@ -87,7 +85,6 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
         text={isSaved ? messages.favorited : messages.favorite}
         leftIcon={<IconHeart />}
         onClick={handleFavorite}
-        widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
         {...other}
       />
     </Tooltip>

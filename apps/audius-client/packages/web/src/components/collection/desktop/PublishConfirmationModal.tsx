@@ -40,7 +40,8 @@ export const PublishConfirmationModal = (
 
   const handlePublish = useCallback(() => {
     dispatch(publishPlaylist(collectionId))
-  }, [dispatch, collectionId])
+    onClose()
+  }, [dispatch, collectionId, onClose])
 
   return (
     <Modal {...other} size='small'>

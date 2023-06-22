@@ -1,3 +1,12 @@
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity var(--calm);
+}
+
 .collectionHeader {
   padding: 16px 16px 24px 16px;
   margin: 0 auto;
@@ -22,6 +31,7 @@
 }
 
 .coverArt {
+  background-color: var(--neutral-light-6) !important;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -29,7 +39,6 @@
 
 .infoSection {
   margin-left: 38px;
-  flex-direction: column;
   width: 100%;
 }
 
@@ -51,7 +60,6 @@
   align-items: center;
   column-gap: var(--unit-2);
   margin-bottom: var(--unit-1);
-  width: 100%;
   position: relative;
 }
 
@@ -64,7 +72,7 @@
   font-size: var(--font-4xl);
   line-height: 40px;
   font-weight: var(--font-bold);
-  transition: color var(--quick);
+  transition: opacity var(--calm), color var(--quick);
 }
 
 .editableTitle:hover .titleHeader {
@@ -189,15 +197,6 @@
   fill: var(--neutral-light-4);
 }
 
-.hide {
-  opacity: 0;
-}
-
-.show {
-  opacity: 1;
-  transition: opacity ease-in-out 0.5s;
-}
-
 .skeleton {
   position: absolute;
   top: 0;
@@ -221,7 +220,7 @@
 
 .imageEditButtonWrapper {
   opacity: 0;
-  transition: opacity var(--calm);
+  transition: opacity var(--expressive);
   position: absolute;
   bottom: var(--unit-4);
 }

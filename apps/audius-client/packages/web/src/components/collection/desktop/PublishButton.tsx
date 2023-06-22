@@ -15,7 +15,6 @@ import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
 import styles from './CollectionHeader.module.css'
 import { PublishConfirmationModal } from './PublishConfirmationModal'
-import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
 const { getCollecitonHasHiddenTracks } = cacheCollectionsSelectors
@@ -63,7 +62,6 @@ export const PublishButton = (props: PublishButtonProps) => {
         )
       }
       onClick={_is_publishing ? undefined : toggleIsConfirming}
-      widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
       disabled={isDisabled}
       {...other}
     />

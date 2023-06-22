@@ -42,7 +42,6 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
       items={items}
       renderTrigger={(ref, onClick, triggerProps) => {
         const handleClick = (e: MouseEvent) => {
-          e.stopPropagation()
           e.preventDefault()
           onClick()
         }

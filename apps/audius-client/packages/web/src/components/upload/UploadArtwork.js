@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
 import cn from 'classnames'
@@ -17,6 +17,7 @@ const messages = {
 const UploadArtwork = (props) => {
   const [processing, setProcessing] = useState(false)
   const [showTip, setShowTip] = useState(false)
+  const imageSelectionAnchorRef = useRef()
 
   useEffect(() => {
     if (props.error) {
@@ -39,6 +40,7 @@ const UploadArtwork = (props) => {
       className={cn(styles.uploadArtwork, {
         [styles.error]: props.error
       })}
+      ref={imageSelectionAnchorRef}
     >
       <div
         className={styles.artworkWrapper}
@@ -60,6 +62,7 @@ const UploadArtwork = (props) => {
           open={showTip}
         >
           <ImageSelectionButton
+            anchorRef={imageSelectionAnchorRef}
             defaultPopupOpen={props.defaultPopupOpen}
             imageName={messages.imageName}
             hasImage={!!props.artworkUrl}
