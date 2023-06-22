@@ -12,7 +12,6 @@ program.command("edit-playlist")
   .action(async (playlist_id, { name, description, from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
-      console.log(isDelete)
       const playlist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlist_id]))[0]
       delete playlist.user
       console.log(chalk.yellow.bold("Playlist before update: "), playlist);

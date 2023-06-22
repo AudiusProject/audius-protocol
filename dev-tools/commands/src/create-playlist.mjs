@@ -31,7 +31,6 @@ program.command("create-playlist")
           }))
         }
       }
-      console.log(metadata)
       const response = await audiusLibs.EntityManager.createPlaylist(
         metadata,
         true /* storageV2UploadEnabled */
