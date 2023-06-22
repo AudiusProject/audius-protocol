@@ -103,4 +103,44 @@ func TestRepair(t *testing.T) {
 		assert.Equal(t, replicationFactor, len(blobs))
 	}
 
+	// ----------------------
+	// now make one of the servers "loose" a file
+	{
+		byHost := map[string]*MediorumServer{}
+		for _, s := range testNetwork {
+			byHost[s.Config.Self.Host] = s
+		}
+
+		rendezvousOrder := []*MediorumServer{}
+		preferred, _ := ss.rendezvous(cid)
+		for _, h := range preferred {
+			rendezvousOrder = append(rendezvousOrder, byHost[h])
+		}
+
+		// make leader loose file
+		leader := rendezvousOrder[0]
+		leader.dropFromMyBucket(cid)
+
+		// normally a standby server wouldn't pull this file
+		standby := rendezvousOrder[replicationFactor+2]
+		err = standby.runRepair(false)
+		assert.NoError(t, err)
+		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+
+		// running repair in cleanup mode... standby will observe that #1 doesn't have blob so will pull it
+		err = standby.runRepair(true)
+		assert.NoError(t, err)
+		assert.True(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+
+		// leader re-gets lost file when repair runs
+		err = leader.runRepair(false)
+		assert.NoError(t, err)
+		assert.True(t, leader.hostHasBlob(leader.Config.Self.Host, cid, true))
+
+		// standby drops file after leader has it back
+		err = standby.runRepair(true)
+		assert.NoError(t, err)
+		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+	}
+
 }

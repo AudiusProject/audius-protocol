@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
 )
 
@@ -17,9 +18,9 @@ func (ss *MediorumServer) startRepairer() {
 	time.Sleep(time.Minute * 10)
 
 	for i := 1; ; i++ {
-		// 20% percent of time... clean up over-replicated
+		// 10% percent of time... clean up over-replicated
 		cleanupMode := false
-		if i%5 == 0 {
+		if i%10 == 0 {
 			cleanupMode = true
 		}
 
@@ -39,7 +40,7 @@ func (ss *MediorumServer) startRepairer() {
 		// if you wanted to aproximate max(1/5) of network running repair at same time...
 		// you could make this node run repair ~1/5 of the time
 		// (with some bounds)
-		sleep := clampDuration(time.Minute, took*5, time.Hour*12)
+		sleep := clampDuration(time.Minute*5, took*5, time.Hour*12)
 		logger.Info("repair sleeping", "sleep", sleep)
 		time.Sleep(sleep)
 
@@ -122,6 +123,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			}
 
 			preferredHosts, isMine := ss.rendezvous(cid)
+			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
 
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
@@ -190,6 +192,41 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 						logger.Error("delete failed", err)
 					} else {
 						logger.Info("delete OK")
+					}
+				}
+			}
+
+			if cleanupMode && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
+				// even tho this blob isn't "mine"
+				// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
+				hasIt := []string{}
+				for _, host := range preferredHosts {
+					if ss.hostHasBlob(host, cid, true) {
+						if host == ss.Config.Self.Host {
+							continue
+						}
+						hasIt = append(hasIt, host)
+						if len(hasIt) == ss.Config.ReplicationFactor {
+							break
+						}
+					}
+				}
+
+				if len(hasIt) < ss.Config.ReplicationFactor {
+					// get it
+					success := false
+					for _, host := range hasIt {
+						err := ss.pullFileFromHost(host, cid)
+						if err != nil {
+							logger.Error("pull failed", err, "host", host)
+						} else {
+							logger.Info("pull OK", "host", host)
+							success = true
+							break
+						}
+					}
+					if !success {
+						logger.Warn("failed to pull from any host", "hosts", preferredHosts)
 					}
 				}
 			}
