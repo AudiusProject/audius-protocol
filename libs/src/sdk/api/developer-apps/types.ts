@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { HashId } from '../../types/HashId'
-import { isApiKeyValid } from '../../utils/file'
+import { isApiKeyValid } from '../../utils/apiKey'
 
 export const CreateDeveloperAppSchema = z.object({
   name: z.string(),

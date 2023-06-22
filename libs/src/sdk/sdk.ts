@@ -92,7 +92,7 @@ type SdkConfig = {
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
-  const { appName } = config
+  const { appName, apiKey } = config
 
   // Initialize services
   const services = initializeServices(config)
@@ -106,7 +106,7 @@ export const sdk = (config: SdkConfig) => {
   // Initialize OAuth
   const oauth =
     typeof window !== 'undefined'
-      ? new OAuth({ appName, usersApi: apis.users })
+      ? new OAuth({ appName, apiKey, usersApi: apis.users })
       : undefined
 
   return {
