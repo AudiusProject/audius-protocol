@@ -768,6 +768,8 @@ def index_nethermind(self):
     have_lock = update_lock.acquire(blocking=False)
 
     if not have_lock:
+        # Some other task is indexing. When tasks are fast, celery can get caught up
+        # with itself.
         logger.disable()
         return
 
@@ -778,10 +780,13 @@ def index_nethermind(self):
             in_valid_state, next_block = get_relevant_blocks(
                 web3, latest_database_block, FINAL_POA_BLOCK
             )
+            if not next_block:
+                # Nothing to index
+                logger.disable()
+                return
 
             if in_valid_state:
-                if next_block:
-                    index_next_block(session, latest_database_block, next_block)
+                index_next_block(session, latest_database_block, next_block)
             else:
                 revert_block(session, latest_database_block)
     except Exception as e:
