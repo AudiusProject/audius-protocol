@@ -197,6 +197,11 @@ func (c *Crudr) tableNameFor(obj interface{}) string {
 	return c.DB.NamingStrategy.TableName(typeName)
 }
 
+func (c *Crudr) KnownType(op *Op) bool {
+	_, ok := c.typeMap[op.Table]
+	return ok
+}
+
 func (c *Crudr) ApplyOp(op *Op) error {
 	elemType, ok := c.typeMap[op.Table]
 	if !ok {

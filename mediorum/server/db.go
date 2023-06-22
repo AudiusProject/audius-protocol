@@ -39,15 +39,6 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
-// todo: get rid of ServerHealth model + drop table after all nodes have stopped crudr broadcast
-type ServerHealth struct {
-	Host      string    `json:"host" gorm:"primaryKey;not null;default:null"`
-	StartedAt time.Time `json:"started_at"`
-	AliveAt   time.Time `json:"alive_at"`
-	Version   string    `json:"version"`
-	BuiltAt   string    `json:"built_at"`
-}
-
 func dbMustDial(dbPath string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
 		SkipDefaultTransaction: true,
@@ -67,13 +58,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{})
+	err := crud.DB.AutoMigrate(&Blob{}, &Upload{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Blob{}, &Upload{}, &ServerHealth{})
+	crud.RegisterModels(&Blob{}, &Upload{})
 
 	sqlDb, _ := crud.DB.DB()
 
