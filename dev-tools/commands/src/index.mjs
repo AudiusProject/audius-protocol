@@ -12,13 +12,15 @@ import "./favorite-playlist.mjs";
 import "./unfavorite-playlist.mjs";
 import "./follow.mjs";
 import "./unfollow.mjs";
-import "./mint-audio.mjs";
 import "./repost-track.mjs";
+import "./unrepost-track.mjs";
 import "./repost-playlist.mjs";
-import "./tip-audio.mjs";
-import "./auth-headers.mjs";
+import "./unrepost-playlist.mjs";
 import "./upload-track.mjs";
 import "./edit-track.mjs";
+import "./mint-audio.mjs";
+import "./tip-audio.mjs";
+import "./auth-headers.mjs";
 
 async function main() {
   program.parseAsync(process.argv);
