@@ -5,7 +5,7 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("auth-headers")
   .description("Output auth headers (for use with curl: `curl -H @<(audius-cmd auth-headers)`)")
-  .option("[account]", "The account to for which to generate auth headers")
+  .option("<account>", "The account to for which to generate auth headers")
   .action(async (account) => {
     const audiusLibs = await initializeAudiusLibs(account);
 

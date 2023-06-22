@@ -67,6 +67,7 @@ program.command("upload-track")
         throw new Error(`Failed to parse track "${track}"`);
       }
 
+      const trackTitle = title || `title ${rand}`
       const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
         trackStream,
         null,
@@ -76,7 +77,7 @@ program.command("upload-track")
           cover_art_sizes: null,
           length: 0,
           duration: 60, // TODO: get duration from track file locally
-          title: title || `title ${rand}`,
+          title: trackTitle,
           tags: tags,
           genre: genre || `genre ${rand}`,
           mood: mood || `mood ${rand}`,
@@ -102,7 +103,7 @@ program.command("upload-track")
 
       console.log(chalk.green("Successfully uploaded track!"));
       console.log(chalk.yellow.bold("Track ID:   "), response.trackId);
-      console.log(chalk.yellow.bold("Block Hash: "), response.blockHash);
+      console.log(chalk.yellow.bold("Track Title:"), trackTitle);
     } catch (err) {
       program.error(err.message);
     }

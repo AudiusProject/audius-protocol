@@ -5,15 +5,18 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("favorite-track")
   .description("Favorite track")
-  .argument("<track>", "Id of the track to favorite", Number)
+  .argument("<trackId>", "Id of the track to favorite", Number)
   .option("-f, --from <from>", "The account to favorite track from")
-  .action(async (track, { from }) => {
+  .action(async (trackId, { from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
 
     try {
-      const { transactionHash } = await audiusLibs.Track.addTrackSave(track);
+      const response = await audiusLibs.EntityManager.saveTrack(trackId)
+
+      if (response.error) {
+        program.error(chalk.red(response.error));
+      }
       console.log(chalk.green("Successfully favorited track"));
-      console.log(chalk.yellow("Transaction Hash:"), transactionHash);
     } catch (err) {
       program.error(err.message);
     }
