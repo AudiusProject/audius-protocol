@@ -42,8 +42,8 @@ program.command("create-playlist")
       }
 
       console.log(chalk.green("Successfully created playlist"));
-      console.log(chalk.yellow("Playlist Name:    "), playlistName)
-      console.log(chalk.yellow("Playlist ID:    "), playlistId)
+      console.log(chalk.yellow("Playlist Name: "), playlistName)
+      console.log(chalk.yellow("Playlist ID:   "), playlistId)
     } catch (err) {
       program.error(err.message);
     }
