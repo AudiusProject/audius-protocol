@@ -10,7 +10,8 @@ import {
   IconBlockMessages,
   IconUnblockMessages,
   IconUser,
-  IconTrash
+  IconTrash,
+  IconError
 } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -32,6 +33,7 @@ const messages = {
   chatSettings: 'Chat Settings',
   block: 'Block Messages',
   unblock: 'Unblock Messages',
+  report: 'Report Abuse',
   delete: 'Delete Conversation',
   visit: "Visit User's Profile"
 }
@@ -57,6 +59,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       useState(false)
     const [isBlockUserModalVisible, setIsBlockUserModalVisible] =
       useState(false)
+    const [isReportAbuse, setIsReportAbuse] = useState(false)
     const [isDeleteChatModalVisible, setIsDeleteChatModalVisible] =
       useState(false)
     const users = useProxySelector(
@@ -83,6 +86,16 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       setIsBlockUserModalVisible(true)
     }, [setIsBlockUserModalVisible])
 
+    const handleReportClicked = useCallback(() => {
+      setIsReportAbuse(true)
+      setIsBlockUserModalVisible(true)
+    }, [setIsReportAbuse])
+
+    const handleCloseBlockModal = useCallback(() => {
+      setIsReportAbuse(false)
+      setIsBlockUserModalVisible(false)
+    }, [setIsReportAbuse])
+
     const handleVisitClicked = useCallback(() => {
       dispatch(pushRoute(profilePage(user.handle)))
     }, [dispatch, user])
@@ -92,6 +105,16 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
     }, [setIsDeleteChatModalVisible])
 
     const overflowItems = [
+      {
+        text: messages.delete,
+        icon: <IconTrash />,
+        onClick: handleDeleteClicked
+      },
+      {
+        text: messages.visit,
+        icon: <IconUser />,
+        onClick: handleVisitClicked
+      },
       isBlocked
         ? {
             text: messages.unblock,
@@ -104,14 +127,9 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
             onClick: handleBlockClicked
           },
       {
-        text: messages.delete,
-        icon: <IconTrash />,
-        onClick: handleDeleteClicked
-      },
-      {
-        text: messages.visit,
-        icon: <IconUser />,
-        onClick: handleVisitClicked
+        text: messages.report,
+        icon: <IconError />,
+        onClick: handleReportClicked
       }
     ]
 
@@ -164,7 +182,8 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
                 <BlockUserConfirmationModal
                   user={user}
                   isVisible={isBlockUserModalVisible}
-                  onClose={() => setIsBlockUserModalVisible(false)}
+                  onClose={handleCloseBlockModal}
+                  isReportAbuse={isReportAbuse}
                 />
                 <DeleteChatConfirmationModal
                   chatId={currentChatId}
