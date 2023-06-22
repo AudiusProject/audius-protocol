@@ -152,6 +152,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			}
 
+			// get blobs that I should have
 			if isMine && !isOnDisk {
 				success := false
 				for _, host := range preferredHosts {
@@ -172,9 +173,10 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				}
 			}
 
+			// delete over-replicated blobs:
+			// check all the nodes ahead of me in the preferred order to ensure they have it
+			// if R nodes in front of me have it, I can safely delete
 			if cleanupMode && !isMine && isOnDisk {
-				// check all the nodes ahead of me in the preferred order to ensure they have it
-				// before delete
 				depth := 0
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid, true) {
@@ -196,9 +198,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				}
 			}
 
-			if cleanupMode && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
-				// even tho this blob isn't "mine"
-				// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
+			// replicate under-replicated blobs:
+			// even tho this blob isn't "mine"
+			// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
+			// and pull file if under-replicated
+			if cleanupMode && !isMine && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid, true) {
