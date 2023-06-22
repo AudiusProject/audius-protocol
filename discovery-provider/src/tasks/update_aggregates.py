@@ -16,7 +16,7 @@ with playlist_saves as (
     where
         s.is_current is true
         and s.is_delete is false
-        and s.save_type = 'playlist'
+        and (s.save_type !')
     group by
         save_item_id
 ),
@@ -29,7 +29,7 @@ playlist_reposts as (
     where
         r.is_current is true
         and r.is_delete is false
-        and r.repost_type = 'playlist'
+        and (s.repost_type = 'playlist' or s.repost_type = 'album')
     group by
         repost_item_id
 ),
