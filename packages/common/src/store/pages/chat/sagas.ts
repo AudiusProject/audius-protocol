@@ -59,6 +59,7 @@ const {
   fetchBlockersSucceeded,
   unblockUser,
   blockUser,
+  reportUser,
   fetchPermissions,
   fetchPermissionsSucceeded,
   fetchLinkUnfurl,
@@ -517,6 +518,19 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
   }
 }
 
+function* doReportUser(action: ReturnType<typeof reportUser>) {
+  try {
+    console.log('reportUser', action.payload)
+  } catch (e) {
+    console.error('reportUserFailed', e)
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error
+    })
+  }
+}
+
 function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
   try {
     const currentUserId = yield* select(getUserId)
@@ -667,6 +681,10 @@ function* watchUnblockUser() {
   yield takeEvery(unblockUser, doUnblockUser)
 }
 
+function* watchReportUser() {
+  yield takeEvery(reportUser, doReportUser)
+}
+
 function* watchFetchPermissions() {
   yield takeEvery(fetchPermissions, doFetchPermissions)
 }
@@ -694,6 +712,7 @@ export const sagas = () => {
     watchFetchBlockers,
     watchBlockUser,
     watchUnblockUser,
+    watchReportUser,
     watchFetchPermissions,
     watchFetchLinkUnfurlMetadata,
     watchDeleteChat

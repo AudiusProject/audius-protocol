@@ -56,7 +56,11 @@ export type DrawerData = {
   ChatActions: { userId: number; chatId: string }
   CreateChatActions: { userId: number }
   ProfileActions: undefined
-  BlockMessages: { userId: number; shouldOpenChat: boolean }
+  BlockMessages: {
+    userId: number
+    shouldOpenChat: boolean
+    isReportAbuse: boolean
+  }
   DeleteChat: { chatId: string }
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }

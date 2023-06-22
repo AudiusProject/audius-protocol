@@ -20,6 +20,7 @@ const messages = {
   visitProfile: 'Visit Profile',
   blockMessages: 'Block Messages',
   unblockMessages: 'Unblock Messages',
+  reportAbuse: 'Report Abuse',
   deleteConversation: 'Delete Conversation'
 }
 
@@ -81,6 +82,17 @@ export const ChatActionsDrawer = () => {
     )
   }, [closeDrawer, dispatch, userId])
 
+  const handleReportPress = useCallback(() => {
+    closeDrawer()
+    dispatch(
+      setVisibility({
+        drawer: 'BlockMessages',
+        visible: true,
+        data: { userId, isReportAbuse: true }
+      })
+    )
+  }, [closeDrawer, dispatch, userId])
+
   const handleDeletePress = useCallback(() => {
     closeDrawer()
     dispatch(
@@ -107,6 +119,11 @@ export const ChatActionsDrawer = () => {
                 ? messages.unblockMessages
                 : messages.blockMessages}
             </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.row}>
+          <TouchableOpacity onPress={handleReportPress}>
+            <Text style={styles.text}>{messages.reportAbuse}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.row}>

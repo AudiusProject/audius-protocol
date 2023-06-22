@@ -16,17 +16,20 @@ import { useColor } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
 const { getDoesBlockUser, getCanCreateChat } = chatSelectors
-const { blockUser, unblockUser, createChat } = chatActions
+const { blockUser, unblockUser, createChat, reportUser } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 
 const messages = {
   title: 'Are you sure?',
-  confirmBlock: (userName?: string) => (
+  confirmBlock: (userName?: string, isReportAbuse?: boolean) => (
     <>
-      {'Are you sure you want to block '}
+      {'Are you sure you want to '}
+      {isReportAbuse ? 'report ' : 'block '}
       {userName}
-      {' from sending messages to your inbox?  '}
+      {isReportAbuse
+        ? ' for abuse? They will be blocked from sending you new messages.'
+        : ' from sending messages to your inbox?'}
     </>
   ),
   confirmUnblock: (userName?: string) => (
@@ -39,6 +42,7 @@ const messages = {
   info: 'This will not affect their ability to view your profile or interact with your content.',
   blockUser: 'Block User',
   unblockUser: 'Unblock User',
+  reportUser: 'Report & Block',
   cancel: 'Cancel'
 }
 
@@ -106,7 +110,7 @@ export const BlockMessagesDrawer = () => {
   const neutral = useColor('neutral')
   const dispatch = useDispatch()
   const { data } = useDrawer('BlockMessages')
-  const { userId, shouldOpenChat } = data
+  const { userId, shouldOpenChat, isReportAbuse } = data
   const user = useSelector((state) => getUser(state, { id: userId }))
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
   const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
@@ -122,6 +126,9 @@ export const BlockMessagesDrawer = () => {
       }
     } else {
       dispatch(blockUser({ userId }))
+      if (isReportAbuse) {
+        dispatch(reportUser({ userId }))
+      }
     }
     dispatch(
       setVisibility({
@@ -129,7 +136,14 @@ export const BlockMessagesDrawer = () => {
         visible: false
       })
     )
-  }, [canCreateChat, dispatch, doesBlockUser, shouldOpenChat, userId])
+  }, [
+    canCreateChat,
+    dispatch,
+    doesBlockUser,
+    isReportAbuse,
+    shouldOpenChat,
+    userId
+  ])
 
   const handleCancelPress = useCallback(() => {
     dispatch(
@@ -150,7 +164,7 @@ export const BlockMessagesDrawer = () => {
         <Text style={styles.confirm}>
           {doesBlockUser
             ? messages.confirmUnblock(user?.name)
-            : messages.confirmBlock(user?.name)}
+            : messages.confirmBlock(user?.name, isReportAbuse)}
         </Text>
         {doesBlockUser ? null : (
           <View style={styles.infoContainer}>
@@ -164,7 +178,13 @@ export const BlockMessagesDrawer = () => {
           </View>
         )}
         <Button
-          title={doesBlockUser ? messages.unblockUser : messages.blockUser}
+          title={
+            isReportAbuse
+              ? messages.reportUser
+              : doesBlockUser
+              ? messages.unblockUser
+              : messages.blockUser
+          }
           onPress={handleConfirmPress}
           variant={doesBlockUser ? 'primary' : 'destructive'}
           styles={{
