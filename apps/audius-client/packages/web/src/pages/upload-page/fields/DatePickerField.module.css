@@ -19,8 +19,21 @@
   color: var(--neutral-light-4);
 }
 
+.input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+
+.displayValue {
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 18px;
+}
+
 .datePickerField :global(.SingleDatePicker_picker) {
-  top: -150px !important;
+  top: -110px !important;
   left: 128px !important;
 }
 

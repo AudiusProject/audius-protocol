@@ -1,0 +1,37 @@
+/* Form display component */
+.previewTile {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: var(--unit-4) var(--unit-6);
+  gap: var(--unit-4);
+
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 8px;
+}
+
+/* Modal styles */
+.modalHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.modalTitle {
+  font-weight: var(--font-heavy);
+  font-size: var(--font-xl);
+  line-height: 25px;
+
+  text-align: center;
+  text-transform: uppercase;
+
+  color: var(--neutral-light-2);
+}
+
+.caret {
+  color: var(--neutral-light-4);
+  height: 14px;
+  width: 14px;
+}
