@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-import { CollectionActionButton } from './CollectionActionButton'
+import { EntityActionButton } from '../../entity-page/EntityActionButton'
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { getCollection } = collectionPageSelectors
@@ -81,7 +81,7 @@ export const FavoriteButton = (props: FavoriteButtonProps) => {
       disabled={isOwner || saveCount === 0}
       text={isSaved ? messages.unfavorite : messages.favorite}
     >
-      <CollectionActionButton
+      <EntityActionButton
         type={type ?? (isSaved ? ButtonType.SECONDARY : ButtonType.COMMON)}
         text={isSaved ? messages.favorited : messages.favorite}
         leftIcon={<IconHeart />}

@@ -11,7 +11,8 @@ import { useDispatch } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
 
-import { CollectionActionButton } from './CollectionActionButton'
+import { EntityActionButton } from '../../entity-page/EntityActionButton'
+
 import { BUTTON_COLLAPSE_WIDTHS } from './utils'
 
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -56,7 +57,7 @@ export const ShareButton = (props: ShareButtonProps) => {
   }, [dispatch, collectionId, userId])
 
   const shareButtonElement = (
-    <CollectionActionButton
+    <EntityActionButton
       type={type ?? ButtonType.COMMON}
       text={messages.share}
       leftIcon={<IconShare />}
