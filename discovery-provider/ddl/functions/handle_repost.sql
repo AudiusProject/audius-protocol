@@ -172,10 +172,16 @@ begin
     end if;
 
 	exception
-		when others then null;
-	end;
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+  end;
 
   return null;
+
+exception
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+      return null;
 end;
 $$ language plpgsql;
 

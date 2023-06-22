@@ -526,9 +526,6 @@ def get_adjusted_block(web3: Web3, block_number: int):
 
 
 def get_final_poa_block() -> int:
-    # get final poa block from identity and cache result
-    # marks the transition to nethermind
-    # depend on identity responding with final_poa_block or the redis cached value
     final_poa_block = None
 
     try:

@@ -7,9 +7,10 @@ from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
+from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -19,13 +20,13 @@ from web3.datastructures import AttributeDict
 
 def set_patches(mocker):
     mocker.patch(
-        "src.tasks.entity_manager.user.get_endpoint_string_from_sp_ids",
+        "src.tasks.entity_manager.entities.user.get_endpoint_string_from_sp_ids",
         return_value="https://cn.io,https://cn2.io,https://cn3.io",
         autospec=True,
     )
 
     mocker.patch(
-        "src.tasks.entity_manager.user.get_verifier_address",
+        "src.tasks.entity_manager.entities.user.get_verifier_address",
         return_value="0x",
         autospec=True,
     )
@@ -151,11 +152,33 @@ def test_index_valid_user(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmCreateUser3": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Isaac",
+            "handle": "isaac",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmIsaacProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmIsaacCoverPhoto",
+            "bio": "this is isaac",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {
+                "contents": []
+            },
+            "events": None,
+            "user_id": USER_ID_OFFSET + 3,
+        },
     }
 
     update_artist_pick_json = json.dumps(test_metadata["QmUpdateArtistPickTrack"])
     update_user1_json = json.dumps(test_metadata["QmUpdateUser1"])
     update_user2_json = json.dumps(test_metadata["QmUpdateUser2"])
+    create_user3_json = json.dumps(test_metadata["QmCreateUser3"])
+
     tx_receipts = {
         "CreateUser1Tx": [
             {
@@ -227,6 +250,20 @@ def test_index_valid_user(app, mocker):
                 )
             },
         ],
+        "CreateUser3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 3,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 3,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid":"QmCreateUser3", "data": {create_user3_json}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -261,10 +298,8 @@ def test_index_valid_user(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -274,10 +309,9 @@ def test_index_valid_user(app, mocker):
         )
 
     with db.scoped_session() as session:
-
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 6
+        assert len(all_users) == 7
 
         user_1: User = (
             session.query(User)
@@ -299,6 +333,21 @@ def test_index_valid_user(app, mocker):
         )
         assert user_2.name == "Forrest"
         assert user_2.handle == "forrest"
+
+        user_3: User = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 3,
+            )
+            .first()
+        )
+        assert user_3.name == "Isaac"
+        assert user_3.handle == "isaac"
+
+        all_cid: List[CIDData] = session.query(CIDData).all()
+        assert len(all_cid) == 4
+               
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),
@@ -611,7 +660,6 @@ def test_index_invalid_users(app, mocker):
 
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -701,7 +749,6 @@ def test_index_verify_users(app, mocker):
         with db.scoped_session() as session:
             # index transactions
             entity_manager_update(
-                None,
                 update_task,
                 session,
                 entity_manager_txs,

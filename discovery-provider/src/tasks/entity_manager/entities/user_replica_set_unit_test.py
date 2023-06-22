@@ -1,4 +1,4 @@
-from src.tasks.entity_manager.user_replica_set import parse_update_sp_id
+from src.tasks.entity_manager.entities.user_replica_set import parse_update_sp_id
 
 
 class Params:

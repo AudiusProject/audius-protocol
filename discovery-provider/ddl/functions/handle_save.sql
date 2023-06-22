@@ -183,10 +183,18 @@ begin
       end if;
     end if;
   exception
-    when others then return null;
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+      return null;
   end;
 
   return null;
+
+exception
+    when others then
+      raise warning 'An error occurred in %: %', tg_name, sqlerrm;
+      raise;
+
 end; 
 $$ language plpgsql;
 
