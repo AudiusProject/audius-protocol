@@ -16,7 +16,7 @@ const {
 
 const models = require('./models')
 const { libs } = require('@audius/sdk')
-const { errorResponseRateLimited } = require('apiHelpers.js')
+const { errorResponseRateLimited } = require('./apiHelpers.js')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
