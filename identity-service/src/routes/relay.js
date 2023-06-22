@@ -17,8 +17,6 @@ const { libs } = require('@audius/sdk')
 const config = require('../config.js')
 
 module.exports = function (app) {
-  // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
-  // method sig has come from sender address as well
   app.post(
     '/relay',
     captchaMiddleware,
@@ -80,7 +78,7 @@ module.exports = function (app) {
         body.encodedABI
       ) {
         // fire and forget update handle if necessary for early anti-abuse measures
-        ; (async () => {
+        ;(async () => {
           try {
             if (!user) return
 
@@ -113,7 +111,7 @@ module.exports = function (app) {
             nethermindContractAddress: body.nethermindContractAddress,
             encodedABI: body.encodedABI,
             nethermindEncodedABI: body.nethermindEncodedAbi,
-            senderAddress: body.senderAddress,
+            senderAddress: body.signer,
             gasLimit: body.gasLimit || null
           }
 
