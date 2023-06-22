@@ -5,16 +5,18 @@ import { initializeAudiusLibs, parseUserId } from "./utils.mjs";
 
 program.command("unfollow")
   .description("Unfollow user")
-  .argument("<account>", "The account to unfollow; can be a @handle or #userId")
+  .argument("[userId]", "The user id to unfollow")
   .option("-f, --from <from>", "The account to unfollow from")
-  .action(async (account, { from }) => {
+  .action(async (userId, { from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
-    const userId = await parseUserId(account);
 
     try {
-      const { transactionHash } = await audiusLibs.User.deleteUserFollow(userId);
+      const response = await audiusLibs.EntityManager.unfollowUser(Number(userId));
+
+      if (response.error) {
+        program.error(chalk.red(response.error));
+      }
       console.log(chalk.green("Successfully unfollowed user"));
-      console.log(chalk.yellow("Transaction Hash:"), transactionHash);
     } catch (err) {
       program.error(err.message);
     }

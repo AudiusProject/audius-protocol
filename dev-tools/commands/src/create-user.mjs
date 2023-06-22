@@ -49,6 +49,7 @@ program.command("create-user")
 
       console.log(chalk.green("Successfully created user!"));
       console.log(chalk.yellow.bold("Handle:   "), metadata.handle);
+      console.log(chalk.yellow.bold("User ID:   "), response.userId);
       console.log(chalk.yellow.bold("Email:    "), email);
       console.log(chalk.yellow.bold("Password: "), password);
 
