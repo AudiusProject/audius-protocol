@@ -160,3 +160,43 @@ func TestRateLimit(t *testing.T) {
 
 	tx.Rollback()
 }
+
+func TestBurstRateLimit(t *testing.T) {
+	var err error
+
+	// reset tables under test
+	_, err = db.Conn.Exec("truncate table chat cascade")
+	assert.NoError(t, err)
+
+	tx := db.Conn.MustBegin()
+	defer tx.Rollback()
+
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	chatId := strconv.Itoa(seededRand.Int())
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+
+	SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
+
+	// hit the 1 second limit... send a burst of messages
+	for i := 1; i < 16; i++ {
+
+		message := fmt.Sprintf("burst %d", i)
+		err = chatSendMessage(tx, user1Id, chatId, message, time.Now().UTC(), message)
+		assert.NoError(t, err, "i is", i)
+
+		messageRpc := schema.RawRPC{
+			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId, message)),
+		}
+		err = testValidator.validateChatMessage(tx, user1Id, messageRpc)
+
+		// first 10 messages are ok...
+		// and then the per-second rate limiter kicks in
+		if i <= 10 {
+			assert.NoError(t, err, "i is", i)
+		} else {
+			assert.ErrorIs(t, err, ErrMessageRateLimitExceeded, "i = ", i)
+		}
+	}
+
+}

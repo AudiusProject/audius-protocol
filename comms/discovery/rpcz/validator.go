@@ -14,9 +14,14 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/exp/slog"
 )
 
 ////////////////////
+
+var (
+	ErrMessageRateLimitExceeded = errors.New("user has exceeded the maximum number of new messages")
+)
 
 type Validator struct {
 	db      *sqlx.DB
@@ -299,6 +304,8 @@ func (vtor *Validator) calculateRateLimitCursor(timeframe int) time.Time {
 func (vtor *Validator) validateNewChatRateLimit(q db.Queryable, users []int32) error {
 	var err error
 
+	// rate_limit_seconds
+
 	limiter := vtor.limiter
 	timeframe := limiter.Get(config.RateLimitTimeframeHours)
 
@@ -323,6 +330,43 @@ func (vtor *Validator) validateNewChatRateLimit(q db.Queryable, users []int32) e
 
 func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32, chatId string) error {
 	var err error
+
+	// BurstRateLimit
+	{
+		query := `
+		select
+			sum(case when created_at > now() - interval '1 second' then 1 else 0 end) as s1,
+			sum(case when created_at > now() - interval '10 seconds' then 1 else 0 end) as s10,
+			sum(case when created_at > now() - interval '60 seconds' then 1 else 0 end) as s60
+		from chat_message
+		where user_id = $1
+		and created_at > now() - interval '90 seconds';
+		`
+		var s1, s10, s60 sql.NullInt64
+		err = q.QueryRow(query, userId).Scan(&s1, &s10, &s60)
+		if err != nil {
+			slog.Error("burst rate limit query failed", err)
+		}
+
+		// 10 per second in last second
+		if s1.Int64 > 10 {
+			slog.Warn("message rate limit exceeded", "bucket", "1s", "user_id", userId, "count", s1)
+			return ErrMessageRateLimitExceeded
+
+		}
+
+		// 7 per second for last 10 seconds
+		if s10.Int64 > 70 {
+			slog.Warn("message rate limit exceeded", "bucket", "10s", "user_id", userId, "count", s10)
+			return ErrMessageRateLimitExceeded
+		}
+
+		// 5 per second for last 60 seconds
+		if s60.Int64 > 300 {
+			slog.Warn("message rate limit exceeded", "bucket", "60s", "user_id", userId, "count", s60)
+			return ErrMessageRateLimitExceeded
+		}
+	}
 
 	limiter := vtor.limiter
 	timeframe := limiter.Get(config.RateLimitTimeframeHours)
@@ -350,7 +394,7 @@ func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32,
 		if counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
 			logger.Info("hit rate limit (new messages per recipient)", "user", userId, "chat", chatId)
 		}
-		return errors.New("User has exceeded the maximum number of new messages")
+		return ErrMessageRateLimitExceeded
 	}
 
 	return nil
