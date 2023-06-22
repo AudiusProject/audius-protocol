@@ -17,9 +17,9 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     copy_record,
 )
-from src.tasks.index_trending import GENRE_ALLOWLIST
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
+from src.utils.hardcoded_data import genre_allowlist
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +258,7 @@ def validate_track_tx(params: ManageEntityParameters):
         if track_metadata is not None:
             track_bio = track_metadata.get("description")
             track_genre = track_metadata.get("genre")
-            if track_genre is not None and track_genre not in GENRE_ALLOWLIST:
+            if track_genre is not None and track_genre not in genre_allowlist:
                 raise Exception(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
             if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
                 raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
