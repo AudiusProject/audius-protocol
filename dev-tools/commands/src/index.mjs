@@ -3,6 +3,7 @@
 import { program } from "commander";
 
 import "./create-playlist.mjs";
+import "./edit-playlist.mjs";
 import "./create-user.mjs";
 import "./edit-user.mjs";
 import "./favorite-track.mjs";
