@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 
 import { User } from 'models/User'
-import { CommonState } from 'store/index'
+import { ChatPermissionAction, CommonState } from 'store/index'
 import {
   getCanSendMessage,
   getOtherChatUsers
@@ -12,14 +12,20 @@ import { useProxySelector } from '..'
 /**
  * Returns whether or not the current user can send messages to the current chat
  */
-export const useCanSendMessage = (currentChatId?: string) => {
+export const useCanSendMessage = (
+  currentChatId?: string
+): {
+  canSendMessage: boolean
+  callToAction: ChatPermissionAction
+  // Explicitly define type as undefinable since users could be empty
+  firstOtherUser: User | undefined
+} => {
   const users = useProxySelector(
     (state) => getOtherChatUsers(state, currentChatId),
     [currentChatId]
   )
 
-  // Explicitly define type as undefinable since users could be empty
-  const firstOtherUser: User | undefined = users[0]
+  const firstOtherUser = users[0]
 
   const { canSendMessage, callToAction } = useSelector((state: CommonState) =>
     getCanSendMessage(state, {

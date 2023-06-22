@@ -1,4 +1,4 @@
-import { AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext, AppContext } from '@audius/common'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
@@ -23,6 +23,7 @@ import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
+import * as analytics from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { audiusSdk } from 'app/services/audius-sdk'
@@ -78,41 +79,47 @@ const App = () => {
   })
 
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <FlipperAsyncStorage />
-      <Provider store={store}>
-        <AudiusQueryContext.Provider
-          value={{ apiClient, audiusSdk, audiusBackend: audiusBackendInstance }}
-        >
-          <PersistGate loading={null} persistor={persistor}>
-            <ThemeProvider>
-              <WalletConnectProvider>
-                <PortalProvider>
-                  <ErrorBoundary>
-                    <NavigationContainer>
-                      <Toasts />
-                      <Airplay />
-                      <RootScreen
-                        isPendingMandatoryCodePushUpdate={
-                          isPendingMandatoryCodePushUpdate
-                        }
-                      />
-                      <Drawers />
-                      <Modals />
-                      <Audio />
-                      <OAuth />
-                      <NotificationReminder />
-                      <RateCtaReminder />
-                      <PortalHost name='ChatReactionsPortal' />
-                    </NavigationContainer>
-                  </ErrorBoundary>
-                </PortalProvider>
-              </WalletConnectProvider>
-            </ThemeProvider>
-          </PersistGate>
-        </AudiusQueryContext.Provider>
-      </Provider>
-    </SafeAreaProvider>
+    <AppContext.Provider value={{ analytics }}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <FlipperAsyncStorage />
+        <Provider store={store}>
+          <AudiusQueryContext.Provider
+            value={{
+              apiClient,
+              audiusSdk,
+              audiusBackend: audiusBackendInstance
+            }}
+          >
+            <PersistGate loading={null} persistor={persistor}>
+              <ThemeProvider>
+                <WalletConnectProvider>
+                  <PortalProvider>
+                    <ErrorBoundary>
+                      <NavigationContainer>
+                        <Toasts />
+                        <Airplay />
+                        <RootScreen
+                          isPendingMandatoryCodePushUpdate={
+                            isPendingMandatoryCodePushUpdate
+                          }
+                        />
+                        <Drawers />
+                        <Modals />
+                        <Audio />
+                        <OAuth />
+                        <NotificationReminder />
+                        <RateCtaReminder />
+                        <PortalHost name='ChatReactionsPortal' />
+                      </NavigationContainer>
+                    </ErrorBoundary>
+                  </PortalProvider>
+                </WalletConnectProvider>
+              </ThemeProvider>
+            </PersistGate>
+          </AudiusQueryContext.Provider>
+        </Provider>
+      </SafeAreaProvider>
+    </AppContext.Provider>
   )
 }
 

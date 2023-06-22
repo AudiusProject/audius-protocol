@@ -23,6 +23,7 @@ import { isElectron } from 'utils/clientUtil'
 import { createPlaylistArtwork } from 'utils/imageProcessingUtil'
 import { share } from 'utils/share'
 
+import { reportToSentry } from './errors/reportToSentry'
 import { getLineupSelectorForRoute } from './lineup/lineupForRoute'
 
 export const storeContext: CommonStoreContext = {
@@ -56,6 +57,7 @@ export const storeContext: CommonStoreContext = {
     metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
   }),
   sentry: Sentry,
+  reportToSentry,
   trackDownload,
   instagramAppId: process.env.REACT_APP_INSTAGRAM_APP_ID,
   instagramRedirectUrl: process.env.REACT_APP_INSTAGRAM_REDIRECT_URL,

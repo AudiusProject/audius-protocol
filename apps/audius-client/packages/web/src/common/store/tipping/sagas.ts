@@ -392,6 +392,11 @@ function* sendTipAsync() {
             skipNavigation: true
           })
         )
+        yield* put(
+          make(Name.TIP_UNLOCKED_CHAT, {
+            recipientUserId: recipient.user_id
+          })
+        )
       }
     })
 

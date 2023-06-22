@@ -15,6 +15,7 @@ let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
 const AmplitudeProxy = Config.AMPLITUDE_PROXY
 const amplitudeInstance = Amplitude.getInstance()
+const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
 export const init = async () => {
   try {
@@ -83,7 +84,10 @@ export const track = async ({ eventName, properties }: Track) => {
     mobileClientVersion: version,
     mobileClientVersionInclOTA: versionInfo ?? 'unknown'
   }
-  amplitudeInstance.logEvent(eventName, propertiesWithContext)
+  if (!IS_PRODUCTION_BUILD) {
+    console.info('Amplitude | track', eventName, properties)
+  }
+  await amplitudeInstance.logEvent(eventName, propertiesWithContext)
 }
 
 // Screen Event

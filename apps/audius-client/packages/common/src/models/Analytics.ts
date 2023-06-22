@@ -1,3 +1,5 @@
+import { ChatPermission } from '@audius/sdk'
+
 import { FeedFilter } from 'models/FeedFilter'
 import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
@@ -319,7 +321,24 @@ export enum Name {
   CONNECT_WALLET_NEW_WALLET_CONNECTED = 'Connect Wallet: New Wallet Connected',
   CONNECT_WALLET_ALREADY_ASSOCIATED = 'Connect Wallet: Already Associated',
   CONNECT_WALLET_ASSOCIATION_ERROR = 'Connect Wallet: Association Error',
-  CONNECT_WALLET_ERROR = 'Connect Wallet: Error'
+  CONNECT_WALLET_ERROR = 'Connect Wallet: Error',
+
+  // Chat
+  CREATE_CHAT_SUCCESS = 'Create Chat: Success',
+  CREATE_CHAT_FAILURE = 'Create Chat: Failure',
+  SEND_MESSAGE_SUCCESS = 'Send Message: Success',
+  SEND_MESSAGE_FAILURE = 'Send Message: Failure',
+  DELETE_CHAT_SUCCESS = 'Delete Chat: Success',
+  DELETE_CHAT_FAILURE = 'Delete Chat: Failure',
+  BLOCK_USER_SUCCESS = 'Block User: Success',
+  BLOCK_USER_FAILURE = 'Block User: Failure',
+  CHANGE_INBOX_SETTINGS_SUCCESS = 'Change Inbox Settings: Success',
+  CHANGE_INBOX_SETTINGS_FAILURE = 'Change Inbox Settings: Failure',
+  SEND_MESSAGE_REACTION_SUCCESS = 'Send Message Reaction: Success',
+  SEND_MESSAGE_REACTION_FAILURE = 'Send Message Reaction: Failure',
+  MESSAGE_UNFURL_TRACK = 'Message Unfurl: Track',
+  MESSAGE_UNFURL_PLAYLIST = 'Message Unfurl: Playlist',
+  TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip'
 }
 
 type PageView = {
@@ -1512,6 +1531,73 @@ type ConnectWalletError = {
   error: string
 }
 
+type CreateChatSuccess = {
+  eventName: Name.CREATE_CHAT_SUCCESS
+}
+
+type CreateChatFailure = {
+  eventName: Name.CREATE_CHAT_FAILURE
+}
+
+type SendMessageSuccess = {
+  eventName: Name.SEND_MESSAGE_SUCCESS
+}
+
+type SendMessageFailure = {
+  eventName: Name.SEND_MESSAGE_FAILURE
+}
+
+type DeleteChatSuccess = {
+  eventName: Name.DELETE_CHAT_SUCCESS
+}
+
+type DeleteChatFailure = {
+  eventName: Name.DELETE_CHAT_FAILURE
+}
+
+type BlockUserSuccess = {
+  eventName: Name.BLOCK_USER_SUCCESS
+  blockedUserId: ID
+}
+
+type BlockUserFailure = {
+  eventName: Name.BLOCK_USER_FAILURE
+  blockedUserId: ID
+}
+
+type ChangeInboxSettingsSuccess = {
+  eventName: Name.CHANGE_INBOX_SETTINGS_SUCCESS
+  permission: ChatPermission
+}
+
+type ChangeInboxSettingsFailure = {
+  eventName: Name.CHANGE_INBOX_SETTINGS_FAILURE
+  permission: ChatPermission
+}
+
+type SendMessageReactionSuccess = {
+  eventName: Name.SEND_MESSAGE_REACTION_SUCCESS
+  reaction: string | null
+}
+
+type SendMessageReactionFailure = {
+  eventName: Name.SEND_MESSAGE_REACTION_FAILURE
+  reaction: string | null
+}
+
+type MessageUnfurlTrack = {
+  eventName: Name.MESSAGE_UNFURL_TRACK
+}
+
+type MessageUnfurlPlaylist = {
+  eventName: Name.MESSAGE_UNFURL_PLAYLIST
+}
+
+type TipUnlockedChat = {
+  eventName: Name.TIP_UNLOCKED_CHAT
+  recipientUserId: ID
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1714,3 +1800,19 @@ export type AllTrackingEvents =
   | ConnectWalletAlreadyAssociated
   | ConnectWalletAssociationError
   | ConnectWalletError
+  | SendMessageSuccess
+  | CreateChatSuccess
+  | CreateChatFailure
+  | SendMessageSuccess
+  | SendMessageFailure
+  | DeleteChatSuccess
+  | DeleteChatFailure
+  | BlockUserSuccess
+  | BlockUserFailure
+  | ChangeInboxSettingsSuccess
+  | ChangeInboxSettingsFailure
+  | SendMessageReactionSuccess
+  | SendMessageReactionFailure
+  | MessageUnfurlTrack
+  | MessageUnfurlPlaylist
+  | TipUnlockedChat
