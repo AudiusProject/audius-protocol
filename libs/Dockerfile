@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY patches/* ./patches/
 # Required to run package-patch: https://github.com/ds300/patch-package/issues/185
-RUN npm config set unsafe-perm true
+# RUN npm config set unsafe-perm true
 RUN --mount=type=cache,target=/root/.npm npm install --loglevel verbose
 
 FROM node:18.16-alpine
