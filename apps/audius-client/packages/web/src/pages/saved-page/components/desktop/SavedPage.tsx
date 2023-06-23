@@ -1,8 +1,6 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useContext } from 'react'
 
 import {
-  cacheCollectionsSelectors,
-  cacheUsersSelectors,
   ID,
   Lineup,
   SavedPageTabs as ProfileTabs,
@@ -13,161 +11,34 @@ import {
   TrackRecord,
   UID,
   User,
-  savedPageSelectors,
-  statusIsNotFinalized,
-  useFetchedSavedCollections,
-  useAccountAlbums,
-  CommonState
+  savedPageSelectors
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import Card, { CardProps } from 'components/card/desktop/Card'
+import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import FilterInput from 'components/filter-input/FilterInput'
 import Header from 'components/header/desktop/Header'
-import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
-import { useGoToRoute } from 'hooks/useGoToRoute'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import useTabs from 'hooks/useTabs/useTabs'
 import { MainContentContext } from 'pages/MainContentContext'
-import { albumPage } from 'utils/route'
 
-import { formatCardSecondaryText } from '../utils'
-
+import { AlbumsTabPage } from './AlbumsTabPage'
+import { PlaylistsTabPage } from './PlaylistsTabPage'
 import styles from './SavedPage.module.css'
 
 const { getInitialFetchStatus } = savedPageSelectors
-const { getCollection } = cacheCollectionsSelectors
-const { getUser } = cacheUsersSelectors
 
 const messages = {
   filterPlaceholder: 'Filter Tracks',
-  emptyAlbumsHeader: 'You haven’t favorited any albums yet.',
-  emptyAlbumsBody: 'Once you have, this is where you’ll find them!',
   emptyTracksHeader: 'You haven’t favorited any tracks yet.',
   emptyTracksBody: 'Once you have, this is where you’ll find them!',
   goToTrending: 'Go to Trending'
-}
-
-type AlbumCardProps = Pick<CardProps, 'index' | 'isLoading' | 'setDidLoad'> & {
-  albumId: ID
-}
-
-const AlbumCard = ({
-  albumId,
-  index,
-  isLoading,
-  setDidLoad
-}: AlbumCardProps) => {
-  const goToRoute = useGoToRoute()
-  const album = useSelector((state: CommonState) =>
-    getCollection(state, { id: albumId })
-  )
-  const ownerHandle = useSelector((state: CommonState) => {
-    if (album == null) {
-      return ''
-    }
-    const user = getUser(state, { id: album.playlist_owner_id })
-    return user?.handle ?? ''
-  })
-
-  const handleClick = useCallback(() => {
-    if (ownerHandle && album) {
-      goToRoute(albumPage(ownerHandle, album.playlist_name, album.playlist_id))
-    }
-  }, [album, ownerHandle, goToRoute])
-
-  return album ? (
-    <Card
-      index={index}
-      isLoading={isLoading}
-      setDidLoad={setDidLoad}
-      key={album.playlist_id}
-      id={album.playlist_id}
-      userId={album.playlist_owner_id}
-      imageSize={album._cover_art_sizes}
-      size='medium'
-      playlistName={album.playlist_name}
-      playlistId={album.playlist_id}
-      isPlaylist={false}
-      isPublic={!album.is_private}
-      handle={ownerHandle}
-      primaryText={album.playlist_name}
-      secondaryText={formatCardSecondaryText(
-        album.save_count,
-        album.playlist_contents.track_ids.length
-      )}
-      isReposted={album.has_current_user_reposted}
-      isSaved={album.has_current_user_saved}
-      cardCoverImageSizes={album._cover_art_sizes}
-      onClick={handleClick}
-    />
-  ) : null
-}
-
-const AlbumsTabContent = () => {
-  const goToRoute = useGoToRoute()
-
-  const { data: savedAlbums, status: accountAlbumsStatus } = useAccountAlbums()
-  const savedAlbumIds = useMemo(
-    () => savedAlbums.map((a) => a.id),
-    [savedAlbums]
-  )
-
-  const {
-    data: fetchedAlbumIds,
-    status,
-    hasMore,
-    fetchMore
-  } = useFetchedSavedCollections({
-    collectionIds: savedAlbumIds,
-    type: 'albums',
-    pageSize: 20
-  })
-  const { isLoading: isAlbumLoading, setDidLoad } = useOrderedLoad(
-    fetchedAlbumIds.length
-  )
-  const cards = fetchedAlbumIds.map((id, i) => {
-    return (
-      <AlbumCard
-        index={i}
-        isLoading={isAlbumLoading(i)}
-        setDidLoad={setDidLoad}
-        key={id}
-        albumId={id}
-      />
-    )
-  })
-
-  const noSavedAlbums =
-    accountAlbumsStatus === Status.SUCCESS && savedAlbumIds.length === 0
-  const noFetchedResults = !statusIsNotFinalized(status) && cards.length === 0
-
-  if (noSavedAlbums || noFetchedResults) {
-    return (
-      <EmptyTable
-        primaryText={messages.emptyAlbumsHeader}
-        secondaryText={messages.emptyAlbumsBody}
-        buttonLabel={messages.goToTrending}
-        onClick={() => goToRoute('/trending')}
-      />
-    )
-  }
-
-  return (
-    <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
-      cards={cards}
-      cardsClassName={styles.cardsContainer}
-    />
-  )
 }
 
 const tableColumns: TracksTableColumn[] = [
@@ -220,8 +91,6 @@ export type SavedPageProps = {
   undoRepostTrack: (trackId: ID) => void
   saveTrack: (trackId: ID) => void
   unsaveTrack: (trackId: ID) => void
-  onClickRemove: any
-  onReorderTracks: any
 }
 
 const SavedPage = ({
@@ -246,9 +115,7 @@ const SavedPage = ({
   onClickTrackName,
   onClickArtistName,
   onClickRepost,
-  onClickRemove,
-  onSortTracks,
-  onReorderTracks
+  onSortTracks
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
   const initFetch = useSelector(getInitialFetchStatus)
@@ -321,6 +188,11 @@ const SavedPage = ({
         icon: <IconAlbum />,
         text: ProfileTabs.ALBUMS,
         label: ProfileTabs.ALBUMS
+      },
+      {
+        icon: <IconPlaylists />,
+        text: ProfileTabs.PLAYLISTS,
+        label: ProfileTabs.PLAYLISTS
       }
     ],
     elements: [
@@ -357,9 +229,8 @@ const SavedPage = ({
           userId={account ? account.user_id : 0}
         />
       ),
-      <div className={styles.albumsWrapper} key='albums'>
-        <AlbumsTabContent />
-      </div>
+      <AlbumsTabPage key='albums' />,
+      <PlaylistsTabPage key='playlists' />
     ]
   })
 

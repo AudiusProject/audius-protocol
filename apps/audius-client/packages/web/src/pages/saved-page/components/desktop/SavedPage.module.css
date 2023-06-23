@@ -92,3 +92,26 @@
 .albumsWrapper {
   flex: 1 1 0;
 }
+
+.createPlaylistCard {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--unit-2);
+  align-items: center;
+  justify-content: center;
+}
+
+.createPlaylistText {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-2);
+}
+
+.createPlaylistIcon {
+  height: var(--unit-5);
+  width: var(--unit-5);
+}
+
+.createPlaylistIcon circle {
+  fill: var(--neutral-light-2);
+}
