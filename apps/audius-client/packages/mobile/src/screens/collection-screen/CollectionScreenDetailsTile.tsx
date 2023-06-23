@@ -13,7 +13,6 @@ import {
   collectionPageLineupActions as tracksActions,
   reachabilitySelectors
 } from '@audius/common'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
@@ -74,7 +73,8 @@ const selectIsQueued = createSelector(
 )
 
 const messages = {
-  empty: 'This playlist is empty.',
+  empty:
+    'This playlist is empty. Start adding tracks to share it or make it public.',
   detailsPlaceholder: '---'
 }
 
@@ -85,10 +85,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderTopColor: palette.neutralLight7
   },
   empty: {
-    ...typography.body,
     color: palette.neutral,
+    paddingHorizontal: spacing(8),
     marginBottom: spacing(8),
-    alignSelf: 'center'
+    textAlign: 'center',
+    lineHeight: 20
   }
 }))
 
@@ -216,10 +217,11 @@ export const CollectionScreenDetailsTile = ({
         showSkeleton={isLineupLoading}
         togglePlay={handlePressTrackListItemPlay}
         uids={isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids}
-        ListHeaderComponent={
-          trackCount > 0 ? <View style={styles.trackListDivider} /> : undefined
+        ListEmptyComponent={
+          <Text fontSize='medium' weight='medium' style={styles.empty}>
+            {messages.empty}
+          </Text>
         }
-        ListEmptyComponent={<Text style={styles.empty}>{messages.empty}</Text>}
       />
     )
   }, [

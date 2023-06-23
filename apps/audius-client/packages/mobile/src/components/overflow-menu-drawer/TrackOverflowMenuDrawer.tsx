@@ -136,7 +136,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.DELETE_TRACK]: () => {
       dispatch(
         setVisibility({
-          drawer: 'DeleteConfirmation',
+          drawer: 'DeleteTrackConfirmation',
           visible: true,
           data: { trackId: id }
         })

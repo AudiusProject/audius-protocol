@@ -26,6 +26,6 @@ export const messages = {
   audioNftPlaylistShareText: (name: string) =>
     `Check out ${name} Audio NFTs in a playlist @AudiusProject #Audius`,
   shareDescription: 'Spread the word! Share with your friends and fans!',
-  playlistShareDescription:
-    'Spread the word! Share your playlist with friends and fans! Hidden playlists will be visible to anyone on the internet with the link.'
+  privatePlaylistShareDescription:
+    'Spread the word! Share your playlist with friends and fans! Private playlists will be visible to anyone on the internet with the link.'
 }

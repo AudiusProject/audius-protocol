@@ -43,7 +43,7 @@ const createImageSourcesForEndpoints = ({
 
 /**
  * Create all the sources for an image.
- * Includes legacy endpoints and optionally local sources
+ * Includes legacy endpoints and optionally lokj cal sources
  */
 export const createAllImageSources = ({
   cid,
@@ -60,6 +60,10 @@ export const createAllImageSources = ({
 }) => {
   if (!cid || (!user && !providedEndpoints)) {
     return []
+  }
+
+  if (cid.startsWith('data:image') || cid.startsWith('file://')) {
+    return [...(localSource ? [localSource] : []), { uri: cid }]
   }
 
   const endpoints =

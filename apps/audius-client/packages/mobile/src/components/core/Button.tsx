@@ -28,6 +28,7 @@ type ButtonVariant =
   | 'primary'
   | 'primaryAlt'
   | 'secondary'
+  | 'secondaryAlt'
   | 'common'
   | 'commonAlt'
   | 'commonSecondary'
@@ -142,6 +143,19 @@ const getCustomStyles = (config: CustomStylesConfig) => {
         color: palette.staticWhite
       }
     },
+    secondaryAlt: {
+      root: {
+        borderColor: palette.neutralLight7,
+        borderWidth: 1,
+        backgroundColor: palette.white
+      },
+      text: {
+        color: palette.secondary
+      },
+      icon: {
+        color: palette.secondary
+      }
+    },
     common: commonVariantStyles,
     commonAlt: commonVariantStyles,
     commonSecondary: commonVariantStyles,
@@ -173,6 +187,7 @@ const getCustomStyles = (config: CustomStylesConfig) => {
 
   const variantPressingStyles = {
     primaryAlt: variantStyles.primary,
+    secondaryAlt: variantStyles.secondaryAlt,
     common: variantStyles.primary,
     commonAlt: variantStyles.commonAlt,
     commonSecondary: variantStyles.secondary,
@@ -239,8 +254,8 @@ const getCustomStyles = (config: CustomStylesConfig) => {
         fontSize: 18
       },
       icon: {
-        height: spacing(8),
-        width: spacing(8)
+        height: spacing(7),
+        width: spacing(7)
       },
       iconLeft: {
         marginRight: spacing(2)
@@ -312,6 +327,7 @@ export const Button = (props: ButtonProps) => {
 
   const {
     primaryDark1,
+    white,
     secondaryDark1,
     neutralLight10,
     neutralLight7,
@@ -332,6 +348,7 @@ export const Button = (props: ButtonProps) => {
       primary: primaryDark1,
       primaryAlt: primaryDark1,
       secondary: secondaryDark1,
+      secondaryAlt: white,
       common: primaryDark1,
       commonAlt: neutralLight10,
       commonSecondary: secondaryDark1,
@@ -343,6 +360,7 @@ export const Button = (props: ButtonProps) => {
     variant,
     primaryDark1,
     secondaryDark1,
+    white,
     neutralLight10,
     accentRedDark1
   ])

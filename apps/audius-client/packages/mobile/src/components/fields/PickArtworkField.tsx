@@ -5,8 +5,8 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import type { Asset } from 'react-native-image-picker'
 
-import IconCamera from 'app/assets/images/iconCamera.svg'
 import IconImage from 'app/assets/images/iconImage.svg'
+import IconPencil from 'app/assets/images/iconPencil.svg'
 import { Button, DynamicImage } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -48,9 +48,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     left: 0,
     right: 0
   },
-  buttonIcon: {
-    marginRight: spacing(2)
-  },
   loading: {
     height: 50,
     width: 50
@@ -62,10 +59,15 @@ const messages = {
   changeArtwork: 'Change Artwork'
 }
 
-export const PickArtworkField = () => {
+type PickArtworkFieldProps = {
+  name: string
+}
+
+export const PickArtworkField = (props: PickArtworkFieldProps) => {
+  const { name } = props
   const styles = useStyles()
   const { neutralLight8 } = useThemeColors()
-  const name = 'artwork'
+  // const name = 'artwork'
   const [{ value }, { error, touched }, { setValue }] = useField(name)
   const [{ value: existingTrackArtwork }] = useField('trackArtwork')
   const trackArtworkUrl = value?.url ?? existingTrackArtwork
@@ -109,12 +111,12 @@ export const PickArtworkField = () => {
         </View>
         <View style={styles.button}>
           <Button
-            variant='commonAlt'
-            styles={{ root: { zIndex: 1000 }, icon: styles.buttonIcon }}
+            variant='secondaryAlt'
+            size='large'
             title={
               trackArtworkUrl ? messages.changeArtwork : messages.addArtwork
             }
-            icon={IconCamera}
+            icon={IconPencil}
             iconPosition='left'
             onPress={handlePress}
           />

@@ -71,8 +71,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginBottom: spacing(2),
     height: 18,
     color: palette.neutralLight4,
-    fontSize: 14,
-    letterSpacing: 2,
+    fontSize: typography.fontSize.xs,
+    letterSpacing: 3,
     textAlign: 'center',
     textTransform: 'uppercase'
   },
@@ -80,7 +80,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   coverArt: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
-    borderRadius: 4,
+    borderRadius: spacing(2),
     height: 195,
     width: 195,
     marginBottom: spacing(6),
@@ -138,8 +138,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     flexWrap: 'wrap',
     flexDirection: 'row',
     width: '100%',
-    paddingTop: spacing(4),
-    paddingBottom: spacing(2)
+    paddingTop: spacing(4)
   },
 
   noStats: {
@@ -335,7 +334,7 @@ export const DetailsTile = ({
         {renderHeader ? (
           renderHeader()
         ) : (
-          <Text style={styles.typeLabel} weight='demiBold'>
+          <Text style={styles.typeLabel} weight='medium'>
             {headerText}
           </Text>
         )}
@@ -413,16 +412,18 @@ export const DetailsTile = ({
               isOwner={isOwner}
             />
           )}
-          <DetailsTileStats
-            favoriteCount={saveCount}
-            hideFavoriteCount={hideFavoriteCount}
-            hideListenCount={hideListenCount}
-            hideRepostCount={hideRepostCount}
-            onPressFavorites={onPressFavorites}
-            onPressReposts={onPressReposts}
-            playCount={playCount}
-            repostCount={repostCount}
-          />
+          {!isPublished ? null : (
+            <DetailsTileStats
+              favoriteCount={saveCount}
+              hideFavoriteCount={hideFavoriteCount}
+              hideListenCount={hideListenCount}
+              hideRepostCount={hideRepostCount}
+              onPressFavorites={onPressFavorites}
+              onPressReposts={onPressReposts}
+              playCount={playCount}
+              repostCount={repostCount}
+            />
+          )}
           <View style={styles.descriptionContainer}>
             {description ? (
               <Hyperlink

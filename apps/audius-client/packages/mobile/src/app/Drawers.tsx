@@ -42,7 +42,7 @@ import {
   RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollectionDrawer,
-  DeleteConfirmationDrawer
+  DeleteTrackConfirmationDrawer
 } from '../components/drawers'
 import { ShareToStoryProgressDrawer } from '../components/share-drawer/useShareToStory'
 import { VipDiscordDrawer } from '../components/vip-discord-drawer'
@@ -112,7 +112,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   EnablePushNotifications: EnablePushNotificationsDrawer,
   DownloadTrackProgress: DownloadTrackProgressDrawer,
   ForgotPassword: ForgotPasswordDrawer,
-  DeleteConfirmation: DeleteConfirmationDrawer,
+  DeleteTrackConfirmation: DeleteTrackConfirmationDrawer,
   ShareToStoryProgress: ShareToStoryProgressDrawer,
   RateCallToAction: RateCtaDrawer,
   RemoveAllDownloads: RemoveAllDownloadsDrawer,

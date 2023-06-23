@@ -226,7 +226,7 @@ const EditPlaylistPage = g(
         }
         refreshLineup()
 
-        const editPlaylistData: EditPlaylistValues = {
+        const editPlaylistData: any = {
           playlist_name: formFields.playlist_name,
           description: formFields.description,
           artwork: formFields.artwork,

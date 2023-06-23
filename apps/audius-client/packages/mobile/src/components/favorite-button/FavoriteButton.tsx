@@ -36,7 +36,7 @@ const useAnimations = makeAnimations(({ palette }) => {
   return [ColorizedOnIcon, ColorizedOffIcon]
 })
 
-type FavoriteButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'isDarkMode'>
+type FavoriteButtonProps = Omit<AnimatedButtonProps, 'iconJSON'>
 
 export const FavoriteButton = (props: FavoriteButtonProps) => {
   const { isActive, wrapperStyle: wrapperStyleProp, ...other } = props

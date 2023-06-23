@@ -1,6 +1,3 @@
-import { createPlaylistModalUISelectors } from 'store/ui'
-import { Nullable } from 'utils/typeUtils'
-
 import { Track, UID, User, ID, Cache, Collection } from '../../../models'
 
 export enum PlaylistOperations {
@@ -25,13 +22,6 @@ export type Image = {
   file?: string
 }
 
-type PlaylistTrack = { time: number; metadata_time?: number; track: number }
-
-export type EditPlaylistValues = {
-  playlist_name: string
-  description: Nullable<string>
+export type EditPlaylistValues = Collection & {
   artwork: Image
-  tracks: ReturnType<typeof createPlaylistModalUISelectors.getTracks>
-  track_ids: PlaylistTrack[]
-  removedTracks: { trackId: ID; timestamp: number }[]
 }

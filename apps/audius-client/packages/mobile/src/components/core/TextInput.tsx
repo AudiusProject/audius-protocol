@@ -198,9 +198,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             labelYAnimation,
             labelFontSizeAnimation
           ])
-
-          Animated.parallel(animations).start()
         }
+
+        Animated.parallel(animations).start()
       },
       [onFocus, isLabelActive]
     )

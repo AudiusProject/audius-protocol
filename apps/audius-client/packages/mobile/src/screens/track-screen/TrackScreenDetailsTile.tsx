@@ -148,7 +148,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerText: {
     marginTop: spacing(4),
     marginBottom: spacing(4),
-    letterSpacing: 2,
+    letterSpacing: 3,
+    lineHeight: 14,
     textAlign: 'center',
     textTransform: 'uppercase'
   },
@@ -426,8 +427,8 @@ export const TrackScreenDetailsTile = ({
       <Text
         style={styles.headerText}
         color={getDownloadTextColor()}
-        weight='demiBold'
-        fontSize='small'
+        weight='medium'
+        fontSize='xs'
       >
         {isRemix
           ? messages.remix
@@ -467,7 +468,7 @@ export const TrackScreenDetailsTile = ({
         <View style={styles.headerRow}>
           <TrackDownloadStatusIndicator
             style={styles.downloadStatusIndicator}
-            size={20}
+            size={16}
             trackId={track_id}
           />
           {renderHeaderText()}

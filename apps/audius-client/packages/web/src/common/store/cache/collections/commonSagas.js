@@ -91,12 +91,10 @@ function* editPlaylistAsync(action) {
   yield call(confirmEditPlaylist, action.playlistId, userId, playlist)
 
   playlist.playlist_id = action.playlistId
-  if (playlist.artwork) {
+  if (playlist.artwork?.url) {
+    playlist.cover_art_sizes = playlist.artwork.url
     playlist._cover_art_sizes = {
-      ...playlist._cover_art_sizes
-    }
-    if (playlist.artwork.url) {
-      playlist._cover_art_sizes[DefaultSizes.OVERRIDE] = playlist.artwork.url
+      [DefaultSizes.OVERRIDE]: playlist.artwork.url
     }
   }
   yield put(
@@ -117,7 +115,6 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
-        console.log('hmmm', formFields)
         const { blockHash, blockNumber, error } = yield call(
           audiusBackendInstance.updatePlaylist,
           {

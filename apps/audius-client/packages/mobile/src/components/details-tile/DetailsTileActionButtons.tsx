@@ -11,7 +11,7 @@ import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { flexRowCentered, makeStyles } from 'app/styles'
+import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -44,31 +44,18 @@ type DetailsTileActionButtonsProps = {
   onPressOverflow?: GestureResponderHandler
 }
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
-    ...flexRowCentered(),
-    width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
+    gap: spacing(8),
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight7,
-    height: 60,
-    paddingTop: 12,
-    paddingBottom: 8
+    paddingVertical: spacing(4)
   },
-
   actionButton: {
-    ...flexRowCentered(),
-    width: 30,
-    height: '100%',
-    justifyContent: 'center',
-    position: 'relative',
-    bottom: 1,
-    marginHorizontal: 16
-  },
-
-  editButtonIcon: {
-    width: 27
+    width: 32,
+    height: 32
   }
 }))
 
@@ -94,7 +81,7 @@ export const DetailsTileActionButtons = ({
   onPressShare
 }: DetailsTileActionButtonsProps) => {
   const styles = useStyles()
-  const { neutralLight2 } = useThemeColors()
+  const { neutralLight4 } = useThemeColors()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
     FeatureFlags.PLAYLIST_UPDATES_PRE_QA
   )
@@ -125,18 +112,18 @@ export const DetailsTileActionButtons = ({
 
   const shareButton = (
     <IconButton
-      fill={neutralLight2}
+      fill={neutralLight4}
       icon={IconShare}
       isDisabled={isCollectionEmpty}
       disabledPressToastContent={messages.shareButtonDisabledContent}
       onPress={onPressShare}
-      styles={{ icon: [styles.actionButton, { height: 24, width: 24 }] }}
+      styles={{ icon: [styles.actionButton] }}
     />
   )
 
   const overflowMenu = (
     <IconButton
-      fill={neutralLight2}
+      fill={neutralLight4}
       icon={IconKebabHorizontal}
       onPress={onPressOverflow}
       styles={{ icon: styles.actionButton }}
@@ -145,16 +132,16 @@ export const DetailsTileActionButtons = ({
 
   const editButton = (
     <IconButton
-      fill={neutralLight2}
+      fill={neutralLight4}
       icon={IconPencil}
       onPress={onPressEdit}
-      styles={{ icon: [styles.actionButton, styles.editButtonIcon] }}
+      styles={{ icon: styles.actionButton }}
     />
   )
 
   const publishButton = (
     <IconButton
-      fill={neutralLight2}
+      fill={neutralLight4}
       icon={IconRocket}
       isDisabled={isCollectionEmpty || collectionHasHiddenTracks}
       disabledPressToastContent={

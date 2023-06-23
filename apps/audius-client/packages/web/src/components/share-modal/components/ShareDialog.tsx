@@ -50,7 +50,8 @@ export const ShareDialog = ({
   onClose,
   onClosed,
   showTikTokShareAction,
-  shareType
+  shareType,
+  isPrivate
 }: ShareDialogProps) => {
   const isLightMode = !(isDarkMode() || isMatrix())
   return (
@@ -71,8 +72,8 @@ export const ShareDialog = ({
       <ModalContent>
         <div className={styles.modalContent}>
           <p className={styles.description}>
-            {shareType === 'playlist'
-              ? messages.playlistShareDescription
+            {shareType === 'playlist' && isPrivate
+              ? messages.privatePlaylistShareDescription
               : messages.shareDescription}
           </p>
           <ul className={styles.actionList}>

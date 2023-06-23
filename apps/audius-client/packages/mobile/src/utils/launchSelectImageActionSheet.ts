@@ -73,7 +73,7 @@ export const launchSelectImageActionSheet = (
   } else {
     // Android Alert
     Alert.alert(
-      'Profile Photo',
+      'Select Photo',
       '',
       [
         {

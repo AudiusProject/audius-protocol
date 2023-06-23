@@ -1,10 +1,10 @@
 import { View } from 'react-native'
 
 import IconInfo from 'app/assets/images/iconInfo.svg'
+import { TextField } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
 import { FormScreen } from '../components'
-import { TextField } from '../fields'
 
 const messages = {
   title: 'ISRC/ISWC',

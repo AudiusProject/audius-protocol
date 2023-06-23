@@ -10,6 +10,7 @@ import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
+import { PickArtworkField, TextField } from 'app/components/fields'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useIsSpecialAccessEnabled } from 'app/hooks/useIsSpecialAccessEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -21,9 +22,7 @@ import { TopBarIconButton } from '../app-screen'
 
 import { CancelEditTrackDrawer, FormScreen } from './components'
 import {
-  PickArtworkField,
   SelectGenreField,
-  TextField,
   DescriptionField,
   SelectMoodField,
   TagField,
@@ -134,7 +133,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       <>
         <KeyboardAwareScrollView>
           <Tile style={styles.tile}>
-            <PickArtworkField />
+            <PickArtworkField name='artwork' />
             <TextField
               name='title'
               label={messages.trackName}
