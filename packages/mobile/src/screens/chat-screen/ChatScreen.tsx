@@ -592,6 +592,7 @@ export const ChatScreen = () => {
               getKeyboardAvoidingPlaybarAwareStyle()
             ]}
             onKeyboardHide={measureChatContainerBottom}
+            onKeyboardShow={measureChatContainerBottom}
           >
             {isLoading ? (
               <View style={styles.loadingSpinnerContainer}>
