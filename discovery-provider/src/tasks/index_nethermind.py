@@ -302,8 +302,8 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
         next_block = next_block_future.result()
 
         if (
-            not next_block
-            or web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            next_block
+            and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
         ):
             block_on_chain = False
 
