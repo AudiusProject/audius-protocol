@@ -1,5 +1,5 @@
 {
-  "editor.formatOnSave": true,
+  // "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
   "python.formatting.provider": "black",
   "python.languageServer": "Pylance",
@@ -10,7 +10,10 @@
   "python.analysis.indexing": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "isort.args": ["--profile", "black"],
+  "isort.args": [
+    "--profile",
+    "black"
+  ],
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
