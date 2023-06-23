@@ -177,14 +177,29 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
-	// Pretend legacy exists for HEAD, and let it fail in the GET (getBlob) if it doesn't. Otherwise we have to duplicate a db query
 	if isLegacyCID(key) {
+		return ss.headLegacyCid(c)
+	}
+
+	// Return 200 if we have it
+	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		return c.NoContent(200)
 	}
 
-	// If the blob doesn't exist, return 404. This is similar to what the GET (getBlob) does
-	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
-		return c.NoContent(200)
+	// Return 302 if we know where it is
+	var blobs []Blob
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+	err := ss.crud.DB.
+		Where("key = ? and host in ?", key, healthyHosts).
+		Find(&blobs).Error
+	if err != nil {
+		return err
+	}
+	for _, blob := range blobs {
+		if ss.hostHasBlob(blob.Host, key, false) {
+			dest := replaceHost(*c.Request().URL, blob.Host)
+			return c.Redirect(302, dest.String())
+		}
 	}
 
 	return c.String(404, "blob not found")
