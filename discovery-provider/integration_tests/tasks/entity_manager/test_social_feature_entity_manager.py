@@ -927,7 +927,6 @@ def test_index_social_feature_playlist_type(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
