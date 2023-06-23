@@ -5,7 +5,7 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("edit-user")
   .description("Update an existing user")
-  .argument("[handle]", "The user's handle (can't change)")
+  .argument("<handle>", "The user's handle (can't change)")
   .option("-n, --name <name>", "The user's new name")
   .option("-b, --bio <bio>", "The user's new bio")
   .action(async (handle, { name, bio }) => {

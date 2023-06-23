@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -114,6 +115,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			cidCursor = cid
 
 			logger := logger.With("cid", cid)
+
+			// don't try to repair legacy blob formats
+			if !strings.HasPrefix(cid, "ba") {
+				continue
+			}
 
 			preferredHosts, isMine := ss.rendezvous(cid)
 

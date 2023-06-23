@@ -5,19 +5,19 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("edit-track")
   .description("Update an existing track")
-  .argument("[track_id]", "id of track to update")
+  .argument("<trackId>", "Id of track to update")
   .option("-t, --title <title>", "Title of track")
   .option("-a, --tags <tags>", "Tags of track")
-  .option("-d, --description <description>", "Description of track ")
+  .option("-d, --description <description>", "Description of track")
   .option("-m, --mood <mood>", "Mood of track")
   .option("-g, --genre <genre>", "Genre of track")
   .option("-l, --license <license>", "License of track")
   .option("-f, --from <from>", "The account to edit the track from")
   .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium", "")
-  .action(async (track_id, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
+  .action(async (trackId, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
-      const track = (await audiusLibs.Track.getTracks(100, 0, [track_id]))[0]
+      const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
       delete track.user
       console.log(chalk.yellow.bold("Track before update: "), track);
 
@@ -39,7 +39,7 @@ program.command("edit-track")
 
       await new Promise(r => setTimeout(r, 2000));
 
-      const updatedTrack = (await audiusLibs.Track.getTracks(100, 0, [track_id]))[0]
+      const updatedTrack = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
       delete updatedTrack.user
       console.log(chalk.green("Successfully updated track!"));
       console.log(chalk.yellow.bold("Track after update: "), updatedTrack);

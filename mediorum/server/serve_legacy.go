@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -41,6 +42,28 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	go ss.logTrackListen(c)
 
 	return nil
+}
+
+func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
+	ctx := c.Request().Context()
+	cid := c.Param("cid")
+	logger := ss.logger.With("cid", cid)
+	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
+
+	var storagePath string
+	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
+	if err == pgx.ErrNoRows {
+		return ss.redirectToCid(c, cid)
+	} else if err != nil {
+		logger.Error("error querying cid storage path", err)
+		return err
+	}
+
+	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
+		return ss.redirectToCid(c, cid)
+	}
+
+	return c.NoContent(200)
 }
 
 func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {

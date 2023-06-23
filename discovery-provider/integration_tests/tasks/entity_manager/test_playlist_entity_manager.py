@@ -374,7 +374,6 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -532,7 +531,6 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -785,7 +783,6 @@ def test_index_invalid_playlists(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -807,6 +804,16 @@ def test_invalid_playlist_description(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None, None, None)
 
+    metadata = {
+        "PlaylistInvalidDescriptionMetadata": {
+            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+            "description": "xtralargeplz" * CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+            "playlist_image_sizes_multihash": "",
+            "is_album": False,
+        },
+    }
+    metadata = json.dumps(metadata["QmCreateTrack2"])
+
     tx_receipts = {
         "PlaylistInvalidDescription": [
             {
@@ -816,21 +823,12 @@ def test_invalid_playlist_description(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Create",
-                        "_metadata": "PlaylistInvalidDescriptionMetadata",
+                        "_metadata": f'{{"cid": "PlaylistInvalidDescriptionMetadata", "data": {metadata}}}',
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
-    }
-
-    metadata = {
-        "PlaylistInvalidDescriptionMetadata": {
-            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
-            "description": "xtralargeplz" * CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
-            "playlist_image_sizes_multihash": "",
-            "is_album": False,
-        },
     }
 
     entity_manager_txs = [
@@ -849,7 +847,6 @@ def test_invalid_playlist_description(app, mocker):
 
     with db.scoped_session() as session:
         total_changes, _ = entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
