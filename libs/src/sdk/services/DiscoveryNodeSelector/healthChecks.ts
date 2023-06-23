@@ -110,9 +110,10 @@ export const parseApiHealthStatusReason = ({
       return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
     }
   } else if (isCommsResponse(data)) {
-    if (!isApiCommsHealthy({ data })) {
-      return { health: HealthCheckStatus.UNHEALTHY, reason: 'comms' }
-    }
+    // TODO: Re-enable once is
+    // if (!isApiCommsHealthy({ data })) {
+    //   return { health: HealthCheckStatus.UNHEALTHY, reason: 'comms' }
+    // }
   }
 
   return { health: HealthCheckStatus.HEALTHY }
