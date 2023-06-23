@@ -42,14 +42,20 @@ export const onDisburse = async (
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
+  console.log("specifier",specifier)
+  console.log("specifier split", specifier.split(":"))
+  const trimmedSpecifier = specifier.split(":")[0]
+
   const nodeGroups = await assembleNodeGroups(libs);
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
   const friendly = await getChallengesDisbursementsUserbanksFriendly(
     db,
-    specifier
+    trimmedSpecifier
   );
+
+  const normal = await getChallengesDisbursementsUserbanks(db, trimmedSpecifier)
   console.log("friendly = ", JSON.stringify(friendly));
   const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
@@ -272,6 +278,7 @@ const getAllChallenges = async (
     if (rewards === null) throw new Error("rewards object null");
 
     if (!dryRun) {
+      console.log("submitting")
       const { error } = await rewards.submitAndEvaluate({
         challengeId: challenge.challenge_id,
         encodedUserId,
@@ -305,6 +312,6 @@ const getAllChallenges = async (
       impossibleChallenges.length
     }: ${JSON.stringify(
       impossibleChallenges
-    )}, possible challenges: ${JSON.stringify(possibleChallenges)}`
+    )}, possible challenges: ${possibleChallenges.length} ${JSON.stringify(possibleChallenges)}`
   );
 };
