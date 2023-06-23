@@ -144,11 +144,9 @@ def validate_playlist_tx(params: ManageEntityParameters):
             playlist_description = playlist_metadata.get("description")
             if playlist_description and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
                 raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
-        if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            playlist: Playlist = params.existing_records[EntityType.PLAYLIST][playlist_id]
-            playlist_tracks = playlist.playlist_contents["track_ids"]
-            if (len(playlist_tracks) >= PLAYLIST_TRACK_LIMIT):
-                raise Exception(f"playlist {playlist_id} exceeds track limit")
+            playlist_track_count = len(playlist_metadata["playlist_contents"]["track_ids"])
+            if playlist_track_count > PLAYLIST_TRACK_LIMIT:
+                raise Exception(f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}")
 
 
 def create_playlist(params: ManageEntityParameters):
@@ -272,7 +270,6 @@ def delete_playlist(params: ManageEntityParameters):
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
-    playlist_id = playlist_record.playlist_id
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
@@ -307,8 +304,6 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         # assume metadata and indexing timestamp is the same
         track_id_index_times: Set = set()
         playlist_tracks = playlist_record.playlist_contents["track_ids"]
-        if (len(playlist_tracks) >= PLAYLIST_TRACK_LIMIT):
-            raise Exception(f"playlist {playlist_id} (legacy) exceeds track limit")
         for track in playlist_tracks:
             track_id = track["track"]
             index_time = track["time"]
