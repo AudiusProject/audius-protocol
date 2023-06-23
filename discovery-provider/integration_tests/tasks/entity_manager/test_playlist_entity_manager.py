@@ -812,7 +812,7 @@ def test_invalid_playlist_description(app, mocker):
             "is_album": False,
         },
     }
-    metadata = json.dumps(metadata["QmCreateTrack2"])
+    metadata = json.dumps(metadata["PlaylistInvalidDescriptionMetadata"])
 
     tx_receipts = {
         "PlaylistInvalidDescription": [
