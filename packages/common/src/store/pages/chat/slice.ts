@@ -503,9 +503,6 @@ const slice = createSlice({
     unblockUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
       // triggers saga
     },
-    reportUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
-      // triggers saga
-    },
     fetchPermissions: (_state, _action: PayloadAction<{ userIds: ID[] }>) => {
       // triggers saga
     },

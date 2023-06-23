@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { User, chatActions } from '@audius/common'
+import { User, chatActions, Name } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -16,10 +16,11 @@ import { useDispatch } from 'react-redux'
 
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { track, make } from 'services/analytics'
 
 import styles from './BlockUserConfirmationModal.module.css'
 
-const { blockUser, reportUser } = chatActions
+const { blockUser } = chatActions
 
 const messages = {
   title: 'Are you sure?',
@@ -56,7 +57,12 @@ export const BlockUserConfirmationModal = ({
   const handleConfirmClicked = useCallback(() => {
     dispatch(blockUser({ userId: user.user_id }))
     if (isReportAbuse) {
-      dispatch(reportUser({ userId: user.user_id }))
+      track(
+        make({
+          eventName: Name.CHAT_REPORT_USER,
+          reportedUserId: user.user_id
+        })
+      )
     }
     onClose()
   }, [dispatch, isReportAbuse, onClose, user.user_id])
