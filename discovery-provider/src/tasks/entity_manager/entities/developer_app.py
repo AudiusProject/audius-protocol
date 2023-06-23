@@ -190,6 +190,14 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise Exception(
                 "Invalid Create Developer App Transaction, is_personal_access must be a boolean (or empty)"
             )
+        if metadata["description"] != None and (
+            not isinstance(metadata["description"], str)
+            or len((metadata["description"])) > 160
+        ):
+            raise Exception(
+                "Invalid Create Developer App Transaction, description must be under 161 chars"
+            )
+
         num_existing_apps_from_user = (
             session.query(DeveloperApp).filter(DeveloperApp.user_id == user_id).count()
         )
@@ -205,13 +213,6 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         if user_has_too_many_apps:
             raise Exception(
                 "Invalid Create Developer App Transaction, user has too many developer apps"
-            )
-        if metadata["description"] != None and (
-            not isinstance(metadata["description"], str)
-            or len((metadata["description"])) > 160
-        ):
-            raise Exception(
-                "Invalid Create Developer App Transaction, description must be under 161 chars"
             )
     else:
         raise Exception(
