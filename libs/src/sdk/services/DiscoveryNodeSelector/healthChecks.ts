@@ -76,9 +76,9 @@ const isApiSolanaIndexerHealthy = ({
   data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
-const isApiCommsHealthy = ({ data }: { data: CommsResponse }) => {
-  return data.health?.is_healthy
-}
+// const isApiCommsHealthy = ({ data }: { data: CommsResponse }) => {
+//   return data.health?.is_healthy
+// }
 
 export const parseApiHealthStatusReason = ({
   data,
