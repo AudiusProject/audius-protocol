@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 def set_patches(mocker):
-
     mocker.patch(
-        "src.tasks.entity_manager.notification.get_verifier_address",
+        "src.tasks.entity_manager.entities.notification.get_verifier_address",
         return_value="0x",
         autospec=True,
     )
@@ -70,7 +69,6 @@ def test_index_create_notification(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

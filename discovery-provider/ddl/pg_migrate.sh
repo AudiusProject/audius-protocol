@@ -73,7 +73,7 @@ migrate() {
 
     # "preflight" files run before server starts
     # to satisfy any necessary preconditions (e.g. inserting initial block)
-    # the intention is to run "preflight" files for all environments EXCEPT text
+    # the intention is to run "preflight" files for all environments EXCEPT test
     if [[ $PG_MIGRATE_TEST_MODE != "true" ]]; then
         migrate_dir "preflight"
     fi

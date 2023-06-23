@@ -54,6 +54,7 @@ func (ss *MediorumServer) startTranscoder() {
 			return
 		}
 		for _, upload := range *uploads {
+			// only the first mirror transcodes
 			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
 				ss.logger.Info("got transcode job", "id", upload.ID)
 				work <- upload
