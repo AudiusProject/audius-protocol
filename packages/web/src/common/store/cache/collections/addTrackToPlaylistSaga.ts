@@ -15,7 +15,8 @@ import {
   UserTrackMetadata,
   AudiusBackend,
   UserCollection,
-  ID
+  ID,
+  FeatureFlags
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
@@ -80,6 +81,11 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const { playlistId, trackId } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isPlaylistImprovementsEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)
 
@@ -100,7 +106,12 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const trackOwnerEntities = yield* call(fetchUsers, [track.owner_id])
   const trackOwner = trackOwnerEntities.entries[track.owner_id]
 
-  if (track && trackOwner && playlist.track_count === 3) {
+  if (
+    track &&
+    trackOwner &&
+    playlist.track_count === 3 &&
+    isPlaylistImprovementsEnabled
+  ) {
     const trackWithUser = { ...track, user: trackOwner }
     const tracks = [...(playlist.tracks ?? []), trackWithUser]
     const first4Tracks = tracks.slice(0, 4)
