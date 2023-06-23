@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -32,40 +33,13 @@ func DiscoveryMain() {
 		}
 
 		// query The Graph for peers
-		// soon: easy to configure peer source for local cluster / test stuff
-		// also: refresh peers on interval (in stage / prod at least)
-		{
-			peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
-			if err != nil {
-				return err
-			}
-
-			// validate host + wallet pair
-			for _, peer := range peers {
-				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) && strings.EqualFold(peer.Host, discoveryConfig.MyHost) {
-					discoveryConfig.IsRegisteredWallet = true
-					break
-				}
-			}
-
-			// special case read only nodes
-			if config.IsHonoraryNode(discoveryConfig.MyWallet) {
-				discoveryConfig.IsRegisteredWallet = true
-			}
-
-			// fix any relayed_by records that have (incorrect) trailing slash
-			{
-				r, err := db.Conn.Exec(`update rpc_log set relayed_by = substr(relayed_by, 1, length(relayed_by)-1) where relayed_by like '%/';`)
-				if err != nil {
-					slog.Error("fix rpc_log relayed_by failed", err)
-				} else {
-					numCorrected, _ := r.RowsAffected()
-					slog.Warn("removed trailing slashes", "num_corrected", numCorrected)
-				}
-			}
-
-			discoveryConfig.SetPeers(peers)
+		err = refreshRegisteredPeers(discoveryConfig)
+		if err != nil {
+			return err
 		}
+
+		// refresh registered peers on interval
+		go backgroundRefreshRegisteredPeers(discoveryConfig)
 
 		// create RPC processor
 		proc, err = rpcz.NewProcessor(discoveryConfig)
@@ -102,4 +76,39 @@ func DiscoveryMain() {
 	go e.StartWebsocketTester()
 
 	e.Logger.Fatal(e.Start(":" + port))
+}
+
+func backgroundRefreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) {
+	for {
+		time.Sleep(time.Minute * 5)
+		if err := refreshRegisteredPeers(discoveryConfig); err != nil {
+			slog.Error("refreshRegisteredPeers failed", err)
+		}
+	}
+}
+
+func refreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) error {
+	peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
+	if err != nil {
+		return err
+	}
+
+	// special case read only nodes
+	if config.IsHonoraryNode(discoveryConfig.MyWallet) {
+		discoveryConfig.IsRegisteredWallet = true
+	}
+
+	// validate host + wallet pair
+	if !discoveryConfig.IsRegisteredWallet {
+		for _, peer := range peers {
+			if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) && strings.EqualFold(peer.Host, discoveryConfig.MyHost) {
+				discoveryConfig.IsRegisteredWallet = true
+				break
+			}
+		}
+	}
+
+	discoveryConfig.SetPeers(peers)
+
+	return nil
 }
