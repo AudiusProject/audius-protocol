@@ -10,6 +10,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_TRACK_DESCRIPTION,
     TRACK_ID_OFFSET,
     Action,
     EntityType,
@@ -18,6 +19,7 @@ from src.tasks.entity_manager.utils import (
 )
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
+from src.utils.hardcoded_data import genre_allowlist
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +253,15 @@ def validate_track_tx(params: ManageEntityParameters):
 
         if track_id < TRACK_ID_OFFSET:
             raise Exception(f"Cannot create track {track_id} below the offset")
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        track_metadata = params.metadata.get(params.metadata_cid)
+        if track_metadata is not None:
+            track_bio = track_metadata.get("description")
+            track_genre = track_metadata.get("genre")
+            if track_genre is not None and track_genre not in genre_allowlist:
+                raise Exception(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
+            if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
+                raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
@@ -267,7 +278,6 @@ def validate_track_tx(params: ManageEntityParameters):
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
                 raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
-
     return True
 
 

@@ -11,7 +11,11 @@ from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
 from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
+from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_USER_BIO,
+    TRACK_ID_OFFSET,
+    USER_ID_OFFSET,
+)
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 from web3 import Web3
@@ -768,6 +772,64 @@ def test_index_verify_users(app, mocker):
             assert not all_users[1].is_verified  # user 2 is not verified
             calls = [mock.call.dispatch(ChallengeEvent.connect_verified, 0, 1)]
             bus_mock.assert_has_calls(calls, any_order=True)
+
+
+def test_invalid_user_bio(app, mocker):
+    "Tests that users cant add a bio that's too long"
+    bus_mock = set_patches(mocker)
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, None, None)
+        metadata = {
+            "CreateUserInvalidBioMetadata": {
+                "bio": "xtralarge" * CHARACTER_LIMIT_USER_BIO
+            }
+        }
+
+        user_metadata = json.dumps(metadata["CreateUserInvalidBioMetadata"])
+        tx_receipts = {
+            "CreateUserInvalidBio": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": 1,
+                            "_entityType": "User",
+                            "_userId": USER_ID_OFFSET + 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {user_metadata}}}',
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+        }
+
+        entity_manager_txs = [
+            AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+            for tx_receipt in tx_receipts
+        ]
+
+        def get_events_side_effect(_, tx_receipt):
+            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+        mocker.patch(
+            "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+            side_effect=get_events_side_effect,
+            autospec=True,
+        )
+
+        with db.scoped_session() as session:
+            total_changes, _ = entity_manager_update(
+                update_task,
+                session,
+                entity_manager_txs,
+                block_number=0,
+                block_timestamp=1585336422,
+                block_hash=0
+            )
+
+            assert total_changes == 0
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)

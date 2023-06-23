@@ -8,7 +8,9 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
+    PLAYLIST_TRACK_LIMIT,
     Action,
     EntityType,
     ManageEntityParameters,
@@ -136,6 +138,15 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise Exception(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        playlist_metadata = params.metadata.get(params.metadata_cid)
+        if playlist_metadata:
+            playlist_description = playlist_metadata.get("description")
+            if playlist_description and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
+                raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
+            playlist_track_count = len(playlist_metadata["playlist_contents"]["track_ids"])
+            if playlist_track_count > PLAYLIST_TRACK_LIMIT:
+                raise Exception(f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}")
 
 
 def create_playlist(params: ManageEntityParameters):
@@ -262,7 +273,8 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
     if playlist_record.metadata_multihash:
         # playlist already has metadata
         metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
-        for track in playlist_record.playlist_contents["track_ids"]:
+        playlist_tracks = playlist_record.playlist_contents["track_ids"]
+        for track in playlist_tracks:
             track_id = track["track"]
             metadata_time = track["metadata_time"]
             metadata_index_time_dict[track_id][metadata_time] = track["time"]
@@ -291,7 +303,8 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         # upgrade legacy playlist to include metadata
         # assume metadata and indexing timestamp is the same
         track_id_index_times: Set = set()
-        for track in playlist_record.playlist_contents["track_ids"]:
+        playlist_tracks = playlist_record.playlist_contents["track_ids"]
+        for track in playlist_tracks:
             track_id = track["track"]
             index_time = track["time"]
             track_id_index_times.add((track_id, index_time))
