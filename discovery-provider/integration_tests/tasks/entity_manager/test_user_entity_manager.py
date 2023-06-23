@@ -786,3 +786,210 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
         )
         assert mock_call not in bus_mock.method_calls
+
+
+def test_index_empty_bio(app, mocker):
+    "Tests empty bio gets saved"
+
+    bus_mock = set_patches(mocker)
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock)
+
+    test_metadata = {
+        "QmUpdateUser2a": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Forrest",
+            "handle": "forrest",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmNmzMoiLYSAgrLbAAnaPW9q3YZwZvHybbbs59QamzUQxg",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmR2fSFvtpWg7nfdYtoJ3KgDNf4YgcuSzKjwZjansW9wcj",
+            "bio": "heres a fake bioooo",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {
+                "contents": [
+                    {"playlist_id": "Audio NFTs", "type": "explore_playlist"},
+                    {"playlist_id": 11363, "type": "playlist"},
+                    {"playlist_id": 129218, "type": "playlist"},
+                ]
+            },
+            "events": None,
+            "user_id": USER_ID_OFFSET + 1,
+        },
+        "QmUpdateUser2b": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Forrest",
+            "handle": "forrest",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmNmzMoiLYSAgrLbAAnaPW9q3YZwZvHybbbs59QamzUQxg",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmR2fSFvtpWg7nfdYtoJ3KgDNf4YgcuSzKjwZjansW9wcj",
+            "bio": "",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {
+                "contents": [
+                    {"playlist_id": "Audio NFTs", "type": "explore_playlist"},
+                    {"playlist_id": 11363, "type": "playlist"},
+                    {"playlist_id": 129218, "type": "playlist"},
+                ]
+            },
+            "events": None,
+            "user_id": USER_ID_OFFSET + 1,
+        },
+        "QmCreateUser3": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Isaac",
+            "handle": "isaac",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmIsaacProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmIsaacCoverPhoto",
+            "bio": "",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {
+                "contents": []
+            },
+            "events": None,
+            "user_id": USER_ID_OFFSET + 3,
+        },
+    }
+
+    update_user2a_json = json.dumps(test_metadata["QmUpdateUser2a"])
+    update_user2b_json = json.dumps(test_metadata["QmUpdateUser2b"])
+    create_user3_json = json.dumps(test_metadata["QmCreateUser3"])
+
+    tx_receipts = {
+        "CreateUser2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Create",
+                        "_metadata": "2,3,4",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUser2aTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdateUser2a", "data": {update_user2a_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUser2bTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdateUser2b", "data": {update_user2b_json}}}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUser3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 3,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 3,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid":"QmCreateUser3", "data": {create_user3_json}}}',
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=1585336422,
+            block_hash=0,
+        )
+
+    with db.scoped_session() as session:
+        # validate db records
+        all_users: List[User] = session.query(User).all()
+        assert len(all_users) == 5
+
+        user_2: User = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 1,
+            )
+            .first()
+        )
+        assert user_2.name == "Forrest"
+        assert user_2.handle == "forrest"
+        assert user_2.bio == ""
+
+        user_3: User = (
+            session.query(User)
+            .filter(
+                User.is_current == True,
+                User.user_id == USER_ID_OFFSET + 3,
+            )
+            .first()
+        )
+        assert user_3.name == "Isaac"
+        assert user_3.handle == "isaac"
+        assert user_3.bio == ""
