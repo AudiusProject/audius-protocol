@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
+import type { Modals } from '@audius/common'
 import { View } from 'react-native'
 
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import { Button, Text } from 'app/components/core'
-import { NativeDrawer } from 'app/components/drawer'
+import { AppDrawer, NativeDrawer, useDrawerState } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import type { Drawer } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
@@ -38,8 +39,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type ConfirmationDrawerProps = {
-  drawerName: Drawer
+type BaseConfirmationDrawerProps = {
   messages: {
     header: string
     description: string
@@ -51,17 +51,32 @@ type ConfirmationDrawerProps = {
   bottomChinHeight?: number
 }
 
-export const ConfirmationDrawer = (props: ConfirmationDrawerProps) => {
+type NativeConfirmationDrawerProps = BaseConfirmationDrawerProps & {
+  drawerName: Drawer
+}
+
+type CommonConfirmationDrawerProps = BaseConfirmationDrawerProps & {
+  modalName: Modals
+}
+
+type ConfirmationDrawerProps =
+  | NativeConfirmationDrawerProps
+  | CommonConfirmationDrawerProps
+
+type DrawerContentProps = BaseConfirmationDrawerProps & {
+  onClose: () => void
+}
+
+const ConfirmationDrawerContent = (props: DrawerContentProps) => {
   const {
-    drawerName,
     messages: messagesProp,
     onConfirm,
     onCancel,
-    bottomChinHeight = spacing(6)
+    bottomChinHeight = spacing(6),
+    onClose
   } = props
   const styles = useStyles()
   const { neutral } = useThemeColors()
-  const { onClose } = useDrawer(drawerName)
   const messages = { ...defaultMessages, ...messagesProp }
 
   const handleConfirm = useCallback(() => {
@@ -75,7 +90,7 @@ export const ConfirmationDrawer = (props: ConfirmationDrawerProps) => {
   }, [onClose, onCancel])
 
   return (
-    <NativeDrawer drawerName={drawerName} drawerStyle={styles.root}>
+    <>
       <View style={styles.header}>
         <IconInfo
           style={styles.headerIcon}
@@ -106,6 +121,48 @@ export const ConfirmationDrawer = (props: ConfirmationDrawerProps) => {
         onPress={handleCancel}
       />
       <View style={{ height: bottomChinHeight }} />
+    </>
+  )
+}
+
+const NativeConfirmationDrawer = (props: NativeConfirmationDrawerProps) => {
+  const styles = useStyles()
+  const { drawerName, ...other } = props
+  const { onCancel } = other
+  const { onClose } = useDrawer(drawerName)
+
+  return (
+    <NativeDrawer
+      drawerName={drawerName}
+      drawerStyle={styles.root}
+      onClose={onCancel}
+    >
+      <ConfirmationDrawerContent onClose={onClose} {...other} />
     </NativeDrawer>
+  )
+}
+
+export const ConfirmationDrawer = (props: ConfirmationDrawerProps) => {
+  return 'drawerName' in props ? (
+    <NativeConfirmationDrawer {...props} />
+  ) : (
+    <CommonConfirmationDrawer {...props} />
+  )
+}
+
+const CommonConfirmationDrawer = (props: CommonConfirmationDrawerProps) => {
+  const { modalName, ...other } = props
+  const { onCancel } = other
+  const styles = useStyles()
+  const { onClose } = useDrawerState(modalName)
+
+  return (
+    <AppDrawer
+      modalName={modalName}
+      drawerStyle={styles.root}
+      onClose={onCancel}
+    >
+      <ConfirmationDrawerContent onClose={onClose} {...other} />
+    </AppDrawer>
   )
 }

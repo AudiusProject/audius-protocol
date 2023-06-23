@@ -14,7 +14,12 @@ export enum Variant {
   SMART = 'smart'
 }
 
-export type PlaylistTrackId = { time: number; track: ID }
+export type PlaylistTrackId = {
+  time: number
+  track: ID
+  metadata_time?: number
+  uid?: UID
+}
 
 type PlaylistContents = {
   track_ids: Array<PlaylistTrackId | { track: string }>
@@ -32,12 +37,7 @@ export type CollectionMetadata = {
   is_delete: boolean
   is_private: boolean
   playlist_contents: {
-    track_ids: Array<{
-      time: number
-      metadata_time?: number
-      track: ID
-      uid?: UID
-    }>
+    track_ids: PlaylistTrackId[]
   }
   tracks?: UserTrackMetadata[]
   track_count: number

@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 type RandomImageInputProps = {
   name: string
-  onProcessing: (isProcessing: boolean) => void
+  onProcessing?: (isProcessing: boolean) => void
 }
 
 export const RandomImageInput = (props: RandomImageInputProps) => {
@@ -41,7 +41,7 @@ export const RandomImageInput = (props: RandomImageInputProps) => {
   const [, , { setValue }] = useField(name)
 
   const handlePress = useCallback(async () => {
-    onProcessing(true)
+    onProcessing?.(true)
     const blob = await RandomImage.get()
     if (blob) {
       const file = await blobToBase64(blob)
@@ -51,7 +51,7 @@ export const RandomImageInput = (props: RandomImageInputProps) => {
         file: { uri: file, name: 'Artwork', type: 'image/jpeg' },
         source: 'unsplash'
       })
-      onProcessing(false)
+      onProcessing?.(false)
     }
   }, [onProcessing, setValue])
 

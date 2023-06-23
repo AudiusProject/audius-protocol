@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import type { EditPlaylistValues } from '@audius/common'
 import {
   SquareSizes,
   cacheCollectionsActions,
@@ -32,7 +31,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const EditPlaylistForm = (props: FormikProps<EditPlaylistValues>) => {
+const EditPlaylistForm = (props: FormikProps<any>) => {
   const { values, handleSubmit, handleReset, setFieldValue } = props
   const styles = useStyles()
 
@@ -116,7 +115,7 @@ const EditPlaylistForm = (props: FormikProps<EditPlaylistValues>) => {
   )
 }
 
-export const EditPlaylistScreen = () => {
+export const LegacyEditPlaylistScreen = () => {
   const playlist = useSelector(getMetadata)
   const dispatch = useDispatch()
   const tracks = useSelector(getTracks)
@@ -127,7 +126,7 @@ export const EditPlaylistScreen = () => {
   })
 
   const handleSubmit = useCallback(
-    (values: EditPlaylistValues) => {
+    (values: any) => {
       if (playlist) {
         dispatch(editPlaylist(playlist.playlist_id, values))
         values.removedTracks.forEach(({ trackId, timestamp }) => {
@@ -151,7 +150,7 @@ export const EditPlaylistScreen = () => {
 
   if (!playlist) return null
 
-  const initialValues: EditPlaylistValues = {
+  const initialValues: any = {
     playlist_name: playlist.playlist_name,
     description: playlist.description,
     artwork: {

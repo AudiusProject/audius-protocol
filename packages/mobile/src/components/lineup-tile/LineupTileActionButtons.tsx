@@ -94,6 +94,7 @@ export const LineupTileActionButtons = ({
       icon={IconShare}
       isDisabled={disabled}
       onPress={onPressShare}
+      styles={{ icon: styles.button }}
     />
   )
 

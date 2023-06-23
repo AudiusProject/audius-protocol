@@ -9,4 +9,5 @@ export type ShareProps = {
   onClosed: () => void
   showTikTokShareAction?: boolean
   shareType: ShareType
+  isPrivate: boolean
 }

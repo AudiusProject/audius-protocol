@@ -41,7 +41,7 @@ import {
 import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
-import { EditPlaylistScreen } from '../edit-playlist-screen/LegacyEditPlaylistScreen'
+import { LegacyEditPlaylistScreen } from '../edit-playlist-screen'
 import { EditProfileScreen } from '../edit-profile-screen'
 import {
   AboutScreen,
@@ -203,13 +203,13 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={CollectionScreen}
         options={screenOptions}
       />
-      {!isPlaylistUpdatesEnabled ? (
+      {isPlaylistUpdatesEnabled ? null : (
         <Stack.Screen
           name='EditPlaylist'
-          component={EditPlaylistScreen}
+          component={LegacyEditPlaylistScreen}
           options={screenOptions}
         />
-      ) : null}
+      )}
       <Stack.Screen
         name='Profile'
         component={ProfileScreen}

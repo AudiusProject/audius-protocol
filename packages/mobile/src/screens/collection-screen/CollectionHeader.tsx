@@ -33,8 +33,7 @@ const { getUserId } = accountSelectors
 const messages = {
   album: 'Album',
   playlist: 'Playlist',
-  empty: 'This playlist is empty.',
-  privatePlaylist: 'Private Playlist',
+  hiddenPlaylist: 'Private Playlist',
   publishing: 'Publishing...',
   queued: 'Download Queued',
   downloading: 'Downloading'
@@ -66,8 +65,8 @@ const useStyles = makeStyles(({ spacing }) => ({
   headerText: {
     marginTop: spacing(4),
     marginBottom: spacing(4),
-    letterSpacing: 2,
-    lineHeight: 17,
+    letterSpacing: 3,
+    lineHeight: 14,
     textAlign: 'center',
     textTransform: 'uppercase'
   }
@@ -98,7 +97,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
     if (!isPlaylistUpdatesEnabled && _is_publishing) return messages.publishing
     if (is_album) return messages.album
-    if (is_private) return messages.privatePlaylist
+    if (is_private) return messages.hiddenPlaylist
     return messages.playlist
   }
 
@@ -213,14 +212,10 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
           <DownloadStatusIndicator
             status={downloadStatus}
             style={styles.downloadStatusIndicator}
+            size={16}
           />
         ) : null}
-        <Text
-          style={styles.headerText}
-          color={getTextColor()}
-          weight='demiBold'
-          fontSize='small'
-        >
+        <Text style={styles.headerText} color={getTextColor()} fontSize='xs'>
           {downloadStatus === OfflineDownloadStatus.LOADING && isReachable
             ? messages.downloading
             : headerText}

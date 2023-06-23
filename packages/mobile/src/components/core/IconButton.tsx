@@ -80,8 +80,8 @@ export const IconButton = ({
         <View
           style={[
             styles.icon,
-            isDisabled && { opacity: 0.5 },
-            stylesProp?.icon
+            stylesProp?.icon,
+            isDisabled && { opacity: 0.5 }
           ]}
         >
           <Icon

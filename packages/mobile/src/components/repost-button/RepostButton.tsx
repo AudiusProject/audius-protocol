@@ -35,7 +35,7 @@ const useAnimations = makeAnimations(({ palette }) => {
   return [ColorizedOnIcon, ColorizedOffIcon]
 })
 
-type RepostButtonProps = Omit<AnimatedButtonProps, 'iconJSON' | 'isDarkMode'>
+type RepostButtonProps = Omit<AnimatedButtonProps, 'iconJSON'>
 
 export const RepostButton = (props: RepostButtonProps) => {
   const { isActive, wrapperStyle: wrapperStyleProp, ...other } = props

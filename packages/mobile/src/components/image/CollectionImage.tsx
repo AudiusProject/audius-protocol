@@ -88,7 +88,7 @@ export const CollectionImage = (props: CollectionImageProps) => {
   const { collection, size, user, style, ...other } = props
 
   const collectionImageSource = useCollectionImage({ collection, size, user })
-  const { neutralLight8 } = useThemeColors()
+  const { neutralLight6 } = useThemeColors()
 
   if (!collectionImageSource) return null
 
@@ -98,7 +98,7 @@ export const CollectionImage = (props: CollectionImageProps) => {
     return (
       <FastImage
         {...other}
-        style={[style, { backgroundColor: neutralLight8 }]}
+        style={[style, { backgroundColor: neutralLight6 }]}
         source={source}
         onError={handleError}
       />

@@ -280,9 +280,9 @@ export const ShareDrawer = () => {
                 {messages.modalTitle(shareType)}
               </Text>
             </View>
-            {shareType === 'playlist' ? (
+            {content?.type === 'playlist' && content.playlist.is_private ? (
               <Text style={styles.titleHelperText} fontSize={'large'}>
-                {messages.playlistShareHelperText}
+                {messages.privatePlaylistShareHelperText}
               </Text>
             ) : null}
           </View>

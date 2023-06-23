@@ -19,9 +19,9 @@ const messages = {
   cancel: 'Nevermind'
 }
 
-const drawerName = 'DeleteConfirmation'
+const drawerName = 'DeleteTrackConfirmation'
 
-export const DeleteConfirmationDrawer = () => {
+export const DeleteTrackConfirmationDrawer = () => {
   const { data } = useDrawer(drawerName)
   const { trackId } = data
   const dispatch = useDispatch()

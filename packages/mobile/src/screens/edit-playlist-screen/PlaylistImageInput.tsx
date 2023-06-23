@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
 import { View } from 'react-native'
 
-import { FormImageInput } from 'app/components/core'
+import { PickArtworkField } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
 import { RandomImageInput } from './RandomImageButton'
@@ -11,20 +9,17 @@ const name = 'artwork'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing(4)
+    marginBottom: spacing(4)
   }
 }))
 
 export const PlaylistImageInput = () => {
   const styles = useStyles()
-  const [isProcessingImage, setIsProcessingImage] = useState(false)
 
   return (
     <View style={styles.root}>
-      <FormImageInput name={name} isProcessing={isProcessingImage} />
-      <RandomImageInput name={name} onProcessing={setIsProcessingImage} />
+      <PickArtworkField name={name} />
+      <RandomImageInput name={name} />
     </View>
   )
 }
