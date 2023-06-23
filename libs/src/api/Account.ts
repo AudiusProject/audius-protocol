@@ -249,11 +249,16 @@ export class Account extends Base {
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
         await this.User.createEntityManagerUserV2({
-          metadata,
-          profilePictureFile,
-          coverPhotoFile
+          metadata
         })
 
+      // Upload user's profile images, if any
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImagesV2(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
