@@ -786,6 +786,8 @@ def index_nethermind(self):
             if not next_block:
                 # Nothing to index
                 logger.disable()
+                update_lock.release()
+                celery.send_task("index_nethermind")
                 return
 
             if in_valid_state:
