@@ -64,7 +64,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     zIndex: zIndex.CHAT_REACTIONS_POPUP_CONTENT,
     width: Dimensions.get('window').width - spacing(10),
     backgroundColor: palette.white,
-    marginHorizontal: spacing(5)
+    marginHorizontal: spacing(5),
+    shadowColor: 'black',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 }
   },
   popupChatMessage: {
     position: 'absolute',
