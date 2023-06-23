@@ -18,6 +18,7 @@ const EmptyTable = (props) => {
           type={ButtonType.SECONDARY}
           text={props.buttonLabel}
           onClick={props.onClick}
+          leftIcon={props.buttonIcon}
         />
       ) : null}
     </div>
@@ -28,6 +29,7 @@ EmptyTable.propTypes = {
   primaryText: PropTypes.string,
   secondaryText: PropTypes.string,
   buttonLabel: PropTypes.string,
+  buttonIcon: PropTypes.any,
   onClick: PropTypes.func
 }
 
