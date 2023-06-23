@@ -254,7 +254,7 @@ def update_user_metadata(
     if "cover_photo" in metadata and metadata["cover_photo"]:
         user_record.cover_photo = metadata["cover_photo"]
 
-    if "bio" in metadata and metadata["bio"]:
+    if "bio" in metadata:
         user_record.bio = metadata["bio"]
 
     if "name" in metadata and metadata["name"]:
