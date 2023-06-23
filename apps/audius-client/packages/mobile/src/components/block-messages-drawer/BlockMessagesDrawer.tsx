@@ -9,14 +9,16 @@ import IconInfo from 'app/assets/images/iconInfo.svg'
 import { Text, Button } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { EventNames } from 'app/types/analytics'
 import { useColor } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
 const { getDoesBlockUser, getCanCreateChat } = chatSelectors
-const { blockUser, unblockUser, createChat, reportUser } = chatActions
+const { blockUser, unblockUser, createChat } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 
@@ -127,7 +129,12 @@ export const BlockMessagesDrawer = () => {
     } else {
       dispatch(blockUser({ userId }))
       if (isReportAbuse) {
-        dispatch(reportUser({ userId }))
+        track(
+          make({
+            eventName: EventNames.CHAT_REPORT_USER,
+            reportedUserId: userId
+          })
+        )
       }
     }
     dispatch(
