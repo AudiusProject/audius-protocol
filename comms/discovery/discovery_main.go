@@ -40,15 +40,10 @@ func DiscoveryMain() {
 				return err
 			}
 
-			// find self in peer list
-			// correct hostname if configured incorrectly
+			// validate host + wallet pair
 			for _, peer := range peers {
-				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) && strings.EqualFold(peer.Host, discoveryConfig.MyHost) {
 					discoveryConfig.IsRegisteredWallet = true
-					if discoveryConfig.MyHost != peer.Host {
-						slog.Warn("incorrect hostname", "incorrect", discoveryConfig.MyHost, "correct", peer.Host)
-						discoveryConfig.MyHost = peer.Host
-					}
 					break
 				}
 			}
