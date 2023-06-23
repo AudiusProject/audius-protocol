@@ -9,8 +9,8 @@ from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
+from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
-from src.tasks.entity_manager.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
@@ -20,13 +20,13 @@ from web3.datastructures import AttributeDict
 
 def set_patches(mocker):
     mocker.patch(
-        "src.tasks.entity_manager.user.get_endpoint_string_from_sp_ids",
+        "src.tasks.entity_manager.entities.user.get_endpoint_string_from_sp_ids",
         return_value="https://cn.io,https://cn2.io,https://cn3.io",
         autospec=True,
     )
 
     mocker.patch(
-        "src.tasks.entity_manager.user.get_verifier_address",
+        "src.tasks.entity_manager.entities.user.get_verifier_address",
         return_value="0x",
         autospec=True,
     )
@@ -298,10 +298,8 @@ def test_index_valid_user(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -311,7 +309,6 @@ def test_index_valid_user(app, mocker):
         )
 
     with db.scoped_session() as session:
-
         # validate db records
         all_users: List[User] = session.query(User).all()
         assert len(all_users) == 7
@@ -663,7 +660,6 @@ def test_index_invalid_users(app, mocker):
 
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -753,7 +749,6 @@ def test_index_verify_users(app, mocker):
         with db.scoped_session() as session:
             # index transactions
             entity_manager_update(
-                None,
                 update_task,
                 session,
                 entity_manager_txs,

@@ -15,7 +15,7 @@ from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.entity_manager.user_replica_set import (
+from src.tasks.entity_manager.entities.user_replica_set import (
     get_endpoint_string_from_sp_ids,
     parse_sp_ids,
 )

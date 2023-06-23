@@ -6,22 +6,19 @@ def makeTestTransaction(hash, transactionIndex):
 
 
 class TestBlock:
-    def __init__(self, number, transactions):
+    def __init__(self, number):
         self.number = number
-        self.transactions = transactions
 
 
 def test_sort_by_hash():
-    block = TestBlock(
-        100,
-        [
-            {"hash": "0xaaa", "transactionIndex": 1},
-            {"hash": "0xddd", "transactionIndex": 2},
-            {"hash": "0xccc", "transactionIndex": 3},
-            {"hash": "0xbbb", "transactionIndex": 4},
-        ],
-    )
-    sorted_txs = sort_block_transactions(block, 200)
+    txs = [
+        {"hash": "0xaaa", "transactionIndex": 1},
+        {"hash": "0xddd", "transactionIndex": 2},
+        {"hash": "0xccc", "transactionIndex": 3},
+        {"hash": "0xbbb", "transactionIndex": 4},
+    ]
+    block = TestBlock(100)
+    sorted_txs = sort_block_transactions(block, txs, 200)
     assert sorted_txs == [
         {"hash": "0xaaa", "transactionIndex": 1},
         {"hash": "0xbbb", "transactionIndex": 4},
@@ -31,16 +28,14 @@ def test_sort_by_hash():
 
 
 def test_sort_by_transaction_index():
-    block = TestBlock(
-        100,
-        [
-            {"hash": "0xaaa", "transactionIndex": 1},
-            {"hash": "0xddd", "transactionIndex": 3},
-            {"hash": "0xccc", "transactionIndex": 2},
-            {"hash": "0xbbb", "transactionIndex": 4},
-        ],
-    )
-    sorted_txs = sort_block_transactions(block, 50)
+    txs = [
+        {"hash": "0xaaa", "transactionIndex": 1},
+        {"hash": "0xddd", "transactionIndex": 3},
+        {"hash": "0xccc", "transactionIndex": 2},
+        {"hash": "0xbbb", "transactionIndex": 4},
+    ]
+    block = TestBlock(100)
+    sorted_txs = sort_block_transactions(block, txs, 50)
     assert sorted_txs == [
         {"hash": "0xaaa", "transactionIndex": 1},
         {"hash": "0xccc", "transactionIndex": 2},
