@@ -340,7 +340,7 @@ func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32,
 			sum(case when created_at > now() - interval '60 seconds' then 1 else 0 end) as s60
 		from chat_message
 		where user_id = $1
-		and created_at > now() - interval '90 seconds';
+		and created_at > now() - interval '60 seconds';
 		`
 		var s1, s10, s60 sql.NullInt64
 		err = q.QueryRow(query, userId).Scan(&s1, &s10, &s60)
