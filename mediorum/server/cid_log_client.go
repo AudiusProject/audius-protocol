@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"time"
@@ -23,9 +21,9 @@ func (ss *MediorumServer) startCidBeamClient() {
 			}
 			result, err := ss.beamFromPeer(peer)
 			if err != nil {
-				log.Println("beam failed", peer.Host, err)
+				slog.Error("beam failed", err, "peer", peer.Host)
 			} else if result.RowCount > 0 {
-				log.Printf("beam OK %+v \n", result)
+				slog.Info("beam OK", "result", result)
 			}
 		}
 		time.Sleep(time.Minute)
@@ -97,7 +95,9 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 	conn.QueryRow(ctx, `select max(updated_at) from cid_log_temp`).Scan(&cursorAfter)
 	if !cursorAfter.IsZero() {
 		_, err := conn.Exec(ctx, `insert into cid_cursor values ($1, $2) on conflict (host) do update set updated_at = $2`, peer.Host, cursorAfter)
-		fmt.Println("update cid_cursor", err)
+		if err != nil {
+			logger.Error("update cid_cursor error", err)
+		}
 	}
 
 	conn.Exec(ctx, `drop table if exists cid_log_temp`)
@@ -112,8 +112,4 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 		Took:         time.Since(startedAt),
 	}
 	return r, nil
-}
-
-func jitterSeconds(min, n int) time.Duration {
-	return time.Second * time.Duration(min+rand.Intn(n-min))
 }

@@ -39,6 +39,7 @@ func main() {
 }
 
 func startStagingOrProd(isProd bool) {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
 	g := registrar.NewGraphStaging()
 	if isProd {
 		g = registrar.NewGraphProd()
@@ -59,7 +60,7 @@ func startStagingOrProd(isProd bool) {
 	if err := eg.Wait(); err != nil {
 		panic(err)
 	}
-	slog.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
+	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	privateKeyHex := mustGetenv("delegatePrivateKey")
@@ -78,7 +79,7 @@ func startStagingOrProd(isProd bool) {
 
 	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
 	if err != nil {
-		slog.Warn("failed to parse trustedNotifierID", "err", err)
+		logger.Warn("failed to parse trustedNotifierID", "err", err)
 	}
 	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
 	if err != nil || spID == 0 {
@@ -88,7 +89,7 @@ func startStagingOrProd(isProd bool) {
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-			Wallet: walletAddress,
+			Wallet: strings.ToLower(walletAddress),
 		},
 		ListenPort:          "1991",
 		Peers:               peers,
@@ -109,6 +110,7 @@ func startStagingOrProd(isProd bool) {
 
 	ss, err := server.New(config)
 	if err != nil {
+		logger.Error("failed to create server", err)
 		log.Fatal(err)
 	}
 
