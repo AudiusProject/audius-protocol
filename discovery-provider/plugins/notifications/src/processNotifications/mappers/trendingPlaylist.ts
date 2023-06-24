@@ -108,6 +108,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

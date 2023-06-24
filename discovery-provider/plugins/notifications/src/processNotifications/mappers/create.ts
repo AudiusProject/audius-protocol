@@ -154,6 +154,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
+              this.identityDB,
               {
                 type: device.type,
                 badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,

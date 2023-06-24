@@ -91,6 +91,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

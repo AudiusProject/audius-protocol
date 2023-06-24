@@ -91,6 +91,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

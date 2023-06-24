@@ -166,6 +166,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

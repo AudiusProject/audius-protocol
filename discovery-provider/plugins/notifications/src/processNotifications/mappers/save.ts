@@ -133,6 +133,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

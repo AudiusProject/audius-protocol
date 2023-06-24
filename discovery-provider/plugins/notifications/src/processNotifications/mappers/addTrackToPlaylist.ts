@@ -109,6 +109,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

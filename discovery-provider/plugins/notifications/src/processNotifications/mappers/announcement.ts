@@ -132,6 +132,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         devices.map((device) => {
           // this may get rate limited by AWS
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,

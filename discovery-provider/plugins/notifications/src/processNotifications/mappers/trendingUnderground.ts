@@ -103,6 +103,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:

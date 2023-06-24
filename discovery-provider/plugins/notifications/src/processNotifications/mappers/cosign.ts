@@ -99,6 +99,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
+            this.identityDB,
             {
               type: device.type,
               badgeCount:
