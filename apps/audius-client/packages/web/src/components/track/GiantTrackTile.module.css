@@ -1,6 +1,6 @@
 .giantTrackTile {
   width: 100%;
-  max-width: 960px;
+  max-width: 1080px;
   border-radius: 12px;
   overflow: hidden;
   background-color: var(--white);
