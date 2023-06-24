@@ -95,6 +95,9 @@ describe('Repost Of Repost Notification', () => {
     await processor.appNotificationsProcessor.process(pending.appNotifications)
     expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
       {
+        identityDb: processor.identityDB,
+      },
+      {
         type: 'ios',
         targetARN: 'arn:2',
         badgeCount: 2
@@ -124,6 +127,9 @@ describe('Repost Of Repost Notification', () => {
     await processor.appNotificationsProcessor.process(pending.appNotifications)
     expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
       {
+        identityDb: processor.identityDB,
+      },
+      {
         type: 'ios',
         targetARN: 'arn:2',
         badgeCount: 2
@@ -152,6 +158,9 @@ describe('Repost Of Repost Notification', () => {
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
     expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
+      {
+        identityDb: processor.identityDB,
+      },
       {
         type: 'ios',
         targetARN: 'arn:2',
