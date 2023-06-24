@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
 
-import { accountActions, accountSelectors } from '@audius/common'
 import type { Animated } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
 
 import IconAlbum from 'app/assets/images/iconAlbum.svg'
 import IconCollectibles from 'app/assets/images/iconCollectibles.svg'
@@ -22,10 +19,8 @@ import { PlaylistsTab } from './PlaylistsTab'
 import { RepostsTab } from './RepostsTab'
 import { TracksTab } from './TracksTab'
 import { useSelectProfile } from './selectors'
+import { useIsArtist } from './useIsArtist'
 import { useShouldShowCollectiblesTab } from './utils'
-
-const { fetchHasTracks } = accountActions
-const { getUserId, getUserHandle, getAccountHasTracks } = accountSelectors
 
 // Height of a typical profile header
 const INITIAL_PROFILE_HEADER_HEIGHT = 1081
@@ -52,31 +47,11 @@ export const ProfileTabNavigator = ({
   refreshing,
   onRefresh
 }: ProfileTabNavigatorProps) => {
-  const { user_id, track_count } = useSelectProfile(['user_id', 'track_count'])
+  const { user_id } = useSelectProfile(['user_id'])
   const { params } = useRoute<'Profile'>()
 
   const initialParams = { id: user_id, handle: params.handle }
-
-  const accountHasTracks = useSelector(getAccountHasTracks)
-  const isArtist = accountHasTracks || track_count > 0
-
-  const currentUserId = useSelector(getUserId)
-  const currentUserHandle = useSelector(getUserHandle)
-  const dispatch = useDispatch()
-  useEffect(() => {
-    if (
-      currentUserId === initialParams.id ||
-      currentUserHandle === initialParams.handle
-    ) {
-      dispatch(fetchHasTracks())
-    }
-  }, [
-    currentUserHandle,
-    currentUserId,
-    dispatch,
-    initialParams.handle,
-    initialParams.id
-  ])
+  const isArtist = useIsArtist()
 
   const showCollectiblesTab = useShouldShowCollectiblesTab()
 
