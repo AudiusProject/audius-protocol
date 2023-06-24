@@ -7,6 +7,7 @@ import {
 } from '@aws-sdk/client-sns'
 import { logger } from './logger'
 import { DeviceType } from './processNotifications/mappers/userNotificationSettings'
+import { Knex } from 'knex'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -117,25 +118,48 @@ type Device = {
 type Message = { title: string; body: string; data: object }
 
 export const sendPushNotification = async (
+  identityDb: Knex,
   device: Device,
   message: Message
 ) => {
-  if (device.type == 'ios') {
-    await sendIOSMessage({
-      title: message.title,
-      body: message.body,
-      badgeCount: device.badgeCount,
-      data: message.data,
-      playSound: true,
-      targetARN: device.targetARN
-    })
-  } else if (device.type == 'android') {
-    await sendAndroidMessage({
-      title: message.title,
-      body: message.body,
-      data: message.data,
-      playSound: true,
-      targetARN: device.targetARN
-    })
+  try {
+    if (device.type == 'ios') {
+      await sendIOSMessage({
+        title: message.title,
+        body: message.body,
+        badgeCount: device.badgeCount,
+        data: message.data,
+        playSound: true,
+        targetARN: device.targetARN
+      })
+    } else if (device.type == 'android') {
+      await sendAndroidMessage({
+        title: message.title,
+        body: message.body,
+        data: message.data,
+        playSound: true,
+        targetARN: device.targetARN
+      })
+    }
+  } catch (e) {
+    if (
+      e &&
+      e.code &&
+      (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
+    ) {
+      try {
+        // mark endpoint as disabled in identity db
+         await identityDb('NotificationDeviceTokens')
+          .where('awsARN', '=', device.targetARN)
+          .update('enabled', false)
+        } catch (e) {
+          logger.error(
+            'Error updating an outdated record from the NotificationDeviceToken table',
+            e
+          )
+        }
+      } else {
+        logger.error('Error sending push notification to device', e)
+      }
   }
 }
