@@ -70,6 +70,7 @@ describe('Trending Track Notification', () => {
     await processor.appNotificationsProcessor.process(dethronedNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',

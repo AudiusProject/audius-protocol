@@ -64,6 +64,7 @@ describe('Push Notifications', () => {
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: user2.deviceType,
         targetARN: user2.awsARN,
@@ -95,6 +96,7 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: user1.deviceType,
         targetARN: user1.awsARN,
@@ -151,6 +153,7 @@ describe('Push Notifications', () => {
     await new Promise((r) => setTimeout(r, config.pollInterval * 5))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: user2.deviceType,
         targetARN: user2.awsARN,

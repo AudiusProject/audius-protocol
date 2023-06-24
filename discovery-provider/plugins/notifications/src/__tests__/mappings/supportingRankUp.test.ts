@@ -59,6 +59,7 @@ describe('Supporting Rank Up Notification', () => {
     await processor.appNotificationsProcessor.process(reactionNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:2',

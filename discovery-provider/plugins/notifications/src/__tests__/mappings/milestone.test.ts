@@ -66,6 +66,7 @@ describe('Milestone Notification', () => {
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
@@ -153,6 +154,7 @@ describe('Milestone Notification', () => {
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
@@ -250,6 +252,7 @@ describe('Milestone Notification', () => {
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
@@ -347,6 +350,7 @@ describe('Milestone Notification', () => {
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
@@ -444,6 +448,7 @@ describe('Milestone Notification', () => {
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
