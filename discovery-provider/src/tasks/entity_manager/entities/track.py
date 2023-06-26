@@ -4,6 +4,7 @@ from typing import Dict
 from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -221,7 +222,7 @@ def validate_track_tx(params: ManageEntityParameters):
     user_id = params.user_id
     track_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exist")
+        raise IndexingValidationError(f"User {user_id} does not exist")
 
     # Ensure the signer is either the user or authorized to perform action for the user
     # TODO (nkang) - Extract to helper
@@ -236,39 +237,39 @@ def validate_track_tx(params: ManageEntityParameters):
             grant = params.existing_records[EntityType.GRANT][grant_key]
             developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
             if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
-                raise Exception(
+                raise IndexingValidationError(
                     f"Signer is not authorized to perform action for user {user_id}"
                 )
         else:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Signer does not match user {user_id} or an authorized wallet"
             )
 
     if params.entity_type != EntityType.TRACK:
-        raise Exception(f"Entity type {params.entity_type} is not a track")
+        raise IndexingValidationError(f"Entity type {params.entity_type} is not a track")
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
-            raise Exception(f"Track {track_id} already exists")
+            raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
-            raise Exception(f"Cannot create track {track_id} below the offset")
+            raise IndexingValidationError(f"Cannot create track {track_id} below the offset")
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         track_metadata = params.metadata.get(params.metadata_cid)
         if track_metadata is not None:
             track_bio = track_metadata.get("description")
             track_genre = track_metadata.get("genre")
             if track_genre is not None and track_genre not in genre_allowlist:
-                raise Exception(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
+                raise IndexingValidationError(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
             if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
-                raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
+                raise IndexingValidationError(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
-            raise Exception(f"Track {track_id} does not exist")
+            raise IndexingValidationError(f"Track {track_id} does not exist")
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
-            raise Exception(f"Existing track {track_id} does not match user")
+            raise IndexingValidationError(f"Existing track {track_id} does not match user")
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
@@ -277,7 +278,7 @@ def validate_track_tx(params: ManageEntityParameters):
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
     return True
 
 

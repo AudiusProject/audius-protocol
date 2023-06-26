@@ -5,6 +5,7 @@ from typing import Dict, Set
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
@@ -105,14 +106,14 @@ def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exist")
+        raise IndexingValidationError(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {user_id} does not match signer")
+        raise IndexingValidationError(f"User {user_id} does not match signer")
 
     if params.entity_type != EntityType.PLAYLIST:
-        raise Exception(f"Entity type {params.entity_type} is not a playlist")
+        raise IndexingValidationError(f"Entity type {params.entity_type} is not a playlist")
 
     premium_tracks = list(
         filter(
@@ -121,21 +122,21 @@ def validate_playlist_tx(params: ManageEntityParameters):
         )
     )
     if premium_tracks:
-        raise Exception("Cannot add premium tracks to playlist")
+        raise IndexingValidationError("Cannot add premium tracks to playlist")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot create playlist {playlist_id} that already exists")
+            raise IndexingValidationError(f"Cannot create playlist {playlist_id} that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
-            raise Exception(f"Cannot create playlist {playlist_id} below the offset")
+            raise IndexingValidationError(f"Cannot create playlist {playlist_id} below the offset")
     else:
         if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot update playlist {playlist_id} that does not exist")
+            raise IndexingValidationError(f"Cannot update playlist {playlist_id} that does not exist")
         existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
             playlist_id
         ]
         if existing_playlist.playlist_owner_id != user_id:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
@@ -143,10 +144,10 @@ def validate_playlist_tx(params: ManageEntityParameters):
         if playlist_metadata:
             playlist_description = playlist_metadata.get("description")
             if playlist_description and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION:
-                raise Exception(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
+                raise IndexingValidationError(f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}")
             playlist_track_count = len(playlist_metadata["playlist_contents"]["track_ids"])
             if playlist_track_count > PLAYLIST_TRACK_LIMIT:
-                raise Exception(f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}")
+                raise IndexingValidationError(f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}")
 
 
 def create_playlist(params: ManageEntityParameters):

@@ -3,6 +3,7 @@ import logging
 from typing import Union
 
 from src.challenges.challenge_event import ChallengeEvent
+from src.exceptions import IndexingValidationError
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -247,14 +248,14 @@ def delete_social_record(params):
 
 def validate_social_feature(params: ManageEntityParameters):
     if params.user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {params.user_id} does not exist")
+        raise IndexingValidationError(f"User {params.user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][params.user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {params.user_id} does not match signer")
+        raise IndexingValidationError(f"User {params.user_id} does not match signer")
 
     if params.entity_id not in params.existing_records[params.entity_type]:
-        raise Exception(f"Entity {params.entity_id} does not exist")
+        raise IndexingValidationError(f"Entity {params.entity_id} does not exist")
 
     # User cannot use social feature on themself
     if params.action in (
@@ -264,7 +265,7 @@ def validate_social_feature(params: ManageEntityParameters):
         Action.UNSUBSCRIBE,
     ):
         if params.user_id == params.entity_id:
-            raise Exception(f"User {params.user_id} cannot {params.action} themself")
+            raise IndexingValidationError(f"User {params.user_id} cannot {params.action} themself")
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
         owner_id = (
@@ -273,7 +274,7 @@ def validate_social_feature(params: ManageEntityParameters):
             else target_entity.owner_id
         )
         if params.user_id == owner_id:
-            raise Exception(f"User {params.user_id} cannot {params.action} themself")
+            raise IndexingValidationError(f"User {params.user_id} cannot {params.action} themself")
 
 
 def validate_duplicate_social_feature(
