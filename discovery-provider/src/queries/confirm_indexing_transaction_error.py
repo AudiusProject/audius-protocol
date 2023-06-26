@@ -18,7 +18,7 @@ def confirm_indexing_transaction_error(
     Gets all other discovery nodes and makes an api call to check the status of a transaction
     given a blocknumber, blockhash, and transactionhash
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
     num_other_nodes = len(all_other_nodes)
     num_transaction_failures = 0
     for node in all_other_nodes:
