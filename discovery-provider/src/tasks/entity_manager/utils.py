@@ -33,7 +33,7 @@ from src.utils.structured_logger import StructuredLogger
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-logger = StructuredLogger(__name__)
+utils_logger = StructuredLogger(__name__)
 
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
@@ -145,6 +145,7 @@ class ManageEntityParameters:
         block_number: int,
         event_blockhash: str,
         txhash: str,
+        logger: StructuredLogger
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -171,6 +172,7 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
+        self.logger = logger
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
@@ -318,7 +320,7 @@ def parse_metadata(metadata, action, entity_type):
 
         return formatted_json, cid
     except Exception as e:
-        logger.info(
+        utils_logger.info(
             f"entity_manager.py | utils.py | error deserializing metadata {metadata}: {e}"
         )
         raise e
