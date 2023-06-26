@@ -47,7 +47,8 @@ export enum FeatureFlags {
   PLAYLIST_UPDATES_POST_QA = 'playlist_updates_post_qa',
   AI_ATTRIBUTION = 'ai_attribution',
   DEVELOPER_APPS_PAGE = 'developer_apps_page',
-  UPLOAD_REDESIGN_ENABLED = 'upload_redesign_enabled'
+  UPLOAD_REDESIGN_ENABLED = 'upload_redesign_enabled',
+  USDC_PURCHASES = 'usdc_purchases'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -110,5 +111,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PLAYLIST_UPDATES_POST_QA]: false,
   [FeatureFlags.AI_ATTRIBUTION]: false,
   [FeatureFlags.DEVELOPER_APPS_PAGE]: false,
-  [FeatureFlags.UPLOAD_REDESIGN_ENABLED]: false
+  [FeatureFlags.UPLOAD_REDESIGN_ENABLED]: false,
+  [FeatureFlags.USDC_PURCHASES]: false
 }
