@@ -75,7 +75,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     and merge with this node's metrics so that this node will be aware
     of all the metrics across users hitting different providers
     """
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
 
     visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
@@ -233,7 +233,7 @@ def synchronize_all_node_metrics(self, db, redis):
     monthly_route_metrics = {}
     daily_app_metrics = {}
     monthly_app_metrics = {}
-    all_other_nodes = get_all_other_discovery_nodes_cached(redis)[0]
+    all_other_nodes = get_all_other_discovery_nodes_cached(redis)
     for node in all_other_nodes:
         historical_metrics = get_historical_metrics(node)
         logger.debug(f"got historical metrics from {node}: {historical_metrics}")
