@@ -16,6 +16,7 @@ SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
 CONTENT_NODE_SERVICE_TYPE = bytes("content-node", "utf-8")
 ALL_DISCOVERY_NODES_CACHE_KEY = "all-discovery-nodes"
+ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY = "all-discovery-nodes-wallets"
 ALL_CONTENT_NODES_CACHE_KEY = "all-content-nodes"
 ALL_HEALTHY_CONTENT_NODES_CACHE_KEY = "all-healthy-content-nodes"
 
@@ -121,10 +122,18 @@ def filter_healthy_content_nodes(all_content_nodes: List[Dict[str, str]]):
 
 def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     """
-    Attempts to get the number of discovery nodes from redis.
+    Attempts to get the enumerated discovery nodes from redis.
     """
 
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY)
+
+
+def get_all_other_discovery_nodes_wallets_cached(redis) -> List[str]:
+    """
+    Attempts to get the enumerated discovery node wallet addresses from redis.
+    """
+
+    return get_json_cached_key(redis, ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY)
 
 
 def get_all_other_content_nodes_cached(redis) -> List[Dict[str, str]]:
