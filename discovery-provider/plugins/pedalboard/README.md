@@ -2,6 +2,11 @@
 
 Pedalboard is a collection of packages and plugins meant to run alongside a discovery indexer and database. They're meant to operate in isolation but stack together to expose various combinations of functionality to the network.
 
+```
+npm install turbo --global
+npm install
+```
+
 # Project Structure
 
 There are two main directories where work is done. [Packages](./packages) and [Apps](./apps). Packages are modules and libraries that are useful across various plugins. Apps are code that gets compiled and run against the database and indexer.
@@ -62,13 +67,14 @@ At the root of this project is a [docker compose](./docker-compose.yml) file tha
 2. Run the docker file with the build flag
 
 ```
-docker compose -f docker-compose.pedalboard.yml up -d --build
+docker compose up --build -d
 ```
 
 3. In docker dashboard or `docker ps` you should find your running container
 
 ```
 docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+
 NAMES                        IMAGE                                    STATUS
 trending-challenge-rewards   pedalboard-trending-challenge-rewards    Up 21 minutes
 app-template                 pedalboard-app-template                  Up 21 minutes
