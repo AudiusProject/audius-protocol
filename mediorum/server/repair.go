@@ -30,7 +30,7 @@ func (ss *MediorumServer) startRepairer() {
 		err := ss.runRepair(cleanupMode)
 		took := time.Since(repairStart)
 		if err != nil {
-			logger.Error("repair failed", err, "took", took)
+			logger.Error("repair failed", "err", err, "took", took)
 		} else {
 			logger.Info("repair OK", "took", took)
 		}
@@ -131,7 +131,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			isOnDisk, err := ss.bucket.Exists(ctx, cid)
 			if err != nil {
-				logger.Error("exist check failed", err)
+				logger.Error("exist check failed", "err", err)
 				continue
 			}
 
@@ -142,7 +142,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					err := validateCID(cid, r)
 					r.Close()
 					if err != nil {
-						logger.Error("deleting invalid CID", err)
+						logger.Error("deleting invalid CID", "err", err)
 						ss.bucket.Delete(ctx, cid)
 						isOnDisk = false
 					}
@@ -158,7 +158,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					}
 					err := ss.pullFileFromHost(host, cid)
 					if err != nil {
-						logger.Error("pull failed", err, "host", host)
+						logger.Error("pull failed", "err", err, "host", host)
 					} else {
 						logger.Info("pull OK", "host", host)
 						success = true
@@ -187,7 +187,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					logger.Info("deleting", "depth", depth, "hosts", preferredHosts)
 					err = ss.dropFromMyBucket(cid)
 					if err != nil {
-						logger.Error("delete failed", err)
+						logger.Error("delete failed", "err", err)
 					} else {
 						logger.Info("delete OK")
 					}

@@ -169,7 +169,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		if err == nil {
 			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
-			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", err)
+			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
 		}
 	} else {
 		slog.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
@@ -350,12 +350,12 @@ func (ss *MediorumServer) Stop() {
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
-		ss.logger.Error("echo shutdown", err)
+		ss.logger.Error("echo shutdown", "err", err)
 	}
 
 	if db, err := ss.crud.DB.DB(); err == nil {
 		if err := db.Close(); err != nil {
-			ss.logger.Error("db shutdown", err)
+			ss.logger.Error("db shutdown", "err", err)
 		}
 	}
 

@@ -26,7 +26,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 		file.Seek(0, 0)
 		err := ss.replicateFileToHost(peer, fileName, file)
 		if err != nil {
-			logger.Error("replication failed", err)
+			logger.Error("replication failed", "err", err)
 		} else {
 			logger.Info("replicated")
 			success = append(success, peer)
@@ -82,7 +82,7 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	ctx := context.Background()
 	err := ss.bucket.Delete(ctx, fileName)
 	if err != nil {
-		logger.Error("failed to delete", err)
+		logger.Error("failed to delete", "err", err)
 	}
 
 	// if blob record exists... delete it
@@ -136,7 +136,9 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 		peer+"/internal/blobs?cid="+fileName,
 		m.FormDataContentType(),
 		r,
-		ss.Config.privateKey)
+		ss.Config.privateKey,
+		ss.Config.Self.Host,
+	)
 
 	// send it
 	resp, err := client.Do(req)
@@ -163,7 +165,12 @@ func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
 		checkMethod = "double_check"
 	}
 	u := apiPath(host, "internal/blobs", checkMethod, key)
-	has, err := client.Get(u)
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return false
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+	has, err := client.Do(req)
 	if err != nil {
 		return false
 	}
@@ -180,7 +187,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 	u := apiPath(host, "internal/blobs", cid)
 
-	req, err := signature.SignedGet(u, ss.Config.privateKey)
+	req, err := signature.SignedGet(u, ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {
 		return err
 	}

@@ -134,27 +134,33 @@ func (ss *MediorumServer) getPeerHealth(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth legacyHealth, err error) {
+func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
+	legacyHealth := legacyHealth{}
 	upstream, err := url.Parse(ss.Config.UpstreamCN)
 	if err != nil {
-		return
+		return legacyHealth, err
 	}
 
 	httpClient := http.Client{
 		Timeout: time.Second,
 	}
 
-	resp, err := httpClient.Get(upstream.JoinPath("/health_check").String())
+	req, err := http.NewRequest("GET", upstream.JoinPath("/health_check").String(), nil)
 	if err != nil {
-		return
+		return legacyHealth, err
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return legacyHealth, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return
+		return legacyHealth, err
 	}
 
 	err = json.Unmarshal(body, &legacyHealth)
-	return
+	return legacyHealth, err
 }

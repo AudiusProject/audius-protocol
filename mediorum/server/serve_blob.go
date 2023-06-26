@@ -81,9 +81,13 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
-	// verify blob exists
 	r, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
+		// Check if the error is a blob not found error
+		// If it is, return a 404
+		if strings.Contains(err.Error(), "not found") {
+			return c.String(404, "blob not found")
+		}
 		return err
 	}
 	defer r.Close()
@@ -230,7 +234,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 
@@ -243,21 +247,22 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("x-forwarded-for", c.RealIP())
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		ss.logger.Error("unable to POST to identity service", err)
+		ss.logger.Error("unable to POST to identity service", "err", err)
 		return
 	}
 	defer res.Body.Close()
