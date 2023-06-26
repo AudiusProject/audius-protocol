@@ -27,9 +27,6 @@ func (ss *MediorumServer) startHealthPoller() {
 				}
 				req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 				resp, err := httpClient.Do(req)
-				if err != nil {
-					return
-				}
 				if err == nil {
 					if resp.StatusCode == 200 {
 						// mark healthy
