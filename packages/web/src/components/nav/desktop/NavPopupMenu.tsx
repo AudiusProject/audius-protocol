@@ -97,15 +97,20 @@ const NavPopupMenu = () => {
         position={PopupPosition.BOTTOM_RIGHT}
         renderTrigger={(anchorRef, triggerPopup) => {
           return (
-            <div className={styles.icon} ref={anchorRef} onClick={triggerPopup}>
-              <Icon
-                icon={IconKebabHorizontal}
-                decorator={
-                  hasUnreadMessages ? (
-                    <NotificationDot variant='large' />
-                  ) : undefined
-                }
-              />
+            <div className={styles.container}>
+              <div
+                className={styles.icon}
+                ref={anchorRef}
+                onClick={triggerPopup}
+              >
+                <Icon icon={IconKebabHorizontal} />
+              </div>
+              {hasUnreadMessages ? (
+                <NotificationDot
+                  variant='large'
+                  className={styles.notificationDot}
+                />
+              ) : undefined}
             </div>
           )
         }}
