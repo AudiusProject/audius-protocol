@@ -72,7 +72,7 @@ def update_user_is_available_statuses(session, users):
                     user.is_available = True
                     user.is_deactivated = False
     except Exception as e:
-        logger.warn(
+        logger.error(
             f"update_delist_statuses.py | Could not process user id batch {user_ids}: {e}\nContinuing..."
         )
 
@@ -102,7 +102,7 @@ def update_track_is_available_statuses(session, tracks):
                     track.is_available = True
                     track.is_delete = False
     except Exception as e:
-        logger.warn(
+        logger.error(
             f"update_delist_statuses.py | Could not process track id batch {track_ids}: {e}\nContinuing..."
         )
 
