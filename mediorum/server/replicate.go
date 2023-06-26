@@ -107,8 +107,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}
 
 	// first check if target already has it...
-	// todo: this should be cheap check... host should be responsible for doing more expensive check
-	if ss.hostHasBlob(peer, fileName, true) {
+	if ss.hostHasBlob(peer, fileName) {
 		ss.logger.Info(peer + " already has " + fileName)
 		return nil
 	}
@@ -156,15 +155,11 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 
 // this is a "quick check" that a host has a blob
 // used for checking host has blob before redirecting to it
-func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
+func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	checkMethod := "info"
-	if doubleCheck {
-		checkMethod = "double_check"
-	}
-	u := apiPath(host, "internal/blobs", checkMethod, key)
+	u := apiPath(host, "internal/blobs/info", key)
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false

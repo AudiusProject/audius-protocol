@@ -119,7 +119,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// check that we're registered...
 	for _, peer := range config.Peers {
-		if strings.EqualFold(config.Self.Wallet, peer.Wallet) {
+		if strings.EqualFold(config.Self.Wallet, peer.Wallet) && strings.EqualFold(config.Self.Host, peer.Host) {
 			config.WalletIsRegistered = true
 			break
 		}
