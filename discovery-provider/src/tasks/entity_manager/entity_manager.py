@@ -8,6 +8,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
@@ -260,7 +261,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
-                except Exception as e:
+                except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(
                         f"entity_manager.py | failed to process tx error {e} | with event {event}"
