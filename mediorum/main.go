@@ -110,7 +110,7 @@ func startStagingOrProd(isProd bool) {
 
 	ss, err := server.New(config)
 	if err != nil {
-		logger.Error("failed to create server", err)
+		logger.Error("failed to create server", "err", err)
 		log.Fatal(err)
 	}
 
@@ -191,7 +191,7 @@ func startDevCluster() {
 		peer := peer
 		spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(peer.Host, peer.Wallet)
 		if err != nil || spID == 0 {
-			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), err)
+			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), "err", err)
 			spID = idx + 1
 		}
 		config := server.MediorumConfig{

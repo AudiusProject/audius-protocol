@@ -22,7 +22,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	if err == pgx.ErrNoRows {
 		return ss.redirectToCid(c, cid)
 	} else if err != nil {
-		logger.Error("error querying cid storage path", err)
+		logger.Error("error querying cid storage path", "err", err)
 		return err
 	}
 
@@ -34,7 +34,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	}
 
 	if err = c.File(storagePath); err != nil {
-		logger.Error("error serving cid", err, "storagePath", storagePath)
+		logger.Error("error serving cid", "err", err, "storagePath", storagePath)
 		return ss.redirectToCid(c, cid)
 	}
 
@@ -55,7 +55,7 @@ func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
 	if err == pgx.ErrNoRows {
 		return ss.redirectToCid(c, cid)
 	} else if err != nil {
-		logger.Error("error querying cid storage path", err)
+		logger.Error("error querying cid storage path", "err", err)
 		return err
 	}
 
@@ -78,12 +78,12 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	if err == pgx.ErrNoRows {
 		return ss.redirectToCid(c, dirCid)
 	} else if err != nil {
-		logger.Error("error querying dirCid storage path", err)
+		logger.Error("error querying dirCid storage path", "err", err)
 		return err
 	}
 
 	if err = c.File(storagePath); err != nil {
-		logger.Error("error serving dirCid", err, "storagePath", storagePath)
+		logger.Error("error serving dirCid", "err", err, "storagePath", storagePath)
 		return ss.redirectToCid(c, dirCid)
 	}
 
@@ -136,7 +136,7 @@ func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool
 	            false)`
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
 	if err != nil {
-		ss.logger.Error("isCidBlacklisted error", err, "cid", cid)
+		ss.logger.Error("isCidBlacklisted error", "err", err, "cid", cid)
 	}
 	return blacklisted
 }

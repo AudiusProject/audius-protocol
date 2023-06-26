@@ -21,7 +21,7 @@ func (ss *MediorumServer) startCidBeamClient() {
 			}
 			result, err := ss.beamFromPeer(peer)
 			if err != nil {
-				slog.Error("beam failed", err, "peer", peer.Host)
+				slog.Error("beam failed", "err", err, "peer", peer.Host)
 			} else if result.RowCount > 0 {
 				slog.Info("beam OK", "result", result)
 			}
@@ -53,7 +53,12 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 	endpoint := fmt.Sprintf("%s?batchSize=%d&after=%s", peer.ApiPath("internal/beam/files"), CidLookupBatchSize, url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
 	startedAt := time.Now()
 	logger := slog.With("beam_client", peer.Host)
-	resp, err := client.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +101,7 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 	if !cursorAfter.IsZero() {
 		_, err := conn.Exec(ctx, `insert into cid_cursor values ($1, $2) on conflict (host) do update set updated_at = $2`, peer.Host, cursorAfter)
 		if err != nil {
-			logger.Error("update cid_cursor error", err)
+			logger.Error("update cid_cursor error", "err", err)
 		}
 	}
 
