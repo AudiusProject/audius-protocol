@@ -122,7 +122,7 @@ def filter_healthy_content_nodes(all_content_nodes: List[Dict[str, str]]):
 
 def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     """
-    Attempts to get the number of discovery nodes from redis.
+    Attempts to get the enumerated discovery nodes from redis.
     """
 
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY)
@@ -130,7 +130,7 @@ def get_all_other_discovery_nodes_cached(redis) -> List[str]:
 
 def get_all_other_discovery_nodes_wallets_cached(redis) -> List[str]:
     """
-    Attempts to get the number of discovery nodes from redis.
+    Attempts to get the enumerated discovery node wallet addresses from redis.
     """
 
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY)
