@@ -126,10 +126,7 @@ def test_get_attestation(app):
 def patch_get_all_other_nodes():
     with patch(
         "src.queries.get_attestation.get_all_other_discovery_nodes_cached",
-        return_value=(
-            ["some_discovery.com"],
-            ["0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"],
-        ),
+        return_value=["some_discovery.com"],
     ):
         yield
 
