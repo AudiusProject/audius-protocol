@@ -21,6 +21,7 @@ func (ss *MediorumServer) startHealthPoller() {
 		for _, peer := range ss.Config.Peers {
 			peer := peer
 			go func() {
+				defer wg.Done()
 				req, err := http.NewRequest("GET", peer.ApiPath("/status"), nil) // todo: switch to /internal/ok later
 				if err != nil {
 					return
@@ -30,16 +31,14 @@ func (ss *MediorumServer) startHealthPoller() {
 				if err != nil {
 					return
 				}
-				if err == nil {
-					if resp.StatusCode == 200 {
-						// mark healthy
-						ss.peerHealthMutex.Lock()
-						ss.peerHealth[httputil.RemoveTrailingSlash(strings.ToLower(peer.Host))] = time.Now()
-						ss.peerHealthMutex.Unlock()
-					}
-					resp.Body.Close()
+				resp.Body.Close()
+				if resp.StatusCode == 200 {
+					// mark healthy
+					ss.peerHealthMutex.Lock()
+					ss.peerHealth[httputil.RemoveTrailingSlash(strings.ToLower(peer.Host))] = time.Now()
+					ss.peerHealthMutex.Unlock()
 				}
-				wg.Done()
+
 			}()
 		}
 		wg.Wait()

@@ -91,6 +91,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
 
+	// check that network is valid (should have more peers than replication factor)
+	if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
+		return fmt.Errorf("invalid network: not enough healthy peers for R%d: %v", ss.Config.ReplicationFactor, healthyPeers)
+	}
+
 	cidCursor := ""
 	for {
 		// scroll over all extant CIDs in batches
@@ -175,7 +180,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				// before delete
 				depth := 0
 				for _, host := range preferredHosts {
-					if ss.hostHasBlob(host, cid, true) {
+					if ss.hostHasBlob(host, cid) {
 						depth++
 					}
 					if host == ss.Config.Self.Host {
