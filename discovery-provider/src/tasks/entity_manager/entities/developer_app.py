@@ -212,7 +212,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             num_existing_apps_from_user + num_new_apps_from_user >= 3
         )
         if user_has_too_many_apps:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, user has too many developer apps"
             )
     else:
