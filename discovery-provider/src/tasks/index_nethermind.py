@@ -787,7 +787,8 @@ def index_nethermind(self):
                 # Nothing to index
                 logger.disable()
                 update_lock.release()
-                celery.send_task("index_nethermind")
+                # Send the task with a small amount of sleep to free up cycles
+                celery.send_task("index_nethermind", countdown=0.5)
                 return
 
             if in_valid_state:
