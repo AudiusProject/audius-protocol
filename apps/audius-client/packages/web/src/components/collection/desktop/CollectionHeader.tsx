@@ -7,7 +7,7 @@ import {
   getPathFromAudiusUrl,
   isAudiusUrl
 } from '@audius/common'
-import { IconPencil } from '@audius/stems'
+import { IconHidden, IconPencil } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkify-react'
 import { useDispatch } from 'react-redux'
@@ -124,9 +124,12 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           isOwner={isOwner}
         />
         <div className={styles.infoSection}>
-          <div className={cn(styles.typeLabel, fadeIn)}>
-            {type === 'playlist' && !isPublished ? 'private playlist' : type}
-          </div>
+          <span className={cn(styles.typeLabel, fadeIn)}>
+            {!isPublished ? <IconHidden className={styles.labelIcon} /> : null}
+            <p className={styles.label}>
+              {type === 'playlist' && !isPublished ? 'private playlist' : type}
+            </p>
+          </span>
           <TitleComponent
             className={cn(styles.title, { [styles.editableTitle]: isOwner })}
             onClick={isOwner ? handleClickEditTitle : undefined}

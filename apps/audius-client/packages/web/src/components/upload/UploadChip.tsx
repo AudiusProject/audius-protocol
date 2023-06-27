@@ -1,7 +1,8 @@
+import { IconMultiselectAdd } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconPlus } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import { Tile } from 'components/tile'
 
 import styles from './UploadChip.module.css'
 
@@ -9,7 +10,7 @@ const messages = {
   track: 'Upload Track',
   aTrack: 'Upload A Track',
   album: 'Upload New Album',
-  playlist: 'Create New Playlist',
+  playlist: 'Create Playlist',
   artistPlaylist: 'Upload New Playlist',
   firstAlbum: 'Upload Your First Album',
   firstPlaylist: 'Create Your First Playlist',
@@ -45,7 +46,7 @@ const UploadChip = ({
     type === 'track' || type === 'album' ? (
       <IconUpload className={styles.iconUpload} />
     ) : (
-      <IconPlus className={styles.iconPlus} />
+      <IconMultiselectAdd className={styles.iconPlus} />
     )
 
   let text
@@ -68,17 +69,18 @@ const UploadChip = ({
   }
 
   return (
-    <div
-      className={cn(styles.uploadChip, {
+    <Tile
+      className={cn(styles.root, {
         [styles.nav]: variant === 'nav',
         [styles.card]: variant === 'card',
         [styles.tile]: variant === 'tile'
       })}
+      as='button'
       onClick={onClick}
     >
-      <div className={styles.icon}>{icon}</div>
-      <div className={styles.text}>{text}</div>
-    </div>
+      <span>{icon}</span>
+      <span className={styles.text}>{text}</span>
+    </Tile>
   )
 }
 

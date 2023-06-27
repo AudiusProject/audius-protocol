@@ -43,15 +43,29 @@
 }
 
 .typeLabel {
+  display: flex;
+  align-items: center;
+  column-gap: var(--unit-2);
+  user-select: none;
+  padding-top: var(--unit-4);
+  padding-bottom: var(--unit-4);
+}
+
+.labelIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.labelIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.label {
   text-transform: uppercase;
   color: var(--neutral-light-4);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   letter-spacing: 3px;
-
-  user-select: none;
-  padding-top: 16px;
-  padding-bottom: 16px;
 }
 
 .title {

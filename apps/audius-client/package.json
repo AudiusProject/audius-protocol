@@ -31,7 +31,8 @@
     "stems": "cd packages/stems && npm run start",
     "SDK========================================": "",
     "sdk:update": "lerna exec -- npm-check-updates @audius/sdk -u --target @beta && rm -rf packages/*/node_modules/@audius/sdk && npm i",
-    "sdk:link": "./scripts/link-sdk.sh"
+    "sdk:link": "./scripts/link-sdk.sh",
+    "verify": "lerna run --scope=audius-client --scope audius-mobile-client verify"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",

@@ -1,4 +1,4 @@
-import React, {
+import {
   MouseEvent,
   useState,
   useEffect,
@@ -21,11 +21,13 @@ import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import ActionsTab from 'components/actions-tab/ActionsTab'
+import { DogEarType } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
+import { Tile } from 'components/tile'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
@@ -37,19 +39,19 @@ const ARTWORK_LOAD_TIMEOUT_MS = 500
 
 const cardSizeStyles = {
   small: {
-    cardContainer: styles.smallContainer,
+    root: styles.smallContainer,
     coverArt: styles.smallCoverArt,
     textContainer: cn(styles.textContainer, styles.smallTextContainer),
     actionsContainer: styles.smallActionsContainer
   },
   medium: {
-    cardContainer: styles.mediumContainer,
+    root: styles.mediumContainer,
     coverArt: styles.mediumCoverArt,
     textContainer: cn(styles.textContainer, styles.mediumTextContainer),
     actionsContainer: styles.mediumActionsTabContainer
   },
   large: {
-    cardContainer: styles.largeContainer,
+    root: styles.largeContainer,
     coverArt: styles.largeCoverArt,
     textContainer: cn(styles.textContainer, styles.largeTextContainer),
     actionsContainer: styles.largeActionsTabContainer
@@ -245,10 +247,12 @@ const Card = ({
   const showRepostFavoriteStats =
     !isUser && reposts && favorites && onClickReposts && onClickFavorites
   return (
-    <a
-      className={cn(className, styles.cardContainer, sizeStyles.cardContainer)}
+    <Tile
+      className={cn(className, styles.root, sizeStyles.root)}
       href={href}
+      as='a'
       onClick={handleClick}
+      dogEar={!isPublic ? DogEarType.HIDDEN : undefined}
     >
       <div
         className={cn(styles.coverArt, sizeStyles.coverArt, {
@@ -303,7 +307,7 @@ const Card = ({
         ) : null}
       </div>
       {bottomActions}
-    </a>
+    </Tile>
   )
 }
 

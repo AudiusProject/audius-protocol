@@ -1,22 +1,25 @@
-.hiddenHeaderContainer {
-  align-items: center;
+.root {
   display: flex;
+  align-items: center;
+  column-gap: var(--unit-2);
 }
 
-.hiddenTrackLabel {
-  color: var(--accent-orange);
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-s);
+.label {
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 3px;
   line-height: 18px;
-  letter-spacing: 3.5px;
 
   user-select: none;
 }
 
-.hiddenHeaderContainer path {
-  fill: var(--accent-orange);
+.icon {
+  height: var(--unit-4);
+  width: var(--unit-4);
 }
 
-.hiddenHeaderContainer svg {
-  margin-right: 8px;
+.icon path {
+  fill: var(--neutral-light-4);
 }

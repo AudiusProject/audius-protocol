@@ -21,14 +21,13 @@ import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { DogEar, DogEarType } from 'components/dog-ear'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { profilePage } from 'utils/route'
-
-import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 
 import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
@@ -156,17 +155,17 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     ? premiumTrackStatusMap[trackId]
     : undefined
 
-  const showPremiumCornerTag =
+  const showPremiumDogEar =
     isGatedContentEnabled &&
     !isLoading &&
     premiumConditions &&
     (isOwner || !doesUserHaveAccess)
-  const cornerTagIconType = showPremiumCornerTag
+  const DogEarIconType = showPremiumDogEar
     ? isOwner
       ? premiumConditions.nft_collection
-        ? TrackBannerIconType.COLLECTIBLE_GATED
-        : TrackBannerIconType.SPECIAL_ACCESS
-      : TrackBannerIconType.LOCKED
+        ? DogEarType.COLLECTIBLE_GATED
+        : DogEarType.SPECIAL_ACCESS
+      : DogEarType.LOCKED
     : null
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
@@ -223,27 +222,16 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
         containerClassName
       )}
     >
-      {showPremiumCornerTag && cornerTagIconType ? (
-        <TrackBannerIcon
-          type={cornerTagIconType}
-          isMatrixMode={isMatrix}
-          containerClassName={styles.premiumCornerTagContainer}
+      {showPremiumDogEar && DogEarIconType ? (
+        <DogEar
+          type={DogEarIconType}
+          containerClassName={styles.premiumDogEarContainer}
         />
       ) : null}
-      {!showPremiumCornerTag && props.showArtistPick && props.isArtistPick ? (
-        <TrackBannerIcon
-          type={TrackBannerIconType.STAR}
-          isMobile
-          isMatrixMode={isMatrix}
-        />
+      {!showPremiumDogEar && props.showArtistPick && props.isArtistPick ? (
+        <DogEar type={DogEarType.STAR} />
       ) : null}
-      {props.isUnlisted && (
-        <TrackBannerIcon
-          type={TrackBannerIconType.HIDDEN}
-          isMobile
-          isMatrixMode={isMatrix}
-        />
-      )}
+      {props.isUnlisted && <DogEar type={DogEarType.HIDDEN} />}
       <div className={styles.mainContent} onClick={handleClick}>
         <div className={cn(styles.topRight, styles.statText)}>
           {props.showArtistPick && props.isArtistPick && (

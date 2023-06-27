@@ -32,23 +32,24 @@ import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
+import { Tile } from 'components/tile'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
 
+import { DogEarType } from '../dog-ear/DogEar'
+
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
 import { CardTitle } from './CardTitle'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
-import { GiantTrackTileCornerTag } from './GiantTrackTileCornerTag'
 import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
-import { TrackBannerIconType } from './TrackBannerIcon'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -401,14 +402,16 @@ class GiantTrackTile extends PureComponent {
     )
 
     const isLoading = loading || artworkLoading
-    const showPremiumCornerTag =
+    const showPremiumDogEar =
       !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
-    const cornerTagIconType = showPremiumCornerTag
+    const dogEarType = showPremiumDogEar
       ? isOwner
         ? premiumConditions.nft_collection
-          ? TrackBannerIconType.COLLECTIBLE_GATED
-          : TrackBannerIconType.SPECIAL_ACCESS
-        : TrackBannerIconType.LOCKED
+          ? DogEarType.COLLECTIBLE_GATED
+          : DogEarType.SPECIAL_ACCESS
+        : DogEarType.LOCKED
+      : isUnlisted
+      ? DogEarType.HIDDEN
       : null
 
     const overflowMenuExtraItems = []
@@ -446,11 +449,13 @@ class GiantTrackTile extends PureComponent {
     }
 
     return (
-      <div className={styles.giantTrackTile}>
+      <Tile
+        className={styles.giantTrackTile}
+        dogEar={dogEarType}
+        size='large'
+        elevation='mid'
+      >
         <div className={styles.topSection}>
-          {showPremiumCornerTag && cornerTagIconType ? (
-            <GiantTrackTileCornerTag type={cornerTagIconType} />
-          ) : null}
           <GiantArtwork
             trackId={trackId}
             coverArtSizes={coverArtSizes}
@@ -610,7 +615,7 @@ class GiantTrackTile extends PureComponent {
           {this.renderTags()}
           {this.renderDownloadButtons()}
         </div>
-      </div>
+      </Tile>
     )
   }
 }

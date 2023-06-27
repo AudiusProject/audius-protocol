@@ -3,10 +3,12 @@ import cn from 'classnames'
 
 import { ReactComponent as IconHidden } from 'assets/img/iconHidden.svg'
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
+import { isMobile } from 'utils/clientUtil'
+import { isMatrix } from 'utils/theme/theme'
 
-import styles from './TrackBannerIcon.module.css'
+import styles from './DogEar.module.css'
 
-export enum TrackBannerIconType {
+export enum DogEarType {
   STAR = 'star',
   HIDDEN = 'hidden',
   LOCKED = 'locked',
@@ -14,30 +16,27 @@ export enum TrackBannerIconType {
   SPECIAL_ACCESS = 'special access'
 }
 
-const TrackBannerIcon = ({
-  type,
-  isMobile,
-  isMatrixMode,
-  className,
-  containerClassName
-}: {
-  type: TrackBannerIconType
-  isMobile?: boolean
-  isMatrixMode: boolean
+export type DogEarProps = {
+  type: DogEarType
   className?: string
   containerClassName?: string
-}) => {
+}
+
+export const DogEar = (props: DogEarProps) => {
+  const { type, className, containerClassName } = props
+  const isMatrixMode = isMatrix()
+  const isMobileMode = isMobile()
   const renderIcon = () => {
     switch (type) {
-      case TrackBannerIconType.STAR:
+      case DogEarType.STAR:
         return <IconStar />
-      case TrackBannerIconType.HIDDEN:
+      case DogEarType.HIDDEN:
         return <IconHidden />
-      case TrackBannerIconType.LOCKED:
+      case DogEarType.LOCKED:
         return <IconLock />
-      case TrackBannerIconType.COLLECTIBLE_GATED:
+      case DogEarType.COLLECTIBLE_GATED:
         return <IconCollectible />
-      case TrackBannerIconType.SPECIAL_ACCESS:
+      case DogEarType.SPECIAL_ACCESS:
         return <IconSpecialAccess />
     }
   }
@@ -45,24 +44,22 @@ const TrackBannerIcon = ({
   return (
     <div
       className={cn(styles.artistPick, className, {
-        [styles.isMobile]: isMobile,
+        [styles.isMobile]: isMobileMode,
         [styles.matrix]: isMatrixMode
       })}
     >
       <div
         className={cn(styles.container, containerClassName, {
           [styles.gated]: [
-            TrackBannerIconType.COLLECTIBLE_GATED,
-            TrackBannerIconType.SPECIAL_ACCESS,
-            TrackBannerIconType.LOCKED
+            DogEarType.COLLECTIBLE_GATED,
+            DogEarType.SPECIAL_ACCESS,
+            DogEarType.LOCKED
           ].includes(type),
-          [styles.star]: type === TrackBannerIconType.STAR,
-          [styles.hidden]: type === TrackBannerIconType.HIDDEN
+          [styles.star]: type === DogEarType.STAR,
+          [styles.hidden]: type === DogEarType.HIDDEN
         })}
       />
       {renderIcon()}
     </div>
   )
 }
-
-export default TrackBannerIcon

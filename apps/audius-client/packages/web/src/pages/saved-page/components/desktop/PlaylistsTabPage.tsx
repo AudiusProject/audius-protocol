@@ -11,10 +11,9 @@ import {
 import { IconPlus } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconSaveFilled } from 'assets/img/iconSaveFilled.svg'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
-import { Tile } from 'components/tile'
 import EmptyTable from 'components/tracks-table/EmptyTable'
+import UploadChip from 'components/upload/UploadChip'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 
 import { CollectionCard } from './CollectionCard'
@@ -87,17 +86,9 @@ export const PlaylistsTabPage = () => {
   }
 
   const createPlaylistCard = (
-    <Tile
-      key='create_playlist'
-      size='medium'
-      as='button'
-      onClick={handleCreatePlaylist}
-      className={styles.createPlaylistCard}
-    >
-      <IconSaveFilled className={styles.createPlaylistIcon} />
-      <h4 className={styles.createPlaylistText}>{messages.createPlaylist}</h4>
-    </Tile>
+    <UploadChip type='playlist' variant='card' onClick={handleCreatePlaylist} />
   )
+
   cards.unshift(createPlaylistCard)
 
   return (
