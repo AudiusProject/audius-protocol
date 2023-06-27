@@ -200,7 +200,13 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             )
 
         num_existing_apps_from_user = (
-            session.query(DeveloperApp).filter(DeveloperApp.user_id == user_id).count()
+            session.query(DeveloperApp)
+            .filter(
+                DeveloperApp.user_id == user_id,
+                DeveloperApp.is_delete == False,
+                DeveloperApp.is_current == True,
+            )
+            .count()
         )
 
         num_new_apps_from_user = 0
