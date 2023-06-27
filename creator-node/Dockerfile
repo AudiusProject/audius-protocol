@@ -17,36 +17,19 @@ ENV storagePath=/file_storage
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
 COPY scripts/wait /usr/bin/wait
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
-    apk update && \
-    apk add \
-    bash \
-    curl \
-    libpq=11.12-r0 \
-    postgresql-client=11.12-r0 \
-    postgresql-contrib=11.12-r0 \
-    postgresql-libs=11.12-r0 \
-    postgresql=11.12-r0 \
-    py3-pip \
-    python3 \
-    python3-dev \
-    redis \
-    rsyslog \
-    sudo=1.9.5p2-r0
-
 # Install openresty with public key
-# RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
-#     apk add wget && \
-#     wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
-#     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
-#     source /etc/os-release && \
-#     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
-#     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
-#     apk update && \
-#     apk add openresty=1.21.4.1-r0 && \
-#     mkdir /usr/local/openresty/conf && \
-#     mkdir /usr/local/openresty/logs && \
-#     mkdir /usr/local/openresty/cache
+RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \
+    apk add wget && \
+    wget 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
+    mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
+    source /etc/os-release && \
+    MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
+    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
+    apk update && \
+    apk add openresty=1.21.4.1-r0 && \
+    mkdir /usr/local/openresty/conf && \
+    mkdir /usr/local/openresty/logs && \
+    mkdir /usr/local/openresty/cache
 
 RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
