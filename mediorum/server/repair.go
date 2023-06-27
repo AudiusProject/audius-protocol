@@ -30,7 +30,7 @@ func (ss *MediorumServer) startRepairer() {
 		err := ss.runRepair(cleanupMode)
 		took := time.Since(repairStart)
 		if err != nil {
-			logger.Error("repair failed", err, "took", took)
+			logger.Error("repair failed", "err", err, "took", took)
 		} else {
 			logger.Info("repair OK", "took", took)
 		}
@@ -91,6 +91,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
 
+	// check that network is valid (should have more peers than replication factor)
+	if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
+		return fmt.Errorf("invalid network: not enough healthy peers for R%d: %v", ss.Config.ReplicationFactor, healthyPeers)
+	}
+
 	cidCursor := ""
 	for {
 		// scroll over all extant CIDs in batches
@@ -131,7 +136,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			isOnDisk, err := ss.bucket.Exists(ctx, cid)
 			if err != nil {
-				logger.Error("exist check failed", err)
+				logger.Error("exist check failed", "err", err)
 				continue
 			}
 
@@ -142,7 +147,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					err := validateCID(cid, r)
 					r.Close()
 					if err != nil {
-						logger.Error("deleting invalid CID", err)
+						logger.Error("deleting invalid CID", "err", err)
 						ss.bucket.Delete(ctx, cid)
 						isOnDisk = false
 					}
@@ -158,7 +163,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					}
 					err := ss.pullFileFromHost(host, cid)
 					if err != nil {
-						logger.Error("pull failed", err, "host", host)
+						logger.Error("pull failed", "err", err, "host", host)
 					} else {
 						logger.Info("pull OK", "host", host)
 						success = true
@@ -175,7 +180,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				// before delete
 				depth := 0
 				for _, host := range preferredHosts {
-					if ss.hostHasBlob(host, cid, true) {
+					if ss.hostHasBlob(host, cid) {
 						depth++
 					}
 					if host == ss.Config.Self.Host {
@@ -187,7 +192,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					logger.Info("deleting", "depth", depth, "hosts", preferredHosts)
 					err = ss.dropFromMyBucket(cid)
 					if err != nil {
-						logger.Error("delete failed", err)
+						logger.Error("delete failed", "err", err)
 					} else {
 						logger.Info("delete OK")
 					}

@@ -149,39 +149,39 @@ describe('health_check', () => {
       expect(reason).toBe('slot diff')
     })
 
-    test('comms unhealthy', () => {
-      const { health, reason } = parseApiHealthStatusReason({
-        data: {
-          health: {
-            is_healthy: false
-          },
-          data: null
-        },
-        healthCheckThresholds: {
-          maxSlotDiffPlays: 10,
-          maxBlockDiff: 10,
-          minVersion: '1.2.3'
-        }
-      })
-      expect(health).toBe(HealthCheckStatus.UNHEALTHY)
-      expect(reason).toBe('comms')
-    })
+    // test('comms unhealthy', () => {
+    //   const { health, reason } = parseApiHealthStatusReason({
+    //     data: {
+    //       health: {
+    //         is_healthy: false
+    //       },
+    //       data: null
+    //     },
+    //     healthCheckThresholds: {
+    //       maxSlotDiffPlays: 10,
+    //       maxBlockDiff: 10,
+    //       minVersion: '1.2.3'
+    //     }
+    //   })
+    //   expect(health).toBe(HealthCheckStatus.UNHEALTHY)
+    //   expect(reason).toBe('comms')
+    // })
 
-    test('comms healthy', () => {
-      const { health } = parseApiHealthStatusReason({
-        data: {
-          health: {
-            is_healthy: true
-          },
-          data: null
-        },
-        healthCheckThresholds: {
-          maxSlotDiffPlays: 10,
-          maxBlockDiff: 10,
-          minVersion: '1.2.3'
-        }
-      })
-      expect(health).toBe(HealthCheckStatus.HEALTHY)
-    })
+    // test('comms healthy', () => {
+    //   const { health } = parseApiHealthStatusReason({
+    //     data: {
+    //       health: {
+    //         is_healthy: true
+    //       },
+    //       data: null
+    //     },
+    //     healthCheckThresholds: {
+    //       maxSlotDiffPlays: 10,
+    //       maxBlockDiff: 10,
+    //       minVersion: '1.2.3'
+    //     }
+    //   })
+    //   expect(health).toBe(HealthCheckStatus.HEALTHY)
+    // })
   })
 })

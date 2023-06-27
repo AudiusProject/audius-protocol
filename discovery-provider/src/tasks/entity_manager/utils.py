@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
+from src.models.indexing.cid_data import CIDData
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -37,6 +38,12 @@ logger = StructuredLogger(__name__)
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
 USER_ID_OFFSET = 3_000_000
+
+# limits
+CHARACTER_LIMIT_USER_BIO = 250
+CHARACTER_LIMIT_PLAYLIST_DESCRIPTION = 250
+CHARACTER_LIMIT_TRACK_DESCRIPTION = 1000
+PLAYLIST_TRACK_LIMIT = 5000
 
 
 class Action(str, Enum):
@@ -317,24 +324,15 @@ def parse_metadata(metadata, action, entity_type):
         raise e
 
 
-UPSERT_CID_METADATA_QUERY = """
-    INSERT INTO cid_data (cid, type, data)
-    VALUES (:cid, :type, :data)
-    ON CONFLICT DO NOTHING;
-"""
-
-
 def save_cid_metadata(
     session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
 ):
     if not cid_metadata:
         return
 
-    vals = []
     for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
-
-    session.execute(UPSERT_CID_METADATA_QUERY, vals)
+        cid_data = CIDData(cid=cid, type=cid_type[cid], data=val)
+        session.merge(cid_data)
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):

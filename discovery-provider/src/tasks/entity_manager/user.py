@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 from typing import Dict, TypedDict
@@ -15,11 +14,12 @@ from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.entity_manager.user_replica_set import (
+from src.tasks.entity_manager.entities.user_replica_set import (
     get_endpoint_string_from_sp_ids,
     parse_sp_ids,
 )
 from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_USER_BIO,
     USER_ID_OFFSET,
     Action,
     EntityType,
@@ -49,6 +49,21 @@ def validate_user_tx(params: ManageEntityParameters):
         raise Exception(
             f"Invalid User Transaction, wrong entity type {params.entity_type}"
         )
+
+    if params.action == Action.CREATE or params.action == Action.UPDATE:
+        user_bio = None
+        try: 
+            # TODO(michelle) validate metadata for notification, developer app
+            # pass in UPDATE until this is fixed
+            user_metadata, _ = parse_metadata(params.metadata, Action.UPDATE, EntityType.USER)
+            if user_metadata:
+                user_bio = user_metadata.get("bio")
+        except Exception:
+            # enforce json metadata after single transaction sign up
+            # dont want to raise here, only check bio IF it exists
+            pass
+        if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
+            raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
@@ -168,7 +183,6 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
         )
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = params.metadata
-        user_record.metadata_multihash = metadata_cid
     except Exception:
         # fallback to multi tx signup
         pass

@@ -1,5 +1,5 @@
 import pytest
-from src.tasks.entity_manager.user import validate_user_handle
+from src.tasks.entity_manager.entities.user import validate_user_handle
 
 
 def test_create_new_hash():

@@ -58,7 +58,7 @@ const copyBuildDirectory = async (outputPath) => {
 }
 
 /** Creates directory if path does not exist */
-async function createDir (dir) {
+async function createDir(dir) {
   try {
     await fs.ensureDir(dir)
   } catch (err) {
@@ -73,18 +73,16 @@ const copySignatureSchemas = (outputPath) => {
 }
 
 const outputJsonConfigFile = async (outputPath) => {
-  try{
+  try {
     let migrationOutputPath = path.join(getDirectoryRoot(AudiusDataContracts), 'migrations', 'migration-output.json')
     let addressInfo = require(migrationOutputPath)
     let outputDictionary = {}
-    outputDictionary['registryAddress'] = addressInfo.registryAddress
     outputDictionary['entityManagerProxyAddress'] = addressInfo.entityManagerProxyAddress
-    outputDictionary['ursmAddress'] = addressInfo.ursmAddress
     outputDictionary['ownerWallet'] = await getDefaultAccount()
     outputDictionary['allWallets'] = await web3.eth.getAccounts()
 
-    fs.writeFile(outputPath, JSON.stringify(outputDictionary), (err)=>{
-      if(err != null){
+    fs.writeFile(outputPath, JSON.stringify(outputDictionary), (err) => {
+      if (err != null) {
         console.log(err)
       }
     })
@@ -100,12 +98,9 @@ const outputJsonConfigFile = async (outputPath) => {
  */
 const outputFlaskConfigFile = async (outputPath) => {
   try {
-    // registry = await Registry.deployed()
-
     let migrationOutputPath = path.join(getDirectoryRoot(AudiusDataContracts), 'migrations', 'migration-output.json')
     let addressInfo = require(migrationOutputPath)
     let configFileContents = '[contracts]\n'
-    configFileContents += 'registry = ' + addressInfo.registryAddress + '\n'
 
     configFileContents += '\n'
 
@@ -142,7 +137,7 @@ module.exports = async callback => {
   try {
     outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json')
   }
-  catch(e){
+  catch (e) {
     console.log("Identity service doesn't exist", e)
   }
 

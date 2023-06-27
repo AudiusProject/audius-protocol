@@ -63,6 +63,7 @@ func (tc *TestClient) upload(data []byte, filename string) error {
 	}
 
 	req.Header.Add("Content-Type", m.FormDataContentType())
+	req.Header.Set("User-Agent", "mediorum-load-test")
 
 	resp, err := tc.HttpClient.Do(req)
 	if err != nil {

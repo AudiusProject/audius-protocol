@@ -54,6 +54,7 @@ func (ss *MediorumServer) startTranscoder() {
 			return
 		}
 		for _, upload := range *uploads {
+			// only the first mirror transcodes
 			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
 				ss.logger.Info("got transcode job", "id", upload.ID)
 				work <- upload
@@ -133,7 +134,7 @@ func (ss *MediorumServer) startTranscodeWorker(n int, work chan *Upload) {
 		ss.logger.Debug("transcoding", "upload", upload.ID)
 		err := ss.transcode(upload)
 		if err != nil {
-			ss.logger.Warn("transocde failed", "upload", upload, "err", err)
+			ss.logger.Warn("transcode failed", "upload", upload, "err", err)
 		}
 	}
 }
@@ -188,7 +189,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		upload.Error = errMsg.Error()
 		upload.Status = JobStatusError
 		ss.crud.Update(upload)
-		logger.Error("transcode error", err)
+		logger.Error("transcode error", "err", err)
 		return errMsg
 	}
 
@@ -264,7 +265,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		// read ffmpeg progress
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
-			fmt.Println("progress err", err)
+			logger.Error("progress err", "err", err)
 		} else if upload.FFProbe != nil {
 			durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
 			durationUs := durationSeconds * 1000 * 1000

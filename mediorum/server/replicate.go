@@ -26,7 +26,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 		file.Seek(0, 0)
 		err := ss.replicateFileToHost(peer, fileName, file)
 		if err != nil {
-			logger.Error("replication failed", err)
+			logger.Error("replication failed", "err", err)
 		} else {
 			logger.Info("replicated")
 			success = append(success, peer)
@@ -82,7 +82,7 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	ctx := context.Background()
 	err := ss.bucket.Delete(ctx, fileName)
 	if err != nil {
-		logger.Error("failed to delete", err)
+		logger.Error("failed to delete", "err", err)
 	}
 
 	// if blob record exists... delete it
@@ -107,8 +107,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}
 
 	// first check if target already has it...
-	// todo: this should be cheap check... host should be responsible for doing more expensive check
-	if ss.hostHasBlob(peer, fileName, true) {
+	if ss.hostHasBlob(peer, fileName) {
 		ss.logger.Info(peer + " already has " + fileName)
 		return nil
 	}
@@ -136,7 +135,9 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 		peer+"/internal/blobs?cid="+fileName,
 		m.FormDataContentType(),
 		r,
-		ss.Config.privateKey)
+		ss.Config.privateKey,
+		ss.Config.Self.Host,
+	)
 
 	// send it
 	resp, err := client.Do(req)
@@ -154,16 +155,17 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 
 // this is a "quick check" that a host has a blob
 // used for checking host has blob before redirecting to it
-func (ss *MediorumServer) hostHasBlob(host, key string, doubleCheck bool) bool {
+func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	checkMethod := "info"
-	if doubleCheck {
-		checkMethod = "double_check"
+	u := apiPath(host, "internal/blobs/info", key)
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return false
 	}
-	u := apiPath(host, "internal/blobs", checkMethod, key)
-	has, err := client.Get(u)
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+	has, err := client.Do(req)
 	if err != nil {
 		return false
 	}
@@ -180,7 +182,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 	u := apiPath(host, "internal/blobs", cid)
 
-	req, err := signature.SignedGet(u, ss.Config.privateKey)
+	req, err := signature.SignedGet(u, ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {
 		return err
 	}
