@@ -210,7 +210,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			if cleanupMode && !isMine && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
 				for _, host := range preferredHosts {
-					if ss.hostHasBlob(host, cid, true) {
+					if ss.hostHasBlob(host, cid) {
 						if host == ss.Config.Self.Host {
 							continue
 						}

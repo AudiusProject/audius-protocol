@@ -125,22 +125,22 @@ func TestRepair(t *testing.T) {
 		standby := rendezvousOrder[replicationFactor+2]
 		err = standby.runRepair(false)
 		assert.NoError(t, err)
-		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 
 		// running repair in cleanup mode... standby will observe that #1 doesn't have blob so will pull it
 		err = standby.runRepair(true)
 		assert.NoError(t, err)
-		assert.True(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+		assert.True(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 
 		// leader re-gets lost file when repair runs
 		err = leader.runRepair(false)
 		assert.NoError(t, err)
-		assert.True(t, leader.hostHasBlob(leader.Config.Self.Host, cid, true))
+		assert.True(t, leader.hostHasBlob(leader.Config.Self.Host, cid))
 
 		// standby drops file after leader has it back
 		err = standby.runRepair(true)
 		assert.NoError(t, err)
-		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid, true))
+		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 	}
 
 }
