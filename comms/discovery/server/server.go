@@ -721,7 +721,3 @@ func (ss *ChatServer) doWebsocketTest() error {
 	}
 	return con.Close()
 }
-
-// func (ss *ChatServer) readCurrentUserId(c echo.Context) (int32, error) {
-// 	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-// }

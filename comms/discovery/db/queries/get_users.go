@@ -26,13 +26,23 @@ func GetUserIDFromWallet(q db.Queryable, ctx context.Context, walletAddress stri
 			// for now just check that the pair exists in the user table
 			// in the future this can check a "grants" table that a given operation is permitted
 			isValid := false
-			db.Conn.QueryRow(`select count(*) > 0 from users where is_current = true and user_id = $1 and wallet = lower($2)`, u, walletAddress).Scan(&isValid)
+			db.Conn.QueryRow(`
+			select count(*) > 0
+			from users
+			where is_current = true
+				and user_id = $1
+				and wallet = lower($2)
+				and handle IS NOT NULL
+				and is_available = TRUE
+				and is_deactivated = FALSE
+			`, u, walletAddress).Scan(&isValid)
 			if isValid {
 				return int32(u), nil
 			}
 		}
 	}
 
+	// fallback to looking up user_id using wallet alone
 	var userId int32
 	err := q.GetContext(ctx, &userId, getUserIDFromWallet, walletAddress)
 	return userId, err
