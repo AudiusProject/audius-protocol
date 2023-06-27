@@ -125,7 +125,7 @@ type ValidatedPermission struct {
 }
 
 func (s *ChatServer) mutate(c echo.Context) error {
-	payload, wallet, err := signing.ReadSignedRequest(c)
+	payload, wallet, err := readSignedPost(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
@@ -263,35 +263,9 @@ func (s *ChatServer) debugSse(c echo.Context) error {
 }
 
 func (s *ChatServer) chatWebsocket(c echo.Context) error {
-	ctx := c.Request().Context()
-
-	// Check that timestamp is less than 5 seconds old
-	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-	if err != nil || time.Now().UnixMilli()-timestamp > 5000 {
-		return c.String(400, "Invalid signature timestamp")
-	}
-
-	// Websockets from the client can't send headers, so instead, the signature is a query parameter
-	// Strip out the signature query parameter to get the true signature payload
-	u, err := url.Parse(c.Request().RequestURI)
-	if err != nil {
-		return c.String(400, "Could not parse URL")
-	}
-	q := u.Query()
-	q.Del("signature")
-	u.RawQuery = q.Encode()
-	signature := c.QueryParam("signature")
-	signedData := []byte(u.String())
-
-	// Now that we have the data that was actually signed, we can recover the wallet
-	wallet, err := signing.ReadSigned(signature, signedData)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	w := c.Response()
@@ -308,14 +282,9 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 
 func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	params := queries.UserChatsParams{UserID: int32(userId), Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
@@ -374,15 +343,11 @@ func (s *ChatServer) getChats(c echo.Context) error {
 
 func (s *ChatServer) getChat(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
 
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
-	}
 	chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -403,14 +368,9 @@ func (s *ChatServer) getChat(c echo.Context) error {
 
 func (s *ChatServer) getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	params := queries.ChatMessagesAndReactionsParams{UserID: int32(userId), ChatID: c.Param("id"), Before: time.Now().UTC(), After: time.Time{}, Limit: 50}
@@ -462,14 +422,9 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 
 func (s *ChatServer) getUnreadChatCount(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	unreadCount, err := queries.UnreadChatCount(db.Conn, ctx, userId)
@@ -488,15 +443,9 @@ func (s *ChatServer) getUnreadChatCount(c echo.Context) error {
 }
 
 func (s *ChatServer) getChatPermissions(c echo.Context) error {
-	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	validatedPermissions := make(map[string]*ValidatedPermission)
@@ -540,14 +489,9 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 
 func (s *ChatServer) getChatBlockees(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	encodedBlockees := []string{}
@@ -575,14 +519,9 @@ func (s *ChatServer) getChatBlockees(c echo.Context) error {
 
 func (s *ChatServer) getChatBlockers(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := signing.ReadSignedRequest(c)
+	userId, err := userIdForSignedGet(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
 	}
 
 	encodedBlockers := []string{}
@@ -782,3 +721,7 @@ func (ss *ChatServer) doWebsocketTest() error {
 	}
 	return con.Close()
 }
+
+// func (ss *ChatServer) readCurrentUserId(c echo.Context) (int32, error) {
+// 	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+// }
