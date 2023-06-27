@@ -180,6 +180,11 @@ type ContainerLayoutStatus = {
   bottom: number
 }
 
+type ReactionContainerStyle = {
+  paddingTop: number
+  bottom: number
+}
+
 const getAutoscrollThreshold = ({ top, bottom }: ContainerLayoutStatus) => {
   return (bottom - top) / 4
 }
@@ -523,14 +528,14 @@ export const ChatScreen = () => {
 
   // For some reason the bottom padding behavior is different between the platforms.
   const getKeyboardAvoidingPlaybarAwareStyle = useCallback(() => {
-    const style = {
-      paddingTop: hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0,
-      bottom: 0
-    }
+    const style = {} as ReactionContainerStyle
     if (Platform.OS === 'ios') {
       style.bottom = hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
+      style.paddingTop = hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
     } else if (Platform.OS === 'android') {
       style.bottom =
+        hasCurrentlyPlayingTrack && !keyboardShown ? PLAY_BAR_HEIGHT : 0
+      style.paddingTop =
         hasCurrentlyPlayingTrack && !keyboardShown ? PLAY_BAR_HEIGHT : 0
     }
     return style
