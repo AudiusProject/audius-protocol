@@ -180,14 +180,6 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	logger = logger.With("wallet", wallet, "userId", userId, "relayed_by", rpcLog.RelayedBy, "relayed_at", rpcLog.RelayedAt, "sig", rpcLog.Sig)
 	logger.Debug("got user", "took", takeSplit())
 
-	// call any validator
-	err = proc.validator.Validate(userId, rawRpc)
-	if err != nil {
-		logger.Info("validation failed", "err", err.Error())
-		return nil
-	}
-	logger.Debug("did validation", "took", takeSplit())
-
 	attemptApply := func() error {
 
 		// write to db
