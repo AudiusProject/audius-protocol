@@ -17,8 +17,7 @@ import {
   IconMessage,
   IconUnblockMessages,
   IconUser,
-  PopupMenu,
-  PopupPosition
+  PopupMenu
 } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -187,7 +186,8 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
         renderTrigger={renderTrigger}
         items={items}
         zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
-        position={PopupPosition.BOTTOM_LEFT}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
       />
     </div>
   )
