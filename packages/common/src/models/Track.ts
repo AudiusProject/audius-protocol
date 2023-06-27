@@ -10,6 +10,7 @@ import { Repost } from './Repost'
 import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
 import { User, UserMetadata } from './User'
+import { StringUSDC } from './Wallet'
 
 type EpochTimeStamp = number
 
@@ -74,12 +75,18 @@ export type PremiumConditionsSolNFTCollection = {
   externalLink: Nullable<string>
 }
 
+export type PremiumConditionsUSDCPurchase = {
+  price: StringUSDC
+  slot: number
+}
+
 export type PremiumConditions = {
   nft_collection?:
     | PremiumConditionsEthNFTCollection
     | PremiumConditionsSolNFTCollection
   follow_user_id?: number
   tip_user_id?: number
+  usdc_purchase?: PremiumConditionsUSDCPurchase
 }
 
 export type PremiumContentSignature = {
