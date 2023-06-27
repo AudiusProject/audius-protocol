@@ -966,3 +966,89 @@ def test_index_social_feature_playlist_type(app, mocker):
         assert album_playlist.is_album == True
         assert album_playlist.save_count == 1
         assert album_playlist.repost_count == 1
+
+
+def test_index_social_feature_hidden_item(app, mocker):
+    # create an unlisted playlist and unlisted track, see if faving does anything
+    "Tests a playlist update and repost in the same block"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, challenge_event_bus=bus_mock)
+
+    tx_receipts = {
+        "RepostPlaylistTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 11,
+                        # metadata is formatted invalid, should be string
+                        "_metadata": 1,
+                        "_action": "Repost",
+                        "_signer": "user11wallet",
+                    }
+                )
+            },
+        ],
+        "FavoriteTrackTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Track",
+                        "_userId": 11,
+                        # metadata is formatted invalid, should be string
+                        "_metadata": 1,
+                        "_action": "Save",
+                        "_signer": "user11wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": i, "handle": f"user-{i}", "wallet": f"user{i}wallet"}
+            for i in range(1, 13)
+        ],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 10, "is_private": True}],
+        "tracks": [{"track_id": 1, "owner_id": 10, "is_private": True}],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=2,
+            block_timestamp=1585336422,
+            block_hash=0,
+        )
+        all_reposts: List[Repost] = session.query(Repost).all()
+        all_favorites: List[Save] = session.query(Save).all()
+        assert len(all_reposts) == 0
+        assert len(all_favorites) == 0

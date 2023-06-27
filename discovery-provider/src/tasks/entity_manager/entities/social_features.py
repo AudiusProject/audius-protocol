@@ -256,6 +256,16 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.entity_id not in params.existing_records[params.entity_type]:
         raise Exception(f"Entity {params.entity_id} does not exist")
 
+    if (params.entity_type == EntityType.PLAYLIST and
+       params.entity_id in params.existing_records[params.entity_type] and
+       params.existing_records[params.entity_type][params.entity_id].is_private):
+        raise Exception(f"Playlist {params.entity_id} is private, cannot execute social feature")
+
+    if (params.entity_type == EntityType.TRACK and
+       params.entity_id in params.existing_records[params.entity_type] and
+       params.existing_records[params.entity_type][params.entity_id].is_unlisted):
+        raise Exception(f"Track {params.entity_id} is private, cannot execute social feature")
+
     # User cannot use social feature on themself
     if params.action in (
         Action.FOLLOW,
