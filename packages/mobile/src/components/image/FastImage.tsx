@@ -15,12 +15,13 @@ export type ImageProps = Omit<FastImageProps, 'source'>
 export const FastImage = (props: FastImageProps) => {
   const { source, priority, ...other } = props
 
-  const imageSource =
-    typeof source === 'number'
-      ? source
-      : Array.isArray(source)
-      ? { uri: source[0].uri, priority }
-      : { uri: source.uri, priority }
+  const imageSource = !source
+    ? source
+    : typeof source === 'number'
+    ? source
+    : Array.isArray(source)
+    ? { uri: source[0].uri, priority }
+    : { uri: source.uri, priority }
 
   return <RNFastImage source={imageSource} {...other} />
 }
