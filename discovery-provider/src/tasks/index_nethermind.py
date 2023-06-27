@@ -11,6 +11,8 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
+from src.models.grants.developer_app import DeveloperApp
+from src.models.grants.grant import Grant
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -537,6 +539,18 @@ def revert_block(session: Session, revert_block: Block):
         .all()
     )
 
+    revert_developer_apps = (
+        session.query(DeveloperApp)
+        .filter(DeveloperApp.blocknumber == revert_block_number)
+        .all()
+    )
+
+    revert_grants = (
+        session.query(Grant)
+        .filter(Grant.blocknumber == revert_block_number)
+        .all()
+    )
+
     # Revert all of above transactions
     for save_to_revert in revert_save_entries:
         save_item_id = save_to_revert.save_item_id
@@ -747,6 +761,37 @@ def revert_block(session: Session, revert_block: Block):
             previous_playlist_seen_entry.is_current = True
         logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
         session.delete(playlist_seen_to_revert)
+    
+    for developer_app_to_revert in revert_developer_apps:
+        previous_developer_app_entry = (
+            session.query(DeveloperApp)
+            .filter(
+                DeveloperApp.address == developer_app_to_revert.address,
+                DeveloperApp.blocknumber < revert_block_number,
+            )
+            .order_by(DeveloperApp.blocknumber.desc())
+            .first()
+        )
+        if previous_developer_app_entry:
+            previous_developer_app_entry.is_current = True
+        logger.info(f"Reverting developer app {developer_app_to_revert}")
+        session.delete(developer_app_to_revert)
+    
+    for grant_to_revert in revert_grants:
+        previous_grant_entry = (
+            session.query(Grant)
+            .filter(
+                Grant.grantee_address == grant_to_revert.grantee_address,
+                Grant.user_id == grant_to_revert.user_id,
+                Grant.blocknumber < revert_block_number,
+            )
+            .order_by(Grant.blocknumber.desc())
+            .first()
+        )
+        if previous_grant_entry:
+            previous_grant_entry.is_current = True
+        logger.info(f"Reverting grant {grant_to_revert}")
+        session.delete(grant_to_revert)
 
     # Remove outdated block entry
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
