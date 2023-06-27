@@ -64,7 +64,8 @@ import {
   Entity,
   Achievement,
   Notification,
-  IdentityNotification
+  IdentityNotification,
+  PushNotifications
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -2812,9 +2813,10 @@ export const audiusBackend = ({
         }
       })
         .then((res) => res.json())
-        .then((res) => res.settings)
+        .then((res: { settings: PushNotifications }) => res.settings)
     } catch (e) {
       console.error(e)
+      return null
     }
   }
 
