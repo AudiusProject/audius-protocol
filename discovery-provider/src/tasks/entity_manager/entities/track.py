@@ -300,9 +300,6 @@ def update_track_record(params: ManageEntityParameters, track: Track, metadata: 
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
-        params.logger.info(
-            f"index.py | tracks.py | Processing track cover art {track.cover_art}"
-        )
         track.cover_art_sizes = track.cover_art
         track.cover_art = None
 

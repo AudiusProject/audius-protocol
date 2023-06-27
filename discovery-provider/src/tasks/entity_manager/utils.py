@@ -172,7 +172,7 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
-        self.logger = logger
+        self.logger = logger  # passed in with EM context
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
