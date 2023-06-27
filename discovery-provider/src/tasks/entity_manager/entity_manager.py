@@ -8,6 +8,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
@@ -20,32 +21,36 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.developer_app import (
+from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
     get_app_address_from_signature,
 )
-from src.tasks.entity_manager.grant import create_grant, revoke_grant
-from src.tasks.entity_manager.notification import (
+from src.tasks.entity_manager.entities.grant import create_grant, revoke_grant
+from src.tasks.entity_manager.entities.notification import (
     create_notification,
     view_notification,
     view_playlist,
 )
-from src.tasks.entity_manager.playlist import (
+from src.tasks.entity_manager.entities.playlist import (
     create_playlist,
     delete_playlist,
     update_playlist,
 )
-from src.tasks.entity_manager.social_features import (
+from src.tasks.entity_manager.entities.social_features import (
     action_to_record_types,
     create_social_action_types,
     create_social_record,
     delete_social_action_types,
     delete_social_record,
 )
-from src.tasks.entity_manager.track import create_track, delete_track, update_track
-from src.tasks.entity_manager.user import create_user, update_user, verify_user
-from src.tasks.entity_manager.user_replica_set import update_user_replica_set
+from src.tasks.entity_manager.entities.track import (
+    create_track,
+    delete_track,
+    update_track,
+)
+from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
+from src.tasks.entity_manager.entities.user_replica_set import update_user_replica_set
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
@@ -62,8 +67,9 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
@@ -75,7 +81,6 @@ def get_record_columns(record) -> List[str]:
 
 
 def entity_manager_update(
-    _,  # main indexing task
     update_task: DatabaseTask,
     session: Session,
     entity_manager_txs: List[Any],
@@ -99,9 +104,6 @@ def entity_manager_update(
         )
         metric_num_changed = PrometheusMetric(
             PrometheusMetricNames.ENTITY_MANAGER_UPDATE_CHANGED_LATEST
-        )
-        metric_num_errors = PrometheusMetric(
-            PrometheusMetricNames.ENTITY_MANAGER_UPDATE_ERRORS
         )
 
         # collect events by entity type and action
@@ -148,7 +150,12 @@ def entity_manager_update(
                         block_number,
                         event_blockhash,
                         txhash,
+                        logger
                     )
+
+                    # update logger context with this tx event
+                    logger.update_context(event["args"])
+
                     # add processed metadata to cid_metadata dicts to batch save to cid_data table
                     # later
                     if expect_cid_metadata_json(
@@ -203,7 +210,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_user(params)
+                        create_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.UPDATE
                         and params.entity_type == EntityType.USER
@@ -260,10 +267,12 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
-                except Exception as e:
+
+                    logger.info("process transaction")  # log event context
+                except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
+                        f"failed to process transaction error {e}"
                     )
         # compile records_to_save
         records_to_save = []

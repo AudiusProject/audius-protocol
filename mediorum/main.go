@@ -11,13 +11,14 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
 
 func init() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
 	slog.SetDefault(logger)
 }
 
@@ -38,6 +39,7 @@ func main() {
 }
 
 func startStagingOrProd(isProd bool) {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
 	g := registrar.NewGraphStaging()
 	if isProd {
 		g = registrar.NewGraphProd()
@@ -58,16 +60,28 @@ func startStagingOrProd(isProd bool) {
 	if err := eg.Wait(); err != nil {
 		panic(err)
 	}
-	slog.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
+	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
-	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
-	privateKey := mustGetenv("delegatePrivateKey")
+	privateKeyHex := mustGetenv("delegatePrivateKey")
+
+	privateKey, err := ethcontracts.ParsePrivateKeyHex(privateKeyHex)
+	if err != nil {
+		log.Fatal("invalid private key", err)
+	}
+
+	// compute wallet address
+	walletAddress := ethcontracts.ComputeAddressFromPrivateKey(privateKey)
+	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
+	if !strings.EqualFold(walletAddress, delegateOwnerWallet) {
+		slog.Warn("incorrect delegateOwnerWallet env config", "incorrect", delegateOwnerWallet, "computed", walletAddress)
+	}
+
 	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
 	if err != nil {
-		slog.Warn("failed to parse trustedNotifierID", "err", err)
+		logger.Warn("failed to parse trustedNotifierID", "err", err)
 	}
-	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, delegateOwnerWallet)
+	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
 	if err != nil || spID == 0 {
 		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
 	}
@@ -75,13 +89,13 @@ func startStagingOrProd(isProd bool) {
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-			Wallet: delegateOwnerWallet,
+			Wallet: strings.ToLower(walletAddress),
 		},
 		ListenPort:          "1991",
 		Peers:               peers,
 		Signers:             signers,
 		ReplicationFactor:   3,
-		PrivateKey:          privateKey,
+		PrivateKey:          privateKeyHex,
 		Dir:                 "/tmp/mediorum",
 		PostgresDSN:         os.Getenv("dbUrl"),
 		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
@@ -96,6 +110,7 @@ func startStagingOrProd(isProd bool) {
 
 	ss, err := server.New(config)
 	if err != nil {
+		logger.Error("failed to create server", "err", err)
 		log.Fatal(err)
 	}
 
@@ -176,7 +191,7 @@ func startDevCluster() {
 		peer := peer
 		spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(peer.Host, peer.Wallet)
 		if err != nil || spID == 0 {
-			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), err)
+			slog.Error(fmt.Sprintf("failed to recover spID for %s, %s (this is expected if running locally without eth-ganache)", peer.Host, peer.Wallet), "err", err)
 			spID = idx + 1
 		}
 		config := server.MediorumConfig{
@@ -263,6 +278,9 @@ func devNetwork(hostNameTemplate string, n int) []server.Peer {
 func mustGetenv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
+		log.Println("missing required env variable: ", key, " sleeping ...")
+		// if config is incorrect, sleep a bit to prevent container from restarting constantly
+		time.Sleep(time.Hour)
 		log.Fatal("missing required env variable: ", key)
 	}
 	return val

@@ -42,10 +42,20 @@ new_apps_data = [
             "message": "Creating Audius developer app at 1686252026",
         },
     },
+    {
+        "user_id": 1,
+        "name": "My App Again",
+        "description": "",
+        "address": "0xdac2e78877758996781e9a30b7c5ca4e717d2665",
+        "app_signature": {
+            "signature": "07e1d2604a0b9e0c0a47e9c4d398874536921757e74d6ea1ffa1a53d3cf604da0b8ff60ced5b2312ecdb30ba4bc5a105bdde02093a9725c3dd2bfb86b964c4211b",
+            "message": "Creating Audius developer app at 1686252024",
+        },
+    },
 ]
 
 
-@freeze_time("2023-06-08")
+@freeze_time("2023-06-08 19:20:00")
 def test_index_app(app, mocker):
     "Tests app action"
 
@@ -107,6 +117,20 @@ def test_index_app(app, mocker):
                 )
             },
         ],
+        "CreateAppTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": new_apps_data[3]["user_id"],
+                        "_action": Action.CREATE,
+                        "_metadata": f"""{{"name": "{new_apps_data[3]["name"]}", "app_signature": {{"signature": "{new_apps_data[3]["app_signature"]["signature"]}", "message": "{new_apps_data[3]["app_signature"]["message"]}"}}}}""",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -126,7 +150,7 @@ def test_index_app(app, mocker):
     entities = {
         "users": [
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
-            for user_id in range(1, 4)
+            for user_id in range(1, 6)
         ],
         "developer_apps": [
             {
@@ -141,7 +165,6 @@ def test_index_app(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -152,7 +175,7 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 4
+        assert len(all_apps) == 5
         for expected_app in new_apps_data:
             found_matches = [
                 item
@@ -302,8 +325,23 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 2,
                         "_action": Action.CREATE,
-                        "_metadata": '{"app_signature": {"signature": "7d53b3f50640b1c64062fea565119e673611e0763778a087c34e8882115d28dc614896874dedb83124a3aa91007595675882537bd6b21444dd94b73ba61c573e1b", "message": "Creating Audius developer app at 1686233691"}, "name": "My app", "description": false}',
+                        "_metadata": '{"app_signature": {"signature": "c614d92de7ebad7566e5b8014df916cacba1c41c91fbf431591010a71efc00686291b9a09e9d2fd1caf7613366bd441f1ff48d77d666db846cecf2781021d9d41c", "message": "Creating Audius developer app at 1686200400"}, "name": "My app"}',
                         "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateAppInvalidTx10": [
+            {
+                # Too many apps
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 1,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"name": "Too many apps", "app_signature": {"signature": "58404f470e94e02d34ec3706b46c1538dc791c939d9a48a66057354bb51afbcb7449a7bcbc308f12513e975d3974290da852d1a1308f4a81a8228707d8fc6f261c", "message": "Creating Audius developer app at 1686252026"}, "is_personal_access": false}',
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -319,7 +357,6 @@ def test_index_app(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -330,7 +367,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_apps) == 4
+        assert len(all_apps) == 5
 
     # Test invalid delete app txs
     tx_receipts = {
@@ -390,7 +427,6 @@ def test_index_app(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -401,7 +437,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        assert len(all_apps) == 4
+        assert len(all_apps) == 5
 
     # Test valid delete app txs
     tx_receipts = {
@@ -447,6 +483,20 @@ def test_index_app(app, mocker):
                 )
             },
         ],
+        "DeleteAppTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_action": Action.DELETE,
+                        "_userId": new_apps_data[3]["user_id"],
+                        "_metadata": f"""{{"address": "{new_apps_data[3]["address"]}"}}""",
+                        "_signer": f"user{new_apps_data[3]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -458,7 +508,6 @@ def test_index_app(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -468,7 +517,7 @@ def test_index_app(app, mocker):
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 7
+        assert len(all_apps) == 9
 
         for expected_app in new_apps_data:
             found_matches = [

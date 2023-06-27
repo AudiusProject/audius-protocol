@@ -63,6 +63,10 @@ const errorResponse = (module.exports.errorResponse = (
   }
 })
 
+module.exports.errorResponseRateLimited = (message) => {
+  return errorResponse(429, message)
+}
+
 module.exports.errorResponseUnauthorized = (message) => {
   return errorResponse(401, message)
 }

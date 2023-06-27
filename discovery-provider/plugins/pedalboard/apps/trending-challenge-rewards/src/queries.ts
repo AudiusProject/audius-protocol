@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { Table, UserChallenges } from "storage";
+import { Table, UserChallenges } from "storage/src/index";
 
 export type ChallengeDisbursementUserbank = {
   challenge_id: string;

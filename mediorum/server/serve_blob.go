@@ -81,9 +81,13 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
-	// verify blob exists
 	r, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
+		// Check if the error is a blob not found error
+		// If it is, return a 404
+		if strings.Contains(err.Error(), "not found") {
+			return c.String(404, "blob not found")
+		}
 		return err
 	}
 	defer r.Close()
@@ -158,7 +162,45 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 	for _, blob := range blobs {
 		// do a check server is up and has blob
-		if ss.hostHasBlob(blob.Host, key, false) {
+		if ss.hostHasBlob(blob.Host, key) {
+			dest := replaceHost(*c.Request().URL, blob.Host)
+			return c.Redirect(302, dest.String())
+		}
+	}
+
+	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) headBlob(c echo.Context) error {
+	ctx := c.Request().Context()
+	key := c.Param("cid")
+	logger := ss.logger.With("cid", key)
+
+	if ss.isCidBlacklisted(ctx, key) {
+		logger.Info("cid is blacklisted")
+		return c.String(403, "cid is blacklisted by this node")
+	}
+
+	if isLegacyCID(key) {
+		return ss.headLegacyCid(c)
+	}
+
+	// Return 200 if we have it
+	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		return c.NoContent(200)
+	}
+
+	// Return 302 if we know where it is
+	var blobs []Blob
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+	err := ss.crud.DB.
+		Where("key = ? and host in ?", key, healthyHosts).
+		Find(&blobs).Error
+	if err != nil {
+		return err
+	}
+	for _, blob := range blobs {
+		if ss.hostHasBlob(blob.Host, key) {
 			dest := replaceHost(*c.Request().URL, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
@@ -185,14 +227,14 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
 	if err != nil {
-		ss.logger.Warn("unable to parse signature for request", "signature", c.QueryParam("signature"))
+		ss.logger.Warn("unable to parse signature for request", "signature", c.QueryParam("signature"), "remote_addr", c.Request().RemoteAddr, "url", c.Request().URL)
 		return
 	}
 
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 
@@ -205,21 +247,22 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
 	if err != nil {
-		ss.logger.Error("unable to build request", err)
+		ss.logger.Error("unable to build request", "err", err)
 		return
 	}
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("x-forwarded-for", c.RealIP())
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		ss.logger.Error("unable to POST to identity service", err)
+		ss.logger.Error("unable to POST to identity service", "err", err)
 		return
 	}
 	defer res.Body.Close()

@@ -9,6 +9,15 @@ const redisClient = new Redis(
   config.get('redisHost'),
   { showFriendlyErrorStack: config.get('environment') !== 'production' }
 )
+const sigUtil = require('eth-sig-util')
+const {
+  generators
+} = require('@audius/sdk/src/data-contracts/signatureSchemas.js')
+
+const models = require('./models')
+const { libs } = require('@audius/sdk')
+const { errorResponseRateLimited, sendResponse } = require('./apiHelpers.js')
+const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
 
@@ -122,6 +131,8 @@ const getRateLimiter = ({
   max,
   expiry = DEFAULT_EXPIRY,
   keyGenerator = (req) => getIP(req).ip,
+  handler,
+  message,
   skip
 }) => {
   return rateLimit({
@@ -133,6 +144,8 @@ const getRateLimiter = ({
     max, // max requests per hour
     skip,
     keyGenerator,
+    handler,
+    message,
     onLimitReached
   })
 }
@@ -165,9 +178,123 @@ const getRateLimiterMiddleware = () => {
   return router
 }
 
+const getEntityManagerActionKey = (encodedABI) => {
+  const decodedABI = decodeABI(encodedABI)
+  let key = decodedABI.action + decodedABI.entityType
+  return key
+}
+
+const decodeABI = (encodedABI) => {
+  const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
+  const mapping = {}
+
+  // map without leading underscore in _userId
+  decodedABI.params.forEach((param) => {
+    mapping[param.name.substring(1)] = param.value
+  })
+
+  return mapping
+}
+
+const recoverSigner = (encodedABI) => {
+  const decodedABI = decodeABI(encodedABI)
+
+  const data = generators.getManageEntityData(
+    config.get('acdcChainId'),
+    config.get('entityManagerAddress'),
+    decodedABI.userId,
+    decodedABI.entityType,
+    decodedABI.entityId,
+    decodedABI.action,
+    decodedABI.metadata,
+    decodedABI.nonce
+  )
+  return sigUtil.recoverTypedSignature({ data, sig: decodedABI.subjectSig })
+}
+
+const rateLimitMessage = 'Too many requests, please try again later'
+const getRelayBlocklistMiddleware = (req, res, next) => {
+  const signer = recoverSigner(req.body.encodedABI)
+  req.body.signer = signer
+  const blocklist = config.get('blocklistPublicKeyFromRelay')
+  if (blocklist && blocklist.includes(signer)) {
+    sendResponse(
+      req,
+      res,
+      errorResponseRateLimited({
+        message: rateLimitMessage
+      })
+    )
+  }
+  next()
+}
+
+const getRelayRateLimiterMiddleware = () => {
+  return getRateLimiter({
+    windowMs: 60 * 60 * 1000, // hourly
+    prefix: `relayWalletRateLimiter`,
+    max: async function (req) {
+      const key = getEntityManagerActionKey(req.body.encodedABI)
+      const signer = recoverSigner(req.body.encodedABI)
+
+      let limit = config.get(key)
+      req.user = await models.User.findOne({
+        where: { walletAddress: signer },
+        attributes: [
+          'id',
+          'blockchainUserId',
+          'walletAddress',
+          'handle',
+          'isBlockedFromRelay',
+          'isBlockedFromNotifications',
+          'isBlockedFromEmails',
+          'appliedRules'
+        ]
+      })
+      const allowlist = config.get('allowlistPublicKeyFromRelay')
+      if (req.user) {
+        limit = limit['owner']
+        req.isFromApp = false
+      } else {
+        if (allowlist && allowlist.includes(signer)) {
+          limit = limit['allowlist']
+        } else {
+          limit = limit['app']
+        }
+        req.isFromApp = true
+      }
+
+      return limit
+    },
+    keyGenerator: function (req) {
+      const key = getEntityManagerActionKey(req.body.encodedABI)
+      const signer = recoverSigner(req.body.encodedABI)
+      return ':::' + key + ':' + signer
+    },
+    handler: (req, res) => {
+      try {
+        const key = getEntityManagerActionKey(req.body.encodedABI)
+        const signer = recoverSigner(req.body.encodedABI)
+        req.logger.error(`Rate limited sender ${signer} performing ${key}`)
+      } catch (error) {
+        req.logger.error(`Cannot relay without sender address`)
+      }
+      sendResponse(
+        req,
+        res,
+        errorResponseRateLimited({
+          message: rateLimitMessage
+        })
+      )
+    }
+  })
+}
+
 module.exports = {
   getIP,
   isIPWhitelisted,
   getRateLimiter,
-  getRateLimiterMiddleware
+  getRateLimiterMiddleware,
+  getRelayBlocklistMiddleware,
+  getRelayRateLimiterMiddleware
 }

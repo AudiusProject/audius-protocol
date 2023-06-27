@@ -3,20 +3,22 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"log"
 	"os"
 	"strings"
 	"sync"
 
 	"comms.audius.co/discovery/the_graph"
 	"github.com/ethereum/go-ethereum/crypto"
+	"golang.org/x/exp/slog"
 )
 
 type DiscoveryConfig struct {
-	MyHost          string
-	MyWallet        string
-	MyPrivateKeyHex string            `json:"-"`
-	MyPrivateKey    *ecdsa.PrivateKey `json:"-"`
-	IsStaging       bool
+	MyHost             string
+	MyWallet           string
+	MyPrivateKey       *ecdsa.PrivateKey `json:"-"`
+	IsStaging          bool
+	IsRegisteredWallet bool
 
 	mu    sync.RWMutex
 	peers []the_graph.Peer
@@ -38,16 +40,21 @@ func (c *DiscoveryConfig) Peers() []the_graph.Peer {
 func Parse() *DiscoveryConfig {
 	c := &DiscoveryConfig{}
 
-	c.MyPrivateKeyHex = os.Getenv("audius_delegate_private_key")
-	c.MyWallet = os.Getenv("audius_delegate_owner_wallet")
 	c.MyHost = strings.TrimRight(strings.TrimSpace(os.Getenv("audius_discprov_url")), "/") // trim any trailing /
 	c.IsStaging = os.Getenv("AUDIUS_IS_STAGING") == "true"
 
-	pk, err := parsePrivateKey(c.MyPrivateKeyHex)
+	pk, err := parsePrivateKey(os.Getenv("audius_delegate_private_key"))
 	if err != nil {
-		panic(err)
+		log.Fatal("invalid private key", err)
 	}
 	c.MyPrivateKey = pk
+
+	addressFromEnv := os.Getenv("audius_delegate_owner_wallet")
+	realAddress := crypto.PubkeyToAddress(pk.PublicKey).Hex()
+	if realAddress != addressFromEnv {
+		slog.Warn("audius_delegate_owner_wallet env variable doesn't match private key address", "audius_delegate_owner_wallet", addressFromEnv, "derived", realAddress)
+	}
+	c.MyWallet = realAddress
 
 	return c
 }

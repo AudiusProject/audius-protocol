@@ -17,8 +17,10 @@ import { WebClient } from "@slack/web-api";
 import { formatDisbursementTable } from "./slack";
 
 // TODO: move something like this into App so results are commonplace for handlers
-export const onCondition = async (app: App<SharedData>): Promise<void> => {
-  const { dryRun } = app.viewAppData()
+export const disburseTrendingRewards = async (
+  app: App<SharedData>
+): Promise<void> => {
+  const { dryRun } = app.viewAppData();
   const disburse = await onDisburse(app, dryRun);
   disburse.mapErr(console.error);
 };
@@ -30,27 +32,34 @@ export const onDisburse = async (
 ): Promise<Result<undefined, string>> => {
   const db = app.getDnDb();
   const libs = app.viewAppData().libs;
-  const token = process.env.SLACK_BOT_TOKEN
-  if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined")
-  const client = new WebClient(token)
+  const token = process.env.SLACK_BOT_TOKEN;
+  if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined");
+  const client = new WebClient(token);
+
+  console.log(`doing ${dryRun ? "a dry run" : "the real deal"}`)
 
   const completedBlockRes = await findStartingBlock(db);
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
-  const nodeGroupsRes = await assembleNodeGroups(libs);
-  if (nodeGroupsRes.err) return nodeGroupsRes;
-  const nodeGroups = nodeGroupsRes.unwrap();
+  const trimmedSpecifier = specifier.split(":")[0]
+
+  const nodeGroups = await assembleNodeGroups(libs);
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
-  const friendly = await getChallengesDisbursementsUserbanksFriendly(db, specifier)
-  console.log('friendly = ', JSON.stringify(friendly))
+  const friendly = await getChallengesDisbursementsUserbanksFriendly(
+    db,
+    trimmedSpecifier
+  );
+
+  const normal = await getChallengesDisbursementsUserbanks(db, trimmedSpecifier)
+  console.log("friendly = ", JSON.stringify(friendly));
   const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
 
-  const channel = process.env.SLACK_CHANNEL
-  if (channel === undefined) return new Err("SLACK_CHANNEL not defined")
+  const channel = process.env.SLACK_CHANNEL;
+  if (channel === undefined) return new Err("SLACK_CHANNEL not defined");
   await client.chat.postMessage({
     channel,
     text: "```" + formattedResults + "```",
@@ -63,7 +72,7 @@ export const findStartingBlock = async (
   db: Knex
 ): Promise<Result<[number, string], string>> => {
   const challenges = await getTrendingChallenges(db);
-  console.log('challenges = ', JSON.stringify(challenges))
+  console.log("challenges = ", JSON.stringify(challenges));
   const firstChallenge = challenges[0];
   if (firstChallenge === undefined)
     return new Err(`no challenges found ${challenges}`);
@@ -86,24 +95,36 @@ type Node = {
 
 const assembleNodeGroups = async (
   libs: AudiusLibs
-): Promise<Result<Map<string, Node[]>, string>> => {
+): Promise<Map<string, Node[]>> => {
   const nodes =
     await libs.ServiceProvider?.discoveryProvider.serviceSelector.getServices({
       verbose: true,
     });
   if (nodes === undefined)
-    return new Err("no nodes returned from libs service provider");
+    throw new Error("no nodes returned from libs service provider");
+
   const groups = new Map<string, Node[]>();
   for (const node of nodes) {
-    const ownerNodes = groups.get(node.owner);
-    if (ownerNodes === undefined) {
-      groups.set(node.owner, [node]);
-    } else {
-      ownerNodes.push(node);
+      const ownerNodes = groups.get(node.owner);
+      if (ownerNodes === undefined) {
+      groups.set(node.owner, [{
+          endpoint: node.endpoint,
+          spID: node.spID,
+          owner: node.owner,
+          delegateOwnerWallet: node.delegateOwnerWallet,
+      }]);
+      } else {
+      ownerNodes.push({
+          endpoint: node.endpoint,
+          spID: node.spID,
+          owner: node.owner,
+          delegateOwnerWallet: node.delegateOwnerWallet,
+      });
       groups.set(node.owner, ownerNodes);
-    }
+      }
   }
-  return new Ok(groups);
+
+  return groups;
 };
 
 const canSuccessfullyAttest = async (
@@ -112,7 +133,7 @@ const canSuccessfullyAttest = async (
   userId: number,
   challengeId: string,
   oracleEthAddress: string
-): Promise<Result<boolean, string>> => {
+): Promise<boolean> => {
   const url = makeAttestationEndpoint(
     endpoint,
     specifier,
@@ -120,9 +141,8 @@ const canSuccessfullyAttest = async (
     challengeId,
     oracleEthAddress
   );
-  console.log({ url });
   const res = await fetch(url);
-  return new Ok(res && res.ok);
+  return res && res.ok;
 };
 
 const makeAttestationEndpoint = (
@@ -152,12 +172,18 @@ const getAllChallenges = async (
   startBlock: number,
   dryRun: boolean
 ) => {
-  const { AAOEndpoint, oracleEthAddress, feePayerOverride, libs, localEndpoint } =
-    app.viewAppData();
+  const {
+    AAOEndpoint,
+    oracleEthAddress,
+    feePayerOverride,
+    libs,
+    localEndpoint,
+  } = app.viewAppData();
   if (libs === null) return undefined;
   const res = await axios.get(
     `${localEndpoint}/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
   );
+
   const data: Challenge[] = res.data.data;
 
   const toDisburse = data.filter((c) =>
@@ -197,13 +223,14 @@ const getAllChallenges = async (
     if (!isValidNodeSet) {
       possibleNodeSet = [];
       console.log("Node set not valid. Selecting nodes...");
-      for (const nodeGroup of Object.values(groups)) {
+      for (const nodeGroup of groups.values()) {
         if (possibleNodeSet.length === 3) {
           console.log(`Got 3 nodes!: ${JSON.stringify(possibleNodeSet)}`);
           break;
         }
 
         for (const node of nodeGroup) {
+          console.log("attesting node ", node)
           const canAttest = await canSuccessfullyAttest(
             node.endpoint,
             challenge.specifier,
@@ -249,6 +276,7 @@ const getAllChallenges = async (
     if (rewards === null) throw new Error("rewards object null");
 
     if (!dryRun) {
+      console.log("submitting")
       const { error } = await rewards.submitAndEvaluate({
         challengeId: challenge.challenge_id,
         encodedUserId,
@@ -265,7 +293,7 @@ const getAllChallenges = async (
         feePayerOverride,
         logger: console,
       });
-  
+
       if (error) {
         console.log(
           "Challenge was unattestable despite new nodes, aborting..." +
@@ -273,7 +301,7 @@ const getAllChallenges = async (
         );
       }
     } else {
-      console.log('running dry run')
+      console.log("running dry run");
     }
   }
   console.log(JSON.stringify(setToChallengeMap, null, 2));
@@ -282,6 +310,6 @@ const getAllChallenges = async (
       impossibleChallenges.length
     }: ${JSON.stringify(
       impossibleChallenges
-    )}, possible challenges: ${JSON.stringify(possibleChallenges)}`
+    )}, possible challenges: ${possibleChallenges.length} ${JSON.stringify(possibleChallenges)}`
   );
 };

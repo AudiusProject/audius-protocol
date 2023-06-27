@@ -69,14 +69,14 @@ func TestGetChats(t *testing.T) {
 
 	tx := db.Conn.MustBegin()
 
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	seededRand := rand.New(rand.NewSource(1))
 	user1Id := seededRand.Int31()
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
 	user4Id := seededRand.Int31()
 
 	// Create 1 user with wallet
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true)", user1Id, wallet1)
+	_, err = tx.Exec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true)", user1Id, wallet1)
 	assert.NoError(t, err)
 
 	// Create 3 chats
@@ -121,6 +121,7 @@ func TestGetChats(t *testing.T) {
 	expectedHealth := schema.Health{
 		IsHealthy: true,
 	}
+
 	encodedUser1, err := misc.EncodeHashId(int(user1Id))
 	assert.NoError(t, err)
 	encodedUser2, err := misc.EncodeHashId(int(user2Id))
@@ -319,7 +320,7 @@ func TestGetMessages(t *testing.T) {
 	user2Id := seededRand.Int31()
 
 	// Create 1 user with wallet
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true)", user1Id, wallet1)
+	_, err = tx.Exec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true)", user1Id, wallet1)
 	assert.NoError(t, err)
 
 	// Create a chat
@@ -530,7 +531,7 @@ func TestGetPermissions(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create 2 users with wallets
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
+	_, err = tx.Exec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true), ($3, $4::text, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
 	assert.NoError(t, err)
 
 	// user 2 follows user 1
@@ -764,7 +765,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create 3 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3)
+	_, err = tx.Exec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true), ($3, $4::text, lower($4), true), ($5, $6::text, lower($6), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3)
 	assert.NoError(t, err)
 
 	// Set blocks:
@@ -772,6 +773,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 	// - user 2 blocks no one
 	// - user 3 blocks user 2
 	_, err = tx.Exec("insert into chat_blocked_users (blocker_user_id, blockee_user_id, created_at) values ($1, $2, $3), ($4, $5, $3)", user1Id, user3Id, time.Now(), user3Id, user2Id)
+	assert.NoError(t, err)
 
 	err = tx.Commit()
 	assert.NoError(t, err)

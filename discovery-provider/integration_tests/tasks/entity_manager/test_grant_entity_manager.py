@@ -125,7 +125,6 @@ def test_index_grant(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -227,7 +226,6 @@ def test_index_grant(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -297,7 +295,6 @@ def test_index_grant(app, mocker):
         # index transactions
         timestamp = 1000000001
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -364,7 +361,6 @@ def test_index_grant(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -423,7 +419,6 @@ def test_index_grant(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -463,7 +458,6 @@ def test_index_grant(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,

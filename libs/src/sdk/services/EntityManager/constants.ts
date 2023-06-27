@@ -11,4 +11,4 @@ export const defaultEntityManagerConfig: EntityManagerConfig = {
 
 export const DEFAULT_GAS_LIMIT = 2000000
 export const CONFIRMATION_POLLING_INTERVAL = 2000
-export const CONFIRMATION_TIMEOUT = 30000
+export const CONFIRMATION_TIMEOUT = 45000
