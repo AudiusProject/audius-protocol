@@ -21,8 +21,6 @@ from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
 
-logger = logging.getLogger(__name__)
-
 
 def update_stems_table(session, track_record, track_metadata):
     if ("stem_of" not in track_metadata) or (
@@ -228,8 +226,10 @@ def validate_track_tx(params: ManageEntityParameters):
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer
-
-    if not signer_matches_user:
+    if signer_matches_user:
+        params.logger.set_context("isApp", "false")
+    else:
+        params.logger.set_context("isApp", "unknown")
         grant_key = (signer, user_id)
         is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
         if is_signer_authorized:
@@ -239,6 +239,7 @@ def validate_track_tx(params: ManageEntityParameters):
                 raise Exception(
                     f"Signer is not authorized to perform action for user {user_id}"
                 )
+            params.logger.set_context("isApp", "true")
         else:
             raise Exception(
                 f"Signer does not match user {user_id} or an authorized wallet"
@@ -289,7 +290,7 @@ def get_handle(params: ManageEntityParameters):
         .first()
     )[0]
     if not handle:
-        logger.error("missing track user in entity manager handle track")
+        params.logger.error("missing track user in entity manager handle track")
     return handle
 
 
@@ -299,9 +300,6 @@ def update_track_record(params: ManageEntityParameters, track: Track, metadata: 
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
-        logger.info(
-            f"index.py | tracks.py | Processing track cover art {track.cover_art}"
-        )
         track.cover_art_sizes = track.cover_art
         track.cover_art = None
 
