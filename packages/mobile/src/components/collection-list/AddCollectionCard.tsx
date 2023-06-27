@@ -5,7 +5,7 @@ import { cacheCollectionsActions, CreatePlaylistSource } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import IconSave from 'app/assets/images/iconSaveFilled.svg'
+import IconSave from 'app/assets/images/iconMultiselectAdd.svg'
 import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

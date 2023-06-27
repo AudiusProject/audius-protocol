@@ -2,12 +2,16 @@ import { ReactNode, ComponentType, ComponentProps, ElementType } from 'react'
 
 import cn from 'classnames'
 
+import { DogEar, DogEarType } from 'components/dog-ear'
+
 import styles from './Tile.module.css'
 
 type TileOwnProps<TileComponentType extends ElementType = 'div'> = {
   children: ReactNode
   size?: 'small' | 'medium' | 'large'
   as?: TileComponentType
+  dogEar?: DogEarType
+  elevation?: 'near' | 'mid' | 'far'
 }
 
 export type TileProps<TileComponentType extends ElementType> =
@@ -24,14 +28,22 @@ export const Tile = <
     size,
     as: RootComponent = 'div',
     className,
+    dogEar,
+    elevation = 'near',
     ...other
   } = props
 
   return (
     <RootComponent
-      className={cn(styles.root, size && styles[size], className)}
+      className={cn(
+        styles.root,
+        size && styles[size],
+        styles[elevation],
+        className
+      )}
       {...other}
     >
+      {dogEar ? <DogEar type={dogEar} /> : null}
       {children}
     </RootComponent>
   )

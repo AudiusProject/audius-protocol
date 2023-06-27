@@ -16,11 +16,11 @@ import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import { DogEar, DogEarType } from 'components/dog-ear'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { PremiumContentLabel } from '../PremiumContentLabel'
-import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {
   TrackTileSize,
   DesktopTrackTileProps as TrackTileProps
@@ -168,17 +168,18 @@ const TrackTile = ({
     ? fieldVisibility.play_count === false
     : false
 
-  const showPremiumCornerTag =
+  const showPremiumDogTag =
     isGatedContentEnabled &&
     !isLoading &&
     premiumConditions &&
     (isOwner || !doesUserHaveAccess)
-  const cornerTagIconType = showPremiumCornerTag
+
+  const dogEarType = showPremiumDogTag
     ? isOwner
       ? premiumConditions.nft_collection
-        ? TrackBannerIconType.COLLECTIBLE_GATED
-        : TrackBannerIconType.SPECIAL_ACCESS
-      : TrackBannerIconType.LOCKED
+        ? DogEarType.COLLECTIBLE_GATED
+        : DogEarType.SPECIAL_ACCESS
+      : DogEarType.LOCKED
     : null
 
   const onClickTitleWrapper = useCallback(
@@ -221,25 +222,16 @@ const TrackTile = ({
       >
         {artwork}
       </div>
-      {showPremiumCornerTag && cornerTagIconType ? (
-        <TrackBannerIcon
-          type={cornerTagIconType}
-          isMatrixMode={isMatrixMode}
-          containerClassName={styles.premiumCornerTagContainer}
+      {showPremiumDogTag && dogEarType ? (
+        <DogEar
+          type={dogEarType}
+          containerClassName={styles.premiumDogEarContainer}
         />
       ) : null}
-      {isArtistPick && !showPremiumCornerTag ? (
-        <TrackBannerIcon
-          type={TrackBannerIconType.STAR}
-          isMatrixMode={isMatrixMode}
-        />
+      {isArtistPick && !showPremiumDogTag ? (
+        <DogEar type={DogEarType.STAR} />
       ) : null}
-      {isUnlisted && (
-        <TrackBannerIcon
-          type={TrackBannerIconType.HIDDEN}
-          isMatrixMode={isMatrixMode}
-        />
-      )}
+      {isUnlisted && <DogEar type={DogEarType.HIDDEN} />}
       <div
         className={cn(styles.body, {
           // if track and not playlist/album

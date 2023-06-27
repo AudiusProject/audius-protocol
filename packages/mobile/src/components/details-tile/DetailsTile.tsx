@@ -18,7 +18,13 @@ import IconPlay from 'app/assets/images/iconPlay.svg'
 import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import { Button, Hyperlink, Tile } from 'app/components/core'
+import {
+  Button,
+  Hyperlink,
+  Tile,
+  DogEar,
+  DogEarType
+} from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
@@ -26,11 +32,6 @@ import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
-
-import {
-  LineupTileBannerIcon,
-  LineupTileBannerIconType
-} from '../lineup-tile/LineupTileBannerIcon'
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
@@ -261,21 +262,22 @@ export const DetailsTile = ({
     onPressPlay()
   }, [onPressPlay])
 
-  const renderCornerTag = () => {
-    const showPremiumCornerTag =
+  const renderDogEar = () => {
+    const showPremiumDogEar =
       isGatedContentEnabled &&
       premiumConditions &&
       (isOwner || !doesUserHaveAccess)
-    const cornerTagIconType = showPremiumCornerTag
+
+    const dogEarType = showPremiumDogEar
       ? isOwner
         ? premiumConditions.nft_collection
-          ? LineupTileBannerIconType.COLLECTIBLE_GATED
-          : LineupTileBannerIconType.SPECIAL_ACCESS
-        : LineupTileBannerIconType.LOCKED
+          ? DogEarType.COLLECTIBLE_GATED
+          : DogEarType.SPECIAL_ACCESS
+        : DogEarType.LOCKED
       : null
 
-    if (showPremiumCornerTag && cornerTagIconType) {
-      return <LineupTileBannerIcon type={cornerTagIconType} />
+    if (showPremiumDogEar && dogEarType) {
+      return <DogEar type={dogEarType} />
     }
     return null
   }
@@ -330,7 +332,7 @@ export const DetailsTile = ({
   return (
     <Tile styles={{ root: styles.root, content: styles.tileContent }}>
       <View style={styles.topContent}>
-        {renderCornerTag()}
+        {renderDogEar()}
         {renderHeader ? (
           renderHeader()
         ) : (

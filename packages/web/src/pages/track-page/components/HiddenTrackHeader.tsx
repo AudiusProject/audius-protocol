@@ -1,19 +1,19 @@
-import { ReactComponent as IconHidden } from 'assets/img/iconHidden.svg'
+import { IconHidden } from '@audius/stems'
 
 import styles from './HiddenTrackHeader.module.css'
 
 const messages = {
-  hiddenTrackTitle: 'HIDDEN TRACK'
+  hiddenTrackTitle: 'Hidden Track'
 }
 
 // Presents the Hidden Track title. Extracted for use in mobile and desktop
 // track pages.
 const HiddenTrackHeader = () => {
   return (
-    <div className={styles.hiddenHeaderContainer}>
-      <IconHidden />
-      <div className={styles.hiddenTrackLabel}>{messages.hiddenTrackTitle}</div>
-    </div>
+    <span className={styles.root}>
+      <IconHidden className={styles.icon} />
+      <div className={styles.label}>{messages.hiddenTrackTitle}</div>
+    </span>
   )
 }
 

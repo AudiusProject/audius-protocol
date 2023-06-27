@@ -1,5 +1,5 @@
 import type { ViewStyle } from 'react-native'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
@@ -7,16 +7,17 @@ import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconLock from 'app/assets/images/iconLock.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles(({ spacing }) => ({
   bannerIcon: {
     position: 'absolute',
     zIndex: 10,
     width: 80,
     height: 80,
     overflow: 'hidden',
-    borderRadius: 8,
+    borderRadius: spacing(2),
 
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 1 },
@@ -26,16 +27,16 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     transform: [{ rotate: '45deg' }, { translateX: -68 }],
-    width: 80,
-    height: 80
+    width: spacing(20),
+    height: spacing(20)
   },
   icon: {
-    marginTop: 4,
-    marginLeft: 4
+    marginTop: spacing(1),
+    marginLeft: spacing(1)
   }
-})
+}))
 
-export enum LineupTileBannerIconType {
+export enum DogEarType {
   STAR = 'star',
   HIDDEN = 'hidden',
   LOCKED = 'locked',
@@ -43,13 +44,14 @@ export enum LineupTileBannerIconType {
   SPECIAL_ACCESS = 'special access'
 }
 
-export const LineupTileBannerIcon = ({
-  type,
-  style
-}: {
-  type: LineupTileBannerIconType
+type DogEarProps = {
+  type: DogEarType
   style?: ViewStyle
-}) => {
+}
+
+export const DogEar = (props: DogEarProps) => {
+  const { type, style } = props
+  const styles = useStyles()
   const {
     neutral,
     neutralLight3,
@@ -60,23 +62,23 @@ export const LineupTileBannerIcon = ({
   } = useThemeColors()
 
   const { icon: Icon, colors } = {
-    [LineupTileBannerIconType.STAR]: {
+    [DogEarType.STAR]: {
       icon: IconStar,
       colors: [secondary, pageHeaderGradientColor2]
     },
-    [LineupTileBannerIconType.HIDDEN]: {
+    [DogEarType.HIDDEN]: {
       icon: IconHidden,
       colors: [neutral, neutralLight3]
     },
-    [LineupTileBannerIconType.LOCKED]: {
+    [DogEarType.LOCKED]: {
       icon: IconLock,
       colors: [accentBlue, accentBlue]
     },
-    [LineupTileBannerIconType.COLLECTIBLE_GATED]: {
+    [DogEarType.COLLECTIBLE_GATED]: {
       icon: IconCollectible,
       colors: [accentBlue, accentBlue]
     },
-    [LineupTileBannerIconType.SPECIAL_ACCESS]: {
+    [DogEarType.SPECIAL_ACCESS]: {
       icon: IconSpecialAccess,
       colors: [accentBlue, accentBlue]
     }

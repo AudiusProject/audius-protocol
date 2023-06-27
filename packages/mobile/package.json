@@ -39,7 +39,8 @@
     "typecheck:trace": "tsc --generateTrace tsc_trace",
     "clean": "react-native-clean-project",
     "preinstall": "npm-force-resolutions",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",

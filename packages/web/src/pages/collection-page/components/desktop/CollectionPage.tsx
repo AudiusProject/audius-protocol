@@ -17,7 +17,9 @@ import {
   CollectiblesPlaylistTable
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
+import { DogEarType } from 'components/dog-ear'
 import Page from 'components/page/Page'
+import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
@@ -241,7 +243,12 @@ const CollectionPage = ({
       containerClassName={styles.pageContainer}
       scrollableSearch
     >
-      <div className={styles.bodyWrapper}>
+      <Tile
+        className={styles.bodyWrapper}
+        size='large'
+        elevation='mid'
+        dogEar={isPrivate ? DogEarType.HIDDEN : undefined}
+      >
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
           <EmptyPage isOwner={isOwner} text={customEmptyText} />
@@ -277,7 +284,7 @@ const CollectionPage = ({
             />
           </div>
         )}
-      </div>
+      </Tile>
     </Page>
   )
 }

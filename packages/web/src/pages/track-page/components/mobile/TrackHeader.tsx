@@ -33,20 +33,18 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
+import { DogEar, DogEarType } from 'components/dog-ear'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
-import TrackBannerIcon, {
-  TrackBannerIconType
-} from 'components/track/TrackBannerIcon'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
-import { isDarkMode, isMatrix } from 'utils/theme/theme'
+import { isDarkMode } from 'utils/theme/theme'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
 
@@ -315,27 +313,21 @@ const TrackHeader = ({
     />
   )
 
-  const renderCornerTag = () => {
-    const showPremiumCornerTag =
+  const renderDogEar = () => {
+    const showPremiumDogEar =
       isGatedContentEnabled &&
       !isLoading &&
       premiumConditions &&
       (isOwner || !doesUserHaveAccess)
-    const cornerTagIconType = showPremiumCornerTag
+    const DogEarIconType = showPremiumDogEar
       ? isOwner
         ? premiumConditions.nft_collection
-          ? TrackBannerIconType.COLLECTIBLE_GATED
-          : TrackBannerIconType.SPECIAL_ACCESS
-        : TrackBannerIconType.LOCKED
+          ? DogEarType.COLLECTIBLE_GATED
+          : DogEarType.SPECIAL_ACCESS
+        : DogEarType.LOCKED
       : null
-    if (showPremiumCornerTag && cornerTagIconType) {
-      return (
-        <TrackBannerIcon
-          type={cornerTagIconType}
-          isMatrixMode={isMatrix()}
-          className={styles.cornerTag}
-        />
-      )
+    if (showPremiumDogEar && DogEarIconType) {
+      return <DogEar type={DogEarIconType} className={styles.DogEar} />
     }
     return null
   }
@@ -367,7 +359,7 @@ const TrackHeader = ({
 
   return (
     <div className={styles.trackHeader}>
-      {renderCornerTag()}
+      {renderDogEar()}
       {isUnlisted ? (
         <div className={styles.hiddenTrackHeaderWrapper}>
           <HiddenTrackHeader />

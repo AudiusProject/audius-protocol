@@ -9,15 +9,12 @@ import {
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
+import { DogEar, DogEarType } from 'app/components/core'
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
-import {
-  LineupTileBannerIcon,
-  LineupTileBannerIconType
-} from './LineupTileBannerIcon'
 import { LineupTileCoSign } from './LineupTileCoSign'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
@@ -75,17 +72,18 @@ export const LineupTile = ({
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
   const dispatch = useDispatch()
 
-  const showPremiumCornerTag =
+  const showPremiumDogEar =
     isGatedContentEnabled &&
     premiumConditions &&
     (isOwner || !doesUserHaveAccess) &&
     !(showArtistPick && isArtistPick)
-  const cornerTagIconType = showPremiumCornerTag
+
+  const dogEarType = showPremiumDogEar
     ? isOwner
       ? premiumConditions.nft_collection
-        ? LineupTileBannerIconType.COLLECTIBLE_GATED
-        : LineupTileBannerIconType.SPECIAL_ACCESS
-      : LineupTileBannerIconType.LOCKED
+        ? DogEarType.COLLECTIBLE_GATED
+        : DogEarType.SPECIAL_ACCESS
+      : DogEarType.LOCKED
     : null
 
   const handlePress = useCallback(() => {
@@ -111,18 +109,13 @@ export const LineupTile = ({
       scaleTo={scale}
       {...TileProps}
     >
-      {showPremiumCornerTag && cornerTagIconType ? (
-        <LineupTileBannerIcon
-          type={cornerTagIconType}
-          style={{ shadowRadius: 1 }}
-        />
+      {showPremiumDogEar && dogEarType ? (
+        <DogEar type={dogEarType} style={{ shadowRadius: 1 }} />
       ) : null}
       {showArtistPick && isArtistPick ? (
-        <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
+        <DogEar type={DogEarType.STAR} />
       ) : null}
-      {isUnlisted ? (
-        <LineupTileBannerIcon type={LineupTileBannerIconType.HIDDEN} />
-      ) : null}
+      {isUnlisted ? <DogEar type={DogEarType.HIDDEN} /> : null}
       <View>
         <LineupTileTopRight
           duration={duration}
