@@ -5,6 +5,7 @@ import (
 
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
+	"golang.org/x/exp/slog"
 )
 
 const getUserIDFromWallet = `
@@ -26,7 +27,7 @@ func GetUserIDFromWallet(q db.Queryable, ctx context.Context, walletAddress stri
 			// for now just check that the pair exists in the user table
 			// in the future this can check a "grants" table that a given operation is permitted
 			isValid := false
-			db.Conn.QueryRow(`
+			err := db.Conn.QueryRow(`
 			select count(*) > 0
 			from users
 			where is_current = true
@@ -36,8 +37,10 @@ func GetUserIDFromWallet(q db.Queryable, ctx context.Context, walletAddress stri
 				and is_available = TRUE
 				and is_deactivated = FALSE
 			`, u, walletAddress).Scan(&isValid)
-			if isValid {
+			if err == nil && isValid {
 				return int32(u), nil
+			} else {
+				slog.Warn("invalid current_user_id", "err", err, "wallet", walletAddress, "encoded_user_id", encodedCurrentUserId, "user_id", u)
 			}
 		}
 	}
