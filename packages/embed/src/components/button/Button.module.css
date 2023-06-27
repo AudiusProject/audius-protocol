@@ -1,0 +1,22 @@
+.container {
+  display: flex;
+  transition: all 0.14s ease-out;
+  transform: scale(1);
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+}
+
+.container:hover {
+  transform: scale(1.03);
+}
+
+.container:active {
+  transform: scale(0.95);
+}
+
+.disabled {
+  opacity: 0.7;
+  cursor: auto;
+  transform: scale(1) !important;
+}

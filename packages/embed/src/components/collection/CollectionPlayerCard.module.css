@@ -1,0 +1,151 @@
+.padding {
+  padding: 10px 14px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.logo {
+  margin-right: auto;
+}
+
+.logo svg {
+  width: 75px;
+  height: 20px;
+}
+
+.logo path {
+  fill: white;
+}
+
+.share {
+  margin-left: auto;
+}
+
+.trackRow {
+  display: flex;
+  align-items: center;
+}
+
+.trackRowTitles {
+  display: flex;
+  flex-direction: column;
+}
+
+.middleRow {
+  display: flex;
+  align-items: stretch;
+}
+
+.middleRowRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  margin-left: 12px;
+  min-width: 0;
+}
+
+.middleRowRight div {
+  margin-top: auto;
+}
+
+.listContainer {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  margin-top: 14px;
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.1);
+  min-height: 0;
+}
+
+.trackListRow {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.17s;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.trackListRow:hover {
+  background-color: rgba(0, 0, 0, 0.055);
+}
+
+.rowShaded {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.leftElement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  flex: 0 0 40px;
+}
+
+.trackIndex {
+  opacity: 0.5;
+}
+
+.rightElement {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 1;
+  min-width: 0;
+  margin-right: 12px;
+}
+
+.rightElement > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clickableText > div:hover {
+  text-decoration: underline;
+}
+
+.rowTitle {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.rowSubtitle {
+  font-size: 12px;
+  line-height: 14px;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.rowSubtitle svg {
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+}
+
+.rowSubtitle path {
+  fill: #ffffff;
+}
+
+.artwork {
+  height: 80px;
+  width: 80px;
+  margin: 0px;
+}
+
+.playButton {
+  height: 20px;
+  width: 20px;
+  border-radius: 10px;
+}

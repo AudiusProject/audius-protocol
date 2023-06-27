@@ -1,0 +1,17 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-radius: 12px;
+    overflow: visible;
+    transition: background 0.5s ease-in-out;
+}
+
+
+.twitterContainer {
+    flex: 0.13;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    overflow: hidden;
+    z-index: 2;
+}

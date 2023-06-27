@@ -1,0 +1,56 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #AAA7B8;
+    font-size: 20px;
+    font-family: "Gilroy";
+    font-weight: bold;
+    background-color: #ffffff;
+    justify-content: space-between;
+    padding: 24px 0px;
+    height: calc(100% - 48px);
+}
+
+.cardContainer {
+    font-size: 24px;
+    height: calc(100% - 84px);
+    padding: 34px 54px 50px;
+}
+
+.logo {
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    height: 52px;
+    width: 192px;
+}
+
+.label {
+    text-align: center;
+}
+
+.subLabel {
+    color: #7118B8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 34px;
+}
+
+.button {
+    background-color: #E000DB;
+    color: #ffffff;
+    padding: 8px 32px;
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.25);
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+.button svg {
+    margin-left: 12px;
+}
+
+.button path {
+    fill: #ffffff;
+}

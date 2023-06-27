@@ -1,0 +1,65 @@
+.container {
+  display: flex;
+  justify-content: stretch;
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0px;
+  transition: background 0.5s ease-in-out;
+  border-radius: 12px;
+}
+
+.trackInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 20px;
+  min-width: 0;
+}
+
+.topSection {
+  height: 10px;
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.bottomSection {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.shareButton {
+  position: absolute;
+  right: 6px;
+}
+
+.logo {
+  margin: 0px 16px;
+}
+
+.logo path {
+  fill: #ffffff;
+}
+
+.shareButtonHolder {
+  margin: 0px 16px 0px auto;
+}
+
+.titleContainer {
+  margin: 0px auto 0px 12px;
+  min-width: 0;
+}
+
+.artwork {
+  height: 106px;
+  width: 106px;
+}
+
+.artworkWrapper {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
