@@ -575,7 +575,7 @@ def test_index_app(app, mocker):
                         "_userId": second_set_new_apps_data[0]["user_id"],
                         "_metadata": f"""{{"name": "{second_set_new_apps_data[0]["name"]}", "description": "{second_set_new_apps_data[0]["description"]}", "app_signature": {{"signature": "{second_set_new_apps_data[0]["app_signature"]["signature"]}", "message": "{second_set_new_apps_data[0]["app_signature"]["message"]}"}}}}""",
                         "_action": Action.CREATE,
-                        "_signer": "user1wallet",
+                        "_signer": f"user{second_set_new_apps_data[0]['user_id']}wallet",
                     }
                 )
             },
