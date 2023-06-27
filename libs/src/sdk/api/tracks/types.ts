@@ -113,11 +113,34 @@ export const createUploadTrackSchema = () =>
     })
     .strict()
 
-export type UploadTrackRequest = z.input<
-  ReturnType<typeof createUploadTrackSchema>
+export type UploadTrackRequest = Omit<
+  z.input<ReturnType<typeof createUploadTrackSchema>>,
+  'onProgress'
 > & {
   // Typing function manually because z.function() does not
   // support argument names
+  onProgress?: (progress: number) => void
+}
+
+export const createUpdateTrackSchema = () =>
+  createUploadTrackSchema()
+    .pick({
+      userId: true,
+      coverArtFile: true,
+      metadata: true,
+      onProgress: true
+    })
+    .merge(
+      z.object({
+        trackId: HashId
+      })
+    )
+    .strict()
+
+export type UpdateTrackRequest = Omit<
+  z.input<ReturnType<typeof createUpdateTrackSchema>>,
+  'onProgress'
+> & {
   onProgress?: (progress: number) => void
 }
 

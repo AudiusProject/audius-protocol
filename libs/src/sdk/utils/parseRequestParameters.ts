@@ -13,10 +13,7 @@ export class ParseRequestError extends Error {
  * @returns The parsed data or throws an error
  */
 export const parseRequestParameters =
-  <T extends z.AnyZodObject | z.ZodOptional<z.AnyZodObject>>(
-    name: string,
-    schema: T
-  ) =>
+  <T extends z.ZodType>(name: string, schema: T) =>
   <J>(requestParameters: J): z.infer<T> => {
     const result = schema.safeParse(requestParameters)
     if (!result.success) {

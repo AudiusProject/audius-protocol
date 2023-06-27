@@ -1,3 +1,4 @@
+import type { z } from 'zod'
 import snakecaseKeys from 'snakecase-keys'
 import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -8,9 +9,11 @@ import {
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
+  createUpdateTrackSchema,
   createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
+  UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
 import type { StorageService } from '../../services/Storage'
@@ -69,7 +72,6 @@ export class TracksApi extends TracksApiWithoutStream {
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
   }
-
   /**
    * Upload a track
    */
@@ -90,30 +92,7 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = {
-      ...parsedMetadata,
-      ownerId: userId
-    }
-
-    const isPremium = metadata.isPremium
-    const isUnlisted = metadata.isUnlisted
-
-    // If track is premium, set remixes to false
-    if (isPremium && metadata.fieldVisibility) {
-      metadata.fieldVisibility.remixes = false
-    }
-
-    // If track is public, set required visibility fields to true
-    if (!isUnlisted) {
-      metadata.fieldVisibility = {
-        ...metadata.fieldVisibility,
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        playCount: true
-      }
-    }
+    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
 
     // Upload track audio and cover art to storage node
     const [audioResp, coverArtResp] = await Promise.all([
@@ -181,6 +160,72 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
+  /**
+   * Update a track
+   */
+  async updateTrack(
+    requestParameters: UpdateTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const {
+      userId,
+      trackId,
+      coverArtFile,
+      metadata: parsedMetadata,
+      onProgress
+    } = parseRequestParameters(
+      'updateTrack',
+      createUpdateTrackSchema()
+    )(requestParameters)
+
+    // Transform metadata
+    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
+
+    // Upload track cover art to storage node
+    const coverArtResp = await retry3(
+      async () =>
+        await this.storage.uploadFile({
+          file: coverArtFile,
+          onProgress,
+          template: 'img_square'
+        }),
+      (e) => {
+        console.log('Retrying uploadTrackCoverArt', e)
+      }
+    )
+
+    // Update metadata to include uploaded CIDs
+    const updatedMetadata = {
+      ...metadata,
+      coverArtSizes: coverArtResp.id
+    }
+
+    // Write metadata to chain
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber
+    }
+  }
+
+  /**
+   * Delete a track
+   */
   async deleteTrack(
     requestParameters: DeleteTrackRequest,
     writeOptions?: WriteOptions
@@ -202,6 +247,39 @@ export class TracksApi extends TracksApiWithoutStream {
     const txReceipt = response.txReceipt
 
     return txReceipt
+  }
+
+  private transformTrackUploadMetadata(
+    inputMetadata: z.output<
+      ReturnType<typeof createUploadTrackSchema>
+    >['metadata'],
+    userId: number
+  ) {
+    const metadata = {
+      ...inputMetadata,
+      ownerId: userId
+    }
+
+    const isPremium = metadata.isPremium
+    const isUnlisted = metadata.isUnlisted
+
+    // If track is premium, set remixes to false
+    if (isPremium && metadata.fieldVisibility) {
+      metadata.fieldVisibility.remixes = false
+    }
+
+    // If track is public, set required visibility fields to true
+    if (!isUnlisted) {
+      metadata.fieldVisibility = {
+        ...metadata.fieldVisibility,
+        genre: true,
+        mood: true,
+        tags: true,
+        share: true,
+        playCount: true
+      }
+    }
+    return metadata
   }
 
   private async generateTrackId() {
