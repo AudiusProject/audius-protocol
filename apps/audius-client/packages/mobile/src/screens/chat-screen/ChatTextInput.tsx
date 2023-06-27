@@ -114,6 +114,7 @@ export const ChatTextInput = ({
       multiline
       value={inputMessage}
       maxLength={10000}
+      autoCorrect
     />
   )
 }
