@@ -263,9 +263,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
-	// internal health: used by loadtest tool
-	internalApi.GET("/health/peers", ss.getPeerHealth)
-
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
@@ -315,9 +312,6 @@ func (ss *MediorumServer) MustStart() {
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
 	if ss.Config.WalletIsRegistered {
-		// the crudr health broadcaster is deprecated and replaced by the health poller.
-		// it's kept here for one extra deploy while old hosts are still expecting that.
-		go ss.startHealthBroadcaster()
 
 		go ss.startHealthPoller()
 

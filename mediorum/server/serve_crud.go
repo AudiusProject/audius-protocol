@@ -26,5 +26,10 @@ func (ss *MediorumServer) serveCrudPush(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
+	known := ss.crud.KnownType(op)
+	if !known {
+		return c.String(406, "unknown crudr type")
+	}
+
 	return ss.crud.ApplyOp(op)
 }

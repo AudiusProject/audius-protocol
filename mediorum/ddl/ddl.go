@@ -27,6 +27,7 @@ func Migrate(db *sql.DB) {
 	mustExec(db, mediorumMigrationTable)
 	runMigration(db, cidLookupDDL)
 	runMigration(db, delistStatusesDDL)
+	runMigration(db, `drop table if exists server_healths;`)
 
 	// delete legacy blobs
 	shouldExec(db, `delete from blobs where key not like 'ba%'`)
