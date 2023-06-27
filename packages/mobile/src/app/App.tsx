@@ -33,6 +33,7 @@ import {
   forceRefreshConnectivity,
   subscribeToNetworkStatusUpdates
 } from 'app/utils/reachability'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
@@ -87,7 +88,8 @@ const App = () => {
             value={{
               apiClient,
               audiusSdk,
-              audiusBackend: audiusBackendInstance
+              audiusBackend: audiusBackendInstance,
+              reportToSentry
             }}
           >
             <PersistGate loading={null} persistor={persistor}>

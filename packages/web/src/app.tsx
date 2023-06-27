@@ -19,6 +19,7 @@ import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
 import { store } from './store/configureStore'
+import { reportToSentry } from './store/errors/reportToSentry'
 
 import './services/webVitals'
 import './index.css'
@@ -27,7 +28,12 @@ const AudiusApp = () => {
   return (
     <Provider store={store}>
       <AudiusQueryContext.Provider
-        value={{ apiClient, audiusBackend: audiusBackendInstance, audiusSdk }}
+        value={{
+          apiClient,
+          audiusBackend: audiusBackendInstance,
+          audiusSdk,
+          reportToSentry
+        }}
       >
         <ConnectedRouter history={history}>
           <LastLocationProvider>

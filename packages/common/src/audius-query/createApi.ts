@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useProxySelector } from 'hooks/useProxySelector'
+import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
 import { Status } from 'models/Status'
 import { getCollection } from 'store/cache/collections/selectors'
@@ -39,6 +40,7 @@ import {
   QueryHookResults
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
+
 const { addEntries } = cacheActions
 
 export const createApi = <
@@ -296,6 +298,14 @@ const fetchData = async <Args, Data>(
 
     endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch })
   } catch (e) {
+    context.reportToSentry({
+      error: e as Error,
+      level: ErrorLevel.Error,
+      additionalInfo: { fetchArgs, endpoint },
+      name: `${
+        endpoint.options?.type === 'mutation' ? 'Mutate' : 'Query'
+      } ${capitalize(endpointName)} error`
+    })
     dispatch(
       // @ts-ignore
       actions[`fetch${capitalize(endpointName)}Error`]({
