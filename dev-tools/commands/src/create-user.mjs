@@ -7,7 +7,7 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("create-user")
   .description("Create a new user")
-  .argument("[handle]", "The handle for the new user (chosen randomly if not specified)")
+  .argument("<handle>", "The handle for the new user (chosen randomly if not specified)")
   .option("-p, --password <password>", "The password for the new user", "password")
   .option("-e, --email <email>", "The email for the new user (chosen randomly if not specified)")
   .action(async (handle, { password, email }) => {
@@ -49,6 +49,7 @@ program.command("create-user")
 
       console.log(chalk.green("Successfully created user!"));
       console.log(chalk.yellow.bold("Handle:   "), metadata.handle);
+      console.log(chalk.yellow.bold("User ID:   "), response.userId);
       console.log(chalk.yellow.bold("Email:    "), email);
       console.log(chalk.yellow.bold("Password: "), password);
 

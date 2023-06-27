@@ -16,7 +16,7 @@ bp = Blueprint("redirect_weights", __name__)
 @cache(ttl_sec=10 * 60, cache_prefix_override=internal_api_cache_prefix)
 def redirect_weights():
     redis = get_redis()
-    endpoints, _ = get_all_other_discovery_nodes_cached(redis)
+    endpoints = get_all_other_discovery_nodes_cached(redis)
     loads = {}
     for endpoint in endpoints:
         try:

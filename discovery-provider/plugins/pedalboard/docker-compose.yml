@@ -18,3 +18,12 @@ services:
       args:
         app_name: trending-challenge-rewards
     restart: always
+
+  sla-auditor:
+    container_name: sla-auditor
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: sla-auditor
+    restart: always

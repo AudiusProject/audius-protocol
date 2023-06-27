@@ -109,10 +109,14 @@ func (s *ChatServer) getStatus(c echo.Context) error {
 		"commit":               vcsRevision,
 		"built":                vcsBuildTime,
 		"booted":               bootTime,
-		"healthy":              s.config.IsRegisteredWallet && s.websocketError == nil, // && len(errors) == 0,
+		"healthy":              s.isHealthy(),
 		"errors":               errors,
 		"websocket_error":      s.websocketError,
 	})
+}
+
+func (s *ChatServer) isHealthy() bool {
+	return s.config.IsRegisteredWallet && s.websocketError == nil
 }
 
 type ValidatedPermission struct {
@@ -163,9 +167,8 @@ func (s *ChatServer) mutate(c echo.Context) error {
 }
 
 func (s *ChatServer) getHealthStatus() schema.Health {
-	errors := s.proc.SweeperErrors()
 	return schema.Health{
-		IsHealthy: s.websocketError == nil && len(errors) == 0,
+		IsHealthy: s.isHealthy(),
 	}
 }
 

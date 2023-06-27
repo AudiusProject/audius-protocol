@@ -119,7 +119,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// check that we're registered...
 	for _, peer := range config.Peers {
-		if strings.EqualFold(config.Self.Wallet, peer.Wallet) {
+		if strings.EqualFold(config.Self.Wallet, peer.Wallet) && strings.EqualFold(config.Self.Host, peer.Host) {
 			config.WalletIsRegistered = true
 			break
 		}
@@ -169,7 +169,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		if err == nil {
 			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
-			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", err)
+			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
 		}
 	} else {
 		slog.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
@@ -233,6 +233,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:cid", ss.getBlob)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
+	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireSignature)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
@@ -261,9 +262,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
-
-	// internal health: used by loadtest tool
-	internalApi.GET("/health/peers", ss.getPeerHealth)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
@@ -314,9 +312,6 @@ func (ss *MediorumServer) MustStart() {
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
 	if ss.Config.WalletIsRegistered {
-		// the crudr health broadcaster is deprecated and replaced by the health poller.
-		// it's kept here for one extra deploy while old hosts are still expecting that.
-		go ss.startHealthBroadcaster()
 
 		go ss.startHealthPoller()
 
@@ -349,12 +344,12 @@ func (ss *MediorumServer) Stop() {
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
-		ss.logger.Error("echo shutdown", err)
+		ss.logger.Error("echo shutdown", "err", err)
 	}
 
 	if db, err := ss.crud.DB.DB(); err == nil {
 		if err := db.Close(); err != nil {
-			ss.logger.Error("db shutdown", err)
+			ss.logger.Error("db shutdown", "err", err)
 		}
 	}
 
