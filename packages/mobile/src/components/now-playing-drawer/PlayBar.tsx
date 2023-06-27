@@ -111,7 +111,9 @@ export const PlayBar = (props: PlayBarProps) => {
   const renderFavoriteButton = () => {
     return (
       <FavoriteButton
-        isDisabled={currentUser?.user_id === track?.owner_id}
+        isDisabled={
+          currentUser?.user_id === track?.owner_id || track?.is_unlisted
+        }
         onPress={onPressFavoriteButton}
         isActive={track?.has_current_user_saved ?? false}
         wrapperStyle={styles.icon}
