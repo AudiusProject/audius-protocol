@@ -139,6 +139,7 @@ const PlayBar = ({
         <TrackingBar percentComplete={percentComplete} />
         <div className={styles.controls}>
           <FavoriteButton
+            isDisabled={track?.is_unlisted}
             onClick={toggleFavorite}
             isDarkMode={isDarkMode()}
             isMatrixMode={isMatrix()}

@@ -472,7 +472,7 @@ class PlayBar extends Component {
                     aria-label={repostText}
                     onClick={() => this.onToggleRepost(reposted, trackId)}
                     isActive={reposted}
-                    isDisabled={isFavoriteAndRepostDisabled}
+                    isDisabled={isFavoriteAndRepostDisabled || isTrackUnlisted}
                     isDarkMode={shouldShowDark(theme)}
                     isMatrixMode={matrix}
                   />
@@ -489,7 +489,7 @@ class PlayBar extends Component {
               >
                 <span>
                   <FavoriteButton
-                    isDisabled={isFavoriteAndRepostDisabled}
+                    isDisabled={isFavoriteAndRepostDisabled || isTrackUnlisted}
                     isMatrixMode={matrix}
                     isActive={favorited}
                     isDarkMode={shouldShowDark(theme)}
