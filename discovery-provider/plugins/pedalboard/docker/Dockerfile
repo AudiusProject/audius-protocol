@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:18.16-alpine AS base
 
 ARG app_name
 

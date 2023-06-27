@@ -3,7 +3,7 @@ FROM node:18.16 as builder
 COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM node:18-slim
+FROM node:18.16-slim
 
 WORKDIR /usr/src/app
 
