@@ -38,7 +38,7 @@ func TestMutateEndpoint(t *testing.T) {
 	user2IdEncoded, _ := misc.EncodeHashId(int(user2Id))
 
 	// Create 2 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
+	_, err = tx.Exec("insert into users (user_id, handle, wallet, is_current) values ($1, $2::text, lower($2), true), ($3, $4::text, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
 	assert.NoError(t, err)
 
 	err = tx.Commit()
