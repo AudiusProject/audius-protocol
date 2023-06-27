@@ -42,8 +42,6 @@ export const onDisburse = async (
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
-  console.log("specifier",specifier)
-  console.log("specifier split", specifier.split(":"))
   const trimmedSpecifier = specifier.split(":")[0]
 
   const nodeGroups = await assembleNodeGroups(libs);
