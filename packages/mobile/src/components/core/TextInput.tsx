@@ -145,6 +145,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
       onBlur,
       placeholder,
       hideInputAccessory: hideInputAccessoryProp,
+      autoCorrect = false,
       ...other
     } = props
     const { autoFocus, returnKeyType } = other
@@ -315,7 +316,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             style={[styles.input, stylesProp?.input]}
             underlineColorAndroid='transparent'
             autoComplete='off'
-            autoCorrect={false}
+            autoCorrect={autoCorrect}
             selectionColor={secondary}
             placeholderTextColor={styles.placeholderText.color}
             value={value}
