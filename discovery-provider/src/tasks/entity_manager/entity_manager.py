@@ -8,6 +8,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
@@ -268,7 +269,7 @@ def entity_manager_update(
                         revoke_grant(params)
 
                     logger.info("process transaction")  # log event context
-                except Exception as e:
+                except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(
                         f"failed to process transaction error {e}"

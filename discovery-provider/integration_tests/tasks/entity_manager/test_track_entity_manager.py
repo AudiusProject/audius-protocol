@@ -491,8 +491,64 @@ def test_index_invalid_tracks(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(web3, None)
-    test_metadata = {"QmAIDisabled": {"ai_attribution_user_id": 2}}
+    test_metadata = {
+        "QmAIDisabled": {"ai_attribution_user_id": 2},
+        "QmInvalidUpdateTrack1": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "track 1 2",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "repost_count": 12,
+            "save_count": 21,
+            "description": "updated description",
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "track_id": 77955,
+            "stem_of": None,
+            "is_playlist_upload": False,
+            "ai_attribution_user_id": 2,
+        },
+    }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
+    invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
+
     tx_receipts = {
         # invalid create
         "CreateTrackBelowOffset": [
@@ -630,7 +686,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 2,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "User2Wallet",
                     }
                 )
@@ -701,7 +757,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -715,7 +771,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 2,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "User2Wallet",
                     }
                 )
@@ -936,7 +992,7 @@ def test_invalid_track_description(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0
+            block_hash=0,
         )
 
         assert total_changes == 0

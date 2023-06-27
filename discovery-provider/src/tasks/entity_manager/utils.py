@@ -302,7 +302,6 @@ def sanitize_json(json_resp):
 def parse_metadata(metadata, action, entity_type):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
-
     try:
         data = sanitize_json(json.loads(metadata))
 

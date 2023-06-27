@@ -3,6 +3,7 @@ import time
 from typing import Optional, TypedDict, Union, cast
 
 from eth_account.messages import defunct_hash_message
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.utils import (
     Action,
@@ -110,48 +111,48 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
     session = params.session
 
     if params.entity_type != EntityType.DEVELOPER_APP:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid Developer App Transaction, wrong entity type {params.entity_type}"
         )
     if not user_id:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user id is required and was not provided"
         )
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user id {user_id} does not exist"
         )
     if not params.existing_records[EntityType.USER][user_id].wallet:
-        raise Exception(
+        raise IndexingValidationError(
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
     if (
         params.existing_records[EntityType.USER][user_id].wallet.lower()
         != params.signer.lower()
     ):
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user does not match signer"
         )
     if params.action == Action.DELETE:
         if not address:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
             )
 
         if address not in params.existing_records[EntityType.DEVELOPER_APP]:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Delete Developer App Transaction, developer app with address {metadata['address']} does not exist"
             )
         existing_developer_app = params.existing_records[EntityType.DEVELOPER_APP][
             address
         ]
         if user_id != existing_developer_app.user_id:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Delete Developer App Transaction, user id {user_id} does not match given developer app address"
             )
     elif params.action == Action.CREATE:
         if not metadata["app_signature"]:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, app signature is required and was not provided"
             )
         if (
@@ -163,38 +164,38 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
                 (metadata["app_signature"].get("message", "").split())[-1]
             )
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, app signature provided does not have correct message"
             )
         try:
             address = get_app_address_from_signature(metadata["app_signature"])
         except:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, app signature provided is invalid"
             )
         if not address:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, app signature provided is invalid"
             )
         if not metadata["name"]:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, name is required and was not provided"
             )
         if address in params.existing_records[EntityType.DEVELOPER_APP]:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Create Developer App Transaction, address {address} already exists"
             )
         if metadata["is_personal_access"] != None and not isinstance(
             metadata["is_personal_access"], bool
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, is_personal_access must be a boolean (or empty)"
             )
         if metadata["description"] != None and (
             not isinstance(metadata["description"], str)
             or len((metadata["description"])) > 160
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, description must be under 161 chars"
             )
 
@@ -215,7 +216,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
                 "Invalid Create Developer App Transaction, user has too many developer apps"
             )
     else:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid Developer App Transaction, action {params.action} is not valid"
         )
     return address
@@ -224,7 +225,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
 def create_developer_app(params: ManageEntityParameters):
     metadata = get_create_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
-        raise Exception("Invalid Developer App Transaction, unable to parse metadata")
+        raise IndexingValidationError("Invalid Developer App Transaction, unable to parse metadata")
     address = validate_developer_app_tx(params, metadata)
     user_id = params.user_id
 
@@ -254,7 +255,7 @@ def create_developer_app(params: ManageEntityParameters):
 def delete_developer_app(params: ManageEntityParameters):
     metadata = get_delete_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
-        raise Exception(
+        raise IndexingValidationError(
             "Invalid Revoke Developer App Transaction, unable to parse metadata"
         )
     address = validate_developer_app_tx(params, metadata)

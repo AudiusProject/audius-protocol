@@ -1,6 +1,7 @@
 import json
 import logging
 
+from src.exceptions import IndexingValidationError
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -19,16 +20,16 @@ def get_verifier_address():
 
 def validate_notification_tx(params: ManageEntityParameters):
     if params.entity_type != EntityType.NOTIFICATION:
-        raise Exception(f"Entity type {params.entity_type} is not a notification")
+        raise IndexingValidationError(f"Entity type {params.entity_type} is not a notification")
 
     if params.action == Action.VIEW:
         user_id = params.user_id
         if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(f"User {user_id} does not exist")
+            raise IndexingValidationError(f"User {user_id} does not exist")
 
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
-            raise Exception(f"User {user_id} does not match signer")
+            raise IndexingValidationError(f"User {user_id} does not match signer")
         return
 
     elif params.action == Action.CREATE:
@@ -38,16 +39,16 @@ def validate_notification_tx(params: ManageEntityParameters):
             not valid_notification_addr
             or valid_notification_addr.lower() != params.signer.lower()
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Notificaiton Creation Transaction, signer does not match notification address"
             )
         try:
             json.loads(params.metadata)
         except:
-            raise Exception("Invalid Notificaiton Metadata Json, unable to parse")
+            raise IndexingValidationError("Invalid Notificaiton Metadata Json, unable to parse")
     else:
         action = params.action
-        raise Exception(f"Entity action {action} is not valid")
+        raise IndexingValidationError(f"Entity action {action} is not valid")
 
 
 def view_notification(params: ManageEntityParameters):
@@ -86,16 +87,16 @@ def create_notification(params: ManageEntityParameters):
 def validate_view_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exist")
+        raise IndexingValidationError(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {user_id} does not match signer")
+        raise IndexingValidationError(f"User {user_id} does not match signer")
 
     playlist_id = params.entity_id
     if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
         # Playlist does not exist, throw error
-        raise Exception("Playlist does not exist, cannot record playlist view")
+        raise IndexingValidationError("Playlist does not exist, cannot record playlist view")
 
 
 def view_playlist(params: ManageEntityParameters):

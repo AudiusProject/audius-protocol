@@ -5,6 +5,7 @@ from typing import List
 import pytest
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -348,7 +349,8 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -500,7 +502,8 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})

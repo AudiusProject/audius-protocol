@@ -39,3 +39,7 @@ class MissingEthRecipientError(Base):
         self.specifier = specifier
         self.signature = signature
         self.slot = slot
+
+
+class IndexingValidationError(Exception):
+    pass

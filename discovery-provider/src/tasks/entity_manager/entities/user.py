@@ -9,6 +9,7 @@ from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -46,7 +47,7 @@ def validate_user_tx(params: ManageEntityParameters):
     user_id = params.user_id
 
     if params.entity_type != EntityType.USER:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid User Transaction, wrong entity type {params.entity_type}"
         )
 
@@ -63,32 +64,32 @@ def validate_user_tx(params: ManageEntityParameters):
             # dont want to raise here, only check bio IF it exists
             pass
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
-            raise Exception(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
+            raise IndexingValidationError(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
-            raise Exception(f"Invalid User Transaction, user {user_id} already exists")
+            raise IndexingValidationError(f"Invalid User Transaction, user {user_id} already exists")
         if user_id < USER_ID_OFFSET:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
             )
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(f"Invalid User Transaction, user {user_id} does not exist")
+            raise IndexingValidationError(f"Invalid User Transaction, user {user_id} does not exist")
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid User Transaction, user wallet signer does not match"
             )
     elif params.action == Action.VERIFY:
         verifier_address = get_verifier_address()
         if not verifier_address or verifier_address.lower() != params.signer.lower():
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid User Transaction, signer does not match verifier address"
             )
     else:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid User Transaction, action {params.action} is not valid"
         )
 
@@ -102,7 +103,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
-            raise Exception(f"User handle {user_metadata['handle']} already exists")
+            raise IndexingValidationError(f"User handle {user_metadata['handle']} already exists")
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = handle_lower
 
@@ -122,7 +123,7 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if not track_id_exists:
             # Invalid artist pick. Should not continue to save
-            raise Exception(
+            raise IndexingValidationError(
                 f"Cannot set artist pick. Track {user_metadata['artist_pick_track_id']} does not exist"
             )
 
@@ -130,15 +131,15 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
 def validate_user_handle(handle: str):
     handle = handle.lower()
     if handle != re.sub(r"[^a-z0-9_\.]", "", handle):
-        raise Exception(f"Handle {handle} contains illegal characters")
+        raise IndexingValidationError(f"Handle {handle} contains illegal characters")
     if len(handle) > 30:
-        raise Exception(f"Handle {handle} is too long")
+        raise IndexingValidationError(f"Handle {handle} is too long")
     if handle in reserved_handles_lower:
-        raise Exception(f"Handle {handle} is a reserved word")
+        raise IndexingValidationError(f"Handle {handle} is a reserved word")
     if handle in genres_lower:
-        raise Exception(f"Handle {handle} is a genre name")
+        raise IndexingValidationError(f"Handle {handle} is a genre name")
     if handle in moods_lower:
-        raise Exception(f"Handle {handle} is a mood name")
+        raise IndexingValidationError(f"Handle {handle} is a mood name")
     return handle
 
 
