@@ -67,8 +67,9 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
@@ -149,7 +150,12 @@ def entity_manager_update(
                         block_number,
                         event_blockhash,
                         txhash,
+                        logger
                     )
+
+                    # update logger context with this tx event
+                    logger.update_context(event["args"])
+
                     # add processed metadata to cid_metadata dicts to batch save to cid_data table
                     # later
                     if expect_cid_metadata_json(
@@ -261,10 +267,12 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
+
+                    logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
+                        f"failed to process transaction error {e}"
                     )
         # compile records_to_save
         records_to_save = []

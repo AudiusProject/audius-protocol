@@ -47,7 +47,7 @@ def get_app_address_from_signature(app_signature):
 def is_within_6_hours(timestamp_str):
     current_timestamp = int(time.time())
     input_timestamp = int(timestamp_str)
-    time_difference = current_timestamp - input_timestamp
+    time_difference = abs(current_timestamp - input_timestamp)
     return time_difference < 6 * 60 * 60
 
 
@@ -108,6 +108,7 @@ def get_delete_developer_app_metadata_from_raw(
 def validate_developer_app_tx(params: ManageEntityParameters, metadata):
     user_id = params.user_id
     address = metadata.get("address", None)
+    session = params.session
 
     if params.entity_type != EntityType.DEVELOPER_APP:
         raise IndexingValidationError(
@@ -196,6 +197,23 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         ):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, description must be under 161 chars"
+            )
+
+        num_existing_apps_from_user = (
+            session.query(DeveloperApp).filter(DeveloperApp.user_id == user_id).count()
+        )
+
+        num_new_apps_from_user = 0
+        for addressKey, apps in params.new_records[EntityType.DEVELOPER_APP].items():
+            if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
+                num_new_apps_from_user += 1
+
+        user_has_too_many_apps = (
+            num_existing_apps_from_user + num_new_apps_from_user >= 3
+        )
+        if user_has_too_many_apps:
+            raise Exception(
+                "Invalid Create Developer App Transaction, user has too many developer apps"
             )
     else:
         raise IndexingValidationError(

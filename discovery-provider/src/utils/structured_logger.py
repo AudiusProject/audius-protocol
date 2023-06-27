@@ -12,6 +12,9 @@ class StructuredLogger:
     def set_context(self, key: str, value):
         self.context[key] = value
 
+    def update_context(self, d: dict):
+        self.context.update(d)
+
     def get_context(self):
         return {
             "path": self.logger.name,

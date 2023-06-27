@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       messages: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false
+        defaultValue: true
       }
     },
     {}

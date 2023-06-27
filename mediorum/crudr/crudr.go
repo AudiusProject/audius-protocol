@@ -45,8 +45,8 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
-func New(host string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
-	host = httputil.RemoveTrailingSlash(strings.ToLower(host))
+func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
+	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
 	opDDL := `
 	create table if not exists ops (
@@ -73,15 +73,15 @@ func New(host string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *go
 		DB:           db,
 		myPrivateKey: myPrivateKey,
 
-		host:    host,
-		logger:  slog.With("module", "crud", "from", host),
+		host:    selfHost,
+		logger:  slog.With("module", "crud", "from", selfHost),
 		typeMap: map[string]reflect.Type{},
 
 		peerClients: make([]*PeerClient, len(peerHosts)),
 	}
 
-	for idx, host := range peerHosts {
-		c.peerClients[idx] = NewPeerClient(host, c)
+	for idx, peerHost := range peerHosts {
+		c.peerClients[idx] = NewPeerClient(peerHost, c, selfHost)
 	}
 
 	return c
@@ -195,6 +195,11 @@ func (c *Crudr) tableNameFor(obj interface{}) string {
 	}
 	typeName := t.Name()
 	return c.DB.NamingStrategy.TableName(typeName)
+}
+
+func (c *Crudr) KnownType(op *Op) bool {
+	_, ok := c.typeMap[op.Table]
+	return ok
 }
 
 func (c *Crudr) ApplyOp(op *Op) error {
