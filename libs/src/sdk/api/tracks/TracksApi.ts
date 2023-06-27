@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import type { z } from 'zod'
 import snakecaseKeys from 'snakecase-keys'
 import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
