@@ -1,0 +1,148 @@
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../assets/fonts/AvenirNextLTPro-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  font-style: bold;
+  font-weight: 700;
+  src: url("../assets/fonts/AvenirNextLTPro-Demi-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Avenir Next LT Pro";
+  font-style: bold;
+  font-weight: 900;
+  src: url("../assets/fonts/AvenirNextLTPro-Bold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Gilroy";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../assets/fonts/Gilroy-Bold.otf") format("opentype");
+}
+
+body {
+  margin: 0px;
+  overflow: hidden;
+}
+
+.app {
+  color: white;
+  font-family: "Avenir Next LT Pro";
+  font-style: bold;
+  font-weight: 700;
+  user-select: none;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /* fonts */
+  --unit: 4px;
+  --unit-1: 4px;
+  --unit-2: 8px;
+  --unit-3: 12px;
+  --unit-4: 16px;
+  --unit-5: 20px;
+  --unit-6: 24px;
+  --unit-7: 28px;
+  --unit-8: 32px;
+  --unit-9: 36px;
+  --unit-10: 40px;
+  --unit-11: 44px;
+  --unit-12: 48px;
+  --unit-13: 52px;
+  --unit-14: 56px;
+  --unit-15: 60px;
+  --unit-16: 64px;
+  --unit-17: 68px;
+  --unit-18: 72px;
+  --unit-19: 76px;
+  --unit-20: 80px;
+  --unit-21: 84px;
+  --unit-22: 88px;
+  --unit-23: 92px;
+  --unit-24: 96px;
+  --unit-half: 2px;
+  --negative-unit: -4px;
+  --negative-unit-2: -8px;
+
+  /* colors */
+  --background: #f3f0f7;
+
+  --primary: #cc0fe0;
+  --primary-dark-1: #b80eca;
+  --primary-dark-2: #a30cb3;
+  --primary-light-1: #d127e3;
+  --primary-light-2: #d63fe6;
+
+  --secondary: #7e1bcc;
+  --secondary-transparent: rgba(126, 27, 204, 0.85);
+  --secondary-dark-1: #7118b8;
+  --secondary-dark-2: #6516a3;
+  --secondary-light-1: #8b32d1;
+  --secondary-light-2: #9849d6;
+
+  --neutral: #858199;
+  --neutral-dark-1: #78748a;
+  --neutral-dark-2: #6a677a;
+  --neutral-dark-3: #4d535a;
+  --neutral-light-1: #9d9aad;
+  --neutral-light-2: #aaa7b8;
+  --neutral-light-3: #b6b3c2;
+  --neutral-light-4: #c2c0cc;
+  --neutral-light-5: #cecdd6;
+  --neutral-light-6: #dad9e0;
+  --neutral-light-7: #e7e6eb;
+  --neutral-light-8: #f2f2f4;
+  --neutral-light-9: #f7f7f9;
+  --neutral-light-10: #fcfcfc;
+  --white: #ffffff;
+
+  --accent-red: #d0021b;
+  --accent-red-dark-1: #aa0115;
+  --accent-red-light-1: #d51b32;
+
+  --accent-green: #0ba400;
+  --accent-green-dark-1: #0a9400;
+  --accent-green-light-1: #23ad1a;
+
+  --accent-orange: #ff9400;
+  --accent-orange-dark-1: #f28100;
+  --accent-orange-light-1: #ffa70f;
+
+  --accent-purple: #8e51cf;
+
+  --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
+  --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
+  --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
+  --page-header-gradient: linear-gradient(-22deg, #5b23e1 0%, #a22feb 100%);
+  --accent-red-gradient: linear-gradient(
+    315deg,
+    var(--accent-red-dark-1) 0%,
+    var(--accent-red-light-1) 100%
+  );
+
+  --scrubber-hover: var(--primary-gradient);
+  --slider-handle: var(--white);
+  --play-button-fill: #ffffff;
+}
+
+.compactApp {
+    height: 120px;
+}
+
+.twitter {
+    margin: 24px;
+    height: calc(100vh - 48px);
+    width: calc(100vw - 48px);
+    overflow: visible;
+}
+

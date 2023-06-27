@@ -1,0 +1,48 @@
+.container {
+  background-color: none;
+  height: 40px;
+  width: 40px;
+  border-radius: 40px;
+  box-shadow: 0 2px 8px -2px rgba(196, 93, 48, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-out;
+  transform: scale(1);
+  overflow: visible;
+  cursor: pointer;
+}
+
+.container.isBuffering {
+  background-color: #FFFFFF;
+}
+
+.container:hover {
+  transform: scale(1.07);
+}
+
+.container:active {
+  transform: scale(0.98);
+}
+
+.container svg {
+  height: 100%;
+  width: 100%;
+}
+
+.container svg path {
+  fill: #FFFFFF;
+}
+
+.container.isBuffering svg path {
+  fill: var(--play-button-fill);
+}
+
+.spinner {
+  height: 70%;
+  width: 70%;
+}
+
+.spinner circle {
+  stroke-width: 20px;
+}

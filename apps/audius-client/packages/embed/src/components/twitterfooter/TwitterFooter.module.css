@@ -1,0 +1,27 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex: 0 0 58px;
+    justify-content: center;
+    align-items: center;
+    color: #7F00E0;
+    background-color: #ffffff;
+    font-family: "Gilroy";
+    font-weight: bold;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.container:hover {
+    background-color: #ECECEC;
+}
+
+.logo {
+    height: 36px;
+    width: 136px;
+    margin-left: 2px;
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+}

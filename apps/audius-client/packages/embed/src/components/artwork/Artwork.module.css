@@ -1,0 +1,63 @@
+.container {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.2s ease-out;
+  transform: scale(1);
+  cursor: pointer;
+}
+
+.container.hasLoaded {
+  box-shadow: 0 2px 15px -3px rgba(44,19,8,0.2);
+}
+
+.container:hover {
+  transform: scale(1.02);
+}
+
+.container:active {
+  transform: scale(0.95);
+}
+
+.albumArt {
+  height: 112px;
+  width: 112px;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity 0.50s ease-in-out;
+}
+
+.hasLoaded .albumArt {
+  opacity: 1;
+}
+
+.playButtonWrapper {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.3) 100%);
+  transition: all 0.25s;
+}
+
+.playButtonWrapper:hover {
+  opacity: 1;
+}
+
+.logoWrapper {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+  right: 8px;
+  transition: opacity 0.25s ease-in-out;
+  height: 60px;
+  width: 150px;
+  background-size: 108px 36px !important;
+  background-repeat: no-repeat !important;
+  background-position: top right !important;
+}
