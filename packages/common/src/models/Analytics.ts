@@ -84,6 +84,13 @@ export enum Name {
   AUDIUS_OAUTH_COMPLETE = 'Audius Oauth: Login (authenticate) Success',
   AUDIUS_OAUTH_ERROR = 'Audius Oauth: Login (authenticate) Failed',
 
+  // Developer app
+  DEVELOPER_APP_CREATE_SUBMIT = 'Developer Apps: Create app submit',
+  DEVELOPER_APP_CREATE_SUCCESS = 'Developer Apps: Create app success',
+  DEVELOPER_APP_CREATE_ERROR = 'Developer Apps: Create app error',
+  DEVELOPER_APP_DELETE_SUCCESS = 'Developer Apps: Delete app success',
+  DEVELOPER_APP_DELETE_ERROR = 'Developer Apps: Delete app error',
+
   // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
@@ -1417,23 +1424,61 @@ type AudiusOauthStart = {
   eventName: Name.AUDIUS_OAUTH_START
   redirectUriParam: string | string[]
   originParam: string | string[] | undefined | null
-  appNameParam: string | string[]
+  appId: string | string[] // App name or API Key
   responseMode: string | string[] | undefined | null
+  scope: string | string[]
 }
 
 type AudiusOauthSubmit = {
   eventName: Name.AUDIUS_OAUTH_SUBMIT
+  appId: string | string[]
+  scope: string | string[]
   alreadySignedIn: boolean
 }
 
 type AudiusOauthComplete = {
   eventName: Name.AUDIUS_OAUTH_COMPLETE
+  appId: string | string[]
+  scope: string | string[]
+  alreadyAuthorized?: boolean
 }
 
 type AudiusOauthError = {
   eventName: Name.AUDIUS_OAUTH_ERROR
+  appId: string | string[]
+  scope: string | string[]
   isUserError: boolean
   error: string
+}
+
+type DeveloperAppCreateSubmit = {
+  eventName: Name.DEVELOPER_APP_CREATE_SUBMIT
+  name?: string
+  description?: string
+}
+
+type DeveloperAppCreateSuccess = {
+  eventName: Name.DEVELOPER_APP_CREATE_SUCCESS
+  name: string
+  apiKey: string
+}
+
+type DeveloperAppCreateError = {
+  eventName: Name.DEVELOPER_APP_CREATE_ERROR
+  error?: string
+}
+
+type DeveloperAppDeleteSuccess = {
+  eventName: Name.DEVELOPER_APP_DELETE_SUCCESS
+  name?: string
+  apiKey?: string
+}
+
+type DeveloperAppDeleteError = {
+  eventName: Name.DEVELOPER_APP_DELETE_ERROR
+  name?: string
+  apiKey?: string
+  error?: string
 }
 
 type BuyAudioOnRampOpened = {
@@ -1823,3 +1868,8 @@ export type AllTrackingEvents =
   | MessageUnfurlPlaylist
   | TipUnlockedChat
   | ChatReportUser
+  | DeveloperAppCreateSubmit
+  | DeveloperAppCreateSuccess
+  | DeveloperAppCreateError
+  | DeveloperAppDeleteSuccess
+  | DeveloperAppDeleteError

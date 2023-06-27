@@ -256,13 +256,18 @@ export const OAuthLoginPage = () => {
     (isUserError: boolean, errorMessage: string, error?: Error) => {
       setGeneralSubmitError(errorMessage)
       record(
-        make(Name.AUDIUS_OAUTH_ERROR, { isUserError, error: errorMessage })
+        make(Name.AUDIUS_OAUTH_ERROR, {
+          isUserError,
+          error: errorMessage,
+          appId: (apiKey || appName)!,
+          scope: scope!
+        })
       )
       if (error && !isUserError) {
         reportToSentry({ level: ErrorLevel.Error, error })
       }
     },
-    [record]
+    [record, appName, apiKey, scope]
   )
 
   const setAndLogInvalidCredentialsError = () => {
@@ -270,7 +275,9 @@ export const OAuthLoginPage = () => {
     record(
       make(Name.AUDIUS_OAUTH_ERROR, {
         isUserError: true,
-        error: messages.invalidCredentialsError
+        error: messages.invalidCredentialsError,
+        appId: (apiKey || appName)!,
+        scope: scope!
       })
     )
   }
@@ -282,19 +289,23 @@ export const OAuthLoginPage = () => {
           redirectUriParam:
             parsedRedirectUri === 'postmessage' ? 'postmessage' : redirectUri!,
           originParam,
-          appNameParam: queryParamAppName!, // queryParamAppName must be non null since queryParamsError is falsey
-          responseMode
+          responseMode,
+          scope: scope!,
+          apiKeyParam: apiKey,
+          appId: (apiKey || appName)!
         })
       )
     }
   }, [
-    queryParamAppName,
+    appName,
     originParam,
     parsedRedirectUri,
     queryParamsError,
     record,
     redirectUri,
-    responseMode
+    responseMode,
+    apiKey,
+    scope
   ])
 
   useEffect(() => {
@@ -319,7 +330,13 @@ export const OAuthLoginPage = () => {
   }, [apiKey, queryParamAppName, queryParamsError, scope])
 
   const formResponseAndRedirect = useCallback(
-    async (account: User) => {
+    async ({
+      account,
+      grantCreated
+    }: {
+      account: User
+      grantCreated?: boolean | undefined
+    }) => {
       const jwt = await formOAuthResponse({
         account,
         userEmail,
@@ -333,13 +350,19 @@ export const OAuthLoginPage = () => {
         return
       }
       if (isRedirectValid === true) {
+        record(
+          make(Name.AUDIUS_OAUTH_COMPLETE, {
+            appId: (apiKey || appName)!,
+            scope: scope!,
+            alreadyAuthorized: grantCreated
+          })
+        )
         if (parsedRedirectUri === 'postmessage') {
           if (parsedOrigin) {
             if (!window.opener) {
               setAndLogGeneralSubmitError(false, messages.noWindowError)
               setIsSubmitting(false)
             } else {
-              record(make(Name.AUDIUS_OAUTH_COMPLETE, {}))
               window.opener.postMessage(
                 { state, token: jwt },
                 parsedOrigin.origin
@@ -347,7 +370,6 @@ export const OAuthLoginPage = () => {
             }
           }
         } else {
-          record(make(Name.AUDIUS_OAUTH_COMPLETE, {}))
           if (responseMode && responseMode === 'query') {
             if (state != null) {
               parsedRedirectUri!.searchParams.append('state', state as string)
@@ -370,7 +392,10 @@ export const OAuthLoginPage = () => {
       setAndLogGeneralSubmitError,
       state,
       history,
-      userEmail
+      userEmail,
+      apiKey,
+      appName,
+      scope
     ]
   )
 
@@ -426,8 +451,9 @@ export const OAuthLoginPage = () => {
   }, [history, isLoggedIn])
 
   const authorize = async (account: User) => {
+    let shouldCreateWriteGrant
+
     if (scope === 'write') {
-      let shouldCreateWriteGrant
       try {
         shouldCreateWriteGrant = await getIsAppAuthorized({
           userId: encodeHashId(account.user_id),
@@ -455,12 +481,21 @@ export const OAuthLoginPage = () => {
         return
       }
     }
-    await formResponseAndRedirect(account)
+    await formResponseAndRedirect({
+      account,
+      grantCreated: shouldCreateWriteGrant
+    })
   }
 
   const handleSignInFormSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    record(make(Name.AUDIUS_OAUTH_SUBMIT, { alreadySignedIn: false }))
+    record(
+      make(Name.AUDIUS_OAUTH_SUBMIT, {
+        alreadySignedIn: false,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
     clearErrors()
     if (!emailInput || !passwordInput) {
       setAndLogGeneralSubmitError(true, messages.missingFieldError)
@@ -505,7 +540,13 @@ export const OAuthLoginPage = () => {
 
   const handleAlreadySignedInAuthorizeSubmit = () => {
     clearErrors()
-    record(make(Name.AUDIUS_OAUTH_SUBMIT, { alreadySignedIn: true }))
+    record(
+      make(Name.AUDIUS_OAUTH_SUBMIT, {
+        alreadySignedIn: true,
+        appId: (apiKey || appName)!,
+        scope: scope!
+      })
+    )
     if (!account) {
       setAndLogGeneralSubmitError(false, messages.miscError)
     } else {
