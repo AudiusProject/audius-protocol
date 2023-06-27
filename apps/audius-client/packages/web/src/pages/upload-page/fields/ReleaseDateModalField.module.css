@@ -8,7 +8,7 @@
 .title {
   font-family: var(--font-family);
   font-style: normal;
-  font-weight: var(--font-extra-bold);
+  font-weight: var(--font-bold);
   font-size: var(--font-l);
   line-height: 20px;
 }
@@ -71,7 +71,6 @@
   border-radius: 4px;
   width: 100%;
   padding: var(--unit-3) var(--unit-4);
-  margin-bottom: 128px;
 }
 
 .datePicker :global(.DateInput_input) {
