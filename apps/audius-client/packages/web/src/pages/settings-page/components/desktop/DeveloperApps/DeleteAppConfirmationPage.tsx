@@ -1,9 +1,15 @@
 import { useCallback, useEffect } from 'react'
 
-import { Status, accountSelectors, useDeleteDeveloperApp } from '@audius/common'
+import {
+  Status,
+  accountSelectors,
+  useDeleteDeveloperApp,
+  Name
+} from '@audius/common'
 import { Button, ButtonType, ModalFooter } from '@audius/stems'
 
 import { useSelector } from 'common/hooks/useSelector'
+import { make, useRecord } from 'common/store/analytics/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './DeleteAppConfirmationPage.module.css'
@@ -26,8 +32,9 @@ export const DeleteAppConfirmationPage = (
 ) => {
   const { params, setPage } = props
   const [deleteDeveloperApp, result] = useDeleteDeveloperApp()
-  const { status } = result
+  const { status, errorMessage } = result
   const userId = useSelector(getUserId)
+  const record = useRecord()
   const apiKey = params?.apiKey
 
   const handleCancel = useCallback(() => {
@@ -42,8 +49,27 @@ export const DeleteAppConfirmationPage = (
   useEffect(() => {
     if (status === Status.SUCCESS) {
       setPage(CreateAppsPages.YOUR_APPS)
+      record(
+        make(Name.DEVELOPER_APP_DELETE_SUCCESS, {
+          name: params?.name,
+          apiKey: params?.apiKey
+        })
+      )
     }
-  }, [status, setPage])
+  }, [status, setPage, record, params?.name, params?.apiKey])
+
+  useEffect(() => {
+    if (status === Status.ERROR) {
+      setPage(CreateAppsPages.YOUR_APPS)
+      record(
+        make(Name.DEVELOPER_APP_DELETE_ERROR, {
+          name: params?.name,
+          apiKey: params?.apiKey,
+          error: errorMessage
+        })
+      )
+    }
+  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
 
   if (!params) return null
 

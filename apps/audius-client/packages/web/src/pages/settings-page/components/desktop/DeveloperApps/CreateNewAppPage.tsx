@@ -4,13 +4,15 @@ import {
   Status,
   accountSelectors,
   developerAppSchema,
-  useAddDeveloperApp
+  useAddDeveloperApp,
+  Name
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { make, useRecord } from 'common/store/analytics/actions'
 import { InputV2Variant } from 'components/data-entry/InputV2'
 import { TextAreaField } from 'components/form-fields/TextAreaField'
 import { TextField } from 'components/form-fields/TextField'
@@ -36,22 +38,45 @@ type CreateNewAppPageProps = CreateAppPageProps
 export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId) as number
+  const record = useRecord()
 
   const [addDeveloperApp, result] = useAddDeveloperApp()
 
-  const { status, data } = result
+  const { status, data, errorMessage } = result
 
   useEffect(() => {
     if (status === Status.SUCCESS && data) {
       setPage(CreateAppsPages.APP_DETAILS, data)
+      record(
+        make(Name.DEVELOPER_APP_CREATE_SUCCESS, {
+          name: data.name,
+          apiKey: data.apiKey
+        })
+      )
     }
-  })
+  }, [data, record, setPage, status])
+
+  useEffect(() => {
+    if (status === Status.ERROR) {
+      record(
+        make(Name.DEVELOPER_APP_CREATE_ERROR, {
+          error: errorMessage
+        })
+      )
+    }
+  }, [errorMessage, record, status])
 
   const handleSubmit = useCallback(
     (values: DeveloperAppValues) => {
+      record(
+        make(Name.DEVELOPER_APP_CREATE_SUBMIT, {
+          name: values.name,
+          description: values.description
+        })
+      )
       addDeveloperApp(values)
     },
-    [addDeveloperApp]
+    [addDeveloperApp, record]
   )
 
   const initialValues: DeveloperAppValues = {
