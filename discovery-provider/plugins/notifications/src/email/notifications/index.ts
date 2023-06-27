@@ -13,7 +13,7 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
-import { MappingFeatureName, RemoteConfig } from '../../remoteConfig'
+import { MappingFeatureName, NotificationsScheduledEmails, RemoteConfig, ScheduledEmailPluginMappings } from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
 
 // blockchainUserId => email
@@ -36,40 +36,6 @@ const Results = Object.freeze({
   ERROR: 'ERROR',
   SENT: 'SENT'
 })
-
-export const getUsersCanNotify = async (
-  identityDb: Knex,
-  frequency: EmailFrequency,
-  startOffset: moment.Moment,
-  pageCount: number,
-  onPage: (emailUsers: EmailUsers) => Promise<void>,
-) => {
-  let lastUser: number = 0;
-
-  const time = Date.now()
-  const timeoutMillis = 14400000
-  const timeout = time + timeoutMillis
-
-  let offset = 0
-  while (true) {
-    const now = Date.now()
-    if (now > timeout) break
-    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
-    offset = offset + pageCount
-    if (userRows.length === 0) break // once we've reached the end of users for this query
-    lastUser = userRows[userRows.length - 1].blockchainUserId
-    if (lastUser === undefined) {
-      logger.info("no last user found")
-      break
-    }
-    if (userRows.length === 0) break
-    const emailUsers = userRows.reduce((acc, user) => {
-      acc[user.blockchainUserId] = user.email
-      return acc
-    }, {} as EmailUsers)
-    await onPage(emailUsers)
-  }
-}
 
 export const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
   await identityDb
@@ -343,21 +309,46 @@ export async function processEmailNotifications(
       days = 7
     }
     const startOffset = now.clone().subtract(days, 'days')
-    const pageCount = 1000
-    await getUsersCanNotify(identityDb, frequency, startOffset, pageCount, async (users) => {
-        if (Object.keys(users).length == 0) {
-          logger.info(`processEmailNotifications | No users to process. Exiting...`)
-          return
-        }
 
-        logger.info(
-          `processEmailNotifications | Beginning processing ${
-            Object.keys(users).length
-          } users at ${frequency} frequency`
-        )
+    // loop settings
+    const pageCount = remoteConfig.getFeatureVariableValue(NotificationsScheduledEmails, ScheduledEmailPluginMappings.PageCount, 1000)
+    let pageOffset = 0
+    let lastUser: number = 0;
 
-        await processGroupOfEmails(dnDb, identityDb, users, frequency, startOffset, remoteConfig)
-    })
+    // timeout settings since we run an infinite loop
+    const time = Date.now()
+    const timeoutMillis = 14400000
+    const timeout = time + timeoutMillis
+
+    while (true) {
+      const now = Date.now()
+      if (now > timeout) break
+      const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
+      pageOffset = pageOffset + pageCount
+      if (userRows.length === 0) break // once we've reached the end of users for this query
+      lastUser = userRows[userRows.length - 1].blockchainUserId
+      if (lastUser === undefined) {
+        logger.info("no last user found")
+        break
+      }
+      if (userRows.length === 0) break
+      const emailUsers = userRows.reduce((acc, user) => {
+        acc[user.blockchainUserId] = user.email
+        return acc
+      }, {} as EmailUsers)
+      if (Object.keys(emailUsers).length == 0) {
+        logger.info(`processEmailNotifications | No users to process. Exiting...`)
+        return
+      }
+
+      logger.info(
+        `processEmailNotifications | Beginning processing ${
+          Object.keys(emailUsers).length
+        } users at ${frequency} frequency`
+      )
+
+      await processGroupOfEmails(dnDb, identityDb, emailUsers, frequency, startOffset, remoteConfig)
+    }
     
   } catch (e) {
     logger.error(
