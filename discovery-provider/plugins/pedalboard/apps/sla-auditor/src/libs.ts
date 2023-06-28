@@ -1,30 +1,26 @@
 import { AudiusLibs } from "@audius/sdk";
+import HDWalletProvider from '@truffle/hdwallet-provider'
+import Web3 from 'web3'
 
 // TODO: promote this into a packages
 export const initAudiusLibs = async (): Promise<AudiusLibs> => {
-  const config = {
-    ethWeb3Config: {
-      tokenAddress: process.env.tokenAddress,
-      registryAddress: process.env.registryAddress,
-      providers: process.env.providers?.split(","),
-      ownerWallet: process.env.ownerWallet,
-      claimDistributionContractAddress:
-        process.env.claimDistributionContractAddress,
-      wormholeContractAddress: process.env.wormholeContractAddress,
-    },
-  };
+  const localKeyProvider = new HDWalletProvider({
+    privateKeys: [process.env.OWNER_PRIVATE_KEY],
+    providerOrUrl: process.env.ETH_PROVIDER_ENDPOINT
+  })
+  const providers = [new Web3(localKeyProvider)]
 
-  const libsConfig = {
-    ethWeb3Config: config.ethWeb3Config,
-    discoveryProviderConfig: {},
-    logger: console,
-    isDebug: false,
-    localStorage: false,
-    isStorageV2Only: false,
-  };
-
-  // @ts-ignore
-  const libs = new AudiusLibs(libsConfig);
-  await libs.init();
-  return libs;
+  const audiusLibs = new AudiusLibs({
+    // @ts-ignore
+    ethWeb3Config: AudiusLibs.configEthWeb3(
+      process.env.ETH_TOKEN_ADDRESS,
+      process.env.ETH_REGISTRY_ADDRESS,
+      providers,
+      process.env.OWNER_WALLET
+    ),
+    isServer: true,
+    enableUserReplicaSetManagerContract: true
+  })
+  await audiusLibs.init();
+  return audiusLibs;
 };
