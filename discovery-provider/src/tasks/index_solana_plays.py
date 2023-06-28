@@ -591,10 +591,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=fetch_size
         )
         is_initial_fetch = False
-
-        logger.info(
-            f"index_solana_plays.py | Retrieved transactions before {last_tx_signature}"
-        )
         transactions_array = transactions_history["result"]
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
