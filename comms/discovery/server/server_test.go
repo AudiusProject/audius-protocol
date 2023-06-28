@@ -90,7 +90,7 @@ func TestGetChats(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Insert members into chats (1 and 2, 1 and 3, 1 and 4)
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3), ($4, $2, $4, $2), ($4, $2, $4, $5), ($6, $2, $6, $2), ($6, $2, $6, $7)", chatId1, user1Id, user2Id, chatId2, user3Id, chatId3, user4Id)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id, created_at) values ($1, $2, $1, $2, now()), ($1, $2, $1, $3, now()), ($4, $2, $4, $2, now()), ($4, $2, $4, $5, now()), ($6, $2, $6, $2, now()), ($6, $2, $6, $7, now())", chatId1, user1Id, user2Id, chatId2, user3Id, chatId3, user4Id)
 	assert.NoError(t, err)
 
 	// Insert 2 messages into chat 1
@@ -330,7 +330,7 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Insert members 1 and 2 into chat
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId, user1Id, user2Id)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id, created_at) values ($1, $2, $1, $2, now()), ($1, $2, $1, $3, now())", chatId, user1Id, user2Id)
 	assert.NoError(t, err)
 
 	// Insert chat messages

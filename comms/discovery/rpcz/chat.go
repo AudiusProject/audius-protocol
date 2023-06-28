@@ -6,35 +6,19 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
-	"golang.org/x/exp/slog"
 )
 
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
-	logger := slog.With("method", "chat.create", "chat_id", params.ChatID, "user_id", userId, "ts", ts)
-
-	// chat row exists and this RPC happened afterwards.
-	// this is a noop... keep existing chat
-	existing := 0
-	tx.Get(&existing, `select count(*) from chat where chat_id = $1 and created_at < $2`, params.ChatID, ts)
-	if existing > 0 {
-		logger.Warn("prior chat exists: ignoring chat create")
-		return nil
-	}
-
-	// a conflicting chat row exists and this RPC happened before...
-	// prefer the RPC since it has the most precedent
-	// delete the conflicting chat before processing this chat.create RPC
-	nuked, err := tx.Exec("delete from chat where chat_id = $1 and created_at > $2", params.ChatID, ts)
-	if err != nil {
-		return err
-	}
-	if c, _ := nuked.RowsAffected(); c > 0 {
-		slog.Warn("deleted conflicting chat")
-	}
-
-	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", params.ChatID, ts)
+	_, err = tx.Exec(`
+		insert into chat
+			(chat_id, created_at, last_message_at)
+		values
+			($1, $2, $2)
+		on conflict (chat_id)
+		do update set created_at = $2, last_message_at = $2 where chat.created_at > $2
+		`, params.ChatID, ts)
 	if err != nil {
 		return err
 	}
@@ -46,8 +30,14 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		}
 		// invited_by_user_id could also be the other user pubkey
 		// this would save client from having to look up pubkey in separate request
-		_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $3, $4)",
-			params.ChatID, userId, invite.InviteCode, invitedUserId)
+		_, err = tx.Exec(`
+		insert into chat_member
+			(chat_id, invited_by_user_id, invite_code, user_id, created_at)
+		values
+			($1, $2, $3, $4, $5)
+		on conflict (chat_id, user_id)
+		do update set invited_by_user_id=$2, invite_code=$3, created_at=$5 where chat_member.created_at > $5`,
+			params.ChatID, userId, invite.InviteCode, invitedUserId, ts)
 		if err != nil {
 			return err
 		}
