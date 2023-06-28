@@ -345,7 +345,7 @@ func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32,
 		var s1, s10, s60 sql.NullInt64
 		err = q.QueryRow(query, userId).Scan(&s1, &s10, &s60)
 		if err != nil {
-			slog.Error("burst rate limit query failed", err)
+			slog.Error("burst rate limit query failed", "err", err)
 		}
 
 		// 10 per second in last second

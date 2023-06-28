@@ -18,7 +18,6 @@ export function Mediorum() {
             <th>built at</th>
             <th>started at</th>
             <th># uploads</th>
-            <th># problem blobs</th>
             <th># peers</th>
           </tr>
         </thead>
@@ -52,9 +51,10 @@ export function MediorumRow({ sp }: { sp: SP }) {
   if (deets?.peerHealths) {
     for (const endpoint of Object.keys(deets.peerHealths)) {
       const healthDate = new Date(deets.peerHealths[endpoint])
-      if (isNaN(healthDate.getTime()) || healthDate <= fiveMinutesAgo) { // Peer is unhealthy if healthDate is NaN or if it's more than 5 minutes ago
+      if (isNaN(healthDate.getTime()) || healthDate <= fiveMinutesAgo) {
+        // Peer is unhealthy if healthDate is NaN or if it's more than 5 minutes ago
         unhealthyPeers++
-      } else if (healthDate <= twoMinutesAgo){
+      } else if (healthDate <= twoMinutesAgo) {
         healthyPeers5m++
       } else {
         healthyPeers2m++
@@ -75,8 +75,10 @@ export function MediorumRow({ sp }: { sp: SP }) {
         <RelTime date={deets?.startedAt} />
       </td>
       <td>{metrics?.uploads}</td>
-      <td>{metrics?.problem_blobs}</td>
-      <td><b>{healthyPeers2m}</b> healthy {'<'}2m ago, <b>{healthyPeers5m}</b> healthy {'<'}5m ago, <b>{unhealthyPeers}</b> unhealthy</td>
+      <td>
+        <b>{healthyPeers2m}</b> healthy {'<'}2m ago, <b>{healthyPeers5m}</b>{' '}
+        healthy {'<'}5m ago, <b>{unhealthyPeers}</b> unhealthy
+      </td>
     </tr>
   )
 }
