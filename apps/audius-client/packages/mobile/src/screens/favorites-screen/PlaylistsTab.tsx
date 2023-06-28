@@ -37,7 +37,7 @@ export const PlaylistsTab = () => {
     navigation.push('CreatePlaylist')
   }, [navigation])
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const [filterValue, setFilterValue] = useState('')

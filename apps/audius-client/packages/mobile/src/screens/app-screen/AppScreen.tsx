@@ -16,7 +16,7 @@ const modalScreenOptions = { presentation: 'fullScreenModal' as const }
 
 export const AppScreen = () => {
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

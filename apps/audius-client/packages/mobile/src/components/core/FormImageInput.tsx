@@ -79,7 +79,7 @@ export const FormImageInput = ({
   const [isLoading, setIsLoading] = useState(false)
   const [{ value }, , { setValue }] = useField(name)
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const { url } = value

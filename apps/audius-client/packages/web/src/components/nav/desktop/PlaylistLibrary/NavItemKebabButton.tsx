@@ -23,7 +23,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
   const { className, visible, items, ...other } = props
 
   const { isEnabled: isPlaylistUpdatesEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const renderKebabButton = (buttonProps?: Partial<IconButtonButtonProps>) => {

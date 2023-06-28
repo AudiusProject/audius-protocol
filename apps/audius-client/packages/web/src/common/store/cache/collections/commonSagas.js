@@ -91,7 +91,7 @@ function* editPlaylistAsync(action) {
   yield call(confirmEditPlaylist, action.playlistId, userId, playlist)
 
   playlist.playlist_id = action.playlistId
-  if (playlist.artwork?.url) {
+  if (playlist.artwork?.file) {
     playlist.cover_art_sizes = playlist.artwork.url
     playlist._cover_art_sizes = {
       [DefaultSizes.OVERRIDE]: playlist.artwork.url
@@ -117,9 +117,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
       function* (confirmedPlaylistId) {
         const { blockHash, blockNumber, error } = yield call(
           audiusBackendInstance.updatePlaylist,
-          {
-            ...formFields
-          }
+          formFields
         )
 
         if (error) throw error

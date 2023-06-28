@@ -60,7 +60,7 @@ const AddToPlaylistModal = () => {
   )
   const [searchValue, setSearchValue] = useState('')
   const { isEnabled: isPlaylistUpdatesEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const filteredPlaylists = useMemo(() => {

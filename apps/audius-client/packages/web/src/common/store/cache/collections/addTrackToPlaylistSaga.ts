@@ -84,7 +84,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isPlaylistImprovementsEnabled = yield* call(
     getFeatureEnabled,
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)

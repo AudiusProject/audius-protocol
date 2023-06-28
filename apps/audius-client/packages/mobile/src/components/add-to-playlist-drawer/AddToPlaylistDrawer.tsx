@@ -63,7 +63,7 @@ export const AddToPlaylistDrawer = () => {
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const user = useSelector(getAccountWithOwnPlaylists)
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const renderImage = useCallback(
