@@ -82,7 +82,7 @@ func backgroundRefreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) {
 	for {
 		time.Sleep(time.Minute * 5)
 		if err := refreshRegisteredPeers(discoveryConfig); err != nil {
-			slog.Error("refreshRegisteredPeers failed", err)
+			slog.Error("refreshRegisteredPeers failed", "err", err)
 		}
 	}
 }

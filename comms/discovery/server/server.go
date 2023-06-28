@@ -221,17 +221,20 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 		since = t
 	}
 	var cursors []struct {
-		Host      string    `db:"relayed_by" json:"relayed_by"`
-		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
-		Count     int       `db:"count" json:"count"`
+		Host      string     `db:"relayed_by" json:"relayed_by"`
+		RelayedAt time.Time  `db:"relayed_at" json:"relayed_at"`
+		RpcCursor *time.Time `db:"rpc_cursor" json:"rpc_cursor"`
+		Count     int        `db:"count" json:"count"`
 	}
 	q := `
 	select
-		relayed_by,
-		max(relayed_at) as relayed_at,
+		l.relayed_by,
+		max(l.relayed_at) as relayed_at,
+		max(c.relayed_at) as rpc_cursor,
 		count(*) as count
-	from rpc_log
-	where relayed_at > $1
+	from rpc_log l
+	left join rpc_cursor c on l.relayed_by = c.relayed_by
+	where l.relayed_at > $1
 	group by 1;
 	`
 	err := db.Conn.Select(&cursors, q, since)

@@ -21,8 +21,9 @@ func TestChatCreate(t *testing.T) {
 
 	var count int
 
-	tsEarly := time.Now().Add(-time.Second)
-	tsLate := time.Now()
+	tsEarly := time.Now().Add(-time.Minute)
+	tsLate := time.Now().Add(-time.Second)
+	tsLater := time.Now()
 
 	tx := db.Conn.MustBegin()
 
@@ -47,6 +48,16 @@ func TestChatCreate(t *testing.T) {
 		Invites: []schema.PurpleInvite{
 			{UserID: user1IdEncoded, InviteCode: "earlier"},
 			{UserID: user2IdEncoded, InviteCode: "earlier"},
+		},
+	})
+	assert.NoError(t, err)
+
+	// now create a "delayed" chat... that was timestamped later and arrives later
+	err = chatCreate(tx, 1, tsLater, schema.ChatCreateRPCParams{
+		ChatID: chatId,
+		Invites: []schema.PurpleInvite{
+			{UserID: user1IdEncoded, InviteCode: "even_later"},
+			{UserID: user2IdEncoded, InviteCode: "even_later"},
 		},
 	})
 	assert.NoError(t, err)
