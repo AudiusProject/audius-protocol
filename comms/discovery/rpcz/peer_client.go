@@ -13,7 +13,6 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/signing"
-	"github.com/avast/retry-go"
 	"golang.org/x/exp/slog"
 )
 
@@ -85,8 +84,13 @@ func (p *PeerClient) startSender() {
 
 // sweeper goroutine will pull messages on interval
 func (c *PeerClient) startSweeper() {
-	for i := 0; ; i++ {
-		c.err = c.doSweep(i)
+	// for now we reset cursor on boot every time...
+	// this is to try to resolve any prior bad state...
+	// if everything works we can remove this step
+	db.Conn.MustExec(`delete from rpc_cursor where relayed_by=$1`, c.Host)
+
+	for {
+		c.err = c.doSweep()
 		if c.err != nil {
 			c.logger.Error("sweep error", c.err)
 			// if broken... add extra sleep
@@ -96,22 +100,16 @@ func (c *PeerClient) startSweeper() {
 	}
 }
 
-func (c *PeerClient) doSweep(i int) error {
+func (c *PeerClient) doSweep() error {
 	host := c.Host
 	bulkEndpoint := "/comms/rpc/bulk"
 
 	// get cursor
 
 	var after time.Time
-
-	// first time: get everything from beginning
-	// this is temporary to recover old messages after code changes fix things
-	// todo: remove the `i` counter and simply resume from cursor
-	if i > 0 {
-		err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
-		if err != nil && err != sql.ErrNoRows {
-			c.logger.Error("backfill failed to get cursor: ", "err", err)
-		}
+	err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
+	if err != nil && err != sql.ErrNoRows {
+		c.logger.Error("backfill failed to get cursor: ", "err", err)
 	}
 
 	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
@@ -151,12 +149,7 @@ func (c *PeerClient) doSweep(i int) error {
 		// if apply fails during sweep
 		// it could be because discovery indexer is behind
 		// retry locally and only advance cursor on success
-		err = retry.Do(
-			func() error {
-				return c.proc.Apply(op)
-			},
-			retry.Delay(time.Second),
-			retry.MaxDelay(time.Second*5))
+		err = c.proc.Apply(op)
 
 		// if apply error stop here (don't advance cursor)
 		// will restart here on next doSeep loop

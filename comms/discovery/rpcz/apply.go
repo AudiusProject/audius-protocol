@@ -177,7 +177,16 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return err // or nil?
 	}
 
-	logger = logger.With("wallet", wallet, "userId", userId, "relayed_by", rpcLog.RelayedBy, "relayed_at", rpcLog.RelayedAt, "sig", rpcLog.Sig)
+	// for debugging
+	chatId := gjson.GetBytes(rpcLog.Rpc, "params.chat_id").String()
+
+	logger = logger.With(
+		"wallet", wallet,
+		"userId", userId,
+		"relayed_by", rpcLog.RelayedBy,
+		"relayed_at", rpcLog.RelayedAt,
+		"chat_id", chatId,
+		"sig", rpcLog.Sig)
 	logger.Debug("got user", "took", takeSplit())
 
 	attemptApply := func() error {

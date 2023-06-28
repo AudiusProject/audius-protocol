@@ -38,9 +38,8 @@ build.push::
 # used for quick stage/prod deployments from localhost
 build.push.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/comms:a1 -t audius/comms:${GIT_HASH}
-	docker push audius/comms:a1
-	docker push audius/comms:${GIT_HASH}
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/comms:z1
+	docker push audius/comms:z1
 
 
 quicktype::
