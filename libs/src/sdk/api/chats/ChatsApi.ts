@@ -62,6 +62,8 @@ import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
+const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
+
 export class ChatsApi
   extends BaseAPI
   implements EventEmitterTarget<ChatEvents>
@@ -257,7 +259,7 @@ export class ChatsApi
             m,
             e
           )
-          return "Error: Couldn't decrypt message"
+          return GENERIC_MESSAGE_ERROR
         })
       }))
     )
@@ -679,7 +681,7 @@ export class ChatsApi
           c,
           e
         )
-        lastMessage = "Error: Couldn't decrypt message"
+        lastMessage = GENERIC_MESSAGE_ERROR
       }
     }
     return {
@@ -797,7 +799,7 @@ export class ChatsApi
                   data,
                   e
                 )
-                return "Error: Couldn't decrypt message"
+                return GENERIC_MESSAGE_ERROR
               }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,
