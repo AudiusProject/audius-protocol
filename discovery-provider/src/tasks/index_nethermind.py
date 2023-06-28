@@ -8,11 +8,11 @@ from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
+from src.models.grants.developer_app import DeveloperApp
+from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
-from src.models.grants.developer_app import DeveloperApp
-from src.models.grants.grant import Grant
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -306,6 +306,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
         if (
             next_block
             and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            and latest_database_block.number != 0
         ):
             block_on_chain = False
 
@@ -546,9 +547,7 @@ def revert_block(session: Session, revert_block: Block):
     )
 
     revert_grants = (
-        session.query(Grant)
-        .filter(Grant.blocknumber == revert_block_number)
-        .all()
+        session.query(Grant).filter(Grant.blocknumber == revert_block_number).all()
     )
 
     # Revert all of above transactions
@@ -761,7 +760,7 @@ def revert_block(session: Session, revert_block: Block):
             previous_playlist_seen_entry.is_current = True
         logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
         session.delete(playlist_seen_to_revert)
-    
+
     for developer_app_to_revert in revert_developer_apps:
         previous_developer_app_entry = (
             session.query(DeveloperApp)
@@ -776,7 +775,7 @@ def revert_block(session: Session, revert_block: Block):
             previous_developer_app_entry.is_current = True
         logger.info(f"Reverting developer app {developer_app_to_revert}")
         session.delete(developer_app_to_revert)
-    
+
     for grant_to_revert in revert_grants:
         previous_grant_entry = (
             session.query(Grant)
