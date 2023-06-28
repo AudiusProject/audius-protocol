@@ -323,6 +323,7 @@ export async function processEmailNotifications(
     while (true) {
       const now = Date.now()
       if (now > timeout) break
+      logger.info(`processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${pageCount}`)
       const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
       pageOffset = pageOffset + pageCount
       if (userRows.length === 0) break // once we've reached the end of users for this query
