@@ -12,6 +12,13 @@ import (
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
+	// if this chat exists... and it was created earlier... skip this chat create
+	existing := 0
+	tx.Get(&existing, `select count(*) from chat where chat_id = $1 and created_at < $2`, params.ChatID, ts)
+	if existing > 0 {
+		return nil
+	}
+
 	// if this chat exists... and created_at is newer... nuke it!
 	nuked, err := tx.Exec("delete from chat where chat_id = $1 and created_at > $2", params.ChatID, ts)
 	if err != nil {
