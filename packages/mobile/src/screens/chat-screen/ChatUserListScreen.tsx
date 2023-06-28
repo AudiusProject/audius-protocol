@@ -259,6 +259,7 @@ export const ChatUserListScreen = () => {
           >
             <TextInput
               placeholder={messages.search}
+              autoFocus={true}
               Icon={IconSearch}
               styles={{
                 root: styles.searchInputContainer,
