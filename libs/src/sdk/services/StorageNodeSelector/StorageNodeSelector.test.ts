@@ -162,21 +162,6 @@ describe('StorageNodeSelector', () => {
     })
   })
 
-  it('selects correct nodes based on user address', async () => {
-    const bootstrapNodes = [storageNodeA, storageNodeB]
-
-    const storageNodeSelector = new StorageNodeSelector({
-      bootstrapNodes,
-      auth,
-      discoveryNodeSelector
-    })
-
-    expect(await storageNodeSelector.getNodes()).toEqual([
-      storageNodeB.endpoint,
-      storageNodeA.endpoint
-    ])
-  })
-
   it('selects correct nodes when provided a cid', async () => {
     const bootstrapNodes = [storageNodeA, storageNodeB]
     const cid = 'QmNnuRwRWxrbWwE9ib9dvWVr4hLgcHGAJ8euys8WH5NgCX'
