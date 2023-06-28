@@ -14,6 +14,7 @@ import { Button, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { spacing } from 'app/styles/spacing'
 
 import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
@@ -83,6 +84,7 @@ export const PlaylistsTab = () => {
                 title='Create a New Playlist'
                 variant='commonAlt'
                 onPress={handleNavigateToNewPlaylist}
+                style={{ marginBottom: spacing(4) }}
               />
             </Animated.View>
           )}
