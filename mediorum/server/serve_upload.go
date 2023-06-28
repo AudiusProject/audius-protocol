@@ -1,10 +1,12 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
+	"strconv"
 	"sync"
 	"time"
 
@@ -37,12 +39,42 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
+	// Parse X-User-Id header
+	userIdHeader := c.Request().Header.Get("X-User-Id")
+	userId := sql.NullInt64{Valid: false}
+	if userIdHeader != "" {
+		userIdInt, err := strconv.Atoi(userIdHeader)
+		if err != nil {
+			ss.logger.Warn("error parsing X-User-Id header", "err", err)
+		} else {
+			userId = sql.NullInt64{
+				Int64: int64(userIdInt),
+				Valid: true,
+			}
+		}
+	}
+
 	// Multipart form
 	form, err := c.MultipartForm()
 	if err != nil {
 		return err
 	}
 	template := JobTemplate(c.FormValue("template"))
+	previewStartSeconds := sql.NullInt64{Valid: false}
+	previewStartSecondsString := c.FormValue("previewStartSeconds")
+	if previewStartSecondsString != "" {
+		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
+		if err != nil {
+			errMsg := "error parsing previewStartSeconds"
+			ss.logger.Error(errMsg, err)
+			return c.String(400, errMsg+": "+err.Error())
+		}
+
+		previewStartSeconds = sql.NullInt64{
+			Int64: int64(previewStartSecondsInt),
+			Valid: true,
+		}
+	}
 	files := form.File[filesFormFieldName]
 	defer form.RemoveAll()
 
@@ -62,13 +94,15 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			defer wg.Done()
 
 			upload := &Upload{
-				ID:               ulid.Make().String(),
-				Status:           JobStatusNew,
-				Template:         template,
-				CreatedBy:        ss.Config.Self.Host,
-				CreatedAt:        time.Now().UTC(),
-				OrigFileName:     formFile.Filename,
-				TranscodeResults: map[string]string{},
+				ID:                  ulid.Make().String(),
+				UserID:              userId,
+				Status:              JobStatusNew,
+				Template:            template,
+				PreviewStartSeconds: previewStartSeconds,
+				CreatedBy:           ss.Config.Self.Host,
+				CreatedAt:           time.Now().UTC(),
+				OrigFileName:        formFile.Filename,
+				TranscodeResults:    map[string]string{},
 			}
 			uploads[idx] = upload
 

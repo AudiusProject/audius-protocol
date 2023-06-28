@@ -163,10 +163,11 @@ const (
 )
 
 const (
-	JobStatusNew   = "new"
-	JobStatusBusy  = "busy"
-	JobStatusDone  = "done"
-	JobStatusError = "error"
+	JobStatusNew         = "new"
+	JobStatusBusy        = "busy"
+	JobStatusRetranscode = "retranscode"
+	JobStatusDone        = "done"
+	JobStatusError       = "error"
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
