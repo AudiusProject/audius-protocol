@@ -234,7 +234,7 @@ def build(
             "--profile=solana",
             "--profile=block-explorer",
             "build",
-            "--no-cache",
+            # "--no-cache",
             *args,
             *services,
         ],
@@ -256,6 +256,7 @@ def push(ctx, services):
     if not git_commit:
         raise click.ClickException("Failed to get git commit")
 
+    # this is building w/o cache every time
     ctx.invoke(build, services=services)
 
     try:
