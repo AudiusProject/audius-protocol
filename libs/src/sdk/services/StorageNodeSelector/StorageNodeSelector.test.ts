@@ -74,10 +74,10 @@ const server = setupServer(...mswHandlers)
 describe('StorageNodeSelector', () => {
   beforeAll(() => {
     server.listen()
-    jest.spyOn(console, 'warn').mockImplementation(() => { })
-    jest.spyOn(console, 'info').mockImplementation(() => { })
-    jest.spyOn(console, 'debug').mockImplementation(() => { })
-    jest.spyOn(console, 'error').mockImplementation(() => { })
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'info').mockImplementation(() => {})
+    jest.spyOn(console, 'debug').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
@@ -160,5 +160,36 @@ describe('StorageNodeSelector', () => {
         storageNodeB.endpoint
       )
     })
+  })
+
+  it('selects correct nodes based on user address', async () => {
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector
+    })
+
+    expect(await storageNodeSelector.getNodes()).toEqual([
+      storageNodeB.endpoint,
+      storageNodeA.endpoint
+    ])
+  })
+
+  it('selects correct nodes when provided a cid', async () => {
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+    const cid = 'QmNnuRwRWxrbWwE9ib9dvWVr4hLgcHGAJ8euys8WH5NgCX'
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector
+    })
+
+    expect(await storageNodeSelector.getNodes(cid)).toEqual([
+      storageNodeA.endpoint,
+      storageNodeB.endpoint
+    ])
   })
 })

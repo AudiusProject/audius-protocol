@@ -19,14 +19,14 @@ import {
 } from './constants'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
-import type { StorageNodeSelector } from '../StorageNodeSelector'
+import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
 export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
   private readonly config: StorageServiceConfig
-  private readonly storageNodeSelector: StorageNodeSelector
+  private readonly storageNodeSelector: StorageNodeSelectorService
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)

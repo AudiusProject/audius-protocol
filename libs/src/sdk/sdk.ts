@@ -129,11 +129,13 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector()
 
-  const defaultStorageNodeSelector = new StorageNodeSelector({
-    auth: config.services?.auth ?? defaultAuthService,
-    discoveryNodeSelector:
-      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
-  })
+  const storageNodeSelector =
+    config.services?.storageNodeSelector ??
+    new StorageNodeSelector({
+      auth: config.services?.auth ?? defaultAuthService,
+      discoveryNodeSelector:
+        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+    })
 
   const defaultEntityManager = new EntityManager({
     ...defaultEntityManagerConfig,
@@ -141,12 +143,10 @@ const initializeServices = (config: SdkConfig) => {
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
 
-  const defaultStorage = new Storage({
-    storageNodeSelector: defaultStorageNodeSelector
-  })
+  const defaultStorage = new Storage({ storageNodeSelector })
 
   const defaultServices: ServicesContainer = {
-    storageNodeSelector: defaultStorageNodeSelector,
+    storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,
