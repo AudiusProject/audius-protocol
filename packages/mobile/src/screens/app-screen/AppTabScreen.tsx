@@ -146,7 +146,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   const handleChangeState = useCallback(

@@ -83,7 +83,7 @@ export const DetailsTileActionButtons = ({
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })

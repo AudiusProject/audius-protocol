@@ -33,7 +33,7 @@ export const PlaylistsTab = () => {
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
 
   useEffect(() => {

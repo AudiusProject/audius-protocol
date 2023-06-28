@@ -79,7 +79,7 @@ type CollectionHeaderProps = {
 export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { collectionId } = props
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   const collection = useSelector((state) =>
     getCollection(

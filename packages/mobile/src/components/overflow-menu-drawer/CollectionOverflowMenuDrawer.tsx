@@ -48,7 +48,7 @@ type Props = {
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
   const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+    FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
   const navigation = useNavigation({ customNavigation: contextNavigation })
