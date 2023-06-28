@@ -27,6 +27,7 @@ export const configureAnnouncement = () => {
   logger.info(`announcements configured ${dryRun ? "" : "not"} for dry run`)
   globalThis.announcementDryRun = dryRun
   globalThis.announcementEmailEnabled = announcementEmailEnabled
+  logger.info("announcements configured")
 }
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {

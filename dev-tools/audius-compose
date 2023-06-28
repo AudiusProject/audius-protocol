@@ -234,7 +234,7 @@ def build(
             "--profile=solana",
             "--profile=block-explorer",
             "build",
-            "--no-cache",
+            # "--no-cache",
             *args,
             *services,
         ],
