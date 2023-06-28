@@ -29,7 +29,7 @@ func NewPeerClient(host string, proc *RPCProcessor) *PeerClient {
 	// buffer up to N outgoing messages
 	// if full, Send will drop outgoing message
 	// which is okay because of sweep
-	outboxBufferSize := 8
+	outboxBufferSize := 64
 
 	return &PeerClient{
 		Host:   host,
@@ -93,10 +93,8 @@ func (c *PeerClient) startSweeper() {
 		c.err = c.doSweep()
 		if c.err != nil {
 			c.logger.Error("sweep error", c.err)
-			// if broken... add extra sleep
-			time.Sleep(time.Minute * 2)
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 30)
 	}
 }
 
@@ -152,7 +150,7 @@ func (c *PeerClient) doSweep() error {
 		err = c.proc.Apply(op)
 
 		// if apply error stop here (don't advance cursor)
-		// will restart here on next doSeep loop
+		// will restart here on next doSweep loop
 		if err != nil {
 			c.logger.Error("sweep apply error", "err", err, "sig", op.Sig)
 			break
