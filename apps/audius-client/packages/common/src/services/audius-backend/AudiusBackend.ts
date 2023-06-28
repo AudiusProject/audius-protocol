@@ -1,6 +1,7 @@
-import type {
-  AudiusLibs as AudiusLibsType,
-  DiscoveryNodeSelector
+import {
+  type AudiusLibs as AudiusLibsType,
+  type DiscoveryNodeSelector,
+  type StorageNodeSelectorService
 } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk/dist/core'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
@@ -78,7 +79,7 @@ import {
   Nullable,
   removeNullable
 } from '../../utils'
-import type { DiscoveryNodeSelectorService } from '../discovery-node-selector'
+import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
 import { MonitoringCallbacks } from './types'
 
@@ -232,6 +233,7 @@ type AudiusBackendParams = {
   ) => Promise<boolean | null> | null | boolean
   getHostUrl: () => Nullable<string>
   getLibs: () => Promise<any>
+  getStorageNodeSelector: () => Promise<StorageNodeSelectorService>
   getWeb3Config: (
     libs: any,
     registryAddress: Maybe<string>,
@@ -286,6 +288,7 @@ export const audiusBackend = ({
   getFeatureEnabled,
   getHostUrl,
   getLibs,
+  getStorageNodeSelector,
   getWeb3Config,
   hedgehogConfig,
   identityServiceUrl,
@@ -700,6 +703,17 @@ export const audiusBackend = ({
       })
     }
 
+    const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
+      userNodeUrl,
+      /* lazyConnect */ true,
+      /* passList */ null,
+      contentNodeBlockList,
+      monitoringCallbacks.contentNode,
+      /* writeQuorumEnabled */ await getFeatureEnabled(
+        FeatureFlags.WRITE_QUORUM_ENABLED
+      )
+    )
+
     try {
       audiusLibs = new AudiusLibs({
         localStorage,
@@ -732,16 +746,10 @@ export const audiusBackend = ({
         },
         identityServiceConfig:
           AudiusLibs.configIdentityService(identityServiceUrl),
-        creatorNodeConfig: AudiusLibs.configCreatorNode(
-          userNodeUrl,
-          /* lazyConnect */ true,
-          /* passList */ null,
-          contentNodeBlockList,
-          monitoringCallbacks.contentNode,
-          /* writeQuorumEnabled */ await getFeatureEnabled(
-            FeatureFlags.WRITE_QUORUM_ENABLED
-          )
-        ),
+        creatorNodeConfig: {
+          ...baseCreatorNodeConfig,
+          storageNodeSelector: await getStorageNodeSelector()
+        },
         // Electron cannot use captcha until it serves its assets from
         // a "domain" (e.g. localhost) rather than the file system itself.
         // i.e. there is no way to instruct captcha that the domain is "file://"

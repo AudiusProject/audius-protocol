@@ -7,7 +7,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import { RadioButton, Text, Screen, ScreenContent } from 'app/components/core'
-import { audiusSdk } from 'app/services/audius-sdk'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { makeStyles } from 'app/styles'
 
 const messages = {
