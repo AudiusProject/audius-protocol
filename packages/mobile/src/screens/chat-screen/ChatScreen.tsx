@@ -151,7 +151,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   userBadgeTitle: {
     fontSize: typography.fontSize.medium,
-    fontWeight: '800',
+    fontFamily: typography.fontByWeight.bold,
     color: palette.neutral
   },
   profilePicture: {
@@ -452,10 +452,9 @@ export const ChatScreen = () => {
   )
 
   const topBarRight = (
-    <IconKebabHorizontal
-      onPress={handleTopRightPress}
-      fill={palette.neutralLight4}
-    />
+    <TouchableOpacity onPress={handleTopRightPress} hitSlop={spacing(2)}>
+      <IconKebabHorizontal fill={palette.neutralLight4} />
+    </TouchableOpacity>
   )
 
   // When reaction popup opens, hide reaction here so it doesn't
