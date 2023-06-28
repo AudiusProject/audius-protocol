@@ -9,21 +9,7 @@ const handlebars = require('handlebars')
 const fs = require('fs')
 const path = require('path')
 const authMiddleware = require('../authMiddleware')
-
-const getEmailTemplate = (path) =>
-  handlebars.compile(fs.readFileSync(path).toString())
-
-const welcomeTemplatePath = path.resolve(
-  __dirname,
-  '../notifications/emails/welcome.html'
-)
-const welcomeTemplate = getEmailTemplate(welcomeTemplatePath)
-
-const welcomeDownloadTemplatePath = path.resolve(
-  __dirname,
-  '../notifications/emails/welcomeDownload.html'
-)
-const welcomeDownloadTemplate = getEmailTemplate(welcomeDownloadTemplatePath)
+const { getWelcomeEmail } = require('../notifications/emails/welcome')
 
 module.exports = function (app) {
   /**
@@ -71,20 +57,17 @@ module.exports = function (app) {
       }
 
       const walletAddress = existingUser.walletAddress
-      const htmlTemplate = isNativeMobile
-        ? welcomeTemplate
-        : welcomeDownloadTemplate
       const copyrightYear = new Date().getFullYear().toString()
-      const welcomeHtml = htmlTemplate({
+      const welcomeHtml = getWelcomeEmail({
         name,
-        copyright_year: copyrightYear
+        copyrightYear
       })
 
       const emailParams = {
         from: 'The Audius Team <team@audius.co>',
         to: existingUser.email,
         bcc: ['forrest@audius.co'],
-        subject: 'The Automated Welcome Email',
+        subject: 'Welcome to Audius!',
         html: welcomeHtml,
         asm: {
           groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
