@@ -110,7 +110,7 @@ func (c *PeerClient) doSweep(i int) error {
 	if i > 0 {
 		err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
 		if err != nil && err != sql.ErrNoRows {
-			c.logger.Error("backfill failed to get cursor: ", err)
+			c.logger.Error("backfill failed to get cursor: ", "err", err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (c *PeerClient) doSweep(i int) error {
 		// if apply error stop here (don't advance cursor)
 		// will restart here on next doSeep loop
 		if err != nil {
-			c.logger.Error("sweep apply error", err)
+			c.logger.Error("sweep apply error", "err", err, "sig", op.Sig)
 			break
 		}
 

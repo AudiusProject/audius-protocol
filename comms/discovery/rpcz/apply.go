@@ -107,7 +107,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	// publish event
 	j, err := json.Marshal(rpcLog)
 	if err != nil {
-		slog.Error("err: invalid json", err)
+		slog.Error("err: invalid json", "err", err)
 	} else {
 		proc.broadcast(j)
 	}
@@ -374,14 +374,14 @@ func (proc *RPCProcessor) applyInternalMessage(rpcLog *schema.RpcLog, rawRpc *sc
 		for _, userId := range params.UserIDs {
 			_, err := tx.Exec(`insert into chat_ban values ($1) on conflict do nothing`, userId)
 			if err != nil {
-				logger.Error("failed", err)
+				logger.Error("failed", "err", err)
 			}
 		}
 	case "internal.chat.unban":
 		for _, userId := range params.UserIDs {
 			_, err := tx.Exec(`delete from chat_ban where user_id = $1`, userId)
 			if err != nil {
-				logger.Error("failed", err)
+				logger.Error("failed", "err", err)
 			}
 		}
 
