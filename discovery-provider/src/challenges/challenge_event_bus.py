@@ -115,9 +115,10 @@ class ChallengeEventBus:
 
     def flush(self):
         """Flushes the in-memory queue of events and enqueues them to Redis"""
-        logger.info(
-            f"ChallengeEventBus: Flushing {len(self._in_memory_queue)} events from in-memory queue"
-        )
+        if len(self._in_memory_queue) != 0:
+            logger.info(
+                f"ChallengeEventBus: Flushing {len(self._in_memory_queue)} events from in-memory queue"
+            )
         for event in self._in_memory_queue:
             try:
                 event_json = self._event_to_json(
