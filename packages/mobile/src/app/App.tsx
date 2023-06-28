@@ -26,8 +26,8 @@ import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import * as analytics from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
-import { audiusSdk } from 'app/services/audius-sdk'
 import { setLibs } from 'app/services/libs'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { persistor, store } from 'app/store'
 import {
   forceRefreshConnectivity,

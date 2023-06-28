@@ -5,7 +5,7 @@ import { interleave } from '@audius/common'
 import type { User } from '@sentry/react-native'
 import type { ImageSourcePropType, ImageURISource } from 'react-native'
 
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { storageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 
 export type ContentNodeImageSource = {
   source: ImageSourcePropType
@@ -66,13 +66,7 @@ export const createAllImageSources = ({
     return [...(localSource ? [localSource] : []), { uri: cid }]
   }
 
-  const endpoints =
-    providedEndpoints ??
-    (user?.creator_node_endpoint
-      ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-          user.creator_node_endpoint
-        )
-      : [])
+  const endpoints = providedEndpoints ?? storageNodeSelector.getNodes(cid)
 
   const newImageSources = createImageSourcesForEndpoints({
     endpoints,
@@ -138,15 +132,10 @@ export const useContentNodeImage = ({
   const [imageSourceIndex, setImageSourceIndex] = useState(0)
   const [failedToLoad, setFailedToLoad] = useState(false)
 
-  const endpoints = useMemo(
-    () =>
-      user?.creator_node_endpoint
-        ? audiusBackendInstance.getCreatorNodeIPFSGateways(
-            user.creator_node_endpoint
-          )
-        : [],
-    [user?.creator_node_endpoint]
-  )
+  const endpoints = useMemo(() => {
+    if (!cid) return []
+    return storageNodeSelector.getNodes(cid)
+  }, [cid])
 
   // Create an array of ImageSources
   // based on the content node endpoints

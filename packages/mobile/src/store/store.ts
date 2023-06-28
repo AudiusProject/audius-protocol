@@ -24,7 +24,7 @@ import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import thunk from 'redux-thunk'
 
-import { audiusSdk } from 'app/services/audius-sdk'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import type { DownloadState } from './download/slice'

@@ -5,13 +5,13 @@ import {
   stagingConfig
 } from '@audius/sdk'
 
-import { Env } from '../env'
+import { Env } from '../../env'
 import {
   BooleanKeys,
   IntKeys,
   RemoteConfigInstance,
   StringKeys
-} from '../remote-config'
+} from '../../remote-config'
 
 type DiscoveryNodeSelectorConfig = {
   env: Env
