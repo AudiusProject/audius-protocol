@@ -141,3 +141,32 @@ app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
     res.send((e as any).message);
   }
 });
+
+app.post<SaveTrackRequest>("/saveTrack", async (req, res) => {
+  try {
+    const saveTrackRequest: SaveTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.tracks.saveTrack(saveTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnsaveTrackRequest>("/unsaveTrack", async (req, res) => {
+  try {
+    const unsaveTrackRequest: UnsaveTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.tracks.unsaveTrack(unsaveTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
