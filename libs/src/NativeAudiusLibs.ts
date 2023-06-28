@@ -522,10 +522,13 @@ export class AudiusLibs {
       // Use rendezvous to select creatorNodeEndpoint for v2 users
       if (
         currentUser?.is_storage_v2 &&
-        this.creatorNodeConfig.storageNodeSelector
+        this.creatorNodeConfig.storageNodeSelector &&
+        currentUser.wallet
       ) {
         const [storageNode] =
-          await this.creatorNodeConfig.storageNodeSelector.getNodes()
+          this.creatorNodeConfig.storageNodeSelector.getNodes(
+            currentUser.wallet
+          )
         if (storageNode) {
           creatorNodeEndpoint = storageNode
         }
