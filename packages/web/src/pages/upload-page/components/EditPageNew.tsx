@@ -19,7 +19,7 @@ type EditPageProps = {
   setTracks: (tracks: TrackForUpload[]) => void
   onContinue: () => void
 }
-export type FormValues = ExtendedTrackMetadata & {
+export type EditFormValues = ExtendedTrackMetadata & {
   releaseDate: moment.Moment
   licenseType: {
     allowAttribution: Nullable<boolean>
@@ -47,7 +47,7 @@ const EditTrackSchema = Yup.object().shape({
 export const EditPageNew = (props: EditPageProps) => {
   const { tracks, setTracks, onContinue } = props
 
-  const initialValues: FormValues = {
+  const initialValues: EditFormValues = {
     ...tracks[0].metadata,
     artwork: null,
     releaseDate: moment().startOf('day'),
@@ -59,7 +59,7 @@ export const EditPageNew = (props: EditPageProps) => {
   }
 
   const onSubmit = useCallback(
-    (values: FormValues) => {
+    (values: EditFormValues) => {
       setTracks([{ ...tracks[0], metadata: values }])
       onContinue()
     },
@@ -67,7 +67,7 @@ export const EditPageNew = (props: EditPageProps) => {
   )
 
   return (
-    <Formik<FormValues>
+    <Formik<EditFormValues>
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={EditTrackSchema}
