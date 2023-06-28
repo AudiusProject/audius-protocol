@@ -10,6 +10,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { useFormikContext } from 'formik'
 
 import styles from './ModalField.module.css'
 
@@ -26,12 +27,18 @@ type ModalFieldProps = PropsWithChildren & {
 export const ModalField = (props: ModalFieldProps) => {
   const { children, title, icon, preview } = props
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { submitForm, resetForm } = useFormikContext()
+
   const open = () => setIsModalOpen(true)
   const close = () => setIsModalOpen(false)
+  const cancel = () => {
+    resetForm()
+    close()
+  }
 
   const modal = (
     <div className={styles.modal}>
-      <Modal onClose={close} isOpen={isModalOpen}>
+      <Modal onClose={cancel} isOpen={isModalOpen}>
         <ModalHeader>
           <div className={styles.modalHeader}>
             <ModalTitle
@@ -46,7 +53,11 @@ export const ModalField = (props: ModalFieldProps) => {
           <Button
             type={ButtonType.PRIMARY}
             text={messages.done}
-            onClick={close}
+            onClick={() => {
+              submitForm()
+              close()
+            }}
+            buttonType='submit'
           />
         </ModalFooter>
       </Modal>
