@@ -332,7 +332,6 @@ export async function processEmailNotifications(
         logger.info("no last user found")
         return
       }
-      if (userRows.length === 0) return
       const emailUsers = userRows.reduce((acc, user) => {
         acc[user.blockchainUserId] = user.email
         return acc
