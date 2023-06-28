@@ -46,7 +46,7 @@ func Dial() error {
 
 	Conn, err = sqlx.Open("postgres", dsn)
 	if err != nil {
-		logger.Error("database.Dial failed", err)
+		logger.Error("database.Dial failed", "err", err)
 		return err
 	}
 	logger.Info("database dialed")
