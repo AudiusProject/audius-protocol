@@ -7,12 +7,17 @@ import { useServiceProviders } from './useServiceProviders'
 import useSWR from 'swr'
 import { fetcher } from './query'
 
+const todayDate = new Date().toISOString().substring(0, 10)
+
 export function DMMatrix() {
   const [env, nodeType] = useEnvironmentSelection()
-  const [since, setSince] = useState('2023-05-25')
+  const [since, setSince] = useState(todayDate)
   const { data: sps, error } = useServiceProviders(env, nodeType)
   const [m, setM] = useState<
-    Record<string, Record<string, { count: number; relayed_at: string }>>
+    Record<
+      string,
+      Record<string, { count: number; relayed_at: string; rpc_cursor: string }>
+    >
   >({})
   const [hoverCol, setHoverCol] = useState(-1)
 
@@ -59,7 +64,10 @@ export function DMMatrix() {
               <td
                 className="spun"
                 key={host}
-                style={{ background: idx == hoverCol ? 'lightyellow' : '' }}
+                style={{
+                  width: '1%',
+                  background: idx == hoverCol ? 'lightyellow' : '',
+                }}
               >
                 <span>{host.replace('https://', '')}</span>
               </td>
@@ -86,7 +94,9 @@ export function DMMatrix() {
                   onMouseEnter={() => setHoverCol(idx)}
                 >
                   {m[host][other]?.count ? (
-                    <span title={m[host][other].relayed_at}>
+                    <span
+                      title={`max(relayed_at) = ${m[host][other].relayed_at} \nrpc_cursor.relayed_at = ${m[host][other].rpc_cursor}`}
+                    >
                       {m[host][other].count}
                     </span>
                   ) : (
