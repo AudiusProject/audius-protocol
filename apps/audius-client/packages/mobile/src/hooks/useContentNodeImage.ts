@@ -70,7 +70,7 @@ export const createAllImageSources = ({
 
   const newImageSources = createImageSourcesForEndpoints({
     endpoints,
-    createUri: (endpoint) => `${endpoint}${cid}/${size}.jpg`
+    createUri: (endpoint) => `${endpoint}/content/${cid}/${size}.jpg`
   })
 
   // These can be removed when all the data on Content Node has
