@@ -12,20 +12,26 @@ import (
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
-	// if this chat exists... and it was created earlier... skip this chat create
+	logger := slog.With("method", "chat.create", "chat_id", params.ChatID, "user_id", userId, "ts", ts)
+
+	// chat row exists and this RPC happened afterwards.
+	// this is a noop... keep existing chat
 	existing := 0
 	tx.Get(&existing, `select count(*) from chat where chat_id = $1 and created_at < $2`, params.ChatID, ts)
 	if existing > 0 {
+		logger.Warn("prior chat exists: ignoring chat create")
 		return nil
 	}
 
-	// if this chat exists... and created_at is newer... nuke it!
+	// a conflicting chat row exists and this RPC happened before...
+	// prefer the RPC since it has the most precedent
+	// delete the conflicting chat before processing this chat.create RPC
 	nuked, err := tx.Exec("delete from chat where chat_id = $1 and created_at > $2", params.ChatID, ts)
 	if err != nil {
 		return err
 	}
 	if c, _ := nuked.RowsAffected(); c > 0 {
-		slog.Warn("deleted conflicting chat", "chat_id", params.ChatID, "ts", ts)
+		slog.Warn("deleted conflicting chat")
 	}
 
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", params.ChatID, ts)
