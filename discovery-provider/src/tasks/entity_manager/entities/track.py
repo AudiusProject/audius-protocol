@@ -17,6 +17,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    validate_signer,
 )
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
@@ -231,29 +232,7 @@ def validate_track_tx(params: ManageEntityParameters):
     if user_id not in params.existing_records[EntityType.USER]:
         raise IndexingValidationError(f"User {user_id} does not exist")
 
-    # Ensure the signer is either the user or authorized to perform action for the user
-    # TODO (nkang) - Extract to helper
-    wallet = params.existing_records[EntityType.USER][user_id].wallet
-    signer = params.signer.lower()
-    signer_matches_user = wallet and wallet.lower() == signer
-    if signer_matches_user:
-        params.logger.set_context("isApp", "false")
-    else:
-        params.logger.set_context("isApp", "unknown")
-        grant_key = (signer, user_id)
-        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
-        if is_signer_authorized:
-            grant = params.existing_records[EntityType.GRANT][grant_key]
-            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
-            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
-                raise IndexingValidationError(
-                    f"Signer is not authorized to perform action for user {user_id}"
-                )
-            params.logger.set_context("isApp", "true")
-        else:
-            raise IndexingValidationError(
-                f"Signer does not match user {user_id} or an authorized wallet"
-            )
+    validate_signer(params)
 
     if params.entity_type != EntityType.TRACK:
         raise IndexingValidationError(f"Entity type {params.entity_type} is not a track")

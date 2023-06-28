@@ -13,6 +13,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     get_record_key,
+    validate_signer,
 )
 
 logger = logging.getLogger(__name__)
@@ -250,9 +251,7 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.user_id not in params.existing_records[EntityType.USER]:
         raise IndexingValidationError(f"User {params.user_id} does not exist")
 
-    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise IndexingValidationError(f"User {params.user_id} does not match signer")
+    validate_signer(params)
 
     if params.entity_id not in params.existing_records[params.entity_type]:
         raise IndexingValidationError(f"Entity {params.entity_id} does not exist")

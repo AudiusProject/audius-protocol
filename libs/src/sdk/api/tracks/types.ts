@@ -152,3 +152,26 @@ export const DeleteTrackSchema = z
   .strict()
 
 export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>
+
+export const SaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        isSaveOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type SaveTrackRequest = z.input<typeof SaveTrackSchema>
+
+export const UnsaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnsaveTrackRequest = z.input<typeof UnsaveTrackSchema>
