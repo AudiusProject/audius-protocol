@@ -11,6 +11,7 @@ import { Screen, FlatList, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemePalette, useColor } from 'app/utils/theme'
 
 import { ChatListItem } from './ChatListItem'
@@ -114,7 +115,7 @@ export const ChatListScreen = () => {
     chats.length === 0 && (chatsStatus ?? Status.LOADING) === Status.LOADING
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
   const iconCompose = (
-    <TouchableOpacity onPress={navigateToChatUserList}>
+    <TouchableOpacity onPress={navigateToChatUserList} hitSlop={spacing(2)}>
       <IconCompose fill={palette.neutralLight4} />
     </TouchableOpacity>
   )

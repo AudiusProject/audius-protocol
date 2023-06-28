@@ -72,7 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     color: palette.neutral
   },
   messageTextIsAuthor: {
-    color: palette.white
+    color: palette.staticWhite
   },
   dateContainer: {
     marginTop: spacing(2),

@@ -72,7 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   userName: {
     fontSize: typography.fontSize.small,
-    fontWeight: 'bold',
+    fontFamily: typography.fontByWeight.bold,
     color: palette.neutral
   },
   followContainer: {
@@ -84,6 +84,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   handle: {
     fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.medium,
     color: palette.neutral
   },
   followersContainer: {
@@ -104,14 +105,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingVertical: spacing(1.5)
   },
   followersCount: {
-    fontWeight: 'bold',
     marginHorizontal: spacing(1),
     color: palette.neutralLight4,
-    fontSize: typography.fontSize.small
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.bold
   },
   followers: {
     color: palette.neutralLight4,
-    fontSize: typography.fontSize.small
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.medium
   },
   iconUser: {
     height: spacing(4),

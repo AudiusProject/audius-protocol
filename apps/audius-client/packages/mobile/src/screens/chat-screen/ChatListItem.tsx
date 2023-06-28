@@ -56,7 +56,7 @@ export const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   userName: {
     fontSize: typography.fontSize.large,
-    fontWeight: 'bold',
+    fontFamily: typography.fontByWeight.bold,
     color: palette.neutral
   },
   handle: {
@@ -71,7 +71,7 @@ export const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   unreadCount: {
     fontSize: typography.fontSize.xxs,
     textTransform: 'uppercase',
-    fontWeight: 'bold',
+    fontFamily: typography.fontByWeight.heavy,
     color: palette.white,
     letterSpacing: 0.5
   }
