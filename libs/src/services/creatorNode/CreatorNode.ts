@@ -11,6 +11,7 @@ import {
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { MonitoringCallbacks } from '../types'
+import type { StorageNodeSelectorService } from '../../sdk'
 
 const { wait } = Utils
 
@@ -68,6 +69,7 @@ export type CreatorNodeConfig = {
   writeQuorumEnabled: boolean
   fallbackUrl: string
   isStorageV2Only: boolean
+  storageNodeSelector: StorageNodeSelectorService
 }
 
 // Currently only supports a single logged-in audius user
@@ -529,7 +531,7 @@ export class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.validateTrackSchema(metadata)
-    } catch(e) {
+    } catch (e) {
       console.error('Error validating track metadata', e)
       throw e
     }
