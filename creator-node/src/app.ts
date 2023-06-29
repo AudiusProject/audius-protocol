@@ -8,7 +8,7 @@ import cors from 'cors'
 import prometheusMiddleware from 'express-prom-bundle'
 import _ from 'lodash'
 
-console.log('Starting app.js')
+console.log('Starting creator node!')
 import { getConfigStoragePath } from './diskManager'
 import { sendResponse, errorResponseServerError } from './apiHelpers'
 import { logger, loggingMiddleware } from './logging'

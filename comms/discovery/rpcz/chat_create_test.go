@@ -65,13 +65,17 @@ func TestChatCreate(t *testing.T) {
 	// send a message in this earlier chat
 	chatSendMessage(tx, 1, chatId, "good_message", tsLate, "this message is blessed")
 	tx.QueryRow(`select count(*) from chat_message where chat_id = $1`, chatId).Scan(&count)
-	assert.Equal(t, 1, count)
+	assert.Equal(t, 2, count)
 
 	err = tx.QueryRow(`select count(*) from chat_member where invite_code = 'earlier'`).Scan(&count)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, count)
 
 	err = tx.QueryRow(`select count(*) from chat_member where invite_code = 'later'`).Scan(&count)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, count)
+
+	err = tx.QueryRow(`select count(*) from chat_member where invite_code = 'even_later'`).Scan(&count)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, count)
 

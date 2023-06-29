@@ -49,7 +49,7 @@ export class Processor {
   } = {}) => {
     await this.remoteConfig.init()
 
-    logger.info('starting!')
+    logger.info('starting up!')
 
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
@@ -143,6 +143,7 @@ export class Processor {
         )
         this.lastWeeklyEmailSent = moment.utc()
       }
+      logger.info('Completed processing scheduled emails')
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }

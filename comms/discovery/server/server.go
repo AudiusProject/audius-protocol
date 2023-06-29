@@ -79,6 +79,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 	g.GET("/debug/cursors", s.debugCursors)
+	g.GET("/debug/failed", s.debugFailed)
 
 	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
@@ -242,6 +243,26 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 		return err
 	}
 	return c.JSON(200, cursors)
+}
+
+func (s *ChatServer) debugFailed(c echo.Context) error {
+	var failed []struct {
+		RpcLogJson json.RawMessage `db:"rpc_log_json" json:"rpc_log_json"`
+		ErrorCount int             `db:"error_count" json:"error_count"`
+		ErrorText  string          `db:"error_text" json:"error_text"`
+	}
+	q := `
+	select
+		rpc_log_json, error_count, error_text
+	from rpc_error
+	order by last_attempt desc
+	limit 5000;
+	`
+	err := db.Conn.Select(&failed, q)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, failed)
 }
 
 func (s *ChatServer) debugSse(c echo.Context) error {
