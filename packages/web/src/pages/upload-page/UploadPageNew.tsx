@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { UploadType } from '@audius/common'
 
@@ -24,6 +24,30 @@ export const UploadPageNew = (props: UploadPageProps) => {
   const [phase, setPhase] = useState(Phase.SELECT)
   const [tracks, setTracks] = useState<TrackForUpload[]>([])
 
+  // Pretty print json just for testing
+  useEffect(() => {
+    if (phase !== Phase.FINISH) return
+    const stylizePreElements = function () {
+      const preElements = document.getElementsByTagName('pre')
+      for (let i = 0; i < preElements.length; ++i) {
+        const preElement = preElements[i]
+        preElement.className += 'prettyprint'
+      }
+    }
+
+    const injectPrettifyScript = function () {
+      const scriptElement = document.createElement('script')
+      scriptElement.setAttribute(
+        'src',
+        'https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js'
+      )
+      document.head.appendChild(scriptElement)
+    }
+
+    stylizePreElements()
+    injectPrettifyScript()
+  }, [phase])
+
   let page
   switch (phase) {
     case Phase.SELECT:
@@ -45,8 +69,8 @@ export const UploadPageNew = (props: UploadPageProps) => {
       )
       break
     case Phase.FINISH:
-      console.log(tracks)
-      page = <>{JSON.stringify(tracks, null, 2)}</>
+      console.log(tracks[0])
+      page = <pre>{JSON.stringify(tracks, null, 2)}</pre>
   }
   return (
     <Page

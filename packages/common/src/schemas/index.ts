@@ -48,7 +48,7 @@ const trackMetadataSchema = {
   ai_attribution_user_id: null
 }
 
-export const newTrackMetadata = (fields, validate = false) => {
+export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields

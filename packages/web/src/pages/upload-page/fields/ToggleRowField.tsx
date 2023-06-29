@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { ComponentProps, PropsWithChildren } from 'react'
 
 import { Switch } from '@audius/stems'
 import cn from 'classnames'
@@ -10,10 +10,10 @@ type ToggleFieldProps = PropsWithChildren & {
   name: string
   header: string
   description: string
-}
+} & Partial<ComponentProps<'input'>>
 
 export const ToggleRowField = (props: ToggleFieldProps) => {
-  const { name, header, description, children } = props
+  const { name, header, description, children, ...inputOverrides } = props
   const [field] = useField({
     name,
     type: 'checkbox'
@@ -26,7 +26,7 @@ export const ToggleRowField = (props: ToggleFieldProps) => {
         <p className={styles.description}>{description}</p>
         {field.checked ? children : null}
       </div>
-      <Switch {...field} />
+      <Switch {...field} {...inputOverrides} />
     </div>
   )
 }
