@@ -2,8 +2,6 @@ import type { BaseConstructorArgs } from './base'
 
 import { Base, Services } from './base'
 import { Nullable, TrackMetadata, Utils } from '../utils'
-import retry from 'async-retry'
-import type { TransactionReceipt } from 'web3-core'
 import {
   Action,
   EntityManagerClient
@@ -25,13 +23,6 @@ const TRACK_PROPS = [
   'ai_attribution_user_id'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
-
-type ChainInfo = {
-  metadataMultihash: string
-  metadataFileUUID: string
-  transcodedTrackUUID: string
-  metadata?: TrackMetadata
-}
 
 const { decodeHashId } = Utils
 
