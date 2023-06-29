@@ -87,7 +87,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if previewStartSeconds != upload.PreviewStartSeconds {
 		upload.PreviewStartSeconds = previewStartSeconds
 		upload.UpdatedAt = time.Now().UTC()
-		upload.Status = JobStatusNewRetranscode
+		upload.Status = JobStatusRetranscode
 
 		err = ss.crud.Update(upload)
 		if err != nil {
@@ -153,6 +153,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		go func() {
 			defer wg.Done()
 
+			now := time.Now().UTC()
 			upload := &Upload{
 				ID:                  ulid.Make().String(),
 				UserID:              userId,
@@ -160,7 +161,8 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				Template:            template,
 				PreviewStartSeconds: previewStartSeconds,
 				CreatedBy:           ss.Config.Self.Host,
-				CreatedAt:           time.Now().UTC(),
+				CreatedAt:           now,
+				UpdatedAt:           now,
 				OrigFileName:        formFile.Filename,
 				TranscodeResults:    map[string]string{},
 			}

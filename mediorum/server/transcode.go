@@ -81,7 +81,7 @@ func (ss *MediorumServer) startTranscoder() {
 		}
 		for _, upload := range *uploads {
 			// only the first mirror transcodes
-			if upload.Status == JobStatusNewRetranscode && slices.Index(upload.Mirrors, myHost) == 0 {
+			if upload.Status == JobStatusRetranscode && slices.Index(upload.Mirrors, myHost) == 0 {
 				ss.logger.Info("got retranscode job", "id", upload.ID)
 				work <- upload
 			}
@@ -188,11 +188,11 @@ const (
 )
 
 const (
-	JobStatusNew            = "new"
-	JobStatusNewRetranscode = "new_retranscode_preview"
-	JobStatusBusy           = "busy"
-	JobStatusDone           = "done"
-	JobStatusError          = "error"
+	JobStatusNew         = "new"
+	JobStatusRetranscode = "retranscode_preview"
+	JobStatusBusy        = "busy"
+	JobStatusDone        = "done"
+	JobStatusError       = "error"
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
@@ -427,7 +427,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 }
 
 func (ss *MediorumServer) transcode(upload *Upload) error {
-	reTranscodePreview := upload.Status == JobStatusNewRetranscode
+	reTranscodePreview := upload.Status == JobStatusRetranscode
 
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
