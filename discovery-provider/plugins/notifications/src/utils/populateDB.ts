@@ -517,12 +517,14 @@ export async function createChat(
     .insert([
       {
         chat_id: chatId,
+        created_at: timestamp.toISOString(),
         invited_by_user_id: user1,
         invite_code: chatId,
-        user_id: user1
+        user_id: user1,
       },
       {
         chat_id: chatId,
+        created_at: timestamp.toISOString(),
         invited_by_user_id: user1,
         invite_code: chatId,
         user_id: user2
