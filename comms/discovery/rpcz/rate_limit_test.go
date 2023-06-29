@@ -59,7 +59,7 @@ func TestRateLimit(t *testing.T) {
 	chatTs := time.Now().UTC().Add(-time.Hour * time.Duration(48))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", chatId1, chatTs)
 	assert.NoError(t, err)
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId1, user1Id, user2Id)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id, created_at) values ($1, $2, $1, $2, $4), ($1, $2, $1, $3, $4)", chatId1, user1Id, user2Id, chatTs)
 	assert.NoError(t, err)
 
 	// user1Id messaged user2Id 48 hours ago
