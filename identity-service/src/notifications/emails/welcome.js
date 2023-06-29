@@ -14,6 +14,8 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
     <meta name="viewport" content="width=device-width,initial-scale=1"> 
     <meta http-equiv="X-UA-Compatible" content="IE=Edge"/> 
     <meta name="x-apple-disable-message-reformatting"> 
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
     <title></title> 
     <style>html{-webkit-text-size-adjust:none;-ms-text-size-adjust:none}@media only screen and (max-device-width:600px),only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}@media only screen and (max-width:600px){.mob_100{width:100%!important;max-width:100%!important}.mob_100 img,.mob_100 table{max-width:100%!important}.mob_full{width:auto!important;display:block!important;padding:0 10px!important}.mob_center{text-align:center!important}.mob_center_bl{margin-left:auto;margin-right:auto}.mob_hidden{display:none!important}.only_mob{display:block!important}}.creative{width:100%!important;max-width:100%!important}.mail_preheader{display:none!important}form input, form textarea{font-family: Arial, sans-serif;width: 100%;box-sizing: border-box;font-size: 13px;color:#000000;outline:none;padding: 0px 15px;}form textarea{resize:vertical;line-height: normal;padding: 10px 15px;}form button{border: 0px none;cursor:pointer;}</style> 
     <style>@media only screen and (max-width:480px){u+.body .full-wrap{width:100%!important;width:100vw!important}}</style> 
@@ -189,7 +191,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                   <tr><td align="center" valign="middle" style="font-size: 0px;">
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+                      <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
                         <div>
                           <!--[if (gte mso 9)|(IE)]>
@@ -224,19 +226,19 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                     </td>
                     <td valign="middle" width="16" style="width: 16px">
                     <![endif]-->
-                    <div style="display: inline-block; vertical-align: middle; width: 16px;">
+                    <!-- <div style="display: inline-block; vertical-align: middle; width: 16px;">
                       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                       <tr><td align="undefined" valign="top" class="outf14" style="font-size: large;">
                         <img src="https://download.audius.co/welcome-email/i1704282037.png" width="16" height="16" alt="" border="0" style="display: block;">
                       </td></tr>
                       </table>
-                    </div>
+                    </div> -->
                     <!--[if (gte mso 9)|(IE)]>
                     </td>
                     <td valign="middle" width="252" style="width: 252px">
                     <![endif]-->
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+                      <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
                         <div>
                           <!--[if (gte mso 9)|(IE)]>
@@ -247,11 +249,11 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <tr><td align="center" valign="middle" height="24" bgcolor="#cc0fe0" style="padding: 12px 24px; border-radius: 4px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px; height: 24px;">
                             <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
-                              <table border="0" cellspacing="0" cellpadding="0" width="151" style="width: 151px;">
+                              <table border="0" cellspacing="0" cellpadding="0" width="160" style="width: 160px;">
                               <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
                                 <div style="line-height: 24px;">
                                   <a style="text-decoration: none;" href="https://audius.co" target="_blank">
-                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start listening</span>
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start Listening</span>
                                   </a>
                                 </div>
                               </td> 
@@ -481,10 +483,10 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                         <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
                           <div>
                             <!--[if (gte mso 9)|(IE)]>
-                            <table width="150" border="0" cellspacing="0" cellpadding="0" style="width: 150px;">
+                            <table width="160" border="0" cellspacing="0" cellpadding="0" style="width: 160px;">
                             <tr><td>
                             <![endif]-->
-                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 150px;">
+                            <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 160px;">
                             <tr><td align="center">
                               <div style="line-height: 24px;">
                                 <a style="text-decoration: none;" href="https://audius.co/trending" target="_blank">
@@ -564,7 +566,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
                   <tr><td align="center" valign="middle" style="font-size: 0px;">
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+                      <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
                         <div>
                           <!--[if (gte mso 9)|(IE)]>
@@ -582,7 +584,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
                                   <a style="text-decoration: none;" href="https://audius.co/feed" target="_blank">
-                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Create playlist</span>
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Create Playlist</span>
                                   </a>
                                 </div>
                               </td></tr>
@@ -608,19 +610,19 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                     </td>
                     <td valign="middle" width="16" style="width: 16px">
                     <![endif]-->
-                    <div style="display: inline-block; vertical-align: middle; width: 16px;">
+                    <!-- <div style="display: inline-block; vertical-align: middle; width: 16px;">
                       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                       <tr><td align="undefined" valign="top" class="outf14" style="font-size: large;">
                         <img src="https://download.audius.co/welcome-email/i1704282037.png" width="16" height="16" alt="" border="0" style="display: block;">
                       </td></tr>
                       </table>
-                    </div>
+                    </div> -->
                     <!--[if (gte mso 9)|(IE)]>
                     </td>
                     <td valign="middle" width="252" style="width: 252px">
                     <![endif]-->
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+                      <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
                         <div>
                           <!--[if (gte mso 9)|(IE)]>
@@ -631,14 +633,14 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <tr><td align="center" valign="middle" height="24" bgcolor="#cc0fe0" style="padding: 12px 24px; border-radius: 4px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px; height: 24px;">
                             <table border="0" cellspacing="0" cellpadding="0" width="100%">
                             <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
-                              <table border="0" cellspacing="0" cellpadding="0" width="150" style="width: 150px;">
+                              <table border="0" cellspacing="0" cellpadding="0" width="160" style="width: 160px;">
                               <tr><td align="left" valign="top" width="21" style="width: 21px; padding: 0px 8px 0px 0px;">
                                 <img src="https://download.audius.co/welcome-email/i-1694726226.png" width="21" height="19.333332061767578" alt="" border="0" style="display: block;">
                               </td> 
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
                                   <a style="text-decoration: none;" href="https://audius.co/upload" target="_blank">
-                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Upload tracks</span>
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Upload Tracks</span>
                                   </a>
                                 </div>
                               </td></tr>
@@ -867,7 +869,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
               </div> 
               <div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
               <div style="line-height: 20px;">
-                <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;"><span style="text-decoration: none;">Tired of seeing these emails? Update your <a href="https://audius.co/settings" target="_blank">notification preferences</a> or </span>
+                <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;"><span style="text-decoration: none;">Tired of seeing these emails? Update your <a style="color: #7e1bcc; text-decoration: underline; line-height: 16px;" href="https://audius.co/settings" target="_blank">notification preferences</a> or </span>
                 <a href="<%asm_group_unsubscribe_raw_url%>">
                   <span style="color: #7e1bcc; text-decoration: underline; line-height: 16px;">Unsubscribe</span></span>
                 </a>
