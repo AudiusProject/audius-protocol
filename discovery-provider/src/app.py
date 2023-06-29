@@ -494,7 +494,7 @@ def configure_celery(celery, test_config=None):
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
-    logger.info("Redis instance initialized!")
+    logger.info("Redis instance connected!")
 
     # Initialize entity manager
     entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
