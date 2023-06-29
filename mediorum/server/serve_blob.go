@@ -128,7 +128,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	key := c.Param("cid")
 	logger := ss.logger.With("cid", key)
 
-	if !c.Get("checkedDelistStatus").(bool) && ss.isCidBlacklisted(ctx, key) {
+	shouldCheckDelistStatus := true
+	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
+		shouldCheckDelistStatus = false
+	}
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
@@ -191,7 +195,11 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 	key := c.Param("cid")
 	logger := ss.logger.With("cid", key)
 
-	if !c.Get("checkedDelistStatus").(bool) && ss.isCidBlacklisted(ctx, key) {
+	shouldCheckDelistStatus := true
+	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
+		shouldCheckDelistStatus = false
+	}
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
