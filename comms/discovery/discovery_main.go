@@ -47,10 +47,9 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// only start sweepers if registered...
-		if discoveryConfig.IsRegisteredWallet {
-			proc.StartPeerClients()
-		}
+		// start peer clients
+		// todo: would be nice to only start sweepers if registered...
+		proc.StartPeerClients()
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {
