@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import {
   Track,
@@ -12,6 +12,7 @@ import {
   accountSelectors
 } from '@audius/common'
 import { Formik, useField } from 'formik'
+import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconRemix } from 'assets/img/iconRemixGray.svg'
@@ -66,6 +67,10 @@ export type RemixFormValues = {
   [REMIX_LINK]: string | null
 }
 
+/**
+ * This is a subform that expects to exist within a parent TrackEdit form.
+ * The useField calls reference the outer form's fields which much match the name constants.
+ */
 export const RemixModalForm = () => {
   // These refer to the field in the outer EditForm
   const [{ value: hideRemixesValue }, , { setValue: setHideRemixesValue }] =
@@ -83,14 +88,17 @@ export const RemixModalForm = () => {
     ? fullTrackPage(initialRemixedTrack?.permalink)
     : null
 
-  const initialValues = useMemo(
-    () => ({
-      [HIDE_REMIXES]: hideRemixesValue,
-      [IS_REMIX]: !!remixOfValue?.tracks.some((track) => !!track),
-      [REMIX_LINK]: remixLink
-    }),
-    [hideRemixesValue, remixLink, remixOfValue?.tracks]
-  )
+  const initialValues = useMemo(() => {
+    const initialValues = {}
+    set(initialValues, HIDE_REMIXES, hideRemixesValue)
+    set(
+      initialValues,
+      IS_REMIX,
+      !!remixOfValue?.tracks.some((track) => !!track)
+    )
+    set(initialValues, REMIX_LINK, remixLink)
+    return initialValues as RemixFormValues
+  }, [hideRemixesValue, remixLink, remixOfValue?.tracks])
 
   const [url, setUrl] = useState<string>()
 
@@ -100,20 +108,23 @@ export const RemixModalForm = () => {
     { disabled: !url }
   )
 
-  const onSubmit = (values: RemixFormValues) => {
-    setHideRemixesValue(values[HIDE_REMIXES])
-    if (values[IS_REMIX] && values[REMIX_LINK]) {
-      // TODO: handle undefined linkedTrack with form validation
-      setRemixOfValue({
-        tracks: [
-          {
-            // @ts-ignore only the track_id is required for the form
-            parent_track_id: linkedTrack?.track_id
-          }
-        ]
-      })
-    }
-  }
+  const onSubmit = useCallback(
+    (values: RemixFormValues) => {
+      setHideRemixesValue(get(values, HIDE_REMIXES))
+      if (get(values, IS_REMIX) && get(values, REMIX_LINK)) {
+        // TODO: handle undefined linkedTrack with form validation
+        setRemixOfValue({
+          tracks: [
+            {
+              // @ts-ignore only the track_id is required for the form
+              parent_track_id: linkedTrack?.track_id
+            }
+          ]
+        })
+      }
+    },
+    [linkedTrack?.track_id, setHideRemixesValue, setRemixOfValue]
+  )
 
   const preview = (
     <div className={styles.preview}>

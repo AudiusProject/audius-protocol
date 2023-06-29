@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { IconCalendar } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useField } from 'formik'
+import { get, set } from 'lodash'
 import moment from 'moment'
 
 import { EditFormValues } from '../components/EditPageNew'
@@ -10,7 +11,6 @@ import { EditFormValues } from '../components/EditPageNew'
 import { DatePickerField } from './DatePickerField'
 import { ModalField } from './ModalField'
 import styles from './ReleaseDateModalForm.module.css'
-
 const messages = {
   title: 'Release Date',
   description:
@@ -23,21 +23,27 @@ export type ReleaseDateFormValues = {
   [RELEASE_DATE]: moment.Moment
 }
 
+/**
+ * This is a subform that expects to exist within a parent TrackEdit form.
+ * The useField calls reference the outer form's fields which much match the name constants.
+ */
 export const ReleaseDateModalForm = () => {
-  // These refer to the field in the outer EditForm
+  // Field from the outer form
   const [{ value }, , { setValue }] =
     useField<EditFormValues[typeof RELEASE_DATE]>(RELEASE_DATE)
 
-  const initialValues = useMemo(
-    () => ({
-      [RELEASE_DATE]: value ?? null
-    }),
-    [value]
-  )
+  const initialValues = useMemo(() => {
+    const initialValues = {}
+    set(initialValues, RELEASE_DATE, value)
+    return initialValues as ReleaseDateFormValues
+  }, [value])
 
-  const onSubmit = (values: ReleaseDateFormValues) => {
-    setValue(values[RELEASE_DATE])
-  }
+  const onSubmit = useCallback(
+    (values: ReleaseDateFormValues) => {
+      setValue(get(values, RELEASE_DATE))
+    },
+    [setValue]
+  )
 
   const preview = (
     <div className={styles.preview}>
