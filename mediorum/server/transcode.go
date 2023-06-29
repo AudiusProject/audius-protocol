@@ -390,6 +390,11 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 	// If a start time is set, also transcode an audio preview
 	// from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
+		// update upload to reflect start of retranscode preview step
+		upload.TranscodedAt = time.Now().UTC()
+		upload.Status = JobStatusBusyRetranscode
+		ss.crud.Update(upload)
+
 		temp320, err := ss.getKeyToTempFileFromFile(resultKey, dest)
 		if err != nil {
 			return onError(err, "getting 320kbps transcoded file for audio preview transcoding")
@@ -499,6 +504,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		// Re-transcode previews off the 320kbps downsample
 		fileHash = upload.TranscodeResults["320"]
 	}
+
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
 	onError := func(err error, info ...string) error {
