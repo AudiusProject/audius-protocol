@@ -181,6 +181,10 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, name is required and was not provided"
             )
+        if not isinstance(metadata["name"], str) or len((metadata["name"])) > 50:
+            raise IndexingValidationError(
+                "Invalid Create Developer App Transaction, name must be under 51 characters"
+            )
         if address in params.existing_records[EntityType.DEVELOPER_APP]:
             raise IndexingValidationError(
                 f"Invalid Create Developer App Transaction, address {address} already exists"
@@ -196,7 +200,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             or len((metadata["description"])) > 160
         ):
             raise IndexingValidationError(
-                "Invalid Create Developer App Transaction, description must be under 161 chars"
+                "Invalid Create Developer App Transaction, description must be under 161 characters"
             )
 
         num_existing_apps_from_user = (
