@@ -36,16 +36,20 @@ func (ss *MediorumServer) startTranscoder() {
 	numWorkers := 2
 
 	// on boot... reset any of my wip jobs
-	tx := ss.crud.DB.Model(Upload{}).
-		Where(Upload{
-			TranscodedBy: myHost,
-			Status:       JobStatusBusy,
-		}).
-		Updates(Upload{Status: JobStatusNew})
-	if tx.Error != nil {
-		ss.logger.Warn("reset stuck uploads error" + tx.Error.Error())
-	} else if tx.RowsAffected > 0 {
-		ss.logger.Info("reset stuck uploads", "count", tx.RowsAffected)
+	for _, statuses := range [][]string{[]string{JobStatusBusy, JobStatusNew}, []string{JobStatusBusyRetranscode, JobStatusRetranscode}} {
+		busyStatus := statuses[0]
+		resetStatus := statuses[1]
+		tx := ss.crud.DB.Model(Upload{}).
+			Where(Upload{
+				TranscodedBy: myHost,
+				Status:       busyStatus,
+			}).
+			Updates(Upload{Status: resetStatus})
+		if tx.Error != nil {
+			ss.logger.Warn("reset stuck uploads error" + tx.Error.Error())
+		} else if tx.RowsAffected > 0 {
+			ss.logger.Info("reset stuck uploads", "count", tx.RowsAffected)
+		}
 	}
 
 	// add a callback to crudr that so we can consider new uploads
@@ -80,10 +84,29 @@ func (ss *MediorumServer) startTranscoder() {
 			return
 		}
 		for _, upload := range *uploads {
-			// only the first mirror transcodes
-			if upload.Status == JobStatusRetranscode && slices.Index(upload.Mirrors, myHost) == 0 {
-				ss.logger.Info("got retranscode job", "id", upload.ID)
-				work <- upload
+			if upload.Status == JobStatusRetranscode {
+				full320CID, ok := upload.TranscodeResults["320"]
+				if !ok {
+					ss.logger.Warn("missing full transcoded mp3 cid in retranscode job", "id", upload.ID)
+					continue
+				}
+				// the first mirror that has the full 320 downsample transcodes
+				assignedJob := false
+				full320Mirrors, _ := ss.rendezvous(full320CID)
+				for _, peer := range full320Mirrors {
+					if peer == myHost {
+						have, _ := ss.bucket.Exists(context.Background(), full320CID)
+						if have {
+							ss.logger.Info("got retranscode job", "id", upload.ID)
+							assignedJob = true
+							work <- upload
+							break
+						}
+					}
+				}
+				if !assignedJob {
+					ss.logger.Warn("missing full transcoded mp3 file in all mirrors. retranscode job not picked up", "id", upload.ID)
+				}
 			}
 		}
 	})
@@ -96,76 +119,91 @@ func (ss *MediorumServer) startTranscoder() {
 	// finally... poll periodically for uploads that slipped thru the cracks
 	for {
 		time.Sleep(time.Minute)
+		// find missed transcode jobs
+		ss.findMissedJobs(work, myHost, false)
+		// find missed retranscode jobs
+		ss.findMissedJobs(work, myHost, true)
+	}
+}
 
-		uploads := []*Upload{}
-		ss.crud.DB.Where("status in ?", []string{JobStatusNew, JobStatusBusy, JobStatusError}).Find(&uploads)
+func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
+	newStatus := JobStatusNew
+	busyStatus := JobStatusBusy
+	statusesToQuery := []string{newStatus, busyStatus, JobStatusError}
+	if retranscode {
+		// only look for retranscode jobs
+		newStatus = JobStatusRetranscode
+		busyStatus = JobStatusBusyRetranscode
+		statusesToQuery = []string{newStatus, busyStatus}
+	}
 
-		for _, upload := range uploads {
-			if upload.ErrorCount > 100 {
-				continue
-			}
+	uploads := []*Upload{}
+	ss.crud.DB.Where("status in ?", statusesToQuery).Find(&uploads)
 
-			myIdx := slices.Index(upload.Mirrors, myHost)
-			if myIdx == -1 {
-				continue
-			}
-			myRank := myIdx + 1
-
-			logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
-
-			// normally this job of mine would start via callback
-			// but just in case we could enqueue it here.
-			// there's a chance it would be processed twice if the callback and this loop
-			// ran at the same instant...
-			// but I'm not too worried about that race condition
-
-			if myRank == 1 && upload.Status == JobStatusNew {
-				logger.Info("my upload not started")
-				work <- upload
-				continue
-			}
-
-			// determine if #1 rank worker dropped ball
-			timedOut := false
-			neverStarted := false
-
-			// for #2 rank worker:
-			if myRank == 2 {
-				// no recent update?
-				timedOut = upload.Status == JobStatusBusy &&
-					time.Since(upload.TranscodedAt) > time.Minute
-
-				// never started?
-				neverStarted = upload.Status == JobStatusNew &&
-					time.Since(upload.CreatedAt) > time.Minute*2
-			}
-
-			// for #3 rank worker:
-			if myRank == 3 {
-				// no recent update?
-				timedOut = upload.Status == JobStatusBusy &&
-					time.Since(upload.TranscodedAt) > time.Minute*5
-
-				// never started?
-				neverStarted = upload.Status == JobStatusNew &&
-					time.Since(upload.CreatedAt) > time.Minute*5
-			}
-
-			if timedOut {
-				logger.Info("upload timed out... starting")
-				work <- upload
-			} else if neverStarted {
-				logger.Info("upload never started")
-				work <- upload
-			}
-
-			// take turns retrying errors
-			if upload.Status == JobStatusError && upload.ErrorCount%len(upload.Mirrors) == myIdx {
-				logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
-				work <- upload
-			}
+	for _, upload := range uploads {
+		if upload.ErrorCount > 100 {
+			continue
 		}
 
+		myIdx := slices.Index(upload.Mirrors, myHost)
+		if myIdx == -1 {
+			continue
+		}
+		myRank := myIdx + 1
+
+		logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
+
+		// normally this job of mine would start via callback
+		// but just in case we could enqueue it here.
+		// there's a chance it would be processed twice if the callback and this loop
+		// ran at the same instant...
+		// but I'm not too worried about that race condition
+
+		if myRank == 1 && upload.Status == newStatus {
+			logger.Info("my upload not started")
+			work <- upload
+			continue
+		}
+
+		// determine if #1 rank worker dropped ball
+		timedOut := false
+		neverStarted := false
+
+		// for #2 rank worker:
+		if myRank == 2 {
+			// no recent update?
+			timedOut = upload.Status == busyStatus &&
+				time.Since(upload.TranscodedAt) > time.Minute
+
+			// never started?
+			neverStarted = upload.Status == newStatus &&
+				time.Since(upload.CreatedAt) > time.Minute*2
+		}
+
+		// for #3 rank worker:
+		if myRank == 3 {
+			// no recent update?
+			timedOut = upload.Status == busyStatus &&
+				time.Since(upload.TranscodedAt) > time.Minute*5
+
+			// never started?
+			neverStarted = upload.Status == newStatus &&
+				time.Since(upload.CreatedAt) > time.Minute*5
+		}
+
+		if timedOut {
+			logger.Info("upload timed out... starting")
+			work <- upload
+		} else if neverStarted {
+			logger.Info("upload never started")
+			work <- upload
+		}
+
+		// take turns retrying errors
+		if upload.Status == JobStatusError && upload.ErrorCount%len(upload.Mirrors) == myIdx {
+			logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
+			work <- upload
+		}
 	}
 }
 
@@ -188,11 +226,12 @@ const (
 )
 
 const (
-	JobStatusNew         = "new"
-	JobStatusRetranscode = "retranscode_preview"
-	JobStatusBusy        = "busy"
-	JobStatusDone        = "done"
-	JobStatusError       = "error"
+	JobStatusNew             = "new"
+	JobStatusRetranscode     = "retranscode_preview"
+	JobStatusBusy            = "busy"
+	JobStatusBusyRetranscode = "busy_retranscode_preview"
+	JobStatusDone            = "done"
+	JobStatusError           = "error"
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
@@ -208,6 +247,21 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	defer blob.Close()
 
 	_, err = io.Copy(temp, blob)
+	if err != nil {
+		return nil, err
+	}
+	temp.Sync()
+
+	return temp, nil
+}
+
+func (ss *MediorumServer) getKeyToTempFileFromFile(fileHash string, file *os.File) (*os.File, error) {
+	temp, err := os.CreateTemp("", fileHash)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = io.Copy(temp, file)
 	if err != nil {
 		return nil, err
 	}
@@ -331,11 +385,16 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 
 	upload.TranscodeResults["320"] = resultKey
 
-	logger.Info("transcode done", "mirrors", mirrors)
+	logger.Info("audio transcode done", "mirrors", mirrors)
 
 	// If a start time is set, also transcode an audio preview
+	// from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
-		ss.transcodeAudioPreview(upload, temp, logger, onError)
+		temp320, err := ss.getKeyToTempFileFromFile(resultKey, dest)
+		if err != nil {
+			return onError(err, "getting 320kbps transcoded file for audio preview transcoding")
+		}
+		ss.transcodeAudioPreview(upload, temp320, logger, onError)
 	}
 
 	return nil
@@ -343,98 +402,103 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 
 func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
 	if !upload.PreviewStartSeconds.Valid {
-		// Delete preview
-		delete(upload.TranscodeResults, "320_preview")
-		// TODO delete file?
-	} else {
-		srcPath := temp.Name()
-		destPath := srcPath + "_320_preview.mp3"
-
-		cmd := exec.Command("ffmpeg",
-			"-y",
-			"-i", srcPath,
-			"-ss", fmt.Sprint(upload.PreviewStartSeconds.Int64), // set preview start time
-			"t", audioPreviewDuration, // set preview duration
-			"-b:a", "320k", // set bitrate to 320k
-			"-ar", "48000", // set sample rate to 48000 Hz
-			"-f", "mp3", // force output to mp3
-			"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
-			"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
-			"-vn", // no video
-			"-progress", "pipe:2",
-			destPath)
-
-		cmd.Stdout = os.Stdout
-
-		// read ffmpeg progress
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			logger.Error("progress err", err)
-		} else if upload.FFProbe != nil {
-			durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
-			durationUs := durationSeconds * 1000 * 1000
-			go func() {
-				stderrLines := bufio.NewScanner(stderr)
-				for stderrLines.Scan() {
-					line := stderrLines.Text()
-					var u float64
-					fmt.Sscanf(line, "out_time_us=%f", &u)
-					if u > 0 && durationUs > 0 {
-						percent := u / durationUs
-						upload.TranscodeProgress = percent
-						upload.TranscodedAt = time.Now().UTC()
-						ss.crud.Patch(upload)
-					}
-				}
-
-			}()
-		}
-
-		err = cmd.Start()
-		if err != nil {
-			return onError(err)
-		}
-
-		err = cmd.Wait()
-		if err != nil {
-			return onError(err)
-		}
-
-		dest, err := os.Open(destPath)
-		if err != nil {
-			return onError(err)
-		}
-		defer dest.Close()
-
-		// replicate to peers
-		// attempt to forward to an assigned node
-		resultHash, err := computeFileCID(dest)
-		if err != nil {
-			return onError(err, "computeFileCID")
-		}
-		resultKey := resultHash
-		mirrors, err := ss.replicateFile(resultHash, dest)
-		if err != nil {
-			return onError(err)
-		}
-
-		upload.TranscodeResults["320_preview"] = resultKey
-
-		logger.Info("audio transcode done", "mirrors", mirrors)
+		logger.Info("no audio preview start time set. skipping preview transcode", "id", upload.ID)
+		return nil
 	}
+
+	srcPath := strings.TrimSuffix(temp.Name(), "_320.mp3")
+	destPath := srcPath + "_320_preview.mp3"
+
+	cmd := exec.Command("ffmpeg",
+		"-y",
+		"-i", srcPath,
+		"-ss", fmt.Sprint(upload.PreviewStartSeconds.Int64), // set preview start time
+		"t", audioPreviewDuration, // set preview duration
+		"-b:a", "320k", // set bitrate to 320k
+		"-ar", "48000", // set sample rate to 48000 Hz
+		"-f", "mp3", // force output to mp3
+		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
+		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
+		"-vn", // no video
+		"-progress", "pipe:2",
+		destPath)
+
+	cmd.Stdout = os.Stdout
+
+	// read ffmpeg progress
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		logger.Error("progress err", err)
+	} else if upload.FFProbe != nil {
+		durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
+		durationUs := durationSeconds * 1000 * 1000
+		go func() {
+			stderrLines := bufio.NewScanner(stderr)
+			for stderrLines.Scan() {
+				line := stderrLines.Text()
+				var u float64
+				fmt.Sscanf(line, "out_time_us=%f", &u)
+				if u > 0 && durationUs > 0 {
+					percent := u / durationUs
+					upload.TranscodeProgress = percent
+					upload.TranscodedAt = time.Now().UTC()
+					ss.crud.Patch(upload)
+				}
+			}
+
+		}()
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return onError(err)
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return onError(err)
+	}
+
+	dest, err := os.Open(destPath)
+	if err != nil {
+		return onError(err)
+	}
+	defer dest.Close()
+
+	// replicate to peers
+	// attempt to forward to an assigned node
+	resultHash, err := computeFileCID(dest)
+	if err != nil {
+		return onError(err, "computeFileCID")
+	}
+	resultKey := resultHash
+	mirrors, err := ss.replicateFile(resultHash, dest)
+	if err != nil {
+		return onError(err)
+	}
+
+	upload.TranscodeResults["320_preview"] = resultKey
+
+	logger.Info("audio preview transcode done", "mirrors", mirrors)
 
 	return nil
 }
 
 func (ss *MediorumServer) transcode(upload *Upload) error {
-	reTranscodePreview := upload.Status == JobStatusRetranscode
-
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
-	upload.Status = JobStatusBusy
+	if upload.Status == JobStatusRetranscode {
+		upload.Status = JobStatusBusyRetranscode
+	} else {
+		upload.Status = JobStatusBusy
+	}
 	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
+	if upload.Status == JobStatusBusyRetranscode {
+		// Re-transcode previews off the 320kbps downsample
+		fileHash = upload.TranscodeResults["320"]
+	}
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
 	onError := func(err error, info ...string) error {
@@ -499,7 +563,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
 		}
 
-		if reTranscodePreview {
+		if upload.Status == JobStatusBusyRetranscode {
 			// Re-transcode audio preview
 			ss.transcodeAudioPreview(upload, temp, logger, onError)
 		} else {

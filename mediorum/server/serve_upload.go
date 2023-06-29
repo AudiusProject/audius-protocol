@@ -67,6 +67,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	}
 	previewStartSeconds := sql.NullInt64{Valid: false}
 	previewStartSecondsString := c.FormValue("previewStartSeconds")
+
 	if previewStartSecondsString != "" {
 		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
 		if err != nil {
@@ -83,8 +84,9 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	defer form.RemoveAll()
 
 	// Update supported editable fields
-	// TODO support removing track preview?
-	if previewStartSeconds != upload.PreviewStartSeconds {
+
+	// Do not support deleting previews
+	if previewStartSeconds.Valid && previewStartSeconds != upload.PreviewStartSeconds {
 		upload.PreviewStartSeconds = previewStartSeconds
 		upload.UpdatedAt = time.Now().UTC()
 		upload.Status = JobStatusRetranscode
