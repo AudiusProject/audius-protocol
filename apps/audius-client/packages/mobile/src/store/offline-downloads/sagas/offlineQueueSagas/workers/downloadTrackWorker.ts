@@ -20,6 +20,7 @@ import {
   getLocalTrackDir,
   getLocalTrackJsonPath
 } from 'app/services/offline-downloader'
+import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { EventNames } from 'app/types/analytics'
 
 import { getTrackOfflineDownloadStatus } from '../../../selectors'
@@ -194,8 +195,12 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
 function* downloadTrackCoverArt(track: UserTrackMetadata) {
   const { cover_art_sizes, cover_art, user, track_id } = track
   const cid = cover_art_sizes ?? cover_art
+
+  const storageNodeSelector = yield* call(getStorageNodeSelector)
+
   const imageSources = createAllImageSources({
     cid,
+    endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
     user,
     size: SquareSizes.SIZE_1000_BY_1000
   })

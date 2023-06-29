@@ -1,5 +1,7 @@
 import { createContext, useContext } from 'react'
 
+import { StorageNodeSelectorService } from '@audius/sdk'
+
 import { AnalyticsEvent, AllTrackingEvents } from 'models/Analytics'
 
 type AppContextType = {
@@ -12,6 +14,7 @@ type AppContextType = {
       properties: any
     }
   }
+  storageNodeSelector?: StorageNodeSelectorService
 }
 
 export const AppContext = createContext<AppContextType | null>(null)

@@ -1,11 +1,9 @@
 import { useState, useMemo, useCallback } from 'react'
 
 import type { Nullable, CID, WidthSizes, SquareSizes } from '@audius/common'
-import { interleave } from '@audius/common'
+import { interleave, useAppContext } from '@audius/common'
 import type { User } from '@sentry/react-native'
 import type { ImageSourcePropType, ImageURISource } from 'react-native'
-
-import { storageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 
 export type ContentNodeImageSource = {
   source: ImageSourcePropType
@@ -48,25 +46,23 @@ const createImageSourcesForEndpoints = ({
 export const createAllImageSources = ({
   cid,
   user,
-  endpoints: providedEndpoints,
+  endpoints,
   size,
   localSource
 }: {
   cid: Nullable<CID>
   user?: Nullable<{ creator_node_endpoint: Nullable<string> }>
-  endpoints?: string[]
+  endpoints: string[]
   size: SquareSizes | WidthSizes
   localSource?: ImageURISource | null
 }) => {
-  if (!cid || (!user && !providedEndpoints)) {
+  if (!cid || (!user && !endpoints)) {
     return []
   }
 
   if (cid.startsWith('data:image') || cid.startsWith('file://')) {
     return [...(localSource ? [localSource] : []), { uri: cid }]
   }
-
-  const endpoints = providedEndpoints ?? storageNodeSelector.getNodes(cid)
 
   const newImageSources = createImageSourcesForEndpoints({
     endpoints,
@@ -131,11 +127,12 @@ export const useContentNodeImage = ({
 }: UseContentNodeImageOptions): ContentNodeImageSource => {
   const [imageSourceIndex, setImageSourceIndex] = useState(0)
   const [failedToLoad, setFailedToLoad] = useState(false)
+  const { storageNodeSelector } = useAppContext()
 
   const endpoints = useMemo(() => {
-    if (!cid) return []
+    if (!cid || !storageNodeSelector) return []
     return storageNodeSelector.getNodes(cid)
-  }, [cid])
+  }, [cid, storageNodeSelector])
 
   // Create an array of ImageSources
   // based on the content node endpoints

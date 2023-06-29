@@ -29,7 +29,8 @@ import {
   tracksSocialActions,
   SquareSizes,
   shallowCompare,
-  savedPageTracksLineupActions
+  savedPageTracksLineupActions,
+  useAppContext
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
@@ -171,6 +172,7 @@ export const Audio = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+  const { storageNodeSelector } = useAppContext()
 
   // Queue Things
   const queueIndex = useSelector(getIndex)
@@ -616,13 +618,18 @@ export const Audio = () => {
           ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
           : undefined
 
+      const cid = track ? track.cover_art_sizes || track.cover_art : null
+
       const imageUrl =
-        getImageSourceOptimistic({
-          cid: track ? track.cover_art_sizes || track.cover_art : null,
-          user: trackOwner,
-          size: SquareSizes.SIZE_1000_BY_1000,
-          localSource: localTrackImageSource
-        })?.uri ?? DEFAULT_IMAGE_URL
+        cid && storageNodeSelector
+          ? getImageSourceOptimistic({
+              cid,
+              endpoints: storageNodeSelector.getNodes(cid),
+              user: trackOwner,
+              size: SquareSizes.SIZE_1000_BY_1000,
+              localSource: localTrackImageSource
+            })?.uri ?? DEFAULT_IMAGE_URL
+          : DEFAULT_IMAGE_URL
 
       return {
         url,
@@ -661,7 +668,9 @@ export const Audio = () => {
     queueTracks,
     didOfflineToggleChange,
     isCollectionMarkedForDownload,
-    handleGatedQueryParams
+    handleGatedQueryParams,
+    isReachable,
+    storageNodeSelector
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
