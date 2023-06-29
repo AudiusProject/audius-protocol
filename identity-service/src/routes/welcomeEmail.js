@@ -93,7 +93,7 @@ module.exports = function (app) {
 
         return successResponse({ status: true })
       } catch (e) {
-        console.log(e)
+        req.logger.error(e)
         return errorResponseServerError(e)
       }
     })

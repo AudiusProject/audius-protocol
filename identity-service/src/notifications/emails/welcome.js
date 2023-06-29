@@ -204,7 +204,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                             </td> 
                             <td align="center" valign="middle">
                               <div style="line-height: 18px; text-transform: capitalize;">
+                              <a href="https://audius.co/download" target="_blank">
                                 <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #858199;">Download app</span>
+                              </a>
                               </div>
                             </td></tr>
                             </table>
@@ -248,7 +250,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                               <table border="0" cellspacing="0" cellpadding="0" width="151" style="width: 151px;">
                               <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
                                 <div style="line-height: 24px;">
-                                  <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start listening</span>
+                                  <a href="https://audius.co" target="_blank">
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start listening</span>
+                                  </a>
                                 </div>
                               </td> 
                               <td align="left" valign="top" width="21" style="width: 21px;">
@@ -318,7 +322,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <![endif]-->
                           <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 240px;">
                           <tr><td align="center" valign="top">
-                            <img src="https://download.audius.co/welcome-email/i1256967770.png" width="240" height="240" alt="" border="0" style="display: block;"> 
+                            <a href="https://audius.co/RAC/next-to-you-ft.-emerson-leif-72485" target="_blank">
+                              <img src="https://download.audius.co/welcome-email/i1256967770.png" width="240" height="240" alt="" border="0" style="display: block;"> 
+                            </a>
                             <div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
                             <div>
                               <!--[if (gte mso 9)|(IE)]>
@@ -395,7 +401,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <![endif]-->
                           <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 240px;">
                           <tr><td align="center" valign="top">
-                            <img src="https://download.audius.co/welcome-email/i1866973852.png" width="240" height="240" alt="" border="0" style="display: block;"> 
+                            <a href="https://audius.co/Skrillex/kliptown-empyrean-98562" target="_blank">
+                              <img src="https://download.audius.co/welcome-email/i1866973852.png" width="240" height="240" alt="" border="0" style="display: block;"> 
+                            </a>
                             <div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
                             <div>
                               <!--[if (gte mso 9)|(IE)]>
@@ -471,7 +479,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                             <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 150px;">
                             <tr><td align="center">
                               <div style="line-height: 24px;">
-                                <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Explore Trending</span>
+                                <a href="https://audius.co/trending" target="_blank">
+                                  <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Explore Trending</span>
+                                </a>
                               </div>
                             </td></tr>
                             </table>
@@ -563,7 +573,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                               </td> 
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
-                                  <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Create playlist</span>
+                                  <a href="https://audius.co/feed" target="_blank">
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Create playlist</span>
+                                  </a>
                                 </div>
                               </td></tr>
                               </table>
@@ -617,7 +629,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                               </td> 
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
-                                  <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Upload tracks</span>
+                                  <a href="https://audius.co/upload" target="_blank">
+                                    <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Upload tracks</span>
+                                  </a>
                                 </div>
                               </td></tr>
                               </table>
@@ -674,11 +688,13 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="108" border="0" cellspacing="0" cellpadding="0" style="width: 108px;">
                       <tr><td>
                       <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 108px;">
-                      <tr><td align="left" valign="top" style="padding: 4px;">
-                        <img src="https://download.audius.co/welcome-email/i1955410215.png" width="96" height="32" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
+                      <a href="https://apps.apple.com/us/app/audius-music/id1491270519" target="_blank">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 108px;">
+                        <tr><td align="left" valign="top" style="padding: 4px;">
+                          <img src="https://download.audius.co/welcome-email/i1955410215.png" width="96" height="32" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                      </a>
                       <!--[if (gte mso 9)|(IE)]>
                       </td></tr>
                       </table>
@@ -699,11 +715,13 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="118" border="0" cellspacing="0" cellpadding="0" style="width: 118px;">
                       <tr><td>
                       <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 118px;">
-                      <tr><td align="left" valign="top" style="padding: 4px;">
-                        <img src="https://download.audius.co/welcome-email/i-2061029840.png" width="106" height="32" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
+                      <a href="https://play.google.com/store/apps/details?id=co.audius.app" target="_blank">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 118px;">
+                        <tr><td align="left" valign="top" style="padding: 4px;">
+                          <img src="https://download.audius.co/welcome-email/i-2061029840.png" width="106" height="32" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                      </a>
                       <!--[if (gte mso 9)|(IE)]>
                       </td></tr>
                       </table>
@@ -731,14 +749,16 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
                       <tr><td>
                       <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                      <tr><td align="left" valign="top" style="padding: 2px;">
-                        <img src="https://download.audius.co/welcome-email/i-1960495855.png" width="20" height="20" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
+                      <a href="https://www.instagram.com/audiusmusic" target="_blank">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
+                        <tr><td align="left" valign="top" style="padding: 2px;">
+                          <img src="https://download.audius.co/welcome-email/i-1960495855.png" width="20" height="20" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                        <!--[if (gte mso 9)|(IE)]>
+                        </td></tr>
+                        </table>
+                      </a>
                       <![endif]-->
                     </div>
                   </td></tr>
@@ -753,14 +773,16 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                   <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
                     <div>
                       <!--[if (gte mso 9)|(IE)]>
-                      <table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
-                      <tr><td>
-                      <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 41px;">
-                      <tr><td align="left" valign="top" style="padding: 4px 1px;">
-                        <img src="https://download.audius.co/welcome-email/i710565130.png" width="21" height="16" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
+                      <a href="https://twitter.com/AudiusProject" target="_blank">
+                        <table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
+                        <tr><td>
+                        <![endif]-->
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 41px;">
+                        <tr><td align="left" valign="top" style="padding: 4px 1px;">
+                          <img src="https://download.audius.co/welcome-email/i710565130.png" width="21" height="16" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                      </a>
                       <!--[if (gte mso 9)|(IE)]>
                       </td></tr>
                       </table>
@@ -781,11 +803,13 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
                       <tr><td>
                       <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                      <tr><td align="left" valign="top" style="padding: 2px;">
-                        <img src="https://download.audius.co/welcome-email/i1847246536.png" width="20" height="20" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
+                      <a href="https://t.me/Audius" target="_blank">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
+                        <tr><td align="left" valign="top" style="padding: 2px;">
+                          <img src="https://download.audius.co/welcome-email/i1847246536.png" width="20" height="20" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                      </a>
                       <!--[if (gte mso 9)|(IE)]>
                       </td></tr>
                       </table>
@@ -806,11 +830,13 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
                       <tr><td>
                       <![endif]-->
-                      <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
-                      <tr><td align="left" valign="top" style="padding: 5px 2px;">
-                        <img src="https://download.audius.co/welcome-email/i1847810965.png" width="20" height="14" alt="" border="0" style="display: block;">
-                      </td></tr>
-                      </table>
+                      <a href="https://discord.com/invite/audius" target="_blank">
+                        <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 42px;">
+                        <tr><td align="left" valign="top" style="padding: 5px 2px;">
+                          <img src="https://download.audius.co/welcome-email/i1847810965.png" width="20" height="14" alt="" border="0" style="display: block;">
+                        </td></tr>
+                        </table>
+                      </a>
                       <!--[if (gte mso 9)|(IE)]>
                       </td></tr>
                       </table>
@@ -833,7 +859,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
               </div> 
               <div style="height: 8px; line-height: 8px; font-size: 6px;">&nbsp;</div>
               <div style="line-height: 20px;">
-                <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;"><span style="text-decoration: none;">Tired of seeing these emails? Update you notification preferences or </span><span style="color: #7e1bcc; text-decoration: underline; line-height: 16px;">Unsubscribe</span></span>
+                <a href="<%asm_group_unsubscribe_raw_url%>">
+                  <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-size: 12px; color: #858199;"><span style="text-decoration: none;">Tired of seeing these emails? Update you notification preferences or </span><span style="color: #7e1bcc; text-decoration: underline; line-height: 16px;">Unsubscribe</span></span>
+                </a>
               </div>
             </td></tr>
             </table>
