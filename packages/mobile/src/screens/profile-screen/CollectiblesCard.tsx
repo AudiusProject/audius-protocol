@@ -15,6 +15,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconPlay from 'app/assets/images/pbIconPlay.svg'
 import { ChainLogo, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+
+import { CollectiblesCardErrorBoundary } from './CollectiblesCardErrorBoundary'
 const { setVisibility } = modalsActions
 const { setCollectible } = collectibleDetailsUIActions
 const getUserId = accountSelectors.getUserId
@@ -119,28 +121,30 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
   const url = frameUrl ?? gifUrl
 
   return (
-    <Tile
-      styles={{ root: style, content: styles.content }}
-      onPress={handlePress}
-    >
-      {url ? (
-        <View>
-          <CollectibleImage style={styles.image} uri={url}>
-            {mediaType === 'VIDEO' ? (
-              <View style={styles.iconPlay}>
-                <IconPlay
-                  height={48}
-                  width={48}
-                  fill='none'
-                  fillSecondary='hsla(0,0%,100%,.6)'
-                />
-              </View>
-            ) : null}
-            <ChainLogo chain={chain} style={styles.chain} />
-          </CollectibleImage>
-        </View>
-      ) : null}
-      <Text style={styles.title}>{name}</Text>
-    </Tile>
+    <CollectiblesCardErrorBoundary>
+      <Tile
+        styles={{ root: style, content: styles.content }}
+        onPress={handlePress}
+      >
+        {url ? (
+          <View>
+            <CollectibleImage style={styles.image} uri={url}>
+              {mediaType === 'VIDEO' ? (
+                <View style={styles.iconPlay}>
+                  <IconPlay
+                    height={48}
+                    width={48}
+                    fill='none'
+                    fillSecondary='hsla(0,0%,100%,.6)'
+                  />
+                </View>
+              ) : null}
+              <ChainLogo chain={chain} style={styles.chain} />
+            </CollectibleImage>
+          </View>
+        ) : null}
+        <Text style={styles.title}>{name}</Text>
+      </Tile>
+    </CollectiblesCardErrorBoundary>
   )
 }

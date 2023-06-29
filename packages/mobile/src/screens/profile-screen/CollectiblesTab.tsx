@@ -160,9 +160,11 @@ export const CollectiblesTab = () => {
         </View>
       }
       renderItem={({ item }) => (
-        <View style={styles.collectibleListItem}>
-          <CollectiblesCard collectible={item} ownerId={profile.user_id} />
-        </View>
+        <CollectiblesCard
+          collectible={item}
+          ownerId={profile.user_id}
+          style={styles.collectibleListItem}
+        />
       )}
     />
   )
