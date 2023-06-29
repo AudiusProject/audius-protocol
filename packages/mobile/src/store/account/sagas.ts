@@ -14,6 +14,7 @@ import { takeEvery, call } from 'typed-redux-saga'
 
 import { IS_MOBILE_USER } from 'app/constants/storage-keys'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
+import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 const { signedIn } = accountActions
 
 /**
@@ -23,17 +24,25 @@ function* cacheUserImages(user: User) {
   try {
     const { profile_picture_sizes, cover_photo_sizes } = user
 
-    const profileImageUri = getImageSourceOptimistic({
-      cid: profile_picture_sizes,
-      user,
-      size: SquareSizes.SIZE_150_BY_150
-    })?.uri
+    const storageNodeSelector = yield* call(getStorageNodeSelector)
 
-    const coverPhotoUri = getImageSourceOptimistic({
-      cid: cover_photo_sizes,
-      user,
-      size: WidthSizes.SIZE_640
-    })?.uri
+    const profileImageUri = profile_picture_sizes
+      ? getImageSourceOptimistic({
+          cid: profile_picture_sizes,
+          user,
+          endpoints: storageNodeSelector.getNodes(profile_picture_sizes),
+          size: SquareSizes.SIZE_150_BY_150
+        })?.uri
+      : null
+
+    const coverPhotoUri = cover_photo_sizes
+      ? getImageSourceOptimistic({
+          cid: cover_photo_sizes,
+          user,
+          endpoints: storageNodeSelector.getNodes(cover_photo_sizes),
+          size: WidthSizes.SIZE_640
+        }).uri
+      : null
 
     const sourcesToPreload = [profileImageUri, coverPhotoUri]
       .filter(removeNullable)

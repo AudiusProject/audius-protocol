@@ -16,6 +16,7 @@ import {
   getLocalCollectionJsonPath,
   mkdirSafe
 } from 'app/services/offline-downloader'
+import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { EventNames } from 'app/types/analytics'
 
@@ -150,8 +151,11 @@ function* downloadCollectionAsync(
 function* downloadCollectionCoverArt(collection: UserCollectionMetadata) {
   const { cover_art_sizes, cover_art, user, playlist_id } = collection
   const cid = cover_art_sizes ?? cover_art
+  const storageNodeSelector = yield* call(getStorageNodeSelector)
+
   const imageSources = createAllImageSources({
     cid,
+    endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
     user,
     size: SquareSizes.SIZE_1000_BY_1000
   })
