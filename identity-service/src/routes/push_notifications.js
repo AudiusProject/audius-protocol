@@ -201,7 +201,6 @@ module.exports = function (app) {
       }
 
       let tokenDeleted = false
-      let settingsDeleted = false
       try {
         // delete device token
         const tokenObj = await models.NotificationDeviceToken.findOne({
@@ -211,9 +210,6 @@ module.exports = function (app) {
           }
         })
 
-        const deleteUserNotificationSettings =
-          tokenObj.deviceType !== DEVICE_TYPES.SAFARI
-
         if (tokenObj) {
           // delete the endpoint from AWS SNS
           if (tokenObj.awsARN)
@@ -222,21 +218,7 @@ module.exports = function (app) {
           tokenDeleted = true
         }
 
-        // Delete user mobile notification settings if device type is mobile (android or ios)
-        if (deleteUserNotificationSettings) {
-          const settingsObj =
-            await models.UserNotificationMobileSettings.findOne({
-              where: {
-                userId
-              }
-            })
-          if (settingsObj) {
-            await settingsObj.destroy()
-            settingsDeleted = true
-          }
-        }
-
-        return successResponse({ tokenDeleted, settingsDeleted })
+        return successResponse({ tokenDeleted })
       } catch (e) {
         req.logger.error(
           `Unable to deregister device token for deviceToken: ${deviceToken}`,
