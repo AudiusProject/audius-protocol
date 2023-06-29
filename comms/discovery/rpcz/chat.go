@@ -11,6 +11,10 @@ import (
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
+	// it is possible that two conflicting chats get created at the same time
+	// in which case there will be two different chat secrets
+	// to deterministically resolve this, if there is a conflict
+	// we keep the chat with the earliest relayed_at (created_at) timestamp
 	_, err = tx.Exec(`
 		insert into chat
 			(chat_id, created_at, last_message_at)
@@ -28,8 +32,9 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 		if err != nil {
 			return err
 		}
-		// invited_by_user_id could also be the other user pubkey
-		// this would save client from having to look up pubkey in separate request
+
+		// similar to above... if there is a conflict when creating chat_member records
+		// keep the version with the earliest relayed_at (created_at) timestamp.
 		_, err = tx.Exec(`
 		insert into chat_member
 			(chat_id, invited_by_user_id, invite_code, user_id, created_at)

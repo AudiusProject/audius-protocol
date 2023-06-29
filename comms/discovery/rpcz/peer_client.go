@@ -161,8 +161,10 @@ func (c *PeerClient) doSweep() error {
 			}
 		} else {
 			// if ok, clear any prior error
-			if _, err := db.Conn.Exec(`delete from rpc_error where sig = $1`, op.Sig); err != nil {
+			if ok, err := db.Conn.Exec(`delete from rpc_error where sig = $1`, op.Sig); err != nil {
 				logger.Error("failed to clear rpc_error rows", err)
+			} else if c, _ := ok.RowsAffected(); c > 0 {
+				logger.Info("rpc_error resolved")
 			}
 		}
 
