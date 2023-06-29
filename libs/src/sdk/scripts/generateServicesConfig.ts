@@ -49,7 +49,7 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
 const devConfig: ServicesConfig = {
   minVersion: '0.0.0',
   discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
-  entityManagerContractAddress: '0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66',
+  entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
   web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
   identityServiceUrl: 'http://audius-protocol-identity-service-1'
 }
