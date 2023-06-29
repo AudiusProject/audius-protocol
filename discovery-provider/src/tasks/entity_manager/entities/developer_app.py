@@ -200,7 +200,13 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             )
 
         num_existing_apps_from_user = (
-            session.query(DeveloperApp).filter(DeveloperApp.user_id == user_id).count()
+            session.query(DeveloperApp)
+            .filter(
+                DeveloperApp.user_id == user_id,
+                DeveloperApp.is_delete == False,
+                DeveloperApp.is_current == True,
+            )
+            .count()
         )
 
         num_new_apps_from_user = 0
@@ -225,7 +231,9 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
 def create_developer_app(params: ManageEntityParameters):
     metadata = get_create_developer_app_metadata_from_raw(params.metadata)
     if not metadata:
-        raise IndexingValidationError("Invalid Developer App Transaction, unable to parse metadata")
+        raise IndexingValidationError(
+            "Invalid Developer App Transaction, unable to parse metadata"
+        )
     address = validate_developer_app_tx(params, metadata)
     user_id = params.user_id
 
