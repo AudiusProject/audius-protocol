@@ -33,6 +33,7 @@ type Upload struct {
 
 	CreatedBy string    `json:"created_by" `
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoCreateTime:false"`
 
 	TranscodedBy      string    `json:"transcoded_by"`
 	TranscodeProgress float64   `json:"transcode_progress"`

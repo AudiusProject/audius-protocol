@@ -223,6 +223,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads)
 	routes.GET("/uploads/:id", ss.getUpload)
+	routes.POST("/uplaods/:id", ss.updateUpload)
 	routes.POST("/uploads", ss.postUpload)
 	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {

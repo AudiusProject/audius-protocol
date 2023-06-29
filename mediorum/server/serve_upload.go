@@ -38,6 +38,66 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	return c.JSON(200, upload)
 }
 
+func (ss *MediorumServer) updateUpload(c echo.Context) error {
+	// Parse X-User-Id header
+	userIdHeader := c.Request().Header.Get("X-User-Id")
+	if userIdHeader == "" {
+		return c.String(400, "user id required to edit upload")
+	}
+	userId, err := strconv.Atoi(userIdHeader)
+	if err != nil {
+		return c.String(400, "error parsing X-User-Id header: "+err.Error())
+	}
+
+	var upload *Upload
+	err = ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
+	if err != nil {
+		return err
+	}
+
+	// Validate requesting user matches user that uploaded the file
+	if !upload.UserID.Valid || upload.UserID.Int64 != int64(userId) {
+		return c.String(403, "can only edit files that you uploaded")
+	}
+
+	// Multipart form
+	form, err := c.MultipartForm()
+	if err != nil {
+		return err
+	}
+	previewStartSeconds := sql.NullInt64{Valid: false}
+	previewStartSecondsString := c.FormValue("previewStartSeconds")
+	if previewStartSecondsString != "" {
+		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
+		if err != nil {
+			errMsg := "error parsing previewStartSeconds"
+			ss.logger.Error(errMsg, err)
+			return c.String(400, errMsg+": "+err.Error())
+		}
+
+		previewStartSeconds = sql.NullInt64{
+			Int64: int64(previewStartSecondsInt),
+			Valid: true,
+		}
+	}
+	defer form.RemoveAll()
+
+	// Update supported editable fields
+	// TODO support removing track preview?
+	if previewStartSeconds != upload.PreviewStartSeconds {
+		upload.PreviewStartSeconds = previewStartSeconds
+		upload.UpdatedAt = time.Now().UTC()
+		upload.Status = JobStatusNewRetranscode
+
+		err = ss.crud.Update(upload)
+		if err != nil {
+			ss.logger.Warn("update upload failed", "err", err)
+		}
+	}
+
+	return c.JSON(200, upload)
+}
+
 func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// Parse X-User-Id header
 	userIdHeader := c.Request().Header.Get("X-User-Id")

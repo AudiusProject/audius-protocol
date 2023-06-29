@@ -23,6 +23,11 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
 	"golang.org/x/exp/slices"
+	"golang.org/x/exp/slog"
+)
+
+var (
+	audioPreviewDuration = "30" // seconds
 )
 
 func (ss *MediorumServer) startTranscoder() {
@@ -58,6 +63,26 @@ func (ss *MediorumServer) startTranscoder() {
 			// only the first mirror transcodes
 			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
 				ss.logger.Info("got transcode job", "id", upload.ID)
+				work <- upload
+			}
+		}
+	})
+
+	// add a callback to crudr that so we can consider audio preview retranscodes
+	ss.crud.AddOpCallback(func(op *crudr.Op, records interface{}) {
+		if op.Table != "uploads" || op.Action != crudr.ActionUpdate {
+			return
+		}
+
+		uploads, ok := records.(*[]*Upload)
+		if !ok {
+			log.Printf("unexpected type in transcode callback %T", records)
+			return
+		}
+		for _, upload := range *uploads {
+			// only the first mirror transcodes
+			if upload.Status == JobStatusNewRetranscode && slices.Index(upload.Mirrors, myHost) == 0 {
+				ss.logger.Info("got retranscode job", "id", upload.ID)
 				work <- upload
 			}
 		}
@@ -163,11 +188,11 @@ const (
 )
 
 const (
-	JobStatusNew         = "new"
-	JobStatusBusy        = "busy"
-	JobStatusRetranscode = "retranscode"
-	JobStatusDone        = "done"
-	JobStatusError       = "error"
+	JobStatusNew            = "new"
+	JobStatusNewRetranscode = "new_retranscode_preview"
+	JobStatusBusy           = "busy"
+	JobStatusDone           = "done"
+	JobStatusError          = "error"
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
@@ -191,7 +216,219 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	return temp, nil
 }
 
+type errorCallback func(err error, info ...string) error
+
+func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
+	srcPath := temp.Name()
+	destPath := srcPath + "_320.mp3"
+
+	cmd := exec.Command("ffmpeg",
+		"-y",
+		"-i", srcPath,
+		"-b:a", "320k", // set bitrate to 320k
+		"-ar", "48000", // set sample rate to 48000 Hz
+		"-f", "mp3", // force output to mp3
+		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
+		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
+		"-vn", // no video
+		"-progress", "pipe:2",
+		destPath)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return onError(err, "cmd.StdoutPipe")
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return onError(err, "cmd.StderrPipe")
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return onError(err, "cmd.Start")
+	}
+
+	// WaitGroup to make sure all stdout/stderr processing is done before cmd.Wait() is called
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// Log stdout
+	go func() {
+		defer wg.Done()
+		var stdoutBuf bytes.Buffer
+		stdoutLines := bufio.NewScanner(stdout)
+		for stdoutLines.Scan() {
+			stdoutBuf.WriteString(stdoutLines.Text())
+			stdoutBuf.WriteString("\n")
+		}
+		if err := stdoutLines.Err(); err != nil {
+			logger.Error("stdoutLines.Scan", "err", err)
+		}
+		logger.Info("stdout lines: " + stdoutBuf.String())
+	}()
+
+	// Log stderr and parse it to update transcode progress
+	go func() {
+		defer wg.Done()
+		var stderrBuf bytes.Buffer
+		stderrLines := bufio.NewScanner(stderr)
+
+		durationUs := float64(0)
+		if upload.FFProbe != nil {
+			durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
+			durationUs = durationSeconds * 1000 * 1000
+		}
+
+		for stderrLines.Scan() {
+			line := stderrLines.Text()
+			stderrBuf.WriteString(line)
+			stderrBuf.WriteString("\n")
+
+			if upload.FFProbe != nil {
+				var u float64
+				fmt.Sscanf(line, "out_time_us=%f", &u)
+				if u > 0 && durationUs > 0 {
+					percent := u / durationUs
+					// logger.Debug("transcode", "file", fileHash, "progress", percent)
+					upload.TranscodeProgress = percent
+					upload.TranscodedAt = time.Now().UTC()
+					ss.crud.Patch(upload)
+				}
+			}
+		}
+
+		if err := stderrLines.Err(); err != nil {
+			logger.Error("stderrLines.Scan", "err", err)
+		}
+		logger.Error("stderr lines: " + stderrBuf.String())
+	}()
+
+	wg.Wait()
+
+	err = cmd.Wait()
+	if err != nil {
+		return onError(err, "cmd.Wait")
+	}
+
+	dest, err := os.Open(destPath)
+	if err != nil {
+		return onError(err, "os.Open")
+	}
+	defer dest.Close()
+
+	// replicate to peers
+	// attempt to forward to an assigned node
+	resultHash, err := computeFileCID(dest)
+	if err != nil {
+		return onError(err, "computeFileCID")
+	}
+	resultKey := resultHash
+	mirrors, err := ss.replicateFile(resultHash, dest)
+	if err != nil {
+		return onError(err, "replicateFile")
+	}
+
+	upload.TranscodeResults["320"] = resultKey
+
+	logger.Info("transcode done", "mirrors", mirrors)
+
+	// If a start time is set, also transcode an audio preview
+	if upload.PreviewStartSeconds.Valid {
+		ss.transcodeAudioPreview(upload, temp, logger, onError)
+	}
+
+	return nil
+}
+
+func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
+	if !upload.PreviewStartSeconds.Valid {
+		// Delete preview
+		delete(upload.TranscodeResults, "320_preview")
+		// TODO delete file?
+	} else {
+		srcPath := temp.Name()
+		destPath := srcPath + "_320_preview.mp3"
+
+		cmd := exec.Command("ffmpeg",
+			"-y",
+			"-i", srcPath,
+			"-ss", fmt.Sprint(upload.PreviewStartSeconds.Int64), // set preview start time
+			"t", audioPreviewDuration, // set preview duration
+			"-b:a", "320k", // set bitrate to 320k
+			"-ar", "48000", // set sample rate to 48000 Hz
+			"-f", "mp3", // force output to mp3
+			"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
+			"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
+			"-vn", // no video
+			"-progress", "pipe:2",
+			destPath)
+
+		cmd.Stdout = os.Stdout
+
+		// read ffmpeg progress
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			logger.Error("progress err", err)
+		} else if upload.FFProbe != nil {
+			durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
+			durationUs := durationSeconds * 1000 * 1000
+			go func() {
+				stderrLines := bufio.NewScanner(stderr)
+				for stderrLines.Scan() {
+					line := stderrLines.Text()
+					var u float64
+					fmt.Sscanf(line, "out_time_us=%f", &u)
+					if u > 0 && durationUs > 0 {
+						percent := u / durationUs
+						upload.TranscodeProgress = percent
+						upload.TranscodedAt = time.Now().UTC()
+						ss.crud.Patch(upload)
+					}
+				}
+
+			}()
+		}
+
+		err = cmd.Start()
+		if err != nil {
+			return onError(err)
+		}
+
+		err = cmd.Wait()
+		if err != nil {
+			return onError(err)
+		}
+
+		dest, err := os.Open(destPath)
+		if err != nil {
+			return onError(err)
+		}
+		defer dest.Close()
+
+		// replicate to peers
+		// attempt to forward to an assigned node
+		resultHash, err := computeFileCID(dest)
+		if err != nil {
+			return onError(err, "computeFileCID")
+		}
+		resultKey := resultHash
+		mirrors, err := ss.replicateFile(resultHash, dest)
+		if err != nil {
+			return onError(err)
+		}
+
+		upload.TranscodeResults["320_preview"] = resultKey
+
+		logger.Info("audio transcode done", "mirrors", mirrors)
+	}
+
+	return nil
+}
+
 func (ss *MediorumServer) transcode(upload *Upload) error {
+	reTranscodePreview := upload.Status == JobStatusNewRetranscode
+
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
 	upload.Status = JobStatusBusy
@@ -262,119 +499,13 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
 		}
 
-		srcPath := temp.Name()
-		destPath := srcPath + "_320.mp3"
-
-		cmd := exec.Command("ffmpeg",
-			"-y",
-			"-i", srcPath,
-			"-b:a", "320k", // set bitrate to 320k
-			"-ar", "48000", // set sample rate to 48000 Hz
-			"-f", "mp3", // force output to mp3
-			"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
-			"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
-			"-vn", // no video
-			"-progress", "pipe:2",
-			destPath)
-
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			return onError(err, "cmd.StdoutPipe")
+		if reTranscodePreview {
+			// Re-transcode audio preview
+			ss.transcodeAudioPreview(upload, temp, logger, onError)
+		} else {
+			// Transcode audio and (optional) audio preview
+			ss.transcodeAudio(upload, temp, logger, onError)
 		}
-
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			return onError(err, "cmd.StderrPipe")
-		}
-
-		err = cmd.Start()
-		if err != nil {
-			return onError(err, "cmd.Start")
-		}
-
-		// WaitGroup to make sure all stdout/stderr processing is done before cmd.Wait() is called
-		var wg sync.WaitGroup
-		wg.Add(2)
-
-		// Log stdout
-		go func() {
-			defer wg.Done()
-			var stdoutBuf bytes.Buffer
-			stdoutLines := bufio.NewScanner(stdout)
-			for stdoutLines.Scan() {
-				stdoutBuf.WriteString(stdoutLines.Text())
-				stdoutBuf.WriteString("\n")
-			}
-			if err := stdoutLines.Err(); err != nil {
-				logger.Error("stdoutLines.Scan", "err", err)
-			}
-			logger.Info("stdout lines: " + stdoutBuf.String())
-		}()
-
-		// Log stderr and parse it to update transcode progress
-		go func() {
-			defer wg.Done()
-			var stderrBuf bytes.Buffer
-			stderrLines := bufio.NewScanner(stderr)
-
-			durationUs := float64(0)
-			if upload.FFProbe != nil {
-				durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
-				durationUs = durationSeconds * 1000 * 1000
-			}
-
-			for stderrLines.Scan() {
-				line := stderrLines.Text()
-				stderrBuf.WriteString(line)
-				stderrBuf.WriteString("\n")
-
-				if upload.FFProbe != nil {
-					var u float64
-					fmt.Sscanf(line, "out_time_us=%f", &u)
-					if u > 0 && durationUs > 0 {
-						percent := u / durationUs
-						// logger.Debug("transcode", "file", fileHash, "progress", percent)
-						upload.TranscodeProgress = percent
-						upload.TranscodedAt = time.Now().UTC()
-						ss.crud.Patch(upload)
-					}
-				}
-			}
-
-			if err := stderrLines.Err(); err != nil {
-				logger.Error("stderrLines.Scan", "err", err)
-			}
-			logger.Error("stderr lines: " + stderrBuf.String())
-		}()
-
-		wg.Wait()
-
-		err = cmd.Wait()
-		if err != nil {
-			return onError(err, "cmd.Wait")
-		}
-
-		dest, err := os.Open(destPath)
-		if err != nil {
-			return onError(err, "os.Open")
-		}
-		defer dest.Close()
-
-		// replicate to peers
-		// attempt to forward to an assigned node
-		resultHash, err := computeFileCID(dest)
-		if err != nil {
-			return onError(err, "computeFileCID")
-		}
-		resultKey := resultHash
-		mirrors, err := ss.replicateFile(resultHash, dest)
-		if err != nil {
-			return onError(err, "replicateFile")
-		}
-
-		upload.TranscodeResults["320"] = resultKey
-
-		logger.Info("transcode done", "mirrors", mirrors)
 	}
 
 	upload.TranscodeProgress = 1
