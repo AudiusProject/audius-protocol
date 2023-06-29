@@ -691,7 +691,7 @@ def revert_block(session: Session, revert_block: Block):
                 {"is_current": True}
             )
         # Remove outdated associated wallets
-        logger.info(f"Reverting associated Wallet: {user_id}")
+        logger.info(f"Reverting associated wallet: {user_id}")
         session.delete(associated_wallets_to_revert)
 
     revert_user_events(session, revert_user_events_entries, revert_block_number)
