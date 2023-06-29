@@ -142,18 +142,28 @@ func (c *PeerClient) doSweep() error {
 		return err
 	}
 
+	// add any prior rpc_error rows to the end for retry
+	err = c.appendRpcErrorRows(&ops)
+	if err != nil {
+		c.logger.Error("failed to query rpc_error rows", err)
+	}
+
 	var cursor time.Time
 	for _, op := range ops {
-		// if apply fails during sweep
-		// it could be because discovery indexer is behind
-		// retry locally and only advance cursor on success
+		logger := c.logger.With("sig", op.Sig)
 		err = c.proc.Apply(op)
 
-		// if apply error stop here (don't advance cursor)
-		// will restart here on next doSweep loop
 		if err != nil {
-			c.logger.Error("sweep apply error", "err", err, "sig", op.Sig)
-			break
+			// if apply error, record in rpc_error table
+			logger.Error("sweep apply error", "err", err, "sig", op.Sig)
+			if err := c.insertRpcError(op, err); err != nil {
+				logger.Error("failed to insert rpc_error row", err)
+			}
+		} else {
+			// if ok, clear any prior error
+			if _, err := db.Conn.Exec(`delete from rpc_error where sig = $1`, op.Sig); err != nil {
+				logger.Error("failed to clear rpc_error rows", err)
+			}
 		}
 
 		cursor = op.RelayedAt
@@ -167,4 +177,38 @@ func (c *PeerClient) doSweep() error {
 	}
 
 	return err
+}
+
+func (c *PeerClient) insertRpcError(op *schema.RpcLog, applyError error) error {
+	opJson, err := json.Marshal(op)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Conn.Exec(`
+	insert into rpc_error
+		(sig, rpc_log_json, error_text, error_count, last_attempt)
+	values
+		($1, $2, $3, 1, now())
+	on conflict (sig) do update set error_text = $3, error_count = rpc_error.error_count + 1, last_attempt = now()
+	`, op.Sig, opJson, applyError.Error())
+
+	return err
+}
+
+func (c *PeerClient) appendRpcErrorRows(ops *[]*schema.RpcLog) error {
+	var js []string
+	err := db.Conn.Select(&js, `select rpc_log_json from rpc_error where rpc_log_json->>'relayed_by' = $1 and error_count < 30 order by last_attempt asc`, c.Host)
+	if err != nil {
+		return err
+	}
+	for _, j := range js {
+		var op *schema.RpcLog
+		err := json.Unmarshal([]byte(j), &op)
+		if err == nil {
+			*ops = append(*ops, op)
+		}
+	}
+
+	return nil
 }
