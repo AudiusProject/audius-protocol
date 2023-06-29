@@ -32,10 +32,7 @@ program.command("create-playlist")
           }))
         }
       }
-      const response = await audiusLibs.EntityManager.createPlaylist(
-        metadata,
-        true /* storageV2UploadEnabled */
-      )
+      const response = await audiusLibs.EntityManager.createPlaylist(metadata)
 
       if (response.error) {
         program.error(chalk.red(response.error));

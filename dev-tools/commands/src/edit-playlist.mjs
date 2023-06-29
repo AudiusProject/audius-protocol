@@ -21,8 +21,7 @@ program.command("edit-playlist")
           ...playlist,
           playlist_name: name || playlist.playlist_name,
           description: description || playlist.description,
-        },
-        true /* storageV2UploadEnabled */
+        }
       );
 
       if (response.error) {
