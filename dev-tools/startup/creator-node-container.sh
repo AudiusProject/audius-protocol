@@ -80,7 +80,7 @@ export discoveryNodeUnhealthyBlockDiff=10
 # Maximum number of wallets the /users/batch_clock_status route will accept at one time
 export maxBatchClockStatusBatchSize=5
 
-export entityManagerAddress="0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66"
+export entityManagerAddress="0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
 
 # Premium content
 export premiumContentEnabled="true"

@@ -17,7 +17,7 @@ module.exports = {
     ],
     userReplicaSetBootstrapAddress: null,
     registryAddress: '0xCfEB869F69431e42cdB54A4F4f105C19C080A601',
-    entityManagerAddress: '0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66'
+    entityManagerAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
   },
   predeploy: {
     verifierAddress: '0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0',
