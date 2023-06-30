@@ -14,6 +14,10 @@ import {
   developmentConfig,
   SubscribeToUserRequest,
   UnsubscribeFromUserRequest,
+  RepostPlaylistRequest,
+  SavePlaylistRequest,
+  UnrepostPlaylistRequest,
+  UnsavePlaylistRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -199,6 +203,70 @@ app.post<UnrepostTrackRequest>("/unrepostTrack", async (req, res) => {
       trackId: req.body.trackId,
     };
     const result = await audiusSdk.tracks.unrepostTrack(unrepostTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<SavePlaylistRequest>("/savePlaylist", async (req, res) => {
+  try {
+    const savePlaylistRequest: SavePlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.playlists.savePlaylist(savePlaylistRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnsavePlaylistRequest>("/unsavePlaylist", async (req, res) => {
+  try {
+    const unsavePlaylistRequest: UnsavePlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+    };
+    const result = await audiusSdk.playlists.unsavePlaylist(
+      unsavePlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<RepostPlaylistRequest>("/repostPlaylist", async (req, res) => {
+  try {
+    const repostPlaylistRequest: RepostPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.playlists.repostPlaylist(
+      repostPlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnrepostPlaylistRequest>("/unrepostPlaylist", async (req, res) => {
+  try {
+    const unrepostPlaylistRequest: UnrepostPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+    };
+    const result = await audiusSdk.playlists.unrepostPlaylist(
+      unrepostPlaylistRequest
+    );
     res.send(result);
   } catch (e) {
     console.error(e);
