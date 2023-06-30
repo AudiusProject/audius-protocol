@@ -28,7 +28,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
-    "@audius/sdk": "3.0.3-beta.60",
+    "@audius/sdk": "3.0.3-beta.62",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",
     "@optimizely/optimizely-sdk": "4.0.0",
@@ -59,7 +59,7 @@
     "@types/react-redux": "7.1.7",
     "@types/redux-saga": "0.10.5",
     "eslint": "8.19.0",
-    "eslint-config-audius": "1.5.26",
+    "eslint-config-audius": "^1.1.13-alpha1",
     "patch-package": "6.4.7",
     "react": "18.2.0",
     "react-redux": "8.0.5",
