@@ -77,8 +77,9 @@ func (proc *RPCProcessor) SweeperErrors() []string {
 
 func (proc *RPCProcessor) StartPeerClients() {
 	for _, p := range proc.peerClients {
-		p.Start()
+		go p.startSender()
 	}
+	go proc.startSweeper()
 }
 
 func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
