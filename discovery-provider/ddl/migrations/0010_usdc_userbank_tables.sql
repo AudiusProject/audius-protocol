@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS usdc_transactions_history (
     transaction_created_at timestamp NOT NULL,
     change numeric NOT NULL,
     balance numeric NOT NULL,
-    tx_metadata varchar,
     PRIMARY KEY(user_bank, "signature")
 );
 CREATE INDEX IF NOT EXISTS idx_usdc_transactions_history_slot ON usdc_transactions_history USING btree (slot);
@@ -40,7 +39,7 @@ CREATE TABLE IF NOT EXISTS usdc_purchases (
     "signature" varchar NOT NULL,
     buyer_user_id integer NOT NULL,
     seller_user_id integer NOT NULL,
-    amount numeric NOT NULL,
+    amount bigint NOT NULL,
     content_type usdc_purchase_content_type NOT NULL,
     content_id integer NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -50,13 +49,5 @@ CREATE TABLE IF NOT EXISTS usdc_purchases (
 CREATE INDEX IF NOT EXISTS idx_usdc_purchases_buyer ON usdc_purchases USING btree (buyer_user_id);
 CREATE INDEX IF NOT EXISTS idx_usdc_purchases_seller ON usdc_purchases USING btree (seller_user_id);
 CREATE INDEX IF NOT EXISTS idx_usdc_purchases_type ON usdc_purchases USING btree (content_type);
-
--- USDC tx indexing progress
-CREATE TABLE IF NOT EXISTS usdc_token_tx (
-    last_scanned_slot integer NOT NULL,
-    "signature" varchar NOT NULL,
-    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
 
 COMMIT;
