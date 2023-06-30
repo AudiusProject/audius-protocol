@@ -359,6 +359,21 @@ def test_index_app(app, mocker):
                 )
             },
         ],
+        "CreateAppInvalidTx11": [
+            {
+                # Name is too long
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": 2,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"app_signature": {"signature": "949b7bad5ba5a1bc1e28212673e2d2786d7b85561eca8f0b9d962ffd42393dd041cf2c6b11418a97fd4f2b9a7fbaab26308795bb872ab9a39d1b4cb94935931e1c", "message": "Creating Audius developer app at 1686252026"}, "name": "My really long app name this is really long we will rock you"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
