@@ -1,3 +1,3 @@
 begin;
-  truncate delist_status_cursor;
+  truncate table delist_status_cursor;
 commit;
