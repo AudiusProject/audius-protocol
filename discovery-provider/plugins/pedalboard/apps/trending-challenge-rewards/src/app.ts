@@ -275,24 +275,28 @@ const getAllChallenges = async (
     const rewards = libs.Rewards;
     if (rewards === null) throw new Error("rewards object null");
 
+    const args = {
+      challengeId: challenge.challenge_id,
+      encodedUserId,
+      handle: challenge.handle,
+      recipientEthAddress: challenge.wallet,
+      specifier: challenge.specifier,
+      oracleEthAddress,
+      amount: parseInt(challenge.amount),
+      quorumSize: 3,
+      AAOEndpoint,
+      instructionsPerTransaction: 2,
+      maxAggregationAttempts: 1,
+      endpoints: possibleNodeSet,
+      feePayerOverride,
+      logger: console,
+    }
+
+    console.log({ args })
+
     if (!dryRun) {
       console.log("submitting")
-      const { error } = await rewards.submitAndEvaluate({
-        challengeId: challenge.challenge_id,
-        encodedUserId,
-        handle: challenge.handle,
-        recipientEthAddress: challenge.wallet,
-        specifier: challenge.specifier,
-        oracleEthAddress,
-        amount: parseInt(challenge.amount),
-        quorumSize: 3,
-        AAOEndpoint,
-        instructionsPerTransaction: 2,
-        maxAggregationAttempts: 1,
-        endpoints: possibleNodeSet,
-        feePayerOverride,
-        logger: console,
-      });
+      const { error } = await rewards.submitAndEvaluate(args);
 
       if (error) {
         console.log(
