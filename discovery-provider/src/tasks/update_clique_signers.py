@@ -3,7 +3,7 @@ import os
 
 import requests
 from src.tasks.celery_app import celery
-from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_wallets_cached
+from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
@@ -32,10 +32,7 @@ def update_signers(self, redis):
     max_signers = int(shared_config["discprov"]["max_signers"])
 
     other_wallets = set(
-        [
-            wallet.lower()
-            for wallet in get_all_other_discovery_nodes_wallets_cached(redis)
-        ]
+        [wallet.lower() for wallet in get_all_other_discovery_nodes_cached(redis)[1]]
     )
     logger.info(
         f"update_clique_signers.py | Other registered discovery addresses: {other_wallets}"
@@ -96,8 +93,9 @@ def update_clique_signers(self):
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            if not os.getenv("audius_discprov_dev_mode"):
-                update_signers(self, redis)
+            # if not os.getenv("audius_discprov_dev_mode"):
+            #     update_signers(self, redis)
+            pass
         else:
             logger.info(
                 "update_clique_signers.py | Failed to acquire update_clique_signers"
