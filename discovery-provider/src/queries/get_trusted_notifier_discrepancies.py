@@ -33,7 +33,7 @@ def check_user_delist_status_cursor(redis: Redis):
                 float(user_cursor_check_timestamp.decode())
             ).replace(tzinfo=timezone.utc)
             # Only run query every 12h
-            if latest_check > datetime.now(timezone.utc) - timedelta(hours=4):
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 user_delist_cursor_check = redis.get(
                     USER_DELIST_STATUS_CURSOR_CHECK_KEY
                 ).decode()
@@ -83,7 +83,7 @@ def check_track_delist_status_cursor(redis: Redis):
                 float(track_cursor_check_timestamp.decode())
             ).replace(tzinfo=timezone.utc)
             # Only run query every 12h
-            if latest_check > datetime.now(timezone.utc) - timedelta(hours=4):
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 track_delist_cursor_check = redis.get(
                     TRACK_DELIST_STATUS_CURSOR_CHECK_KEY
                 ).decode()
