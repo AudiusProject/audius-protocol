@@ -191,7 +191,7 @@ export class OAuth {
       )
       return
     }
-    if (isOAuthScopeValid(scopeFormatted)) {
+    if (!isOAuthScopeValid(scopeFormatted)) {
       this._surfaceError('Scope must be `read` or `write`.')
       return
     }
