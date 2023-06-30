@@ -38,7 +38,7 @@ def check_user_delist_status_cursor(redis: Redis):
                     USER_DELIST_STATUS_CURSOR_CHECK_KEY
                 ).decode()
                 if user_delist_cursor_check != "ok":
-                    # If discrepancies, re-run query every 5 min to quickly suppress errors
+                    # If not ok, re-run query every 5 min to quickly suppress errors
                     # once resolved
                     if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
                         return user_delist_cursor_check
@@ -88,7 +88,7 @@ def check_track_delist_status_cursor(redis: Redis):
                     TRACK_DELIST_STATUS_CURSOR_CHECK_KEY
                 ).decode()
                 if track_delist_cursor_check != "ok":
-                    # If discrepancies, re-run query every 5 min to quickly suppress errors
+                    # If not ok, re-run query every 5 min to quickly suppress errors
                     # once resolved
                     if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
                         return track_delist_cursor_check
