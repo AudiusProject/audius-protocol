@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -227,6 +228,12 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		return
 	}
 
+	// as per CN `userId: req.userId ?? delegateOwnerWallet`
+	userId := ss.Config.Self.Wallet
+	if sig.Data.UserID != 0 {
+		userId = strconv.Itoa(sig.Data.UserID)
+	}
+
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
@@ -235,7 +242,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 
 	body := map[string]interface{}{
-		"userId":       ss.Config.Self.Wallet, // as per CN `userId: req.userId ?? delegateOwnerWallet`
+		"userId":       userId,
 		"solanaListen": false,
 		"timestamp":    signatureData.Timestamp,
 		"signature":    signatureData.Signature,
