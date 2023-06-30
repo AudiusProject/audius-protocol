@@ -135,6 +135,16 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		}
 
 		myIdx := slices.Index(upload.Mirrors, myHost)
+		if retranscode {
+			full320CID, ok := upload.TranscodeResults["320"]
+			if !ok {
+				ss.logger.Warn("missing full transcoded mp3 cid in retranscode job. skipping", "id", upload.ID)
+				continue
+			}
+			full320Mirrors, _ := ss.rendezvous(full320CID)
+			myIdx = slices.Index(full320Mirrors, myHost)
+		}
+
 		if myIdx == -1 {
 			continue
 		}
@@ -373,8 +383,8 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 	// if a start time is set, also transcode an audio preview from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
 		// update upload to reflect the start of the retranscoding preview step
-		upload.TranscodedAt = time.Now().UTC()
 		upload.TranscodeProgress = 0
+		upload.TranscodedAt = time.Now().UTC()
 		upload.Status = JobStatusBusyRetranscode
 		ss.crud.Update(upload)
 
@@ -391,7 +401,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 	}
 
 	srcPath := temp.Name()
-	destPath := strings.TrimSuffix(srcPath, ".mp3") + "_preview.mp3"
+	destPath := strings.TrimSuffix(srcPath, "_320.mp3") + "_320_preview.mp3"
 
 	cmd := exec.Command("ffmpeg",
 		"-y",
