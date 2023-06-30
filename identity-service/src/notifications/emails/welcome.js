@@ -771,8 +771,8 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                   <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
                     <div>
-                      <!--[if (gte mso 9)|(IE)]>
                       <a style="text-decoration: none;" href="https://twitter.com/AudiusProject" target="_blank">
+                        <!--[if (gte mso 9)|(IE)]>
                         <table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
                         <tr><td>
                         <![endif]-->
@@ -781,11 +781,11 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <img src="https://download.audius.co/welcome-email/i710565130.png" width="21" height="16" alt="" border="0" style="display: block;">
                         </td></tr>
                         </table>
+                        <!--[if (gte mso 9)|(IE)]>
+                        </td></tr>
+                        </table>
+                        <![endif]-->
                       </a>
-                      <!--[if (gte mso 9)|(IE)]>
-                      </td></tr>
-                      </table>
-                      <![endif]-->
                     </div>
                   </td></tr>
                   </table>
