@@ -289,7 +289,7 @@ const getAllChallenges = async (
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
       feePayerOverride,
-      logger: console,
+      logger: console
     }
 
     console.log({ args })
