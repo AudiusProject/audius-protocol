@@ -236,6 +236,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                     </td>
                     <td valign="middle" width="252" style="width: 252px">
                     <![endif]-->
+                    <a style="text-decoration: none;" href="https://audius.co" target="_blank">
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
                       <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
@@ -247,17 +248,12 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 252px;">
                           <tr><td align="center" valign="middle" height="24" bgcolor="#cc0fe0" style="padding: 12px 24px; border-radius: 4px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px; height: 24px;">
                             <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
+                            <tr><td align="center" valign="middle" style="padding: 0px;">
                               <table border="0" cellspacing="0" cellpadding="0" width="160" style="width: 160px;">
-                              <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
+                              <tr><td align="center" valign="middle" style="padding: 0px;">
                                 <div style="line-height: 24px;">
-                                  <a style="text-decoration: none;" href="https://audius.co" target="_blank">
                                     <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start Listening</span>
-                                  </a>
                                 </div>
-                              </td> 
-                              <td align="left" valign="top" width="21" style="width: 21px;">
-                                <img src="https://download.audius.co/welcome-email/i723809766.png" width="21" height="20.666667938232422" alt="" border="0" style="display: block;">
                               </td></tr>
                               </table>
                             </td> 
@@ -277,6 +273,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       </td></tr>
                       </table>
                     </div>
+                    </a>
                   </td></tr>
                   </table>
                 </td></tr>
@@ -479,7 +476,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                       <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
                         <table border="0" cellspacing="0" cellpadding="0" width="183" style="width: 183px;">
-                        <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
+                        <tr><td align="center" valign="middle" style="padding: 0">
                           <div>
                             <!--[if (gte mso 9)|(IE)]>
                             <table width="160" border="0" cellspacing="0" cellpadding="0" style="width: 160px;">
@@ -499,9 +496,6 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                             </table>
                             <![endif]-->
                           </div>
-                        </td> 
-                        <td align="left" valign="top" width="21" style="width: 21px;">
-                          <img src="https://download.audius.co/welcome-email/i723809766.png" width="21" height="20.666667938232422" alt="" border="0" style="display: block;">
                         </td></tr>
                         </table>
                       </td></tr>
@@ -575,11 +569,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 252px;">
                           <tr><td align="center" valign="middle" height="24" bgcolor="#cc0fe0" style="padding: 12px 24px; border-radius: 4px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px; height: 24px;">
                             <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
+                            <tr><td align="center" valign="middle" style="padding: 0px;">
                               <table border="0" cellspacing="0" cellpadding="0" width="155" style="width: 155px;">
-                              <tr><td align="left" valign="top" width="21" style="width: 21px; padding: 0px 8px 0px 0px;">
-                                <img src="https://download.audius.co/welcome-email/i778950820.png" width="21" height="20.666667938232422" alt="" border="0" style="display: block;">
-                              </td> 
+                              <tr>
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
                                   <a style="text-decoration: none;" href="https://audius.co/feed" target="_blank">
@@ -631,11 +623,9 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                           <table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 252px;">
                           <tr><td align="center" valign="middle" height="24" bgcolor="#cc0fe0" style="padding: 12px 24px; border-radius: 4px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 4px; height: 24px;">
                             <table border="0" cellspacing="0" cellpadding="0" width="100%">
-                            <tr><td align="center" valign="middle" style="padding: 0px 8px 0px 0px;">
+                            <tr><td align="center" valign="middle" style="padding: 0px;">
                               <table border="0" cellspacing="0" cellpadding="0" width="160" style="width: 160px;">
-                              <tr><td align="left" valign="top" width="21" style="width: 21px; padding: 0px 8px 0px 0px;">
-                                <img src="https://download.audius.co/welcome-email/i-1694726226.png" width="21" height="19.333332061767578" alt="" border="0" style="display: block;">
-                              </td> 
+                              <tr> 
                               <td align="center" valign="middle">
                                 <div style="line-height: 24px;">
                                   <a style="text-decoration: none;" href="https://audius.co/upload" target="_blank">
@@ -894,7 +884,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
   </table> 
   </div> 
   </body> 
-  </html> 
+  </html>
 `
 }
 
