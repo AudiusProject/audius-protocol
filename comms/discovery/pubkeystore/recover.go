@@ -117,7 +117,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 			}
 
 			// try addUser on POA
-			pubkeyBase64, err = findAddUserTransaction(ctx, big.NewInt(blocknumber))
+			pubkeyBase64, err = findAddUserTransaction(ctx, big.NewInt(blocknumber), wallet)
 			if err == nil {
 				break
 			}

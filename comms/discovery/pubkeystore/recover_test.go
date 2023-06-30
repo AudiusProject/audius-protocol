@@ -27,7 +27,7 @@ func TestRecovery(t *testing.T) {
 
 		blocknumber := big.NewInt(14412789)
 
-		pk, err := findAddUserTransaction(context.Background(), blocknumber)
+		pk, err := findAddUserTransaction(context.Background(), blocknumber, "")
 		assert.NoError(t, err)
 		fmt.Println(pk)
 	}
@@ -69,7 +69,7 @@ func TestRecoveryProd(t *testing.T) {
 		// 8592904
 		blocknumber := big.NewInt(8592904)
 
-		pk, err := findAddUserTransaction(context.Background(), blocknumber)
+		pk, err := findAddUserTransaction(context.Background(), blocknumber, "")
 		assert.NoError(t, err)
 		fmt.Println(pk)
 	}
