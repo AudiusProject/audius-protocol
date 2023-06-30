@@ -47,7 +47,7 @@ export redisPort=6379
 
 # Sync / SnapbackSM configs
 export stateMonitoringQueueRateLimitInterval=60000
-export stateMonitoringQueueRateLimitJobsPerInterval=1
+export stateMonitoringQueueRateLimitJobsPerInterval=0
 export snapbackModuloBase=3
 export minimumDailySyncCount=5
 export minimumRollingSyncCount=10

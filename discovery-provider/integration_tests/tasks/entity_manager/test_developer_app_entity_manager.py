@@ -10,7 +10,7 @@ from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-new_apps_data = [
+first_set_new_apps_data = [
     {
         "user_id": 1,
         "name": "My App",
@@ -54,6 +54,19 @@ new_apps_data = [
     },
 ]
 
+second_set_new_apps_data = [
+    {
+        "user_id": 1,
+        "name": "My New App",
+        "description": "My app description",
+        "address": "0x00ac9540c24b59ca8a6253397420c9a73c4ab3a7",
+        "app_signature": {
+            "signature": "efa178e0979f09e536dbf8e7815163411d0b3f3261beed24f73882ffa9db8e8d566595b47ced52fb57b4fbf2de8209d6f38c50a43659a5349c164dcb7ebf33001b",
+            "message": "Creating Audius developer app at 1686252026",
+        },
+    },
+]
+
 
 @freeze_time("2023-06-08 19:20:00")
 def test_index_app(app, mocker):
@@ -81,8 +94,8 @@ def test_index_app(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
-                        "_userId": new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"name": "{new_apps_data[0]["name"]}", "description": "{new_apps_data[0]["description"]}", "app_signature": {{"signature": "{new_apps_data[0]["app_signature"]["signature"]}", "message": "{new_apps_data[0]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if new_apps_data[0]["is_personal_access"] else 'false' }}}""",
+                        "_userId": first_set_new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"name": "{first_set_new_apps_data[0]["name"]}", "description": "{first_set_new_apps_data[0]["description"]}", "app_signature": {{"signature": "{first_set_new_apps_data[0]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[0]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if first_set_new_apps_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
                         "_signer": "user1wallet",
                     }
@@ -95,9 +108,9 @@ def test_index_app(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
-                        "_userId": new_apps_data[1]["user_id"],
+                        "_userId": first_set_new_apps_data[1]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[1]["name"]}", "description": "{new_apps_data[1]["description"]}", "app_signature": {{"signature": "{new_apps_data[1]["app_signature"]["signature"]}", "message": "{new_apps_data[1]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if new_apps_data[1]["is_personal_access"] else 'false' }}}""",
+                        "_metadata": f"""{{"name": "{first_set_new_apps_data[1]["name"]}", "description": "{first_set_new_apps_data[1]["description"]}", "app_signature": {{"signature": "{first_set_new_apps_data[1]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[1]["app_signature"]["message"]}"}}, "is_personal_access": {'true' if first_set_new_apps_data[1]["is_personal_access"] else 'false' }}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -109,9 +122,9 @@ def test_index_app(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
-                        "_userId": new_apps_data[2]["user_id"],
+                        "_userId": first_set_new_apps_data[2]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[2]["name"]}", "app_signature": {{"signature": "{new_apps_data[2]["app_signature"]["signature"]}", "message": "{new_apps_data[2]["app_signature"]["message"]}"}}}}""",
+                        "_metadata": f"""{{"name": "{first_set_new_apps_data[2]["name"]}", "app_signature": {{"signature": "{first_set_new_apps_data[2]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[2]["app_signature"]["message"]}"}}}}""",
                         "_signer": "user2wallet",
                     }
                 )
@@ -123,9 +136,9 @@ def test_index_app(app, mocker):
                     {
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
-                        "_userId": new_apps_data[3]["user_id"],
+                        "_userId": first_set_new_apps_data[3]["user_id"],
                         "_action": Action.CREATE,
-                        "_metadata": f"""{{"name": "{new_apps_data[3]["name"]}", "app_signature": {{"signature": "{new_apps_data[3]["app_signature"]["signature"]}", "message": "{new_apps_data[3]["app_signature"]["message"]}"}}}}""",
+                        "_metadata": f"""{{"name": "{first_set_new_apps_data[3]["name"]}", "app_signature": {{"signature": "{first_set_new_apps_data[3]["app_signature"]["signature"]}", "message": "{first_set_new_apps_data[3]["app_signature"]["message"]}"}}}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -176,7 +189,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         assert len(all_apps) == 5
-        for expected_app in new_apps_data:
+        for expected_app in first_set_new_apps_data:
             found_matches = [
                 item
                 for item in all_apps
@@ -379,8 +392,8 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"address": "{new_apps_data[0]["address"]}"}}""",
+                        "_userId": first_set_new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[0]["address"]}"}}""",
                         "_signer": "incorrectwallet",
                     }
                 )
@@ -410,7 +423,7 @@ def test_index_app(app, mocker):
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_userId": 1,
                         "_action": Action.DELETE,
-                        "_metadata": f"""{{"address": "{new_apps_data[2]["address"]}"}}""",
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[2]["address"]}"}}""",
                         "_signer": "user1wallet",
                     }
                 )
@@ -448,9 +461,9 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_apps_data[0]["user_id"],
-                        "_metadata": f"""{{"address": "{new_apps_data[0]["address"]}"}}""",
-                        "_signer": f"user{new_apps_data[0]['user_id']}wallet",
+                        "_userId": first_set_new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[0]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[0]['user_id']}wallet",
                     }
                 )
             },
@@ -462,9 +475,9 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_apps_data[1]["user_id"],
-                        "_metadata": f"""{{"address": "{new_apps_data[1]["address"]}"}}""",
-                        "_signer": f"user{new_apps_data[1]['user_id']}wallet",
+                        "_userId": first_set_new_apps_data[1]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[1]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[1]['user_id']}wallet",
                     }
                 )
             },
@@ -476,9 +489,9 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_apps_data[2]["user_id"],
-                        "_metadata": f"""{{"address": "{new_apps_data[2]["address"]}"}}""",
-                        "_signer": f"user{new_apps_data[2]['user_id']}wallet",
+                        "_userId": first_set_new_apps_data[2]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[2]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -490,9 +503,9 @@ def test_index_app(app, mocker):
                         "_entityId": 0,
                         "_entityType": EntityType.DEVELOPER_APP,
                         "_action": Action.DELETE,
-                        "_userId": new_apps_data[3]["user_id"],
-                        "_metadata": f"""{{"address": "{new_apps_data[3]["address"]}"}}""",
-                        "_signer": f"user{new_apps_data[3]['user_id']}wallet",
+                        "_userId": first_set_new_apps_data[3]["user_id"],
+                        "_metadata": f"""{{"address": "{first_set_new_apps_data[3]["address"]}"}}""",
+                        "_signer": f"user{first_set_new_apps_data[3]['user_id']}wallet",
                     }
                 )
             },
@@ -519,7 +532,7 @@ def test_index_app(app, mocker):
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         assert len(all_apps) == 9
 
-        for expected_app in new_apps_data:
+        for expected_app in first_set_new_apps_data:
             found_matches = [
                 item
                 for item in all_apps
@@ -550,3 +563,58 @@ def test_index_app(app, mocker):
             )
             assert old.is_delete == False and updated.is_delete == True
             assert old.blocknumber == 0 and updated.blocknumber == 1
+
+    # Test valid create again
+    tx_receipts = {
+        "CreateAppTx5": [  # Make sure user 1 can make another app since they now have fewer than 3 non-deleted apps
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DEVELOPER_APP,
+                        "_userId": second_set_new_apps_data[0]["user_id"],
+                        "_metadata": f"""{{"name": "{second_set_new_apps_data[0]["name"]}", "description": "{second_set_new_apps_data[0]["description"]}", "app_signature": {{"signature": "{second_set_new_apps_data[0]["app_signature"]["signature"]}", "message": "{second_set_new_apps_data[0]["app_signature"]["message"]}"}}}}""",
+                        "_action": Action.CREATE,
+                        "_signer": f"user{second_set_new_apps_data[0]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=2,
+            block_timestamp=1000000003,
+            block_hash=0,
+        )
+
+        # validate db records
+        all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
+        assert len(all_apps) == 10
+        for expected_app in second_set_new_apps_data:
+            found_matches = [
+                item
+                for item in all_apps
+                if item.address == expected_app["address"].lower()
+            ]
+            assert len(found_matches) == 1
+            res = found_matches[0]
+            assert res.user_id == expected_app["user_id"]
+            assert res.name == expected_app["name"]
+            assert res.description == (
+                expected_app.get("description", None) or None
+            )  # If description value is empty in metadata, the description value should be null in the table row.
+            assert res.is_personal_access == expected_app.get(
+                "is_personal_access", False
+            )
+            assert res.blocknumber == 2

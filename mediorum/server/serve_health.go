@@ -69,7 +69,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                   err == nil,
+		Healthy:                   err == nil && ss.databaseSize > 0,
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
 		BuiltAt:                   vcsBuildTime,

@@ -159,6 +159,10 @@ export const SaveTrackSchema = z
     trackId: HashId,
     metadata: z.optional(
       z.object({
+        /**
+         * Is this a save of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
         isSaveOfRepost: z.boolean()
       })
     )

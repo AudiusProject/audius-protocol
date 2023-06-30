@@ -42,6 +42,7 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	if err == nil {
 		ss.databaseSize = dbSize
 	} else {
+		ss.databaseSize = 0
 		slog.Error("Error getting database size", "err", err)
 	}
 }

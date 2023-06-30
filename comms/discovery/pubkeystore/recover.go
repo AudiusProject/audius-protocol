@@ -38,7 +38,7 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 	// staging settings
 	if discoveryConfig.IsStaging {
 		acdcEndpoint = "https://acdc-gateway.staging.audius.co"
-		poaEndpoint = "http://54.176.124.102:8545"
+		poaEndpoint = "http://54.177.176.62:8545"
 		verifyingContract = "0x39d26a6a138ddf8b447d651d5d3883644d277251"
 
 		// got from:
@@ -117,7 +117,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 			}
 
 			// try addUser on POA
-			pubkeyBase64, err = findAddUserTransaction(ctx, big.NewInt(blocknumber))
+			pubkeyBase64, err = findAddUserTransaction(ctx, big.NewInt(blocknumber), wallet)
 			if err == nil {
 				break
 			}

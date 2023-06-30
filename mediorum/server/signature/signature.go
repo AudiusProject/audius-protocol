@@ -24,6 +24,7 @@ type SignatureData struct {
 	ShouldCache int    `json:"shouldCache"`
 	Timestamp   int64  `json:"timestamp"`
 	TrackId     int64  `json:"trackId"`
+	UserID      int    `json:"userId"`
 }
 
 type RecoveredSignature struct {

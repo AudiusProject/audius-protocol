@@ -506,7 +506,7 @@ const config = convict({
     doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'stateMonitoringQueueRateLimitJobsPerInterval',
-    default: 1
+    default: 0
   },
   recoverOrphanedDataQueueRateLimitInterval: {
     doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
@@ -518,7 +518,7 @@ const config = convict({
     doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
     format: 'nat',
     env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 1
+    default: 0
   },
   recoverOrphanedDataNumUsersPerBatch: {
     doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
@@ -596,13 +596,13 @@ const config = convict({
     doc: 'Max bull queue concurrency for recurring sync request jobs',
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 20
+    default: 0
   },
   maxUpdateReplicaSetJobConcurrency: {
     doc: 'Max bull queue concurrency for update replica set jobs',
     format: 'nat',
     env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 10
+    default: 0
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
