@@ -15,7 +15,7 @@ services:
     image: postgres
     restart: unless-stopped
     ports:
-      - 5454:5432
+      - 5455:5432
     environment:
       PGUSER: "postgres"
       POSTGRES_PASSWORD: "postgres"
