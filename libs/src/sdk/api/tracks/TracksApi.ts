@@ -18,6 +18,7 @@ import {
   SaveTrackRequest,
   SaveTrackSchema,
   UnrepostTrackSchema,
+  UnsaveTrackRequest,
   UnsaveTrackSchema,
   UpdateTrackRequest,
   UploadTrackRequest
@@ -286,7 +287,7 @@ export class TracksApi extends TracksApiWithoutStream {
    * Unfavorite a track
    */
   async unsaveTrack(
-    requestParameters: SaveTrackRequest,
+    requestParameters: UnsaveTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs

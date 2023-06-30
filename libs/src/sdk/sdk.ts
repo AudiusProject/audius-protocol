@@ -3,14 +3,10 @@ import { OAuth } from './oauth'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { TracksApi } from './api/tracks/TracksApi'
+import { UsersApi } from './api/users/UsersApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
-import {
-  Configuration,
-  PlaylistsApi,
-  UsersApi,
-  TipsApi
-} from './api/generated/default'
+import { Configuration, PlaylistsApi, TipsApi } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
@@ -178,7 +174,11 @@ const initializeApis = ({
     services.entityManager,
     services.auth
   )
-  const users = new UsersApi(generatedApiClientConfig)
+  const users = new UsersApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)

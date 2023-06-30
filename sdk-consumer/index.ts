@@ -1,12 +1,14 @@
 import {
   DiscoveryNodeSelector,
   EntityManager,
+  RepostTrackRequest,
   SaveTrackRequest,
   sdk,
+  UnrepostTrackRequest,
   UnsaveTrackRequest,
   UpdateTrackRequest,
-} from "@audius/sdk";
-import {
+  FollowUserRequest,
+  UnfollowUserRequest,
   UploadTrackRequest,
   DeleteTrackRequest,
   developmentConfig,
@@ -20,7 +22,7 @@ const upload = multer({ storage: storage });
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
-const port = 3000;
+const port = 3100;
 
 // Test/develop sdk functionality here
 
@@ -166,6 +168,63 @@ app.post<UnsaveTrackRequest>("/unsaveTrack", async (req, res) => {
       trackId: req.body.trackId,
     };
     const result = await audiusSdk.tracks.unsaveTrack(unsaveTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<RepostTrackRequest>("/repostTrack", async (req, res) => {
+  try {
+    const repostTrackRequest: RepostTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.tracks.repostTrack(repostTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnrepostTrackRequest>("/unrepostTrack", async (req, res) => {
+  try {
+    const unrepostTrackRequest: UnrepostTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.tracks.unrepostTrack(unrepostTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<FollowUserRequest>("/followUser", async (req, res) => {
+  try {
+    const followUserRequest: FollowUserRequest = {
+      userId: req.body.userId,
+      followeeUserId: req.body.followeeUserId,
+    };
+    const result = await audiusSdk.users.followUser(followUserRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnfollowUserRequest>("/unfollowUser", async (req, res) => {
+  try {
+    const unfollowUserRequest: UnfollowUserRequest = {
+      userId: req.body.userId,
+      followeeUserId: req.body.followeeUserId,
+    };
+    const result = await audiusSdk.users.unfollowUser(unfollowUserRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
