@@ -255,21 +255,6 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	return temp, nil
 }
 
-func (ss *MediorumServer) getKeyToTempFileFromFile(fileHash string, file *os.File) (*os.File, error) {
-	temp, err := os.CreateTemp("", fileHash)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = io.Copy(temp, file)
-	if err != nil {
-		return nil, err
-	}
-	temp.Sync()
-
-	return temp, nil
-}
-
 type errorCallback func(err error, info ...string) error
 
 func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *exec.Cmd, logger *slog.Logger) error {
@@ -371,7 +356,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 
 	err := ss.transcodeAudio(upload, destPath, cmd, logger)
 	if err != nil {
-		return onError(err)
+		return onError(err, "transcoding audio")
 	}
 
 	dest, err := os.Open(destPath)
@@ -396,20 +381,15 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 
 	logger.Info("audio transcode done", "mirrors", mirrors)
 
-	// If a start time is set, also transcode an audio preview
-	// from the full 320kbps downsample
+	// If a start time is set, also transcode an audio preview from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
 		// update upload to reflect the start of the retranscoding preview step
 		upload.TranscodedAt = time.Now().UTC()
+		upload.TranscodeProgress = 0
 		upload.Status = JobStatusBusyRetranscode
 		ss.crud.Update(upload)
 
-		temp320, err := ss.getKeyToTempFileFromFile(resultKey, dest)
-		if err != nil {
-			return onError(err, "getting 320kbps transcoded file for audio preview transcoding")
-		}
-		defer temp320.Close()
-		ss.transcodeAudioPreview(upload, temp320, logger, onError)
+		return ss.transcodeAudioPreview(upload, dest, logger, onError)
 	}
 
 	return nil
@@ -421,14 +401,14 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return nil
 	}
 
-	srcPath := strings.TrimSuffix(temp.Name(), "_320.mp3")
-	destPath := srcPath + "_320_preview.mp3"
+	srcPath := temp.Name()
+	destPath := strings.TrimSuffix(srcPath, ".mp3") + "_preview.mp3"
 
 	cmd := exec.Command("ffmpeg",
 		"-y",
 		"-i", srcPath,
 		"-ss", fmt.Sprint(upload.PreviewStartSeconds.Int64), // set preview start time
-		"t", audioPreviewDuration, // set preview duration
+		"-t", audioPreviewDuration, // set preview duration
 		"-b:a", "320k", // set bitrate to 320k
 		"-ar", "48000", // set sample rate to 48000 Hz
 		"-f", "mp3", // force output to mp3
@@ -440,12 +420,12 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 
 	err := ss.transcodeAudio(upload, destPath, cmd, logger)
 	if err != nil {
-		return onError(err)
+		return onError(err, "transcoding audio")
 	}
 
 	dest, err := os.Open(destPath)
 	if err != nil {
-		return onError(err)
+		return onError(err, "opening "+destPath)
 	}
 	defer dest.Close()
 
@@ -458,7 +438,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 	resultKey := resultHash
 	mirrors, err := ss.replicateFile(resultHash, dest)
 	if err != nil {
-		return onError(err)
+		return onError(err, "replicating file")
 	}
 
 	upload.TranscodeResults["320_preview"] = resultKey
@@ -550,10 +530,16 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 		if upload.Status == JobStatusBusyRetranscode {
 			// Re-transcode audio preview
-			ss.transcodeAudioPreview(upload, temp, logger, onError)
+			err := ss.transcodeAudioPreview(upload, temp, logger, onError)
+			if err != nil {
+				return err
+			}
 		} else {
 			// Transcode audio and (optional) audio preview
-			ss.transcodeFullAudio(upload, temp, logger, onError)
+			err := ss.transcodeFullAudio(upload, temp, logger, onError)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
