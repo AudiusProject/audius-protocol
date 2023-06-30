@@ -45,7 +45,6 @@ import UnlistedTrackModal from 'components/unlisted-track-modal/UnlistedTrackMod
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
@@ -832,15 +831,7 @@ class FormTile extends Component {
     try {
       let file = selectedFiles[0]
       file = await this.props.transformArtworkFunction(file)
-      const storageV2SignupEnabled = await getFeatureEnabled(
-        FeatureFlags.STORAGE_V2_SIGNUP
-      )
-      const storageV2UploadEnabled = await getFeatureEnabled(
-        FeatureFlags.STORAGE_V2_TRACK_UPLOAD
-      )
-      if (storageV2SignupEnabled || storageV2UploadEnabled) {
-        file.name = selectedFiles[0].name
-      }
+      file.name = selectedFiles[0].name
       const url = URL.createObjectURL(file)
       this.props.onChangeField('artwork', { url, file, source }, false)
       this.setState({ imageProcessingError: false })
