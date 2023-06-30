@@ -236,6 +236,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                     </td>
                     <td valign="middle" width="252" style="width: 252px">
                     <![endif]-->
+                    <a style="text-decoration: none;" href="https://audius.co" target="_blank">
                     <div style="display: inline-block; vertical-align: middle; width: 100%; max-width: 252px;">
                       <table width="100%" border="0" cellspacing="0" cellpadding="8" style="border-collapse: collapse;">
                       <tr><td align="center" valign="top" class="outf14" style="font-size: large;">
@@ -251,9 +252,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                               <table border="0" cellspacing="0" cellpadding="0" width="160" style="width: 160px;">
                               <tr><td align="center" valign="middle" style="padding: 0px;">
                                 <div style="line-height: 24px;">
-                                  <a style="text-decoration: none;" href="https://audius.co" target="_blank">
                                     <span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 18px; color: #ffffff;">Start Listening</span>
-                                  </a>
                                 </div>
                               </td></tr>
                               </table>
@@ -274,6 +273,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                       </td></tr>
                       </table>
                     </div>
+                    </a>
                   </td></tr>
                   </table>
                 </td></tr>
