@@ -5,6 +5,7 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
+import requests
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
@@ -492,9 +493,18 @@ class TrackStream(Resource):
         base_path = f"tracks/cidstream/{track_cid}"
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
-        stream_url = urljoin(content_node, path)
-
-        return stream_url
+        # Try primary first then fallback to replica set
+        # Perform a partial content request to verify 206 success
+        for creator_node in info["creator_nodes"].split(","):
+            stream_url = urljoin(creator_node, path)
+            headers = {"Range": "bytes=0-1"}
+            try:
+                response = requests.get(stream_url, headers=headers)
+                if response.status_code == 206:
+                    return stream_url
+            except:
+                pass
+        abort_not_found(track_id, ns)
 
 
 track_search_result = make_response(
