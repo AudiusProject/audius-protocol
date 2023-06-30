@@ -71,9 +71,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if previewStartSecondsString != "" {
 		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
 		if err != nil {
-			errMsg := "error parsing previewStartSeconds"
-			ss.logger.Error(errMsg, err)
-			return c.String(400, errMsg+": "+err.Error())
+			return c.String(400, "error parsing previewStartSeconds: "+err.Error())
 		}
 
 		previewStartSeconds = sql.NullInt64{
@@ -127,9 +125,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	if previewStartSecondsString != "" {
 		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
 		if err != nil {
-			errMsg := "error parsing previewStartSeconds"
-			ss.logger.Error(errMsg, err)
-			return c.String(400, errMsg+": "+err.Error())
+			return c.String(400, "error parsing previewStartSeconds: "+err.Error())
 		}
 
 		previewStartSeconds = sql.NullInt64{

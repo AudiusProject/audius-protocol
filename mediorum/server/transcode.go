@@ -36,7 +36,7 @@ func (ss *MediorumServer) startTranscoder() {
 	numWorkers := 2
 
 	// on boot... reset any of my wip jobs
-	for _, statuses := range [][]string{[]string{JobStatusBusy, JobStatusNew}, []string{JobStatusBusyRetranscode, JobStatusRetranscode}} {
+	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
 		busyStatus := statuses[0]
 		resetStatus := statuses[1]
 		tx := ss.crud.DB.Model(Upload{}).
@@ -87,25 +87,14 @@ func (ss *MediorumServer) startTranscoder() {
 			if upload.Status == JobStatusRetranscode {
 				full320CID, ok := upload.TranscodeResults["320"]
 				if !ok {
-					ss.logger.Warn("missing full transcoded mp3 cid in retranscode job", "id", upload.ID)
+					ss.logger.Warn("missing full transcoded mp3 cid in retranscode job. skipping", "id", upload.ID)
 					continue
 				}
-				// the first mirror that has the full 320 downsample transcodes
-				assignedJob := false
+				// the first mirror with the full 320 downsample transcodes
 				full320Mirrors, _ := ss.rendezvous(full320CID)
-				for _, peer := range full320Mirrors {
-					if peer == myHost {
-						have, _ := ss.bucket.Exists(context.Background(), full320CID)
-						if have {
-							ss.logger.Info("got retranscode job", "id", upload.ID)
-							assignedJob = true
-							work <- upload
-							break
-						}
-					}
-				}
-				if !assignedJob {
-					ss.logger.Warn("missing full transcoded mp3 file in all mirrors. retranscode job not picked up", "id", upload.ID)
+				if slices.Index(full320Mirrors, myHost) == 0 {
+					ss.logger.Info("got retranscode job", "id", upload.ID)
+					work <- upload
 				}
 			}
 		}
@@ -381,7 +370,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 
 	logger.Info("audio transcode done", "mirrors", mirrors)
 
-	// If a start time is set, also transcode an audio preview from the full 320kbps downsample
+	// if a start time is set, also transcode an audio preview from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
 		// update upload to reflect the start of the retranscoding preview step
 		upload.TranscodedAt = time.Now().UTC()
