@@ -1,7 +1,9 @@
 import {
   DiscoveryNodeSelector,
   EntityManager,
+  SaveTrackRequest,
   sdk,
+  UnsaveTrackRequest,
   UpdateTrackRequest,
 } from "@audius/sdk";
 import {
