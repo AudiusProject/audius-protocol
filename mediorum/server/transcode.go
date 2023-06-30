@@ -272,26 +272,8 @@ func (ss *MediorumServer) getKeyToTempFileFromFile(fileHash string, file *os.Fil
 
 type errorCallback func(err error, info ...string) error
 
-func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
-	srcPath := temp.Name()
-	destPath := srcPath + "_320.mp3"
-
-	cmd := exec.Command("ffmpeg",
-		"-y",
-		"-i", srcPath,
-		"-b:a", "320k", // set bitrate to 320k
-		"-ar", "48000", // set sample rate to 48000 Hz
-		"-f", "mp3", // force output to mp3
-		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
-		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
-		"-vn", // no video
-		"-progress", "pipe:2",
-		destPath)
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return onError(err, "cmd.StdoutPipe")
-	}
+func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *exec.Cmd, logger *slog.Logger) error {
+	cmd.Stdout = os.Stdout
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -358,11 +340,38 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 		logger.Error("stderr lines: " + stderrBuf.String())
 	}()
 
-	wg.Wait()
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
 
 	err = cmd.Wait()
 	if err != nil {
-		return onError(err, "cmd.Wait")
+		return err
+	}
+
+	return nil
+}
+
+func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
+	srcPath := temp.Name()
+	destPath := srcPath + "_320.mp3"
+
+	cmd := exec.Command("ffmpeg",
+		"-y",
+		"-i", srcPath,
+		"-b:a", "320k", // set bitrate to 320k
+		"-ar", "48000", // set sample rate to 48000 Hz
+		"-f", "mp3", // force output to mp3
+		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
+		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
+		"-vn", // no video
+		"-progress", "pipe:2",
+		destPath)
+
+	err := ss.transcodeAudio(upload, destPath, cmd, logger)
+	if err != nil {
+		return onError(err)
 	}
 
 	dest, err := os.Open(destPath)
@@ -390,7 +399,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 	// If a start time is set, also transcode an audio preview
 	// from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
-		// update upload to reflect start of retranscode preview step
+		// update upload to reflect the start of the retranscoding preview step
 		upload.TranscodedAt = time.Now().UTC()
 		upload.Status = JobStatusBusyRetranscode
 		ss.crud.Update(upload)
@@ -399,6 +408,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, temp *os.File, logger *
 		if err != nil {
 			return onError(err, "getting 320kbps transcoded file for audio preview transcoding")
 		}
+		defer temp320.Close()
 		ss.transcodeAudioPreview(upload, temp320, logger, onError)
 	}
 
@@ -428,38 +438,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		"-progress", "pipe:2",
 		destPath)
 
-	cmd.Stdout = os.Stdout
-
-	// read ffmpeg progress
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		logger.Error("progress err", err)
-	} else if upload.FFProbe != nil {
-		durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
-		durationUs := durationSeconds * 1000 * 1000
-		go func() {
-			stderrLines := bufio.NewScanner(stderr)
-			for stderrLines.Scan() {
-				line := stderrLines.Text()
-				var u float64
-				fmt.Sscanf(line, "out_time_us=%f", &u)
-				if u > 0 && durationUs > 0 {
-					percent := u / durationUs
-					upload.TranscodeProgress = percent
-					upload.TranscodedAt = time.Now().UTC()
-					ss.crud.Patch(upload)
-				}
-			}
-
-		}()
-	}
-
-	err = cmd.Start()
-	if err != nil {
-		return onError(err)
-	}
-
-	err = cmd.Wait()
+	err := ss.transcodeAudio(upload, destPath, cmd, logger)
 	if err != nil {
 		return onError(err)
 	}
@@ -574,7 +553,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			ss.transcodeAudioPreview(upload, temp, logger, onError)
 		} else {
 			// Transcode audio and (optional) audio preview
-			ss.transcodeAudio(upload, temp, logger, onError)
+			ss.transcodeFullAudio(upload, temp, logger, onError)
 		}
 	}
 
