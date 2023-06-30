@@ -78,6 +78,7 @@ const {
   getReactionsPopupMessageId
 } = chatSelectors
 const {
+  fetchLatestMessages,
   fetchMoreMessages,
   markChatAsRead,
   setReactionsPopupMessageId,
@@ -254,16 +255,12 @@ export const ChatScreen = () => {
   // The chat/chatId selectors will trigger the rerenders necessary.
   const chatFrozenRef = useRef(chat)
 
-  // Initial fetch, but only if messages weren't fetched on app load
+  // Refresh messages on first render
   useEffect(() => {
-    if (
-      chatId &&
-      (chat?.messagesStatus ?? Status.IDLE) === Status.IDLE &&
-      chatMessages.length === 0
-    ) {
-      dispatch(fetchMoreMessages({ chatId }))
+    if (chatId) {
+      dispatch(fetchLatestMessages({ chatId }))
     }
-  }, [dispatch, chatId, chat, chatMessages.length])
+  }, [dispatch, chatId])
 
   useEffect(() => {
     // Update chatFrozenRef when entering a new chat screen.
