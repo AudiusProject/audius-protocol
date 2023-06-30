@@ -450,7 +450,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
-	if upload.Status == JobStatusRetranscode {
+	if upload.Status == JobStatusRetranscode || upload.Status == JobStatusBusyRetranscode {
 		upload.Status = JobStatusBusyRetranscode
 	} else {
 		upload.Status = JobStatusBusy
