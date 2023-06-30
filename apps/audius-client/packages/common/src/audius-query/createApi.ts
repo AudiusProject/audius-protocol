@@ -7,7 +7,6 @@ import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { useProxySelector } from 'hooks/useProxySelector'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
 import { Status } from 'models/Status'
@@ -143,7 +142,7 @@ const useQueryState = <Args, Data>(
   reducerPath: string,
   endpointName: string,
   endpoint: EndpointConfig<Args, Data>
-) => {
+): Nullable<PerKeyState<any> & { isInitialValue?: boolean }> => {
   return useSelector((state: CommonState) => {
     if (!state.api[reducerPath]) {
       throw new Error(
@@ -224,7 +223,7 @@ const useQueryState = <Args, Data>(
       }
     }
 
-    return { ...endpointState[key] }
+    return endpointState[key]
   }, isEqual)
 }
 
@@ -234,23 +233,15 @@ const useCacheData = <Args, Data>(
   nonNormalizedData: any,
   hookOptions?: QueryHookOptions
 ) => {
-  return useProxySelector(
-    (state: CommonState) => {
-      if (hookOptions?.shallow && !endpoint.options.kind)
-        return nonNormalizedData
-      const entityMap = selectCommonEntityMap(
-        state,
-        endpoint.options.kind,
-        hookOptions?.shallow
-      )
-      return denormalize(
-        nonNormalizedData,
-        apiResponseSchema,
-        entityMap
-      ) as Data
-    },
-    [nonNormalizedData, apiResponseSchema, endpoint.options.kind]
-  )
+  return useSelector((state: CommonState) => {
+    if (hookOptions?.shallow && !endpoint.options.kind) return nonNormalizedData
+    const entityMap = selectCommonEntityMap(
+      state,
+      endpoint.options.kind,
+      hookOptions?.shallow
+    )
+    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
+  }, isEqual)
 }
 
 const fetchData = async <Args, Data>(

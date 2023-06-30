@@ -1,5 +1,5 @@
+import { createApi } from 'audius-query'
 import { ID, Kind } from 'models'
-import { createApi } from 'src/audius-query/createApi'
 import { Nullable } from 'utils'
 
 const collectionApi = createApi({

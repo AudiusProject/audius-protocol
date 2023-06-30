@@ -3,6 +3,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
+      "audius-query": ["src/audius-query/index.ts"],
       "assets/*": ["src/assets/*"],
       "hooks/*": ["src/hooks/*"],
       "models/*": ["src/models/*"],

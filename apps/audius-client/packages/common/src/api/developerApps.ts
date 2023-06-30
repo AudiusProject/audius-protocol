@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
+import { createApi } from 'audius-query'
 import { ID } from 'models/Identifiers'
-import { createApi } from 'src/audius-query'
 import { encodeHashId } from 'utils/hashIds'
 
 const descriptionMaxLength = 128
