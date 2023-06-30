@@ -30,7 +30,7 @@ type ChatID = string
 
 type ChatState = {
   chats: EntityState<UserChatWithMessagesStatus> & {
-    status: Status
+    status: Status | 'REFRESHING'
     summary?: TypedCommsResponse<UserChat>['summary']
   }
   messages: Record<
@@ -156,25 +156,60 @@ const slice = createSlice({
     goToChat: (_state, _action: PayloadAction<{ chatId?: string }>) => {
       // triggers saga
     },
+    fetchLatestChats: (state) => {
+      // triggers saga
+      state.chats.status = 'REFRESHING'
+    },
     fetchMoreChats: (state) => {
       // triggers saga
       state.chats.status = Status.LOADING
     },
     fetchMoreChatsSucceeded: (
       state,
-      action: PayloadAction<TypedCommsResponse<UserChat[]>>
+      action: PayloadAction<
+        Pick<TypedCommsResponse<UserChat[]>, 'data' | 'summary'>
+      >
     ) => {
+      const { data, summary } = action.payload
       state.chats.status = Status.SUCCESS
-      state.chats.summary = action.payload.summary
-      for (const chat of action.payload.data) {
+      if (!state.chats.summary) {
+        state.chats.summary = summary
+      } else {
+        if (
+          summary?.next_cursor &&
+          dayjs(summary?.next_cursor).isAfter(state.chats.summary.next_cursor)
+        ) {
+          state.chats.summary.next_cursor = summary?.next_cursor
+          state.chats.summary.next_count = summary?.next_count
+        }
+        if (
+          summary?.prev_cursor &&
+          dayjs(summary?.prev_cursor).isBefore(state.chats.summary.prev_cursor)
+        ) {
+          state.chats.summary.prev_cursor = summary?.prev_cursor
+          state.chats.summary.prev_count = summary?.prev_count
+        }
+      }
+      for (const chat of data) {
         if (!(chat.chat_id in state.messages)) {
           state.messages[chat.chat_id] = chatMessagesAdapter.getInitialState()
         }
       }
-      chatsAdapter.addMany(state.chats, action.payload.data)
+      chatsAdapter.upsertMany(state.chats, data)
     },
     fetchMoreChatsFailed: (state) => {
       state.chats.status = Status.ERROR
+    },
+    fetchLatestMessages: (state, action: PayloadAction<{ chatId: string }>) => {
+      // triggers saga
+      if (!state.messages[action.payload.chatId]) {
+        state.messages[action.payload.chatId] = {
+          ...chatMessagesAdapter.getInitialState(),
+          status: Status.LOADING
+        }
+      } else {
+        state.messages[action.payload.chatId].status = Status.LOADING
+      }
     },
     fetchMoreMessages: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
@@ -190,7 +225,7 @@ const slice = createSlice({
     fetchMoreMessagesSucceeded: (
       state,
       action: PayloadAction<{
-        response: TypedCommsResponse<ChatMessage[]>
+        response: Pick<TypedCommsResponse<ChatMessage[]>, 'summary' | 'data'>
         chatId: string
       }>
     ) => {
@@ -203,15 +238,21 @@ const slice = createSlice({
         return
       }
 
-      // Update the summary to include the min of next_cursor/next_count and
-      // prev_cursor/prev_count.
+      // Update the summary to include the max of next_cursor and
+      // min of prev_cursor.
       const existingSummary = state.chats.entities[chatId]?.messagesSummary
       const summaryToUse = { ...summary, ...existingSummary }
-      if (summary.next_count < (existingSummary?.next_count ?? Infinity)) {
+      if (
+        !existingSummary ||
+        dayjs(summary.next_cursor).isAfter(existingSummary.next_cursor)
+      ) {
         summaryToUse.next_count = summary.next_count
         summaryToUse.next_cursor = summary.next_cursor
       }
-      if (summary.prev_count < (existingSummary?.prev_count ?? Infinity)) {
+      if (
+        !existingSummary ||
+        dayjs(summary.prev_cursor).isBefore(existingSummary.prev_cursor)
+      ) {
         summaryToUse.prev_count = summary.prev_count
         summaryToUse.prev_cursor = summary.prev_cursor
       }
@@ -227,10 +268,12 @@ const slice = createSlice({
         return { ...item, hasTail: hasTail(item, data[index - 1]) }
       })
       chatMessagesAdapter.upsertMany(state.messages[chatId], messagesWithTail)
-      recalculatePreviousMessageHasTail(
-        state.messages[chatId],
-        summary.next_count - 1
-      )
+      if (data.length > 0) {
+        recalculatePreviousMessageHasTail(
+          state.messages[chatId],
+          summary.next_count - 1
+        )
+      }
     },
     fetchMoreMessagesFailed: (
       state,

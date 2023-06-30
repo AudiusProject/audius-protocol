@@ -19,7 +19,7 @@ import { ChatListItemSkeleton } from './ChatListItemSkeleton'
 import { HeaderShadow } from './HeaderShadow'
 
 const { getChats, getChatsStatus, getHasMoreChats } = chatSelectors
-const { fetchMoreMessages, fetchMoreChats } = chatActions
+const { fetchMoreMessages, fetchLatestChats, fetchMoreChats } = chatActions
 
 const CHATS_MESSAGES_PREFETCH_LIMIT = 10
 
@@ -120,6 +120,15 @@ export const ChatListScreen = () => {
     </TouchableOpacity>
   )
 
+  const handleLoadMore = useCallback(() => {
+    if (chatsStatus === Status.LOADING || !hasMore) return
+    dispatch(fetchMoreChats())
+  }, [hasMore, chatsStatus, dispatch])
+
+  const refresh = useCallback(() => {
+    dispatch(fetchLatestChats())
+  }, [dispatch])
+
   // Prefetch messages for initial loaded chats
   useEffect(() => {
     if (
@@ -134,10 +143,9 @@ export const ChatListScreen = () => {
     }
   }, [chats, dispatch])
 
-  const handleLoadMore = useCallback(() => {
-    if (chatsStatus === Status.LOADING || !hasMore) return
-    dispatch(fetchMoreChats())
-  }, [hasMore, chatsStatus, dispatch])
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   return (
     <Screen
@@ -162,6 +170,8 @@ export const ChatListScreen = () => {
               ))
           ) : (
             <FlatList
+              refreshing={chatsStatus === 'REFRESHING'}
+              onRefresh={refresh}
               data={nonEmptyChats}
               contentContainerStyle={styles.listContainer}
               renderItem={({ item }) => <ChatListItem chatId={item.chat_id} />}

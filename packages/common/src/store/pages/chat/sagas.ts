@@ -37,9 +37,11 @@ const {
   fetchUnreadMessagesCountFailed,
   goToChat,
   fetchChatIfNecessary,
+  fetchLatestChats,
   fetchMoreChats,
   fetchMoreChatsSucceeded,
   fetchMoreChatsFailed,
+  fetchLatestMessages,
   fetchMoreMessages,
   fetchMoreMessagesSucceeded,
   fetchMoreMessagesFailed,
@@ -74,6 +76,9 @@ const {
   getOtherChatUsers
 } = chatSelectors
 const { toast } = toastActions
+
+const CHAT_PAGE_SIZE = 30
+const MESSAGES_PAGE_SIZE = 50
 
 /**
  * Helper to dispatch actions for fetching chat users
@@ -111,6 +116,49 @@ function* doFetchUnreadMessagesCount() {
   }
 }
 
+/**
+ * Gets all chats fresher than what we currently have
+ */
+function* doFetchLatestChats() {
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const summary = yield* select(getChatsSummary)
+    let before: string | undefined
+    let hasMoreChats = true
+    let data: UserChat[] = []
+    let firstResponse: TypedCommsResponse<UserChat[]> | undefined
+    while (hasMoreChats) {
+      const response = yield* call([sdk.chats, sdk.chats.getAll], {
+        before,
+        after: summary?.next_cursor,
+        limit: CHAT_PAGE_SIZE
+      })
+      hasMoreChats = response.data.length > 0
+      before = summary?.prev_cursor
+      data = data.concat(response.data)
+      if (!firstResponse) {
+        firstResponse = response
+      }
+    }
+    yield* fetchUsersForChats(data)
+    yield* put(
+      fetchMoreChatsSucceeded({
+        ...firstResponse,
+        data
+      })
+    )
+  } catch (e) {
+    console.error('fetchLatestChatsFailed', e)
+    yield* put(fetchMoreChatsFailed())
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error
+    })
+  }
+}
+
 function* doFetchMoreChats() {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -119,7 +167,7 @@ function* doFetchMoreChats() {
     const before = summary?.prev_cursor
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
       before,
-      limit: 30
+      limit: CHAT_PAGE_SIZE
     })
     yield* fetchUsersForChats(response.data)
     yield* put(fetchMoreChatsSucceeded(response))
@@ -134,6 +182,76 @@ function* doFetchMoreChats() {
   }
 }
 
+/**
+ * Gets all messages newer than what we currently have
+ */
+function* doFetchLatestMessages(
+  action: ReturnType<typeof fetchLatestMessages>
+) {
+  const { chatId } = action.payload
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+
+    // Update the chat too to keep everything in sync
+    yield* call(doFetchChat, { chatId })
+    const chat = yield* select((state) => getChat(state, chatId))
+    const after = chat?.messagesSummary?.next_cursor
+
+    // On first fetch of messages, we won't have an after cursor.
+    // Do `fetchMoreMessages` instead for initial fetch of messages and get all up to the first unread
+    if (!after) {
+      yield* call(doFetchMoreMessages, action)
+      return
+    }
+
+    let hasMoreUnread = true
+    let data: ChatMessage[] = []
+    let before: string | undefined
+    let firstResponse: TypedCommsResponse<ChatMessage[]> | undefined
+    while (hasMoreUnread) {
+      // This will get all messages sent after what we currently got, starting at the most recent,
+      // and batching by MESSAGE_PAGE_SIZE. Sends one extra request to get the 0 response but oh well
+      const response = yield* call([sdk.chats, sdk.chats.getMessages], {
+        chatId,
+        before,
+        after,
+        limit: MESSAGES_PAGE_SIZE
+      })
+      data = data.concat(response.data)
+      // If we have no more messages with our after filter, we're done
+      hasMoreUnread = response.data.length > 0
+      before = response.summary?.prev_cursor
+      if (!firstResponse) {
+        firstResponse = response
+      }
+    }
+    yield* put(
+      fetchMoreMessagesSucceeded({
+        chatId,
+        response: {
+          ...firstResponse,
+          data
+        }
+      })
+    )
+  } catch (e) {
+    console.error('fetchLatestChatMessagesFailed', e)
+    yield* put(fetchMoreMessagesFailed({ chatId }))
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error,
+      additionalInfo: {
+        chatId
+      }
+    })
+  }
+}
+
+/**
+ * Get older messages than what we currently have for a chat
+ */
 function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
   const { chatId } = action.payload
   try {
@@ -150,20 +268,20 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
     let hasMoreUnread = true
     let data: ChatMessage[] = []
     while (hasMoreUnread) {
-      const limit = 10
-      const response = yield* call([sdk.chats, sdk.chats!.getMessages], {
+      const response = yield* call([sdk.chats, sdk.chats.getMessages], {
         chatId,
         before,
-        limit
+        limit: MESSAGES_PAGE_SIZE
       })
       // Only save the last response summary. Pagination is one-way
       lastResponse = response
       data = data.concat(response.data)
       // If the unread count is greater than the previous fetched messages (next_cursor)
-      // plus this batch (limit), we should keep fetching
+      // plus this batch, we should keep fetching
       hasMoreUnread =
         !!chat?.unread_message_count &&
-        chat.unread_message_count > (response.summary?.next_count ?? 0) + limit
+        chat.unread_message_count >
+          (response.summary?.next_count ?? 0) + data.length
       before = response.summary?.prev_cursor
     }
     if (!lastResponse) {
@@ -179,7 +297,7 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
       })
     )
   } catch (e) {
-    console.error('fetchNewChatMessagesFailed', e)
+    console.error('fetchMoreChatMessagesFailed', e)
     yield* put(fetchMoreMessagesFailed({ chatId }))
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -631,11 +749,19 @@ function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
 
-function* watchFetchChats() {
+function* watchFetchLatestChats() {
+  yield takeLatest(fetchLatestChats, doFetchLatestChats)
+}
+
+function* watchFetchMoreChats() {
   yield takeLatest(fetchMoreChats, doFetchMoreChats)
 }
 
-function* watchFetchChatMessages() {
+function* watchFetchLatestMessages() {
+  yield takeEvery(fetchLatestMessages, doFetchLatestMessages)
+}
+
+function* watchFetchMoreMessages() {
   yield takeEvery(fetchMoreMessages, doFetchMoreMessages)
 }
 
@@ -683,8 +809,10 @@ export const sagas = () => {
   return [
     watchFetchUnreadMessagesCount,
     watchFetchChatIfNecessary,
-    watchFetchChats,
-    watchFetchChatMessages,
+    watchFetchLatestChats,
+    watchFetchMoreChats,
+    watchFetchLatestMessages,
+    watchFetchMoreMessages,
     watchSetMessageReaction,
     watchCreateChat,
     watchMarkChatAsRead,
