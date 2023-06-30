@@ -27,7 +27,7 @@ func TestRecovery(t *testing.T) {
 
 		blocknumber := big.NewInt(14412789)
 
-		pk, err := findAddUserTransaction(context.Background(), blocknumber, "")
+		pk, err := findAddUserTransaction(context.Background(), blocknumber, "0xB5f6A1B59FeAc1453Cb9E768b8f0cF7fc172DcA3")
 		assert.NoError(t, err)
 		fmt.Println(pk)
 	}
@@ -44,7 +44,7 @@ func TestRecovery(t *testing.T) {
 
 	// EM on audius chain
 	{
-		txhash := "0xec9daecc8269b9629baff0e53abaaa8e1bced65fb3fa48aa1950bfe8ada4f075"
+		txhash := "0xbf7f9501da15bbafac583276f0e303ed1827dbe79d04a6d62d4dcd586515756a"
 		wallet := "0xbb70390859ce84afc5d47c2eea6c89462faa6c7e"
 
 		pk, err := recoverEntityManagerPubkey(acdcClient, txhash, wallet)
@@ -67,9 +67,9 @@ func TestRecoveryProd(t *testing.T) {
 	// addUser on POA
 	{
 		// 8592904
-		blocknumber := big.NewInt(8592904)
+		blocknumber := big.NewInt(29382239)
 
-		pk, err := findAddUserTransaction(context.Background(), blocknumber, "")
+		pk, err := findAddUserTransaction(context.Background(), blocknumber, "0x87c233438e9cf31a12bb085083056dc2169c9d56")
 		assert.NoError(t, err)
 		fmt.Println(pk)
 	}
