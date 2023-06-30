@@ -55,7 +55,7 @@ def _mock_response(json_data, raise_for_status=None):
 
 
 @mock.patch("src.utils.auth_helpers.requests")
-def test_update_track_delist_statuses_missing_user(mock_requests, app):
+def test_update_user_delist_statuses_missing_user(mock_requests, app):
     with app.app_context():
         db = get_db()
     _seed_db(db)
