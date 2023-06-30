@@ -24,6 +24,10 @@ func (proc *RPCProcessor) startSweeper() {
 	for {
 		// visit each host in turn
 		for _, peer := range proc.discoveryConfig.Peers() {
+			if peer.Host == proc.discoveryConfig.MyHost {
+				continue
+			}
+
 			logger := slog.With("host", peer.Host)
 			if err := proc.sweepHost(peer.Host); err != nil {
 				logger.Error("sweepHost failed", "err", err)
@@ -117,12 +121,12 @@ func (proc *RPCProcessor) sweeperApply(op *schema.RpcLog) {
 		// if apply error, record in rpc_error table
 		logger.Error("sweep apply error", "err", err, "sig", op.Sig)
 		if err := insertRpcError(op, err); err != nil {
-			logger.Error("failed to insert rpc_error row", err)
+			logger.Error("failed to insert rpc_error row", "err", err)
 		}
 	} else {
 		// if ok, clear any prior error
 		if ok, err := db.Conn.Exec(`delete from rpc_error where sig = $1`, op.Sig); err != nil {
-			logger.Error("failed to clear rpc_error rows", err)
+			logger.Error("failed to clear rpc_error rows", "err", err)
 		} else if c, _ := ok.RowsAffected(); c > 0 {
 			logger.Info("rpc_error resolved")
 		}
