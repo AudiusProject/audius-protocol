@@ -107,8 +107,7 @@ export class EntityManager extends Base {
   /** Playlist */
 
   async createPlaylist(
-    playlist: PlaylistParam,
-    storageV2UploadEnabled = false
+    playlist: PlaylistParam
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -123,17 +122,9 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
       if (playlist?.artwork?.file) {
-        if (storageV2UploadEnabled) {
-          const updatedPlaylistImage =
-            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
-          dirCID = updatedPlaylistImage.id
-        } else {
-          const updatedPlaylistImage = await this.creatorNode.uploadImage(
-            playlist.artwork.file,
-            true // square
-          )
-          dirCID = updatedPlaylistImage.dirCID
-        }
+        const updatedPlaylistImage =
+          await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
+        dirCID = updatedPlaylistImage.id
       }
       const tracks = this.mapTimestamps(playlist.playlist_contents.track_ids)
 
@@ -149,16 +140,9 @@ export class EntityManager extends Base {
 
       this.creatorNode.validatePlaylistSchema(metadata)
 
-      let metadataCid = ''
-      if (storageV2UploadEnabled) {
-        metadataCid = (
-          await Utils.fileHasher.generateMetadataCidV1(metadata)
-        ).toString()
-      } else {
-        const { metadataMultihash } =
-          await this.creatorNode.uploadPlaylistMetadata(metadata)
-        metadataCid = metadataMultihash
-      }
+      const metadataCid = (
+        await Utils.fileHasher.generateMetadataCidV1(metadata)
+      ).toString()
 
       const entityManagerMetadata = JSON.stringify({
         cid: metadataCid,
@@ -202,8 +186,7 @@ export class EntityManager extends Base {
   }
 
   async updatePlaylist(
-    playlist: PlaylistParam,
-    storageV2UploadEnabled = false
+    playlist: PlaylistParam
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -224,17 +207,9 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
       if (playlist?.artwork?.file) {
-        if (storageV2UploadEnabled) {
-          const updatedPlaylistImage =
-            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
-          dirCID = updatedPlaylistImage.id
-        } else {
-          const updatedPlaylistImage = await this.creatorNode.uploadImage(
-            playlist.artwork.file,
-            true // square
-          )
-          dirCID = updatedPlaylistImage.dirCID
-        }
+        const updatedPlaylistImage =
+          await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
+        dirCID = updatedPlaylistImage.id
       }
 
       const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids)
@@ -250,16 +225,9 @@ export class EntityManager extends Base {
       }
       this.creatorNode.validatePlaylistSchema(metadata)
 
-      let metadataCid = ''
-      if (storageV2UploadEnabled) {
-        metadataCid = (
-          await Utils.fileHasher.generateMetadataCidV1(metadata)
-        ).toString()
-      } else {
-        const { metadataMultihash } =
-          await this.creatorNode.uploadPlaylistMetadata(metadata)
-        metadataCid = metadataMultihash
-      }
+      const metadataCid = (
+        await Utils.fileHasher.generateMetadataCidV1(metadata)
+      ).toString()
 
       const entityManagerMetadata = JSON.stringify({
         cid: metadataCid,
