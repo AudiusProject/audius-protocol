@@ -13,8 +13,12 @@ import {
 import {
   FollowUserRequest,
   FollowUserSchema,
+  SubscribeToUserRequest,
+  SubscribeToUserSchema,
   UnfollowUserRequest,
-  UnfollowUserSchema
+  UnfollowUserSchema,
+  UnsubscribeFromUserRequest,
+  UnsubscribeFromUserSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -70,6 +74,58 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: followeeUserId,
       action: Action.UNFOLLOW,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Subscribe to a user
+   */
+  async subscribeToUser(
+    requestParameters: SubscribeToUserRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, subscribeeUserId } = parseRequestParameters(
+      'subscribeToUser',
+      SubscribeToUserSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: subscribeeUserId,
+      action: Action.SUBSCRIBE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Unsubscribe from a user
+   */
+  async unsubscribeFromUser(
+    requestParameters: UnsubscribeFromUserRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, subscribeeUserId } = parseRequestParameters(
+      'unsubscribeFromUser',
+      UnsubscribeFromUserSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: subscribeeUserId,
+      action: Action.UNSUBSCRIBE,
       auth: this.auth,
       ...writeOptions
     })

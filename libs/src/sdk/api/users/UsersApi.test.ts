@@ -76,4 +76,50 @@ describe('UsersApi', () => {
       }).rejects.toThrow()
     })
   })
+
+  describe('subscribeToUser', () => {
+    it('subscribes to a user if valid metadata is provided', async () => {
+      const result = await users.subscribeToUser({
+        userId: '7eP5n',
+        subscribeeUserId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.subscribeToUser({
+          userId: '7eP5n',
+          subscribeeUserId: 1 as any
+        })
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('unsubscribeFromUser', () => {
+    it('unsubscribes from a user if valid metadata is provided', async () => {
+      const result = await users.unsubscribeFromUser({
+        userId: '7eP5n',
+        subscribeeUserId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.unsubscribeFromUser({
+          userId: '7eP5n',
+          subscribeeUserId: 1 as any
+        })
+      }).rejects.toThrow()
+    })
+  })
 })

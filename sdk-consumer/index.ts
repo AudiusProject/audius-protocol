@@ -12,6 +12,8 @@ import {
   UploadTrackRequest,
   DeleteTrackRequest,
   developmentConfig,
+  SubscribeToUserRequest,
+  UnsubscribeFromUserRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -231,3 +233,38 @@ app.post<UnfollowUserRequest>("/unfollowUser", async (req, res) => {
     res.send((e as any).message);
   }
 });
+
+app.post<SubscribeToUserRequest>("/subscribeToUser", async (req, res) => {
+  try {
+    const subscribeToUserRequest: SubscribeToUserRequest = {
+      userId: req.body.userId,
+      subscribeeUserId: req.body.subscribeeUserId,
+    };
+    const result = await audiusSdk.users.subscribeToUser(
+      subscribeToUserRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnsubscribeFromUserRequest>(
+  "/unsubscribeFromUser",
+  async (req, res) => {
+    try {
+      const unsubscribeFromUserRequest: UnsubscribeFromUserRequest = {
+        userId: req.body.userId,
+        subscribeeUserId: req.body.subscribeeUserId,
+      };
+      const result = await audiusSdk.users.unsubscribeFromUser(
+        unsubscribeFromUserRequest
+      );
+      res.send(result);
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
