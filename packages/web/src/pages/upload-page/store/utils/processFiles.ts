@@ -1,56 +1,12 @@
-import { newTrackMetadata } from '@audius/common'
+import {
+  newTrackMetadata,
+  ALLOWED_MAX_AUDIO_SIZE_BYTES,
+  ALLOWED_AUDIO_FILE_EXTENSIONS,
+  ALLOWED_AUDIO_FILE_MIME
+} from '@audius/common'
 import jsmediatags from 'jsmediatags'
 
 import { resizeImage } from 'utils/imageProcessingUtil'
-
-const ALLOWED_MAX_AUDIO_SIZE_BYTES = 250 * 1000 * 1000
-
-const ALLOWED_AUDIO_FILE_EXTENSIONS = [
-  'mp2',
-  'mp3',
-  // mp4
-  'mp4',
-  'm4a',
-  'm4p',
-  'm4b',
-  'm4r',
-  'm4v',
-  // wave file extensiosn
-  'wav',
-  'wave',
-  // flac file extensiosn
-  'flac',
-  // aiff file extensiosn
-  'aif',
-  'aiff',
-  'aifc',
-  // Ogg file extensiosn
-  'ogg',
-  'ogv',
-  'oga',
-  'ogx',
-  'ogm',
-  'spx',
-  'opus',
-  // aac
-  '3gp',
-  'aac',
-  // amr
-  'amr',
-  '3ga',
-  // amrwb
-  'awb',
-  // xwma
-  'xwma',
-  // webm
-  'webm',
-  // mpegts
-  'ts',
-  'tsv',
-  'tsa'
-]
-
-const ALLOWED_AUDIO_FILE_MIME = /^audio/
 
 const readMediaTags = (file: File): Promise<any> => {
   return new Promise(function (resolve, reject) {
