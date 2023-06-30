@@ -152,3 +152,30 @@ export const DeleteTrackSchema = z
   .strict()
 
 export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>
+
+export const SaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        /**
+         * Is this a save of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
+        isSaveOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type SaveTrackRequest = z.input<typeof SaveTrackSchema>
+
+export const UnsaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnsaveTrackRequest = z.input<typeof UnsaveTrackSchema>

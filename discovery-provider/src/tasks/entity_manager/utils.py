@@ -5,6 +5,7 @@ from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
@@ -363,3 +364,28 @@ def copy_record(
         else:
             setattr(record_copy, key, value)
     return record_copy
+
+
+def validate_signer(params: ManageEntityParameters):
+    # Ensure the signer is either the user or authorized to perform action for the user
+    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
+    signer = params.signer.lower()
+    signer_matches_user = wallet and wallet.lower() == signer
+    if signer_matches_user:
+        params.logger.set_context("isApp", "false")
+    else:
+        params.logger.set_context("isApp", "unknown")
+        grant_key = (signer, params.user_id)
+        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        if is_signer_authorized:
+            grant = params.existing_records[EntityType.GRANT][grant_key]
+            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+                raise IndexingValidationError(
+                    f"Signer is not authorized to perform action for user {params.user_id}"
+                )
+            params.logger.set_context("isApp", "true")
+        else:
+            raise IndexingValidationError(
+                f"Signer does not match user {params.user_id} or an authorized wallet"
+            )

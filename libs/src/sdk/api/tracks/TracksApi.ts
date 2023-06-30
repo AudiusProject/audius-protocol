@@ -13,6 +13,9 @@ import {
   createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
+  SaveTrackRequest,
+  SaveTrackSchema,
+  UnsaveTrackSchema,
   UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
@@ -241,6 +244,59 @@ export class TracksApi extends TracksApiWithoutStream {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DELETE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Favorite a track
+   */
+  async saveTrack(
+    requestParameters: SaveTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId, metadata } = parseRequestParameters(
+      'saveTrack',
+      SaveTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.SAVE,
+      metadata: metadata && JSON.stringify(metadata),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Unfavorite a track
+   */
+  async unsaveTrack(
+    requestParameters: SaveTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = parseRequestParameters(
+      'unsaveTrack',
+      UnsaveTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UNSAVE,
       auth: this.auth,
       ...writeOptions
     })

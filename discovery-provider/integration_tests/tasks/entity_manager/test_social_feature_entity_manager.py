@@ -143,6 +143,21 @@ def test_index_valid_social_features(app, mocker):
                 )
             },
         ],
+        # Delegated social action
+        "SaveTrackTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Save",
+                        "_metadata": "",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
         "UnrepostPlaylistTx3": [
             {
                 "args": AttributeDict(
@@ -212,7 +227,21 @@ def test_index_valid_social_features(app, mocker):
         "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
         "playlists": [{"playlist_id": 1, "playlist_owner_id": 11}],
         "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
+        "developer_apps": [
+            {
+                "user_id": 1,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+        ],
+        "grants": [
+            {
+                "user_id": 2,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            }
+        ],
     }
+
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
@@ -302,16 +331,22 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify saves
         all_saves: List[Save] = session.query(Save).all()
-        assert len(all_saves) == 2
+        assert len(all_saves) == 3
 
         current_saves: List[Save] = (
             session.query(Save).filter(Save.is_current == True).all()
         )
-        assert len(current_saves) == 1
+        assert len(current_saves) == 2
         current_save = current_saves[0]
         assert current_save.is_delete == True
         assert current_save.save_type == EntityType.TRACK.value.lower()
         assert current_save.save_item_id == 1
+        assert current_save.user_id == 1
+
+        current_save = current_saves[1]
+        assert current_save.save_type == EntityType.TRACK.value.lower()
+        assert current_save.save_item_id == 1
+        assert current_save.user_id == 2
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
