@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
 
 import { collectionApiReducer } from './collection'
-import { developerAppsApiReducer } from './developer-apps'
+import { developerAppsApiReducer } from './developerApps'
 import { relatedArtistsApiReducer } from './relatedArtists'
 import { trackApiReducer } from './track'
 import { userApiReducer } from './user'
