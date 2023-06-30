@@ -61,7 +61,7 @@ latest_sol_rewards_manager_backfill_slot_key = (
 LAST_REACTIONS_INDEX_TIME_KEY = "reactions_last_index_time"
 LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
 
-# Delist status cursor monitoring key
+# Delist status cursor monitoring keys
 USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY = "user_delist_status_cursor_check_timestamp_key"
 USER_DELIST_STATUS_CURSOR_CHECK_KEY = "user_delist_status_cursor_check_key"
 TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY = "track_delist_status_cursor_check_timestamp_key"
