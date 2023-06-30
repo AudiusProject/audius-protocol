@@ -499,7 +499,7 @@ class TrackStream(Resource):
             stream_url = urljoin(creator_node, path)
             headers = {"Range": "bytes=0-1"}
             try:
-                response = requests.get(stream_url, headers=headers)
+                response = requests.get(stream_url + "&skip_play_count=true", headers=headers)
                 if response.status_code == 206:
                     return stream_url
             except:
