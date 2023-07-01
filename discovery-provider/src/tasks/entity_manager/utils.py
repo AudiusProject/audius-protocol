@@ -72,7 +72,6 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     USER_REPLICA_SET = "UserReplicaSet"
-    USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -146,7 +145,7 @@ class ManageEntityParameters:
         block_number: int,
         event_blockhash: str,
         txhash: str,
-        logger: StructuredLogger
+        logger: StructuredLogger,
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")

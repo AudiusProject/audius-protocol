@@ -150,7 +150,7 @@ def entity_manager_update(
                         block_number,
                         event_blockhash,
                         txhash,
-                        logger
+                        logger,
                     )
 
                     # update logger context with this tx event
@@ -271,9 +271,7 @@ def entity_manager_update(
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
-                    logger.info(
-                        f"failed to process transaction error {e}"
-                    )
+                    logger.info(f"failed to process transaction error {e}")
         # compile records_to_save
         records_to_save = []
         for record_type, record_dict in new_records.items():
@@ -416,9 +414,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(
                         raw_grantee_address.lower()
                     )
-                    entities_to_fetch[EntityType.USER_WALLET].add(
-                        raw_grantee_address.lower()
-                    )
                 else:
                     logger.error(
                         "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
@@ -494,20 +489,6 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.USER] = {user.user_id: user for user in users}
-
-    # USERS BY WALLET
-    if entities_to_fetch[EntityType.USER_WALLET]:
-        users_by_wallet: List[User] = (
-            session.query(User)
-            .filter(
-                func.lower(User.wallet).in_(entities_to_fetch[EntityType.USER_WALLET]),
-                User.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.USER_WALLET] = {
-            (cast(str, user.wallet)).lower(): user.user_id for user in users_by_wallet
-        }
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:
