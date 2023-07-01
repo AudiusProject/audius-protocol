@@ -251,6 +251,12 @@ export interface UserFull {
     doesCurrentUserFollow: boolean;
     /**
      * 
+     * @type {boolean}
+     * @memberof UserFull
+     */
+    doesCurrentUserSubscribe: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof UserFull
      */
@@ -356,6 +362,7 @@ export function instanceOfUserFull(value: object): boolean {
     isInstance = isInstance && "isStorageV2" in value;
     isInstance = isInstance && "currentUserFolloweeFollowCount" in value;
     isInstance = isInstance && "doesCurrentUserFollow" in value;
+    isInstance = isInstance && "doesCurrentUserSubscribe" in value;
     isInstance = isInstance && "handleLc" in value;
     isInstance = isInstance && "updatedAt" in value;
     isInstance = isInstance && "hasCollectibles" in value;
@@ -409,6 +416,7 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'creatorNodeEndpoint': !exists(json, 'creator_node_endpoint') ? undefined : json['creator_node_endpoint'],
         'currentUserFolloweeFollowCount': json['current_user_followee_follow_count'],
         'doesCurrentUserFollow': json['does_current_user_follow'],
+        'doesCurrentUserSubscribe': json['does_current_user_subscribe'],
         'handleLc': json['handle_lc'],
         'updatedAt': json['updated_at'],
         'coverPhotoSizes': !exists(json, 'cover_photo_sizes') ? undefined : json['cover_photo_sizes'],
@@ -468,6 +476,7 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'creator_node_endpoint': value.creatorNodeEndpoint,
         'current_user_followee_follow_count': value.currentUserFolloweeFollowCount,
         'does_current_user_follow': value.doesCurrentUserFollow,
+        'does_current_user_subscribe': value.doesCurrentUserSubscribe,
         'handle_lc': value.handleLc,
         'updated_at': value.updatedAt,
         'cover_photo_sizes': value.coverPhotoSizes,
