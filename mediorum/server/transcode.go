@@ -91,10 +91,22 @@ func (ss *MediorumServer) startTranscoder() {
 					continue
 				}
 				// the first mirror with the full 320 downsample transcodes
-				full320Mirrors, _ := ss.rendezvous(full320CID)
-				if slices.Index(full320Mirrors, myHost) == 0 {
-					ss.logger.Info("got retranscode job", "id", upload.ID)
-					work <- upload
+				full320Preferred, _ := ss.rendezvous(full320CID)
+				for _, peer := range full320Preferred {
+					if peer != myHost && ss.hostHasBlob(peer, full320CID) {
+						// another peer before me in the preferred order has the file and will pick up the transcode job.
+						// break from iterating further because I should not do this job
+						break
+					}
+					if peer == myHost {
+						// if loop iterates until my host in the preferred order, pick up the job if I have the file
+						have, _ := ss.bucket.Exists(context.Background(), full320CID)
+						if have {
+							ss.logger.Info("got retranscode job", "id", upload.ID)
+							work <- upload
+						}
+						break
+					}
 				}
 			}
 		}
