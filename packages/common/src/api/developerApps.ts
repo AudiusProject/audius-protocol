@@ -4,12 +4,13 @@ import { createApi } from 'audius-query'
 import { ID } from 'models/Identifiers'
 import { encodeHashId } from 'utils/hashIds'
 
-const descriptionMaxLength = 128
+export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
+export const DEVELOPER_APP_NAME_MAX_LENGTH = 50
 
 export const developerAppSchema = z.object({
   userId: z.number(),
-  name: z.string(),
-  description: z.string().max(descriptionMaxLength).optional()
+  name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
+  description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
 })
 
 export type DeveloperApp = {

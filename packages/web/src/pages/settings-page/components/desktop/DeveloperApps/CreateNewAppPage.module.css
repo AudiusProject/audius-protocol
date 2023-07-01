@@ -14,7 +14,19 @@
   stroke: var(--white);
 }
 
-.footer {
+.actionsContainer {
   display: flex;
   gap: var(--unit-2);
+}
+
+.errorContainer {
+  text-align: center;
+}
+
+.errorText {
+  text-align: center;
+  font-weight: var(--font-bold);
+  color: var(--accent-red);
+  font-size: var(--font-m);
+  line-height: 120%;
 }

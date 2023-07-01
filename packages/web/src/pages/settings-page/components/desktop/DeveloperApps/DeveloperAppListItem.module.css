@@ -30,6 +30,8 @@
   font-size: var(--font-m);
   font-weight: var(--font-medium);
   color: var(--neutral);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .listItemActions {
