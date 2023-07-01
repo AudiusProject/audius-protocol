@@ -30,7 +30,7 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 
-import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color-Deprecated@2x.png'
+import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

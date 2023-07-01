@@ -6,7 +6,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import horizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color-Deprecated@2x.png'
+import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   AUDIUS_HOME_LINK,
   AUDIUS_TWITTER_LINK,

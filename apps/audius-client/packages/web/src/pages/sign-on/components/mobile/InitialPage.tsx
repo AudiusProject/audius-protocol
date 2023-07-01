@@ -13,7 +13,7 @@ import cn from 'classnames'
 import { Spring } from 'react-spring/renderprops'
 
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
-import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color-Deprecated.png'
+import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
 import signupCtaImage from 'assets/img/signUpCTA.png'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import Input from 'components/data-entry/Input'

@@ -8,7 +8,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color-Deprecated@2x.png'
+import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,

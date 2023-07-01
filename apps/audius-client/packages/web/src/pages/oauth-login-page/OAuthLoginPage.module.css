@@ -12,7 +12,7 @@
 }
 
 .titleContainer {
-  margin-top: var(--unit-8);
+  margin-top: var(--unit-4);
   text-align: center;
 }
 
@@ -21,6 +21,9 @@
   font-size: var(--font-l);
   font-weight: var(--font-bold);
   line-height: 140%;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .loadingStateContainer {
