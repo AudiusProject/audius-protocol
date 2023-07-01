@@ -1,8 +1,7 @@
 import json
-import logging
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple, cast
+from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session

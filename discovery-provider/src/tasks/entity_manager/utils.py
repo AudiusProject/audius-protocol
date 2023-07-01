@@ -102,7 +102,6 @@ class RecordDict(TypedDict):
 class ExistingRecordDict(TypedDict):
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
-    UserByWallet: Dict[str, User]
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
@@ -122,7 +121,6 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
     DeveloperApp: Set[str]
-    UserByWallet: Set[str]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
