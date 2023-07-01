@@ -153,7 +153,23 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 				ss.logger.Warn("missing full transcoded mp3 cid in retranscode job. skipping", "id", upload.ID)
 				continue
 			}
-			full320Mirrors, _ := ss.rendezvous(full320CID)
+			// manually deduce the full 320kbps file's mirrors since we don't persist this information
+			full320Preferred, _ := ss.rendezvous(full320CID)
+			full320Mirrors := []string{}
+			for _, peer := range full320Preferred {
+				if peer != myHost && ss.hostHasBlob(peer, full320CID) {
+					full320Mirrors = append(full320Mirrors, peer)
+				}
+				if peer == myHost {
+					have, _ := ss.bucket.Exists(context.Background(), full320CID)
+					if have {
+						full320Mirrors = append(full320Mirrors, peer)
+					}
+				}
+				if len(full320Mirrors) == ss.Config.ReplicationFactor {
+					break
+				}
+			}
 			myIdx = slices.Index(full320Mirrors, myHost)
 		}
 
