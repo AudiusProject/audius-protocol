@@ -105,8 +105,13 @@ const generateAudiusLogoSvg = (size: 'small' | 'medium' | 'large') => {
 </svg>`
 }
 
-const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
+
+type OAuthEnv = 'production' | 'staging'
+const OAUTH_URL = {
+  production: 'https://audius.co/oauth/auth',
+  staging: 'https://staging.audius.co/oauth/auth'
+} as Record<OAuthEnv, string>
 
 type OAuthConfig = {
   appName?: string
@@ -120,6 +125,7 @@ export class OAuth {
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
   apiKey: string | null
+  env: OAuthEnv = 'production'
 
   constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
@@ -136,13 +142,16 @@ export class OAuth {
 
   init({
     successCallback,
-    errorCallback
+    errorCallback,
+    env = 'production'
   }: {
     successCallback: LoginSuccessCallback
     errorCallback?: LoginErrorCallback
+    env?: OAuthEnv
   }) {
     this.loginSuccessCallback = successCallback
     this.loginErrorCallback = errorCallback ?? null
+    this.env = env
     window.addEventListener(
       'message',
       (e: MessageEvent) => {
@@ -208,7 +217,9 @@ export class OAuth {
       this.apiKey ? 'api_key' : 'app_name'
     }=${appIdURISafe}`
     const scopeUriParam = scope.includes('write') ? 'write' : 'read'
-    const fullOauthUrl = `${OAUTH_URL}?scope=${scopeUriParam}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
+    const fullOauthUrl = `${
+      OAUTH_URL[this.env]
+    }?scope=${scopeUriParam}&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&${appIdURIParam}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
     this.popupCheckInterval = setInterval(() => {
@@ -290,7 +301,7 @@ export class OAuth {
   }
 
   async _receiveMessage(event: MessageEvent) {
-    const oauthOrigin = new URL(OAUTH_URL).origin
+    const oauthOrigin = new URL(OAUTH_URL[this.env]).origin
     if (
       event.origin !== oauthOrigin ||
       event.source !== this.activePopupWindow ||
