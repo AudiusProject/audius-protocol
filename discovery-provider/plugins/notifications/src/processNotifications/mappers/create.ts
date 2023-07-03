@@ -66,7 +66,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     let ownerId: number | undefined
@@ -140,7 +140,13 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       const title = 'New Artist Update'
       const body = description
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        userId,
+        title,
+        body
+      )
 
       // If the user has devices to the notification to, proceed
       if (

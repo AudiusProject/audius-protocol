@@ -38,7 +38,9 @@ export class Listener {
     logger.info('did connect')
 
     this.client.on('notification', async (msg: Notification) => {
-      const { notification_id }: { notification_id: number } = JSON.parse(msg.payload)
+      const { notification_id }: { notification_id: number } = JSON.parse(
+        msg.payload
+      )
       const notification = await getNotification(this.client, notification_id)
       if (notification !== null) {
         this.handler(notification)
@@ -56,7 +58,10 @@ export class Listener {
   }
 }
 
-const getNotification = async (client: Client, notificationId: number): Promise<NotificationRow | null> => {
+const getNotification = async (
+  client: Client,
+  notificationId: number
+): Promise<NotificationRow | null> => {
   const query = 'SELECT * FROM notification WHERE id = $1 limit 1;'
   const values = [notificationId] // parameterized query
   try {

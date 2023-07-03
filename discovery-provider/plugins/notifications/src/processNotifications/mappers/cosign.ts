@@ -41,7 +41,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -85,7 +85,13 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
 
     const title = 'New Track Co-Sign! 🔥'
     const body = `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.remixUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.remixUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (

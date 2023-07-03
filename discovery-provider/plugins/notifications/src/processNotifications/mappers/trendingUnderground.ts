@@ -44,7 +44,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -89,7 +89,13 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     const body = `${tracks[this.trackId]?.title} is #${
       this.rank
     } on Underground Trending right now!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (

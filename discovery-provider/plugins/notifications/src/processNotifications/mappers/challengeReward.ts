@@ -93,7 +93,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -125,8 +125,14 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
     const title = this.challengeInfoMap[this.challengeId].title
     const body = this.getPushBodyText()
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
-    
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({

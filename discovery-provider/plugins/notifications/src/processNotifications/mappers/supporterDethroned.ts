@@ -40,7 +40,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -81,7 +81,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     const body = `${capitalize(
       newTopSupporterHandle
     )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`
-    await sendBrowserNotification(isBrowserPushEnabled, 
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
       userNotificationSettings,
       this.receiverUserId,
       title,

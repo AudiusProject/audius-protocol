@@ -520,7 +520,7 @@ export async function createChat(
         created_at: timestamp.toISOString(),
         invited_by_user_id: user1,
         invite_code: chatId,
-        user_id: user1,
+        user_id: user1
       },
       {
         chat_id: chatId,

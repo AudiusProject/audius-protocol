@@ -27,7 +27,7 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     // NOTE: there is no current tier change push notification

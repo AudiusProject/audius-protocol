@@ -38,7 +38,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -70,8 +70,19 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
 
     const title = 'New Follow'
     const body = `${users[this.followerUserId].name} followed you`
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'followers')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'followers'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed

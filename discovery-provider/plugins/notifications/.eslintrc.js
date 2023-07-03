@@ -9,6 +9,6 @@ module.exports = {
   plugins: ['@typescript-eslint'],
   root: true,
   rules: {
-    "@typescript-eslint/ban-ts-comment": "warn"
+    '@typescript-eslint/ban-ts-comment': 'warn'
   }
 }

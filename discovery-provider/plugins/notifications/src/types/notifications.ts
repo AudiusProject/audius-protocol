@@ -197,7 +197,6 @@ export type ListenCountMilestoneNotifications = {
   threshold: number
 }
 
-
 export type TierChangeNotification = {
   new_tier: string
   new_tier_value: number

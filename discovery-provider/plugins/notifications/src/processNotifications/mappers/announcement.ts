@@ -19,13 +19,16 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 const getEnv = (envVar: string | undefined, defaultVal?: boolean): boolean => {
   if (envVar === undefined && defaultVal === undefined) return true
   if (envVar === undefined) return defaultVal
-  return envVar.toLowerCase() === "true"
+  return envVar.toLowerCase() === 'true'
 }
 
 export const configureAnnouncement = () => {
   const dryRun = getEnv(process.env.ANNOUNCEMENTS_DRY_RUN)
-  const announcementEmailEnabled = getEnv(process.env.ANNOUNCEMENTS_EMAIL_ENABLED, false)
-  logger.info(`announcements configured ${dryRun ? "" : "not"} for dry run`)
+  const announcementEmailEnabled = getEnv(
+    process.env.ANNOUNCEMENTS_EMAIL_ENABLED,
+    false
+  )
+  logger.info(`announcements configured ${dryRun ? '' : 'not'} for dry run`)
   globalThis.announcementDryRun = dryRun
   globalThis.announcementEmailEnabled = announcementEmailEnabled
 }
@@ -34,7 +37,6 @@ type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
 }
 export class Announcement extends BaseNotification<AnnouncementNotificationRow> {
-
   constructor(
     dnDB: Knex,
     identityDB: Knex,
@@ -47,11 +49,14 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
-    const totalUsers = await this.dnDB('users').max('user_id').where('is_current', true).andWhere('is_deactivated', false)
+    const totalUsers = await this.dnDB('users')
+      .max('user_id')
+      .where('is_current', true)
+      .andWhere('is_deactivated', false)
 
     // convert to number
     const totalCurrentUsers = parseInt(totalUsers[0].max as string)
@@ -78,17 +83,24 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       offset = offset + pageCount
 
       const validReceiverUserIds = res.map((user) => user.user_id)
-      logger.info(`received until user ${validReceiverUserIds[validReceiverUserIds.length - 1]}`)
+      logger.info(
+        `received until user ${
+          validReceiverUserIds[validReceiverUserIds.length - 1]
+        }`
+      )
 
       const lastUserFromPage = res[res.length - 1]
       if (lastUserFromPage === undefined) {
-        logger.info("no last user found")
+        logger.info('no last user found')
         break
       }
       lastUser = lastUserFromPage.user_id
 
       if (!isDryRun) {
-        await this.broadcastAnnouncement(validReceiverUserIds, isLiveEmailEnabled)
+        await this.broadcastAnnouncement(
+          validReceiverUserIds,
+          isLiveEmailEnabled
+        )
       }
 
       if (validReceiverUserIds.includes(maxUserId)) {
@@ -113,14 +125,27 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   async broadcastAnnouncement(userIds: number[], isLiveEmailEnabled: boolean) {
-    const userNotificationSettings = await buildUserNotificationSettings(this.identityDB, userIds)
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      userIds
+    )
     for (const userId of userIds) {
-      await this.broadcastPushNotificationAnnouncements(userId, userNotificationSettings)
-      await this.broadcastEmailAnnouncements(isLiveEmailEnabled, userId, userNotificationSettings)
+      await this.broadcastPushNotificationAnnouncements(
+        userId,
+        userNotificationSettings
+      )
+      await this.broadcastEmailAnnouncements(
+        isLiveEmailEnabled,
+        userId,
+        userNotificationSettings
+      )
     }
   }
 
-  async broadcastPushNotificationAnnouncements(userId: number, userNotificationSettings: UserNotificationSettings) {
+  async broadcastPushNotificationAnnouncements(
+    userId: number,
+    userNotificationSettings: UserNotificationSettings
+  ) {
     if (
       userNotificationSettings.shouldSendPushNotification({
         receiverUserId: userId
@@ -156,7 +181,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     }
   }
 
-  async broadcastEmailAnnouncements(isLiveEmailEnabled: boolean, userId: number, userNotificationSettings: UserNotificationSettings) {
+  async broadcastEmailAnnouncements(
+    isLiveEmailEnabled: boolean,
+    userId: number,
+    userNotificationSettings: UserNotificationSettings
+  ) {
     if (
       isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmailAtFrequency({
@@ -185,18 +214,22 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
  * fetches user rows based on pagination parameters, control over which page is elevated to
  * the caller
  * @param dnDb discovery node db
- * @param offset the start of this "window" of user ids, user ids aren't created 
+ * @param offset the start of this "window" of user ids, user ids aren't created
  * in order anymore but they're still numeric and unique and thus can be paginated through
  * in this way
  * @param page_count how many records are returned in (default) ascending order after the offset
  * @returns a minified version of UserRow for usage in announcements
  */
-export const fetchUsersPage = async (dnDb: Knex, lastUser: number, pageCount: number): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
-    await dnDb
-      .select('name', 'is_deactivated', 'user_id')
-      .from<UserRow>('users')
-      .where('user_id', '>', lastUser)
-      .andWhere('is_current', true)
-      .andWhere('is_deactivated', false)
-      .limit(pageCount)
-      .orderBy('user_id')
+export const fetchUsersPage = async (
+  dnDb: Knex,
+  lastUser: number,
+  pageCount: number
+): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
+  await dnDb
+    .select('name', 'is_deactivated', 'user_id')
+    .from<UserRow>('users')
+    .where('user_id', '>', lastUser)
+    .andWhere('is_current', true)
+    .andWhere('is_deactivated', false)
+    .limit(pageCount)
+    .orderBy('user_id')
