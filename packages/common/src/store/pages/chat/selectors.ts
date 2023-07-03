@@ -307,8 +307,8 @@ export const getCanSendMessage = createSelector(
   ) => {
     if (!userId) {
       return {
-        canSendMessage: false,
-        callToAction: ChatPermissionAction.NONE
+        canSendMessage: true,
+        callToAction: ChatPermissionAction.NOT_APPLICABLE
       }
     }
     const isBlockee = blockees.includes(userId)
