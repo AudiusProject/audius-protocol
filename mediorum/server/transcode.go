@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -189,7 +190,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		upload.Error = errMsg.Error()
 		upload.Status = JobStatusError
 		ss.crud.Update(upload)
-		logger.Error("transcode error", "err", err)
+		logger.Error("transcode error", "err", errMsg.Error())
 		return errMsg
 	}
 
@@ -260,46 +261,86 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			"-progress", "pipe:2",
 			destPath)
 
-		cmd.Stdout = os.Stdout
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			return onError(err, "cmd.StdoutPipe")
+		}
 
-		// read ffmpeg progress
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
-			logger.Error("progress err", "err", err)
-		} else if upload.FFProbe != nil {
-			durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
-			durationUs := durationSeconds * 1000 * 1000
-			go func() {
-				stderrLines := bufio.NewScanner(stderr)
-				for stderrLines.Scan() {
-					line := stderrLines.Text()
+			return onError(err, "cmd.StderrPipe")
+		}
+
+		err = cmd.Start()
+		if err != nil {
+			return onError(err, "cmd.Start")
+		}
+
+		// WaitGroup to make sure all stdout/stderr processing is done before cmd.Wait() is called
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		// Log stdout
+		go func() {
+			defer wg.Done()
+			var stdoutBuf bytes.Buffer
+			stdoutLines := bufio.NewScanner(stdout)
+			for stdoutLines.Scan() {
+				stdoutBuf.WriteString(stdoutLines.Text())
+				stdoutBuf.WriteString("\n")
+			}
+			if err := stdoutLines.Err(); err != nil {
+				logger.Error("stdoutLines.Scan", "err", err)
+			}
+			logger.Info("stdout lines: " + stdoutBuf.String())
+		}()
+
+		// Log stderr and parse it to update transcode progress
+		go func() {
+			defer wg.Done()
+			var stderrBuf bytes.Buffer
+			stderrLines := bufio.NewScanner(stderr)
+
+			durationUs := float64(0)
+			if upload.FFProbe != nil {
+				durationSeconds := cast.ToFloat64(upload.FFProbe.Format.Duration)
+				durationUs = durationSeconds * 1000 * 1000
+			}
+
+			for stderrLines.Scan() {
+				line := stderrLines.Text()
+				stderrBuf.WriteString(line)
+				stderrBuf.WriteString("\n")
+
+				if upload.FFProbe != nil {
 					var u float64
 					fmt.Sscanf(line, "out_time_us=%f", &u)
 					if u > 0 && durationUs > 0 {
 						percent := u / durationUs
-						// ss.logger.Debug("transcode", "file", fileHash, "progress", percent)
+						// logger.Debug("transcode", "file", fileHash, "progress", percent)
 						upload.TranscodeProgress = percent
 						upload.TranscodedAt = time.Now().UTC()
 						ss.crud.Patch(upload)
 					}
 				}
+			}
 
-			}()
-		}
+			if err := stderrLines.Err(); err != nil {
+				logger.Error("stderrLines.Scan", "err", err)
+			}
+			logger.Error("stderr lines: " + stderrBuf.String())
+		}()
 
-		err = cmd.Start()
-		if err != nil {
-			return onError(err)
-		}
+		wg.Wait()
 
 		err = cmd.Wait()
 		if err != nil {
-			return onError(err)
+			return onError(err, "cmd.Wait")
 		}
 
 		dest, err := os.Open(destPath)
 		if err != nil {
-			return onError(err)
+			return onError(err, "os.Open")
 		}
 		defer dest.Close()
 
@@ -312,7 +353,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		resultKey := resultHash
 		mirrors, err := ss.replicateFile(resultHash, dest)
 		if err != nil {
-			return onError(err)
+			return onError(err, "replicateFile")
 		}
 
 		upload.TranscodeResults["320"] = resultKey
