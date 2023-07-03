@@ -50,62 +50,62 @@
     "whitelist": 1000
   },
   "FollowUser": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnfollowUser": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "SubscribeUser": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnsubscribeUser": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "SaveTrack": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnsaveTrack": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "RepostTrack": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnrepostTrack": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "SavePlaylist": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnsavePlaylist": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "RepostPlaylist": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
   "UnrepostPlaylist": {
-    "owner": 100,
+    "owner": 2000,
     "app": 10,
     "whitelist": 1000
   },
