@@ -182,6 +182,7 @@ const initializeApis = ({
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
+    services.storage,
     services.entityManager,
     services.auth
   )

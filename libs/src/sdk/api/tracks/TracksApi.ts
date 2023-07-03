@@ -32,9 +32,9 @@ import {
   EntityType,
   WriteOptions
 } from '../../services/EntityManager/types'
-import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { TracksUploader } from './TracksUploader'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -49,6 +49,8 @@ const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
 
 // Extend that new class
 export class TracksApi extends TracksApiWithoutStream {
+  private readonly tracksUploader: TracksUploader
+
   constructor(
     configuration: Configuration,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
@@ -57,6 +59,7 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly auth: AuthService
   ) {
     super(configuration)
+    this.tracksUploader = new TracksUploader(configuration)
   }
 
   /**
@@ -100,21 +103,13 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
+    const metadata = this.tracksUploader.transformTrackUploadMetadata(
+      parsedMetadata,
+      userId
+    )
 
     // Upload track audio and cover art to storage node
-    const [audioResp, coverArtResp] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: trackFile,
-            onProgress,
-            template: 'audio'
-          }),
-        (e) => {
-          console.log('Retrying uploadTrackAudio', e)
-        }
-      ),
+    const [coverArtResponse, audioResponse] = await Promise.all([
       retry3(
         async () =>
           await this.storage.uploadFile({
@@ -125,6 +120,17 @@ export class TracksApi extends TracksApiWithoutStream {
         (e) => {
           console.log('Retrying uploadTrackCoverArt', e)
         }
+      ),
+      retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: trackFile,
+            onProgress,
+            template: 'audio'
+          }),
+        (e) => {
+          console.log('Retrying uploadTrackAudio', e)
+        }
       )
     ])
 
@@ -132,24 +138,25 @@ export class TracksApi extends TracksApiWithoutStream {
     const updatedMetadata = {
       ...metadata,
       trackSegments: [],
-      trackCid: audioResp.results['320'],
+      trackCid: audioResponse.results['320'],
       download: metadata.download?.isDownloadable
         ? {
             ...metadata.download,
-            cid: audioResp.results['320']
+            cid: audioResponse.results['320']
           }
         : metadata.download,
-      coverArtSizes: coverArtResp.id,
-      duration: parseInt(audioResp.probe.format.duration, 10)
+      coverArtSizes: coverArtResponse.id,
+      duration: parseInt(audioResponse.probe.format.duration, 10)
     }
 
     // Write metadata to chain
 
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const trackId = await this.generateTrackId()
+    const trackId = await this.tracksUploader.generateId('track')
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
+      // Should the trackId also be in the metadata?
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
@@ -361,54 +368,5 @@ export class TracksApi extends TracksApiWithoutStream {
     const txReceipt = response.txReceipt
 
     return txReceipt
-  }
-
-  private transformTrackUploadMetadata(
-    inputMetadata: z.output<
-      ReturnType<typeof createUploadTrackSchema>
-    >['metadata'],
-    userId: number
-  ) {
-    const metadata = {
-      ...inputMetadata,
-      ownerId: userId
-    }
-
-    const isPremium = metadata.isPremium
-    const isUnlisted = metadata.isUnlisted
-
-    // If track is premium, set remixes to false
-    if (isPremium && metadata.fieldVisibility) {
-      metadata.fieldVisibility.remixes = false
-    }
-
-    // If track is public, set required visibility fields to true
-    if (!isUnlisted) {
-      metadata.fieldVisibility = {
-        ...metadata.fieldVisibility,
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        playCount: true
-      }
-    }
-    return metadata
-  }
-
-  private async generateTrackId() {
-    const response = await this.request({
-      path: `/tracks/unclaimed_id`,
-      method: 'GET',
-      headers: {},
-      query: { noCache: Math.floor(Math.random() * 1000).toString() }
-    })
-
-    const { data } = await response.json()
-    const id = decodeHashId(data)
-    if (id === null) {
-      throw new Error('Could not generate track id')
-    }
-    return id
   }
 }

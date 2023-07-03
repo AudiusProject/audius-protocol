@@ -51,12 +51,6 @@ export const createUploadTrackMetadataSchema = () =>
           requiresFollow: z.boolean()
         })
       ),
-      isPremium: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      isUnlisted: z.optional(z.boolean()),
-      iswc: z.optional(z.string()),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       fieldVisibility: z.optional(
         z.object({
           mood: z.optional(z.boolean()),
@@ -68,6 +62,12 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      isPremium: z.optional(z.boolean()),
+      isrc: z.optional(z.string()),
+      isUnlisted: z.optional(z.boolean()),
+      iswc: z.optional(z.string()),
+      license: z.optional(z.string()),
+      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       premiumConditions: z.optional(
         z.union([
           PremiumConditionsNFTCollection,
