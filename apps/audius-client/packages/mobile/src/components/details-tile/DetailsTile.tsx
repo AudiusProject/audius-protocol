@@ -23,9 +23,9 @@ import {
   Hyperlink,
   Tile,
   DogEar,
-  DogEarType
+  DogEarType,
+  Text
 } from 'app/components/core'
-import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
@@ -98,11 +98,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     ...flexRowCentered(),
     marginBottom: spacing(4),
     alignSelf: 'center'
-  },
-
-  artist: {
-    color: palette.secondary,
-    fontSize: 18
   },
 
   badge: {
@@ -348,7 +343,9 @@ export const DetailsTile = ({
           {user ? (
             <TouchableOpacity onPress={handlePressArtistName}>
               <View style={styles.artistContainer}>
-                <Text style={styles.artist}>{user.name}</Text>
+                <Text fontSize='large' color='secondary'>
+                  {user.name}
+                </Text>
                 <UserBadges
                   style={styles.badge}
                   badgeSize={16}
