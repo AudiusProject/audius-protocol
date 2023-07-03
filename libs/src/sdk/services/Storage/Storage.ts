@@ -100,7 +100,15 @@ export class Storage implements StorageService {
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
           )
         }
-      } catch (e) {
+      } catch (e: any) {
+        // Rethrow if error is "Upload failed" or if status code is 422 (Unprocessable Entity)
+        if (
+          e.message?.startsWith('Upload failed') ||
+          (e.response && e.response?.status === 422)
+        ) {
+          throw e
+        }
+
         // Swallow errors caused by failure to establish connection to node so we can retry polling
         console.error(`Failed to poll for processing status, ${e}`)
       }
