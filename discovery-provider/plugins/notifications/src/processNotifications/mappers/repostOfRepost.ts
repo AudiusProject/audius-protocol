@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostOfRepostNotification
@@ -129,10 +130,9 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
         this.receiverUserId
       )
       // If the user's settings for the reposts notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
-            this.identityDB,
             {
               type: device.type,
               badgeCount:
@@ -155,6 +155,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

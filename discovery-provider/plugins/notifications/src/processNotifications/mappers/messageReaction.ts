@@ -8,6 +8,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 export class MessageReaction extends BaseNotification<DMReactionNotification> {
   receiverUserId: number
@@ -91,10 +92,9 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
-            this.identityDB,
             {
               type: device.type,
               badgeCount:
@@ -113,6 +113,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
   }

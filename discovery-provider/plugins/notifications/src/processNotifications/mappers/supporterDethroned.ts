@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -97,10 +98,9 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
-            this.identityDB,
             {
               type: device.type,
               badgeCount:
@@ -122,6 +122,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
   }

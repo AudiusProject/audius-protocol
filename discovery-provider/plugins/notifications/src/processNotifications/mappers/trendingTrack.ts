@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -100,10 +101,9 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
         notificationReceiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
-            this.identityDB,
             {
               type: device.type,
               badgeCount:
@@ -126,6 +126,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(notificationReceiverUserId)
     }
 

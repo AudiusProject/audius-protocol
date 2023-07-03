@@ -117,11 +117,12 @@ type Device = {
 }
 type Message = { title: string; body: string; data: object }
 
+export type SendPushNotificationResult<T extends boolean> = T extends true ? { endpointDisabled: true, arn: string } : { endpointDisabled: false }
+
 export const sendPushNotification = async (
-  identityDb: Knex,
   device: Device,
   message: Message
-) => {
+): Promise<SendPushNotificationResult<boolean>> => {
   try {
     if (device.type == 'ios') {
       await sendIOSMessage({
@@ -142,24 +143,15 @@ export const sendPushNotification = async (
       })
     }
   } catch (e) {
-    if (
-      e &&
-      e.code &&
-      (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
-    ) {
-      try {
-        // mark endpoint as disabled in identity db
-         await identityDb('NotificationDeviceTokens')
-          .where('awsARN', '=', device.targetARN)
-          .update('enabled', false)
-        } catch (e) {
-          logger.error(
-            'Error updating an outdated record from the NotificationDeviceToken table',
-            e
-          )
-        }
-      } else {
-        logger.error('Error sending push notification to device', e)
-      }
+      if (
+        e &&
+        e.code &&
+        (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
+      ) {
+        return  { endpointDisabled: true, arn: device.targetARN }
+    }
   }
+return { endpointDisabled: false }
 }
+
+
