@@ -29,6 +29,10 @@ import { getContext } from '../../effects'
 import * as chatSelectors from './selectors'
 import { actions as chatActions } from './slice'
 
+// Attach ulid to window object for debugging DMs
+// @ts-ignore
+window.ulid = ulid
+
 const {
   createChat,
   createChatSucceeded,
