@@ -69,7 +69,6 @@ describe('Trending Playlist Notification', () => {
     await processor.appNotificationsProcessor.process(playlistNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',

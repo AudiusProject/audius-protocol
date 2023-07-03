@@ -70,7 +70,6 @@ describe('Cosign Notification', () => {
     await processor.appNotificationsProcessor.process(cosignNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:2',

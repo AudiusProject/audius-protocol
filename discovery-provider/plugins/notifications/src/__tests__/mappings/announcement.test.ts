@@ -69,7 +69,6 @@ describe('Announcement Notification', () => {
     await processor.appNotificationsProcessor.process(pending.appNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',

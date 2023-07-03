@@ -66,7 +66,6 @@ describe('Add track to playlist notification', () => {
     await processor.appNotificationsProcessor.process(pending.appNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',

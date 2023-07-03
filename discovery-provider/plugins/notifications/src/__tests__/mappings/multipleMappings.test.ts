@@ -58,7 +58,6 @@ describe('Multiple Mappings Notification', () => {
     await processor.appNotificationsProcessor.process(follows)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
@@ -78,7 +77,6 @@ describe('Multiple Mappings Notification', () => {
     const reposts = pending?.appNotifications.filter((n) => n.type == 'repost')
     await processor.appNotificationsProcessor.process(reposts)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',

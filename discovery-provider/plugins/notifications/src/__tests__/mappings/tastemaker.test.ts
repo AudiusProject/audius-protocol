@@ -72,7 +72,6 @@ describe('Tastemaker Notification', () => {
     await processor.appNotificationsProcessor.process(tastemaker_notifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:10',

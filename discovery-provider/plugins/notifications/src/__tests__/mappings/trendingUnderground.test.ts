@@ -67,7 +67,6 @@ describe('Trending Underground Notification', () => {
     await processor.appNotificationsProcessor.process(undergroundNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-      processor.identityDB,
       {
         type: 'ios',
         targetARN: 'arn:1',
