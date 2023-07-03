@@ -98,19 +98,32 @@ export class EntityManager implements EntityManagerService {
         senderAddress
       })
     })
-
     const jsonResponse = await response.json()
+    if (response.ok) {
+      if (!skipConfirmation) {
+        await this.confirmWrite({
+          blockHash: jsonResponse.receipt.blockHash,
+          blockNumber: jsonResponse.receipt.blockNumber,
+          confirmationTimeout
+        })
+      }
 
-    if (!skipConfirmation) {
-      await this.confirmWrite({
-        blockHash: jsonResponse.receipt.blockHash,
-        blockNumber: jsonResponse.receipt.blockNumber,
-        confirmationTimeout
-      })
-    }
-
-    return {
-      txReceipt: jsonResponse.receipt
+      return {
+        txReceipt: jsonResponse.receipt
+      }
+    } else if (response.status === 429) {
+      console.error(
+        'API Rate Limit Exceeded: You have exceeded the allowed number of requests for this action. Please wait and try again later. If you require a higher rate limit, please send an email to api@audius.co with your request, detailing the reasons and expected usage.'
+      )
+      throw new Error(
+        'Error making relay request: API Rate Limit Exceeded. If you require a higher rate limit, please send an email to api@audius.co with your request.'
+      )
+    } else {
+      throw new Error(
+        `Error making relay request${
+          jsonResponse?.error?.message ? `: ${jsonResponse.error.message}` : '.'
+        }`
+      )
     }
   }
 
