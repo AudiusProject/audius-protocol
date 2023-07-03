@@ -13,8 +13,13 @@ import {
   createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
+  RepostTrackRequest,
+  RepostTrackSchema,
   SaveTrackRequest,
   SaveTrackSchema,
+  UnrepostTrackRequest,
+  UnrepostTrackSchema,
+  UnsaveTrackRequest,
   UnsaveTrackSchema,
   UpdateTrackRequest,
   UploadTrackRequest
@@ -270,7 +275,7 @@ export class TracksApi extends TracksApiWithoutStream {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.SAVE,
-      metadata: metadata && JSON.stringify(metadata),
+      metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
       ...writeOptions
     })
@@ -283,7 +288,7 @@ export class TracksApi extends TracksApiWithoutStream {
    * Unfavorite a track
    */
   async unsaveTrack(
-    requestParameters: SaveTrackRequest,
+    requestParameters: UnsaveTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
@@ -297,6 +302,59 @@ export class TracksApi extends TracksApiWithoutStream {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNSAVE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Repost a track
+   */
+  async repostTrack(
+    requestParameters: RepostTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId, metadata } = parseRequestParameters(
+      'respostTrack',
+      RepostTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.REPOST,
+      metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Unrepost a track
+   */
+  async unrepostTrack(
+    requestParameters: UnrepostTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = parseRequestParameters(
+      'unrepostTrack',
+      UnrepostTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UNREPOST,
       auth: this.auth,
       ...writeOptions
     })
