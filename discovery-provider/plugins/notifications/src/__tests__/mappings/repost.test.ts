@@ -25,7 +25,7 @@ describe('Repost Notification', () => {
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
-    .mockImplementation(() => Promise.resolve())
+    .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
 
   const sendEmailNotificationSpy = jest
     .spyOn(sendEmailFns, 'sendNotificationEmail')

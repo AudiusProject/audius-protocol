@@ -22,7 +22,7 @@ describe('Supporter Rank Up Notification', () => {
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
-    .mockImplementation(() => Promise.resolve())
+    .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
 
   beforeEach(async () => {
     const setup = await setupTest()
