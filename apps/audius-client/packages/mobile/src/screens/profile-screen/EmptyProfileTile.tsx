@@ -1,4 +1,5 @@
 import { accountSelectors } from '@audius/common'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { EmptyTile } from 'app/components/core'
@@ -30,12 +31,13 @@ export const useEmptyProfileText = (tab: Tab) => {
 }
 
 type EmptyProfileTileProps = {
+  style?: StyleProp<ViewStyle>
   tab: Tab
 }
 
 export const EmptyProfileTile = (props: EmptyProfileTileProps) => {
-  const { tab } = props
+  const { style, tab } = props
   const emptyText = useEmptyProfileText(tab)
 
-  return <EmptyTile message={emptyText} />
+  return <EmptyTile message={emptyText} style={style} />
 }

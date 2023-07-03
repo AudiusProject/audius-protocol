@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import type { TextStyle } from 'react-native'
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native'
 import { Text, View, Image } from 'react-native'
 
 import Sophisticated from 'app/assets/images/emojis/face-with-monocle.png'
@@ -46,6 +46,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => {
 })
 
 type EmptyTileProps = {
+  style?: StyleProp<ViewStyle>
   message: string
   secondaryMessage?: string
   children?: ReactNode
@@ -53,12 +54,12 @@ type EmptyTileProps = {
 
 export const EmptyTile = (props: EmptyTileProps) => {
   const styles = useStyles()
-  const { message, secondaryMessage, children } = props
+  const { style, message, secondaryMessage, children } = props
 
   return (
     <Tile
       styles={{
-        root: styles.emptyTabRoot,
+        root: [styles.emptyTabRoot, style],
         tile: styles.emptyTab,
         content: styles.emptyTabContent
       }}
