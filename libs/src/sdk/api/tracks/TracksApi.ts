@@ -17,6 +17,7 @@ import {
   RepostTrackSchema,
   SaveTrackRequest,
   SaveTrackSchema,
+  UnrepostTrackRequest,
   UnrepostTrackSchema,
   UnsaveTrackRequest,
   UnsaveTrackSchema,
@@ -340,7 +341,7 @@ export class TracksApi extends TracksApiWithoutStream {
    * Unrepost a track
    */
   async unrepostTrack(
-    requestParameters: SaveTrackRequest,
+    requestParameters: UnrepostTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs

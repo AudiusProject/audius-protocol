@@ -186,6 +186,10 @@ export const RepostTrackSchema = z
     trackId: HashId,
     metadata: z.optional(
       z.object({
+        /**
+         * Is this a repost of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
         isRepostOfRepost: z.boolean()
       })
     )
