@@ -93,8 +93,9 @@ def update_clique_signers(self):
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            if not os.getenv("audius_discprov_dev_mode"):
-                update_signers(self, redis)
+            # if not os.getenv("audius_discprov_dev_mode"):
+            #     update_signers(self, redis)
+            pass
         else:
             logger.info(
                 "update_clique_signers.py | Failed to acquire update_clique_signers"

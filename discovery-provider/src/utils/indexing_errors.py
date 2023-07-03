@@ -1,5 +1,6 @@
 class IndexingError(Exception):
-    """Exception raised for errors in the indexing flow.
+    """
+    Exception raised for errors in the indexing flow.
 
     Attributes:
         type -- One of 'session.commit', 'tx', 'user', 'user_replica_set', 'user_library', 'tracks', 'social_features', 'playlists'
@@ -18,8 +19,22 @@ class IndexingError(Exception):
         self.message = message
 
 
+class NotAllTransactionsFetched(Exception):
+    """
+    Exception raised
+
+    Attributes:
+        message -- error message
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class EntityMissingRequiredFieldError(Exception):
-    """Exception raised for errors when processing transactions and a non-nullable field on a created entity is set to null.
+    """
+    Exception raised for errors when processing transactions and a non-nullable field on a created entity is set to null.
+
     Attributes:
         type -- One of 'user', 'user_replica_set', 'user_library', 'tracks', 'social_features', 'playlists'
         cursed_record -- record number of error

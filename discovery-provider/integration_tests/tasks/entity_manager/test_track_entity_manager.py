@@ -11,7 +11,10 @@ from src.tasks.entity_manager.entity_manager import (
     ENABLE_DEVELOPMENT_FEATURES,
     entity_manager_update,
 )
-from src.tasks.entity_manager.utils import TRACK_ID_OFFSET
+from src.tasks.entity_manager.utils import (
+    CHARACTER_LIMIT_TRACK_DESCRIPTION,
+    TRACK_ID_OFFSET,
+)
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -51,6 +54,7 @@ def test_index_valid_track(app, mocker):
             "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
             "file_type": None,
             "is_playlist_upload": True,
+            "duration": 100,
             "track_segments": [
                 {
                     "duration": 6.016,
@@ -255,6 +259,46 @@ def test_index_valid_track(app, mocker):
             "is_playlist_upload": False,
             "ai_attribution_user_id": 2,
         },
+        "QmUpdateTrack2": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid-2",
+            "title": "track 2",
+            "length": None,
+            "duration": 200,
+            "cover_art": None,
+            "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
+            "tags": None,
+            "genre": "Electronic",
+            "mood": None,
+            "credits_splits": None,
+            "created_at": None,
+            "create_date": None,
+            "updated_at": None,
+            "release_date": None,
+            "file_type": None,
+            "track_segments": [],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "genre": True,
+                "mood": True,
+                "tags": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": None,
+            "repost_count": 0,
+            "save_count": 0,
+            "description": "",
+            "license": "",
+            "isrc": "",
+            "iswc": "",
+            "is_playlist_upload": True,
+        },
     }
 
     create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
@@ -262,6 +306,7 @@ def test_index_valid_track(app, mocker):
     create_track3_json = json.dumps(test_metadata["QmCreateTrack3"])
     create_track4_json = json.dumps(test_metadata["QmCreateTrack4"])
     update_track1_json = json.dumps(test_metadata["QmUpdateTrack1"])
+    update_track2_json = json.dumps(test_metadata["QmUpdateTrack2"])
     tx_receipts = {
         "CreateTrack1Tx": [
             {
@@ -314,6 +359,20 @@ def test_index_valid_track(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateTrack2", "data": {create_track2_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrack2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdateTrack2", "data": {update_track2_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -393,7 +452,6 @@ def test_index_valid_track(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -404,7 +462,7 @@ def test_index_valid_track(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 6
+        assert len(all_tracks) == 7
 
         track_1: Track = (
             session.query(Track)
@@ -414,6 +472,7 @@ def test_index_valid_track(app, mocker):
         assert track_1.description == "updated description"
         assert track_1.ai_attribution_user_id == 2
         assert track_1.is_delete == True
+        assert track_1.duration == 100
 
         track_2: Track = (
             session.query(Track)
@@ -425,6 +484,7 @@ def test_index_valid_track(app, mocker):
         )
         assert track_2.title == "track 2"
         assert track_2.is_delete == False
+        assert track_2.duration == 200
 
         track_3: Track = (
             session.query(Track)
@@ -489,8 +549,64 @@ def test_index_invalid_tracks(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(web3, None)
-    test_metadata = {"QmAIDisabled": {"ai_attribution_user_id": 2}}
+    test_metadata = {
+        "QmAIDisabled": {"ai_attribution_user_id": 2},
+        "QmInvalidUpdateTrack1": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "track 1 2",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "repost_count": 12,
+            "save_count": 21,
+            "description": "updated description",
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "track_id": 77955,
+            "stem_of": None,
+            "is_playlist_upload": False,
+            "ai_attribution_user_id": 2,
+        },
+    }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
+    invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
+
     tx_receipts = {
         # invalid create
         "CreateTrackBelowOffset": [
@@ -628,7 +744,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 2,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "User2Wallet",
                     }
                 )
@@ -699,7 +815,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 1,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -713,7 +829,7 @@ def test_index_invalid_tracks(app, mocker):
                         "_entityType": "Track",
                         "_userId": 2,
                         "_action": "Update",
-                        "_metadata": "",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
                         "_signer": "User2Wallet",
                     }
                 )
@@ -819,7 +935,6 @@ def test_index_invalid_tracks(app, mocker):
     with db.scoped_session() as session:
         # index transactions
         entity_manager_update(
-            None,
             update_task,
             session,
             entity_manager_txs,
@@ -831,3 +946,111 @@ def test_index_invalid_tracks(app, mocker):
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
         assert len(all_tracks) == 1  # no new tracks indexed
+
+
+def test_invalid_track_description(app, mocker):
+    "Tests that playlists cant have a description that's too long"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, None)
+
+    metadata = {
+        "CreateInvalidTrackDescriptionMetadata": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "track 1",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "is_playlist_upload": True,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "repost_count": 12,
+            "save_count": 21,
+            "description": "xtralargeplz" * CHARACTER_LIMIT_TRACK_DESCRIPTION,
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "track_id": 77955,
+            "stem_of": None,
+            "ai_attribution_user_id": 2,
+        },
+    }
+
+    track_metadata = json.dumps(metadata["CreateInvalidTrackDescriptionMetadata"])
+
+    tx_receipts = {
+        "CreateInvalidTrackDescription": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {track_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    with db.scoped_session() as session:
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=0,
+        )
+
+        assert total_changes == 0

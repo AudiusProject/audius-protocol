@@ -610,7 +610,8 @@ def process_solana_rewards_manager(
         get_tx_in_db,
         MIN_SLOT,
     )
-    logger.info(f"index_rewards_manager.py | {transaction_signatures}")
+    if transaction_signatures:
+        logger.info(f"index_rewards_manager.py | {transaction_signatures}")
 
     last_tx = process_transaction_signatures(
         solana_client_manager, db, redis, transaction_signatures

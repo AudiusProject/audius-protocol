@@ -16,6 +16,7 @@ const {
 
 const models = require('./models')
 const { libs } = require('@audius/sdk')
+const { errorResponseRateLimited, sendResponse } = require('./apiHelpers.js')
 const AudiusABIDecoder = libs.AudiusABIDecoder
 
 const DEFAULT_EXPIRY = 60 * 60 // one hour in seconds
@@ -130,6 +131,8 @@ const getRateLimiter = ({
   max,
   expiry = DEFAULT_EXPIRY,
   keyGenerator = (req) => getIP(req).ip,
+  handler,
+  message,
   skip
 }) => {
   return rateLimit({
@@ -141,6 +144,8 @@ const getRateLimiter = ({
     max, // max requests per hour
     skip,
     keyGenerator,
+    handler,
+    message,
     onLimitReached
   })
 }
@@ -210,9 +215,16 @@ const recoverSigner = (encodedABI) => {
 const rateLimitMessage = 'Too many requests, please try again later'
 const getRelayBlocklistMiddleware = (req, res, next) => {
   const signer = recoverSigner(req.body.encodedABI)
+  req.body.signer = signer
   const blocklist = config.get('blocklistPublicKeyFromRelay')
   if (blocklist && blocklist.includes(signer)) {
-    return res.status(429).send(rateLimitMessage)
+    sendResponse(
+      req,
+      res,
+      errorResponseRateLimited({
+        message: rateLimitMessage
+      })
+    )
   }
   next()
 }
@@ -259,14 +271,21 @@ const getRelayRateLimiterMiddleware = () => {
       const signer = recoverSigner(req.body.encodedABI)
       return ':::' + key + ':' + signer
     },
-    handler: (req, res, options) => {
-      const signer = recoverSigner(req.body.encodedABI)
+    handler: (req, res) => {
       try {
-        req.logger.error(`Rate limited sender ${signer}`)
+        const key = getEntityManagerActionKey(req.body.encodedABI)
+        const signer = recoverSigner(req.body.encodedABI)
+        req.logger.error(`Rate limited sender ${signer} performing ${key}`)
       } catch (error) {
         req.logger.error(`Cannot relay without sender address`)
       }
-      res.status(options.statusCode).send(options.message)
+      sendResponse(
+        req,
+        res,
+        errorResponseRateLimited({
+          message: rateLimitMessage
+        })
+      )
     }
   })
 }

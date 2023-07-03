@@ -5,14 +5,14 @@ import { initializeAudiusLibs } from "./utils.mjs";
 
 program.command("edit-playlist")
   .description("Update an existing playlist")
-  .argument("[playlist_id]", "id of playlist to update")
+  .argument("<playlistId>", "id of playlist to update")
   .option("-n, --name <name>", "Name of playlist")
   .option("-d, --description <description>", "Description of playlist")
   .option("-f, --from <from>", "The account to edit the track from")
-  .action(async (playlist_id, { name, description, from }) => {
+  .action(async (playlistId, { name, description, from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     try {
-      const playlist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlist_id]))[0]
+      const playlist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlistId]))[0]
       delete playlist.user
       console.log(chalk.yellow.bold("Playlist before update: "), playlist);
 
@@ -21,8 +21,7 @@ program.command("edit-playlist")
           ...playlist,
           playlist_name: name || playlist.playlist_name,
           description: description || playlist.description,
-        },
-        true /* storageV2UploadEnabled */
+        }
       );
 
       if (response.error) {
@@ -31,7 +30,7 @@ program.command("edit-playlist")
 
       await new Promise(r => setTimeout(r, 2000));
 
-      const updatedPlaylist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlist_id]))[0]
+      const updatedPlaylist = (await audiusLibs.Playlist.getPlaylists(100, 0, [playlistId]))[0]
       delete updatedPlaylist.user
       console.log(chalk.green("Successfully updated playlist!"));
       console.log(chalk.yellow.bold("Playlist after update: "), updatedPlaylist);

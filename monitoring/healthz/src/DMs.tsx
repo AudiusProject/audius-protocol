@@ -22,8 +22,10 @@ export function DMs() {
           <tr>
             <th>Host</th>
             <th>Ver</th>
-            <th>Comms Tag</th>
             <th>Boot Time</th>
+            <th>Host Config</th>
+            <th>Wallet</th>
+            <th>Healthy</th>
             <th>Websocket</th>
             <th>Lasted</th>
           </tr>
@@ -93,26 +95,19 @@ function DMRow({ sp }: { sp: SP }) {
       </td>
       <td>{health?.data && <div>{health.data.version}</div>}</td>
       <td>
-        {commsStatus?.error && (
-          <span style={{ color: 'red' }}>{commsStatus.error}</span>
-        )}
-        {commsStatus?.commit && (
-          <>
-            <a
-              href={`https://github.com/AudiusProject/audius-protocol/commits/${commsStatus.commit}/comms`}
-              target="_blank"
-              title={`built: ${new Date(commsStatus.built).toLocaleString()}`}
-            >
-              {commsStatus.commit.substring(0, 8)}{' '}
-            </a>
-          </>
-        )}
-      </td>
-      <td>
         {commsStatus?.booted && (
           <>
             <RelTime date={commsStatus.booted} />
           </>
+        )}
+      </td>
+      <td>{commsStatus?.host}</td>
+      <td>{commsStatus?.wallet}</td>
+      <td>
+        {commsStatus?.healthy ? (
+          <div style={{ color: 'darkgreen' }}>yes</div>
+        ) : (
+          <div style={{ color: 'red' }}>no</div>
         )}
       </td>
       <td>

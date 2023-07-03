@@ -11,6 +11,7 @@ import {
 import type { Web3Manager } from '../web3Manager'
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { MonitoringCallbacks } from '../types'
+import type { StorageNodeSelectorService } from '../../sdk'
 
 const { wait } = Utils
 
@@ -68,6 +69,7 @@ export type CreatorNodeConfig = {
   writeQuorumEnabled: boolean
   fallbackUrl: string
   isStorageV2Only: boolean
+  storageNodeSelector: StorageNodeSelectorService
 }
 
 // Currently only supports a single logged-in audius user
@@ -326,74 +328,6 @@ export class CreatorNode {
     })
   }
 
-  /**
-   * Uploads a track (including audio and image content) to a creator node
-   * @param trackFile the audio content
-   * @param coverArtFile the image content
-   * @param metadata the metadata for the track
-   * @param onProgress an optional on progress callback
-   */
-  async uploadTrackContent(
-    trackFile: File,
-    coverArtFile: File,
-    metadata: TrackMetadata,
-    onProgress: ProgressCB = () => {}
-  ) {
-    let loadedImageBytes = 0
-    let loadedTrackBytes = 0
-    let totalImageBytes = 0
-    let totalTrackBytes = 0
-    const onImageProgress: ProgressCB = (loaded, total) => {
-      loadedImageBytes = loaded
-      if (!totalImageBytes) totalImageBytes += total
-      if (totalImageBytes && totalTrackBytes) {
-        onProgress(
-          loadedImageBytes + loadedTrackBytes,
-          totalImageBytes + totalTrackBytes
-        )
-      }
-    }
-    const onTrackProgress: ProgressCB = (loaded, total) => {
-      loadedTrackBytes = loaded
-      if (!totalTrackBytes) totalTrackBytes += total
-      if ((!coverArtFile || totalImageBytes) && totalTrackBytes) {
-        onProgress(
-          loadedImageBytes + loadedTrackBytes,
-          totalImageBytes + totalTrackBytes
-        )
-      }
-    }
-
-    const uploadPromises = []
-    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
-    if (coverArtFile)
-      uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
-
-    const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
-    metadata.track_segments = trackContentResp.track_segments
-    metadata.track_cid = trackContentResp.transcodedTrackCID
-    if (metadata.download?.is_downloadable) {
-      metadata.download.cid = trackContentResp.transcodedTrackCID
-    }
-
-    const sourceFile = trackContentResp.source_file
-    if (!sourceFile) {
-      throw new Error(
-        `Invalid or missing sourceFile in response: ${JSON.stringify(
-          trackContentResp
-        )}`
-      )
-    }
-
-    if (coverArtResp) {
-      metadata.cover_art_sizes = coverArtResp.dirCID
-    }
-    // Creates new track entity on creator node, making track's metadata available
-    // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
-    const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
-    return { ...metadataResp, ...trackContentResp, metadata: { ...metadata } }
-  }
-
   async uploadTrackAudioAndCoverArtV2(
     trackFile: File,
     coverArtFile: File,
@@ -529,7 +463,7 @@ export class CreatorNode {
     // if validation fails, validate() will throw an error
     try {
       this.validateTrackSchema(metadata)
-    } catch(e) {
+    } catch (e) {
       console.error('Error validating track metadata', e)
       throw e
     }
@@ -602,32 +536,6 @@ export class CreatorNode {
   }
 
   /**
-   * Creates a track on the content node, associating track id with file content
-   * @param audiusTrackId returned by track creation on-blockchain
-   * @param metadataFileUUID unique ID for metadata file
-   * @param blockNumber
-   * @param transcodedTrackUUID the CID for the transcoded master if this is a first-time upload
-   */
-  async associateTrack(
-    audiusTrackId: number,
-    metadataFileUUID: string,
-    blockNumber: number,
-    transcodedTrackUUID?: string
-  ) {
-    this.maxBlockNumber = Math.max(this.maxBlockNumber, blockNumber)
-    await this._makeRequest({
-      url: '/tracks',
-      method: 'post',
-      data: {
-        blockchainTrackId: audiusTrackId,
-        metadataFileUUID,
-        blockNumber: this.maxBlockNumber,
-        transcodedTrackUUID
-      }
-    })
-  }
-
-  /**
    * Uploads an image to the connected content node
    * @param file image to upload
    * @param onProgress called with loaded bytes and total bytes
@@ -648,79 +556,6 @@ export class CreatorNode {
       /* retries */ undefined,
       timeoutMs
     )
-    return body
-  }
-
-  /**
-   * @param file track to upload
-   * @param onProgress called with loaded bytes and total bytes
-   * @return response body
-   */
-  async uploadTrackAudio(file: File, onProgress: ProgressCB) {
-    return await this.handleAsyncTrackUpload(file, onProgress)
-  }
-
-  async handleAsyncTrackUpload(file: File, onProgress: ProgressCB) {
-    const {
-      data: { uuid }
-    } = await this._uploadFile(file, '/track_content_async', onProgress)
-    return await this.pollProcessingStatus(uuid)
-  }
-
-  async pollProcessingStatus(uuid: string) {
-    const route = this.creatorNodeEndpoint + '/async_processing_status'
-    const start = Date.now()
-    while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
-      try {
-        const { status, resp } = await this.getTrackContentProcessingStatus(
-          uuid
-        )
-        // Should have a body structure of:
-        //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-        if (status && status === 'DONE') return resp
-        if (status && status === 'FAILED') {
-          await this._handleErrorHelper(
-            new Error(
-              `Track content async upload failed: uuid=${uuid}, error=${resp}`
-            ),
-            route,
-            uuid
-          )
-        }
-      } catch (e) {
-        // Catch errors here and swallow them. Errors don't signify that the track
-        // upload has failed, just that we were unable to establish a connection to the node.
-        // This allows polling to retry
-        console.error(`Failed to poll for processing status, ${e}`)
-      }
-
-      await wait(POLL_STATUS_INTERVAL)
-    }
-
-    // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
-    await this._handleErrorHelper(
-      new Error(
-        `Track content async upload took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`
-      ),
-      route,
-      uuid
-    )
-  }
-
-  /**
-   * Gets the task progress given the task type and uuid associated with the task
-   * @param uuid the uuid of the track transcoding task
-   * @returns the status, and the success or failed response if the task is complete
-   */
-  async getTrackContentProcessingStatus(uuid: string) {
-    const { data: body } = await this._makeRequest({
-      url: '/async_processing_status',
-      params: {
-        uuid
-      },
-      method: 'get'
-    })
-
     return body
   }
 

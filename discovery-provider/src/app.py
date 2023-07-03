@@ -27,7 +27,6 @@ from src.queries import (
     block_confirmation,
     get_redirect_weights,
     health_check,
-    index_block_stats,
     notifications,
     queries,
     search,
@@ -41,6 +40,7 @@ from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
 from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
@@ -49,6 +49,10 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
+
+ENTITY_MANAGER_CONTRACT_NAME = CONTRACT_NAMES_ON_CHAIN[CONTRACT_TYPES.ENTITY_MANAGER]
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -265,7 +269,6 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(search_queries.bp)
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
-    app.register_blueprint(index_block_stats.bp)
     app.register_blueprint(get_redirect_weights.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
@@ -289,14 +292,11 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    indexing_interval_sec = int(
-        shared_config["discprov"]["block_processing_interval_sec"]
-    )
-
     # Update celery configuration
     celery.conf.update(
         imports=[
             "src.tasks.index_nethermind",
+            "src.tasks.index_latest_block",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
             "src.tasks.index_hourly_play_counts",
@@ -325,10 +325,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_aggregates",
         ],
         beat_schedule={
-            "update_discovery_provider_nethermind": {
-                "task": "update_discovery_provider_nethermind",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
@@ -433,6 +429,10 @@ def configure_celery(celery, test_config=None):
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
             },
+            "index_latest_block": {
+                "task": "index_latest_block",
+                "schedule": timedelta(seconds=5),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -465,9 +465,7 @@ def configure_celery(celery, test_config=None):
 
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    redis_inst.delete("disc_prov_lock")
-    redis_inst.delete("disc_prov_lock_nethermind")
-
+    redis_inst.delete("index_nethermind_lock")
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
@@ -496,7 +494,14 @@ def configure_celery(celery, test_config=None):
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
-    logger.info("Redis instance initialized!")
+    logger.info("Redis instance connected!")
+
+    # Initialize entity manager
+    entity_manager_contract_abi = abi_values[ENTITY_MANAGER_CONTRACT_NAME]["abi"]
+    entity_manager_contract = web3.eth.contract(
+        address=contract_addresses[ENTITY_MANAGER],
+        abi=entity_manager_contract_abi,
+    )
 
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
@@ -515,6 +520,7 @@ def configure_celery(celery, test_config=None):
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
+                entity_manager_contract=entity_manager_contract,
             )
 
     # Subclassing celery task with discovery provider context
@@ -522,3 +528,6 @@ def configure_celery(celery, test_config=None):
     celery.Task = WrappedDatabaseTask
 
     celery.finalize()
+
+    # Start main indexer
+    celery.send_task("index_nethermind")

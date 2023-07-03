@@ -113,11 +113,34 @@ export const createUploadTrackSchema = () =>
     })
     .strict()
 
-export type UploadTrackRequest = z.input<
-  ReturnType<typeof createUploadTrackSchema>
+export type UploadTrackRequest = Omit<
+  z.input<ReturnType<typeof createUploadTrackSchema>>,
+  'onProgress'
 > & {
   // Typing function manually because z.function() does not
   // support argument names
+  onProgress?: (progress: number) => void
+}
+
+export const createUpdateTrackSchema = () =>
+  createUploadTrackSchema()
+    .pick({
+      userId: true,
+      coverArtFile: true,
+      metadata: true,
+      onProgress: true
+    })
+    .merge(
+      z.object({
+        trackId: HashId
+      })
+    )
+    .strict()
+
+export type UpdateTrackRequest = Omit<
+  z.input<ReturnType<typeof createUpdateTrackSchema>>,
+  'onProgress'
+> & {
   onProgress?: (progress: number) => void
 }
 
@@ -129,3 +152,30 @@ export const DeleteTrackSchema = z
   .strict()
 
 export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>
+
+export const SaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        /**
+         * Is this a save of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
+        isSaveOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type SaveTrackRequest = z.input<typeof SaveTrackSchema>
+
+export const UnsaveTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnsaveTrackRequest = z.input<typeof UnsaveTrackSchema>

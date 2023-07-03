@@ -35,14 +35,15 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		ss.storagePathUsed = total - free
 		ss.storagePathSize = total
 	} else {
-		slog.Error("Error getting disk status", err)
+		slog.Error("Error getting disk status", "err", err)
 	}
 
 	dbSize, err := getDatabaseSize(ss.pgPool)
 	if err == nil {
 		ss.databaseSize = dbSize
 	} else {
-		slog.Error("Error getting database size", err)
+		ss.databaseSize = 0
+		slog.Error("Error getting database size", "err", err)
 	}
 }
 

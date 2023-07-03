@@ -76,9 +76,15 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     return await this.select()
   }
 
+  public getNodes(cid: string) {
+    return this.orderNodes(cid)
+  }
+
   private async select() {
     if (!this.orderedNodes) {
-      this.orderedNodes = await this.orderNodes()
+      this.orderedNodes = await this.orderNodes(
+        (await this.auth.getAddress()).toLowerCase()
+      )
     }
 
     if (this.orderedNodes.length === 0) {
@@ -107,11 +113,10 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     return this.selectedNode ?? null
   }
 
-  private async orderNodes() {
-    const userAddress = await this.auth.getAddress()
+  private orderNodes(key: string) {
     const endpoints = this.nodes.map((node) => node.endpoint.toLowerCase())
     const hash = new RendezvousHash(...endpoints)
-    return hash.getN(this.nodes.length, userAddress.toLowerCase())
+    return hash.getN(this.nodes.length, key)
   }
 
   /** console.info proxy utility to add a prefix */

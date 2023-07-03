@@ -1,4 +1,11 @@
-import { DiscoveryNodeSelector, EntityManager, sdk } from "@audius/sdk";
+import {
+  DiscoveryNodeSelector,
+  EntityManager,
+  SaveTrackRequest,
+  sdk,
+  UnsaveTrackRequest,
+  UpdateTrackRequest,
+} from "@audius/sdk";
 import {
   UploadTrackRequest,
   DeleteTrackRequest,
@@ -88,6 +95,41 @@ app.post<UploadTrackRequest>(
   }
 );
 
+const trackUpdate = upload.fields([{ name: "coverArtFile", maxCount: 1 }]);
+
+app.post<UpdateTrackRequest>(
+  "/updateTrack",
+  trackUpdate as any,
+  async (req, res) => {
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+
+      if (coverArtFile) {
+        const inputMetadata = JSON.parse(req.body.metadata);
+        inputMetadata.releaseDate = inputMetadata.releaseDate
+          ? new Date(inputMetadata.releaseDate)
+          : inputMetadata.releaseDate;
+
+        const updateTrackRequest: any = {
+          userId: req.body.userId,
+          trackId: req.body.trackId,
+          coverArtFile: {
+            buffer: coverArtFile?.buffer,
+            name: coverArtFile.originalname,
+          },
+          metadata: inputMetadata,
+          onProgress: (progress: any) => console.log("Progress:", progress),
+        };
+        const result = await audiusSdk.tracks.updateTrack(updateTrackRequest);
+        res.send(result);
+      }
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
+
 app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
   try {
     const deleteTrackRequest: DeleteTrackRequest = {
@@ -95,6 +137,35 @@ app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
       trackId: req.body.trackId,
     };
     const result = await audiusSdk.tracks.deleteTrack(deleteTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<SaveTrackRequest>("/saveTrack", async (req, res) => {
+  try {
+    const saveTrackRequest: SaveTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.tracks.saveTrack(saveTrackRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnsaveTrackRequest>("/unsaveTrack", async (req, res) => {
+  try {
+    const unsaveTrackRequest: UnsaveTrackRequest = {
+      userId: req.body.userId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.tracks.unsaveTrack(unsaveTrackRequest);
     res.send(result);
   } catch (e) {
     console.error(e);

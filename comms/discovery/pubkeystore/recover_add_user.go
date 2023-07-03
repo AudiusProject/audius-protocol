@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
@@ -12,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 )
 
-func findAddUserTransaction(ctx context.Context, blockNumber *big.Int) (string, error) {
+func findAddUserTransaction(ctx context.Context, blockNumber *big.Int, targetWallet string) (string, error) {
 
 	block, err := poaClient.BlockByNumber(ctx, blockNumber)
 	if err != nil {
@@ -100,7 +101,7 @@ func findAddUserTransaction(ctx context.Context, blockNumber *big.Int) (string, 
 		}
 		address := crypto.PubkeyToAddress(*pubkey)
 
-		if address == owner {
+		if address == owner && strings.EqualFold(address.Hex(), targetWallet) {
 			// success
 			return base64.StdEncoding.EncodeToString(pubkeyBytes), nil
 		}

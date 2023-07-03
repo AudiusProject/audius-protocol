@@ -62,6 +62,8 @@ import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 
+const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
+
 export class ChatsApi
   extends BaseAPI
   implements EventEmitterTarget<ChatEvents>
@@ -221,7 +223,13 @@ export class ChatsApi
         ChatGetMessagesRequestSchema
       )(requestParameters)
 
-    const sharedSecret = await this.getChatSecret(chatId)
+    let sharedSecret: Uint8Array
+    try {
+      sharedSecret = await this.getChatSecret(chatId)
+    } catch (e) {
+      console.error("[audius-sdk] Couldn't get chat secret", e)
+      throw new Error("[audius-sdk] Couldn't get chat secret")
+    }
     const path = `/comms/chats/${chatId}/messages`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
@@ -257,7 +265,7 @@ export class ChatsApi
             m,
             e
           )
-          return "Error: Couldn't decrypt message"
+          return GENERIC_MESSAGE_ERROR
         })
       }))
     )
@@ -665,22 +673,22 @@ export class ChatsApi
   }
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
-    const sharedSecret = await this.getChatSecret(c.chat_id)
     let lastMessage = ''
-    if (c.last_message && c.last_message.length > 0) {
-      try {
+    try {
+      const sharedSecret = await this.getChatSecret(c.chat_id)
+      if (c.last_message && c.last_message.length > 0) {
         lastMessage = await this.decryptString(
           sharedSecret,
           base64.decode(c.last_message)
         )
-      } catch (e) {
-        console.error(
-          "[audius-sdk]: Error: Couldn't decrypt last chat message",
-          c,
-          e
-        )
-        lastMessage = "Error: Couldn't decrypt message"
       }
+    } catch (e) {
+      console.error(
+        "[audius-sdk]: Error: Couldn't decrypt last chat message",
+        c,
+        e
+      )
+      lastMessage = GENERIC_MESSAGE_ERROR
     }
     return {
       ...c,
@@ -797,7 +805,7 @@ export class ChatsApi
                   data,
                   e
                 )
-                return "Error: Couldn't decrypt message"
+                return GENERIC_MESSAGE_ERROR
               }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,

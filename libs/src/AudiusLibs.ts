@@ -557,7 +557,19 @@ export class AudiusLibs {
         : this.creatorNodeConfig.fallbackUrl
 
       // Use rendezvous to select creatorNodeEndpoint for v2 users
-      if (currentUser?.is_storage_v2 && this.ethContracts) {
+      if (
+        currentUser?.is_storage_v2 &&
+        this.creatorNodeConfig.storageNodeSelector &&
+        currentUser.wallet
+      ) {
+        const [storageNode] =
+          this.creatorNodeConfig.storageNodeSelector.getNodes(
+            currentUser.wallet
+          )
+        if (storageNode) {
+          creatorNodeEndpoint = storageNode
+        }
+      } else if (currentUser?.is_storage_v2 && this.ethContracts) {
         const storageV2Nodes =
           await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
             'content-node'

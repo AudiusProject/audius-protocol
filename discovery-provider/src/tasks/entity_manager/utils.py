@@ -5,8 +5,10 @@ from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
+from src.models.indexing.cid_data import CIDData
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -32,11 +34,17 @@ from src.utils.structured_logger import StructuredLogger
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-logger = StructuredLogger(__name__)
+utils_logger = StructuredLogger(__name__)
 
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
 USER_ID_OFFSET = 3_000_000
+
+# limits
+CHARACTER_LIMIT_USER_BIO = 250
+CHARACTER_LIMIT_PLAYLIST_DESCRIPTION = 250
+CHARACTER_LIMIT_TRACK_DESCRIPTION = 1000
+PLAYLIST_TRACK_LIMIT = 5000
 
 
 class Action(str, Enum):
@@ -138,6 +146,7 @@ class ManageEntityParameters:
         block_number: int,
         event_blockhash: str,
         txhash: str,
+        logger: StructuredLogger
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -164,6 +173,7 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
+        self.logger = logger  # passed in with EM context
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
@@ -293,7 +303,6 @@ def sanitize_json(json_resp):
 def parse_metadata(metadata, action, entity_type):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
-
     try:
         data = sanitize_json(json.loads(metadata))
 
@@ -311,17 +320,10 @@ def parse_metadata(metadata, action, entity_type):
 
         return formatted_json, cid
     except Exception as e:
-        logger.info(
+        utils_logger.info(
             f"entity_manager.py | utils.py | error deserializing metadata {metadata}: {e}"
         )
         raise e
-
-
-UPSERT_CID_METADATA_QUERY = """
-    INSERT INTO cid_data (cid, type, data)
-    VALUES (:cid, :type, :data)
-    ON CONFLICT DO NOTHING;
-"""
 
 
 def save_cid_metadata(
@@ -330,11 +332,9 @@ def save_cid_metadata(
     if not cid_metadata:
         return
 
-    vals = []
     for cid, val in cid_metadata.items():
-        vals.append({"cid": cid, "type": cid_type[cid], "data": json.dumps(val)})
-
-    session.execute(UPSERT_CID_METADATA_QUERY, vals)
+        cid_data = CIDData(cid=cid, type=cid_type[cid], data=val)
+        session.merge(cid_data)
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
@@ -364,3 +364,28 @@ def copy_record(
         else:
             setattr(record_copy, key, value)
     return record_copy
+
+
+def validate_signer(params: ManageEntityParameters):
+    # Ensure the signer is either the user or authorized to perform action for the user
+    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
+    signer = params.signer.lower()
+    signer_matches_user = wallet and wallet.lower() == signer
+    if signer_matches_user:
+        params.logger.set_context("isApp", "false")
+    else:
+        params.logger.set_context("isApp", "unknown")
+        grant_key = (signer, params.user_id)
+        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        if is_signer_authorized:
+            grant = params.existing_records[EntityType.GRANT][grant_key]
+            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+                raise IndexingValidationError(
+                    f"Signer is not authorized to perform action for user {params.user_id}"
+                )
+            params.logger.set_context("isApp", "true")
+        else:
+            raise IndexingValidationError(
+                f"Signer does not match user {params.user_id} or an authorized wallet"
+            )

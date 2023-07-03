@@ -16,23 +16,25 @@ import (
 )
 
 type PeerClient struct {
-	Host   string
-	outbox chan []byte
-	crudr  *Crudr
-	logger *slog.Logger
+	Host     string
+	outbox   chan []byte
+	crudr    *Crudr
+	logger   *slog.Logger
+	selfHost string
 }
 
-func NewPeerClient(host string, crudr *Crudr) *PeerClient {
+func NewPeerClient(host string, crudr *Crudr, selfHost string) *PeerClient {
 	// buffer up to N outgoing messages
 	// if full, Send will drop outgoing message
 	// which is okay because of sweep
 	outboxBufferSize := 8
 
 	return &PeerClient{
-		Host:   httputil.RemoveTrailingSlash(strings.ToLower(host)),
-		outbox: make(chan []byte, outboxBufferSize),
-		crudr:  crudr,
-		logger: slog.With("crudr_client", httputil.RemoveTrailingSlash(strings.ToLower(host))),
+		Host:     httputil.RemoveTrailingSlash(strings.ToLower(host)),
+		outbox:   make(chan []byte, outboxBufferSize),
+		crudr:    crudr,
+		logger:   slog.With("crudr_client", httputil.RemoveTrailingSlash(strings.ToLower(host))),
+		selfHost: selfHost,
 	}
 }
 
@@ -62,7 +64,9 @@ func (p *PeerClient) startSender() {
 			endpoint,
 			"application/json",
 			bytes.NewReader(data),
-			p.crudr.myPrivateKey)
+			p.crudr.myPrivateKey,
+			p.selfHost,
+		)
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
@@ -111,9 +115,16 @@ func (p *PeerClient) doSweep() error {
 		Timeout: time.Minute,
 	}
 
-	resp, err := client.Get(endpoint)
+	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("User-Agent", "mediorum "+p.selfHost)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("request failed: %v", err)
 	}
 	defer resp.Body.Close()
 

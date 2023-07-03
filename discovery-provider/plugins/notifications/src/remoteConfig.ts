@@ -37,6 +37,11 @@ export const EmailPluginMappings = {
   Scheduled: 'scheduled'
 }
 
+export const NotificationsScheduledEmails = "notification_scheduled_emails"
+export const ScheduledEmailPluginMappings = {
+  PageCount: 'page_count'
+}
+
 const defaultMappingVariable = {
   [MappingVariable.PushRepost]: false,
   [MappingVariable.PushSave]: false,
@@ -112,5 +117,18 @@ export class RemoteConfig {
       }
     }
     return optimizelyValue
+  }
+
+  getFeatureVariableValue<T>(featureName: string, variable: string, defaultValue: T): T {
+    const optimizelyValue = this.optimizelyClient.getFeatureVariable(
+      featureName,
+      variable,
+      ''
+    )
+
+    if (optimizelyValue === null) {
+      return defaultValue
+    }
+    return optimizelyValue as T
   }
 }

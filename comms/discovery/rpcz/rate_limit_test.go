@@ -59,7 +59,7 @@ func TestRateLimit(t *testing.T) {
 	chatTs := time.Now().UTC().Add(-time.Hour * time.Duration(48))
 	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", chatId1, chatTs)
 	assert.NoError(t, err)
-	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id) values ($1, $2, $1, $2), ($1, $2, $1, $3)", chatId1, user1Id, user2Id)
+	_, err = tx.Exec("insert into chat_member (chat_id, invited_by_user_id, invite_code, user_id, created_at) values ($1, $2, $1, $2, $4), ($1, $2, $1, $3, $4)", chatId1, user1Id, user2Id, chatTs)
 	assert.NoError(t, err)
 
 	// user1Id messaged user2Id 48 hours ago
@@ -159,4 +159,44 @@ func TestRateLimit(t *testing.T) {
 	assert.ErrorContains(t, err, "An invited user has exceeded the maximum number of new chats")
 
 	tx.Rollback()
+}
+
+func TestBurstRateLimit(t *testing.T) {
+	var err error
+
+	// reset tables under test
+	_, err = db.Conn.Exec("truncate table chat cascade")
+	assert.NoError(t, err)
+
+	tx := db.Conn.MustBegin()
+	defer tx.Rollback()
+
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	chatId := strconv.Itoa(seededRand.Int())
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+
+	SetupChatWithMembers(t, tx, chatId, user1Id, user2Id)
+
+	// hit the 1 second limit... send a burst of messages
+	for i := 1; i < 16; i++ {
+
+		message := fmt.Sprintf("burst %d", i)
+		err = chatSendMessage(tx, user1Id, chatId, message, time.Now().UTC(), message)
+		assert.NoError(t, err, "i is", i)
+
+		messageRpc := schema.RawRPC{
+			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "%s"}`, chatId, message)),
+		}
+		err = testValidator.validateChatMessage(tx, user1Id, messageRpc)
+
+		// first 10 messages are ok...
+		// and then the per-second rate limiter kicks in
+		if i <= 10 {
+			assert.NoError(t, err, "i is", i)
+		} else {
+			assert.ErrorIs(t, err, ErrMessageRateLimitExceeded, "i = ", i)
+		}
+	}
+
 }

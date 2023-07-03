@@ -44,10 +44,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	testServer = NewServer(discoveryConfig, proc)
-
-	// start SSE clients
-	// TODO: test peers
-	// proc.StartSSEClients(nil, nil)
+	testServer.config.IsRegisteredWallet = true
 
 	// run tests
 	code := m.Run()

@@ -28,6 +28,8 @@ export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: 
 
   const week = maybeWeek || moment().format("YYYY-MM-DD")
 
+  console.log("getting top trending for week ", week)
+
   const [tracks, playlists, undergroundTracks] = await queryTopFiveTrending(
     discoveryDb,
     week
@@ -43,6 +45,10 @@ export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: 
     undergroundHandles,
     undergroundTracks
   );
+
+  console.log("track entries", JSON.stringify(trackEntries))
+  console.log("playlist entries", JSON.stringify(playlistEntries))
+  console.log("underground entries", JSON.stringify(undergroundEntries))
 
   const trendingTracksTweet = composeTweet(
     "Top 5 Trending Tracks 🔥",
