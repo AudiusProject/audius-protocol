@@ -19,6 +19,7 @@ import { useKeyboard } from '@react-native-community/hooks'
 import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
 import {
+  AppState,
   FlatList,
   Keyboard,
   Platform,
@@ -201,6 +202,40 @@ const getNewMessageToastThreshold = (
     : NEW_MESSAGE_TOAST_SCROLL_THRESHOLD
 }
 
+// Gets latest messages on both initial render and when app state changes
+const useGetLatestMessages = (
+  chatId: string,
+  dispatch: ReturnType<typeof useDispatch>
+) => {
+  const fetchLatestMessagesCallback = useCallback(() => {
+    if (chatId) {
+      dispatch(fetchLatestMessages({ chatId }))
+    }
+  }, [dispatch, chatId])
+
+  // Refresh messages on first render
+  useEffect(() => {
+    console.debug('Fetching latest messages on first render')
+    fetchLatestMessagesCallback()
+  }, [fetchLatestMessagesCallback])
+
+  // Also listen to app state changes to refresh messages,
+  // in case this page was previously in the background
+  useEffect(() => {
+    const handle = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        console.debug(
+          'App came back from background onto chat page, fetching latest messages'
+        )
+        fetchLatestMessagesCallback()
+      }
+    })
+
+    // Remove listener on unmount
+    return () => handle.remove()
+  })
+}
+
 export const ChatScreen = () => {
   const styles = useStyles()
   const palette = useThemePalette()
@@ -255,12 +290,7 @@ export const ChatScreen = () => {
   // The chat/chatId selectors will trigger the rerenders necessary.
   const chatFrozenRef = useRef(chat)
 
-  // Refresh messages on first render
-  useEffect(() => {
-    if (chatId) {
-      dispatch(fetchLatestMessages({ chatId }))
-    }
-  }, [dispatch, chatId])
+  useGetLatestMessages(chatId, dispatch)
 
   useEffect(() => {
     // Update chatFrozenRef when entering a new chat screen.
