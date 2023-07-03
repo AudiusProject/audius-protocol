@@ -48,7 +48,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -85,7 +85,13 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     const body = `${capitalize(
       reactingUserName
     )} reacted to your tip of ${tipAmount} $AUDIO`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.senderUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.senderUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (

@@ -112,7 +112,11 @@ export class Processor {
     this.isRunning = true
     while (this.isRunning) {
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
-      await sendDMNotifications(this.discoveryDB, this.identityDB, this.getIsBrowserPushEnabled())
+      await sendDMNotifications(
+        this.discoveryDB,
+        this.identityDB,
+        this.getIsBrowserPushEnabled()
+      )
 
       if (
         this.getIsScheduledEmailEnabled() &&

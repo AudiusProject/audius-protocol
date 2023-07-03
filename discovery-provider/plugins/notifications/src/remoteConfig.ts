@@ -37,7 +37,7 @@ export const EmailPluginMappings = {
   Scheduled: 'scheduled'
 }
 
-export const NotificationsScheduledEmails = "notification_scheduled_emails"
+export const NotificationsScheduledEmails = 'notification_scheduled_emails'
 export const ScheduledEmailPluginMappings = {
   PageCount: 'page_count'
 }
@@ -69,7 +69,7 @@ const defaultMappingVariable = {
   [MappingVariable.PushReaction]: false
 }
 
-export const BrowserPushPlugin = "browser_push_plugin"
+export const BrowserPushPlugin = 'browser_push_plugin'
 export const BrowserPluginMappings = {
   Enabled: 'enabled'
 }
@@ -119,7 +119,11 @@ export class RemoteConfig {
     return optimizelyValue
   }
 
-  getFeatureVariableValue<T>(featureName: string, variable: string, defaultValue: T): T {
+  getFeatureVariableValue<T>(
+    featureName: string,
+    variable: string,
+    defaultValue: T
+  ): T {
     const optimizelyValue = this.optimizelyClient.getFeatureVariable(
       featureName,
       variable,
