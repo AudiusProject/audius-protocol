@@ -1,4 +1,8 @@
-.root {
+.default {
+  border-color: var(--neutral-light-5);
+}
+
+.subdued {
   border-color: var(--neutral-light-8);
 }
 

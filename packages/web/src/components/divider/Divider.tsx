@@ -4,22 +4,25 @@ import cn from 'classnames'
 
 import styles from './Divider.module.css'
 
-type DividerProps = AntDividerProps
+type DividerProps = AntDividerProps & {
+  variant?: 'default' | 'subdued'
+}
 
 export const Divider = (props: DividerProps) => {
-  const { className, ...other } = props
+  const { className, variant = 'subdued', ...other } = props
+
   const { type = 'horizontal' } = other
 
   return (
     <AntDivider
       className={cn(
-        styles.root,
+        styles[variant],
         {
           [styles.horizontal]: type === 'horizontal'
         },
         className
       )}
-      {...props}
+      {...other}
     />
   )
 }
