@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { User } from '@audius/common'
+import { UserMetadata } from '@audius/common'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -13,7 +13,7 @@ export const UserNameAndBadges = ({
   user,
   onNavigateAway
 }: {
-  user: User
+  user: UserMetadata
   onNavigateAway?: () => void
 }) => {
   const goToRoute = useGoToRoute()

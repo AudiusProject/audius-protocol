@@ -9,7 +9,8 @@ import {
   User,
   CollectionTrack,
   CollectionPageTrackRecord,
-  CollectionsPageType
+  CollectionsPageType,
+  FeatureFlags
 } from '@audius/common'
 
 import {
@@ -17,13 +18,16 @@ import {
   CollectiblesPlaylistTable
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
+import { Divider } from 'components/divider'
 import { DogEarType } from 'components/dog-ear'
 import Page from 'components/page/Page'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
+import { SuggestedTracks } from './SuggestedTracks'
 
 const messages = {
   emptyPage: {
@@ -127,6 +131,9 @@ const CollectionPage = ({
   onClickDescriptionInternalLink
 }: CollectionPageProps) => {
   // TODO: Consider dynamic lineups, esp. for caching improvement.
+  const { isEnabled: arePlaylistUpdatesEnabled } = useFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
   const [dataSource, playingIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
@@ -285,6 +292,12 @@ const CollectionPage = ({
           </div>
         )}
       </Tile>
+      {isOwner && !isAlbum && !isNftPlaylist && arePlaylistUpdatesEnabled ? (
+        <>
+          <Divider variant='default' className={styles.titleDivider} />
+          <SuggestedTracks />
+        </>
+      ) : null}
     </Page>
   )
 }

@@ -21,7 +21,8 @@ import {
   RepostType,
   repostsUserListActions,
   favoritesUserListActions,
-  createPlaylistModalUIActions
+  createPlaylistModalUIActions,
+  FeatureFlags
 } from '@audius/common'
 import type {
   Collection,
@@ -36,16 +37,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   ScreenContent,
   Screen,
-  VirtualizedScrollView
+  VirtualizedScrollView,
+  Divider
 } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import type { ImageProps } from 'app/components/image/FastImage'
+import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
+import { useThemePalette } from 'app/utils/theme'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
@@ -70,6 +75,10 @@ const { requestOpen: openPublishConfirmation } =
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     padding: spacing(3)
+  },
+  divider: {
+    marginTop: spacing(2),
+    marginBottom: spacing(8)
   }
 }))
 
@@ -150,6 +159,11 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     updated_at
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const { isEnabled: arePlaylistUpdatesEnabled } = useFeatureFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
+
+  const { neutralLight5 } = useThemePalette()
 
   const url = useMemo(() => {
     return `/${encodeUrlName(user.handle)}/${
@@ -273,30 +287,38 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     <Screen url={url}>
       <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
         <VirtualizedScrollView style={styles.root}>
-          <CollectionScreenDetailsTile
-            description={description ?? ''}
-            extraDetails={extraDetails}
-            hasReposted={has_current_user_reposted}
-            hasSaved={has_current_user_saved}
-            isAlbum={is_album}
-            collectionId={playlist_id}
-            isPrivate={is_private}
-            isPublishing={_is_publishing ?? false}
-            onPressEdit={handlePressEdit}
-            onPressFavorites={handlePressFavorites}
-            onPressOverflow={handlePressOverflow}
-            onPressPublish={handlePressPublish}
-            onPressRepost={handlePressRepost}
-            onPressReposts={handlePressReposts}
-            onPressSave={handlePressSave}
-            onPressShare={handlePressShare}
-            renderImage={renderImage}
-            repostCount={repost_count}
-            saveCount={save_count}
-            trackCount={track_ids.length}
-            title={playlist_name}
-            user={user}
-          />
+          <>
+            <CollectionScreenDetailsTile
+              description={description ?? ''}
+              extraDetails={extraDetails}
+              hasReposted={has_current_user_reposted}
+              hasSaved={has_current_user_saved}
+              isAlbum={is_album}
+              collectionId={playlist_id}
+              isPrivate={is_private}
+              isPublishing={_is_publishing ?? false}
+              onPressEdit={handlePressEdit}
+              onPressFavorites={handlePressFavorites}
+              onPressOverflow={handlePressOverflow}
+              onPressPublish={handlePressPublish}
+              onPressRepost={handlePressRepost}
+              onPressReposts={handlePressReposts}
+              onPressSave={handlePressSave}
+              onPressShare={handlePressShare}
+              renderImage={renderImage}
+              repostCount={repost_count}
+              saveCount={save_count}
+              trackCount={track_ids.length}
+              title={playlist_name}
+              user={user}
+            />
+            {isOwner && !is_album && arePlaylistUpdatesEnabled ? (
+              <>
+                <Divider style={styles.divider} color={neutralLight5} />
+                <SuggestedTracks />
+              </>
+            ) : null}
+          </>
         </VirtualizedScrollView>
       </ScreenContent>
     </Screen>
