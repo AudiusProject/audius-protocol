@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { CrossPlatformFile } from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
@@ -20,7 +20,7 @@ const createUploadPlaylistMetadataSchema = () =>
       iswc: z.optional(z.string()),
       license: z.optional(z.string()),
       mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-      playlist_name: z.string(),
+      playlistName: z.string(),
       releaseDate: z.optional(
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
@@ -38,15 +38,13 @@ export const createUploadPlaylistSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
+        isFileValid(data as File)
       ),
       metadata: createUploadPlaylistMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
       trackMetadatas: z.array(createUploadTrackMetadataSchema()),
       trackFiles: z.array(
-        z.custom<File>((data: unknown) =>
-          isFileValid(data as CrossPlatformFile)
-        )
+        z.custom<File>((data: unknown) => isFileValid(data as File))
       )
     })
     .strict()

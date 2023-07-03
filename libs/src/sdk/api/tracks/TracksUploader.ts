@@ -1,3 +1,4 @@
+import type { z } from 'zod'
 import { decodeHashId } from '../../utils/hashId'
 import { BaseAPI } from '../generated/default'
 import type { createUploadTrackSchema } from './types'

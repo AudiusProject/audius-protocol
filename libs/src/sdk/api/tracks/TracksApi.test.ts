@@ -30,7 +30,7 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 jest
-  .spyOn(TracksApi.prototype, 'generateTrackId' as any)
+  .spyOn(TracksApi.prototype, 'generateId' as any)
   .mockImplementation(async () => {
     return 1
   })

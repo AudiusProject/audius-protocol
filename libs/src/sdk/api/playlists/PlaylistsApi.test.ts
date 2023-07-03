@@ -3,8 +3,35 @@ import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { EntityManager } from '../../services/EntityManager'
 import { PlaylistsApi } from './PlaylistsApi'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { Storage } from '../../services/Storage'
 
 jest.mock('../../services/EntityManager')
+jest.mock('../../services/DiscoveryNodeSelector')
+jest.mock('../../services/StorageNodeSelector')
+jest.mock('../../services/Storage')
+
+jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
+  return {
+    id: 'a',
+    status: 'done',
+    results: {
+      '320': 'a'
+    },
+    probe: {
+      format: {
+        duration: '10'
+      }
+    }
+  }
+})
+
+jest
+  .spyOn(PlaylistsApi.prototype, 'generateId' as any)
+  .mockImplementation(async () => {
+    return 1
+  })
 
 jest
   .spyOn(EntityManager.prototype, 'manageEntity')
@@ -21,9 +48,19 @@ describe('PlaylistsApi', () => {
   let playlists: PlaylistsApi
 
   const auth = new Auth()
+  const discoveryNodeSelector = new DiscoveryNodeSelector()
+  const storageNodeSelector = new StorageNodeSelector({
+    auth,
+    discoveryNodeSelector
+  })
 
   beforeAll(() => {
-    playlists = new PlaylistsApi(new Configuration(), new EntityManager(), auth)
+    playlists = new PlaylistsApi(
+      new Configuration(),
+      new Storage({ storageNodeSelector }),
+      new EntityManager(),
+      auth
+    )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
     jest.spyOn(console, 'debug').mockImplementation(() => {})

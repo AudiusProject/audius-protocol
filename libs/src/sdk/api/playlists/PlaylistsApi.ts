@@ -48,24 +48,24 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     requestParameters: UploadPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
+    // TODO: handle error and delete playlist
+    // TODO: duration?
+    // TODO: Progress callback
+    // TODO: collection image not working
+    // TODO: delegated playlist writes
+
     // Parse inputs
     const {
       userId,
       trackFiles,
       coverArtFile,
-      metadata: parsedMetadata,
+      metadata,
       trackMetadatas: parsedTrackMetadatas,
       onProgress
     } = parseRequestParameters(
       'uploadPlaylist',
       createUploadPlaylistSchema()
     )(requestParameters)
-
-    // Transform track metadata
-    const metadata = this.tracksUploader.transformTrackUploadMetadata(
-      parsedMetadata,
-      userId
-    )
 
     // Upload track audio and cover art to storage node
     const [coverArtResponse, ...audioResponses] = await Promise.all([
@@ -95,17 +95,21 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       )
     ])
 
-    // Combine track metadata with playlist metadata
-    const trackMetadatas = parsedTrackMetadatas.map((tm) =>
-      this.combineMetadata(tm, {
-        ...metadata,
-        coverArtSizes: coverArtResponse.id
-      })
-    )
-
     // Write tracks to chain
     const trackIds = await Promise.all(
-      trackMetadatas.map(async (trackMetadata, i) => {
+      parsedTrackMetadatas.map(async (parsedTrackMetadata, i) => {
+        // Transform track metadata
+        const trackMetadata = this.combineMetadata(
+          this.tracksUploader.transformTrackUploadMetadata(
+            parsedTrackMetadata,
+            userId
+          ),
+          {
+            ...metadata,
+            coverArtSizes: coverArtResponse.id
+          }
+        )
+
         // Update metadata to include uploaded CIDs
         const audioResponse = audioResponses[i]
 
@@ -157,14 +161,11 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          metadataTime: Date.now()
+          time: Date.now()
         }))
       },
       coverArtSizes: coverArtResponse.id
     }
-
-    // TODO: handle error and delete playlist
-    // TODO: duration?
 
     // Write playlist metadata to chain
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
@@ -175,7 +176,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.CREATE,
       metadata: JSON.stringify({
-        cid: metadataCid,
+        cid: metadataCid.toString(),
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

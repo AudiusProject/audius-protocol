@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import type {
-  CrossPlatformFile,
-  CrossPlatformFile as File
-} from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
@@ -103,13 +100,11 @@ export const createUploadTrackSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
+        isFileValid(data as File)
       ),
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
-      )
+      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
     })
     .strict()
 

@@ -1,4 +1,3 @@
-import type { z } from 'zod'
 import snakecaseKeys from 'snakecase-keys'
 import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
@@ -195,7 +194,10 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = this.transformTrackUploadMetadata(parsedMetadata, userId)
+    const metadata = this.tracksUploader.transformTrackUploadMetadata(
+      parsedMetadata,
+      userId
+    )
 
     // Upload track cover art to storage node
     const coverArtResp = await retry3(
