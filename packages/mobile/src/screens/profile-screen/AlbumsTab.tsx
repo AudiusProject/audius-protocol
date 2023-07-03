@@ -9,9 +9,11 @@ import { useIsFocused } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list/CollectionList'
+import { spacing } from 'app/styles/spacing'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
-import { useSelectProfile } from './selectors'
+import { getIsOwner, useSelectProfile } from './selectors'
+
 const { getProfileAlbums, getCollectionsStatus } = profilePageSelectors
 const { fetchCollections } = profilePageActions
 
@@ -23,20 +25,28 @@ export const AlbumsTab = () => {
   const collectionsStatus = useSelector((state) =>
     getCollectionsStatus(state, handle)
   )
+  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
 
+  const shouldFetchAlbums =
+    isFocused &&
+    (album_count > 0 || isOwner) &&
+    collectionsStatus === Status.IDLE
+
   useEffect(() => {
-    if (isFocused && album_count > 0 && collectionsStatus === Status.IDLE) {
+    if (shouldFetchAlbums) {
       dispatch(fetchCollections(handle))
     }
-  }, [isFocused, album_count, collectionsStatus, dispatch, handle])
+  }, [shouldFetchAlbums, dispatch, handle])
 
   return (
     <CollectionList
-      collection={album_count > 0 ? albums : emptyAlbums}
-      style={{ paddingTop: album_count > 0 ? 12 : 0 }}
-      ListEmptyComponent={<EmptyProfileTile tab='albums' />}
+      collection={album_count > 0 || isOwner ? albums : emptyAlbums}
+      style={{ paddingTop: spacing(3) }}
+      ListEmptyComponent={
+        <EmptyProfileTile tab='albums' style={{ marginTop: 0 }} />
+      }
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
