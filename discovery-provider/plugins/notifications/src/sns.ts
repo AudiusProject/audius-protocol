@@ -7,6 +7,7 @@ import {
 } from '@aws-sdk/client-sns'
 import { logger } from './logger'
 import { DeviceType } from './processNotifications/mappers/userNotificationSettings'
+import { Knex } from 'knex'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -116,26 +117,41 @@ type Device = {
 }
 type Message = { title: string; body: string; data: object }
 
+export type SendPushNotificationResult<T extends boolean> = T extends true ? { endpointDisabled: true, arn: string } : { endpointDisabled: false }
+
 export const sendPushNotification = async (
   device: Device,
   message: Message
-) => {
-  if (device.type == 'ios') {
-    await sendIOSMessage({
-      title: message.title,
-      body: message.body,
-      badgeCount: device.badgeCount,
-      data: message.data,
-      playSound: true,
-      targetARN: device.targetARN
-    })
-  } else if (device.type == 'android') {
-    await sendAndroidMessage({
-      title: message.title,
-      body: message.body,
-      data: message.data,
-      playSound: true,
-      targetARN: device.targetARN
-    })
+): Promise<SendPushNotificationResult<boolean>> => {
+  try {
+    if (device.type == 'ios') {
+      await sendIOSMessage({
+        title: message.title,
+        body: message.body,
+        badgeCount: device.badgeCount,
+        data: message.data,
+        playSound: true,
+        targetARN: device.targetARN
+      })
+    } else if (device.type == 'android') {
+      await sendAndroidMessage({
+        title: message.title,
+        body: message.body,
+        data: message.data,
+        playSound: true,
+        targetARN: device.targetARN
+      })
+    }
+  } catch (e) {
+      if (
+        e &&
+        e.code &&
+        (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
+      ) {
+        return  { endpointDisabled: true, arn: device.targetARN }
+    }
   }
+return { endpointDisabled: false }
 }
+
+

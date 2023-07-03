@@ -16,6 +16,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -151,7 +152,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         const devices: Device[] = userNotificationSettings.getDevices(userId)
         // If the user's settings for the follow notification is set to true, proceed
 
-        await Promise.all(
+        const pushes = await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
               {
@@ -175,6 +176,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
             )
           })
         )
+        await disableDeviceArns(this.identityDB, pushes)
         await this.incrementBadgeCount(userId)
       }
 

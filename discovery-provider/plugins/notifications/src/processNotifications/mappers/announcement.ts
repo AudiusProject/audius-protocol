@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { UserNotificationSettings } from './userNotificationSettings'
 import { logger } from '../../logger'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 const getEnv = (envVar: string | undefined, defaultVal?: boolean): boolean => {
   if (envVar === undefined && defaultVal === undefined) return true
@@ -128,7 +129,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       const devices: Device[] = userNotificationSettings.getDevices(userId)
       // If the user's settings for the follow notification is set to true, proceed
   
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           // this may get rate limited by AWS
           return sendPushNotification(
@@ -150,6 +151,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(userId)
     }
   }

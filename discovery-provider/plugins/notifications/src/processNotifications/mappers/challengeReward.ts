@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & {
   data: ChallengeRewardNotification
@@ -135,7 +136,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -157,6 +158,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

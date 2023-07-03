@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TipReceiveNotification
@@ -89,7 +90,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -112,6 +113,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SupporterRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterRankUpNotification
@@ -88,7 +89,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
         this.receiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -111,6 +112,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
