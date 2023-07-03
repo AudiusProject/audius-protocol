@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & {
   data: FollowNotification
@@ -99,7 +100,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
         this.receiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -122,6 +123,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

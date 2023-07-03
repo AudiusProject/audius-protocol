@@ -223,4 +223,50 @@ describe('TracksApi', () => {
       }).rejects.toThrow()
     })
   })
+
+  describe('repostTrack', () => {
+    it('reposts a track if valid metadata is provided', async () => {
+      const result = await tracks.repostTrack({
+        userId: '7eP5n',
+        trackId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await tracks.repostTrack({
+          userId: '7eP5n',
+          trackId: 1 as any
+        })
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('unrepostTrack', () => {
+    it('unreposts a track if valid metadata is provided', async () => {
+      const result = await tracks.unrepostTrack({
+        userId: '7eP5n',
+        trackId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await tracks.unrepostTrack({
+          userId: '7eP5n',
+          trackId: 1 as any
+        })
+      }).rejects.toThrow()
+    })
+  })
 })

@@ -179,3 +179,30 @@ export const UnsaveTrackSchema = z
   .strict()
 
 export type UnsaveTrackRequest = z.input<typeof UnsaveTrackSchema>
+
+export const RepostTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        /**
+         * Is this a repost of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
+        isRepostOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type RepostTrackRequest = z.input<typeof RepostTrackSchema>
+
+export const UnrepostTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>

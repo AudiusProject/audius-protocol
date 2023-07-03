@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -141,7 +142,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       const timestamp = Math.floor(
         Date.parse(this.notification.timestamp as any as string) / 1000
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -162,6 +163,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (

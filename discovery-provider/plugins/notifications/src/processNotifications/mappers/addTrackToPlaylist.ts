@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -112,7 +113,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       const devices: Device[] = userNotificationSettings.getDevices(
         track.owner_id
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -135,6 +136,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(track.owner_id)
     }
     if (

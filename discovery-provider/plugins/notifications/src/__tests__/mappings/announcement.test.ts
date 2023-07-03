@@ -21,7 +21,7 @@ describe('Announcement Notification', () => {
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
-    .mockImplementation(() => Promise.resolve())
+    .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
 
   beforeEach(async () => {
     process.env.ANNOUNCEMENTS_DRY_RUN = 'false'

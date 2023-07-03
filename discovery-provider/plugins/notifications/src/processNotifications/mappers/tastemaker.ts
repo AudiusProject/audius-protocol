@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TastemakerNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TastemakerNotification
@@ -112,7 +113,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       })
     ) {
       // If the user's settings for the reposts notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -129,6 +130,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

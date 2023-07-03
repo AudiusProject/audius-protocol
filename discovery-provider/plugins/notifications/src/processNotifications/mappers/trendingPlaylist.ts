@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -111,7 +112,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
         notificationReceiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -130,6 +131,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
