@@ -15,7 +15,6 @@ from web3.middleware import geth_poa_middleware
 logger = logging.getLogger(__name__)
 
 web3: Optional[Web3] = None
-LOCAL_RPC = "http://chain:8545"
 
 
 def get_web3(web3endpoint=None):
@@ -28,13 +27,14 @@ def get_web3(web3endpoint=None):
     if not web3endpoint:
         # attempt local rpc, check if healthy
         try:
-            if requests.get(LOCAL_RPC + "/health").status_code == 200:
-                web3endpoint = LOCAL_RPC
-                logger.info("web3_provider.py | using local RPC")
+            primary_acdc_rpc = os.getenv("audius_web3_primary_host")
+            if requests.get(primary_acdc_rpc + "/health").status_code == 200:
+                web3endpoint = primary_acdc_rpc
+                logger.info("web3_provider.py | using primary RPC")
             else:
-                raise Exception("local RPC unhealthy or unreachable")
+                raise Exception("primary RPC unhealthy or unreachable")
         except Exception as e:
-            web3endpoint = os.getenv("audius_web3_host")
+            web3endpoint = os.getenv("audius_web3_secondary_host")
             logger.warn(e)
     web3 = Web3(HTTPProvider(web3endpoint))
 
