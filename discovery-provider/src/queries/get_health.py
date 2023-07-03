@@ -47,7 +47,10 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
-from src.utils.web3_provider import LOCAL_RPC, get_web3
+from src.utils.web3_provider import get_web3
+
+LOCAL_RPC = "http://chain:8545"
+
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
