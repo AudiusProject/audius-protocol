@@ -21,9 +21,9 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   const collection = useSelector((state: CommonState) =>
     getCollection(state, { id: collectionId })
   ) as Collection
-  const { track_count, is_private, is_album } = collection
+  const { track_count, is_private, is_album } = collection ?? {}
 
-  return (
+  return collection ? (
     <>
       <EditButton
         collectionId={collectionId}
@@ -45,5 +45,5 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
         <OverflowMenuButton collectionId={collectionId} isOwner />
       ) : null}
     </>
-  )
+  ) : null
 }
