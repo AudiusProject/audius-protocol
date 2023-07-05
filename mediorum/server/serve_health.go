@@ -113,6 +113,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	status := 200
 	if !ss.Config.WalletIsRegistered {
 		status = 506
+	} else if !data.Healthy {
+		status = 500
 	}
 
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
