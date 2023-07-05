@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -122,13 +121,13 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			logger := logger.With("cid", cid)
 
-			// don't try to repair legacy blob formats
-			if !strings.HasPrefix(cid, "ba") {
-				continue
-			}
-
 			preferredHosts, isMine := ss.rendezvous(cid)
 			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
+
+			if isLegacyCID(cid) {
+				// TODO(theo): Remove this once all nodes have enough space to store Qm CIDs
+				myRank = 999
+			}
 
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
@@ -143,8 +142,8 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			}
 
 			// in cleanup mode do some extra checks:
-			// - validate CID, delete if invalid
-			if cleanupMode && isOnDisk {
+			// - validate CID, delete if invalid (doesn't apply to legacy CIDs)
+			if cleanupMode && isOnDisk && !isLegacyCID(cid) {
 				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
 					err := validateCID(cid, r)
 					r.Close()
@@ -154,7 +153,6 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 						isOnDisk = false
 					}
 				}
-
 			}
 
 			// get blobs that I should have

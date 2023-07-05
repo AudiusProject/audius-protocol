@@ -53,6 +53,8 @@ type healthCheckResponseData struct {
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
 	CidCursors                []cidCursor                `json:"cidCursors"`
 	PeerHealths               map[string]time.Time       `json:"peerHealths"`
+	IsV2Only                  bool                       `json:"isV2Only"`
+	StoreAll                  bool                       `json:"storeAll"`
 }
 
 type legacyHealth struct {
@@ -62,7 +64,23 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
-	legacyHealth, err := ss.fetchCreatorNodeHealth()
+	var err error
+	var version string
+	var service string
+	var selectedDiscoveryProvider string
+	if ss.Config.IsV2Only {
+		version = ss.Config.VersionJson.Version
+		service = ss.Config.VersionJson.Service
+		selectedDiscoveryProvider = "<none - v2 only>"
+	} else {
+		var legacyHealth legacyHealth
+		legacyHealth, err = ss.fetchCreatorNodeHealth()
+		if err != nil {
+			version = legacyHealth.Version
+			service = legacyHealth.Service
+			selectedDiscoveryProvider = legacyHealth.SelectedDiscoveryProvider
+		}
+	}
 
 	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
@@ -70,11 +88,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	data := healthCheckResponseData{
 		Healthy:                   err == nil && ss.databaseSize > 0,
-		Version:                   legacyHealth.Version,
-		Service:                   legacyHealth.Service,
+		Version:                   version,
+		Service:                   service,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
-		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
+		SelectedDiscoveryProvider: selectedDiscoveryProvider,
 		SPID:                      ss.Config.SPID,
 		SPOwnerWallet:             ss.Config.SPOwnerWallet,
 		Git:                       ss.Config.GitSHA,
@@ -95,6 +113,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		CidCursors:                ss.cachedCidCursors,
 		PeerHealths:               ss.peerHealth,
 		Signers:                   ss.Config.Signers,
+		IsV2Only:                  ss.Config.IsV2Only,
+		StoreAll:                  ss.Config.StoreAll,
 	}
 
 	dataBytes, err := json.Marshal(data)

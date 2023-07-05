@@ -8,6 +8,7 @@ import (
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -75,6 +76,44 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	}
 
 	return nil
+}
+
+func (ss *MediorumServer) moveFromDiskToMyBucket(diskPath string, key string) error {
+	// create temp file to copy data to from disk
+	origFile, err := os.Open(diskPath)
+	if err != nil {
+		return err
+	}
+	defer origFile.Close()
+	tempFile, err := os.CreateTemp("", "mediorum")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tempFile.Name())
+
+	// copy data from original file to temp file
+	_, err = io.Copy(tempFile, origFile)
+	if err != nil {
+		return err
+	}
+	if err := tempFile.Close(); err != nil {
+		return err
+	}
+
+	// write to bucket, record in blobs table that we have it, and delete the original file from disk
+	source, err := os.Open(tempFile.Name())
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	err = ss.replicateToMyBucket(key, source)
+	if err == nil {
+		err = os.Remove(diskPath)
+	} else {
+		os.Remove(diskPath)
+	}
+
+	return err
 }
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
@@ -161,7 +200,7 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	u := apiPath(host, "internal/blobs/info", key)
+	u := apiPath(host, "internal/blobs", key, "info")
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"net/url"
 	"sync"
 	"time"
@@ -126,6 +127,33 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	if isLegacyCID(jobID) {
+		// check if file is migrated first - it would have a single key and no upload object in the db
+		key := jobID + "/" + variant
+		exists, err := ss.bucket.Exists(c.Request().Context(), key)
+		if err != nil {
+			ss.logger.Warn("migrated blob exists check failed", "err", err)
+		} else if exists {
+			blob, err := ss.bucket.NewReader(c.Request().Context(), key, nil)
+			if err != nil {
+				return err
+			}
+			defer blob.Close()
+
+			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+			return nil
+		}
+
+		// check if file is migrated but on another host
+		host, err := ss.findNodeToServeBlob(key)
+		if err != nil {
+			return err
+		} else if host != "" {
+			dest := replaceHost(*c.Request().URL, host)
+			return c.Redirect(302, dest.String())
+		}
+
+		// fall back to serving from disk
+		// TODO: this should be removed once all files are migrated
 		c.SetParamNames("dirCid", "fileName")
 		c.SetParamValues(jobID, variant)
 		return ss.serveLegacyDirCid(c)

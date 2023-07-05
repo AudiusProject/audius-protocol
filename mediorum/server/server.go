@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
@@ -28,6 +30,11 @@ import (
 type Peer struct {
 	Host   string `json:"host"`
 	Wallet string `json:"wallet"`
+}
+
+type VersionJson struct {
+	Version string `json:"version"`
+	Service string `json:"service"`
 }
 
 func (p Peer) ApiPath(parts ...string) string {
@@ -56,11 +63,14 @@ type MediorumConfig struct {
 	AudiusDockerCompose string
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
+	IsV2Only            bool
+	VersionJson         VersionJson
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
 
-	// StoreAll          bool   // todo: set this to true for "full node"
+	StoreAll      bool
+	MigrateQmCids bool
 
 	privateKey *ecdsa.PrivateKey
 }
@@ -93,6 +103,28 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
 		config.Env = env
 	}
+
+	// parse version.json
+	var versionJson VersionJson
+	versionJsonFile, err := os.Open(".version.json")
+	if err != nil {
+		slog.Error("Unable to open .version.json file", "host", config.Self.Host, "err", err)
+		if config.IsV2Only {
+			panic("Unable to open .version.json file")
+		}
+	}
+	defer versionJsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(versionJsonFile)
+
+	err = json.Unmarshal(byteValue, &versionJson)
+	if err != nil {
+		slog.Error("Unable to parse .version.json file", "host", config.Self.Host, "err", err)
+		if config.IsV2Only {
+			panic("Unable to parse .version.json file")
+		}
+	}
+	config.VersionJson = versionJson
 
 	// validate host config
 	if config.Self.Host == "" {
@@ -271,14 +303,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/broken", ss.getBlobBroken)
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
 
-	// old info routes
-	// TODO: remove
-	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
+	// TODO: old info route. remove
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 
 	// new info routes
-	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)
 	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
 
 	// internal: blobs between peers
@@ -328,6 +356,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorDiskAndDbStatus()
 
 	go ss.monitorCidCursors()
+
+	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

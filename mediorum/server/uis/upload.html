@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mediorum</title>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: sans-serif;
-      }
-    </style>
-  </head>
-  <body>
-    <upload-table />
-  </body>
-  <script type="module">
-    import {
-      LitElement,
-      html,
-      css,
-    } from "https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js";
 
-    class UploadTable extends LitElement {
-      static styles = css`
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mediorum</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <upload-table />
+</body>
+<script type="module">
+  import {
+    LitElement,
+    html,
+    css,
+  } from "https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js";
+
+  class UploadTable extends LitElement {
+    static styles = css`
         .ui {
         }
         table {
@@ -52,76 +55,76 @@
         }
       `;
 
-      constructor() {
-        super();
-        this.uploads = [];
-        this.hostHealth = {};
-      }
+    constructor() {
+      super();
+      this.uploads = [];
+      this.hostHealth = {};
+    }
 
-      connectedCallback() {
-        super.connectedCallback();
-        this.doPoll();
-        setInterval(this.doPoll.bind(this), 10000);
-      }
+    connectedCallback() {
+      super.connectedCallback();
+      this.doPoll();
+      setInterval(this.doPoll.bind(this), 10000);
+    }
 
-      doPoll() {
-        fetch("/uploads")
-          .then((r) => r.json())
-          .then((r) => {
-            if (Array.isArray(r)) {
-              this.uploads = r;
-              this.requestUpdate();
-            }
-          });
-
-        fetch("/internal/health/peers")
-          .then((r) => r.json())
-          .then((r) => {
-            for (const peer of r.peers) {
-              this.hostHealth[peer.host] = peer;
-            }
+    doPoll() {
+      fetch("/uploads")
+        .then((r) => r.json())
+        .then((r) => {
+          if (Array.isArray(r)) {
+            this.uploads = r;
             this.requestUpdate();
-          });
+          }
+        });
+
+      fetch("/internal/health/peers")
+        .then((r) => r.json())
+        .then((r) => {
+          for (const peer of r.peers) {
+            this.hostHealth[peer.host] = peer;
+          }
+          this.requestUpdate();
+        });
+    }
+
+    hostSwitcher(h) {
+      const url = new URL(h.host);
+      const aliveAge = Math.floor((new Date() - new Date(h.alive_at)) / 1000);
+
+      let style = "";
+      if (window.location.host == url.host) {
+        style += "font-weight: bold;";
       }
+      style += hostHealthStyle(h);
 
-      hostSwitcher(h) {
-        const url = new URL(h.host);
-        const aliveAge = Math.floor((new Date() - new Date(h.alive_at)) / 1000);
+      let title = Object.entries(h)
+        .map((v) => v.join("\n"))
+        .join("\n");
 
-        let style = "";
-        if (window.location.host == url.host) {
-          style += "font-weight: bold;";
-        }
-        style += hostHealthStyle(h);
-
-        let title = Object.entries(h)
-          .map((v) => v.join("\n"))
-          .join("\n");
-
-        // if (aliveAge)
-        return html` <a
+      // if (aliveAge)
+      return html` <a
           style=${style}
           href="${h.host}${window.location.pathname}"
           title="${title}"
         >
           ${url.host}
         </a>`;
-      }
+    }
 
-      sortedHostNames() {
-        const names = Object.keys(this.hostHealth);
-        names.sort();
-        return names;
-      }
+    sortedHostNames() {
+      const names = Object.keys(this.hostHealth);
+      names.sort();
+      return names;
+    }
 
-      render() {
-        return html`<div class="ui">
+    render() {
+      return html`<div class="ui">
           <div
             style="display: flex; gap: 10px; font-size: 80%; margin-bottom: 25px;"
           >
             ${this.sortedHostNames().map((name) =>
-              this.hostSwitcher(this.hostHealth[name])
-            )}
+        this.hostSwitcher(this.hostHealth[name])
+      )}
           </div>
 
           <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -142,7 +145,7 @@
               <th>Results</th>
             </tr>
             ${this.uploads.map(
-              (upload) => html`
+        (upload) => html`
                 <tr>
                   <td>
                     <a href="/uploads/${upload.id}" target="_blank">
@@ -166,8 +169,8 @@
                   <td>
                     <div style="display: flex; gap: 10px;">
                       ${Object.entries(upload.results).map(
-                        ([label, key]) =>
-                          html`
+          ([label, key]) =>
+            html`
                             <blob-link
                               key=${key}
                               label=${label}
@@ -175,19 +178,19 @@
                               .hostHealth=${this.hostHealth}
                             ></blob-link>
                           `
-                      )}
+        )}
                     </div>
                   </td>
                 </tr>
               `
-            )}
+      )}
           </table>
         </div>`;
-      }
     }
+  }
 
-    class BlobLink extends LitElement {
-      static styles = css`
+  class BlobLink extends LitElement {
+    static styles = css`
         .blob-link {
           position: relative;
         }
@@ -216,50 +219,50 @@
         }
       `;
 
-      static properties = {
-        key: { type: String },
-        label: { type: String },
-        pos: { type: String },
-        hostHealth: { type: Object, state: true },
+    static properties = {
+      key: { type: String },
+      label: { type: String },
+      pos: { type: String },
+      hostHealth: { type: Object, state: true },
 
-        isOpen: { type: Boolean },
-        detailPanel: {},
-      };
+      isOpen: { type: Boolean },
+      detailPanel: {},
+    };
 
-      _show(e) {
-        this.isOpen = true;
+    _show(e) {
+      this.isOpen = true;
 
-        fetch("/internal/blobs/location/" + this.key)
-          .then((r) => r.json())
-          .then((r) => {
-            this._renderDetail(r);
-          });
-      }
+      fetch(`/internal/blobs/${this.key}/location`)
+        .then((r) => r.json())
+        .then((r) => {
+          this._renderDetail(r);
+        });
+    }
 
-      _hide(e) {
-        this.isOpen = false;
-      }
+    _hide(e) {
+      this.isOpen = false;
+    }
 
-      _renderDetail(blobs) {
-        this.detailPanel = html`
+    _renderDetail(blobs) {
+      this.detailPanel = html`
           <div class="detail" style=${this.pos}>
             ${blobs.map(
-              (b) => html`<div>
+        (b) => html`<div>
                 <a
-                  href=${b.host + "/internal/blobs/info/" + b.key}
+                  href=${`${b.host}/internal/blobs/${b.key}/info`}
                   target="_blank"
                   style=${hostHealthStyle(this.hostHealth[b.host])}
                 >
                   ${hostName(b.host)}
                 </a>
               </div>`
-            )}
+      )}
           </div>
         `;
-      }
+    }
 
-      render() {
-        return html`<div
+    render() {
+      return html`<div
           class="blob-link"
           @mouseenter=${this._show}
           @mouseleave=${this._hide}
@@ -267,16 +270,16 @@
           <a href=${"/content/" + this.key} target="_blank"> ${this.label} </a>
           ${this.isOpen ? this.detailPanel : null}
         </div>`;
-      }
     }
+  }
 
-    class UploadForm extends LitElement {
-      static properties = {
-        template: { type: String },
-        mime: { type: String },
-      };
+  class UploadForm extends LitElement {
+    static properties = {
+      template: { type: String },
+      mime: { type: String },
+    };
 
-      static styles = css`
+    static styles = css`
         .template-name {
           font-weight: bold;
         }
@@ -294,8 +297,8 @@
         }
       `;
 
-      render() {
-        return html`
+    render() {
+      return html`
           <form
             action="/uploads?redirect=true"
             method="POST"
@@ -316,37 +319,38 @@
             </label>
           </form>
         `;
-      }
+    }
+  }
+
+  customElements.define("upload-table", UploadTable);
+  customElements.define("upload-form", UploadForm);
+  customElements.define("blob-link", BlobLink);
+
+  //////// helpers
+  function hostName(host) {
+    if (!host) return "";
+    const u = new URL(host);
+    return u.host;
+  }
+
+  function hostHealthStyle(h) {
+    const aliveAge = Math.floor((new Date() - new Date(h.alive_at)) / 1000);
+
+    // see health.go
+    const heartbeatInterval = 5;
+
+    let style = "";
+    if (aliveAge > heartbeatInterval * 10) {
+      // 10 missed heartbeats: mark red
+      style +=
+        "background: pink; color: firebrick; text-decoration: line-through;";
+    } else if (aliveAge > heartbeatInterval * 5) {
+      // 5 missed heartbeats: mark orange
+      style += "color: orange";
     }
 
-    customElements.define("upload-table", UploadTable);
-    customElements.define("upload-form", UploadForm);
-    customElements.define("blob-link", BlobLink);
+    return style;
+  }
+</script>
 
-    //////// helpers
-    function hostName(host) {
-      if (!host) return "";
-      const u = new URL(host);
-      return u.host;
-    }
-
-    function hostHealthStyle(h) {
-      const aliveAge = Math.floor((new Date() - new Date(h.alive_at)) / 1000);
-
-      // see health.go
-      const heartbeatInterval = 5;
-
-      let style = "";
-      if (aliveAge > heartbeatInterval * 10) {
-        // 10 missed heartbeats: mark red
-        style +=
-          "background: pink; color: firebrick; text-decoration: line-through;";
-      } else if (aliveAge > heartbeatInterval * 5) {
-        // 5 missed heartbeats: mark orange
-        style += "color: orange";
-      }
-
-      return style;
-    }
-  </script>
 </html>

@@ -18,18 +18,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
-	cid := c.Param("cid")
-	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
-	preferred, _ := ss.rendezvous(cid)
-	return c.JSON(200, map[string]any{
-		"cid":       cid,
-		"locations": locations,
-		"preferred": preferred,
-	})
-}
-
 func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
 	problems, err := ss.findProblemBlobs(false)
 	if err != nil {
@@ -56,6 +44,7 @@ func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
 			continue
 		}
 		defer r.Close()
+		// any Qm CIDs are considered "broken"
 		cid, err := computeFileCID(r)
 		if err != nil {
 			results[problem.Key] = err.Error()
@@ -80,38 +69,6 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 		return err
 	}
 	return c.JSON(200, attr)
-}
-
-// similar to blob info... but more complete
-func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
-	ctx := c.Request().Context()
-	key := c.Param("cid")
-
-	r, err := ss.bucket.NewReader(ctx, key, nil)
-	if err != nil {
-		// Check if the error is a blob not found error
-		// If it is, return a 404
-		if strings.Contains(err.Error(), "not found") {
-			return c.String(404, "blob not found")
-		}
-		return err
-	}
-	defer r.Close()
-
-	// verify CID matches
-	err = validateCID(key, r)
-	if err != nil {
-		return err
-	}
-
-	// verify DB row exists
-	var existingBlob *Blob
-	err = ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, key).First(&existingBlob).Error
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(200, existingBlob)
 }
 
 func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerFunc {
@@ -150,11 +107,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
 
-	if isLegacyCID(key) {
-		logger.Debug("serving legacy cid")
-		return ss.serveLegacyCid(c)
-	}
-
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		// detect mime type:
 		// if this is not the cidstream route, we should block mp3 streaming
@@ -177,23 +129,38 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// redirect to it
+	host, err := ss.findNodeToServeBlob(key)
+	if err != nil {
+		return err
+	} else if host != "" {
+		dest := replaceHost(*c.Request().URL, host)
+		return c.Redirect(302, dest.String())
+	}
+
+	if isLegacyCID(key) {
+		logger.Debug("serving legacy cid")
+		return ss.serveLegacyCid(c)
+	}
+
+	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
 		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
 	if err != nil {
-		return err
+		return "", err
 	}
 	for _, blob := range blobs {
 		// do a check server is up and has blob
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
-			return c.Redirect(302, dest.String())
+			return blob.Host, nil
 		}
 	}
-
-	return c.String(404, "blob not found")
+	return "", nil
 }
 
 func (ss *MediorumServer) headBlob(c echo.Context) error {
@@ -210,29 +177,23 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
-	if isLegacyCID(key) {
-		return ss.headLegacyCid(c)
-	}
-
 	// Return 200 if we have it
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		return c.NoContent(200)
 	}
 
 	// Return 302 if we know where it is
-	var blobs []Blob
-	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
-		Find(&blobs).Error
+	host, err := ss.findNodeToServeBlob(key)
 	if err != nil {
 		return err
+	} else if host != "" {
+		dest := replaceHost(*c.Request().URL, host)
+		return c.Redirect(302, dest.String())
 	}
-	for _, blob := range blobs {
-		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
-			return c.Redirect(302, dest.String())
-		}
+
+	if isLegacyCID(key) {
+		logger.Debug("serving legacy cid")
+		return ss.serveLegacyCid(c)
 	}
 
 	return c.String(404, "blob not found")

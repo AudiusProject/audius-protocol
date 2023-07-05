@@ -28,9 +28,6 @@ func Migrate(db *sql.DB) {
 	runMigration(db, cidLookupDDL)
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, `drop table if exists server_healths;`)
-
-	// delete legacy blobs
-	shouldExec(db, `delete from blobs where key not like 'ba%'`)
 }
 
 func runMigration(db *sql.DB, ddl string) {
