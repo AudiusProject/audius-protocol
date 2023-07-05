@@ -33,7 +33,7 @@ const TotalApiCallsChart: React.FC<TotalApiCallsChartProps> = props => {
       data={data}
       labels={labels}
       selection={bucket}
-      options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
+      options={[Bucket.ALL_TIME, Bucket.MONTH]}
       onSelectOption={(option: string) => setBucket(option as Bucket)}
       showLeadingDay
     />
