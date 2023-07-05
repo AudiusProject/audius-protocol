@@ -433,26 +433,27 @@ export class Track extends Base {
       throw new Error('No users loaded for this wallet')
     }
 
-    let trackIds: number[] = []
-    let requestFailed = false
-    await Promise.all(
-      trackMetadatas.map(async (trackMetadata) => {
-        try {
-          const { trackId } = await this.writeTrackToChain(
-            trackMetadata,
-            Action.CREATE
-          )
-          trackIds.push(trackId)
-        } catch (e) {
-          requestFailed = true
-          console.error(`Failed to add track to chain: ${e}`)
-        }
-      })
-    )
-
-    // Any failures in addding track to the blockchain will prevent further progress.
+    // Any failures in adding track to the blockchain will prevent further progress.
     // The list of successful track uploads is returned for revert operations by caller
-    trackIds = trackIds.filter(Boolean)
+    let requestFailed = false
+    const trackIds = (
+      await Promise.all(
+        trackMetadatas.map(async (trackMetadata) => {
+          try {
+            const { trackId } = await this.writeTrackToChain(
+              trackMetadata,
+              Action.CREATE
+            )
+            return trackId
+          } catch (e) {
+            requestFailed = true
+            console.error(`Failed to add track to chain: ${e}`)
+            return null
+          }
+        })
+      )
+    ).filter(Boolean)
+
     const error = requestFailed || trackIds.length !== trackMetadatas.length
     return { error, trackIds }
   }
