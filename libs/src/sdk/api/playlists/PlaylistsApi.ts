@@ -14,6 +14,7 @@ import {
 import {
   createUploadPlaylistSchema,
   PlaylistMetadata,
+  PlaylistTrackMetadata,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
   SavePlaylistRequest,
@@ -26,7 +27,6 @@ import {
 import { retry3 } from '../../utils/retry'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
-import type { TrackMetadata } from '../tracks/types'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
@@ -284,7 +284,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * taking the metadata from the playlist when the track is missing it.
    */
   private combineMetadata(
-    trackMetadata: TrackMetadata & { coverArtSizes?: string },
+    trackMetadata: PlaylistTrackMetadata & { coverArtSizes?: string },
     playlistMetadata: PlaylistMetadata & { coverArtSizes?: string }
   ) {
     const metadata = trackMetadata

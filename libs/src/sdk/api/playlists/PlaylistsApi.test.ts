@@ -6,11 +6,15 @@ import { PlaylistsApi } from './PlaylistsApi'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
+import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
+import { Genre } from '../../types/Genre'
+import { Mood } from '../../types/Mood'
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
 jest.mock('../../services/StorageNodeSelector')
 jest.mock('../../services/Storage')
+jest.mock('../tracks/TrackUploadHelper')
 
 jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   return {
@@ -28,10 +32,21 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 jest
-  .spyOn(PlaylistsApi.prototype, 'generateId' as any)
+  .spyOn(TrackUploadHelper.prototype, 'generateId' as any)
   .mockImplementation(async () => {
     return 1
   })
+
+jest
+  .spyOn(
+    TrackUploadHelper.prototype,
+    'populateTrackMetadataWithUploadResponse' as any
+  )
+  .mockImplementation(async () => ({}))
+
+jest
+  .spyOn(TrackUploadHelper.prototype, 'transformTrackUploadMetadata' as any)
+  .mockImplementation(async () => ({}))
 
 jest
   .spyOn(EntityManager.prototype, 'manageEntity')
@@ -65,6 +80,66 @@ describe('PlaylistsApi', () => {
     jest.spyOn(console, 'info').mockImplementation(() => {})
     jest.spyOn(console, 'debug').mockImplementation(() => {})
     jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  describe('uploadPlaylist', () => {
+    it('uploads a playlist if valid metadata is provided', async () => {
+      const result = await playlists.uploadPlaylist({
+        userId: '7eP5n',
+        coverArtFile: {
+          buffer: Buffer.from([]),
+          name: 'coverArt'
+        },
+        metadata: {
+          playlistName: 'My Playlist',
+          genre: Genre.ELECTRONIC,
+          mood: Mood.TENDER
+        },
+        trackMetadatas: [
+          {
+            title: 'BachGavotte'
+          }
+        ],
+        trackFiles: [
+          {
+            buffer: Buffer.from([]),
+            name: 'trackArt'
+          }
+        ]
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1,
+        playlistId: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await playlists.uploadPlaylist({
+          userId: '7eP5n',
+          coverArtFile: {
+            buffer: Buffer.from([]),
+            name: 'coverArt'
+          },
+          metadata: {
+            playlistName: 'My Playlist'
+          } as any,
+          trackMetadatas: [
+            {
+              title: 'BachGavotte'
+            }
+          ],
+          trackFiles: [
+            {
+              buffer: Buffer.from([]),
+              name: 'trackArt'
+            }
+          ]
+        })
+      }).rejects.toThrow()
+    })
   })
 
   describe('savePlaylist', () => {

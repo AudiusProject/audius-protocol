@@ -1,8 +1,7 @@
-import type { z } from 'zod'
 import type { UploadResponse } from '../../services/Storage/types'
 import { decodeHashId } from '../../utils/hashId'
 import { BaseAPI } from '../generated/default'
-import type { createUploadTrackSchema, TrackMetadata } from './types'
+import type { PlaylistTrackMetadata } from '../playlists/types'
 
 export class TrackUploadHelper extends BaseAPI {
   public async generateId(type: 'track' | 'playlist') {
@@ -22,9 +21,9 @@ export class TrackUploadHelper extends BaseAPI {
   }
 
   public transformTrackUploadMetadata(
-    inputMetadata: z.output<
-      ReturnType<typeof createUploadTrackSchema>
-    >['metadata'],
+    // PlaylistTrackMetadata is less strict than TrackMetadata because
+    // `genre`, `mood`, and `tags` are optional
+    inputMetadata: PlaylistTrackMetadata,
     userId: number
   ) {
     const metadata = {
@@ -55,7 +54,7 @@ export class TrackUploadHelper extends BaseAPI {
   }
 
   public populateTrackMetadataWithUploadResponse(
-    trackMetadata: TrackMetadata,
+    trackMetadata: PlaylistTrackMetadata,
     audioResponse: UploadResponse,
     coverArtResponse: UploadResponse
   ) {

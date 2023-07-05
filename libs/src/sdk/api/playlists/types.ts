@@ -32,6 +32,19 @@ export type PlaylistMetadata = z.input<
   ReturnType<typeof createUploadPlaylistMetadataSchema>
 >
 
+const createPlaylistTrackMetadataSchema = () =>
+  createUploadTrackMetadataSchema().partial({
+    genre: true,
+    mood: true,
+    tags: true
+  })
+
+// PlaylistTrackMetadata is less strict than TrackMetadata because
+// `genre`, `mood`, and `tags` are optional
+export type PlaylistTrackMetadata = z.infer<
+  ReturnType<typeof createPlaylistTrackMetadataSchema>
+>
+
 export const createUploadPlaylistSchema = () =>
   z
     .object({
@@ -41,7 +54,10 @@ export const createUploadPlaylistSchema = () =>
       ),
       metadata: createUploadPlaylistMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackMetadatas: z.array(createUploadTrackMetadataSchema()),
+      /**
+       * Track metadata is populated from the playlist if fields are missing
+       */
+      trackMetadatas: z.array(createPlaylistTrackMetadataSchema()),
       trackFiles: z.array(
         z.custom<File>((data: unknown) => isFileValid(data as File))
       )
