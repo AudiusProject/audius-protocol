@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"mime/multipart"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -38,48 +39,33 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	return c.JSON(200, upload)
 }
 
+type UpdateUploadBody struct {
+	PreviewStartSeconds string `json:"previewStartSeconds"`
+}
+
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
-	// Parse X-User-Id header
-	userIdHeader := c.Request().Header.Get("X-User-Id")
-	if userIdHeader == "" {
-		return c.String(400, "user id required to edit upload")
-	}
-	userId, err := strconv.Atoi(userIdHeader)
-	if err != nil {
-		return c.String(400, "error parsing X-User-Id header: "+err.Error())
-	}
-
 	var upload *Upload
-	err = ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
+	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
 		return err
 	}
 
-	// Validate requesting user matches user that uploaded the file
-	if !upload.UserID.Valid || upload.UserID.Int64 != int64(userId) {
-		return c.String(403, "can only edit files that you uploaded")
+	body := new(UpdateUploadBody)
+	if err := c.Bind(body); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	// Multipart form
-	form, err := c.MultipartForm()
-	if err != nil {
-		return err
-	}
 	previewStartSeconds := sql.NullInt64{Valid: false}
-	previewStartSecondsString := c.FormValue("previewStartSeconds")
-
-	if previewStartSecondsString != "" {
-		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
+	if body.PreviewStartSeconds != "" {
+		previewStartSecondsInt, err := strconv.Atoi(body.PreviewStartSeconds)
 		if err != nil {
-			return c.String(400, "error parsing previewStartSeconds: "+err.Error())
+			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
-
 		previewStartSeconds = sql.NullInt64{
-			Int64: int64(previewStartSecondsInt),
 			Valid: true,
+			Int64: int64(previewStartSecondsInt),
 		}
 	}
-	defer form.RemoveAll()
 
 	// Update supported editable fields
 
@@ -125,7 +111,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	if previewStartSecondsString != "" {
 		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
 		if err != nil {
-			return c.String(400, "error parsing previewStartSeconds: "+err.Error())
+			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
 
 		previewStartSeconds = sql.NullInt64{
