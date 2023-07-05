@@ -9,8 +9,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"time"
-
-	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
@@ -61,9 +59,13 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	}
 
 	// record that we "have" this key
-	var existingBlob *Blob
-	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
-	if found.Error == gorm.ErrRecordNotFound {
+	var exists bool
+	ss.crud.DB.Raw(
+		"SELECT EXISTS(SELECT 1 FROM blobs WHERE host = ? AND key = ? LIMIT 1)",
+		ss.Config.Self.Host,
+		fileName,
+	).Scan(&exists)
+	if !exists {
 		logger.Info("creating blob record")
 		return ss.crud.Create(&Blob{
 			Host:      ss.Config.Self.Host,

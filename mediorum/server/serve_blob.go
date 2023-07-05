@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
 
@@ -72,6 +73,10 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	key := c.Param("cid")
 	attr, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			return c.String(404, "blob not found")
+		}
+		ss.logger.Warn("error getting blob attributes", "error", err)
 		return err
 	}
 	return c.JSON(200, attr)

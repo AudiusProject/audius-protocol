@@ -30,6 +30,9 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	if upload.Status == JobStatusError {
+		return c.JSON(422, upload)
+	}
 	return c.JSON(200, upload)
 }
 
