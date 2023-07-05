@@ -29,6 +29,7 @@ type Upload struct {
 	Error               string         `json:"error,omitempty"`
 	ErrorCount          int            `json:"error_count,omitempty"`
 	Mirrors             []string       `json:"mirrors" gorm:"serializer:json"`
+	TranscodedMirrors   []string       `json:"transcoded_mirrors" gorm:"serializer:json"`
 	Status              string         `json:"status" gorm:"index"`
 
 	CreatedBy string    `json:"created_by" `

@@ -85,28 +85,14 @@ func (ss *MediorumServer) startTranscoder() {
 		}
 		for _, upload := range *uploads {
 			if upload.Status == JobStatusRetranscode {
-				full320CID, ok := upload.TranscodeResults["320"]
-				if !ok {
-					ss.logger.Warn("missing full transcoded mp3 cid in retranscode job. skipping", "id", upload.ID)
+				if upload.TranscodedMirrors == nil {
+					ss.logger.Warn("missing full transcoded mp3 data in retranscode job. skipping", "id", upload.ID)
 					continue
 				}
-				// the first mirror with the full 320 downsample transcodes
-				full320Preferred, _ := ss.rendezvous(full320CID)
-				for _, peer := range full320Preferred {
-					if peer != myHost && ss.hostHasBlob(peer, full320CID) {
-						// another peer before me in the preferred order has the file and will pick up the transcode job.
-						// break from iterating further because I should not do this job
-						break
-					}
-					if peer == myHost {
-						// if loop iterates until my host in the preferred order, pick up the job if I have the file
-						have, _ := ss.bucket.Exists(context.Background(), full320CID)
-						if have {
-							ss.logger.Info("got retranscode job", "id", upload.ID)
-							work <- upload
-						}
-						break
-					}
+				// only the first mirror transcodes
+				if slices.Index(upload.TranscodedMirrors, myHost) == 0 {
+					ss.logger.Info("got retranscode job", "id", upload.ID)
+					work <- upload
 				}
 			}
 		}
@@ -148,29 +134,11 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 
 		myIdx := slices.Index(upload.Mirrors, myHost)
 		if retranscode {
-			full320CID, ok := upload.TranscodeResults["320"]
-			if !ok {
-				ss.logger.Warn("missing full transcoded mp3 cid in retranscode job. skipping", "id", upload.ID)
+			if upload.TranscodedMirrors == nil {
+				ss.logger.Warn("missing full transcoded mp3 mirrors in retranscode job. skipping", "id", upload.ID)
 				continue
 			}
-			// manually deduce the full 320kbps file's mirrors since we don't persist this information
-			full320Preferred, _ := ss.rendezvous(full320CID)
-			full320Mirrors := []string{}
-			for _, peer := range full320Preferred {
-				if peer != myHost && ss.hostHasBlob(peer, full320CID) {
-					full320Mirrors = append(full320Mirrors, peer)
-				}
-				if peer == myHost {
-					have, _ := ss.bucket.Exists(context.Background(), full320CID)
-					if have {
-						full320Mirrors = append(full320Mirrors, peer)
-					}
-				}
-				if len(full320Mirrors) == ss.Config.ReplicationFactor {
-					break
-				}
-			}
-			myIdx = slices.Index(full320Mirrors, myHost)
+			myIdx = slices.Index(upload.TranscodedMirrors, myHost)
 		}
 
 		if myIdx == -1 {
@@ -399,14 +367,14 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, "computeFileCID")
 	}
 	resultKey := resultHash
-	mirrors, err := ss.replicateFile(resultHash, dest)
+	upload.TranscodedMirrors, err = ss.replicateFile(resultHash, dest)
 	if err != nil {
 		return onError(err, "replicateFile")
 	}
 
 	upload.TranscodeResults["320"] = resultKey
 
-	logger.Info("audio transcode done", "mirrors", mirrors)
+	logger.Info("audio transcode done", "mirrors", upload.TranscodedMirrors)
 
 	// if a start time is set, also transcode an audio preview from the full 320kbps downsample
 	if upload.PreviewStartSeconds.Valid {
