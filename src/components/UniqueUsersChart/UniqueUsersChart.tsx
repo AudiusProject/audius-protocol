@@ -2,6 +2,7 @@ import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
 import { useApiCalls } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import { datesToSkip } from 'utils/consts'
 
 type OwnProps = {}
 
@@ -17,8 +18,12 @@ const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
     labels = []
     data = []
   } else {
-    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
-    data = apiCalls?.map(a => a.summed_unique_count) ?? null
+    labels = apiCalls
+      ?.filter(a => !datesToSkip.has(a.timestamp))
+      ?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+    data = apiCalls
+      ?.filter(a => !datesToSkip.has(a.timestamp))
+      ?.map(a => a.summed_unique_count) ?? null
   }
   return (
     <LineChart
