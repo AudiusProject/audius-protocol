@@ -348,7 +348,7 @@ def process_playlist_data_event(
     metadata_cid = params.metadata_cid
 
     playlist_record.is_album = (
-        params.playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
+        playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
     )
     playlist_record.description = playlist_metadata["description"]
     playlist_record.playlist_image_multihash = playlist_metadata[
