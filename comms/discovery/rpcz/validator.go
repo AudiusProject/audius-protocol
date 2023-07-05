@@ -74,7 +74,7 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 func (vtor *Validator) isBanned(tx *sqlx.Tx, userId int32) bool {
 	q := vtor.getQ(tx)
 	isBanned := false
-	q.Get(&isBanned, `select count(user_id) = 1 from chat_ban where user_id = $1`, userId)
+	q.Get(&isBanned, `select count(user_id) = 1 from chat_ban where user_id = $1 and is_banned = true`, userId)
 	return isBanned
 }
 

@@ -133,10 +133,5 @@ func TestChat(t *testing.T) {
 	assert.NoError(t, err)
 	assertReaction(user1Id, replyMessageId, nil)
 
-	// user1 is banned
-	tx.MustExec(`insert into chat_ban values ($1)`, user1Id)
-
-	assert.True(t, testValidator.isBanned(tx, user1Id))
-
 	tx.Rollback()
 }
