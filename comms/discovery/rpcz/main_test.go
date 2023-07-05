@@ -5,11 +5,13 @@ import (
 	"os"
 	"testing"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 )
 
 var (
 	testValidator *Validator
+	testProcessor *RPCProcessor
 )
 
 // this runs before all tests (not a per-test setup / teardown)
@@ -30,6 +32,10 @@ func TestMain(m *testing.M) {
 		db:      db.Conn,
 		limiter: limiter,
 	}
+
+	// setup test processor
+	discoveryConfig := config.Parse()
+	testProcessor, err = NewProcessor(discoveryConfig)
 
 	// run tests
 	code := m.Run()
