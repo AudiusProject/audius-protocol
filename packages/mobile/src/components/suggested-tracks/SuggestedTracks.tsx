@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import type { UserTrackMetadata } from '@audius/common'
 import { SquareSizes, useGetSuggestedTracks } from '@audius/common'
 import { View } from 'react-native'
@@ -114,13 +116,10 @@ export const SuggestedTracks = () => {
       <View>
         <Divider />
         {suggestedTracks?.map((suggestedTrack) => (
-          <>
-            <SuggestedTrack
-              key={suggestedTrack.track_id}
-              track={suggestedTrack}
-            />
+          <Fragment key={suggestedTrack.track_id}>
+            <SuggestedTrack track={suggestedTrack} />
             <Divider />
-          </>
+          </Fragment>
         ))}
       </View>
       <TextButton
