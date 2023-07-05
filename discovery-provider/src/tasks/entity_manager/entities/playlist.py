@@ -1,4 +1,3 @@
-import logging
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Set
@@ -16,15 +15,17 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    validate_signer,
 )
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
-logger = logging.getLogger(__name__)
 
+def update_playlist_routes_table(params: ManageEntityParameters, playlist_record):
+    pending_playlist_routes = params.pending_playlist_routes
+    session = params.session
 
-def update_playlist_routes_table(session, playlist_record, pending_playlist_routes):
-    logger.info(
+    params.logger.info(
         f"index.py | playlists.py | Updating playlist routes for {playlist_record.playlist_id}"
     )
     # Get the title slug, and set the new slug to that
@@ -59,7 +60,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
-            logger.info(f"not changing for {playlist_record.playlist_id}")
+            params.logger.info(f"not changing for {playlist_record.playlist_id}")
             return
         # The new route will be current
         prev_playlist_route_record.is_current = False
@@ -91,7 +92,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
 
-    logger.info(
+    params.logger.info(
         f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
     )
 
@@ -108,9 +109,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
     if user_id not in params.existing_records[EntityType.USER]:
         raise IndexingValidationError(f"User {user_id} does not exist")
 
-    wallet = params.existing_records[EntityType.USER][user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise IndexingValidationError(f"User {user_id} does not match signer")
+    validate_signer(params)
 
     if params.entity_type != EntityType.PLAYLIST:
         raise IndexingValidationError(f"Entity type {params.entity_type} is not a playlist")
@@ -200,7 +199,7 @@ def create_playlist(params: ManageEntityParameters):
     )
 
     update_playlist_routes_table(
-        params.session, create_playlist_record, params.pending_playlist_routes
+        params, create_playlist_record
     )
 
     params.add_playlist_record(playlist_id, create_playlist_record)
@@ -239,15 +238,12 @@ def update_playlist(params: ManageEntityParameters):
         params.block_datetime,
     )
     process_playlist_data_event(
-        updated_playlist,
-        params.metadata,
-        params.block_integer_time,
-        params.block_datetime,
-        params.metadata_cid,
+        params,
+        updated_playlist
     )
 
     update_playlist_routes_table(
-        params.session, updated_playlist, params.pending_playlist_routes
+        params, updated_playlist
     )
 
     params.add_playlist_record(playlist_id, updated_playlist)
@@ -343,12 +339,14 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
 
 
 def process_playlist_data_event(
+    params: ManageEntityParameters,
     playlist_record,
-    playlist_metadata,
-    block_integer_time,
-    block_datetime,
-    metadata_cid,
 ):
+    playlist_metadata = params.playlist_metadata
+    block_integer_time = params.block_integer_time
+    block_datetime = params.block_datetime
+    metadata_cid = params.metadata_cid
+
     playlist_record.is_album = (
         playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
     )
@@ -385,6 +383,6 @@ def process_playlist_data_event(
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(
+    params.logger.info(
         f"playlist.py | EntityManager | Updated playlist record {playlist_record}"
     )

@@ -8,11 +8,13 @@ import { EntityManager } from '../../services/EntityManager'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
+import { TrackUploadHelper } from './TrackUploadHelper'
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
 jest.mock('../../services/StorageNodeSelector')
 jest.mock('../../services/Storage')
+jest.mock('./TrackUploadHelper')
 
 jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
   return {
@@ -30,10 +32,17 @@ jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 jest
-  .spyOn(TracksApi.prototype, 'generateTrackId' as any)
+  .spyOn(TrackUploadHelper.prototype, 'generateId' as any)
   .mockImplementation(async () => {
     return 1
   })
+
+jest
+  .spyOn(
+    TrackUploadHelper.prototype,
+    'populateTrackMetadataWithUploadResponse' as any
+  )
+  .mockImplementation(async () => ({}))
 
 jest
   .spyOn(EntityManager.prototype, 'manageEntity')
