@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import {
   SquareSizes,
   Status,
@@ -67,12 +69,12 @@ export const SuggestedTracks = () => {
           <LoadingSpinner className={styles.loading} />
         ) : null}
         {suggestedTracks?.map((suggestedTrack) => (
-          <>
-            <li key={suggestedTrack.track_id}>
+          <Fragment key={suggestedTrack.track_id}>
+            <li>
               <SuggestedTrack track={suggestedTrack} />
             </li>
             {divider}
-          </>
+          </Fragment>
         ))}
         {divider}
       </ul>

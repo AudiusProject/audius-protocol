@@ -16,7 +16,7 @@ type EditButtonProps = Partial<ButtonProps> & {
 }
 
 export const EditButton = (props: EditButtonProps) => {
-  const { collectionId } = props
+  const { collectionId, ...other } = props
   const dispatch = useDispatch()
 
   const handleEdit = useCallback(
@@ -30,7 +30,7 @@ export const EditButton = (props: EditButtonProps) => {
       text={messages.edit}
       leftIcon={<IconPencil />}
       onClick={handleEdit}
-      {...props}
+      {...other}
     />
   )
 }

@@ -2,7 +2,3 @@
   position: absolute;
   left: calc(var(--unit-3) * -1);
 }
-
-.tooltip :global(.ant-tooltip-arrow) {
-  left: var(--unit-6);
-}
