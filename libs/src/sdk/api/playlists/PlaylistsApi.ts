@@ -49,9 +49,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // TODO: handle error and delete playlist
-    // TODO: duration?
-    // TODO: Progress callback
-    // TODO: collection image not working
+    // TODO: Progress callback, granular to each track?
     // TODO: delegated playlist writes
 
     // Parse inputs
@@ -104,10 +102,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             parsedTrackMetadata,
             userId
           ),
-          {
-            ...metadata,
-            coverArtSizes: coverArtResponse.id
-          }
+          metadata
         )
 
         // Update metadata to include uploaded CIDs
@@ -164,7 +159,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           time: Date.now()
         }))
       },
-      coverArtSizes: coverArtResponse.id
+      playlistImageSizesMultihash: coverArtResponse.id
     }
 
     // Write playlist metadata to chain
@@ -306,8 +301,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     playlistMetadata: PlaylistMetadata & { coverArtSizes?: string }
   ) {
     const metadata = trackMetadata
-
-    metadata.coverArtSizes = playlistMetadata.coverArtSizes
 
     if (!metadata.genre) metadata.genre = playlistMetadata.genre
     if (!metadata.mood) metadata.mood = playlistMetadata.mood
