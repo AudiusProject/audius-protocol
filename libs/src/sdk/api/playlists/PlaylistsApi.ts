@@ -25,11 +25,11 @@ import {
 } from './types'
 import { retry3 } from '../../utils/retry'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { TracksUploader } from '../tracks/TracksUploader'
-import type { TrackMetadataType } from '../tracks/types'
+import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
+import type { TrackMetadata } from '../tracks/types'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
-  private readonly tracksUploader: TracksUploader
+  private readonly trackUploadHelper: TrackUploadHelper
 
   constructor(
     configuration: Configuration,
@@ -38,7 +38,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     private readonly auth: AuthService
   ) {
     super(configuration)
-    this.tracksUploader = new TracksUploader(configuration)
+    this.trackUploadHelper = new TrackUploadHelper(configuration)
   }
 
   /**
@@ -48,10 +48,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     requestParameters: UploadPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
-    // TODO: handle error and delete playlist
-    // TODO: Progress callback, granular to each track?
-    // TODO: delegated playlist writes
-
     // Parse inputs
     const {
       userId,
@@ -98,41 +94,32 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       parsedTrackMetadatas.map(async (parsedTrackMetadata, i) => {
         // Transform track metadata
         const trackMetadata = this.combineMetadata(
-          this.tracksUploader.transformTrackUploadMetadata(
+          this.trackUploadHelper.transformTrackUploadMetadata(
             parsedTrackMetadata,
             userId
           ),
           metadata
         )
 
-        // Update metadata to include uploaded CIDs
         const audioResponse = audioResponses[i]
 
         if (!audioResponse) {
           throw new Error(`Failed to upload track: ${trackMetadata}`)
         }
 
-        // TODO: generalize this?
-        const updatedMetadata = {
-          ...trackMetadata,
-          trackSegments: [],
-          trackCid: audioResponse.results['320'],
-          download: trackMetadata.download?.isDownloadable
-            ? {
-                ...trackMetadata.download,
-                cid: audioResponse.results['320']
-              }
-            : trackMetadata.download,
-          coverArtSizes: coverArtResponse.id,
-          duration: parseInt(audioResponse.probe.format.duration, 10)
-        }
+        // Update metadata to include uploaded CIDs
+        const updatedMetadata =
+          this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+            trackMetadata,
+            audioResponse,
+            coverArtResponse
+          )
 
         const metadataCid = await generateMetadataCidV1(updatedMetadata)
-        const trackId = await this.tracksUploader.generateId('track')
+        const trackId = await this.trackUploadHelper.generateId('track')
         await this.entityManager.manageEntity({
           userId,
           entityType: EntityType.TRACK,
-          // Should the trackId also be in the metadata?
           entityId: trackId,
           action: Action.CREATE,
           metadata: JSON.stringify({
@@ -147,7 +134,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       })
     )
 
-    const playlistId = await this.tracksUploader.generateId('playlist')
+    const playlistId = await this.trackUploadHelper.generateId('playlist')
 
     // Update metadata to include uploaded CIDs
     const updatedMetadata = {
@@ -297,7 +284,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * taking the metadata from the playlist when the track is missing it.
    */
   private combineMetadata(
-    trackMetadata: TrackMetadataType & { coverArtSizes?: string },
+    trackMetadata: TrackMetadata & { coverArtSizes?: string },
     playlistMetadata: PlaylistMetadata & { coverArtSizes?: string }
   ) {
     const metadata = trackMetadata

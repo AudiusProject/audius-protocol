@@ -1,9 +1,10 @@
 import type { z } from 'zod'
+import type { UploadResponse } from '../../services/Storage/types'
 import { decodeHashId } from '../../utils/hashId'
 import { BaseAPI } from '../generated/default'
-import type { createUploadTrackSchema } from './types'
+import type { createUploadTrackSchema, TrackMetadata } from './types'
 
-export class TracksUploader extends BaseAPI {
+export class TrackUploadHelper extends BaseAPI {
   public async generateId(type: 'track' | 'playlist') {
     const response = await this.request({
       path: `/${type}s/unclaimed_id`,
@@ -51,5 +52,25 @@ export class TracksUploader extends BaseAPI {
       }
     }
     return metadata
+  }
+
+  public populateTrackMetadataWithUploadResponse(
+    trackMetadata: TrackMetadata,
+    audioResponse: UploadResponse,
+    coverArtResponse: UploadResponse
+  ) {
+    return {
+      ...trackMetadata,
+      trackSegments: [],
+      trackCid: audioResponse.results['320'],
+      download: trackMetadata.download?.isDownloadable
+        ? {
+            ...trackMetadata.download,
+            cid: audioResponse.results['320']
+          }
+        : trackMetadata.download,
+      coverArtSizes: coverArtResponse.id,
+      duration: parseInt(audioResponse.probe.format.duration, 10)
+    }
   }
 }

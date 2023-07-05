@@ -91,7 +91,7 @@ export const createUploadTrackMetadataSchema = () =>
     })
     .strict()
 
-export type TrackMetadataType = z.input<
+export type TrackMetadata = z.input<
   ReturnType<typeof createUploadTrackMetadataSchema>
 >
 

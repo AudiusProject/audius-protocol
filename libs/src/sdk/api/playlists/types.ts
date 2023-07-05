@@ -15,7 +15,6 @@ const createUploadPlaylistMetadataSchema = () =>
        * Is this playlist an album?
        */
       isAlbum: z.optional(z.boolean()),
-      //   isPrivate: z.optional(z.boolean()),
       isrc: z.optional(z.string()),
       iswc: z.optional(z.string()),
       license: z.optional(z.string()),

@@ -33,7 +33,7 @@ import {
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
-import { TracksUploader } from './TracksUploader'
+import { TrackUploadHelper } from './TrackUploadHelper'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -48,7 +48,7 @@ const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
 
 // Extend that new class
 export class TracksApi extends TracksApiWithoutStream {
-  private readonly tracksUploader: TracksUploader
+  private readonly trackUploadHelper: TrackUploadHelper
 
   constructor(
     configuration: Configuration,
@@ -58,7 +58,7 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly auth: AuthService
   ) {
     super(configuration)
-    this.tracksUploader = new TracksUploader(configuration)
+    this.trackUploadHelper = new TrackUploadHelper(configuration)
   }
 
   /**
@@ -102,7 +102,7 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = this.tracksUploader.transformTrackUploadMetadata(
+    const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
       parsedMetadata,
       userId
     )
@@ -134,28 +134,19 @@ export class TracksApi extends TracksApiWithoutStream {
     ])
 
     // Update metadata to include uploaded CIDs
-    const updatedMetadata = {
-      ...metadata,
-      trackSegments: [],
-      trackCid: audioResponse.results['320'],
-      download: metadata.download?.isDownloadable
-        ? {
-            ...metadata.download,
-            cid: audioResponse.results['320']
-          }
-        : metadata.download,
-      coverArtSizes: coverArtResponse.id,
-      duration: parseInt(audioResponse.probe.format.duration, 10)
-    }
+    const updatedMetadata =
+      this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+        metadata,
+        audioResponse,
+        coverArtResponse
+      )
 
     // Write metadata to chain
-
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const trackId = await this.tracksUploader.generateId('track')
+    const trackId = await this.trackUploadHelper.generateId('track')
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
-      // Should the trackId also be in the metadata?
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
@@ -194,7 +185,7 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = this.tracksUploader.transformTrackUploadMetadata(
+    const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
       parsedMetadata,
       userId
     )
