@@ -294,7 +294,7 @@ const CollectionPage = ({
       </Tile>
       {isOwner && !isAlbum && !isNftPlaylist && arePlaylistUpdatesEnabled ? (
         <>
-          <Divider variant='default' className={styles.titleDivider} />
+          <Divider variant='default' className={styles.tileDivider} />
           <SuggestedTracks />
         </>
       ) : null}

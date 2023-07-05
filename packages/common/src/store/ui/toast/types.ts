@@ -7,6 +7,7 @@ export type ToastType = 'info' | 'error'
 export type Toast = {
   content: ToastContent
   link?: string
+  linkConfig?: Record<string, unknown>
   linkText?: string
   type?: ToastType
   key: string
