@@ -6,7 +6,8 @@ import { navigationRef } from 'app/components/navigation-container/NavigationCon
 const { registerToast } = toastActions
 
 const messages = {
-  createdToast: 'Playlist Created!'
+  createdToast: 'Playlist Created!',
+  view: 'View'
 }
 
 export function* createPlaylistRequestedSaga() {
@@ -22,7 +23,9 @@ export function* createPlaylistRequestedSaga() {
           yield* put(
             registerToast({
               content: messages.createdToast,
-              key: uuid()
+              key: uuid(),
+              linkText: messages.view,
+              linkConfig: { screen: 'Collection', params: { id: playlistId } }
             })
           )
           break

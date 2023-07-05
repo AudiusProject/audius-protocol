@@ -2,6 +2,8 @@ import { useRef, useCallback, useEffect } from 'react'
 
 import { toastActions } from '@audius/common'
 import type { Toast as ToastType } from '@audius/common'
+import { Link } from '@react-navigation/native'
+import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
 import { Animated, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
@@ -27,6 +29,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   toast: {
     position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: palette.secondary,
     borderRadius: 8
   },
@@ -41,6 +45,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   content: {
     color: palette.staticWhite,
     fontSize: 14
+  },
+  link: {
+    textDecorationLine: 'underline'
   }
 }))
 
@@ -50,7 +57,13 @@ type ToastProps = {
 
 export const Toast = (props: ToastProps) => {
   const { toast } = props
-  const { content, timeout = DEFAULT_TIMEOUT, key } = toast
+  const {
+    content,
+    timeout = DEFAULT_TIMEOUT,
+    key,
+    linkConfig,
+    linkText
+  } = toast
   const styles = useStyles()
   const toastAnimation = useRef(new Animated.Value(0))
   const insets = useSafeAreaInsets()
@@ -111,6 +124,14 @@ export const Toast = (props: ToastProps) => {
           <View style={styles.contentRoot}>
             <Text style={styles.content} weight='demiBold'>
               {content}
+              {linkText && linkConfig ? (
+                <>
+                  {' '}
+                  <Link style={styles.link} to={linkConfig as To}>
+                    {linkText}
+                  </Link>
+                </>
+              ) : null}
             </Text>
           </View>
         ) : (
