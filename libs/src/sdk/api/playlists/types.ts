@@ -39,8 +39,10 @@ const createPlaylistTrackMetadataSchema = () =>
     tags: true
   })
 
-// PlaylistTrackMetadata is less strict than TrackMetadata because
-// `genre`, `mood`, and `tags` are optional
+/**
+ * PlaylistTrackMetadata is less strict than TrackMetadata because
+ * `genre`, `mood`, and `tags` are optional
+ */
 export type PlaylistTrackMetadata = z.infer<
   ReturnType<typeof createPlaylistTrackMetadataSchema>
 >
@@ -67,6 +69,15 @@ export const createUploadPlaylistSchema = () =>
 export type UploadPlaylistRequest = z.input<
   ReturnType<typeof createUploadPlaylistSchema>
 >
+
+export const DeletePlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId
+  })
+  .strict()
+
+export type DeletePlaylistRequest = z.input<typeof DeletePlaylistSchema>
 
 export const SavePlaylistSchema = z
   .object({

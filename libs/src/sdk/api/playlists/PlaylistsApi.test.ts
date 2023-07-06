@@ -142,6 +142,29 @@ describe('PlaylistsApi', () => {
     })
   })
 
+  describe('deletePlaylist', () => {
+    it('deletes a playlist if valid metadata is provided', async () => {
+      const result = await playlists.deletePlaylist({
+        userId: '7eP5n',
+        playlistId: 'x5pJ3Aj'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await playlists.deletePlaylist({
+          userId: '7eP5n',
+          playlistId: 1 as any
+        })
+      }).rejects.toThrow()
+    })
+  })
+
   describe('savePlaylist', () => {
     it('saves a playlist if valid metadata is provided', async () => {
       const result = await playlists.savePlaylist({
