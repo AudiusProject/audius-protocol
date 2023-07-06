@@ -1,9 +1,14 @@
 import App from "basekit/src/app";
 import Fastify from "fastify";
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { healthCheck } from "./routes/health";
 import { relayHandler } from "./routes/relay";
-import { RelayRequest, RelayRequestType, RelayResponse, RelayResponseType } from "./types/relay";
+import {
+  RelayRequest,
+  RelayRequestType,
+  RelayResponse,
+  RelayResponseType,
+} from "./types/relay";
 
 export const webServer = async (app: App<{}>) => {
   const fastify = Fastify({
@@ -17,12 +22,12 @@ export const webServer = async (app: App<{}>) => {
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
     "/relay",
     {
-        schema: {
-            body: RelayRequest,
-            response: {
-                200: RelayResponse
-            }
-        }
+      schema: {
+        body: RelayRequest,
+        response: {
+          200: RelayResponse,
+        },
+      },
     },
     async ({ body }, _rep) => await relayHandler(app, body)
   );

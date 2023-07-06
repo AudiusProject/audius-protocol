@@ -8,10 +8,17 @@ const main = async () => {
   // TODO: connect to libs/sdk
 
   await new App<SharedData>({})
-    .tick({ minutes: 5 }, async (app) => {/** TODO: update and cache health check */})
-    .tick({ seconds: 10 }, async (app) => {/** TODO: check health of local node */})
-    .tick({ minutes: 10 }, async (app) => {/** TODO: fund relayer wallets if empty */})
-    .task(webServer).run();
+    .tick({ minutes: 5 }, async (app) => {
+      /** TODO: update and cache health check */
+    })
+    .tick({ seconds: 10 }, async (app) => {
+      /** TODO: check health of local node */
+    })
+    .tick({ minutes: 10 }, async (app) => {
+      /** TODO: fund relayer wallets if empty */
+    })
+    .task(webServer)
+    .run();
 };
 
 (async () => {
