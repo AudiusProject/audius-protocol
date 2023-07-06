@@ -12,6 +12,8 @@ import {
   PlaylistsApi as GeneratedPlaylistsApi
 } from '../generated/default'
 import {
+  CreatePlaylistRequest,
+  CreatePlaylistSchema,
   createUploadPlaylistSchema,
   DeletePlaylistRequest,
   DeletePlaylistSchema,
@@ -44,7 +46,75 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
+   * Create a playlist from existing tracks
+   */
+  async createPlaylist(
+    requestParameters: CreatePlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, coverArtFile, metadata, onProgress, trackIds } =
+      parseRequestParameters(
+        'createPlaylist',
+        CreatePlaylistSchema
+      )(requestParameters)
+
+    // Upload cover art to storage node
+    const coverArtResponse =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadPlaylistCoverArt', e)
+        }
+      ))
+
+    const playlistId = await this.trackUploadHelper.generateId('playlist')
+
+    // Update metadata to include track ids
+    const updatedMetadata = {
+      ...metadata,
+      playlistContents: {
+        trackIds: (trackIds ?? []).map((trackId) => ({
+          track: trackId,
+          time: Date.now()
+        }))
+      },
+      playlistImageSizesMultihash: coverArtResponse?.id
+    }
+
+    // Write playlist metadata to chain
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber,
+      playlistId
+    }
+  }
+
+  /**
    * Upload a playlist or album
+   * Uploads the specified tracks and combines them into a playlist or album
    */
   async uploadPlaylist(
     requestParameters: UploadPlaylistRequest,
@@ -73,7 +143,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          console.log('Retrying uploadPlaylistCoverArt', e)
         }
       ),
       ...trackFiles.map((trackFile) =>
@@ -138,7 +208,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
 
-    // Update metadata to include uploaded CIDs
+    // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
       ...metadata,
       isPrivate: false,

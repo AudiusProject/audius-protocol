@@ -19,6 +19,7 @@ import {
   UnrepostPlaylistRequest,
   UnsavePlaylistRequest,
   UploadPlaylistRequest,
+  CreatePlaylistRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -210,6 +211,40 @@ app.post<UnrepostTrackRequest>("/unrepostTrack", async (req, res) => {
     res.send((e as any).message);
   }
 });
+
+const playlistCreation = upload.fields([{ name: "coverArtFile", maxCount: 1 }]);
+
+app.post<CreatePlaylistRequest>(
+  "/createPlaylist",
+  playlistCreation as any,
+  async (req, res) => {
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+
+      if (coverArtFile) {
+        const inputMetadata = JSON.parse(req.body.metadata);
+
+        const createPlaylistRequest: CreatePlaylistRequest = {
+          userId: req.body.userId,
+          coverArtFile: {
+            buffer: coverArtFile?.buffer,
+            name: coverArtFile.originalname,
+          },
+          metadata: inputMetadata,
+          trackIds: JSON.parse(req.body.trackIds),
+          onProgress: (progress) => console.log("Progress:", progress),
+        };
+        const result = await audiusSdk.playlists.createPlaylist(
+          createPlaylistRequest
+        );
+        res.send(result);
+      }
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
 
 const playlistUpload = upload.fields([
   { name: "coverArtFile", maxCount: 1 },

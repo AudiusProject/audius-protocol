@@ -82,6 +82,42 @@ describe('PlaylistsApi', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
+  describe('createPlaylist', () => {
+    it('creates a playlist if valid metadata is provided', async () => {
+      const result = await playlists.createPlaylist({
+        userId: '7eP5n',
+        coverArtFile: {
+          buffer: Buffer.from([]),
+          name: 'coverArt'
+        },
+        metadata: {
+          playlistName: 'My Playlist'
+        },
+        trackIds: ['yyNwXq7']
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1,
+        playlistId: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await playlists.createPlaylist({
+          userId: '7eP5n',
+          coverArtFile: {
+            buffer: Buffer.from([]),
+            name: 'coverArt'
+          },
+          metadata: {} as any,
+          trackIds: ['yyNwXq7']
+        })
+      }).rejects.toThrow()
+    })
+  })
+
   describe('uploadPlaylist', () => {
     it('uploads a playlist if valid metadata is provided', async () => {
       const result = await playlists.uploadPlaylist({
