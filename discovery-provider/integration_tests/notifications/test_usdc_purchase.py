@@ -22,6 +22,7 @@ def test_usdc_purchase_notification(app):
     entities = {
         "usdc_purchases": [
             {
+                "slot": 4,
                 "buyer_user_id": 1,
                 "seller_user_id": 2,
                 "amount": 1000,
@@ -35,7 +36,6 @@ def test_usdc_purchase_notification(app):
     with db.scoped_session() as session:
         seller_notifications: List[Notification] = session.query(Notification).filter(Notification.type == 'usdc_purchase_seller').all()
         buyer_notifications: List[Notification] = session.query(Notification).filter(Notification.type == 'usdc_purchase_buyer').all()
-        print('seller notifs ', seller_notifications)
         assert len(seller_notifications) == 1
         assert len(buyer_notifications) == 1
         assert seller_notifications[0].user_ids == [2]
@@ -48,6 +48,7 @@ def test_usdc_purchase_notification(app):
             "amount": 1000,
             "content_id": 100
         }
+        assert seller_notifications[0].slot == 4
         assert buyer_notifications[0].user_ids == [1]
         assert buyer_notifications[0].specifier == '1'
         assert buyer_notifications[0].group_id == "usdc_purchase_buyer:seller_user_id:2:buyer_user_id:1:content_id:100:content_type:track"
@@ -58,3 +59,4 @@ def test_usdc_purchase_notification(app):
             "amount": 1000,
             "content_id": 100
         }
+        assert buyer_notifications[0].slot == 4
