@@ -13,6 +13,8 @@ import {
 } from '../generated/default'
 import {
   createUploadPlaylistSchema,
+  DeletePlaylistRequest,
+  DeletePlaylistSchema,
   PlaylistMetadata,
   PlaylistTrackMetadata,
   RepostPlaylistRequest,
@@ -171,6 +173,32 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       blockNumber: txReceipt.blockNumber,
       playlistId
     }
+  }
+
+  /**
+   * Delete a playlist or album
+   */
+  async deletePlaylist(
+    requestParameters: DeletePlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, playlistId } = parseRequestParameters(
+      'deletePlaylist',
+      DeletePlaylistSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.DELETE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
   }
 
   /**

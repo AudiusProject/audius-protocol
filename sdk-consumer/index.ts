@@ -258,6 +258,22 @@ app.post<UploadPlaylistRequest>(
   }
 );
 
+app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
+  try {
+    const deletePlaylistRequest: RepostPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.trackId,
+    };
+    const result = await audiusSdk.playlists.deletePlaylist(
+      deletePlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
 app.post<SavePlaylistRequest>("/savePlaylist", async (req, res) => {
   try {
     const savePlaylistRequest: SavePlaylistRequest = {
