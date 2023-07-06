@@ -277,7 +277,7 @@ def get_metadata_type_and_format(entity_type):
         metadata_type = "user"
         metadata_format = user_metadata_format
     else:
-        raise Exception(f"Unknown metadata type ${entity_type}")
+        raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
 
 
@@ -307,7 +307,7 @@ def parse_metadata(metadata, action, entity_type):
         data = sanitize_json(json.loads(metadata))
 
         if "cid" not in data.keys() or "data" not in data.keys():
-            raise Exception("required keys missing in metadata")
+            raise IndexingValidationError("required keys missing in metadata")
 
         cid = data["cid"]
         metadata_json = data["data"]
@@ -316,14 +316,14 @@ def parse_metadata(metadata, action, entity_type):
 
         # Only index valid changes
         if formatted_json == metadata_format:
-            raise Exception("no valid metadata changes detected")
+            raise IndexingValidationError("no valid metadata changes detected")
 
         return formatted_json, cid
     except Exception as e:
         utils_logger.info(
             f"entity_manager.py | utils.py | error deserializing metadata {metadata}: {e}"
         )
-        raise e
+        raise IndexingValidationError(e)
 
 
 def save_cid_metadata(
