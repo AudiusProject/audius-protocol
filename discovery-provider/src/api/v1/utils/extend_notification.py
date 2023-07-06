@@ -32,6 +32,8 @@ from src.queries.get_notifications import (
     TrendingNotification,
     TrendingPlaylistNotification,
     TrendingUndergroundNotification,
+    UsdcPurchaseBuyerNotification,
+    UsdcPurchaseSellerNotification,
 )
 from src.utils.helpers import encode_int_id
 from src.utils.spl_audio import to_wei_string
@@ -442,6 +444,25 @@ def extend_trending_playlist(action: NotificationAction):
             "genre": data["genre"],
             "playlist_id": encode_int_id(data["playlist_id"]),
             "time_range": data["time_range"],
+        },
+    }
+    return notification
+
+
+def extend_usdc_purchase_seller(action: NotificationAction):
+    data: UsdcPurchaseSellerNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "content_type": data["content_type"],
+            "buyer_user_id": encode_int_id(data["buyer_user_id"]),
+            "seller_user_id": encode_int_id(data["seller_user_id"]),
+            "amount": to_wei_string(data["amount"]),
+            "content_id": encode_int_id(data["content_id"]),
         },
     }
     return notification

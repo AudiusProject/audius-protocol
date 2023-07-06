@@ -162,6 +162,8 @@ class NotificationType(str, Enum):
     TRENDING = "trending"
     TRENDING_PLAYLIST = "trending_playlist"
     TRENDING_UNDERGROUND = "trending_underground"
+    USDC_PURCHASE_BUYER = "usdc_purchase_buyer"
+    USDC_PURCHASE_SELLER = "usdc_purchase_seller"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -390,6 +392,22 @@ class TrendingUndergroundNotification(TypedDict):
     time_range: str
 
 
+class UsdcPurchaseSellerNotification(TypedDict):
+    content_type: str
+    content_id: int
+    buyer_user_id: int
+    seller_user_id: int
+    amount: int
+
+
+class UsdcPurchaseBuyerNotification(TypedDict):
+    content_type: str
+    content_id: int
+    buyer_user_id: int
+    seller_user_id: int
+    amount: int
+
+
 class AnnouncementNotification(TypedDict):
     title: str
     short_description: str
@@ -421,6 +439,8 @@ NotificationData = Union[
     PlaylistMilestoneNotification,
     TierChangeNotification,
     TrendingNotification,
+    UsdcPurchaseBuyerNotification,
+    UsdcPurchaseSellerNotification
 ]
 
 
