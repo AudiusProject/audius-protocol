@@ -6,6 +6,25 @@ import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
+export const CreatePlaylistSchema = z
+  .object({
+    coverArtFile: z.optional(
+      z.custom<File>((data: unknown) => isFileValid(data as File))
+    ),
+    metadata: z.object({
+      description: z.optional(z.string().max(1000)),
+      playlistName: z.string(),
+      isPrivate: z.optional(z.boolean())
+    }),
+    onProgress: z.optional(z.function().args(z.number())),
+    trackIds: z.optional(z.array(HashId)),
+    userId: HashId
+  })
+  .strict()
+
+export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
+
+// TODO: potentially use discriminated union for this?
 const createUploadPlaylistMetadataSchema = () =>
   z
     .object({
