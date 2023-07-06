@@ -143,7 +143,6 @@ export class Processor {
         )
         this.lastWeeklyEmailSent = moment.utc()
       }
-      logger.info('Completed processing scheduled emails')
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }
