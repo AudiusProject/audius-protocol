@@ -166,9 +166,9 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					}
 					err := ss.pullFileFromHost(host, cid)
 					if err != nil {
-						logger.Error("pull failed", "err", err, "host", host)
+						logger.Error("pull failed (blob I should have)", "err", err, "host", host)
 					} else {
-						logger.Info("pull OK", "host", host)
+						logger.Info("pull OK (blob I should have)", "host", host)
 						success = true
 						break
 					}
@@ -227,9 +227,9 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					for _, host := range hasIt {
 						err := ss.pullFileFromHost(host, cid)
 						if err != nil {
-							logger.Error("pull failed", err, "host", host)
+							logger.Error("pull failed (under-replicated)", err, "host", host)
 						} else {
-							logger.Info("pull OK", "host", host)
+							logger.Info("pull OK (under-replicated)", "host", host)
 							success = true
 							break
 						}
