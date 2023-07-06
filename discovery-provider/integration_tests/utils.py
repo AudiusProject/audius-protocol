@@ -33,6 +33,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
+from src.models.users.usdc_purchase import UsdcPurchase
 from src.models.users.user import User
 from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_bank import UserBankAccount, UserBankTx
@@ -144,6 +145,7 @@ def populate_mock_db(db, entities, block_offset=None):
         notifications = entities.get("notification", [])
         playlist_seens = entities.get("playlist_seens", [])
         user_balance_changes = entities.get("user_balance_changes", [])
+        usdc_purchases = entities.get("usdc_purchases", [])
 
         num_blocks = max(
             len(tracks),
@@ -649,6 +651,19 @@ def populate_mock_db(db, entities, block_offset=None):
                 previous_balance=balance_change.get("previous_balance", 0),
                 created_at=balance_change.get("created_at", datetime.now()),
                 updated_at=balance_change.get("updated_at", datetime.now()),
+            )
+            session.add(ns)
+        for i, usdc_purchase in enumerate(usdc_purchases):
+            ns = UsdcPurchase(
+                slot=usdc_purchase.get("slot", i),
+                signature=usdc_purchase.get("signature", 'fake_signature'),
+                buyer_user_id=usdc_purchase.get("buyer_user_id", 1),
+                seller_user_id=usdc_purchase.get("seller_user_id", 2),
+                amount=usdc_purchase.get("amount", 100),
+                content_type=usdc_purchase.get("content_type", "track"),
+                content_id=usdc_purchase.get("content_id", 3),
+                created_at=usdc_purchase.get("created_at", datetime.now()),
+                updated_at=usdc_purchase.get("updated_at", datetime.now()),
             )
             session.add(ns)
 
