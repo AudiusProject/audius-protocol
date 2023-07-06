@@ -62,14 +62,22 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
+	healthy := ss.databaseSize > 0
+
+	// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
+	if ss.Config.Env == "stage" || ss.Config.Env == "prod" {
+		if err != nil {
+			healthy = false
+		}
+	}
 
 	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                   err == nil && ss.databaseSize > 0,
+		Healthy:                   healthy,
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
 		BuiltAt:                   vcsBuildTime,
@@ -113,7 +121,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	status := 200
 	if !ss.Config.WalletIsRegistered {
 		status = 506
-	} else if !data.Healthy {
+	} else if !healthy {
 		status = 500
 	}
 
