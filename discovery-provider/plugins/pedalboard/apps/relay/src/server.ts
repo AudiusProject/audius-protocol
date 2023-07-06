@@ -9,8 +9,9 @@ import {
   RelayResponse,
   RelayResponseType,
 } from "./types/relay";
+import { SharedData } from ".";
 
-export const webServer = async (app: App<{}>) => {
+export const webServer = async (app: App<SharedData>) => {
   const fastify = Fastify({
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
