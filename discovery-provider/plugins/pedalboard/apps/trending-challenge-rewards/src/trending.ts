@@ -17,7 +17,10 @@ type TrendingEntry = {
   rank: number;
 };
 
-export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: string) => {
+export const announceTopFiveTrending = async (
+  app: App<SharedData>,
+  maybeWeek?: string
+) => {
   const identityDbRes = await intoResult(async () => app.getIdDb());
   if (identityDbRes.err) {
     console.error("Identity connection error: ", identityDbRes);
@@ -26,9 +29,9 @@ export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: 
   const identityDb = identityDbRes.unwrap();
   const discoveryDb = app.getDnDb();
 
-  const week = maybeWeek || moment().format("YYYY-MM-DD")
+  const week = maybeWeek || moment().format("YYYY-MM-DD");
 
-  console.log("getting top trending for week ", week)
+  console.log("getting top trending for week ", week);
 
   const [tracks, playlists, undergroundTracks] = await queryTopFiveTrending(
     discoveryDb,
@@ -46,9 +49,9 @@ export const announceTopFiveTrending = async (app: App<SharedData>, maybeWeek?: 
     undergroundTracks
   );
 
-  console.log("track entries", JSON.stringify(trackEntries))
-  console.log("playlist entries", JSON.stringify(playlistEntries))
-  console.log("underground entries", JSON.stringify(undergroundEntries))
+  console.log("track entries", JSON.stringify(trackEntries));
+  console.log("playlist entries", JSON.stringify(playlistEntries));
+  console.log("underground entries", JSON.stringify(undergroundEntries));
 
   const trendingTracksTweet = composeTweet(
     "Top 5 Trending Tracks 🔥",
@@ -160,7 +163,9 @@ export const composeTweet = (
     return 0; // ranks are equal, no sort to be done
   });
   const newLine = "\n";
-  const handles = orderedEntries.map((entry) => `${entry.handle}${newLine}`).join("");
+  const handles = orderedEntries
+    .map((entry) => `${entry.handle}${newLine}`)
+    .join("");
   return "```\n" + `${title} (${week})` + newLine + handles + "```";
 };
 

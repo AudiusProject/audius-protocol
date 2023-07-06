@@ -27,7 +27,7 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
     identityServiceConfig: {
       url: process.env.identityUrl,
       useHedgehogLocalStorage: false,
-    }
+    },
   };
 
   const libsConfig = {
