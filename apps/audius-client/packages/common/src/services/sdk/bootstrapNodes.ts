@@ -1,4 +1,4 @@
-import Config from 'react-native-config'
+import { Env } from '../env'
 
 const stagingBootstrapNodes = [
   {
@@ -306,9 +306,9 @@ const productionBootstrapNodes = [
   }
 ]
 
-export const bootstrapNodes =
-  Config.ENVIRONMENT === 'staging'
+export const getBootstrapNodes = (env: Env) =>
+  env.ENVIRONMENT === 'staging'
     ? stagingBootstrapNodes
-    : Config.ENVIRONMENT === 'production'
+    : env.ENVIRONMENT === 'production'
     ? productionBootstrapNodes
     : undefined

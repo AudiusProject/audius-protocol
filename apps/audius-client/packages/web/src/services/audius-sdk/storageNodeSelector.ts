@@ -1,14 +1,12 @@
-import { StorageNodeSelector, StorageNodeSelectorService } from '@audius/sdk'
+import { makeGetStorageNodeSelector } from '@audius/common'
+
+import { env } from 'services/env'
 
 import { auth } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 
-let storageNodeSelector: StorageNodeSelectorService
-
-export const getStorageNodeSelector = async () => {
-  if (storageNodeSelector) return storageNodeSelector
-
-  const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
-  storageNodeSelector = new StorageNodeSelector({ auth, discoveryNodeSelector })
-  return storageNodeSelector
-}
+export const getStorageNodeSelector = makeGetStorageNodeSelector({
+  auth,
+  discoveryNodeSelectorService,
+  env
+})
