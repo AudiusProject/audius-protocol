@@ -132,7 +132,7 @@ func startDevInstance() {
 		postgresDSN = v
 	}
 
-	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%s")
 	network := devNetwork(hostNameTemplate, 7)
 
 	config := server.MediorumConfig{

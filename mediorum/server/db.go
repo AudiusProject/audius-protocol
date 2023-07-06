@@ -24,6 +24,7 @@ type Upload struct {
 	OrigFileCID  string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
 	Error        string         `json:"error,omitempty"`
+	ErrorCount   int            `json:"error_count,omitempty"`
 	Mirrors      []string       `json:"mirrors" gorm:"serializer:json"`
 	Status       string         `json:"status" gorm:"index"`
 

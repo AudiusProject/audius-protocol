@@ -71,22 +71,29 @@ func (ss *MediorumServer) startTranscoder() {
 	// finally... poll periodically for uploads that slipped thru the cracks
 	for {
 		uploads := []*Upload{}
-		ss.crud.DB.Where("status in ?", []string{JobStatusNew, JobStatusBusy}).Find(&uploads)
+		ss.crud.DB.Where("status in ?", []string{JobStatusNew, JobStatusBusy, JobStatusError}).Find(&uploads)
 
 		for _, upload := range uploads {
+			if upload.ErrorCount > 100 {
+				continue
+			}
+
 			myIdx := slices.Index(upload.Mirrors, myHost)
 			if myIdx == -1 {
 				continue
 			}
+			myRank := myIdx + 1
+
+			logger := ss.logger.With("upload_id", upload.ID, "upload_status", upload.Status, "my_rank", myRank)
 
 			// normally this job of mine would start via callback
 			// but just in case we could enqueue it here.
 			// there's a chance it would be processed twice if the callback and this loop
 			// ran at the same instant...
 			// but I'm not too worried about that race condition
-			myRank := myIdx + 1
+
 			if myRank == 1 && upload.Status == JobStatusNew {
-				ss.logger.Info("my upload not started", "id", upload.ID, "my_rank", myRank)
+				logger.Info("my upload not started")
 				work <- upload
 				continue
 			}
@@ -118,10 +125,16 @@ func (ss *MediorumServer) startTranscoder() {
 			}
 
 			if timedOut {
-				ss.logger.Info("upload timed out... starting", "id", upload.ID, "my_rank", myRank)
+				logger.Info("upload timed out... starting")
 				work <- upload
 			} else if neverStarted {
-				ss.logger.Info("upload never started", "id", upload.ID, "my_rank", myRank)
+				logger.Info("upload never started")
+				work <- upload
+			}
+
+			// take turns retrying errors
+			if upload.Status == JobStatusError && upload.ErrorCount%len(upload.Mirrors) == myIdx {
+				ss.logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
 				work <- upload
 			}
 		}
@@ -189,6 +202,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		errMsg := fmt.Errorf("%s %s", err, strings.Join(info, " "))
 		upload.Error = errMsg.Error()
 		upload.Status = JobStatusError
+		upload.ErrorCount = upload.ErrorCount + 1
 		ss.crud.Update(upload)
 		logger.Error("transcode error", "err", errMsg.Error())
 		return errMsg
