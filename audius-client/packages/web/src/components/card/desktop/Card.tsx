@@ -142,7 +142,7 @@ const Card = ({
   isReposted,
   isSaved,
   playlistId,
-  isPublic,
+  isPublic = true,
   playlistName,
   primaryText,
   secondaryText,
