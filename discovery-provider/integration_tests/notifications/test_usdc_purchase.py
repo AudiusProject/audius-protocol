@@ -3,7 +3,7 @@ from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
-from src.models.users.usdc_purchase import UsdcPurchaseContentType
+from src.models.users.usdc_purchase import PurchaseType
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def test_usdc_purchase_notification(app):
                 "buyer_user_id": 1,
                 "seller_user_id": 2,
                 "amount": 1000,
-                "content_type": UsdcPurchaseContentType.track,
+                "content_type": PurchaseType.track,
                 "content_id": 100
             }
         ]
