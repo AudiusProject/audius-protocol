@@ -301,6 +301,15 @@ class CollectionPage extends Component<
       }
     }
 
+    // check if a track has been added to collection
+    if (
+      metadata &&
+      prevMetadata &&
+      metadata.track_count > prevMetadata.track_count
+    ) {
+      this.props.fetchTracks()
+    }
+
     // check that the collection content hasn't changed
     if (
       metadata &&
