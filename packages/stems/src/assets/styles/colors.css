@@ -59,6 +59,7 @@ root {
   --accent-orange-dark-1: #f28100;
   --accent-orange-light-1: #ffa70f;
 
+  --accent-blue: #1ba1f1;
   --accent-purple: #8e51cf;
 
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
@@ -107,6 +108,7 @@ root {
   --static-neutral-light-9: #f7f7f9;
   --static-neutral-light-10: #fcfcfc;
   --static-white: #ffffff;
+  --static-black: #000000;
 
   --static-accent-red: #d0021b;
   --static-accent-red-dark-1: #bb0218;

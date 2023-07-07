@@ -6,6 +6,7 @@
   white-space: nowrap;
   overflow: hidden;
   transition: all var(--quick);
+  position: relative;
 
   display: inline-flex;
   align-items: center;
@@ -81,12 +82,25 @@
   transition: all var(--quick);
 }
 
+.button .overlay {
+  background-color: var(--overlay-color, transparent);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: var(--overlay-opacity, 0);
+}
+
+
 /* Primary Button */
 
 .primary {
+  --button-color: var(--primary);
+  box-shadow: var(--shadow-near);
   border: none;
   border-radius: 4px;
-  background: var(--primary);
+  background: var(--button-color);
 }
 
 .primary .textLabel {
@@ -95,19 +109,25 @@
   font-weight: var(--font-bold);
 }
 
-.primary .icon g path,
+.primary .icon path,
 .primary .icon use {
   fill: var(--primary-secondary-text);
 }
 
 .primary.includeHoverAnimations:hover:enabled {
+  --overlay-color: var(--static-white);
+  --overlay-opacity: .1;
+  box-shadow: var(--shadow-mid);
   transform: var(--grow);
-  background: var(--primary);
+  background: var(--button-color);
 }
 
 .primary.includeHoverAnimations:active:enabled {
+  --overlay-color: var(--static-blck);
+  --overlay-opacity: .2;
+  box-shadow: none;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
-  background: var(--primary);
+  background: var(--button-color);
 }
 
 /* PrimaryAlt Button */
@@ -347,6 +367,7 @@
 /* Disabled Button */
 
 .disabled {
+  box-shadow: none;
   border-radius: 4px;
   background-color: var(--neutral-light-7);
   cursor: default;

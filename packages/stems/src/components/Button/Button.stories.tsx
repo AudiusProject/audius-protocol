@@ -37,6 +37,10 @@ Disabled.args = { disabled: true }
 export const PrimaryAlt = Template.bind({})
 PrimaryAlt.args = { type: Type.PRIMARY_ALT }
 
+// Primary w/ color
+export const PrimaryWithColor = Template.bind({})
+PrimaryWithColor.args = { color: 'accentBlue' }
+
 // Secondary
 export const Secondary = Template.bind({})
 Secondary.args = { type: Type.SECONDARY }
