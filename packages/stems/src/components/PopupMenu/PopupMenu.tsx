@@ -24,7 +24,8 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       containerRef,
       anchorOrigin,
       transformOrigin,
-      id
+      id,
+      mountRef
     } = props
     const clickInsideRef = useRef<any>()
     const anchorRef = useRef<HTMLElement>(null)
@@ -83,6 +84,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
           wrapperClassName={styles.popup}
+          mountRef={mountRef}
         >
           <ul
             className={styles.menu}

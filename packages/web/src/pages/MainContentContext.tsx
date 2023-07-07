@@ -1,12 +1,14 @@
-import { createContext, memo, useRef, MutableRefObject } from 'react'
+import { createContext, memo, useRef, RefObject } from 'react'
 
-export const MainContentContext = createContext({
-  mainContentRef: {} as MutableRefObject<HTMLDivElement | undefined>
+export const MainContentContext = createContext<{
+  mainContentRef: RefObject<HTMLDivElement>
+}>({
+  mainContentRef: { current: null }
 })
 
 export const MainContentContextProvider = memo(
   (props: { children: JSX.Element }) => {
-    const mainContentRef = useRef<HTMLDivElement>()
+    const mainContentRef = useRef<HTMLDivElement>(null)
     return (
       <MainContentContext.Provider
         value={{

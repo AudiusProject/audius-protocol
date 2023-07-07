@@ -1,4 +1,4 @@
-import { MouseEvent, useCallback, useMemo, useRef } from 'react'
+import React, { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
 import {
   formatCount,
@@ -96,7 +96,7 @@ type TracksTableProps = {
   playing?: boolean
   playingIndex?: number
   removeText?: string
-  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
+  scrollRef?: React.RefObject<HTMLDivElement>
   showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number

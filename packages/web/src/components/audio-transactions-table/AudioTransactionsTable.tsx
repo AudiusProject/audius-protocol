@@ -54,7 +54,7 @@ type AudioTransactionsTableProps = {
   tableClassName?: string
   wrapperClassName?: string
   totalRowCount: number
-  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
+  scrollRef?: React.RefObject<HTMLDivElement>
   fetchBatchSize: number
 }
 
