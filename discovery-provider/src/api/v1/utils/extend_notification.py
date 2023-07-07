@@ -461,7 +461,7 @@ def extend_usdc_purchase_seller(action: NotificationAction):
             "content_type": data["content_type"],
             "buyer_user_id": encode_int_id(data["buyer_user_id"]),
             "seller_user_id": encode_int_id(data["seller_user_id"]),
-            "amount": to_wei_string(data["amount"]),
+            "amount": str(data["amount"]),
             "content_id": encode_int_id(data["content_id"]),
         },
     }
@@ -480,7 +480,7 @@ def extend_usdc_purchase_buyer(action: NotificationAction):
             "content_type": data["content_type"],
             "buyer_user_id": encode_int_id(data["buyer_user_id"]),
             "seller_user_id": encode_int_id(data["seller_user_id"]),
-            "amount": to_wei_string(data["amount"]),
+            "amount": str(data["amount"]),
             "content_id": encode_int_id(data["content_id"]),
         },
     }

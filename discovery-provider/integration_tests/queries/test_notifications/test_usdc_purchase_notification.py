@@ -31,7 +31,7 @@ def test_get_repost_notifications(app):
                 "slot": 4,
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
-                "amount": 1000,
+                "amount": 1000000,
                 "content_type": PurchaseType.track,
                 "content_id": 1
               }
@@ -54,7 +54,7 @@ def test_get_repost_notifications(app):
                 "content_type": "track",
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
-                "amount": 1000,
+                "amount": 1000000,
                 "content_id": 1
             }
 
@@ -72,7 +72,7 @@ def test_get_repost_notifications(app):
                 "content_type": "track",
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
-                "amount": 1000,
+                "amount": 1000000,
                 "content_id": 1
             }
 
@@ -93,7 +93,7 @@ def test_extended_usdc_purchase_notification(app):
                 "slot": 4,
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
-                "amount": 1000,
+                "amount": 1000000,
                 "content_type": PurchaseType.track,
                 "content_id": 1
               }
@@ -117,7 +117,7 @@ def test_extended_usdc_purchase_notification(app):
                 "content_type": "track",
                 "buyer_user_id": "ML51L",
                 "seller_user_id": "7eP5n",
-                "amount": "10000000000000",
+                "amount": "1000000",
                 "content_id": "7eP5n"
             }
 
@@ -136,6 +136,6 @@ def test_extended_usdc_purchase_notification(app):
                 "content_type": "track",
                 "buyer_user_id": "ML51L",
                 "seller_user_id": "7eP5n",
-                "amount": "10000000000000",
+                "amount": "1000000",
                 "content_id": "7eP5n"
             }
