@@ -16,18 +16,24 @@ import {
 type DiscoveryNodeSelectorConfig = {
   env: Env
   remoteConfigInstance: RemoteConfigInstance
+  initialSelectedNode?: string
+  onChange?: (endpoint: string) => void
 }
 
 export class DiscoveryNodeSelectorService {
   private env: Env
   private remoteConfigInstance: RemoteConfigInstance
   private discoveryNodeSelectorPromise: Promise<DiscoveryNodeSelector> | null
+  private initialSelectedNode: string | undefined
+  private onChange: ((endpoint: string) => void) | undefined
 
   constructor(config: DiscoveryNodeSelectorConfig) {
-    const { env, remoteConfigInstance } = config
+    const { env, remoteConfigInstance, initialSelectedNode, onChange } = config
     this.env = env
     this.remoteConfigInstance = remoteConfigInstance
     this.discoveryNodeSelectorPromise = null
+    this.initialSelectedNode = initialSelectedNode
+    this.onChange = onChange
   }
 
   private async makeDiscoveryNodeSelector() {
@@ -59,12 +65,17 @@ export class DiscoveryNodeSelectorService {
     const requestTimeout =
       getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS) ?? undefined
 
-    return new DiscoveryNodeSelector({
+    const dnSelector = new DiscoveryNodeSelector({
       healthCheckThresholds,
       blocklist,
       requestTimeout,
-      bootstrapServices: discoveryNodes
+      bootstrapServices: discoveryNodes,
+      initialSelectedNode: this.initialSelectedNode
     })
+    if (this.onChange) {
+      dnSelector.addEventListener('change', this.onChange)
+    }
+    return dnSelector
   }
 
   private getBlockList(remoteVarKey: StringKeys) {

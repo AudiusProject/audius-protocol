@@ -7,8 +7,6 @@ import { Nullable } from '../../utils'
 
 // TODO: the following should come from @audius/libs/dist/core when
 // discoveryProvider/constants is migrated to typescript.
-const DISCOVERY_PROVIDER_TIMESTAMP = '@audius/libs:discovery-node-timestamp'
-
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
 const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
 
@@ -116,10 +114,4 @@ export class LocalStorage {
 
   getCurrentUserExists = async () =>
     this.getValue(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
-
-  async getCachedDiscoveryProvider() {
-    return await this.getJSONValue<CachedDiscoveryProviderType>(
-      DISCOVERY_PROVIDER_TIMESTAMP
-    )
-  }
 }
