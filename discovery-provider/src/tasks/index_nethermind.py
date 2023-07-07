@@ -445,8 +445,8 @@ def index_next_block(
                 exc_info=True,
             )
         try:
-            # Every 50 blocks, poll and apply delist statuses from trusted notifier
-            if next_block.number % 50 == 0:
+            # Every 100 blocks, poll and apply delist statuses from trusted notifier
+            if next_block.number % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses"
                 )
