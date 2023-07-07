@@ -19,9 +19,7 @@ export const getScrollParent = (node: HTMLElement): Element | null => {
     style(_node, 'overflow') +
     style(_node, 'overflow-y') +
     style(_node, 'overflow-x')
-  const scroll = (_node: HTMLElement) =>
-    regex.test(overflow(_node)) ||
-    _node.classList.contains('scrollbar-container') // Perfect scrollbar does overflow: hidden
+  const scroll = (_node: HTMLElement) => regex.test(overflow(_node))
 
   const scrollParent = (_node: HTMLElement) => {
     if (!_node.parentNode) {

@@ -12,7 +12,6 @@ type ApplicablePopupProps = Pick<
   | 'containerRef'
   | 'transformOrigin'
   | 'anchorOrigin'
-  | 'mountRef'
 >
 
 export type PopupMenuProps = {

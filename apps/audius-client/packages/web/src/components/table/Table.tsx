@@ -99,7 +99,7 @@ type TableProps = {
   onSort?: (...props: any[]) => void
   isEmptyRow?: (row: any) => boolean
   pageSize?: number
-  scrollRef?: React.RefObject<HTMLDivElement>
+  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
   showMoreLimit?: number
   tableClassName?: string
   totalRowCount?: number
@@ -663,7 +663,7 @@ export const Table = ({
         minimumBatchSize={fetchBatchSize}
       >
         {({ onRowsRendered, registerChild: registerListChild }) => (
-          <WindowScroller scrollElement={scrollRef?.current ?? undefined}>
+          <WindowScroller scrollElement={scrollRef?.current}>
             {({
               height,
               registerChild,

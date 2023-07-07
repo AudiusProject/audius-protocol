@@ -1,6 +1,6 @@
 import {
   forwardRef,
-  RefObject,
+  MutableRefObject,
   useCallback,
   useEffect,
   useRef,
@@ -106,7 +106,7 @@ const getComputedOrigins = (
   transformOrigin: Origin,
   anchorRect: DOMRect,
   wrapperRect: DOMRect,
-  containerRef?: RefObject<HTMLElement>
+  containerRef?: MutableRefObject<HTMLDivElement | undefined>
 ) => {
   if (!anchorRect || !wrapperRect) return { anchorOrigin, transformOrigin }
 
@@ -152,7 +152,6 @@ const getComputedOrigins = (
     anchorOrigin.vertical = 'top'
     transformOrigin.vertical = 'bottom'
   }
-
   return { anchorOrigin, transformOrigin }
 }
 
@@ -163,13 +162,12 @@ const getComputedOrigins = (
 const getAdjustedPosition = (
   top: number,
   left: number,
-  wrapperRect: DOMRect,
-  containerRect: Pick<DOMRect, 'width' | 'height'>
+  wrapperRect: DOMRect
 ): { adjustedTop: number; adjustedLeft: number } => {
   if (!wrapperRect) return { adjustedTop: 0, adjustedLeft: 0 }
 
-  const containerWidth = containerRect.width - CONTAINER_INSET_PADDING
-  const containerHeight = containerRect.height - CONTAINER_INSET_PADDING
+  const containerWidth = window.innerWidth - CONTAINER_INSET_PADDING
+  const containerHeight = window.innerHeight - CONTAINER_INSET_PADDING
 
   const overflowRight = left + wrapperRect.width > containerWidth
   const overflowLeft = left < 0
@@ -258,10 +256,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     className,
     wrapperClassName,
     zIndex,
-    containerRef,
-    mountRef
+    containerRef
   } = props
-
   const handleClose = useCallback(() => {
     onClose()
     setTimeout(() => {
@@ -293,18 +289,10 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   // On visible, set the position
   useEffect(() => {
     if (isVisible) {
-      const [anchorRect, wrapperRect, mountRect] = [
-        anchorRef,
-        wrapperRef,
-        mountRef
-      ].map((r) => r?.current?.getBoundingClientRect())
+      const [anchorRect, wrapperRect] = [anchorRef, wrapperRef].map((r) =>
+        r?.current?.getBoundingClientRect()
+      )
       if (!anchorRect || !wrapperRect) return
-
-      // If using a mount source, subtract off the position of the containing mount
-      if (mountRect) {
-        anchorRect.x -= mountRect.x
-        anchorRect.y -= mountRect.y
-      }
 
       const {
         anchorOrigin: anchorOriginComputed,
@@ -333,11 +321,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       const { adjustedTop, adjustedLeft } = getAdjustedPosition(
         top,
         left,
-        wrapperRect,
-        {
-          width: containerRef?.current?.clientWidth ?? window.innerWidth,
-          height: containerRef?.current?.clientHeight ?? window.innerHeight
-        }
+        wrapperRect
       )
 
       if (wrapperRef.current) {
@@ -355,8 +339,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     transformOrigin,
     setComputedTransformOrigin,
     originalTopPosition,
-    containerRef,
-    mountRef
+    containerRef
   ])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
@@ -365,13 +348,13 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   const watchScroll = useCallback(
     (scrollParent: Element, initialScrollPosition: number) => {
       const scrollTop = scrollParent.scrollTop
-      if (wrapperRef.current && !mountRef?.current) {
+      if (wrapperRef.current) {
         wrapperRef.current.style.top = `${
           originalTopPosition.current - scrollTop + initialScrollPosition
         }px`
       }
     },
-    [wrapperRef, originalTopPosition, mountRef]
+    [wrapperRef, originalTopPosition]
   )
 
   // Set up scroll listeners
@@ -469,7 +452,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
             ) : null
           )}
         </div>,
-        mountRef?.current ?? document.body
+        document.body
       )}
     </>
   )
