@@ -22,6 +22,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
+from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 from src.utils import (
     db_session,
     get_all_other_nodes,
@@ -48,7 +49,6 @@ from src.utils.redis_constants import (
     user_balances_refresh_last_completion_redis_key,
 )
 from src.utils.web3_provider import LOCAL_RPC, get_web3
-from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -331,7 +331,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
         "backfilled_cid_data": backfilled_cid_data,
-        "delist_statuses_ok": delist_statuses_ok
+        "delist_statuses_ok": delist_statuses_ok,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
