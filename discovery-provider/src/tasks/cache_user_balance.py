@@ -56,7 +56,7 @@ class UserWalletMetadata(TypedDict):
     bank_account: Optional[str]
 
 
-def get_lazy_refresh_user_ids(redis: Redis, session: Session, ) -> List[int]:
+def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
     redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)[:MAX_LAZY_REFRESH_USER_IDS]
     user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
 
