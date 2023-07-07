@@ -27,14 +27,14 @@ def get_web3(web3endpoint=None):
     if not web3endpoint:
         # attempt local rpc, check if healthy
         try:
-            primary_acdc_rpc = os.getenv("audius_web3_primary_host")
-            if requests.get(primary_acdc_rpc + "/health").status_code == 200:
-                web3endpoint = primary_acdc_rpc
-                logger.info("web3_provider.py | using primary RPC")
+            local_rpc = os.getenv("audius_web3_localhost")
+            if requests.get(local_rpc + "/health").status_code == 200:
+                web3endpoint = local_rpc
+                logger.info("web3_provider.py | using local RPC")
             else:
-                raise Exception("primary RPC unhealthy or unreachable")
+                raise Exception("local RPC unhealthy or unreachable")
         except Exception as e:
-            web3endpoint = os.getenv("audius_web3_secondary_host")
+            web3endpoint = os.getenv("audius_web3_host")
             logger.warn(e)
     web3 = Web3(HTTPProvider(web3endpoint))
 
