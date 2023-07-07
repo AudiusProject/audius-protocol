@@ -70,6 +70,8 @@ func (ss *MediorumServer) startTranscoder() {
 
 	// finally... poll periodically for uploads that slipped thru the cracks
 	for {
+		time.Sleep(time.Minute)
+
 		uploads := []*Upload{}
 		ss.crud.DB.Where("status in ?", []string{JobStatusNew, JobStatusBusy, JobStatusError}).Find(&uploads)
 
@@ -134,12 +136,11 @@ func (ss *MediorumServer) startTranscoder() {
 
 			// take turns retrying errors
 			if upload.Status == JobStatusError && upload.ErrorCount%len(upload.Mirrors) == myIdx {
-				ss.logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
+				logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
 				work <- upload
 			}
 		}
 
-		time.Sleep(time.Minute)
 	}
 }
 
@@ -378,6 +379,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.TranscodeProgress = 1
 	upload.TranscodedAt = time.Now().UTC()
 	upload.Status = "done"
+	upload.Error = ""
 	ss.crud.Update(upload)
 
 	return nil
