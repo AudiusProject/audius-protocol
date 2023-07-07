@@ -293,7 +293,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Update a playlist
    */
 
-  // TODO: Allow fetching private playlists/tracks with sdk
   async updatePlaylist(
     requestParameters: UpdatePlaylistRequest,
     writeOptions?: WriteOptions
