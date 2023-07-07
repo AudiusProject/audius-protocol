@@ -188,7 +188,8 @@ export const TracksTable = ({
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const index = cellInfo.row.index
-      const deleted = track.is_delete || track.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
 
       const renderLocked = () => {
         return (
@@ -311,7 +312,8 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-      const deleted = track.is_delete || !!track.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       if (isLocked || deleted || isOwner) {
         return <div className={styles.placeholderButton} />
@@ -345,7 +347,8 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-      const deleted = track.is_delete || track.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
       if (isLocked || deleted || isOwner) {
         return <div className={styles.placeholderButton} />
@@ -382,7 +385,8 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-      const deleted = track.is_delete || !!track.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       return (
         <div ref={overflowMenuRef}>
           <OverflowMenuButton
@@ -598,7 +602,8 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-      const deleted = track.is_delete || track.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       const clickedActionButton = [
         favoriteButtonRef,
         repostButtonRef,
@@ -618,7 +623,8 @@ export const TracksTable = ({
         track.track_id
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-      const deleted = track?.is_delete || !!track?.user?.is_deactivated
+      const deleted =
+        track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
       return cn(styles.tableRow, {
         [styles.disabled]: isLocked || deleted,
         [styles.lockedRow]: isLocked && !deleted
