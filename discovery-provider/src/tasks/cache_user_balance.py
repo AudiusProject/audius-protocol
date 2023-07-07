@@ -114,9 +114,12 @@ def refresh_user_ids(
     waudio_token,
 ):
     with db.scoped_session() as session:
-        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[
-            :MAX_LAZY_REFRESH_USER_IDS
-        ]
+        # lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[
+        #     :MAX_LAZY_REFRESH_USER_IDS
+        # ]
+        # Temporarily disabling this to prevent 2 million users getting loaded
+        # at once
+        lazy_refresh_user_ids = []
         immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
 
         logger.info(
