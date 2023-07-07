@@ -84,10 +84,9 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     const updatedMetadata = {
       ...metadata,
       playlistContents: {
-        // TODO: Generalize this
         trackIds: (trackIds ?? []).map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: new Date().getTime()
         }))
       },
       playlistImageSizesMultihash: coverArtResponse?.id
@@ -220,7 +219,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: new Date().getTime()
         }))
       },
       playlistImageSizesMultihash: coverArtResponse.id
@@ -294,8 +293,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Update a playlist
    */
 
-  // TODO: Test reordering
-  // TODO: Test fetching and updating
   // TODO: Allow fetching private playlists/tracks with sdk
   async updatePlaylist(
     requestParameters: UpdatePlaylistRequest,
