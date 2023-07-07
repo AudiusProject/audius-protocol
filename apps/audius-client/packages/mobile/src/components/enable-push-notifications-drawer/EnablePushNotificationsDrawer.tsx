@@ -64,19 +64,18 @@ const actions = [
   }
 ]
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   drawer: {
-    display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    padding: 16,
-    paddingTop: 64,
-    paddingBottom: 32
+    paddingHorizontal: spacing(4),
+    paddingTop: spacing(12),
+    paddingBottom: spacing(8)
   },
 
   cta: {
-    marginTop: 16,
+    marginTop: spacing(4),
     fontSize: 28
   },
 
@@ -88,24 +87,21 @@ const useStyles = makeStyles(({ palette }) => ({
   },
 
   top: {
-    marginBottom: 32,
-    display: 'flex',
+    marginBottom: spacing(8),
     flexDirection: 'column',
     alignItems: 'center'
   },
 
   actions: {
-    display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    marginBottom: 32
+    marginBottom: spacing(8)
   },
 
   action: {
-    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12
+    marginBottom: spacing(3)
   },
 
   actionText: {
@@ -114,7 +110,7 @@ const useStyles = makeStyles(({ palette }) => ({
   },
 
   actionIcon: {
-    marginRight: 16
+    marginRight: spacing(4)
   }
 }))
 
