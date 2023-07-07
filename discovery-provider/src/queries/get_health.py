@@ -48,6 +48,7 @@ from src.utils.redis_constants import (
     user_balances_refresh_last_completion_redis_key,
 )
 from src.utils.web3_provider import LOCAL_RPC, get_web3
+from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -293,6 +294,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     backfilled_cid_data = get_backfilled_cid_data(redis)
+    delist_statuses_ok = get_delist_statuses_ok()
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -329,6 +331,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
         "backfilled_cid_data": backfilled_cid_data,
+        "delist_statuses_ok": delist_statuses_ok
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
@@ -408,6 +411,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]
         or reactions_health_info["is_unhealthy"]
+        or not delist_statuses_ok
     )
 
     return health_results, is_unhealthy
