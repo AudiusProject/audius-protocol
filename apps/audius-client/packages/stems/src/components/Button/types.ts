@@ -1,5 +1,7 @@
 import { ComponentPropsWithoutRef, ReactNode } from 'react'
 
+import { ColorValue } from 'styles/colors'
+
 export enum Type {
   PRIMARY = 'primary',
   PRIMARY_ALT = 'primaryAlt',
@@ -26,6 +28,7 @@ type BaseButtonProps = Omit<
 >
 
 export type ButtonProps = {
+  color?: ColorValue
   /**
    * The text of the button
    */
