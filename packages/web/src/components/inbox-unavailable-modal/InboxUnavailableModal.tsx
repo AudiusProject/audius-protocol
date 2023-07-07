@@ -1,6 +1,7 @@
 import { ReactNode, useCallback } from 'react'
 
 import {
+  CHAT_BLOG_POST_URL,
   ChatPermissionAction,
   User,
   chatActions,
@@ -110,7 +111,8 @@ export const InboxUnavailableModal = ({
       dispatch(createChat({ userIds: [user.user_id] }))
       onClose()
     } else {
-      // TODO: Link to blog post
+      window.open(CHAT_BLOG_POST_URL, '_blank')
+      onClose()
     }
   }, [dispatch, onClose, user, callToAction])
 

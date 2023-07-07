@@ -5,6 +5,9 @@ import { Status } from 'models/Status'
 
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 
+export const CHAT_BLOG_POST_URL =
+  'http://support.audius.co/help/How-to-Send-Messages-on-Audius'
+
 /**
  * Checks to see if the message was sent within the time threshold for grouping it with the next message
  */

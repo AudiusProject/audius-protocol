@@ -1,9 +1,14 @@
 import { useCallback, useMemo } from 'react'
 
-import { ChatPermissionAction, useCanSendMessage } from '@audius/common'
+import {
+  ChatPermissionAction,
+  useCanSendMessage,
+  CHAT_BLOG_POST_URL
+} from '@audius/common'
 import { View, Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { useLink } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
@@ -49,8 +54,7 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
 
   const { firstOtherUser: otherUser, callToAction } = useCanSendMessage(chatId)
 
-  // TODO: link to blog
-  const handleLearnMorePress = useCallback(() => {}, [])
+  const { onPress: handleLearnMorePress } = useLink(CHAT_BLOG_POST_URL)
 
   const handleUnblockPress = useCallback(() => {
     if (otherUser) {

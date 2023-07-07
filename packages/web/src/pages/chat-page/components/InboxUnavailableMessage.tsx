@@ -1,6 +1,6 @@
 import { useState, useCallback, MouseEventHandler } from 'react'
 
-import { User, ChatPermissionAction } from '@audius/common'
+import { User, ChatPermissionAction, CHAT_BLOG_POST_URL } from '@audius/common'
 
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
@@ -69,7 +69,7 @@ export const InboxUnavailableMessage = ({
       return (
         <div className={styles.root}>
           {messages.default(user)}{' '}
-          <a href='#' target='_blank'>
+          <a href={CHAT_BLOG_POST_URL} target='_blank' rel='noreferrer'>
             {messages.learnMore}
           </a>
         </div>

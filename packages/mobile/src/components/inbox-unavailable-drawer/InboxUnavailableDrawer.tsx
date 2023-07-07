@@ -6,14 +6,15 @@ import {
   chatActions,
   tippingActions,
   cacheUsersSelectors,
-  ChatPermissionAction
+  ChatPermissionAction,
+  CHAT_BLOG_POST_URL
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'
 import IconTip from 'app/assets/images/iconTip.svg'
-import { Text, Button } from 'app/components/core'
+import { Text, Button, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -132,10 +133,11 @@ const DrawerContent = ({ data }: DrawerContentProps) => {
     closeDrawer()
   }, [dispatch, userId, shouldOpenChat, canCreateChat, closeDrawer])
 
+  const { onPress: onPressLearnMore } = useLink(CHAT_BLOG_POST_URL)
   const handleLearnMorePress = useCallback(() => {
-    // TODO: Link to blog
+    onPressLearnMore()
     closeDrawer()
-  }, [closeDrawer])
+  }, [closeDrawer, onPressLearnMore])
 
   const handleTipPress = useCallback(() => {
     dispatch(beginTip({ user, source: 'inboxUnavailableModal' }))
