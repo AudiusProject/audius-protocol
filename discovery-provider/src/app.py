@@ -415,7 +415,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_delist_statuses": {
                 "task": "update_delist_statuses",
-                "schedule": timedelta(seconds=20),
+                "schedule": timedelta(minutes=1),
             },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
