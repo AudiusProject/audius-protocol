@@ -342,7 +342,7 @@ def process_playlist_data_event(
     params: ManageEntityParameters,
     playlist_record,
 ):
-    playlist_metadata = params.playlist_metadata
+    playlist_metadata = params.metadata
     block_integer_time = params.block_integer_time
     block_datetime = params.block_datetime
     metadata_cid = params.metadata_cid
