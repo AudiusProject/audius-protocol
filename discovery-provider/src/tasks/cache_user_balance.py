@@ -502,9 +502,9 @@ def update_user_balances_task(self):
             refresh_user_ids(
                 redis,
                 db,
-                token_inst,
-                delegate_manager_inst,
-                staking_inst,
+                self.token_inst,
+                self.delegate_manager_inst,
+                self.staking_inst,
                 eth_web3,
                 waudio_token,
             )
