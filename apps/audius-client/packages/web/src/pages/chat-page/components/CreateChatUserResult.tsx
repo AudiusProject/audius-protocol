@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import {
   accountSelectors,
@@ -104,6 +104,8 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
     getCanCreateChat(state, { userId: user.user_id })
   )
 
+  const ref = useRef<HTMLDivElement | null>(null)
+
   const handleComposeClicked = useCallback(() => {
     if (canCreateChat) {
       closeParentModal()
@@ -173,7 +175,12 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   }
 
   return (
-    <div className={styles.root}>
+    <div
+      className={styles.root}
+      ref={(rootRef) =>
+        (ref.current = (rootRef?.parentElement as HTMLDivElement) ?? null)
+      }
+    >
       <ArtistChip
         className={styles.artistChip}
         user={user}
@@ -188,6 +195,8 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
         zIndex={zIndex.MODAL_OVERFLOW_MENU_POPUP}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        mountRef={ref}
+        containerRef={ref}
       />
     </div>
   )

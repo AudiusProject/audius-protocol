@@ -1,7 +1,7 @@
-import { MutableRefObject } from 'react'
+import { RefObject } from 'react'
 
 type AppProps = {
-  mainContentRef: MutableRefObject<HTMLDivElement | undefined>
+  mainContentRef: RefObject<HTMLDivElement>
 }
 
 const App: (props: AppProps) => JSX.Element

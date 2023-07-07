@@ -1,4 +1,4 @@
-import { MutableRefObject, ReactChild } from 'react'
+import { ReactNode, RefObject } from 'react'
 
 export enum Position {
   TOP_LEFT = 'topLeft',
@@ -18,7 +18,7 @@ export type PopupProps = {
   /**
    * A ref to the element whose position will be used to anchor the Popup
    */
-  anchorRef: MutableRefObject<HTMLElement | null>
+  anchorRef: RefObject<HTMLElement>
 
   /**
    * Duration of the animations in ms
@@ -35,7 +35,7 @@ export type PopupProps = {
   /**
    * Children to render inside the Popup
    */
-  children: ReactChild
+  children: ReactNode
 
   /**
    * Class name to apply to the popup itself
@@ -52,7 +52,7 @@ export type PopupProps = {
    * to be the size of the container it belongs to. If the popup expands outside
    * the bounds of the container, it repositions itself.
    */
-  containerRef?: MutableRefObject<HTMLDivElement | undefined>
+  containerRef?: RefObject<HTMLElement>
 
   /**
    * Boolean representing whether the Popup is visible
@@ -110,6 +110,11 @@ export type PopupProps = {
    * An optional z-index to override the default of 10000
    */
   zIndex?: number
+
+  /**
+   * The element to portal to
+   */
+  mountRef?: RefObject<HTMLElement>
 }
 
 export const popupDefaultProps: Partial<PopupProps> = {
