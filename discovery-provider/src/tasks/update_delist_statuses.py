@@ -77,7 +77,12 @@ def update_user_is_available_statuses(session, users):
             if not user.is_available:
                 user.is_available = True
                 user.is_deactivated = False
-    users_updated = list(map(lambda user: {"user_id": user.user_id, "blocknumber": user.blocknumber}, users_to_update))
+    users_updated = list(
+        map(
+            lambda user: {"user_id": user.user_id, "blocknumber": user.blocknumber},
+            users_to_update,
+        )
+    )
     return True, users_updated
 
 
@@ -97,7 +102,9 @@ def update_track_is_available_statuses(session, tracks):
     if len(track_id_to_delisted_map) != len(track_ids_to_update):
         # halt processing until indexing is caught up and all tracks are created in db
         missing_track_ids = track_ids - track_ids_to_update
-        logger.info(f"update_delist_statuses.py | missing track ids: {missing_track_ids}")
+        logger.info(
+            f"update_delist_statuses.py | missing track ids: {missing_track_ids}"
+        )
         return False, []
     for track in tracks_to_update:
         delisted = track_id_to_delisted_map[track.track_id]
@@ -111,7 +118,15 @@ def update_track_is_available_statuses(session, tracks):
             if not track.is_available:
                 track.is_available = True
                 track.is_delete = False
-    tracks_updated = list(map(lambda track: {"track_id": track.track_id, "blocknumber": track.blocknumber}, tracks_to_update))
+    tracks_updated = list(
+        map(
+            lambda track: {
+                "track_id": track.track_id,
+                "blocknumber": track.blocknumber,
+            },
+            tracks_to_update,
+        )
+    )
     return True, tracks_updated
 
 
@@ -201,12 +216,16 @@ def process_user_delist_statuses(session, resp, endpoint):
             success, users_updated = update_user_is_available_statuses(session, users)
             if success:
                 cursor_after = users[-1]["createdAt"]
-                update_delist_status_cursor(session, cursor_after, endpoint, DelistEntity.USERS)
+                update_delist_status_cursor(
+                    session, cursor_after, endpoint, DelistEntity.USERS
+                )
                 logger.info(
                     f"update_delist_statuses.py | processed {len(users)} user delist statuses: {users_updated}"
                 )
         except Exception as e:
-            logger.error(f"update_delist_statuses.py | exception while processing user delists: {e}")
+            logger.error(
+                f"update_delist_statuses.py | exception while processing user delists: {e}"
+            )
 
 
 def process_track_delist_statuses(session, resp, endpoint):
@@ -215,7 +234,9 @@ def process_track_delist_statuses(session, resp, endpoint):
     if len(tracks) > 0:
         insert_track_delist_statuses(session, tracks)
         try:
-            success, tracks_updated = update_track_is_available_statuses(session, tracks)
+            success, tracks_updated = update_track_is_available_statuses(
+                session, tracks
+            )
             if success:
                 cursor_after = tracks[-1]["createdAt"]
                 update_delist_status_cursor(
@@ -225,7 +246,9 @@ def process_track_delist_statuses(session, resp, endpoint):
                     f"update_delist_statuses.py | processed {len(tracks)} track delist statuses: {tracks_updated}"
                 )
         except Exception as e:
-            logger.error(f"update_delist_statuses.py | exception while processing track delists: {e}")
+            logger.error(
+                f"update_delist_statuses.py | exception while processing track delists: {e}"
+            )
 
 
 def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):

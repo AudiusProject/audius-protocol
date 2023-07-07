@@ -1,14 +1,12 @@
-import json
 import logging
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
 import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
-from sqlalchemy.sql import text
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
