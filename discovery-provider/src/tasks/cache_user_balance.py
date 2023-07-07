@@ -57,7 +57,7 @@ class UserWalletMetadata(TypedDict):
 
 
 def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
-    redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
+    redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)[:MAX_LAZY_REFRESH_USER_IDS]
     user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
 
     user_balances = (
@@ -114,9 +114,7 @@ def refresh_user_ids(
     waudio_token,
 ):
     with db.scoped_session() as session:
-        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[
-            :MAX_LAZY_REFRESH_USER_IDS
-        ]
+        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)
         immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
 
         logger.info(
