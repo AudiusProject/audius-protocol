@@ -33,7 +33,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
-from src.models.users.usdc_purchase import UsdcPurchase
+from src.models.users.usdc_purchase import USDCPurchase
 from src.models.users.user import User
 from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_bank import UserBankAccount, UserBankTx
@@ -654,7 +654,7 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(ns)
         for i, usdc_purchase in enumerate(usdc_purchases):
-            ns = UsdcPurchase(
+            ns = USDCPurchase(
                 slot=usdc_purchase.get("slot", i),
                 signature=usdc_purchase.get("signature", 'fake_signature'),
                 buyer_user_id=usdc_purchase.get("buyer_user_id", 1),
