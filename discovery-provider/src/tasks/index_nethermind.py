@@ -444,6 +444,18 @@ def index_next_block(
                 f"Error in calling update trending challenge {e}",
                 exc_info=True,
             )
+        try:
+            # Every 100 blocks, poll and apply delist statuses from trusted notifier
+            if next_block.number % 100 == 0:
+                celery.send_task(
+                    "update_delist_statuses"
+                )
+        except Exception as e:
+            # Do not throw error, as this should not stop indexing
+            logger.error(
+                f"Error in calling update_delist_statuses {e}",
+                exc_info=True,
+            )
         if skip_tx_hash:
             clear_indexing_error(redis)
 

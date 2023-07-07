@@ -1,14 +1,12 @@
-import json
 import logging
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
 import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
-from sqlalchemy.sql import text
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -22,6 +20,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
+from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
 from src.utils import (
     db_session,
     get_all_other_nodes,
@@ -293,6 +292,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
     backfilled_cid_data = get_backfilled_cid_data(redis)
+    delist_statuses_ok = get_delist_statuses_ok()
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -329,6 +329,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
         "backfilled_cid_data": backfilled_cid_data,
+        "delist_statuses_ok": delist_statuses_ok,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
@@ -408,6 +409,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]
         or reactions_health_info["is_unhealthy"]
+        or not delist_statuses_ok
     )
 
     return health_results, is_unhealthy
