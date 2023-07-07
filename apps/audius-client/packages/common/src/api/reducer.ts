@@ -5,6 +5,7 @@ import { developerAppsApiReducer } from './developerApps'
 import { favoritesApiReducer } from './favorites'
 import { relatedArtistsApiReducer } from './relatedArtists'
 import { trackApiReducer } from './track'
+import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
 
 export default combineReducers({
@@ -13,5 +14,6 @@ export default combineReducers({
   trackApi: trackApiReducer,
   userApi: userApiReducer,
   developerAppsApi: developerAppsApiReducer,
-  favoritesApi: favoritesApiReducer
+  favoritesApi: favoritesApiReducer,
+  trendingApi: trendingApiReducer
 })

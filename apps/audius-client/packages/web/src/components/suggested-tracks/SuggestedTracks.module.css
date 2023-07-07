@@ -4,9 +4,25 @@
 
 .heading {
   display: flex;
-  flex-direction: column;
-  gap: var(--unit-2);
   padding: var(--unit-4);
+  gap: var(--unit-3);
+  align-self: stretch;
+}
+
+.headingText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--unit-2);
+  flex: 1;
+}
+
+.caret {
+  transition: transform var(--expressive) !important;
+}
+
+.caretExpanded {
+  transform: rotate(180deg);
 }
 
 .title {
@@ -16,10 +32,9 @@
   text-transform: uppercase;
 }
 
-.description {
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  line-height: var(--unit-5);
+.content {
+  display: flex;
+  flex-direction: column;
 }
 
 .loading {
@@ -75,7 +90,7 @@
   cursor: pointer;
   padding-top: var(--unit-4);
   padding-bottom: var(--unit-4);
-  align-self: stretch;
+  align-self: center;
 }
 
 .refreshContent {
@@ -101,4 +116,9 @@
   font-weight: var(--font-bold);
   line-height: 16px;
   text-transform: capitalize;
+}
+
+.suggestedTrackSkeleton {
+  composes: suggestedTrack;
+  height: 72px;
 }

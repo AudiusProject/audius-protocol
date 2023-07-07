@@ -1,27 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { isEqual } from 'lodash'
 import { useCustomCompareEffect } from 'react-use'
 
 import { Status } from 'models/Status'
 
-import { QueryHookResults } from '../types'
+import { QueryHookOptions, QueryHookResults } from '../types'
 
 export const usePaginatedQuery = <
-  Data extends [],
-  ArgsType extends { limit: number; offset: number },
-  HookType extends (args: ArgsType) => QueryHookResults<Data>
+  Data,
+  ArgsType extends { limit: number; offset: number }
 >(
-  useQueryHook: HookType,
-  baseArgs: Exclude<ArgsType, 'limit' | 'offset'>,
-  pageSize: number
+  useQueryHook: (
+    args: ArgsType,
+    options?: QueryHookOptions
+  ) => QueryHookResults<Data[]>,
+  baseArgs: Omit<ArgsType, 'limit' | 'offset'>,
+  options: { pageSize: number } & QueryHookOptions
 ) => {
+  const { pageSize, ...queryHookOptions } = options
+  const { disabled } = queryHookOptions
   const [page, setPage] = useState(0)
-  const args = { ...baseArgs, limit: pageSize, offset: page * pageSize }
-  const result = useQueryHook(args)
+  const args = {
+    ...baseArgs,
+    limit: pageSize,
+    offset: page * pageSize
+  } as ArgsType
+  const result = useQueryHook(args, queryHookOptions)
+
+  const loadMore = useCallback(() => {
+    if (!disabled) {
+      setPage(page + 1)
+    }
+  }, [disabled, page])
+
   return {
     ...result,
-    loadMore: () => setPage(page + 1),
+    loadMore,
     hasMore:
       result.status === Status.IDLE ||
       (!result.data && result.status === Status.LOADING) ||
@@ -31,13 +46,16 @@ export const usePaginatedQuery = <
 
 export const useAllPaginatedQuery = <
   Data,
-  ArgsType extends { limit: number; offset: number },
-  HookType extends (args: ArgsType) => QueryHookResults<Data[]>
+  ArgsType extends { limit: number; offset: number }
 >(
-  useQueryHook: HookType,
+  useQueryHook: (
+    args: ArgsType,
+    options?: QueryHookOptions
+  ) => QueryHookResults<Data[]>,
   baseArgs: Omit<ArgsType, 'limit' | 'offset'>,
-  pageSize: number
+  options: { pageSize: number } & QueryHookOptions
 ) => {
+  const { pageSize, ...queryHookOptions } = options
   const [page, setPage] = useState(0)
   const [allData, setAllData] = useState<Data[]>([])
   const args = {
@@ -45,7 +63,7 @@ export const useAllPaginatedQuery = <
     limit: pageSize,
     offset: page * pageSize
   } as ArgsType
-  const result = useQueryHook(args)
+  const result = useQueryHook(args, queryHookOptions)
   useEffect(() => {
     if (result.status !== Status.SUCCESS) return
     setAllData((allData) => [...allData, ...result.data])

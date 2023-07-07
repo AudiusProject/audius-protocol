@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
@@ -11,9 +11,11 @@ import {
   PlaybackSource,
   formatSecondsAsText,
   collectionPageLineupActions as tracksActions,
-  reachabilitySelectors
+  reachabilitySelectors,
+  cacheCollectionsSelectors
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
+import { usePrevious } from 'react-use'
 import { createSelector } from 'reselect'
 
 import { Text } from 'app/components/core'
@@ -34,6 +36,7 @@ const { resetAndFetchCollectionTracks } = collectionPageActions
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
+const { getCollection } = cacheCollectionsSelectors
 
 const selectTrackUids = createSelector(
   (state: AppState) => getCollectionTracksLineup(state).entries,
@@ -72,9 +75,28 @@ const selectIsQueued = createSelector(
   }
 )
 
+const useRefetchLineupOnTrackAdd = (
+  collectionId: ID | SmartCollectionVariant
+) => {
+  const trackCount = useSelector((state) =>
+    typeof collectionId !== 'number'
+      ? 0
+      : getCollection(state, { id: collectionId })?.track_count
+  )
+  const previousTrackCount = usePrevious(trackCount)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (previousTrackCount && previousTrackCount !== trackCount) {
+      dispatch(tracksActions.fetchLineupMetadatas(0, 200, false))
+    }
+  }, [previousTrackCount, trackCount, dispatch])
+}
+
 const messages = {
   empty:
     'This playlist is empty. Start adding tracks to share it or make it public.',
+  emptyPublic: 'This playlist is empty',
   detailsPlaceholder: '---'
 }
 
@@ -96,6 +118,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 type CollectionScreenDetailsTileProps = {
   isAlbum?: boolean
   isPrivate?: boolean
+  isOwner?: boolean
   isPublishing?: boolean
   extraDetails?: DetailsTileDetail[]
   collectionId: number | SmartCollectionVariant
@@ -127,6 +150,7 @@ export const CollectionScreenDetailsTile = ({
   isPublishing,
   renderImage,
   trackCount: trackCountProp,
+  isOwner,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -151,6 +175,8 @@ export const CollectionScreenDetailsTile = ({
   const playingTrack = useSelector(getCurrentTrack)
   const playingTrackId = playingTrack?.track_id
   const firstTrack = useSelector(selectFirstTrack)
+
+  useRefetchLineupOnTrackAdd(collectionId)
 
   const details = useMemo(() => {
     if (!isLineupLoading && trackCount === 0) return []
@@ -218,9 +244,11 @@ export const CollectionScreenDetailsTile = ({
         togglePlay={handlePressTrackListItemPlay}
         uids={isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids}
         ListEmptyComponent={
-          <Text fontSize='medium' weight='medium' style={styles.empty}>
-            {messages.empty}
-          </Text>
+          isLineupLoading ? null : (
+            <Text fontSize='medium' weight='medium' style={styles.empty}>
+              {isOwner ? messages.empty : messages.emptyPublic}
+            </Text>
+          )
         }
       />
     )
@@ -231,7 +259,8 @@ export const CollectionScreenDetailsTile = ({
     isLineupLoading,
     styles,
     trackUids,
-    trackCount
+    trackCount,
+    isOwner
   ])
 
   const isPlayable = isQueued || (trackCount > 0 && !!firstTrack)

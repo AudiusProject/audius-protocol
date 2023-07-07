@@ -21,13 +21,13 @@ import { CollectionHeader } from 'components/collection/desktop/CollectionHeader
 import { Divider } from 'components/divider'
 import { DogEarType } from 'components/dog-ear'
 import Page from 'components/page/Page'
+import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
-import { SuggestedTracks } from './SuggestedTracks'
 
 const messages = {
   emptyPage: {
@@ -295,7 +295,7 @@ const CollectionPage = ({
       {isOwner && !isAlbum && !isNftPlaylist && arePlaylistUpdatesEnabled ? (
         <>
           <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedTracks />
+          <SuggestedTracks collectionId={playlistId} />
         </>
       ) : null}
     </Page>
