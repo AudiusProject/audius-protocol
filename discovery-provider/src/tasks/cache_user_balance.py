@@ -481,11 +481,11 @@ def update_user_balances_task(self):
     """Caches user Audio balances, in wei."""
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
-    if not self.delegate_manager_inst:
+    if not hasattr(self, "delegate_manager_inst"):
         self.delegate_manager_inst = get_delegate_manager_contract(eth_web3)
-    if not self.staking_inst:
+    if not hasattr(self, "staking_inst"):
         self.staking_inst = get_staking_contract(eth_web3)
-    if not self.token_inst:
+    if not hasattr(self, "token_inst"):
         self.token_inst = get_token_contract(eth_web3)
     solana_client_manager = update_user_balances_task.solana_client_manager
 
