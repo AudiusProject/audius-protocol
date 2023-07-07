@@ -468,6 +468,25 @@ def extend_usdc_purchase_seller(action: NotificationAction):
     return notification
 
 
+def extend_usdc_purchase_buyer(action: NotificationAction):
+    data: UsdcPurchaseBuyerNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "content_type": data["content_type"],
+            "buyer_user_id": encode_int_id(data["buyer_user_id"]),
+            "seller_user_id": encode_int_id(data["seller_user_id"]),
+            "amount": to_wei_string(data["amount"]),
+            "content_id": encode_int_id(data["content_id"]),
+        },
+    }
+    return notification
+
+
 def extend_trending_underground(action: NotificationAction):
     data: TrendingUndergroundNotification = action["data"]  # type: ignore
     notification = {
@@ -522,5 +541,7 @@ notification_action_handler = {
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
     "trending_underground": extend_trending_underground,
+    "usdc_purchase_buyer": extend_usdc_purchase_buyer,
+    "usdc_purchase_seller": extend_usdc_purchase_seller,
     "announcement": extend_announcement,
 }
