@@ -147,10 +147,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
-const ctaToTextMap = {
+const ctaToTextMap: Record<ChatPermissionAction, string> = {
   [ChatPermissionAction.TIP]: messages.ctaTip,
   [ChatPermissionAction.UNBLOCK]: messages.ctaBlock,
-  [ChatPermissionAction.NONE]: messages.ctaNone
+  [ChatPermissionAction.NONE]: messages.ctaNone,
+  [ChatPermissionAction.WAIT]: messages.ctaNone,
+  [ChatPermissionAction.NOT_APPLICABLE]: messages.ctaNone,
+  [ChatPermissionAction.SIGN_UP]: messages.ctaNone
 }
 
 type ChatUserListItemProps = {
