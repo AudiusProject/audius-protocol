@@ -231,6 +231,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                       }
                     }
                   },
+                  rel: 'noreferrer noopener',
                   target: (href) => {
                     return isAudiusUrl(href) ? '' : '_blank'
                   }
