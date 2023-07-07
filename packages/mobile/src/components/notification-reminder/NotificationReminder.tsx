@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch, useSelector } from 'react-redux'
-import type { Dispatch } from 'redux'
 
 import useSessionCount from 'app/hooks/useSessionCount'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -23,21 +22,9 @@ const NotificationReminderInternal = () => {
   const dispatch = useDispatch()
 
   // Sets up reminders to turn on push notifications
-  const reminder = useCallback(() => {
-    remindUserToTurnOnNotifications(dispatch)
-  }, [dispatch])
-
-  useSessionCount(reminder, REMINDER_FREQUENCY, FIRST_REMINDER_SESSION)
-
-  // No UI component
-  return null
-}
-
-// Sends a notification to the WebApp to turn on push notifications if we're in the DENIED
-// state. Is called from the `NotificationsReminder` component as well as `handleMessage`
-export const remindUserToTurnOnNotifications = (dispatch: Dispatch) => {
-  checkNotifications()
-    .then(({ status }) => {
+  const remindUserToTurnOnNotifications = useCallback(async () => {
+    try {
+      const { status } = await checkNotifications()
       switch (status) {
         case RESULTS.UNAVAILABLE:
           // Notifications are not available (on this device / in this context).
@@ -63,9 +50,18 @@ export const remindUserToTurnOnNotifications = (dispatch: Dispatch) => {
             setVisibility({ drawer: 'EnablePushNotifications', visible: true })
           )
       }
-    })
-    .catch((error) => {
+    } catch (error) {
       // Not sure what happened, but swallow the error. Not worth blocking on.
       console.error(error)
-    })
+    }
+  }, [dispatch])
+
+  useSessionCount(
+    remindUserToTurnOnNotifications,
+    REMINDER_FREQUENCY,
+    FIRST_REMINDER_SESSION
+  )
+
+  // No UI component
+  return null
 }

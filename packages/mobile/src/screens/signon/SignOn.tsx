@@ -36,7 +36,6 @@ import ValidationIconX from 'app/assets/images/iconValidationX.svg'
 import signupCTA from 'app/assets/images/signUpCTA.png'
 import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import useAppState from 'app/hooks/useAppState'
 import { useToast } from 'app/hooks/useToast'
 import { screen, track, make } from 'app/services/analytics'
@@ -385,8 +384,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
         setEmail('')
         setPassword('')
       }, 1000)
-
-      remindUserToTurnOnNotifications(dispatch)
 
       return () => {
         clearTimeout(timeout)

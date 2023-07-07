@@ -5,7 +5,6 @@ import {
   Genre,
   MAX_HANDLE_LENGTH,
   Name,
-  PushNotificationSetting,
   accountActions,
   accountSelectors,
   cacheUsersSelectors,
@@ -53,8 +52,7 @@ import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
 
-const { requestPushNotificationPermissions, togglePushNotificationSetting } =
-  settingsPageActions
+const { requestPushNotificationPermissions } = settingsPageActions
 const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
@@ -439,13 +437,7 @@ function* signUp() {
 
         const isNativeMobile = yield getContext('isNativeMobile')
         if (isNativeMobile) {
-          // Request permission to send push notifications and enable all if accepted
-          yield put(
-            togglePushNotificationSetting(
-              PushNotificationSetting.MobilePush,
-              true
-            )
-          )
+          yield put(requestPushNotificationPermissions())
         } else {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
@@ -545,8 +537,6 @@ function* signIn(action) {
       yield put(signOnActions.resetSignOn())
       const isNativeMobile = yield getContext('isNativeMobile')
       if (isNativeMobile) {
-        // If permissions not already enabled, request permission to send push notifications
-        // and enable all if accepted
         yield put(requestPushNotificationPermissions())
       } else {
         setHasRequestedBrowserPermission()

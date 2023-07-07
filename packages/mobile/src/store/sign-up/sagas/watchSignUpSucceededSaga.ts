@@ -6,7 +6,6 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { takeEvery, put, select } from 'typed-redux-saga'
 
-import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import { EventNames } from 'app/types/analytics'
 
 export function* watchSignUpSucceeded() {
@@ -33,6 +32,4 @@ function* handleSignUpSucceeded() {
       handle: handleField.value
     })
   )
-
-  remindUserToTurnOnNotifications(put)
 }

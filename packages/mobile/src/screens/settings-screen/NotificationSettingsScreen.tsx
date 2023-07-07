@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { Screen, ScreenContent } from 'app/components/core'
-import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import { Divider } from './Divider'
@@ -35,7 +34,6 @@ export const NotificationSettingsScreen = () => {
   useEffectOnce(() => {
     dispatch(getPushNotificationSettings())
     dispatch(getNotificationSettings())
-    remindUserToTurnOnNotifications(dispatch)
   })
 
   return (
