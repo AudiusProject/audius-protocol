@@ -129,6 +129,14 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
+func formatHeader(header http.Header) map[string]string {
+	formatted := make(map[string]string)
+	for k, v := range header {
+		formatted[k] = strings.Join(v, ", ")
+	}
+	return formatted
+}
+
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
@@ -160,6 +168,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		// if this is not the cidstream route, we should block mp3 streaming
 		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
 		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
+			// Note: we should remove this soon. It's probably not best practice to be logging headers
+			logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
 			c.Response().Header().Set("x-would-block", "true")
 		}
 
