@@ -37,6 +37,7 @@ playlist_model = ns.model(
         "favorite_count": fields.Integer(required=True),
         "total_play_count": fields.Integer(required=True),
         "user": fields.Nested(user_model, required=True),
+        "cover_art_sizes": fields.String,
     },
 )
 
@@ -60,7 +61,6 @@ full_playlist_model = ns.clone(
         "user": fields.Nested(user_model_full, required=True),
         "tracks": fields.List(fields.Nested(track_full), required=True),
         "cover_art": fields.String,
-        "cover_art_sizes": fields.String,
         "track_count": fields.Integer(required=True),
     },
 )

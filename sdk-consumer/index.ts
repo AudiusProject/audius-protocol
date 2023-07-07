@@ -330,21 +330,21 @@ app.post<UpdatePlaylistRequest>(
   }
 );
 
-// app.post<PublishPlaylistRequest>("/publishPlaylist", async (req, res) => {
-//   try {
-//     const publishPlaylistRequest: PublishPlaylistRequest = {
-//       userId: req.body.userId,
-//       playlistId: req.body.playlistId,
-//     };
-//     const result = await audiusSdk.playlists.publishPlaylist(
-//       publishPlaylistRequest
-//     );
-//     res.send(result);
-//   } catch (e) {
-//     console.error(e);
-//     res.send((e as any).message);
-//   }
-// });
+app.post<PublishPlaylistRequest>("/publishPlaylist", async (req, res) => {
+  try {
+    const publishPlaylistRequest: PublishPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+    };
+    const result = await audiusSdk.playlists.publishPlaylist(
+      publishPlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
 
 app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
   try {

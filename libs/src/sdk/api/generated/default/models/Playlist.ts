@@ -105,6 +105,12 @@ export interface Playlist {
      * @memberof Playlist
      */
     user: User;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    coverArtSizes?: string;
 }
 
 /**
@@ -145,6 +151,7 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFromJSON(json['user']),
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
     };
 }
 
@@ -168,6 +175,7 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserToJSON(value.user),
+        'cover_art_sizes': value.coverArtSizes,
     };
 }
 

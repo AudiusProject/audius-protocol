@@ -20,6 +20,8 @@ import {
   DeletePlaylistSchema,
   PlaylistMetadata,
   PlaylistTrackMetadata,
+  PublishPlaylistRequest,
+  PublishPlaylistSchema,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
   SavePlaylistRequest,
@@ -248,74 +250,45 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
   }
 
-  // /**
-  //  * Publish a playlist
-  //  * Changes a playlist from private to public
-  //  */
-  // async publishPlaylist(
-  //   requestParameters: PublishPlaylistRequest,
-  //   writeOptions?: WriteOptions
-  // ) {
-  //   // Parse inputs
-  //   const { userId, playlistId } = parseRequestParameters(
-  //     'publishPlaylist',
-  //     PublishPlaylistSchema
-  //   )(requestParameters)
+  /**
+   * Publish a playlist
+   * Changes a playlist from private to public
+   */
+  async publishPlaylist(
+    requestParameters: PublishPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    parseRequestParameters(
+      'publishPlaylist',
+      PublishPlaylistSchema
+    )(requestParameters)
 
-  //   // Fetch playlist
-  //   const playlistResponse = await this.getPlaylist({
-  //     playlistId: requestParameters.playlistId,
-  //     userId: requestParameters.userId
-  //   })
-  //   const playlist = playlistResponse.data?.[0]
+    // Fetch playlist
+    const playlistResponse = await this.getPlaylist({
+      playlistId: requestParameters.playlistId,
+      userId: requestParameters.userId
+    })
+    const playlist = playlistResponse.data?.[0]
 
-  //   if (!playlist) {
-  //     throw new Error(
-  //       `Could not fetch playlist: ${requestParameters.playlistId}`
-  //     )
-  //   }
+    if (!playlist) {
+      throw new Error(
+        `Could not fetch playlist: ${requestParameters.playlistId}`
+      )
+    }
 
-  //   const playlistTracksResponse = await this.getPlaylistTracks({
-  //     playlistId: requestParameters.playlistId,
-  //     userId: requestParameters.userId
-  //   })
-
-  //   const playlistTracks = playlistTracksResponse.data
-
-  //     const metadata: PlaylistMetadata = {
-  //       playlistId: playlist.playlist_id,
-  //       playlistContents: { track_ids: trackIds },
-  //       playlistName: playlist.playlist_name,
-  //       playlistImageSizesMultihash: dirCID ?? playlist.cover_art_sizes,
-  //       description: playlist.description,
-  //       isAlbum: playlist.isAlbum,
-  //       isPrivate: playlist.isPrivate
-  //   }
-
-  // const updatedMetadata = {
-  //   // ...playlist,
-  //     isPrivate: false
-  //   }
-
-  //   console.log(updatedMetadata)
-
-  //   const metadataCid = await generateMetadataCidV1(updatedMetadata)
-  //   const response = await this.entityManager.manageEntity({
-  //     userId,
-  //     entityType: EntityType.PLAYLIST,
-  //     entityId: playlistId,
-  //     action: Action.UPDATE,
-  //     metadata: JSON.stringify({
-  //       cid: metadataCid.toString(),
-  //       data: snakecaseKeys(updatedMetadata)
-  //     }),
-  //     auth: this.auth,
-  //     ...writeOptions
-  //   })
-  //   const txReceipt = response.txReceipt
-
-  //   return txReceipt
-  // }
+    return await this.updatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        metadata: {
+          ...playlist,
+          isPrivate: false
+        }
+      },
+      writeOptions
+    )
+  }
 
   /**
    * Update a playlist
@@ -323,6 +296,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
 
   // TODO: Test reordering
   // TODO: Test fetching and updating
+  // TODO: Allow fetching private playlists/tracks with sdk
   async updatePlaylist(
     requestParameters: UpdatePlaylistRequest,
     writeOptions?: WriteOptions
@@ -368,8 +342,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       isPrivate: metadata.isPrivate
       // TODO: Support updating advanced fields
     }
-
-    console.log(updatedMetadata)
 
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const response = await this.entityManager.manageEntity({

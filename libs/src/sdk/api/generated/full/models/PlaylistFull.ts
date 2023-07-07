@@ -125,6 +125,12 @@ export interface PlaylistFull {
     user: UserFull;
     /**
      * 
+     * @type {string}
+     * @memberof PlaylistFull
+     */
+    coverArtSizes?: string;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -203,12 +209,6 @@ export interface PlaylistFull {
     coverArt?: string;
     /**
      * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    coverArtSizes?: string;
-    /**
-     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -264,6 +264,7 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -277,7 +278,6 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'userId': json['user_id'],
         'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'trackCount': json['track_count'],
     };
 }
@@ -302,6 +302,7 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
+        'cover_art_sizes': value.coverArtSizes,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
@@ -315,7 +316,6 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'user_id': value.userId,
         'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
         'cover_art': value.coverArt,
-        'cover_art_sizes': value.coverArtSizes,
         'track_count': value.trackCount,
     };
 }
