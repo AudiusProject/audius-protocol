@@ -21,7 +21,7 @@ const TopAPIBody = () => {
   const wm = useWithMobileStyle(styles.mobile)
 
   const onClickAudiusAPI = useCallback(() => {
-    window.open(AUDIUS_API_LINK, '__blank')
+    window.open(AUDIUS_API_LINK, '_blank')
   }, [])
 
   return (
