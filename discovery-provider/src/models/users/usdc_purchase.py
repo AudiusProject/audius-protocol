@@ -11,7 +11,7 @@ class PurchaseType(str, enum.Enum):
     album = "album"
 
 
-class UsdcPurchase(Base, RepresentableMixin):
+class USDCPurchase(Base, RepresentableMixin):
     __tablename__ = "usdc_purchases"
 
     slot = Column(Integer, primary_key=True, nullable=False, index=True)
