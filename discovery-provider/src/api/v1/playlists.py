@@ -102,7 +102,9 @@ def get_playlist(
     args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
-        return extend_playlist(playlists[0])
+        extendedPlaylist = extend_playlist(playlists[0])
+        extendedPlaylist["playlist_contents"] = extendedPlaylist["added_timestamps"]
+        return extendedPlaylist
     return None
 
 
@@ -130,15 +132,20 @@ class Playlist(Resource):
     @ns.doc(
         id="""Get Playlist""",
         description="""Get a playlist by ID""",
-        params={"playlist_id": "A Playlist ID"},
+        params={
+            "playlist_id": "A Playlist ID",
+            "user_id": {"description": "The user ID", "in": "query"}
+        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlists_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
+        args = current_user_parser.parse_args()
+        current_user_id = get_current_user_id(args)
         playlist = get_playlist(
-            current_user_id=None,
+            current_user_id=current_user_id,
             playlist_id=playlist_id,
         )
         response = success_response([playlist] if playlist else [])
@@ -150,7 +157,10 @@ class FullPlaylist(Resource):
     @ns.doc(
         id="""Get Playlist""",
         description="""Get a playlist by ID""",
-        params={"playlist_id": "A Playlist ID"},
+        params={
+            "playlist_id": "A Playlist ID",
+            "user_id": {"description": "The user ID", "in": "query"}
+        },
     )
     @ns.expect(current_user_parser)
     @ns.marshal_with(full_playlists_response)
@@ -213,7 +223,10 @@ class PlaylistTracks(Resource):
     @ns.doc(
         id="""Get Playlist Tracks""",
         description="""Fetch tracks within a playlist.""",
-        params={"playlist_id": "A Playlist ID"},
+        params={
+            "playlist_id": "A Playlist ID",
+            "user_id": {"description": "The user ID", "in": "query"}
+        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlist_tracks_response)
@@ -230,7 +243,10 @@ class FullPlaylistTracks(Resource):
     @ns.doc(
         id="""Get Playlist Tracks""",
         description="""Fetch tracks within a playlist.""",
-        params={"playlist_id": "A Playlist ID"},
+        params={
+            "playlist_id": "A Playlist ID",
+            "user_id": {"description": "The user ID", "in": "query"}
+        },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(full_playlist_tracks_response)
