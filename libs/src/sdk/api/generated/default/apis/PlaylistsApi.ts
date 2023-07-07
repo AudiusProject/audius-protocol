@@ -39,7 +39,6 @@ export interface GetPlaylistRequest {
 
 export interface GetPlaylistTracksRequest {
     playlistId: string;
-    userId?: string;
 }
 
 export interface GetTrendingPlaylistsRequest {
@@ -98,10 +97,6 @@ export class PlaylistsApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
-
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
-        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 

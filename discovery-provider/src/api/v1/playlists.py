@@ -223,10 +223,7 @@ class PlaylistTracks(Resource):
     @ns.doc(
         id="""Get Playlist Tracks""",
         description="""Fetch tracks within a playlist.""",
-        params={
-            "playlist_id": "A Playlist ID",
-            "user_id": {"description": "The user ID", "in": "query"}
-        },
+        params={"playlist_id": "A Playlist ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlist_tracks_response)
@@ -243,10 +240,7 @@ class FullPlaylistTracks(Resource):
     @ns.doc(
         id="""Get Playlist Tracks""",
         description="""Fetch tracks within a playlist.""",
-        params={
-            "playlist_id": "A Playlist ID",
-            "user_id": {"description": "The user ID", "in": "query"}
-        },
+        params={"playlist_id": "A Playlist ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(full_playlist_tracks_response)
