@@ -68,7 +68,7 @@ export const InboxUnavailableMessage = ({
     default:
       return (
         <div className={styles.root}>
-          {messages.default(user)}
+          {messages.default(user)}{' '}
           <a href='#' target='_blank'>
             {messages.learnMore}
           </a>
