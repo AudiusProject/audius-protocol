@@ -1,6 +1,4 @@
 import App from "basekit/src/app";
-import { FastifyReply, FastifyRequest } from "fastify";
-import { TransactionReceipt, Address } from "web3";
 import { RelayRequestType, RelayResponseType } from "../types/relay";
 import { SharedData } from "..";
 

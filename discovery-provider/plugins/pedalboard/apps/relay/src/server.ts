@@ -17,7 +17,7 @@ export const webServer = async (app: App<SharedData>) => {
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   fastify.get(
-    "/health_check",
+    "/relay/health",
     async (req, rep) => await healthCheck(app, req, rep)
   );
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
