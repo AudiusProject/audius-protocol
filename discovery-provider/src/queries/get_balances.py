@@ -102,6 +102,6 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
     # Enqueue new balances to Redis refresh queue
     # 1. All users who need a new balance
     # 2. All users who need a balance refresh
-    # enqueue_lazy_balance_refresh(redis, list(needs_balance_set) + needs_refresh)
+    enqueue_lazy_balance_refresh(redis, list(needs_balance_set) + needs_refresh)
 
     return result
