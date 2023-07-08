@@ -16,6 +16,7 @@ import (
 	"mime/multipart"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -27,7 +28,7 @@ import (
 )
 
 var (
-	audioPreviewDuration = "30" // seconds
+	audioPreviewDuration = 30.0 // seconds
 )
 
 func (ss *MediorumServer) startTranscoder() {
@@ -377,7 +378,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 	logger.Info("audio transcode done", "mirrors", upload.TranscodedMirrors)
 
 	// if a start time is set, also transcode an audio preview from the full 320kbps downsample
-	if upload.PreviewStartSeconds.Valid {
+	if upload.SelectedPreview.Valid {
 		// update upload to reflect the start of the retranscoding preview step
 		upload.TranscodeProgress = 0
 		upload.TranscodedAt = time.Now().UTC()
@@ -391,7 +392,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 }
 
 func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
-	if !upload.PreviewStartSeconds.Valid {
+	if !upload.SelectedPreview.Valid {
 		logger.Info("no audio preview start time set. skipping preview transcode", "id", upload.ID)
 		return nil
 	}
@@ -399,11 +400,24 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 	srcPath := temp.Name()
 	destPath := strings.TrimSuffix(srcPath, "_320.mp3") + "_320_preview.mp3"
 
+	splitPreview := strings.Split(upload.SelectedPreview.String, "|")
+	previewStart := splitPreview[1]
+	previewEnd := splitPreview[2]
+	previewStartSeconds, err := strconv.ParseFloat(previewStart, 64)
+	if err != nil {
+		return onError(err, "parsing selected preview start")
+	}
+	previewEndSeconds, err := strconv.ParseFloat(previewEnd, 64)
+	if err != nil {
+		return onError(err, "parsing selected preview end")
+	}
+	previewDuration := previewEndSeconds - previewStartSeconds
+
 	cmd := exec.Command("ffmpeg",
 		"-y",
 		"-i", srcPath,
-		"-ss", fmt.Sprint(upload.PreviewStartSeconds.Int64), // set preview start time
-		"-t", audioPreviewDuration, // set preview duration
+		"-ss", previewStart, // set preview start time
+		"-t", fmt.Sprint(previewDuration), // set preview duration
 		"-b:a", "320k", // set bitrate to 320k
 		"-ar", "48000", // set sample rate to 48000 Hz
 		"-f", "mp3", // force output to mp3
@@ -413,7 +427,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		"-progress", "pipe:2",
 		destPath)
 
-	err := ss.transcodeAudio(upload, destPath, cmd, logger)
+	err = ss.transcodeAudio(upload, destPath, cmd, logger)
 	if err != nil {
 		return onError(err, "transcoding audio")
 	}
@@ -436,7 +450,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, "replicating file")
 	}
 
-	upload.TranscodeResults["320_preview"] = resultKey
+	upload.TranscodeResults[upload.SelectedPreview.String] = resultKey
 
 	logger.Info("audio preview transcode done", "mirrors", mirrors)
 

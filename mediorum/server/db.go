@@ -20,17 +20,17 @@ type Blob struct {
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
-	UserID              sql.NullInt64  `json:"user_id"`
-	Template            JobTemplate    `json:"template"`
-	OrigFileName        string         `json:"orig_filename"`
-	OrigFileCID         string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //
-	PreviewStartSeconds sql.NullInt64  `json:"preview_start_seconds"`
-	FFProbe             *FFProbeResult `json:"probe" gorm:"serializer:json"`
-	Error               string         `json:"error,omitempty"`
-	ErrorCount          int            `json:"error_count,omitempty"`
-	Mirrors             []string       `json:"mirrors" gorm:"serializer:json"`
-	TranscodedMirrors   []string       `json:"transcoded_mirrors" gorm:"serializer:json"`
-	Status              string         `json:"status" gorm:"index"`
+	UserID            sql.NullInt64  `json:"user_id"`
+	Template          JobTemplate    `json:"template"`
+	OrigFileName      string         `json:"orig_filename"`
+	OrigFileCID       string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //
+	SelectedPreview   sql.NullString `json:"selected_preview"`
+	FFProbe           *FFProbeResult `json:"probe" gorm:"serializer:json"`
+	Error             string         `json:"error,omitempty"`
+	ErrorCount        int            `json:"error_count,omitempty"`
+	Mirrors           []string       `json:"mirrors" gorm:"serializer:json"`
+	TranscodedMirrors []string       `json:"transcoded_mirrors" gorm:"serializer:json"`
+	Status            string         `json:"status" gorm:"index"`
 
 	CreatedBy string    `json:"created_by" `
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`

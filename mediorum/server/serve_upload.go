@@ -55,23 +55,25 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
-	previewStartSeconds := sql.NullInt64{Valid: false}
+	selectedPreview := sql.NullString{Valid: false}
 	if body.PreviewStartSeconds != "" {
-		previewStartSecondsInt, err := strconv.Atoi(body.PreviewStartSeconds)
+		previewStartSeconds, err := strconv.ParseFloat(body.PreviewStartSeconds, 64)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
-		previewStartSeconds = sql.NullInt64{
-			Valid: true,
-			Int64: int64(previewStartSecondsInt),
+		previewEndSeconds := previewStartSeconds + audioPreviewDuration
+		selectedPreviewString := fmt.Sprintf("320_preview|%g|%g", previewStartSeconds, previewEndSeconds)
+		selectedPreview = sql.NullString{
+			Valid:  true,
+			String: selectedPreviewString,
 		}
 	}
 
 	// Update supported editable fields
 
 	// Do not support deleting previews
-	if previewStartSeconds.Valid && previewStartSeconds != upload.PreviewStartSeconds {
-		upload.PreviewStartSeconds = previewStartSeconds
+	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
+		upload.SelectedPreview = selectedPreview
 		upload.UpdatedAt = time.Now().UTC()
 		upload.Status = JobStatusRetranscode
 
@@ -106,17 +108,18 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		return err
 	}
 	template := JobTemplate(c.FormValue("template"))
-	previewStartSeconds := sql.NullInt64{Valid: false}
-	previewStartSecondsString := c.FormValue("previewStartSeconds")
-	if previewStartSecondsString != "" {
-		previewStartSecondsInt, err := strconv.Atoi(previewStartSecondsString)
+	selectedPreview := sql.NullString{Valid: false}
+	previewStart := c.FormValue("previewStartSeconds")
+	if previewStart != "" {
+		previewStartSeconds, err := strconv.ParseFloat(previewStart, 64)
 		if err != nil {
 			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
-
-		previewStartSeconds = sql.NullInt64{
-			Int64: int64(previewStartSecondsInt),
-			Valid: true,
+		previewEndSeconds := previewStartSeconds + audioPreviewDuration
+		selectedPreviewString := fmt.Sprintf("320_preview|%g|%g", previewStartSeconds, previewEndSeconds)
+		selectedPreview = sql.NullString{
+			Valid:  true,
+			String: selectedPreviewString,
 		}
 	}
 	files := form.File[filesFormFieldName]
@@ -139,16 +142,16 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 
 			now := time.Now().UTC()
 			upload := &Upload{
-				ID:                  ulid.Make().String(),
-				UserID:              userId,
-				Status:              JobStatusNew,
-				Template:            template,
-				PreviewStartSeconds: previewStartSeconds,
-				CreatedBy:           ss.Config.Self.Host,
-				CreatedAt:           now,
-				UpdatedAt:           now,
-				OrigFileName:        formFile.Filename,
-				TranscodeResults:    map[string]string{},
+				ID:               ulid.Make().String(),
+				UserID:           userId,
+				Status:           JobStatusNew,
+				Template:         template,
+				SelectedPreview:  selectedPreview,
+				CreatedBy:        ss.Config.Self.Host,
+				CreatedAt:        now,
+				UpdatedAt:        now,
+				OrigFileName:     formFile.Filename,
+				TranscodeResults: map[string]string{},
 			}
 			uploads[idx] = upload
 
