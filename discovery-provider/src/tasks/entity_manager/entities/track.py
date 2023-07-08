@@ -156,6 +156,7 @@ def is_valid_json_field(metadata, field):
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
+    track_record.audio_upload_id = track_metadata["audio_upload_id"]
     track_record.title = track_metadata["title"]
     track_record.cover_art = track_metadata["cover_art"]
     track_record.tags = track_metadata["tags"]
@@ -173,6 +174,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
     track_record.is_premium = track_metadata["is_premium"]
     track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+    track_record.preview_start_seconds = track_metadata["preview_start_seconds"]
 
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]

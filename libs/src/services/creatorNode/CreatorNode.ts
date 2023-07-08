@@ -200,6 +200,7 @@ export class CreatorNode {
     updatedMetadata.track_segments = []
     updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
+    updatedMetadata.audio_upload_id = audioResp.id
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }

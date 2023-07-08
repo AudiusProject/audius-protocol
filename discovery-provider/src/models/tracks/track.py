@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
     Text,
     text,
+    Float,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
@@ -30,12 +31,14 @@ class Track(Base, RepresentableMixin):
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False, index=True)
+    audio_upload_id = Column(String)
     track_cid = Column(
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
     title = Column(Text)
     duration = Column(Integer)
     length = Column(Integer)
+    preview_start_seconds = Column(Float)
     cover_art = Column(String)
     tags = Column(String)
     genre = Column(String)

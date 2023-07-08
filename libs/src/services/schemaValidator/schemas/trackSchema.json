@@ -11,8 +11,16 @@
           "type": "string",
           "default": null
         },
+        "audio_upload_id": {
+          "type": ["string", "null"],
+          "default": null
+        },
         "length": {
           "type": ["integer", "null"],
+          "default": null
+        },
+        "preview_start_seconds": {
+          "type": ["float", "null"],
           "default": null
         },
         "cover_art": {
