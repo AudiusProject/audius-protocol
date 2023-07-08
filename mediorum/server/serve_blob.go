@@ -79,6 +79,13 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 		ss.logger.Warn("error getting blob attributes", "error", err)
 		return err
 	}
+
+	// since this is called before redirecting, make sure this node can actually serve the blob (it needs to check db for delisted status)
+	dbHealthy := ss.databaseSize > 0
+	if !dbHealthy {
+		return c.String(500, "database connection issue")
+	}
+
 	return c.JSON(200, attr)
 }
 
