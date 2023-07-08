@@ -3,7 +3,7 @@ import { Static, Type } from "@sinclair/typebox";
 export const RelayRequest = Type.Object({
   senderAddress: Type.String(),
   encodedABI: Type.String(),
-  gasLimit: Type.Integer(),
+  gasLimit: Type.Optional(Type.Integer()),
 });
 
 export type RelayRequestType = Static<typeof RelayRequest>;

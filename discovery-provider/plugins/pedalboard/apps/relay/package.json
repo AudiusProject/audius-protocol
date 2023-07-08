@@ -18,8 +18,7 @@
     "@sinclair/typebox": "^0.29.4",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "ethers": "^6.6.2",
-    "express": "^4.17.1",
+    "ethers": "^5.7.0",
     "fastify": "^4.19.2",
     "logger": "*",
     "morgan": "^1.10.0"
