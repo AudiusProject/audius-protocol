@@ -244,6 +244,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		if !ss.Config.WalletIsRegistered {
 			status = 506
 		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			status = 500
+		}
 		return c.JSON(status, map[string]any{
 			"host":                 ss.Config.Self.Host,
 			"wallet":               ss.Config.Self.Wallet,
@@ -258,6 +262,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			c.JSON(500, "database not healthy")
+		}
 		return c.String(200, "OK")
 	})
 
