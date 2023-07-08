@@ -357,13 +357,14 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 				})
 			}
 
-			// check it is for this cid or id
+			// check it is for this cid or job id
 			if cid != "" && sig.Data.Cid != cid {
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect CID",
 					"detail": fmt.Sprintf("url: %s, signature %s", cid, sig.Data.Cid),
 				})
 			}
+			// note: id is the upload ID, which is persisted in discovery as part of a track's metadata
 			if id != "" && sig.Data.ID != id {
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect ID",
