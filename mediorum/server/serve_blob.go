@@ -171,10 +171,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
 		// detect mime type:
 		// if this is not the cidstream route, we should block mp3 streaming
 		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
-		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
+		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
 			// Note: we should remove this soon. It's probably not best practice to be logging headers
 			logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
 			c.Response().Header().Set("x-would-block", "true")
@@ -187,7 +188,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		defer blob.Close()
 
 		// v2 file listen
-		go ss.logTrackListen(c)
+		if isAudioFile {
+			go ss.logTrackListen(c)
+		}
 
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
