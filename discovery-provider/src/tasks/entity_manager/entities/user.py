@@ -28,6 +28,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     get_metadata_type_and_format,
     parse_metadata,
+    validate_signer,
 )
 from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
@@ -75,13 +76,8 @@ def validate_user_tx(params: ManageEntityParameters):
             )
     elif params.action == Action.UPDATE:
         # update / delete specific validations
-        if user_id not in params.existing_records[EntityType.USER]:
-            raise IndexingValidationError(f"Invalid User Transaction, user {user_id} does not exist")
-        wallet = params.existing_records[EntityType.USER][user_id].wallet
-        if wallet and wallet.lower() != params.signer.lower():
-            raise IndexingValidationError(
-                "Invalid User Transaction, user wallet signer does not match"
-            )
+        validate_signer(params)
+
     elif params.action == Action.VERIFY:
         verifier_address = get_verifier_address()
         if not verifier_address or verifier_address.lower() != params.signer.lower():
