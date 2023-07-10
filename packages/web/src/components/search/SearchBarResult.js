@@ -19,13 +19,9 @@ const Image = memo((props) => {
     let isCanceled = false
     const getImage = async () => {
       try {
-        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-          props.creatorNodeEndpoint
-        )
         const url = await audiusBackendInstance.getImageUrl(
           imageMultihash,
-          size,
-          gateways
+          size
         )
         if (!isCanceled) setImage(url || defaultImage)
       } catch (err) {
@@ -36,7 +32,7 @@ const Image = memo((props) => {
     return () => {
       isCanceled = true
     }
-  }, [defaultImage, imageMultihash, props.creatorNodeEndpoint, size])
+  }, [defaultImage, imageMultihash, size])
   return (
     <DynamicImage
       skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
@@ -60,7 +56,6 @@ const SearchBarResult = memo((props) => {
     primary,
     secondary,
     imageMultihash,
-    creatorNodeEndpoint,
     size,
     defaultImage,
     isVerifiedUser,
@@ -76,7 +71,6 @@ const SearchBarResult = memo((props) => {
         id={id}
         sizes={sizes}
         imageMultihash={imageMultihash}
-        creatorNodeEndpoint={creatorNodeEndpoint}
         defaultImage={defaultImage}
         size={size}
       />
@@ -127,7 +121,6 @@ SearchBarResult.propTypes = {
   id: PropTypes.string,
   sizes: PropTypes.object,
   imageMultihash: PropTypes.string,
-  creatorNodeEndpoint: PropTypes.string,
   size: PropTypes.string,
   defaultImage: PropTypes.string,
   isVerifiedUser: PropTypes.bool

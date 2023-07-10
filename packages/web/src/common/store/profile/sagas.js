@@ -74,15 +74,11 @@ function* watchFetchProfile() {
 
 function* fetchProfileCustomizedCollectibles(user) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-    user.creator_node_endpoint
-  )
   const cid = user?.metadata_multihash ?? null
   if (cid) {
     const metadata = yield call(
       audiusBackendInstance.fetchCID,
       cid,
-      gateways,
       /* cache */ false,
       /* asUrl */ false
     )
@@ -439,18 +435,12 @@ export function* updateProfileAsync(action) {
   )
 
   // Get existing metadata and combine with it
-  const gateways = metadata.is_storage_v2
-    ? []
-    : audiusBackendInstance.getCreatorNodeIPFSGateways(
-        metadata.creator_node_endpoint
-      )
   const cid = metadata.metadata_multihash ?? null
   if (cid) {
     try {
       const metadataFromIPFS = yield call(
         audiusBackendInstance.fetchCID,
         cid,
-        gateways,
         /* cache */ false,
         /* asUrl */ false
       )

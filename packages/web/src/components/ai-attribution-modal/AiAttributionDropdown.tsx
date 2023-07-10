@@ -31,7 +31,6 @@ const selectSearchResults = createSelector(getSearchResults, (results) => {
           userId={user.user_id}
           sizes={user.profile_picture_sizes}
           imageMultihash={user.profile_picture_sizes || user.profile_picture}
-          creatorNodeEndpoint={user.creator_node_endpoint}
           size={SquareSizes.SIZE_150_BY_150}
           primary={user.name || user.handle}
           defaultImage={imageProfilePicEmpty}

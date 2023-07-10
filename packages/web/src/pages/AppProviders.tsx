@@ -1,12 +1,11 @@
-import { AppContext } from '@audius/common'
-
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { HeaderContextProvider } from 'components/header/mobile/HeaderContextProvider'
 import { NavProvider } from 'components/nav/store/context'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { MainContentContextProvider } from 'pages/MainContentContext'
-import * as analytics from 'services/analytics'
+
+import { AppContextProvider } from './AppContextProvider'
 
 type AppContextProps = {
   children: JSX.Element
@@ -14,7 +13,7 @@ type AppContextProps = {
 
 const AppProviders = ({ children }: AppContextProps) => {
   return (
-    <AppContext.Provider value={{ analytics }}>
+    <AppContextProvider>
       <NavProvider>
         <ScrollProvider>
           <RouterContextProvider>
@@ -26,7 +25,7 @@ const AppProviders = ({ children }: AppContextProps) => {
           </RouterContextProvider>
         </ScrollProvider>
       </NavProvider>
-    </AppContext.Provider>
+    </AppContextProvider>
   )
 }
 

@@ -13,6 +13,8 @@ import {
   AUDIUS_PRESS_LINK
 } from 'utils/route'
 
+import { AppContextProvider } from './AppContextProvider'
+
 const BASENAME = process.env.PUBLIC_URL
 
 const PrivacyPolicyPage = lazy(
@@ -96,76 +98,78 @@ const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
       />
 
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-        <Router basename={BASENAME}>
-          <Route
-            exact
-            path={'/legal/terms-of-use'}
-            render={() => (
-              <TermsOfUsePage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
-          />
-          <Route
-            exact
-            path={'/legal/service-terms'}
-            render={() => (
-              <ServiceTermsPage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
-          />
-          <Route
-            exact
-            path={'/legal/privacy-policy'}
-            render={() => (
-              <PrivacyPolicyPage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
-          />
-          <Route
-            exact
-            path={'/press'}
-            render={() => {
-              window.location.href = AUDIUS_PRESS_LINK
-              return null
-            }}
-          />
-          <Route
-            exact
-            path={'/download'}
-            render={() => (
-              <DownloadPage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
-          />
-          <Route
-            exact
-            path={'/'}
-            render={() => (
-              <LandingPage
-                isMobile={isMobileOrNarrow}
-                openNavScreen={openNavScreen}
-                setRenderPublicSite={setRenderPublicSite}
-              />
-            )}
-          />
-          <Route
-            exact
-            path={'/auth-redirect'}
-            render={() => <LoadingSpinnerFullPage />}
-          />
-        </Router>
+        <AppContextProvider>
+          <Router basename={BASENAME}>
+            <Route
+              exact
+              path={'/legal/terms-of-use'}
+              render={() => (
+                <TermsOfUsePage
+                  isMobile={isMobileOrNarrow}
+                  openNavScreen={openNavScreen}
+                  setRenderPublicSite={setRenderPublicSite}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={'/legal/service-terms'}
+              render={() => (
+                <ServiceTermsPage
+                  isMobile={isMobileOrNarrow}
+                  openNavScreen={openNavScreen}
+                  setRenderPublicSite={setRenderPublicSite}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={'/legal/privacy-policy'}
+              render={() => (
+                <PrivacyPolicyPage
+                  isMobile={isMobileOrNarrow}
+                  openNavScreen={openNavScreen}
+                  setRenderPublicSite={setRenderPublicSite}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={'/press'}
+              render={() => {
+                window.location.href = AUDIUS_PRESS_LINK
+                return null
+              }}
+            />
+            <Route
+              exact
+              path={'/download'}
+              render={() => (
+                <DownloadPage
+                  isMobile={isMobileOrNarrow}
+                  openNavScreen={openNavScreen}
+                  setRenderPublicSite={setRenderPublicSite}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={'/'}
+              render={() => (
+                <LandingPage
+                  isMobile={isMobileOrNarrow}
+                  openNavScreen={openNavScreen}
+                  setRenderPublicSite={setRenderPublicSite}
+                />
+              )}
+            />
+            <Route
+              exact
+              path={'/auth-redirect'}
+              render={() => <LoadingSpinnerFullPage />}
+            />
+          </Router>
+        </AppContextProvider>
       </Suspense>
     </>
   )

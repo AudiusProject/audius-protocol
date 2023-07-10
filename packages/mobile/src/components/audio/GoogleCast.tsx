@@ -54,14 +54,9 @@ export const useChromecast = () => {
   const loadCast = useCallback(
     async (track, startTime) => {
       if (client && track && owner && streamingUri) {
-        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-          owner.creator_node_endpoint
-        )
-
         const imageUrl = await audiusBackendInstance.getImageUrl(
           track.cover_art_sizes,
-          SquareSizes.SIZE_1000_BY_1000,
-          gateways
+          SquareSizes.SIZE_1000_BY_1000
         )
 
         client.loadMedia({

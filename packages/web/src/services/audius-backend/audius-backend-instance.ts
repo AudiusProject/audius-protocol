@@ -91,7 +91,6 @@ export const audiusBackendInstance = audiusBackend({
   generalAdmissionUrl: process.env.REACT_APP_GENERAL_ADMISSION,
   isElectron: isElectron(),
   isMobile: isMobile(),
-  legacyUserNodeUrl: process.env.REACT_APP_LEGACY_USER_NODE,
   monitoringCallbacks,
   nativeMobile: false,
   onLibsInit: (libs: AudiusLibs) => {
