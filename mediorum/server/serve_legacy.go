@@ -4,10 +4,12 @@ import (
 	"context"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
@@ -108,19 +110,22 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 		return err
 	}
 
-	// here we would want to check that host in question is up
-	// (perhaps using healthy hosts convetion from elsewhere)
-	// for now just use first host
 	logger := ss.logger.With("cid", cid)
 	logger.Info("potential hosts for cid", "hosts", hosts)
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+
 	for _, host := range hosts {
+		if !slices.Contains(healthyHosts, host) {
+			logger.Info("host not healthy; skipping", "host", host)
+			continue
+		}
 		dest := replaceHost(*c.Request().URL, host)
 		logger.Info("redirecting to: " + dest.String())
 		return c.Redirect(302, dest.String())
 	}
 
-	logger.Info("no host found with cid")
-	return c.String(404, "no host found with cid: "+cid)
+	logger.Info("no healthy host found with cid")
+	return c.String(404, "no healthy host found with cid: "+cid)
 }
 
 func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
