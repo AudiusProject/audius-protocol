@@ -625,7 +625,6 @@ export const Audio = () => {
           ? getImageSourceOptimistic({
               cid,
               endpoints: storageNodeSelector.getNodes(cid),
-              user: trackOwner,
               size: SquareSizes.SIZE_1000_BY_1000,
               localSource: localTrackImageSource
             })?.uri ?? DEFAULT_IMAGE_URL

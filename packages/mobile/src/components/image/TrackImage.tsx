@@ -1,12 +1,5 @@
-import type {
-  User,
-  Track,
-  Nullable,
-  SquareSizes,
-  ID,
-  Maybe
-} from '@audius/common'
-import { reachabilitySelectors, cacheUsersSelectors } from '@audius/common'
+import type { Track, Nullable, SquareSizes, ID, Maybe } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
@@ -23,14 +16,10 @@ export const DEFAULT_IMAGE_URL =
   'https://download.audius.co/static-resources/preview-image.jpg'
 
 const { getIsReachable } = reachabilitySelectors
-const { getUser } = cacheUsersSelectors
 
 type UseTrackImageOptions = {
-  track: Nullable<
-    Pick<Track, 'track_id' | 'cover_art_sizes' | 'cover_art' | 'owner_id'>
-  >
+  track: Nullable<Pick<Track, 'track_id' | 'cover_art_sizes' | 'cover_art'>>
   size: SquareSizes
-  user?: Pick<User, 'creator_node_endpoint'>
 }
 
 const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
@@ -50,19 +39,14 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
   return trackImageUri
 }
 
-export const useTrackImage = ({ track, size, user }: UseTrackImageOptions) => {
+export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
   const cid = track ? track.cover_art_sizes || track.cover_art : null
-
-  const selectedUser = useSelector((state) =>
-    getUser(state, { id: track?.owner_id })
-  )
 
   const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
 
   const contentNodeSource = useContentNodeImage({
     cid,
     size,
-    user: user ?? selectedUser,
     fallbackImageSource: imageEmpty,
     localSource: localTrackImageUri ? { uri: localTrackImageUri } : null
   })
@@ -73,9 +57,9 @@ export const useTrackImage = ({ track, size, user }: UseTrackImageOptions) => {
 type TrackImageProps = UseTrackImageOptions & Partial<FastImageProps>
 
 export const TrackImage = (props: TrackImageProps) => {
-  const { track, size, user, style, ...other } = props
+  const { track, size, style, ...other } = props
 
-  const trackImageSource = useTrackImage({ track, size, user })
+  const trackImageSource = useTrackImage({ track, size })
   const { neutralLight8 } = useThemeColors()
 
   if (!trackImageSource) return null

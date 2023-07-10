@@ -95,7 +95,6 @@ const TrackSearchResult = (props: TrackSearchResultProps) => {
       <TrackImage
         track={track}
         size={SquareSizes.SIZE_150_BY_150}
-        user={track.user}
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
@@ -134,7 +133,6 @@ const PlaylistSearchResult = (props: PlaylistSearchResultProps) => {
       <CollectionImage
         collection={playlist}
         size={SquareSizes.SIZE_150_BY_150}
-        user={playlist.user}
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
@@ -173,7 +171,6 @@ const AlbumSearchResult = (props: AlbumSearchResultProps) => {
       <CollectionImage
         collection={album}
         size={SquareSizes.SIZE_150_BY_150}
-        user={album.user}
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
