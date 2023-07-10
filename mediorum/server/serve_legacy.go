@@ -29,7 +29,10 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	// detect mime type:
 	// if this is not the cidstream route, we should block mp3 streaming
 	// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
-	if !strings.Contains(c.Path(), "cidstream") && isAudioFile(storagePath) {
+	isAudioFile := isAudioFile(storagePath)
+	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+		// Note: we should remove this soon. It's probably not best practice to be logging headers
+		logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
 		c.Response().Header().Set("x-would-block", "true")
 	}
 
@@ -39,7 +42,9 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	}
 
 	// v1 file listen
-	go ss.logTrackListen(c)
+	if isAudioFile {
+		go ss.logTrackListen(c)
+	}
 
 	return nil
 }
