@@ -61,8 +61,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 		if err != nil {
 			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
-		previewEndSeconds := previewStartSeconds + audioPreviewDuration
-		selectedPreviewString := fmt.Sprintf("320_preview|%g|%g", previewStartSeconds, previewEndSeconds)
+		selectedPreviewString := fmt.Sprintf("320_preview|%g", previewStartSeconds)
 		selectedPreview = sql.NullString{
 			Valid:  true,
 			String: selectedPreviewString,
@@ -115,8 +114,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		if err != nil {
 			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
 		}
-		previewEndSeconds := previewStartSeconds + audioPreviewDuration
-		selectedPreviewString := fmt.Sprintf("320_preview|%g|%g", previewStartSeconds, previewEndSeconds)
+		selectedPreviewString := fmt.Sprintf("320_preview|%g", previewStartSeconds)
 		selectedPreview = sql.NullString{
 			Valid:  true,
 			String: selectedPreviewString,
