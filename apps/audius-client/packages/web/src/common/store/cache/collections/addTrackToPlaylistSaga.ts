@@ -12,11 +12,11 @@ import {
   Collection,
   Nullable,
   SquareSizes,
-  UserTrackMetadata,
   AudiusBackend,
   UserCollection,
   ID,
-  FeatureFlags
+  FeatureFlags,
+  TrackMetadata
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
@@ -28,7 +28,6 @@ import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { retrieveTracks } from '../tracks/utils'
-import { fetchUsers } from '../users/sagas'
 
 import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import {
@@ -48,20 +47,16 @@ type AddTrackToPlaylistAction = ReturnType<
 >
 
 async function getTrackArtworkUrl(
-  tracks: UserTrackMetadata[],
+  tracks: TrackMetadata[],
   audiusBackend: AudiusBackend
 ) {
   return await Promise.all(
     tracks.map(async (track) => {
-      const { user, cover_art_sizes, cover_art } = track
-      const userGateways = audiusBackend.getCreatorNodeIPFSGateways(
-        user.creator_node_endpoint
-      )
+      const { cover_art_sizes, cover_art } = track
 
-      const imageUrl: string = await audiusBackend.getImageUrl(
+      const imageUrl = await audiusBackend.getImageUrl(
         cover_art_sizes || cover_art,
-        SquareSizes.SIZE_1000_BY_1000,
-        userGateways
+        SquareSizes.SIZE_1000_BY_1000
       )
       return imageUrl
     })
@@ -103,17 +98,9 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   // Retrieve track-to-add so we confirm with the
   // most up-to-date information.
   const [track] = yield* call(retrieveTracks, { trackIds: [trackId] })
-  const trackOwnerEntities = yield* call(fetchUsers, [track.owner_id])
-  const trackOwner = trackOwnerEntities.entries[track.owner_id]
 
-  if (
-    track &&
-    trackOwner &&
-    playlist.track_count === 3 &&
-    isPlaylistImprovementsEnabled
-  ) {
-    const trackWithUser = { ...track, user: trackOwner }
-    const tracks = [...(playlist.tracks ?? []), trackWithUser]
+  if (track && playlist.track_count === 3 && isPlaylistImprovementsEnabled) {
+    const tracks = [...(playlist.tracks ?? []), track]
     const first4Tracks = tracks.slice(0, 4)
     if (first4Tracks.length === 4) {
       const trackArtworks = yield* call(

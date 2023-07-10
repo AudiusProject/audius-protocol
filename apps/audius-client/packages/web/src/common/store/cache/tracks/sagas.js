@@ -363,16 +363,12 @@ function* watchFetchCoverArt() {
       const user = yield call(waitForValue, getUser, { id: track.owner_id })
       if (!track || !user || (!track.cover_art_sizes && !track.cover_art))
         return
-      const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-        user.creator_node_endpoint
-      )
       const multihash = track.cover_art_sizes || track.cover_art
       const coverArtSize = multihash === track.cover_art_sizes ? size : null
       const url = yield call(
         audiusBackendInstance.getImageUrl,
         multihash,
-        coverArtSize,
-        gateways
+        coverArtSize
       )
       track = yield select(getTrack, { id: trackId })
       track._cover_art_sizes = {
@@ -388,8 +384,7 @@ function* watchFetchCoverArt() {
         smallImageUrl = yield call(
           audiusBackendInstance.getImageUrl,
           multihash,
-          SquareSizes.SIZE_150_BY_150,
-          gateways
+          SquareSizes.SIZE_150_BY_150
         )
       }
 

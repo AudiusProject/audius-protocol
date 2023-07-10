@@ -40,11 +40,13 @@ import {
   Name,
   PlaylistTrackId,
   ProfilePictureSizes,
+  SquareSizes,
   StringWei,
   Track,
   TrackMetadata,
   User,
-  UserMetadata
+  UserMetadata,
+  WidthSizes
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -249,7 +251,6 @@ type AudiusBackendParams = {
   generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
   isMobile: Maybe<boolean>
-  legacyUserNodeUrl: Maybe<string>
   localStorage?: LocalStorage
   monitoringCallbacks: MonitoringCallbacks
   nativeMobile: Maybe<boolean>
@@ -295,7 +296,6 @@ export const audiusBackend = ({
   generalAdmissionUrl,
   isElectron,
   isMobile,
-  legacyUserNodeUrl,
   localStorage,
   monitoringCallbacks,
   nativeMobile,
@@ -361,20 +361,6 @@ export const audiusBackend = ({
     if (currentDiscoveryProvider !== null) {
       listener(currentDiscoveryProvider)
     }
-  }
-
-  function getCreatorNodeIPFSGateways(endpoint: Nullable<string>) {
-    if (endpoint) {
-      return endpoint
-        .split(',')
-        .filter(Boolean)
-        .map((endpoint) => `${endpoint}/ipfs/`)
-    }
-    const gateways = [`${userNodeUrl}/ipfs/`]
-    if (legacyUserNodeUrl) {
-      gateways.push(`${legacyUserNodeUrl}/ipfs/`)
-    }
-    return gateways
   }
 
   async function preloadImage(url: string) {
@@ -459,75 +445,46 @@ export const audiusBackend = ({
     }
   }
 
-  async function fetchImageCID(
-    cid: CID,
-    creatorNodeGateways: string[] = [],
-    cache = true
-  ) {
-    if (CIDCache.has(cid)) {
-      return CIDCache.get(cid)
+  async function fetchImageCID(cid: CID, size?: SquareSizes | WidthSizes) {
+    const cidFileName = size ? `${cid}/${size}.jpg` : `${cid}.jpg`
+    if (CIDCache.has(cidFileName)) {
+      return CIDCache.get(cidFileName) as string
     }
 
-    creatorNodeGateways.push(`${userNodeUrl}/ipfs`)
-    const primary = creatorNodeGateways[0]
-    const firstImageUrl = `${primary}${cid}`
+    const storageNodeSelector = await getStorageNodeSelector()
+    const storageNode = storageNodeSelector.getNodes(cid)[0]
+    const imageUrl = `${storageNode}/content/${cidFileName}`
 
-    if (primary) {
-      if (imagePreloader) {
-        try {
-          const preloaded = await imagePreloader(firstImageUrl)
-          if (preloaded) {
-            return firstImageUrl
-          }
-        } catch (e) {
-          // swallow error and continue
+    if (imagePreloader) {
+      try {
+        const preloaded = await imagePreloader(imageUrl)
+        console.log('we doing this actually?')
+        if (preloaded) {
+          return imageUrl
         }
-      } else {
-        // Attempt to fetch/load the image using the first creator node gateway
-        const preloadedImageUrl = await preloadImage(firstImageUrl)
+      } catch (e) {
+        // swallow error and continue
+      }
+    } else {
+      // Attempt to fetch/load the image using the first creator node gateway
+      const preloadedImageUrl = await preloadImage(imageUrl)
 
-        // If the image is loaded, add to cache and return
-        if (preloadedImageUrl && cache) {
-          CIDCache.add(cid, preloadedImageUrl)
-        }
-        if (preloadedImageUrl) {
-          return preloadedImageUrl
-        }
+      // If the image is loaded, add to cache and return
+      if (preloadedImageUrl) {
+        CIDCache.add(cidFileName, preloadedImageUrl)
+        return preloadedImageUrl
       }
     }
-
-    await waitForLibsInit()
-    // Else, race fetching of the image from all gateways & return the image url blob
-    try {
-      const image = await audiusLibs.File.fetchCID(
-        cid,
-        creatorNodeGateways,
-        () => {}
-      )
-
-      const url = nativeMobile
-        ? image.config.url
-        : URL.createObjectURL(image.data)
-
-      if (cache) CIDCache.add(cid, url)
-
-      return url
-    } catch (e) {
-      console.error(e)
-      return ''
-    }
+    return ''
   }
 
   async function getImageUrl(
     cid: Nullable<CID>,
-    size: Nullable<string>,
-    gateways: string[]
+    size?: SquareSizes | WidthSizes
   ) {
     if (!cid) return ''
     try {
-      return size
-        ? fetchImageCID(`${cid}/${size}.jpg`, gateways)
-        : fetchImageCID(cid, gateways)
+      return await fetchImageCID(cid, size)
     } catch (e) {
       console.error(e)
       return ''
@@ -3329,7 +3286,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getClaimDistributionAmount,
     getCollectionImages,
-    getCreatorNodeIPFSGateways,
     getCreators,
     getSocialHandles,
     getEmailNotificationSettings,
@@ -3354,7 +3310,6 @@ export const audiusBackend = ({
     getWeb3,
     handleInUse,
     identityServiceUrl,
-    legacyUserNodeUrl,
     listCreatorNodes,
     markAllNotificationAsViewed,
     orderPlaylist,

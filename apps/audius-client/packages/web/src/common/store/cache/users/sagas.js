@@ -203,15 +203,11 @@ function* watchFetchProfilePicture() {
         const user = yield select(getUser, { id: userId })
         if (!user || (!user.profile_picture_sizes && !user.profile_picture))
           return
-        const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-          user.creator_node_endpoint
-        )
         if (user.profile_picture_sizes) {
           const url = yield call(
             audiusBackendInstance.getImageUrl,
             user.profile_picture_sizes,
-            size,
-            gateways
+            size
           )
 
           if (url) {
@@ -232,9 +228,7 @@ function* watchFetchProfilePicture() {
         } else if (user.profile_picture) {
           const url = yield call(
             audiusBackendInstance.getImageUrl,
-            user.profile_picture,
-            null,
-            gateways
+            user.profile_picture
           )
           if (url) {
             yield put(
@@ -276,15 +270,11 @@ function* watchFetchCoverPhoto() {
         return
       }
 
-      const gateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
-        user.creator_node_endpoint
-      )
       if (user.cover_photo_sizes) {
         const url = yield call(
           audiusBackendInstance.getImageUrl,
           user.cover_photo_sizes,
-          size,
-          gateways
+          size
         )
 
         if (url) {
@@ -300,9 +290,7 @@ function* watchFetchCoverPhoto() {
       } else if (user.cover_photo) {
         const url = yield call(
           audiusBackendInstance.getImageUrl,
-          user.cover_photo,
-          null,
-          gateways
+          user.cover_photo
         )
         if (url) {
           user = yield select(getUser, { id: userId })
