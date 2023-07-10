@@ -15,4 +15,4 @@ RUN npm run build
 ENV PATH="${PATH}:/notifications/node_modules/.bin"
 
 # Run the command on container startup
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "dev"]
