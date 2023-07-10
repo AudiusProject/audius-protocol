@@ -20,6 +20,14 @@ custom_edit_url: null
 
 ___
 
+### coverArtSizes
+
+ `Optional` **coverArtSizes**: `string`
+
+**`memberof`** Playlist
+
+___
+
 ### description
 
  `Optional` **description**: `string`
@@ -28,9 +36,9 @@ ___
 
 ___
 
-### favorite\_count
+### favoriteCount
 
- **favorite\_count**: `number`
+ **favoriteCount**: `number`
 
 **`memberof`** Playlist
 
@@ -44,33 +52,49 @@ ___
 
 ___
 
-### is\_album
+### isAlbum
 
- **is\_album**: `boolean`
-
-**`memberof`** Playlist
-
-___
-
-### playlist\_name
-
- **playlist\_name**: `string`
+ **isAlbum**: `boolean`
 
 **`memberof`** Playlist
 
 ___
 
-### repost\_count
+### permalink
 
- **repost\_count**: `number`
+ `Optional` **permalink**: `string`
 
 **`memberof`** Playlist
 
 ___
 
-### total\_play\_count
+### playlistContents
 
- **total\_play\_count**: `number`
+ **playlistContents**: [`PlaylistAddedTimestamp`](PlaylistAddedTimestamp.md)[]
+
+**`memberof`** Playlist
+
+___
+
+### playlistName
+
+ **playlistName**: `string`
+
+**`memberof`** Playlist
+
+___
+
+### repostCount
+
+ **repostCount**: `number`
+
+**`memberof`** Playlist
+
+___
+
+### totalPlayCount
+
+ **totalPlayCount**: `number`
 
 **`memberof`** Playlist
 

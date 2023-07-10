@@ -11,5 +11,3 @@ custom_edit_url: null
 ### trackId
 
  **trackId**: `string`
-
-A Track ID

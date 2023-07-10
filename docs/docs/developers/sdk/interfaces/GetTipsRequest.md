@@ -10,9 +10,7 @@ custom_edit_url: null
 
 ### currentUserFollows
 
- `Optional` **currentUserFollows**: [`GetTipsCurrentUserFollowsEnum`](../enums/GetTipsCurrentUserFollowsEnum.md)
-
-Only include tips involving the user\&#39;s followers in the given capacity. Requires user_id to be set.
+ `Optional` **currentUserFollows**: [`GetTipsCurrentUserFollowsEnum`](../modules.md#gettipscurrentuserfollowsenum-1)
 
 ___
 
@@ -20,15 +18,11 @@ ___
 
  `Optional` **limit**: `number`
 
-The number of items to fetch
-
 ___
 
 ### offset
 
  `Optional` **offset**: `number`
-
-The number of items to skip. Useful for pagination (page number * limit)
 
 ___
 
@@ -36,28 +30,20 @@ ___
 
  `Optional` **receiverIsVerified**: `boolean`
 
-Only include tips to recipients that are verified
-
 ___
 
 ### receiverMinFollowers
 
  `Optional` **receiverMinFollowers**: `number`
 
-Only include tips to recipients that have this many followers
-
 ___
 
 ### uniqueBy
 
- `Optional` **uniqueBy**: [`GetTipsUniqueByEnum`](../enums/GetTipsUniqueByEnum.md)
-
-Only include the most recent tip for a user was involved in the given capacity.  Eg. \&#39;sender\&#39; will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.
+ `Optional` **uniqueBy**: [`GetTipsUniqueByEnum`](../modules.md#gettipsuniquebyenum-1)
 
 ___
 
 ### userId
 
  `Optional` **userId**: `string`
-
-The user ID of the user making the request

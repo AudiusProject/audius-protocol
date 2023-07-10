@@ -37,6 +37,22 @@ ___
 
 ___
 
+### config
+
+`set` **config**(`configuration`): `void`
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `configuration` | [`Configuration`](Configuration.md) |
+
+#### Returns
+
+`void`
+
+___
+
 ### credentials
 
 `get` **credentials**(): `undefined` \| `RequestCredentials`
@@ -49,31 +65,31 @@ ___
 
 ### fetchApi
 
-`get` **fetchApi**(): [`FetchAPI`](../modules.md#fetchapi)
+`get` **fetchApi**(): `undefined` \| (`input`: `RequestInfo`, `init?`: `RequestInit`) => `Promise`<`Response`\>
 
 #### Returns
 
-[`FetchAPI`](../modules.md#fetchapi)
+`undefined` \| (`input`: `RequestInfo`, `init?`: `RequestInit`) => `Promise`<`Response`\>
 
 ___
 
 ### headers
 
-`get` **headers**(): `undefined` \| `HTTPHeaders`
+`get` **headers**(): `undefined` \| [`HTTPHeaders`](../modules.md#httpheaders)
 
 #### Returns
 
-`undefined` \| `HTTPHeaders`
+`undefined` \| [`HTTPHeaders`](../modules.md#httpheaders)
 
 ___
 
 ### middleware
 
-`get` **middleware**(): `Middleware`[]
+`get` **middleware**(): [`Middleware`](../interfaces/Middleware.md)[]
 
 #### Returns
 
-`Middleware`[]
+[`Middleware`](../interfaces/Middleware.md)[]
 
 ___
 
@@ -89,7 +105,7 @@ ___
 
 ### queryParamsStringify
 
-`get` **queryParamsStringify**(): (`params`: `HTTPQuery`) => `string`
+`get` **queryParamsStringify**(): (`params`: [`HTTPQuery`](../modules.md#httpquery)) => `string`
 
 #### Returns
 
@@ -101,7 +117,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `params` | `HTTPQuery` |
+| `params` | [`HTTPQuery`](../modules.md#httpquery) |
 
 ##### Returns
 
