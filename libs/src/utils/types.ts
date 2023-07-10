@@ -126,6 +126,7 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   track_cid: string
+  preview_cid: Nullable<string>
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>

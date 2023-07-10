@@ -11,6 +11,10 @@
           "type": "string",
           "default": null
         },
+        "preview_cid": {
+          "type": ["string", "null"],
+          "default": null
+        },
         "audio_upload_id": {
           "type": ["string", "null"],
           "default": null

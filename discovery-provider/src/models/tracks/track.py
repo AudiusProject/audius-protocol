@@ -32,6 +32,7 @@ class Track(Base, RepresentableMixin):
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False, index=True)
     audio_upload_id = Column(String)
+    preview_cid = Column(String, index=True)
     track_cid = Column(
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
