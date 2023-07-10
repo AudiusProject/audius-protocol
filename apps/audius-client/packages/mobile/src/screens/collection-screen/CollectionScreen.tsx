@@ -111,7 +111,7 @@ export const CollectionScreen = () => {
   }, [collectionName, idParam])
 
   const handleFetchCollection = useCallback(() => {
-    dispatch(fetchCollection(id))
+    dispatch(fetchCollection(id, undefined, true))
   }, [dispatch, id])
 
   useFocusEffect(handleFetchCollection)
