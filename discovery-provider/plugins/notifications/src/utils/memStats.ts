@@ -4,7 +4,8 @@ export type MemoryStats = {
     heapTotal: string,
     heapUsed: string
     heapAvailable: string,
-    external: string
+    external: string,
+    rss: string,
 }
 
 export const logMemStats = () => {
@@ -14,6 +15,7 @@ export const logMemStats = () => {
     logFmt("Heap Used", stats.heapUsed)
     logFmt("Heap Available", stats.heapAvailable)
     logFmt("External", stats.external)
+    logFmt("RSS", stats.rss)
 }
 
 export const getMemStats = (): MemoryStats => {
@@ -24,7 +26,8 @@ export const getMemStats = (): MemoryStats => {
     const heapUsed = convert(memoryUsage.heapUsed)
     const heapAvailable = (parseFloat(heapTotal) - parseFloat(heapUsed)).toString()
     const external = convert(memoryUsage.external)
+    const rss = convert(memoryUsage.rss)
     return {
-        heapAvailable, heapTotal, heapUsed, external
+        heapAvailable, heapTotal, heapUsed, external, rss
     }
 }
