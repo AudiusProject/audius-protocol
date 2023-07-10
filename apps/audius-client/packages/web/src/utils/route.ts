@@ -124,6 +124,8 @@ export const AUDIUS_REMIX_CONTESTS_LINK = 'https://remix.audius.co/'
 export const AUDIUS_BLOG_LINK = 'https://blog.audius.co/'
 export const AUDIUS_AI_BLOG_LINK =
   'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius'
+export const AUDIUS_GATED_CONTENT_BLOG_LINK =
+  'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 
 // Org Links
 export const AUDIUS_ORG = 'https://audius.org'

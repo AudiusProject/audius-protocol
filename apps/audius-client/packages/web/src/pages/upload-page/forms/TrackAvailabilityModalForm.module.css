@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  line-height: 20px;
+}
+
+.description {
+  font-weight: var(--font-medium);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--unit-2);
+}
+
+.titleIcon {
+  height: 22px;
+  width: 22px;
+  margin-bottom: -4px;
+}
+
+.isRemix {
+  margin-bottom: var(--unit-6);
+}
