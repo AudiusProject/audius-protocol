@@ -7,9 +7,9 @@ import { get, set } from 'lodash'
 import moment from 'moment'
 
 import { EditFormValues } from '../components/EditPageNew'
+import { DatePickerField } from '../fields/DatePickerField'
+import { ModalField } from '../fields/ModalField'
 
-import { DatePickerField } from './DatePickerField'
-import { ModalField } from './ModalField'
 import styles from './ReleaseDateModalForm.module.css'
 const messages = {
   title: 'Release Date',
