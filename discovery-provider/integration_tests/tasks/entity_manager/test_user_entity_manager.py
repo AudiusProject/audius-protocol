@@ -264,7 +264,7 @@ def test_index_valid_user(app, mocker):
                         "_userId": USER_ID_OFFSET,
                         "_action": "Update",
                         "_metadata": f'{{"cid": "QmUpdateUser1", "data": {update_user1_json}}}',
-                        "_signer": "user1wallet",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
             },
@@ -354,6 +354,34 @@ def test_index_valid_user(app, mocker):
                 "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 17),
             }
+        ],
+        "developer_apps": [
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "is_delete": True,
+            },
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
+        "grants": [
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "is_revoked": True,
+            },
+            {
+                "user_id": 2,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
         ],
     }
     populate_mock_db(db, entities)
