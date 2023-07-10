@@ -1,7 +1,7 @@
 import { App } from "basekit/src/index";
 import { SharedData } from ".";
 import { RelayRequestType } from "./types/relay";
-import { Wallet } from "ethers";
+import { Wallet, ethers } from "ethers";
 import { TransactionReceipt, TransactionRequest } from "@ethersproject/abstract-provider"
 
 export type RelayedTransaction = {
@@ -56,4 +56,49 @@ const isInvalidTransaction = async (encodedABI: string): Promise<boolean> => {
 // TODO: https://github.com/AudiusProject/audius-protocol/blob/main/identity-service/src/relay/txRelay.js#L44
 const getGasPrice = async (): Promise<number> => {
     return 10
+}
+
+/**
+ *       
+ * "inputs": [
+        {
+          "name": "_userId",
+          "type": "uint256"
+        },
+        {
+          "name": "_entityType",
+          "type": "string"
+        },
+        {
+          "name": "_entityId",
+          "type": "uint256"
+        },
+        {
+          "name": "_action",
+          "type": "string"
+        },
+        {
+          "name": "_metadata",
+          "type": "string"
+        },
+        {
+          "name": "_nonce",
+          "type": "bytes32"
+        },
+        {
+          "name": "_subjectSig",
+          "type": "bytes"
+        }
+      ],
+ */
+
+export const decodeAbi = (data: string) => {
+    // const abi = ["function manageEntity(uint userId,string entityType,uint entityId,string action,string metadata,bytes32 nonce)"]
+    // const iface = new ethers.utils.Interface(abi)
+    // const decoded = iface.parseTransaction({ data })
+    const decoded = ethers.utils.defaultAbiCoder.decode(
+        ["function", "manageEntity", "uint", "string", "uint", "string", "string", "bytes32", "bytes"],
+        data
+    )
+    console.log(decoded)
 }
