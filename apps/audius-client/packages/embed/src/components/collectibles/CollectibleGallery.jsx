@@ -2,13 +2,13 @@ import cn from 'classnames'
 import { h } from 'preact'
 import { useState, useEffect } from 'preact/hooks'
 
-import { fetchJsonFromCID } from '../../util/fetchCID'
 import Card from '../card/Card'
 
 import CollectibleDetailsView from './CollectibleDetailsView'
 import styles from './CollectibleGallery.module.css'
 import CollectibleTile from './CollectibleTile'
 import CollectiblesHeader from './CollectiblesHeader'
+import { getCollectiblesJson } from '../../util/BedtimeClient'
 
 const CollectibleGallery = ({
   collectibles,
@@ -22,7 +22,7 @@ const CollectibleGallery = ({
   const [hasFetched, setHasFetched] = useState(false)
 
   const fetchCollectiblesOrder = async () => {
-    const result = await fetchJsonFromCID(user.metadata_multihash)
+    const result = await getCollectiblesJson(user.metadata_multihash)
     setHasFetched(true)
 
     if (result && result.collectibles) {

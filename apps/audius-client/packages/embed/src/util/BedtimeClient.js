@@ -49,6 +49,11 @@ const audiusSdk = sdk({
 export const getTrackStreamEndpoint = (trackId) =>
   `${discoveryEndpoint}/v1/tracks/${trackId}/stream`
 
+export const getCollectiblesJson = async (cid) => {
+  const url = `${discoveryEndpoint}/v1/full/cid_data/${cid}`
+  return (await (await fetch(url)).json())?.data?.data
+}
+
 export const uuid = () => {
   // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/873856#873856
   const s = []
