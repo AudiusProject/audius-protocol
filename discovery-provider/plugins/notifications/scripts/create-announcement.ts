@@ -79,7 +79,7 @@ export const main = async () => {
   await audiusInstance.init()
   const notification = {
     title: values.title,
-    description: values.body
+    short_description: values.body
   }
 
   try {
