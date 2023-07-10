@@ -10,6 +10,7 @@ from src.queries.get_health import get_health, get_location
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.get_trusted_notifier_discrepancies import get_trusted_notifier_discrepancies
+from src.queries.get_entities_count_check import get_entities_count_check
 from src.queries.queries import parse_bool_param
 from src.tasks.index_profile_challenge_backfill import (
     index_profile_challenge_backfill_tablename,
@@ -69,6 +70,12 @@ def health_check():
 def trusted_notifier_discrepancies_check():
     (health_results, error) = get_trusted_notifier_discrepancies()
     return success_response(health_results, 500 if error else 200, sign_response=False)
+
+
+@bp.route("/entities_count_check", methods=["GET"])
+def entities_count_check():
+    res_count = get_entities_count_check()
+    return success_response(res_count)
 
 
 # Health check for block diff between DB and chain.
