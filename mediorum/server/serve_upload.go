@@ -3,8 +3,8 @@ package server
 import (
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
-	"net/url"
 	"sync"
 	"time"
 
@@ -116,11 +116,11 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
-	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
-		contentDisposition := url.QueryEscape(filenameForDownload)
-		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+		contentDisposition := mime.QEncoding.Encode("utf-8", filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
 	jobID := c.Param("jobID")
