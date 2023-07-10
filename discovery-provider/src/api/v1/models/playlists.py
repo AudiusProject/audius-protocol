@@ -21,7 +21,6 @@ playlist_added_timestamp = ns.model(
         "track_id": fields.String(required=True),
     },
 )
-
 playlist_model = ns.model(
     "playlist",
     {
@@ -31,10 +30,14 @@ playlist_model = ns.model(
         "id": fields.String(required=True),
         "is_album": fields.Boolean(required=True),
         "playlist_name": fields.String(required=True),
+        "playlist_contents": fields.List(
+            fields.Nested(playlist_added_timestamp), required=True
+        ),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
         "total_play_count": fields.Integer(required=True),
         "user": fields.Nested(user_model, required=True),
+        "cover_art_sizes": fields.String,
     },
 )
 
@@ -58,7 +61,6 @@ full_playlist_model = ns.clone(
         "user": fields.Nested(user_model_full, required=True),
         "tracks": fields.List(fields.Nested(track_full), required=True),
         "cover_art": fields.String,
-        "cover_art_sizes": fields.String,
         "track_count": fields.Integer(required=True),
     },
 )

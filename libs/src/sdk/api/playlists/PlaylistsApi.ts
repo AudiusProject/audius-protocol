@@ -14,11 +14,14 @@ import {
 import {
   CreatePlaylistRequest,
   CreatePlaylistSchema,
+  createUpdatePlaylistSchema,
   createUploadPlaylistSchema,
   DeletePlaylistRequest,
   DeletePlaylistSchema,
   PlaylistMetadata,
   PlaylistTrackMetadata,
+  PublishPlaylistRequest,
+  PublishPlaylistSchema,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
   SavePlaylistRequest,
@@ -26,6 +29,7 @@ import {
   UnrepostPlaylistSchema,
   UnsavePlaylistRequest,
   UnsavePlaylistSchema,
+  UpdatePlaylistRequest,
   UploadPlaylistRequest
 } from './types'
 import { retry3 } from '../../utils/retry'
@@ -243,6 +247,114 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       blockNumber: txReceipt.blockNumber,
       playlistId
     }
+  }
+
+  /**
+   * Publish a playlist
+   * Changes a playlist from private to public
+   */
+  async publishPlaylist(
+    requestParameters: PublishPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    parseRequestParameters(
+      'publishPlaylist',
+      PublishPlaylistSchema
+    )(requestParameters)
+
+    // Fetch playlist
+    const playlistResponse = await this.getPlaylist({
+      playlistId: requestParameters.playlistId,
+      userId: requestParameters.userId
+    })
+    const playlist = playlistResponse.data?.[0]
+
+    if (!playlist) {
+      throw new Error(
+        `Could not fetch playlist: ${requestParameters.playlistId}`
+      )
+    }
+
+    return await this.updatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        metadata: {
+          ...playlist,
+          isPrivate: false
+        }
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Update a playlist
+   */
+
+  async updatePlaylist(
+    requestParameters: UpdatePlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, playlistId, coverArtFile, onProgress, metadata } =
+      parseRequestParameters(
+        'updatePlaylist',
+        createUpdatePlaylistSchema()
+      )(requestParameters)
+
+    // Upload cover art to storage node
+    const coverArtResponse =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadPlaylistCoverArt', e)
+        }
+      ))
+
+    const updatedMetadata = {
+      playlistId,
+      playlistContents: {
+        trackIds: metadata.playlistContents.map(
+          ({ trackId, metadataTimestamp, timestamp }) => ({
+            track: trackId,
+            // default to timestamp for legacy playlists
+            time: metadataTimestamp ?? timestamp
+          })
+        )
+      },
+      playlistName: metadata.playlistName,
+      playlistImageSizesMultihash:
+        coverArtResponse?.id ?? metadata.coverArtSizes,
+      description: metadata.description,
+      isAlbum: metadata.isAlbum,
+      isPrivate: metadata.isPrivate
+      // TODO: Support updating advanced fields
+    }
+
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
   }
 
   /**

@@ -20,6 +20,8 @@ import {
   UnsavePlaylistRequest,
   UploadPlaylistRequest,
   CreatePlaylistRequest,
+  PublishPlaylistRequest,
+  UpdatePlaylistRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -292,6 +294,57 @@ app.post<UploadPlaylistRequest>(
     }
   }
 );
+
+const playlistUpdate = upload.fields([{ name: "coverArtFile", maxCount: 1 }]);
+
+app.post<UpdatePlaylistRequest>(
+  "/updatePlaylist",
+  playlistUpdate as any,
+  async (req, res) => {
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+
+      const inputMetadata = JSON.parse(req.body.metadata);
+      inputMetadata.releaseDate = inputMetadata.releaseDate
+        ? new Date(inputMetadata.releaseDate)
+        : inputMetadata.releaseDate;
+
+      const updatePlaylistRequest: UpdatePlaylistRequest = {
+        userId: req.body.userId,
+        playlistId: req.body.playlistId,
+        coverArtFile: coverArtFile && {
+          buffer: coverArtFile?.buffer,
+          name: coverArtFile.originalname,
+        },
+        metadata: inputMetadata,
+        onProgress: (progress) => console.log("Progress:", progress),
+      };
+      const result = await audiusSdk.playlists.updatePlaylist(
+        updatePlaylistRequest
+      );
+      res.send(result);
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
+
+app.post<PublishPlaylistRequest>("/publishPlaylist", async (req, res) => {
+  try {
+    const publishPlaylistRequest: PublishPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+    };
+    const result = await audiusSdk.playlists.publishPlaylist(
+      publishPlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
 
 app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
   try {

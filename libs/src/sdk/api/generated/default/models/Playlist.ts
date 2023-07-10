@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { PlaylistAddedTimestamp } from './PlaylistAddedTimestamp';
+import {
+    PlaylistAddedTimestampFromJSON,
+    PlaylistAddedTimestampFromJSONTyped,
+    PlaylistAddedTimestampToJSON,
+} from './PlaylistAddedTimestamp';
 import type { PlaylistArtwork } from './PlaylistArtwork';
 import {
     PlaylistArtworkFromJSON,
@@ -71,6 +77,12 @@ export interface Playlist {
     playlistName: string;
     /**
      * 
+     * @type {Array<PlaylistAddedTimestamp>}
+     * @memberof Playlist
+     */
+    playlistContents: Array<PlaylistAddedTimestamp>;
+    /**
+     * 
      * @type {number}
      * @memberof Playlist
      */
@@ -93,6 +105,12 @@ export interface Playlist {
      * @memberof Playlist
      */
     user: User;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    coverArtSizes?: string;
 }
 
 /**
@@ -103,6 +121,7 @@ export function instanceOfPlaylist(value: object): boolean {
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "isAlbum" in value;
     isInstance = isInstance && "playlistName" in value;
+    isInstance = isInstance && "playlistContents" in value;
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "favoriteCount" in value;
     isInstance = isInstance && "totalPlayCount" in value;
@@ -127,10 +146,12 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'id': json['id'],
         'isAlbum': json['is_album'],
         'playlistName': json['playlist_name'],
+        'playlistContents': ((json['playlist_contents'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFromJSON(json['user']),
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
     };
 }
 
@@ -149,10 +170,12 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'id': value.id,
         'is_album': value.isAlbum,
         'playlist_name': value.playlistName,
+        'playlist_contents': ((value.playlistContents as Array<any>).map(PlaylistAddedTimestampToJSON)),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserToJSON(value.user),
+        'cover_art_sizes': value.coverArtSizes,
     };
 }
 

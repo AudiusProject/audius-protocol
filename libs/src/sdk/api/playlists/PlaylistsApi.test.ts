@@ -178,6 +178,46 @@ describe('PlaylistsApi', () => {
     })
   })
 
+  describe('updatePlaylist', () => {
+    it('updates a playlist if valid metadata is provided', async () => {
+      const result = await playlists.updatePlaylist({
+        userId: '7eP5n',
+        playlistId: 'x5pJ3Aj',
+        coverArtFile: {
+          buffer: Buffer.from([]),
+          name: 'coverArt'
+        },
+        metadata: {
+          playlistName: 'My Playlist edited',
+          mood: Mood.TENDER,
+          playlistContents: []
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await playlists.updatePlaylist({
+          userId: '7eP5n',
+          playlistId: 'x5pJ3Aj',
+          coverArtFile: {
+            buffer: Buffer.from([]),
+            name: 'coverArt'
+          },
+          metadata: {
+            playlistName: 'My Playlist edited',
+            mood: Mood.TENDER
+          } as any
+        })
+      }).rejects.toThrow()
+    })
+  })
+
   describe('deletePlaylist', () => {
     it('deletes a playlist if valid metadata is provided', async () => {
       const result = await playlists.deletePlaylist({

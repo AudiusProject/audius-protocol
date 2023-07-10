@@ -19,6 +19,7 @@ export * from './GetSupporters';
 export * from './GetSupporting';
 export * from './GetTipsResponse';
 export * from './Playlist';
+export * from './PlaylistAddedTimestamp';
 export * from './PlaylistArtwork';
 export * from './PlaylistResponse';
 export * from './PlaylistSearchResult';

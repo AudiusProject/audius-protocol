@@ -6,16 +6,20 @@ import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
+const CreatePlaylistMetadataSchema = z
+  .object({
+    description: z.optional(z.string().max(1000)),
+    playlistName: z.string(),
+    isPrivate: z.optional(z.boolean())
+  })
+  .strict()
+
 export const CreatePlaylistSchema = z
   .object({
     coverArtFile: z.optional(
       z.custom<File>((data: unknown) => isFileValid(data as File))
     ),
-    metadata: z.object({
-      description: z.optional(z.string().max(1000)),
-      playlistName: z.string(),
-      isPrivate: z.optional(z.boolean())
-    }),
+    metadata: CreatePlaylistMetadataSchema,
     onProgress: z.optional(z.function().args(z.number())),
     trackIds: z.optional(z.array(HashId)),
     userId: HashId
@@ -24,7 +28,37 @@ export const CreatePlaylistSchema = z
 
 export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
 
-// TODO: potentially use discriminated union for this?
+export const createUpdatePlaylistSchema = () =>
+  z
+    .object({
+      userId: HashId,
+      playlistId: HashId,
+      coverArtFile: z.optional(
+        z.custom<File>((data: unknown) => isFileValid(data as File))
+      ),
+      metadata: createUploadPlaylistMetadataSchema()
+        .omit({ genre: true })
+        .merge(
+          z.object({
+            coverArtSizes: z.optional(z.string()),
+            isPrivate: z.optional(z.boolean()),
+            playlistContents: z.array(
+              z.object({
+                timestamp: z.number(),
+                metadataTimestamp: z.optional(z.number()),
+                trackId: HashId
+              })
+            )
+          })
+        ),
+      onProgress: z.optional(z.function().args(z.number()))
+    })
+    .strict()
+
+export type UpdatePlaylistRequest = z.input<
+  ReturnType<typeof createUpdatePlaylistSchema>
+>
+
 const createUploadPlaylistMetadataSchema = () =>
   z
     .object({
@@ -88,6 +122,15 @@ export const createUploadPlaylistSchema = () =>
 export type UploadPlaylistRequest = z.input<
   ReturnType<typeof createUploadPlaylistSchema>
 >
+
+export const PublishPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId
+  })
+  .strict()
+
+export type PublishPlaylistRequest = z.input<typeof PublishPlaylistSchema>
 
 export const DeletePlaylistSchema = z
   .object({
