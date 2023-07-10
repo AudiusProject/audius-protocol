@@ -132,13 +132,11 @@ class Playlist(Resource):
     @ns.doc(
         id="""Get Playlist""",
         description="""Get a playlist by ID""",
-        params={
-            "playlist_id": "A Playlist ID",
-            "user_id": {"description": "The user ID", "in": "query"}
-        },
+        params={"playlist_id": "A Playlist ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlists_response)
+    @ns.expect(current_user_parser)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
@@ -157,10 +155,7 @@ class FullPlaylist(Resource):
     @ns.doc(
         id="""Get Playlist""",
         description="""Get a playlist by ID""",
-        params={
-            "playlist_id": "A Playlist ID",
-            "user_id": {"description": "The user ID", "in": "query"}
-        },
+        params={"playlist_id": "A Playlist ID"},
     )
     @ns.expect(current_user_parser)
     @ns.marshal_with(full_playlists_response)

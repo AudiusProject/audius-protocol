@@ -86,7 +86,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: (trackIds ?? []).map((trackId) => ({
           track: trackId,
-          time: new Date().getTime()
+          time: Date.now()
         }))
       },
       playlistImageSizesMultihash: coverArtResponse?.id
@@ -219,7 +219,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          time: new Date().getTime()
+          time: Date.now()
         }))
       },
       playlistImageSizesMultihash: coverArtResponse.id
