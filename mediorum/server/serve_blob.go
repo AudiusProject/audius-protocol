@@ -68,6 +68,13 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 		ss.logger.Warn("error getting blob attributes", "error", err)
 		return err
 	}
+
+	// since this is called before redirecting, make sure this node can actually serve the blob (it needs to check db for delisted status)
+	dbHealthy := ss.databaseSize > 0
+	if !dbHealthy {
+		return c.String(500, "database connection issue")
+	}
+
 	return c.JSON(200, attr)
 }
 
@@ -84,6 +91,14 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 		c.Set("checkedDelistStatus", true)
 		return next(c)
 	}
+}
+
+func formatHeader(header http.Header) map[string]string {
+	formatted := make(map[string]string)
+	for k, v := range header {
+		formatted[k] = strings.Join(v, ", ")
+	}
+	return formatted
 }
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
@@ -112,6 +127,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		// if this is not the cidstream route, we should block mp3 streaming
 		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
 		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
+			// Note: we should remove this soon. It's probably not best practice to be logging headers
+			logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
 			c.Response().Header().Set("x-would-block", "true")
 		}
 

@@ -263,8 +263,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	routes.GET("/ipfs/:cid", ss.getBlob, ss.ensureNotDelisted)
 	routes.GET("/content/:cid", ss.getBlob, ss.ensureNotDelisted)
-	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.ensureNotDelisted)
-	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.ensureNotDelisted)
+	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
+	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireSignature)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireSignature)
 	routes.GET("/contact", ss.serveContact)
@@ -275,6 +275,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		status := 200
 		if !ss.Config.WalletIsRegistered {
 			status = 506
+		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			status = 500
 		}
 		return c.JSON(status, map[string]any{
 			"host":                 ss.Config.Self.Host,
@@ -290,6 +294,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			c.JSON(500, "database not healthy")
+		}
 		return c.String(200, "OK")
 	})
 

@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"log"
 	"os"
-	"strings"
 	"sync"
 
+	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/the_graph"
 	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/exp/slog"
@@ -40,7 +40,7 @@ func (c *DiscoveryConfig) Peers() []the_graph.Peer {
 func Parse() *DiscoveryConfig {
 	c := &DiscoveryConfig{}
 
-	c.MyHost = strings.TrimRight(strings.TrimSpace(os.Getenv("audius_discprov_url")), "/") // trim any trailing /
+	c.MyHost = misc.TrimTrailingSlash(os.Getenv("audius_discprov_url"))
 	c.IsStaging = os.Getenv("AUDIUS_IS_STAGING") == "true"
 
 	pk, err := parsePrivateKey(os.Getenv("audius_delegate_private_key"))

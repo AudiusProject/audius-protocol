@@ -382,14 +382,14 @@ func (proc *RPCProcessor) applyInternalMessage(rpcLog *schema.RpcLog, rawRpc *sc
 	switch rawRpc.Method {
 	case "internal.chat.ban":
 		for _, userId := range params.UserIDs {
-			_, err := tx.Exec(`insert into chat_ban values ($1) on conflict do nothing`, userId)
+			err := upsertUserBan(tx, userId, true, rpcLog.RelayedAt)
 			if err != nil {
 				logger.Error("failed", "err", err)
 			}
 		}
 	case "internal.chat.unban":
 		for _, userId := range params.UserIDs {
-			_, err := tx.Exec(`delete from chat_ban where user_id = $1`, userId)
+			err := upsertUserBan(tx, userId, false, rpcLog.RelayedAt)
 			if err != nil {
 				logger.Error("failed", "err", err)
 			}

@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import type {
-  CrossPlatformFile,
-  CrossPlatformFile as File
-} from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
@@ -51,12 +48,6 @@ export const createUploadTrackMetadataSchema = () =>
           requiresFollow: z.boolean()
         })
       ),
-      isPremium: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      isUnlisted: z.optional(z.boolean()),
-      iswc: z.optional(z.string()),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       fieldVisibility: z.optional(
         z.object({
           mood: z.optional(z.boolean()),
@@ -68,6 +59,12 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      isPremium: z.optional(z.boolean()),
+      isrc: z.optional(z.string()),
+      isUnlisted: z.optional(z.boolean()),
+      iswc: z.optional(z.string()),
+      license: z.optional(z.string()),
+      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       premiumConditions: z.optional(
         z.union([
           PremiumConditionsNFTCollection,
@@ -94,7 +91,7 @@ export const createUploadTrackMetadataSchema = () =>
     })
     .strict()
 
-export type TrackMetadataType = z.input<
+export type TrackMetadata = z.input<
   ReturnType<typeof createUploadTrackMetadataSchema>
 >
 
@@ -103,13 +100,11 @@ export const createUploadTrackSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
+        isFileValid(data as File)
       ),
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
-      )
+      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
     })
     .strict()
 
