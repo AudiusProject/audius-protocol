@@ -10,10 +10,6 @@ export const getIdentityEndpoint = () => {
   return process.env.PREACT_APP_IDENTITY_ENDPOINT
 }
 
-export const getCreatorNodeWhitelist = () => {
-  return process.env.PREACT_APP_CREATOR_NODE_WHITELIST
-}
-
 // Need some way to run against GA locally
 export const getAPIHostname = () => {
   const localGAPort = process.env.PREACT_APP_LOCAL_GA_PORT
