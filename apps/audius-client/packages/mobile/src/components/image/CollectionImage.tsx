@@ -3,10 +3,9 @@ import type {
   ID,
   Maybe,
   Nullable,
-  SquareSizes,
-  User
+  SquareSizes
 } from '@audius/common'
-import { reachabilitySelectors, cacheUsersSelectors } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
@@ -20,7 +19,6 @@ import type { FastImageProps } from './FastImage'
 import { FastImage } from './FastImage'
 
 const { getIsReachable } = reachabilitySelectors
-const { getUser } = cacheUsersSelectors
 
 type UseCollectionImageOptions = {
   collection: Nullable<
@@ -30,7 +28,6 @@ type UseCollectionImageOptions = {
     >
   >
   size: SquareSizes
-  user?: Pick<User, 'creator_node_endpoint'>
 }
 
 const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
@@ -56,14 +53,10 @@ const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
 }
 
 export const useCollectionImage = (options: UseCollectionImageOptions) => {
-  const { collection, size, user } = options
+  const { collection, size } = options
   const cid = collection
     ? collection.cover_art_sizes || collection.cover_art
     : null
-
-  const selectedUser = useSelector((state) =>
-    getUser(state, { id: collection?.playlist_owner_id })
-  )
 
   const localCollectionImageUri = useLocalCollectionImageUri(
     collection?.playlist_id
@@ -72,7 +65,6 @@ export const useCollectionImage = (options: UseCollectionImageOptions) => {
   const contentNodeSource = useContentNodeImage({
     cid,
     size,
-    user: selectedUser ?? user ?? null,
     fallbackImageSource: imageEmpty,
     localSource: localCollectionImageUri
       ? { uri: localCollectionImageUri }
@@ -85,9 +77,9 @@ export const useCollectionImage = (options: UseCollectionImageOptions) => {
 type CollectionImageProps = UseCollectionImageOptions & Partial<FastImageProps>
 
 export const CollectionImage = (props: CollectionImageProps) => {
-  const { collection, size, user, style, ...other } = props
+  const { collection, size, style, ...other } = props
 
-  const collectionImageSource = useCollectionImage({ collection, size, user })
+  const collectionImageSource = useCollectionImage({ collection, size })
   const { neutralLight6 } = useThemeColors()
 
   if (!collectionImageSource) return null

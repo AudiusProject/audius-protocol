@@ -29,7 +29,6 @@ function* cacheUserImages(user: User) {
     const profileImageUri = profile_picture_sizes
       ? getImageSourceOptimistic({
           cid: profile_picture_sizes,
-          user,
           endpoints: storageNodeSelector.getNodes(profile_picture_sizes),
           size: SquareSizes.SIZE_150_BY_150
         })?.uri
@@ -38,7 +37,6 @@ function* cacheUserImages(user: User) {
     const coverPhotoUri = cover_photo_sizes
       ? getImageSourceOptimistic({
           cid: cover_photo_sizes,
-          user,
           endpoints: storageNodeSelector.getNodes(cover_photo_sizes),
           size: WidthSizes.SIZE_640
         }).uri
