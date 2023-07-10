@@ -362,25 +362,11 @@ def test_index_valid_user(app, mocker):
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                 "is_delete": True,
             },
-            {
-                "user_id": 2,
-                "name": "My App",
-                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
-            },
         ],
         "grants": [
             {
                 "user_id": 1,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-            },
-            {
-                "user_id": 1,
-                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
-                "is_revoked": True,
-            },
-            {
-                "user_id": 2,
-                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
         ],
     }
@@ -731,6 +717,7 @@ def test_index_invalid_users(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
         ],
         "tracks": [
             {
