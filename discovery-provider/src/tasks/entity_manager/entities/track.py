@@ -276,11 +276,11 @@ def get_handle(params: ManageEntityParameters):
         params.session.query(User.handle)
         .filter(User.user_id == params.user_id, User.is_current == True)
         .first()
-    )[0]
-    if not handle:
+    )
+    if not handle or not handle[0]:
         raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
 
-    return handle
+    return handle[0]
 
 
 def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
