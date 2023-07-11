@@ -13,6 +13,13 @@ export type EntityManagerService = {
   manageEntity: (
     options: ManageEntityOptions
   ) => Promise<{ txReceipt: TransactionReceipt }>
+  confirmWrite: (options: {
+    blockHash: string
+    blockNumber: number
+    confirmationTimeout?: number
+    confirmationPollingInterval?: number
+  }) => Promise<boolean>
+  getCurrentBlock: () => Promise<{ timestamp: number }>
 }
 
 export enum Action {

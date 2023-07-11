@@ -175,4 +175,11 @@ export class EntityManager implements EntityManagerService {
 
     return true
   }
+
+  public async getCurrentBlock() {
+    const currentBlockNumber = await this.web3.eth.getBlockNumber()
+    return (await this.web3.eth.getBlock(currentBlockNumber)) as {
+      timestamp: number
+    }
+  }
 }
