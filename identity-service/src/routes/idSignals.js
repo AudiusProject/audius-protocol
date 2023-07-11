@@ -102,7 +102,7 @@ module.exports = function (app) {
         deviceUserCount,
         userIP: userIPRecord && userIPRecord.userIP,
         emailAddress: req.user.email,
-        s
+        s: s[0]?.count ?? 0
       }
 
       if (socialHandles) {
