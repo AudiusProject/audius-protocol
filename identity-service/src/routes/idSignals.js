@@ -38,7 +38,7 @@ module.exports = function (app) {
       ] = await Promise.all([
         models.sequelize.query(
           `select "Users"."blockchainUserId" as "userId", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context", "BotScores"."updatedAt" as "updatedAt"
-        from 
+        from
           "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
         where
           "Users"."handle" = :handle`,
@@ -49,7 +49,7 @@ module.exports = function (app) {
         ),
         models.sequelize.query(
           `select "Users"."blockchainUserId" as "userId", "CognitoFlows"."score" as "score"
-        from 
+        from
           "Users" inner join "CognitoFlows" on "Users"."handle" = "CognitoFlows"."handle"
         where
           "Users"."handle" = :handle`,
@@ -87,7 +87,9 @@ module.exports = function (app) {
         models.sequelize.query(
           `select count(*) from "Users" where "handle" SIMILAR TO :handle;`,
           {
-            replacements: { handle: handle.replace(/(^\d*|\d*$)/g, '') },
+            replacements: {
+              handle: `[0-9]*${handle.replace(/(^\d*|\d*$)/g, '')}[0-9]*`
+            },
             type: QueryTypes.SELECT
           }
         )
