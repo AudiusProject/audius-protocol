@@ -7,5 +7,5 @@
   },
   "exclude": ["node_modules"],
   "extends": "../../packages/tsconfig/base.json",
-  "include": ["src"]
+  "include": ["src", "scripts/sandbox.ts"]
 }
