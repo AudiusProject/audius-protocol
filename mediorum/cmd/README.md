@@ -1,1 +1,2 @@
-cp -r cmd/reaper/test/ /tmp/reaper
+cd mediorum/cmd
+go test ./reaper -count=1 -timeout 60s -v

@@ -15,11 +15,11 @@ import (
 const (
 	NOT_IN_DB_LOG_FILE = "files_on_disk_not_in_db.txt"
 	BATCH_SIZE         = 1000
+	IS_TEST            = true
 )
 
 var (
 	FILE_TYPES = []string{"track", "copy320", "metadata", "image", "dir", "not_in_db"}
-	counter    = make(map[string]map[string]int)
 	conn       *sql.DB
 	outfile    *os.File
 	config     Config
@@ -35,48 +35,54 @@ type Config struct {
 	MoveDir   string
 	WalkDir   string
 	LogDir    string
+	isTest    bool `default:"false"`
 }
 
-func init() {
+func initCounter() map[string]map[string]int {
+	counter := make(map[string]map[string]int)
+
 	for _, fileType := range FILE_TYPES {
 		counter[fileType] = make(map[string]int)
 		counter[fileType]["count"] = 0
 		counter[fileType]["error_count"] = 0
 		counter[fileType]["bytes_used"] = 0
 	}
+
+	return counter
 }
 
 func RunMain(_runConfig Config) {
 	// TODO: init config
-	config = _runConfig
+	// config = _runConfig
 
-	dbUrl := os.Getenv("dbUrl")
-	if dbUrl == "" {
-		dbUrl = "postgres://postgres:example@localhost:5454/m1"
-	}
+	// dbUrl := os.Getenv("dbUrl")
+	// if dbUrl == "" {
+	// 	dbUrl = "postgres://postgres:example@localhost:5454/m1"
+	// }
 
-	// TODO: fix
-	var err error
-	conn, err = sql.Open("postgres", fmt.Sprintf("%s?sslmode=disable", dbUrl))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
+	// // TODO: fix
+	// var err error
+	// conn, err = sql.Open("postgres", fmt.Sprintf("%s?sslmode=disable", dbUrl))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer conn.Close()
 
-	outfile, err = os.Create(filepath.Join(config.LogDir, "files_on_disk_not_in_db.txt"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer outfile.Close()
+	// outfile, err = os.Create(filepath.Join(config.LogDir, "files_on_disk_not_in_db.txt"))
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// defer outfile.Close()
 
-	batcher := NewBatcher()
+	// // batcher := NewBatcher(&config)
+	// batcher := NewBatcher(conn, &config)
 
-	err = batcher.Walk(config.WalkDir, config.MoveFiles)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err = batcher.Walk(config.WalkDir, config.MoveFiles)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	reportAndExit()
+	// reportAndExit()
 }
 
 type Batcher struct {
@@ -84,76 +90,23 @@ type Batcher struct {
 	Outfile   *os.File
 	Iteration int
 	Batch     []string
+	Config    *Config
+	counter   map[string]map[string]int
 }
 
-func NewBatcher() *Batcher {
+// func NewBatcher(c *Config) *Batcher {
+func NewBatcher(conn *sql.DB, config *Config) *Batcher {
 	return &Batcher{
 		Conn:      conn,
 		Outfile:   outfile,
 		Iteration: 0,
 		Batch:     make([]string, 0, BATCH_SIZE),
-	}
-}
-
-func (b *Batcher) test() {
-
-	moveDirs := []string{
-		filepath.Join(config.MoveDir, "not_in_db"),
-		filepath.Join(config.MoveDir, "track"),
-		config.WalkDir,
-		config.LogDir,
-	}
-
-	for _, dir := range moveDirs {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			err := os.MkdirAll(dir, 0755)
-			if err != nil {
-				fmt.Println("Failed to create directory:", err)
-				return
-			}
-		}
-	}
-
-	// TODO test for duplicates
-	query := `
-		DROP TABLE IF EXISTS "FilesTest";
-		CREATE TABLE "FilesTest" (
-			"storagePath" TEXT,
-			type TEXT
-		)`
-
-	_, err := b.Conn.Exec(query)
-	if err != nil {
-		log.Fatal("Failed to create table:", err)
-	}
-
-	// see ./reaper/test/to_walk
-	data := []FileRow{
-		{StoragePath: "/tmp/reaper/to_walk/111/Qmaaa", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/111/Qmbbb", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/111/Qmccc", Type: "copy320"},
-		{StoragePath: "/tmp/reaper/to_walk/222/Qmaaa", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/222/Qmbbb", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/222/Qmccc", Type: "copy320"},
-		{StoragePath: "/tmp/reaper/to_walk/333/Qmaaa", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/333/Qmbbb", Type: "track"},
-		{StoragePath: "/tmp/reaper/to_walk/333/Qmccc", Type: "copy320"},
-	}
-
-	for _, row := range data {
-		_, err := b.Conn.Exec("INSERT INTO \"FilesTest\" (\"storagePath\", type) VALUES ($1, $2)", row.StoragePath, row.Type)
-		if err != nil {
-			log.Println("Failed to insert row:", err)
-		}
+		Config:    config,
+		counter:   initCounter(),
 	}
 }
 
 func (b *Batcher) Walk(directory string, moveFiles bool) error {
-
-	// TODO if --test
-	// setup fixture data
-	b.test()
-	// end TODO
 
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -203,7 +156,11 @@ func (b *Batcher) handleBatch(moveFiles bool) {
 
 func (b *Batcher) checkDB() ([]FileRow, []string) {
 	pathsSQL := strings.Join(quoteStrings(b.Batch), ",")
-	query := fmt.Sprintf("SELECT \"storagePath\", \"type\" FROM \"FilesTest\" WHERE \"storagePath\" IN (%s)", pathsSQL)
+	tableName := "Files"
+	if IS_TEST {
+		tableName = "FilesTest"
+	}
+	query := fmt.Sprintf("SELECT \"storagePath\", \"type\" FROM \"%s\" WHERE \"storagePath\" IN (%s)", tableName, pathsSQL)
 	rows, err := b.Conn.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -237,29 +194,29 @@ func (b *Batcher) checkDB() ([]FileRow, []string) {
 func (b *Batcher) handleFileNotInDB(filePath string, moveFiles bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			counter["not_in_db"]["error_count"]++
+			b.counter["not_in_db"]["error_count"]++
 		}
 	}()
 
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		counter["not_in_db"]["error_count"]++
+		b.counter["not_in_db"]["error_count"]++
 		return
 	}
 
-	counter["not_in_db"]["count"]++
-	counter["not_in_db"]["bytes_used"] += int(fileInfo.Size())
+	b.counter["not_in_db"]["count"]++
+	b.counter["not_in_db"]["bytes_used"] += int(fileInfo.Size())
 
 	b.Outfile.WriteString(filePath + "\n")
 
 	if moveFiles {
 		// Move file to a staging delete directory
 		// Retain all subdirs in case we want to move back before deleting
-		moveFile(filePath, filepath.Join(filepath.Join(config.MoveDir, "not_in_db"), filePath))
+		moveFile(filePath, filepath.Join(filepath.Join(b.Config.MoveDir, "not_in_db"), filePath))
 
 		// Remove empty directories
 		parentDir := filepath.Dir(filePath)
-		for parentDir != config.WalkDir {
+		for parentDir != b.Config.WalkDir {
 			isEmpty, err := isDirectoryEmpty(parentDir)
 			if err != nil {
 				log.Println("Failed to check if directory is empty:", err)
@@ -283,26 +240,26 @@ func (b *Batcher) handleFileNotInDB(filePath string, moveFiles bool) {
 func (b *Batcher) handleFileInDB(row FileRow) {
 	defer func() {
 		if r := recover(); r != nil {
-			counter[row.Type]["error_count"]++
+			b.counter[row.Type]["error_count"]++
 		}
 	}()
 
 	if contains(FILE_TYPES, row.Type) {
 		fileInfo, err := os.Stat(row.StoragePath)
 		if err != nil {
-			counter[row.Type]["error_count"]++
+			b.counter[row.Type]["error_count"]++
 			return
 		}
 
-		counter[row.Type]["count"]++
-		counter[row.Type]["bytes_used"] += int(fileInfo.Size())
+		b.counter[row.Type]["count"]++
+		b.counter[row.Type]["bytes_used"] += int(fileInfo.Size())
 
 		// segments
 		if row.Type == "track" {
-			if config.MoveFiles {
+			if b.Config.MoveFiles {
 				// Move file to a staging delete directory
 				// Retain all subdirs in case we want to move back before deleting
-				moveFile(row.StoragePath, filepath.Join(filepath.Join(config.MoveDir, "track"), row.StoragePath))
+				moveFile(row.StoragePath, filepath.Join(filepath.Join(b.Config.MoveDir, "track"), row.StoragePath))
 			}
 		}
 	}
@@ -338,11 +295,14 @@ func contains(strings []string, str string) bool {
 func moveFile(source, destination string) error {
 	err := os.MkdirAll(filepath.Dir(destination), 0755)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
+	// fmt.Println("moving from:", source, destination)
 	err = os.Rename(source, destination)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
@@ -364,29 +324,33 @@ func isDirectoryEmpty(dirPath string) (bool, error) {
 	return false, err
 }
 
-func reportAndExit() {
-	gbNotInDB := float64(counter["not_in_db"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbSegments := float64(counter["track"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbCopy320 := float64(counter["copy320"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbImage := float64(counter["image"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbMetadata := float64(counter["metadata"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbDir := float64(counter["dir"]["bytes_used"]) / (1024 * 1024 * 1024)
+func report(b *Batcher) {
+	gbNotInDB := float64(b.counter["not_in_db"]["bytes_used"]) / (1024 * 1024 * 1024)
+	gbSegments := float64(b.counter["track"]["bytes_used"]) / (1024 * 1024 * 1024)
+	gbCopy320 := float64(b.counter["copy320"]["bytes_used"]) / (1024 * 1024 * 1024)
+	gbImage := float64(b.counter["image"]["bytes_used"]) / (1024 * 1024 * 1024)
+	gbMetadata := float64(b.counter["metadata"]["bytes_used"]) / (1024 * 1024 * 1024)
+	gbDir := float64(b.counter["dir"]["bytes_used"]) / (1024 * 1024 * 1024)
 
-	fmt.Printf("NOT IN DB COUNT  : %d\n", counter["not_in_db"]["count"])
+	fmt.Printf("NOT IN DB COUNT  : %d\n", b.counter["not_in_db"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["not_in_db"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n", gbNotInDB)
-	fmt.Printf("SEGMENTS  COUNT  : %d\n", counter["track"]["count"])
+	fmt.Printf("SEGMENTS  COUNT  : %d\n", b.counter["track"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["track"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n", gbSegments)
-	fmt.Printf("COPY320   COUNT  : %d\n", counter["copy320"]["count"])
+	fmt.Printf("COPY320   COUNT  : %d\n", b.counter["copy320"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["copy320"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n", gbCopy320)
-	fmt.Printf("IMAGE     COUNT  : %d\n", counter["image"]["count"])
+	fmt.Printf("IMAGE     COUNT  : %d\n", b.counter["image"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["image"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n", gbImage)
-	fmt.Printf("METADATA  COUNT  : %d\n", counter["metadata"]["count"])
+	fmt.Printf("METADATA  COUNT  : %d\n", b.counter["metadata"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["metadata"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n", gbMetadata)
-	fmt.Printf("DIR       COUNT  : %d\n", counter["dir"]["count"])
+	fmt.Printf("DIR       COUNT  : %d\n", b.counter["dir"]["count"])
+	fmt.Printf("          ERRORS : %d\n", b.counter["dir"]["error_count"])
 	fmt.Printf("          GB USED: %.2f\n\n", gbDir)
 
 	totalGBUsed := gbNotInDB + gbSegments + gbCopy320 + gbImage + gbMetadata + gbDir
 	fmt.Printf("TOTAL     GB USED: %.2f\n", totalGBUsed)
-
-	os.Exit(0)
 }
