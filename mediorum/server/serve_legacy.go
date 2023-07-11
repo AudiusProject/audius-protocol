@@ -28,14 +28,10 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return err
 	}
 
-	// detect mime type:
-	// if this is not the cidstream route, we should block mp3 streaming
-	// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
+	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
 	isAudioFile := isAudioFile(storagePath)
 	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-		// Note: we should remove this soon. It's probably not best practice to be logging headers
-		logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
-		c.Response().Header().Set("x-would-block", "true")
+		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
 	if err = c.File(storagePath); err != nil {
@@ -64,6 +60,12 @@ func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
 	} else if err != nil {
 		logger.Error("error querying cid storage path", "err", err)
 		return err
+	}
+
+	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+	isAudioFile := isAudioFile(storagePath)
+	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
 	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
