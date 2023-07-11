@@ -35,6 +35,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	// Middleware
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Logger())
 
 	s := &ChatServer{
 		Echo:   e,
