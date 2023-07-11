@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"mediorum/cmd/loadtest"
+	"mediorum/cmd/reaper"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -51,29 +53,39 @@ func initClient() *loadtest.TestClient {
 
 func main() {
 
-	// this has been named `test` as ci passes `test` as an arg to all services
-	loadtestCmd := flag.NewFlagSet("test", flag.ExitOnError)
-	loadtestNum := loadtestCmd.Int("num", 10, "number of uploads")
-
-	metricsCmd := flag.NewFlagSet("metrics", flag.ExitOnError)
-
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'test' or 'metrics' subcommands")
-		os.Exit(1)
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
 	}
 
-	testClient := initClient()
-
 	switch os.Args[1] {
-
 	case "test":
+		// this has been named `test` as ci passes `test` as an arg to all services
+		loadtestCmd := flag.NewFlagSet("test", flag.ExitOnError)
+		loadtestCmdNum := loadtestCmd.Int("num", 10, "number of uploads")
 		loadtestCmd.Parse(os.Args[2:])
-		loadtest.Run(testClient, *loadtestNum)
+		testClient := initClient()
+		loadtest.Run(testClient, *loadtestCmdNum)
 	case "metrics":
+		metricsCmd := flag.NewFlagSet("metrics", flag.ExitOnError)
 		metricsCmd.Parse(os.Args[2:])
-		loadtest.RunM(testClient)
+		testClient := initClient()
+		loadtest.RunMain(testClient)
+	case "reaper":
+		reaperCmd := flag.NewFlagSet("reaper", flag.ExitOnError)
+		moveFiles := reaperCmd.Bool("move", false, "move files (default false)")
+		logDir := reaperCmd.String("logDir", "/tmp/reaper/logs", "directory to store job logs (default: /tmp/reaper/logs)")
+		moveDir := reaperCmd.String("moveDir", "/tmp/reaper/to_delete", "directory to move files staged for deletion (default: /tmp/reaper/to_delete)")
+		walkDir := reaperCmd.String("walkDir", "/tmp/reaper/to_walk", "directory to walk (default: /tmp/reaper/to_walk)")
+		reaperCmd.Parse(os.Args[2:])
+
+		config := reaper.Config{
+			MoveFiles: *moveFiles,
+			MoveDir:   *moveDir,
+			WalkDir:   *walkDir,
+			LogDir:    *logDir,
+		}
+		reaper.RunMain(config)
 	default:
-		fmt.Println("expected 'test' or 'metrics' subcommands")
-		os.Exit(1)
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
 	}
 }

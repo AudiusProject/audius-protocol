@@ -12,7 +12,7 @@ import (
 
 // !! metrics.go is WIP - will revisit !!
 
-func RunM(tc *TestClient) {
+func RunMain(tc *TestClient) {
 
 	for {
 
