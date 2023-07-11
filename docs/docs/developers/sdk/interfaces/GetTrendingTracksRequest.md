@@ -12,12 +12,8 @@ custom_edit_url: null
 
  `Optional` **genre**: `string`
 
-Filter trending to a specified genre
-
 ___
 
 ### time
 
- `Optional` **time**: [`GetTrendingTracksTimeEnum`](../enums/GetTrendingTracksTimeEnum.md)
-
-Calculate trending over a specified time range
+ `Optional` **time**: [`GetTrendingTracksTimeEnum`](../modules.md#gettrendingtrackstimeenum-1)

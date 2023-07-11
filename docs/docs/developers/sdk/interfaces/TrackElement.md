@@ -12,8 +12,8 @@ custom_edit_url: null
 
 ## Properties
 
-### parent\_track\_id
+### parentTrackId
 
- **parent\_track\_id**: `string`
+ **parentTrackId**: `string`
 
 **`memberof`** TrackElement

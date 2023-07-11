@@ -8,8 +8,36 @@ custom_edit_url: null
 
 ## Properties
 
+### filename
+
+ `Optional` **filename**: `string`
+
+___
+
+### premiumContentSignature
+
+ `Optional` **premiumContentSignature**: `string`
+
+___
+
+### skipPlayCount
+
+ `Optional` **skipPlayCount**: `boolean`
+
+___
+
 ### trackId
 
  **trackId**: `string`
 
-A Track ID
+___
+
+### userData
+
+ `Optional` **userData**: `string`
+
+___
+
+### userSignature
+
+ `Optional` **userSignature**: `string`

@@ -12,12 +12,8 @@ custom_edit_url: null
 
  `Optional` **onlyDownloadable**: `string`
 
-Return only downloadable tracks
-
 ___
 
 ### query
 
  **query**: `string`
-
-The search query

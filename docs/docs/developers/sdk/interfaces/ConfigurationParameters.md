@@ -34,19 +34,34 @@ ___
 
 ### fetchApi
 
- **fetchApi**: [`FetchAPI`](../modules.md#fetchapi)
+ `Optional` **fetchApi**: (`input`: `RequestInfo`, `init?`: `RequestInit`) => `Promise`<`Response`\>
+
+#### Type declaration
+
+(`input`, `init?`): `Promise`<`Response`\>
+
+##### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `input` | `RequestInfo` |
+| `init?` | `RequestInit` |
+
+##### Returns
+
+`Promise`<`Response`\>
 
 ___
 
 ### headers
 
- `Optional` **headers**: `HTTPHeaders`
+ `Optional` **headers**: [`HTTPHeaders`](../modules.md#httpheaders)
 
 ___
 
 ### middleware
 
- `Optional` **middleware**: `Middleware`[]
+ `Optional` **middleware**: [`Middleware`](Middleware.md)[]
 
 ___
 
@@ -70,7 +85,7 @@ ___
 
 | Name | Type |
 | :------ | :------ |
-| `params` | `HTTPQuery` |
+| `params` | [`HTTPQuery`](../modules.md#httpquery) |
 
 #### Returns
 

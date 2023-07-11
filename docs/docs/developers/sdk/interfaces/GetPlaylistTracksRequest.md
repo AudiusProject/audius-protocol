@@ -11,5 +11,3 @@ custom_edit_url: null
 ### playlistId
 
  **playlistId**: `string`
-
-A Playlist ID
