@@ -33,7 +33,8 @@ module.exports = function (app) {
         instagramUser,
         tikTokUser,
         deviceUserCount,
-        userIPRecord
+        userIPRecord,
+        s
       ] = await Promise.all([
         models.sequelize.query(
           `select "Users"."blockchainUserId" as "userId", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context", "BotScores"."updatedAt" as "updatedAt"
@@ -82,7 +83,14 @@ module.exports = function (app) {
           }
         }),
         getDeviceIDCountForUserId(req.user.blockchainUserId),
-        models.UserIPs.findOne({ where: { handle } })
+        models.UserIPs.findOne({ where: { handle } }),
+        models.sequelize.query(
+          `select count(*) from "Users" where "handle" SIMILAR TO :handle;`,
+          {
+            replacements: { handle: handle.replace(/(^\d*|\d*$)/g, '') },
+            type: QueryTypes.SELECT
+          }
+        )
       ])
 
       const response = {
@@ -91,7 +99,8 @@ module.exports = function (app) {
         socialSignals: {},
         deviceUserCount,
         userIP: userIPRecord && userIPRecord.userIP,
-        emailAddress: req.user.email
+        emailAddress: req.user.email,
+        s
       }
 
       if (socialHandles) {
