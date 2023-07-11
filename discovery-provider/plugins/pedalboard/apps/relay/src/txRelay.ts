@@ -3,6 +3,7 @@ import { SharedData } from ".";
 import { RelayRequestType } from "./types/relay";
 import { Wallet } from "ethers";
 import { TransactionReceipt, TransactionRequest } from "@ethersproject/abstract-provider"
+import { validateSupportedContract, validateTransactionData } from "./validate";
 
 export type RelayedTransaction = {
     receipt: TransactionReceipt,
@@ -16,7 +17,7 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const gasLimit = req.gasLimit ?? defaultGasLimit
 
     // validate transaction and select wallet
-    await isInvalidTransaction(encodedABI)
+    await validateTransactionData(encodedABI)
     const wallet = await wallets.selectNextWallet()
 
     const privateKey = "wallet.privateKey" // TODO: get private key from env var?
@@ -36,7 +37,9 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const transaction = { nonce, gasLimit, gasPrice, to, value, data }
     await senderWallet.signTransaction(transaction)
     const submit = await senderWallet.sendTransaction(transaction)
-    const receipt = await submit.wait() // internally polls until mined
+
+    // internally polls until mined, basically the same as client's confirmer
+    const receipt = await submit.wait()
 
     // release wallet so next relay can use it
     wallets.release(wallet)
