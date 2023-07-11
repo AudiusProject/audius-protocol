@@ -22,6 +22,8 @@ import {
   CreatePlaylistRequest,
   PublishPlaylistRequest,
   UpdatePlaylistRequest,
+  AddTrackToPlaylistRequest,
+  RemoveTrackFromPlaylistRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";

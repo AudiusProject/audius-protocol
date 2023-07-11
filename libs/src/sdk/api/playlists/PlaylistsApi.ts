@@ -596,7 +596,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       userId
     })
     const playlist = playlistResponse.data?.[0]
-    console.log('playlist', playlist)
 
     if (!playlist) {
       throw new Error(`Could not fetch playlist: ${playlistId}`)
