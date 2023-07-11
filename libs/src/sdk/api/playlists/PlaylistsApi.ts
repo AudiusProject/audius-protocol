@@ -84,6 +84,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids
     const updatedMetadata = {
@@ -91,7 +92,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: (trackIds ?? []).map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse?.id
@@ -216,6 +217,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
@@ -224,7 +226,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse.id
@@ -295,6 +297,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       AddTrackToPlaylistSchema
     )(requestParameters)
 
+    const currentBlock = await this.entityManager.getCurrentBlock()
+
     return await this.fetchAndUpdatePlaylist(
       {
         userId: requestParameters.userId,
@@ -305,7 +309,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             ...playlist.playlistContents,
             {
               trackId: requestParameters.trackId,
-              timestamp: Date.now()
+              timestamp: currentBlock.timestamp
             }
           ]
         })
