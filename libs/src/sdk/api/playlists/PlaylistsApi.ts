@@ -337,6 +337,9 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         userId: requestParameters.userId,
         playlistId: requestParameters.playlistId,
         updateMetadata: (playlist) => {
+          if (playlist.playlistContents.length <= trackIndex) {
+            throw new Error(`No track exists at index ${trackIndex}`)
+          }
           playlist.playlistContents.splice(trackIndex, 1)
           return {
             ...playlist,

@@ -63,13 +63,24 @@ jest
   })
 
 jest
+  .spyOn(EntityManager.prototype, 'getCurrentBlock')
+  .mockImplementation(async () => {
+    return {
+      timestamp: 1
+    }
+  })
+
+jest
   .spyOn(GeneratedPlaylistsApi.prototype, 'getPlaylist')
   .mockImplementation(async () => {
     return {
       data: [
         {
           playlistName: 'test',
-          playlistContents: []
+          playlistContents: [
+            { trackId: 'yyNwXq7', timestamp: 1 },
+            { trackId: 'yyNwXq7', timestamp: 1 }
+          ]
         } as any
       ]
     }
