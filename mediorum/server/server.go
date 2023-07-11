@@ -325,9 +325,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 
 	// reverse proxy stuff
-	upstream, _ := url.Parse(config.UpstreamCN)
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
-	echoServer.Any("*", echo.WrapHandler(proxy))
+	if !config.IsV2Only {
+		upstream, _ := url.Parse(config.UpstreamCN)
+		proxy := httputil.NewSingleHostReverseProxy(upstream)
+		echoServer.Any("*", echo.WrapHandler(proxy))
+	}
 
 	return ss, nil
 
