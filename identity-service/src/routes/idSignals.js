@@ -34,7 +34,7 @@ module.exports = function (app) {
         tikTokUser,
         deviceUserCount,
         userIPRecord,
-        s
+        handleSimilarity
       ] = await Promise.all([
         models.sequelize.query(
           `select "Users"."blockchainUserId" as "userId", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context", "BotScores"."updatedAt" as "updatedAt"
@@ -102,7 +102,7 @@ module.exports = function (app) {
         deviceUserCount,
         userIP: userIPRecord && userIPRecord.userIP,
         emailAddress: req.user.email,
-        s: s[0]?.count ?? 0
+        handleSimilarity: handleSimilarity[0]?.count ?? 0
       }
 
       if (socialHandles) {
