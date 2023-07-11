@@ -288,14 +288,14 @@ def get_handle(params: ManageEntityParameters):
         params.session.query(User.handle)
         .filter(User.user_id == params.user_id, User.is_current == True)
         .first()
-    )[0]
-    if not handle:
-        params.logger.error("missing track user in entity manager handle track")
-    return handle
+    )
+    if not handle or not handle[0]:
+        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+
+    return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict):
-    handle = get_handle(params)
+def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
@@ -305,6 +305,7 @@ def update_track_record(params: ManageEntityParameters, track: Track, metadata: 
 
 
 def create_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -325,7 +326,7 @@ def create_track(params: ManageEntityParameters):
         params.session, track_record, params.metadata, params.pending_track_routes
     )
 
-    update_track_record(params, track_record, params.metadata)
+    update_track_record(params, track_record, params.metadata, handle)
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
@@ -337,6 +338,7 @@ def create_track(params: ManageEntityParameters):
 
 
 def update_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -357,7 +359,7 @@ def update_track(params: ManageEntityParameters):
     update_track_routes_table(
         params.session, updated_track, params.metadata, params.pending_track_routes
     )
-    update_track_record(params, updated_track, params.metadata)
+    update_track_record(params, updated_track, params.metadata, handle)
     update_remixes_table(params.session, updated_track, params.metadata)
 
     params.add_track_record(track_id, updated_track)
