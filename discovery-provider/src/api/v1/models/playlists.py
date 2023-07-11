@@ -38,6 +38,7 @@ playlist_model = ns.model(
         "total_play_count": fields.Integer(required=True),
         "user": fields.Nested(user_model, required=True),
         "cover_art_sizes": fields.String,
+        "is_private": fields.Boolean(required=True),
     },
 )
 
@@ -52,7 +53,6 @@ full_playlist_model = ns.clone(
         "has_current_user_reposted": fields.Boolean(required=True),
         "has_current_user_saved": fields.Boolean(required=True),
         "is_delete": fields.Boolean(required=True),
-        "is_private": fields.Boolean(required=True),
         "updated_at": fields.String,
         "added_timestamps": fields.List(
             fields.Nested(playlist_added_timestamp), required=True
