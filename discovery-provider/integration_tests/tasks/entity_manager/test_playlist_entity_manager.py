@@ -168,6 +168,20 @@ def tx_receipts():
                 )
             },
         ],
+        "CreatePlaylist5Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 5,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist5", "data": {create_playlist4_json}}}',
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
     }
 
 
@@ -324,20 +338,6 @@ def tx_receipts_update_routes():
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreateDiffOwner", "data": {create_playlist_diff_owner_json}}}',
                         "_signer": "user2wallet",
-                    }
-                )
-            },
-        ],
-        "CreatePlaylist5Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": PLAYLIST_ID_OFFSET + 7,
-                        "_entityType": "Playlist",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreatePlaylist5", "data": {create_playlist4_json}}}',
-                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
             },
@@ -549,11 +549,11 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
                 "user_id": 2,
                 "name": "My App",
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-                "is_delete": True,
+                "is_delete": False,
             },
             {
                 "user_id": 2,
-                "name": "My App",
+                "name": "My App 2",
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
         ],
@@ -566,10 +566,6 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
                 "user_id": 1,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
                 "is_revoked": True,
-            },
-            {
-                "user_id": 2,
-                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
             },
         ],
     }
@@ -723,6 +719,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_action": "Create",
                         "_metadata": "",
                         "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylistRevokedAuthorizedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
                     }
                 )
             },

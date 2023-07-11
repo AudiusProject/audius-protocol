@@ -227,9 +227,7 @@ def test_index_valid_user(app, mocker):
             "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
             "associated_wallets": None,
             "associated_sol_wallets": None,
-            "playlist_library": {
-                "contents": []
-            },
+            "playlist_library": {"contents": []},
             "events": None,
             "user_id": USER_ID_OFFSET + 3,
         },
@@ -357,15 +355,15 @@ def test_index_valid_user(app, mocker):
         ],
         "developer_apps": [
             {
-                "user_id": 2,
+                "user_id": 1,
                 "name": "My App",
                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-                "is_delete": True,
+                "is_delete": False,
             },
         ],
         "grants": [
             {
-                "user_id": 1,
+                "user_id": USER_ID_OFFSET,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
             },
         ],
@@ -422,7 +420,7 @@ def test_index_valid_user(app, mocker):
 
         all_cid: List[CIDData] = session.query(CIDData).all()
         assert len(all_cid) == 4
-               
+
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET + 1),
@@ -657,6 +655,48 @@ def test_index_invalid_users(app, mocker):
                 )
             },
         ],
+        "UpdateUserInvalidAuthorizedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
+        "UpdateUserDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 322,
+                        "_entityType": "User",
+                        "_userId": 322,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                    }
+                )
+            },
+        ],
+        "UpdateUserBadMetadata": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         "UpdateUserInvalidOwner": [
             {
                 "args": AttributeDict(
@@ -717,7 +757,6 @@ def test_index_invalid_users(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
         ],
         "tracks": [
             {
@@ -878,7 +917,9 @@ def test_invalid_user_bio(app, mocker):
         }
 
         entity_manager_txs = [
-            AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+            AttributeDict(
+                {"transactionHash": update_task.web3.toBytes(text=tx_receipt)}
+            )
             for tx_receipt in tx_receipts
         ]
 
@@ -898,7 +939,7 @@ def test_invalid_user_bio(app, mocker):
                 entity_manager_txs,
                 block_number=0,
                 block_timestamp=1585336422,
-                block_hash=0
+                block_hash=0,
             )
 
             assert total_changes == 0
@@ -996,9 +1037,7 @@ def test_index_empty_bio(app, mocker):
             "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
             "associated_wallets": None,
             "associated_sol_wallets": None,
-            "playlist_library": {
-                "contents": []
-            },
+            "playlist_library": {"contents": []},
             "events": None,
             "user_id": USER_ID_OFFSET + 3,
         },

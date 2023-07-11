@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Dict, TypedDict
+from typing import Dict, TypedDict, Union
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -91,6 +91,8 @@ def validate_user_tx(params: ManageEntityParameters):
 
 
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
+    if not isinstance(user_metadata, dict):
+        raise IndexingValidationError("Invalid user metadata")
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
         handle_lower = validate_user_handle(user_metadata["handle"])
@@ -124,7 +126,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             )
 
 
-def validate_user_handle(handle: str):
+def validate_user_handle(handle: Union[str, None]):
+    if not handle:
+        raise IndexingValidationError("Handle is missing")
     handle = handle.lower()
     if handle != re.sub(r"[^a-z0-9_\.]", "", handle):
         raise IndexingValidationError(f"Handle {handle} contains illegal characters")
@@ -208,7 +212,7 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
 def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
-    user_id = params.entity_id
+    user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
     if (
         user_id in params.new_records[EntityType.USER]
