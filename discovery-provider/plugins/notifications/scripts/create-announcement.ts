@@ -79,7 +79,7 @@ export const main = async () => {
   await audiusInstance.init()
   const notification = {
     title: values.title,
-    description: values.description
+    short_description: values.body
   }
 
   try {
@@ -92,7 +92,7 @@ export const main = async () => {
         // @ts-ignore
         'Create', // EntityManagerClient.Action.CREATE,
         JSON.stringify(notification),
-        values.privateKey
+        values.pk
       )
     console.log({ res })
   } catch (e) {
