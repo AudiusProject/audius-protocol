@@ -28,11 +28,10 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
 
     // gather some transaction params
     const nonce = await web3.getTransactionCount(address)
-    // TODO: pull in from config
-    const gasPrice = await getGasPrice(web3, { highGasPrice: 10000000, minGasPrice: 100, ganacheGasPrice: 0 })
     const to = entityManagerContractAddress
     const value = '0x00'
     const data = encodedABI
+    const gasPrice = await web3.getGasPrice() // shouldn't need with ACDC
 
     // assemble, sign, and send transaction
     const transaction = { nonce, gasLimit, gasPrice, to, value, data }
@@ -46,24 +45,4 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     wallets.release(wallet)
 
     return { receipt, transaction }
-}
-
-const getGasPrice = async (web3: ethers.providers.JsonRpcProvider, gasPrices: { highGasPrice: number, ganacheGasPrice: number, minGasPrice: number}): Promise<string> => {
-  const { highGasPrice, minGasPrice, ganacheGasPrice } = gasPrices
-  let gasPrice = (await web3.getGasPrice()).toNumber()
-  if (isNaN(gasPrice) || gasPrice > highGasPrice) {
-    console.log(
-      'txRelay - gas price was not defined or was greater than HIGH_GAS_PRICE',
-      gasPrice
-    )
-    gasPrice = ganacheGasPrice
-  } else if (gasPrice === 0) {
-    console.log('txRelay - gas price was zero', gasPrice)
-    // If the gas is zero, the txn will likely never get mined.
-    gasPrice = minGasPrice
-  } else if (gasPrice < minGasPrice) {
-    console.log('txRelay - gas price was less than MIN_GAS_PRICE', gasPrice)
-    gasPrice = minGasPrice
-  }
-  return '0x' + gasPrice.toString(16)
 }
