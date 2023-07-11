@@ -177,6 +177,7 @@ const initializeApis = ({
   )
   const users = new UsersApi(
     generatedApiClientConfig,
+    services.storage,
     services.entityManager,
     services.auth
   )

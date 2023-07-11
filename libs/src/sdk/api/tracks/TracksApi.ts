@@ -82,6 +82,7 @@ export class TracksApi extends TracksApiWithoutStream {
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
   }
+
   /**
    * Upload a track
    */
