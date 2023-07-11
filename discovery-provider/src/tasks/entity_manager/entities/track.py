@@ -226,38 +226,48 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
 
 
 def validate_track_tx(params: ManageEntityParameters):
-    user_id = params.user_id
     track_id = params.entity_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise IndexingValidationError(f"User {user_id} does not exist")
 
     validate_signer(params)
 
     if params.entity_type != EntityType.TRACK:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a track")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a track"
+        )
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
             raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
-            raise IndexingValidationError(f"Cannot create track {track_id} below the offset")
+            raise IndexingValidationError(
+                f"Cannot create track {track_id} below the offset"
+            )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         track_metadata = params.metadata.get(params.metadata_cid)
         if track_metadata is not None:
             track_bio = track_metadata.get("description")
             track_genre = track_metadata.get("genre")
             if track_genre is not None and track_genre not in genre_allowlist:
-                raise IndexingValidationError(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
-            if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
-                raise IndexingValidationError(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
+                raise IndexingValidationError(
+                    f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
+                )
+            if (
+                track_bio is not None
+                and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+                )
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
-            raise IndexingValidationError(f"Existing track {track_id} does not match user")
+            raise IndexingValidationError(
+                f"Existing track {track_id} does not match user"
+            )
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
@@ -266,7 +276,9 @@ def validate_track_tx(params: ManageEntityParameters):
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(
+                    f"Cannot AI attribute user {ai_attribution_user}"
+                )
     return True
 
 
