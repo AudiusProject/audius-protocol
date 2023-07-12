@@ -1,13 +1,17 @@
 ---
 sidebar_label: Log In with Audius
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 # Log In with Audius
 
-<center><img src="/img/oauthpopup.png" height="488" width="252" alt="Log In with Audius popup" /></center>
+<p align="center">
+<img src="/img/readOAuth2.png" width="341" alt="Log In with Audius popup" />
+<img src="/img/writeOAuth.png" width="252" alt="Log In with Audius popup" />
+<center><sup><i>UI for read and read/write authorization flows</i></sup></center>
+</p>
 
-Log In with Audius lets you retrieve and verify a user's Audius profile information without making the user give you their Audius password.
+Log In with Audius lets you retrieve a user's Audius profile information and optionally get permission to perform actions on their behalf, without making the user give you their Audius password.
 
 ## Quickstart
 
@@ -21,14 +25,25 @@ import { sdk } from "@audius/sdk";
 
 window.Web3 = Web3;
 
-const audiusSdk = sdk({ appName: "Name of your app goes here" });
+const audiusSdk = sdk({ apiKey: "Your API key goes here" });
 
-audiusSdk.oauth.init((res) => {
-  console.log("Log in success!", res);
+audiusSdk.oauth.init({
+  successCallback: (userInfo) => {
+    console.log("Log in success!", userInfo);
+  },
 });
 
-audiusSdk.oauth.renderButton(document.getElementById("audiusLogInButton"));
+audiusSdk.oauth.renderButton({
+  element: document.getElementById("audiusLogInButton"),
+  scope: "read", // use "write" instead if you'd like to request read/write access to user's account
+});
 ```
+
+:::tip
+
+Don't have an API key? Get one by creating a developer app on the Audius [Settings page](https://audius.co/settings).
+
+:::
 
 ## Examples
 
@@ -59,24 +74,26 @@ import Web3 from "web3";
 import { sdk } from "@audius/sdk";
 
 window.Web3 = Web3;
-const audiusSdk = sdk({ appName: "Name of your app goes here" });
+const audiusSdk = sdk({ apiKey: "Your API Key goes here" });
 ```
 
 :::tip
-See complete instructions [here](developers/sdk/index#installation) to install and initialize the JavaScript SDK.
+
+See complete instructions [here](/developers/sdk/#install-the-sdk) to install and initialize the JavaScript SDK.
+
 :::
 
 ### 2. Initialize the SDK `oauth` feature
 
 ```js showLineNumbers
-audiusSdk.oauth.init(
-  (res) => {
+audiusSdk.oauth.init({
+  successCallback: (res) => {
     // This will run if the user logged in successfully.
     console.log("Log in success!", res);
     /**
      `res` will contain the following user information:
       {
-        userId: string; // unique Audius user identifier
+        userId: number; // unique Audius user identifier
         email: string;
         name: string; // user's display name
         handle: string;
@@ -87,21 +104,25 @@ audiusSdk.oauth.init(
       }
     **/
   },
-  (err) => {
+  errorCallback: (err) => {
     // This will run if there was an error during the auth flow.
     console.log("Error :(", err);
     // `err` will contain the error message
-  }
-);
+  },
+});
 ```
 
 ### 3. Render the Log In button
 
-```js title="In your JS" showLineNumbers
-audiusSdk.oauth.renderButton(document.getElementById("audiusLogInButton"), {
-  size: "large",
-  corners: "pill",
-  customText: "Continue with Audius",
+```js title="In your JS"
+audiusSdk.oauth.renderButton({
+  element: document.getElementById("audiusLogInButton"),
+  scope: "read", // Change to "write" if you need write access to users' accounts
+  buttonOptions: {
+    size: "large",
+    corners: "pill",
+    customText: "Continue with Audius",
+  },
 });
 ```
 
@@ -109,15 +130,25 @@ audiusSdk.oauth.renderButton(document.getElementById("audiusLogInButton"), {
 <div id="audiusLogInButton"></div>
 ```
 
-[`renderButton`](sdk-oauth-methods#oauthrenderbuttonelement-customizations) replaces the element passed in the first parameter with the Log In with Audius button.
+[`renderButton`](/developers/sdk-oauth-methods#oauthrenderbuttonparams-element-scope-buttonoptions) replaces the given `element` with the Log In with Audius button.
 
-The second parameter passed to `renderButton` is an optional object with customization settings for the button.
+If `scope` is set to `"write"`, the user will be prompted to grant your app read/write access to their account (allowing your app to perform actions like uploading a track on the user's behalf). If `scope` is set to `"read"`, the user will be prompted to grant your app read-only access to their account.
 
-:::tip
-You can use [this playground](https://9ncjui.csb.app/) to see how these customizations affect the button appearance and determine what config works best for your app!
+:::note
+
+The `write` scope grants your app permission to perform most actions on the user's behalf, but it does NOT allow any access to DMs or wallets.
+
 :::
 
-If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login()`](sdk-oauth-methods#oauthlogin).
+You can also pass in `buttonOptions`, an optional object with customization settings for the button.
+
+:::tip
+
+Use [this playground](https://9ncjui.csb.app/) to explore the different button options.
+
+:::
+
+If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthloginparams-scope).
 
 ### 4. Optional: Show loader until the button is ready
 
@@ -152,11 +183,37 @@ observer.observe(document.querySelector("#parent"), {
 
 The log in button will be rendered with an id of `audius-login-button`. As shown above, you can detect when the element has been added using a MutationObserver.
 
-### 5. Done!
+### 5. Optional: Write to the user's Audius account
 
-[See examples](#examples)
+Once a user has authorized your app with the `write` scope, you can easily perform actions on their behalf using the SDK.
 
-[Read full SDK `oauth` docs](sdk-oauth-methods)
+Simply initialize the SDK with your API Key and Secret and begin using the various write methods.
+
+```js title="Server-side JS
+const audiusSdk = sdk({
+  apiKey: "Your API Key goes here",
+  apiSecret: "Your API Secret goes here",
+});
+
+const track = await audiusSdk.tracks.saveTrack({
+  trackId: "D7KyD",
+  userId: "Audius user ID of user who gave your app write access",
+});
+```
+
+:::warning
+
+Do NOT do this if you are running the SDK on the client side, as this will make your API Secret accessible to anyone who can look at the code.
+
+:::
+
+### 6. Done!
+
+- [See examples](#examples)
+
+- [Read full SDK `oauth` docs](sdk-oauth-methods)
+
+- [Explore the API docs](./sdk/classes/TracksApi)
 
 :::note
 
@@ -167,6 +224,13 @@ Once you know your user's Audius user id, you can retrieve their Audius informat
 
 ## Example use cases
 
+#### Write scope
+
+- Upload tracks to your users' Audius accounts
+- Save tracks to your users' Audius libraries
+
+#### Read-only scope
+
 - Provide a convenient way for users to sign up and/or log in to your app without having to set a password or fill in a profile form
 - Associate a user to their Audius account so that you can retrieve their Audius data (e.g. retrieve their tracks)
 - Confirm if a user is a "Verified" Audius artist
@@ -174,11 +238,6 @@ Once you know your user's Audius user id, you can retrieve their Audius informat
 However, note that this flow **CANNOT**:
 
 - Manage the user's login session on your app
-- Grant your app permission to perform actions on Audius on the user's behalf (see more below)
-
-### Authentication, not authorization
-
-Log in With Audius is able to provide authentication, but not authorization (yet!). In other words, this flow does not enable you to perform actions on the user's behalf (for example, upload a track).
 
 ## Workflow
 
@@ -186,7 +245,7 @@ The "Log In with Audius" flow looks like this:
 
 1. You provide a button on your app or website to begin the authentication flow
 2. When the user clicks the button, it opens the Log In with Audius page
-3. Once the user successfully signs in, Audius provides your app/website with the user profile using a JSON Web Token (JWT)
+3. Once the user successfully authorizes your app, Audius provides your app/website with the user profile using a JSON Web Token (JWT)
 4. Your app verifies and decodes the JWT
 
 The JWT payload contains the following information about the user:
@@ -218,14 +277,14 @@ On a native app, the log in button should open a secure web browser within the a
 
 The Log In with Audius prompt page is located at the following URL:
 
-`https://audius.co/oauth/auth?scope=read&app_name={YourAppName}&redirect_uri={YourRedirectURI}&origin={YourAppOrigin}&state={YourStateValue}&response_mode={query|fragment}`
+`https://audius.co/oauth/auth?scope={read|write}&api_key={Your API Key}&redirect_uri={Your Redirect URI}&origin={Your App Origin}&state={Your State Value}&response_mode={query|fragment}`
 
 You must open this page with the required URL parameters, described below.
 
 **Params**
 
-- scope `"read"` - the scope of the authentication request. Only `"read"` is available (i.e. don't change this).
-- app_name `string` - the name of your app. This will be displayed to the user in the log in prompt page.
+- scope `"read" | "write"` - the scope of the authentication request. Use `"write"` if your app will request read/write access to the user's account; otherwise, use `"read"` if your app only needs read access.
+- api_key `string` - your app's Audius API Key. If you don't have one, you can create one on the Audius [Settings page](https://audius.co/settings).
 - redirect_uri `string` - the location that the Audius login page should redirect to once the user successfully authenticates. Custom URL schemes are allowed and supported. You can use the special value `postmessage` here if you would like the login page to send the response back to its opener using `window.postMessage` instead of using a redirect. Otherwise, the following validation rules apply:
 
   - Hosts cannot be raw IP addresses UNLESS they are localhost IP addresses
@@ -364,5 +423,21 @@ We recommend selecting a host each time your application starts up as availabili
 #### 3. Done!
 
 Once you've verified the JWT, the authentication flow is complete and you now have your user's Audius profile information.
+
+If you used the `write` scope, you can use the Audius SDK to perform actions on behalf of the user who authorized your app:
+
+```js title="Server-side JS
+const audiusSdk = sdk({
+  apiKey: "Your API Key goes here",
+  apiSecret: "Your API Secret goes here",
+});
+
+const track = await audiusSdk.tracks.saveTrack({
+  trackId: "D7KyD",
+  userId: "Audius user ID of user who gave your app write access",
+});
+```
+
+See [Getting Started](/developers/sdk) with the SDK or [Performing Writes](./log-in-with-audius.md) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)
