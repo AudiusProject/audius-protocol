@@ -17,7 +17,7 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const log = (msg?: string | undefined, ...args: any[]) => logger.info(msg, requestId, ...args)
     const { web3, wallets, config } = app.viewAppData()
     const { entityManagerContractAddress, entityManagerContractRegistryKey, defaultGasLimit } = config
-    const { senderAddress, encodedABI, contractRegistryKey } = req
+    const { encodedABI, contractRegistryKey } = req
     const gasLimit = req.gasLimit ?? defaultGasLimit
 
     log("new relay request", req)
