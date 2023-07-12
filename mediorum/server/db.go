@@ -20,7 +20,7 @@ type Blob struct {
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
-	UserID            sql.NullInt64  `json:"user_id"`
+	UserWallet        sql.NullString `json:"user_wallet"`
 	Template          JobTemplate    `json:"template"`
 	OrigFileName      string         `json:"orig_filename"`
 	OrigFileCID       string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //

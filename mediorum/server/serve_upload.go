@@ -50,6 +50,18 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 		return err
 	}
 
+	// Validate signer wallet matches uploader's wallet
+	signerWallet := c.Request().Header.Get("x-signer-wallet")
+	if signerWallet == "" {
+		return c.String(http.StatusBadRequest, "error recovering wallet from signature")
+	}
+	if !upload.UserWallet.Valid {
+		return c.String(http.StatusBadRequest, "upload cannot be updated because it does not have an associated user wallet")
+	}
+	if signerWallet != upload.UserWallet.String {
+		return c.String(http.StatusUnauthorized, "request signer's wallet does not match uploader's wallet")
+	}
+
 	body := new(UpdateUploadBody)
 	if err := c.Bind(body); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
@@ -86,18 +98,13 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
-	// Parse X-User-Id header
-	userIdHeader := c.Request().Header.Get("X-User-Id")
-	userId := sql.NullInt64{Valid: false}
-	if userIdHeader != "" {
-		userIdInt, err := strconv.Atoi(userIdHeader)
-		if err != nil {
-			ss.logger.Warn("error parsing X-User-Id header", "err", err)
-		} else {
-			userId = sql.NullInt64{
-				Int64: int64(userIdInt),
-				Valid: true,
-			}
+	// Parse X-User-Wallet header
+	userWalletHeader := c.Request().Header.Get("X-User-Wallet")
+	userWallet := sql.NullString{Valid: false}
+	if userWalletHeader != "" {
+		userWallet = sql.NullString{
+			String: userWalletHeader,
+			Valid:  true,
 		}
 	}
 
@@ -141,7 +148,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			now := time.Now().UTC()
 			upload := &Upload{
 				ID:               ulid.Make().String(),
-				UserID:           userId,
+				UserWallet:       userWallet,
 				Status:           JobStatusNew,
 				Template:         template,
 				SelectedPreview:  selectedPreview,

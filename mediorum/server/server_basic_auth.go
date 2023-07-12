@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/hex"
+	"fmt"
+	"mediorum/server/signature"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,4 +55,40 @@ func (ss *MediorumServer) checkBasicAuth(user, pass string, c echo.Context) (boo
 
 	return false, echo.NewHTTPError(http.StatusBadRequest, "basic auth: wallet not in peer list "+wallet.Hex())
 
+}
+
+func (ss *MediorumServer) requireUserSignature(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id := c.Param("id")
+		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+		if err != nil {
+			return c.JSON(401, map[string]string{
+				"error":  "invalid signature",
+				"detail": err.Error(),
+			})
+		} else {
+			// check signature not too old
+			age := time.Since(time.Unix(sig.Data.Timestamp/1000, 0))
+			if age > (time.Hour * 48) {
+				return c.JSON(401, map[string]string{
+					"error":  "signature too old",
+					"detail": age.String(),
+				})
+			}
+
+			// check it is for this upload id
+			if sig.Data.UploadID != id {
+				return c.JSON(401, map[string]string{
+					"error":  "signature contains incorrect ID",
+					"detail": fmt.Sprintf("url: %s, signature %s", id, sig.Data.UploadID),
+				})
+			}
+
+			// OK
+			c.Response().Header().Set("x-signature-debug", sig.String())
+			c.Response().Header().Set("x-signer-wallet", sig.SignerWallet)
+		}
+
+		return next(c)
+	}
 }

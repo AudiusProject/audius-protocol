@@ -325,10 +325,9 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 // checks signature from discovery node for cidstream endpoint + premium content.
 // based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
-func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFunc {
+func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cid := c.Param("cid")
-		id := c.Param("id")
 		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
 		if err != nil {
 			return c.JSON(401, map[string]string{
@@ -357,18 +356,11 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 				})
 			}
 
-			// check it is for this cid or job id
-			if cid != "" && sig.Data.Cid != cid {
+			// check it is for this cid
+			if sig.Data.Cid != cid {
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect CID",
 					"detail": fmt.Sprintf("url: %s, signature %s", cid, sig.Data.Cid),
-				})
-			}
-			// note: id is the upload ID, which is persisted in discovery as part of a track's metadata
-			if id != "" && sig.Data.ID != id {
-				return c.JSON(401, map[string]string{
-					"error":  "signature contains incorrect ID",
-					"detail": fmt.Sprintf("url: %s, signature %s", id, sig.Data.ID),
 				})
 			}
 

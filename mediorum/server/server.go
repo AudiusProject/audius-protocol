@@ -223,7 +223,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads)
 	routes.GET("/uploads/:id", ss.getUpload)
-	routes.POST("/uploads/:id", ss.updateUpload, ss.requireSignature)
+	routes.POST("/uploads/:id", ss.updateUpload, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload)
 	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
@@ -234,8 +234,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:cid", ss.getBlob, ss.ensureNotDelisted)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireSignature)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireSignature)
+	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
 
