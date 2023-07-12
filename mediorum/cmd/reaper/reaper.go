@@ -1,6 +1,7 @@
 package reaper
 
 import (
+	"bufio"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sort"
 	"strings"
 	"syscall"
 
@@ -41,6 +43,7 @@ type Config struct {
 type Batcher struct {
 	DB        *sql.DB
 	Outfile   *os.File
+	OutWriter *bufio.Writer
 	Iteration int
 	Batch     []string
 	Config    *Config
@@ -67,7 +70,7 @@ func NewBatcher(config *Config) (*Batcher, error) {
 
 	reaperDirs := []string{
 		filepath.Join(config.MoveDir, "not_in_db"),
-		filepath.Join(config.MoveDir, "track"),
+		filepath.Join(config.MoveDir, "segments"),
 		config.WalkDir,
 		config.LogDir,
 	}
@@ -86,10 +89,12 @@ func NewBatcher(config *Config) (*Batcher, error) {
 	if err != nil {
 		return nil, err
 	}
+	outWriter := bufio.NewWriter(outfile)
 
 	return &Batcher{
 		DB:        db,
 		Outfile:   outfile,
+		OutWriter: outWriter,
 		Iteration: 0,
 		Batch:     make([]string, 0, BATCH_SIZE),
 		Config:    config,
@@ -106,6 +111,11 @@ func (b *Batcher) Close() error {
 	}
 
 	err = b.Outfile.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.OutWriter.Flush()
 	if err != nil {
 		return err
 	}
@@ -222,6 +232,10 @@ func (b *Batcher) Walk() error {
 }
 
 func (b *Batcher) handleBatch() {
+	// fmt.Println(b.Batch)
+	sort.Strings(b.Batch)
+	// sort.Sort(sort.Reverse(sort.StringSlice(b.Batch)))
+	// fmt.Println(b.Batch)
 	b.Iteration++
 	fmt.Printf("iteration:        %d\n", b.Iteration)
 
@@ -230,12 +244,15 @@ func (b *Batcher) handleBatch() {
 	fmt.Printf("files_not_in_db:  %d\n\n", len(rowsNotInDB))
 
 	for _, filePath := range rowsNotInDB {
+		// if ! contains()
 		b.handleFileNotInDB(filePath)
 	}
+	rowsNotInDB = nil
 
 	for _, row := range rowsInDB {
 		b.handleFileInDB(row)
 	}
+	rowsInDB = nil
 
 	b.Batch = b.Batch[:0]
 }
@@ -246,7 +263,12 @@ func (b *Batcher) checkDB() ([]FileRow, []string) {
 	if config.isTest {
 		tableName = "FilesTest"
 	}
-	query := fmt.Sprintf("SELECT \"storagePath\", \"type\" FROM \"%s\" WHERE \"storagePath\" IN (%s)", tableName, pathsSQL)
+	// TODO orderby
+	query := fmt.Sprintf(`
+		SELECT DISTINCT "storagePath", "type"
+		FROM "%s" 
+		WHERE "storagePath" IN (%s) 
+		ORDER BY "storagePath" ASC`, tableName, pathsSQL)
 	rows, err := b.DB.Query(query)
 	if err != nil {
 		log.Fatal(err)
@@ -254,27 +276,28 @@ func (b *Batcher) checkDB() ([]FileRow, []string) {
 	defer rows.Close()
 
 	rowsInDB := make([]FileRow, 0)
-	rowsNotInDB := make([]string, len(b.Batch))
-	copy(rowsNotInDB, b.Batch)
-
 	for rows.Next() {
 		var row FileRow
 		err := rows.Scan(&row.StoragePath, &row.Type)
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		rowsInDB = append(rowsInDB, row)
+	}
 
-		for i, path := range rowsNotInDB {
-			if path == row.StoragePath {
-				rowsNotInDB[i] = ""
-				break
-			}
+	rowsInDBMap := make(map[string]bool)
+	for _, row := range rowsInDB {
+		rowsInDBMap[row.StoragePath] = true
+	}
+
+	rowsNotInDB := make([]string, 0)
+	for _, storagePath := range b.Batch {
+		if _, found := rowsInDBMap[storagePath]; !found {
+			rowsNotInDB = append(rowsNotInDB, storagePath)
 		}
 	}
 
-	return rowsInDB, removeEmptyStrings(rowsNotInDB)
+	return rowsInDB, rowsNotInDB
 }
 
 func (b *Batcher) handleFileNotInDB(filePath string) {
@@ -345,7 +368,7 @@ func (b *Batcher) handleFileInDB(row FileRow) {
 			if b.Config.MoveFiles {
 				// Move file to a staging delete directory
 				// Retain all subdirs in case we want to move back before deleting
-				moveFile(row.StoragePath, filepath.Join(filepath.Join(b.Config.MoveDir, "track"), row.StoragePath))
+				moveFile(row.StoragePath, filepath.Join(filepath.Join(b.Config.MoveDir, "segments"), row.StoragePath))
 			}
 		}
 	}
