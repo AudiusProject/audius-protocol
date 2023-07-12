@@ -28,9 +28,7 @@ const {
 const messages = {
   documentTitle: 'Notifications',
   description: 'View your notifications on Audius',
-  title: 'NOTIFICATIONS',
-  empty: 'There’s Nothing Here Yet!',
-  readMore: 'Read More'
+  title: 'NOTIFICATIONS'
 }
 
 // The threshold of distance from the bottom of the scroll container in the
