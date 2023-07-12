@@ -48,7 +48,7 @@ from src.utils.redis_constants import (
 )
 from src.utils.web3_provider import get_web3
 
-LOCAL_RPC = "http://chain:8545"
+LOCAL_RPC = "http://localhost:8545"
 
 
 logger = logging.getLogger(__name__)
@@ -137,7 +137,11 @@ def _get_chain_health():
         chain_res["snapshot"] = snapshot_response_dict
         return chain_res
     except Exception as e:
-        logging.error("issue with chain health %s", exc_info=e)
+        # We use ganache locally in development, which doesn't have /health endpoint
+        # Don't log the error to prevent red herrings. Things will still work.
+        # TODO: Remove this check when we use nethermind in development
+        if shared_config["discprov"]["env"] != "dev":
+            logging.error("issue with chain health %s", exc_info=e)
         pass
 
 
