@@ -6,8 +6,7 @@ import { LineupState, Track } from '../../../../../models'
 
 export const initialState: LineupState<Track> = {
   ...initialLineupState,
-  prefix: PREFIX,
-  containsDeleted: false
+  prefix: PREFIX
 }
 
 type ResetSucceededAction = {

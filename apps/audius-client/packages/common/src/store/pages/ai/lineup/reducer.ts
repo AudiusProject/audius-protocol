@@ -5,7 +5,6 @@ import { PREFIX } from './actions'
 
 export const initialState = {
   ...initialLineupState,
-  containsDeleted: false,
   prefix: PREFIX
 }
 

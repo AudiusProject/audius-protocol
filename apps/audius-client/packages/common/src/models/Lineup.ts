@@ -38,7 +38,6 @@ export type LineupState<T> = {
   page: number
   isMetadataLoading: boolean
   dedupe?: boolean
-  containsDeleted: boolean
   maxEntries: Nullable<number>
   entryIds?: Nullable<Set<UID>>
 }

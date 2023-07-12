@@ -39,8 +39,6 @@ export const initialLineupState = {
   // Boolean if the lineup fetch call pagination includes deleted tracks/collections
   // e.g. This should be true if we request 10 tracks but only get 9 back because
   // one is deleted
-  // - Used to know if the lineup should stop fetching more content
-  containsDeleted: true,
   // Whether the lineup is limited to a certain length
   maxEntries: null
 }
@@ -131,18 +129,7 @@ export const actionsMap = {
     const newState = { ...state }
     newState.isMetadataLoading = false
     newState.status = Status.SUCCESS
-    newState.hasMore =
-      action.entries.length + action.deleted >= action.limit - action.offset
-
-    // If the lineup does not fetch deleted tracks and there are missing tracks
-    // in the response (indicated by 'deleted' count), then there is no more content
-    if (
-      !newState.containsDeleted &&
-      !isNaN(action.deleted) &&
-      action.deleted > 0
-    ) {
-      newState.hasMore = false
-    }
+    newState.hasMore = action.entries.length + action.deleted >= action.limit
 
     // Hack alert:
     // For lineups with max entries (such as trending playlists) and deleted content,
