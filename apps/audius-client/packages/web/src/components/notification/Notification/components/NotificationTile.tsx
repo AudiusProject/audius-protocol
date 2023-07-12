@@ -17,7 +17,7 @@ type NotificationTileProps = {
   notification: Notification
   children: ReactNode
   onClick?: ReactEventHandler
-  // When `true` disable :active transforms
+  // When `true` disable :active and :hover transforms
   disabled?: boolean
   // When `true` do not close notification panel onClick
   disableClosePanel?: boolean

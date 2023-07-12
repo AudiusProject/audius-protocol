@@ -49,9 +49,7 @@ const getScrollParent = () => {
 }
 
 const messages = {
-  title: 'Notifications',
-  empty: 'There’s Nothing Here Yet!',
-  readMore: 'Read More'
+  title: 'Notifications'
 }
 
 type NotificationPanelProps = {
