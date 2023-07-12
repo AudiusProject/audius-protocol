@@ -109,7 +109,7 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 
 	hosts, err := ss.findHostsWithCid(ctx, cid)
 	if err != nil {
-		return err
+		return c.String(500, "error redirecting:"+err.Error())
 	}
 
 	logger := ss.logger.With("cid", cid)
