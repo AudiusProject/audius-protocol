@@ -1,5 +1,10 @@
 when: << pipeline.parameters.run-integration-workflow >>
 jobs:
+  - push-docker-image:
+      name: push-solana-test-validator
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-solana-test-validator-$CIRCLE_BUILD_NUM
+      service: solana-test-validator
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
