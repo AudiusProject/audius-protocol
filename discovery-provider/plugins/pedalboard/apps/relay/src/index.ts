@@ -2,7 +2,7 @@ import App from "basekit/src/app";
 import { webServer } from "./server";
 import { Config, readConfig } from "./config";
 import { ethers } from "ethers";
-import { WalletManager } from "./walletManager";
+import { WalletManager, releaseWallets } from "./walletManager";
 
 export type SharedData = {
   config: Config,
@@ -31,10 +31,11 @@ const main = async () => {
     .tick({ minutes: 10 }, async (app) => {
       /** TODO: fund relayer wallets if empty */
     })
+    // every 30 seconds release wallets whose locks have expired
+    .tick({ seconds: 30 }, releaseWallets)
     .task(webServer)
     .run();
 };
 
-(async () => {
-  await main().catch(console.error);
-})();
+
+main().catch(console.error);

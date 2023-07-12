@@ -1,24 +1,50 @@
+import { App } from "basekit/src"
+import { SharedData } from "."
+
+type LockableWallet = {
+    wallet: string,
+    locked: boolean,
+    lockExpiration: Date | undefined
+}
+
 export class WalletManager {
-    private readonly wallets: string[]
+    private lockableWallets: Map<string, LockableWallet>
 
     constructor(wallets: string[]) {
-        this.wallets = wallets
+        const lockableWallets = new Map()
+        for (const wallet of wallets) {
+            lockableWallets.set(wallet, { wallet, locked: false, lockExpiration: undefined })
+        }
+        this.lockableWallets = lockableWallets
     }
     
-    /// returns currently selected wallet then randomly saves the next one
-    /// no need for redis lock
+    // randomly select next available wallet
     async selectNextWallet(): Promise<string> {
-        return this.wallets[Math.floor(Math.random() * this.wallets.length)]
+        const unlockedWallets = Array.from(this.lockableWallets).filter(([_, wallet]) => !wallet.locked)
+        const randomIndex = Math.floor(Math.random() * unlockedWallets.length)
+        return unlockedWallets[randomIndex][0]
     }
 
-    /// returns true if locked, false if not locked
-    generateWalletLockKey(pubKey: string): boolean {
-        return true
+    release(wallet: string) {
+        this.lockableWallets.set(wallet, { wallet, locked: false, lockExpiration: undefined })
     }
 
-    randomIndex(): number {
-        return Math.random() * (this.wallets.length - 1)
+    releaseTimedOutWallets() {
+        for (const [wallet, lockableWallet] of this.lockableWallets) {
+            const { locked, lockExpiration } = lockableWallet
+            if (locked && lockExpiration) {
+                // expiration date has passed
+                if (new Date() > lockExpiration) {
+                    this.lockableWallets.set(wallet, { wallet, locked: false, lockExpiration: undefined })
+                }
+            }
+        }
     }
+}
 
-    release(wallet: string) {}
+// runs on an interval and releases any wallets that are left locked
+// and hit their timeout
+export const releaseWallets = async (app: App<SharedData>) => {
+    const { wallets } = app.viewAppData()
+    wallets.releaseTimedOutWallets()
 }
