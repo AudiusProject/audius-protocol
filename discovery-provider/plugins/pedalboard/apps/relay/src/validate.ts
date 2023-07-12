@@ -11,6 +11,9 @@ export const validateTransactionData = async (encodedABI: string): Promise<Manag
     return decoded
 }
 
-export const validateSupportedContract = (supportedContracts: string[], requestedContract: string): boolean => {
-    return supportedContracts.includes(requestedContract)
+// throws if contract not valid
+export const validateSupportedContract = (supportedContracts: string[], requestedContract: string | undefined) => {
+    if (requestedContract === undefined) return true
+    const supported = supportedContracts.includes(requestedContract)
+    if (!supported) throw new Error(`requested contract ${requestedContract} not supported by ${supportedContracts}`)
 }

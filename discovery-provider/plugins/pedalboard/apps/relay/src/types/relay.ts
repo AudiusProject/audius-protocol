@@ -4,6 +4,7 @@ export const RelayRequest = Type.Object({
   senderAddress: Type.String(),
   encodedABI: Type.String(),
   gasLimit: Type.Optional(Type.Integer()),
+  contractRegistryKey: Type.Optional(Type.String())
 });
 
 export type RelayRequestType = Static<typeof RelayRequest>;

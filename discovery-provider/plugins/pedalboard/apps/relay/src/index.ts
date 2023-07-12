@@ -3,6 +3,7 @@ import { webServer } from "./server";
 import { Config, readConfig } from "./config";
 import { ethers } from "ethers";
 import { WalletManager, releaseWallets } from "./walletManager";
+import { logger } from "./logger";
 
 export type SharedData = {
   config: Config,
@@ -13,7 +14,9 @@ export type SharedData = {
 const main = async () => {
   const config = readConfig()
   const web3 = new ethers.providers.JsonRpcProvider()
-  const wallets = new WalletManager(["hardcoded wallet"])
+  const wallets = new WalletManager(config.relayWallets)
+
+  logger.info("read config, setup web3, and created wallets")
 
   const appData = {
     config,
@@ -38,4 +41,4 @@ const main = async () => {
 };
 
 
-main().catch(console.error);
+main().catch(logger.error);
