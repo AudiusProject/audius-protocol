@@ -9,9 +9,12 @@ import {
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import {
   Configuration,
+  Playlist,
   PlaylistsApi as GeneratedPlaylistsApi
 } from '../generated/default'
 import {
+  AddTrackToPlaylistRequest,
+  AddTrackToPlaylistSchema,
   CreatePlaylistRequest,
   CreatePlaylistSchema,
   createUpdatePlaylistSchema,
@@ -22,6 +25,8 @@ import {
   PlaylistTrackMetadata,
   PublishPlaylistRequest,
   PublishPlaylistSchema,
+  RemoveTrackFromPlaylistRequest,
+  RemoveTrackFromPlaylistSchema,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
   SavePlaylistRequest,
@@ -79,6 +84,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids
     const updatedMetadata = {
@@ -86,7 +92,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: (trackIds ?? []).map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse?.id
@@ -211,6 +217,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
@@ -219,7 +226,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse.id
@@ -263,26 +270,81 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       PublishPlaylistSchema
     )(requestParameters)
 
-    // Fetch playlist
-    const playlistResponse = await this.getPlaylist({
-      playlistId: requestParameters.playlistId,
-      userId: requestParameters.userId
-    })
-    const playlist = playlistResponse.data?.[0]
-
-    if (!playlist) {
-      throw new Error(
-        `Could not fetch playlist: ${requestParameters.playlistId}`
-      )
-    }
-
-    return await this.updatePlaylist(
+    return await this.fetchAndUpdatePlaylist(
       {
         userId: requestParameters.userId,
         playlistId: requestParameters.playlistId,
-        metadata: {
+        updateMetadata: (playlist) => ({
           ...playlist,
           isPrivate: false
+        })
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Add a single track to the end of a playlist
+   * For more control use updatePlaylist
+   */
+  async addTrackToPlaylist(
+    requestParameters: AddTrackToPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    parseRequestParameters(
+      'addTrackToPlaylist',
+      AddTrackToPlaylistSchema
+    )(requestParameters)
+
+    const currentBlock = await this.entityManager.getCurrentBlock()
+
+    return await this.fetchAndUpdatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        updateMetadata: (playlist) => ({
+          ...playlist,
+          playlistContents: [
+            ...playlist.playlistContents,
+            {
+              trackId: requestParameters.trackId,
+              timestamp: currentBlock.timestamp
+            }
+          ]
+        })
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Removes a single track at the given index of playlist
+   * For more control use updatePlaylist
+   */
+  async removeTrackFromPlaylist(
+    requestParameters: RemoveTrackFromPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { trackIndex } = parseRequestParameters(
+      'removeTrackFromPlaylist',
+      RemoveTrackFromPlaylistSchema
+    )(requestParameters)
+
+    return await this.fetchAndUpdatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        updateMetadata: (playlist) => {
+          if (playlist.playlistContents.length <= trackIndex) {
+            throw new Error(`No track exists at index ${trackIndex}`)
+          }
+          playlist.playlistContents.splice(trackIndex, 1)
+          return {
+            ...playlist,
+            playlistContents: playlist.playlistContents
+          }
         }
       },
       writeOptions
@@ -292,7 +354,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   /**
    * Update a playlist
    */
-
   async updatePlaylist(
     requestParameters: UpdatePlaylistRequest,
     writeOptions?: WriteOptions
@@ -517,5 +578,43 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       }
     }
     return trackMetadata
+  }
+
+  /**
+   * Update helper method that first fetches a playlist and then updates it
+   */
+  private async fetchAndUpdatePlaylist(
+    {
+      userId,
+      playlistId,
+      updateMetadata
+    }: {
+      userId: string
+      playlistId: string
+      updateMetadata: (
+        fetchedMetadata: Playlist
+      ) => UpdatePlaylistRequest['metadata']
+    },
+    writeOptions?: WriteOptions
+  ) {
+    // Fetch playlist
+    const playlistResponse = await this.getPlaylist({
+      playlistId,
+      userId
+    })
+    const playlist = playlistResponse.data?.[0]
+
+    if (!playlist) {
+      throw new Error(`Could not fetch playlist: ${playlistId}`)
+    }
+
+    return await this.updatePlaylist(
+      {
+        userId,
+        playlistId,
+        metadata: updateMetadata(playlist)
+      },
+      writeOptions
+    )
   }
 }

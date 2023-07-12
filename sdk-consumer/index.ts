@@ -22,6 +22,8 @@ import {
   CreatePlaylistRequest,
   PublishPlaylistRequest,
   UpdatePlaylistRequest,
+  AddTrackToPlaylistRequest,
+  RemoveTrackFromPlaylistRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -345,6 +347,43 @@ app.post<PublishPlaylistRequest>("/publishPlaylist", async (req, res) => {
     res.send((e as any).message);
   }
 });
+
+app.post<AddTrackToPlaylistRequest>("/addTrackToPlaylist", async (req, res) => {
+  try {
+    const addTrackToPlaylistRequest: AddTrackToPlaylistRequest = {
+      userId: req.body.userId,
+      playlistId: req.body.playlistId,
+      trackId: req.body.trackId,
+    };
+    const result = await audiusSdk.playlists.addTrackToPlaylist(
+      addTrackToPlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<RemoveTrackFromPlaylistRequest>(
+  "/removeTrackFromPlaylist",
+  async (req, res) => {
+    try {
+      const removeTrackFromPlaylistRequest: RemoveTrackFromPlaylistRequest = {
+        userId: req.body.userId,
+        playlistId: req.body.playlistId,
+        trackIndex: req.body.trackIndex,
+      };
+      const result = await audiusSdk.playlists.removeTrackFromPlaylist(
+        removeTrackFromPlaylistRequest
+      );
+      res.send(result);
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
 
 app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
   try {

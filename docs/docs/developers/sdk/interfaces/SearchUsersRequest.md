@@ -11,5 +11,3 @@ custom_edit_url: null
 ### query
 
  **query**: `string`
-
-The search query

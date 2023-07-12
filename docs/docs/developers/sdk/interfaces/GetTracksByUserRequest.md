@@ -8,11 +8,15 @@ custom_edit_url: null
 
 ## Properties
 
+### filterTracks
+
+ `Optional` **filterTracks**: [`GetTracksByUserFilterTracksEnum`](../modules.md#gettracksbyuserfiltertracksenum-1)
+
+___
+
 ### id
 
  **id**: `string`
-
-A User ID
 
 ___
 
@@ -20,28 +24,38 @@ ___
 
  `Optional` **limit**: `number`
 
-The number of items to fetch
-
 ___
 
 ### offset
 
  `Optional` **offset**: `number`
 
-The number of items to skip. Useful for pagination (page number * limit)
+___
+
+### query
+
+ `Optional` **query**: `string`
 
 ___
 
 ### sort
 
- `Optional` **sort**: [`GetTracksByUserSortEnum`](../enums/GetTracksByUserSortEnum.md)
+ `Optional` **sort**: [`GetTracksByUserSortEnum`](../modules.md#gettracksbyusersortenum-1)
 
-Field to sort by
+___
+
+### sortDirection
+
+ `Optional` **sortDirection**: [`GetTracksByUserSortDirectionEnum`](../modules.md#gettracksbyusersortdirectionenum-1)
+
+___
+
+### sortMethod
+
+ `Optional` **sortMethod**: [`GetTracksByUserSortMethodEnum`](../modules.md#gettracksbyusersortmethodenum-1)
 
 ___
 
 ### userId
 
  `Optional` **userId**: `string`
-
-The user ID of the user making the request

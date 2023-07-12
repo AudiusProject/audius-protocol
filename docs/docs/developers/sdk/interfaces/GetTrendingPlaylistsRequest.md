@@ -10,6 +10,4 @@ custom_edit_url: null
 
 ### time
 
- `Optional` **time**: [`GetTrendingPlaylistsTimeEnum`](../enums/GetTrendingPlaylistsTimeEnum.md)
-
-Calculate trending over a specified time range
+ `Optional` **time**: [`GetTrendingPlaylistsTimeEnum`](../modules.md#gettrendingplayliststimeenum-1)

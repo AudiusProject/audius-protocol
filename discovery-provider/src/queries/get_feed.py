@@ -33,8 +33,8 @@ def get_feed(args):
     use_es = es_url and not skip_es
     if use_es:
         try:
-            (limit, _) = get_pagination_vars()
-            return get_feed_es(args, limit)
+            (limit, offset) = get_pagination_vars()
+            return get_feed_es(args, limit, offset)
         except Exception as e:
             logger.error(f"elasticsearch get_feed_es failed: {e}")
             return get_feed_sql(args)
@@ -314,8 +314,8 @@ def get_feed_sql(args):
         )
 
         # truncate feed to requested limit
-        (limit, _) = get_pagination_vars()
-        feed_results = sorted_feed[0:limit]
+        (limit, offset) = get_pagination_vars()
+        feed_results = sorted_feed[offset:limit]
         if "with_users" in args and args.get("with_users") != False:
             user_id_list = get_users_ids(feed_results)
             users = get_users_by_id(session, user_id_list)

@@ -12,24 +12,32 @@ custom_edit_url: null
 
 ## Properties
 
-### favorite\_item\_id
+### createdAt
 
- **favorite\_item\_id**: `string`
-
-**`memberof`** Favorite
-
-___
-
-### favorite\_type
-
- **favorite\_type**: `string`
+ **createdAt**: `string`
 
 **`memberof`** Favorite
 
 ___
 
-### user\_id
+### favoriteItemId
 
- **user\_id**: `string`
+ **favoriteItemId**: `string`
+
+**`memberof`** Favorite
+
+___
+
+### favoriteType
+
+ **favoriteType**: `string`
+
+**`memberof`** Favorite
+
+___
+
+### userId
+
+ **userId**: `string`
 
 **`memberof`** Favorite

@@ -365,6 +365,8 @@ def copy_record(
 
 def validate_signer(params: ManageEntityParameters):
     # Ensure the signer is either the user or authorized to perform action for the user
+    if params.user_id not in params.existing_records[EntityType.USER]:
+        raise IndexingValidationError(f"User {params.user_id} does not exist")
     wallet = params.existing_records[EntityType.USER][params.user_id].wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"mediorum/server/signature"
+	"mime"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -136,14 +136,6 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
-func formatHeader(header http.Header) map[string]string {
-	formatted := make(map[string]string)
-	for k, v := range header {
-		formatted[k] = strings.Join(v, ", ")
-	}
-	return formatted
-}
-
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
@@ -158,11 +150,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
-	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
-		contentDisposition := url.QueryEscape(filenameForDownload)
-		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+		contentDisposition := mime.QEncoding.Encode("utf-8", filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
 	if isLegacyCID(key) {
@@ -172,13 +164,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
-		// detect mime type:
-		// if this is not the cidstream route, we should block mp3 streaming
-		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
+		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
 		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-			// Note: we should remove this soon. It's probably not best practice to be logging headers
-			logger.Warn("blocking mp3 streaming", "headers", formatHeader(c.Request().Header), "uri", c.Request().RequestURI, "remote_ip", c.Request().RemoteAddr)
-			c.Response().Header().Set("x-would-block", "true")
+			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 		}
 
 		blob, err := ss.bucket.NewReader(ctx, key, nil)
@@ -236,6 +224,11 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 
 	// Return 200 if we have it
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
+		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
+		}
 		return c.NoContent(200)
 	}
 

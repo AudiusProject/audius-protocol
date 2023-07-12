@@ -12,4 +12,8 @@ custom_edit_url: null
 
  **playlistId**: `string`
 
-A Playlist ID
+___
+
+### userId
+
+ `Optional` **userId**: `string`

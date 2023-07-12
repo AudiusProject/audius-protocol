@@ -134,9 +134,7 @@ def get_social_feature_type(params):
 
 
 def create_save(params):
-    is_save_of_repost = get_attribute_from_record_metadata(
-        params, "is_save_of_repost"
-    )
+    is_save_of_repost = get_attribute_from_record_metadata(params, "is_save_of_repost")
 
     record = Save(
         blockhash=params.event_blockhash,
@@ -245,23 +243,28 @@ def delete_social_record(params):
 
 
 def validate_social_feature(params: ManageEntityParameters):
-    if params.user_id not in params.existing_records[EntityType.USER]:
-        raise IndexingValidationError(f"User {params.user_id} does not exist")
-
     validate_signer(params)
 
     if params.entity_id not in params.existing_records[params.entity_type]:
         raise IndexingValidationError(f"Entity {params.entity_id} does not exist")
 
-    if (params.entity_type == EntityType.PLAYLIST and
-       params.entity_id in params.existing_records[params.entity_type] and
-       params.existing_records[params.entity_type][params.entity_id].is_private):
-        raise IndexingValidationError(f"Playlist {params.entity_id} is private, cannot execute social feature")
+    if (
+        params.entity_type == EntityType.PLAYLIST
+        and params.entity_id in params.existing_records[params.entity_type]
+        and params.existing_records[params.entity_type][params.entity_id].is_private
+    ):
+        raise IndexingValidationError(
+            f"Playlist {params.entity_id} is private, cannot execute social feature"
+        )
 
-    if (params.entity_type == EntityType.TRACK and
-       params.entity_id in params.existing_records[params.entity_type] and
-       params.existing_records[params.entity_type][params.entity_id].is_unlisted):
-        raise IndexingValidationError(f"Track {params.entity_id} is private, cannot execute social feature")
+    if (
+        params.entity_type == EntityType.TRACK
+        and params.entity_id in params.existing_records[params.entity_type]
+        and params.existing_records[params.entity_type][params.entity_id].is_unlisted
+    ):
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is private, cannot execute social feature"
+        )
 
     # User cannot use social feature on themself
     if params.action in (
@@ -271,7 +274,9 @@ def validate_social_feature(params: ManageEntityParameters):
         Action.UNSUBSCRIBE,
     ):
         if params.user_id == params.entity_id:
-            raise IndexingValidationError(f"User {params.user_id} cannot {params.action} themself")
+            raise IndexingValidationError(
+                f"User {params.user_id} cannot {params.action} themself"
+            )
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
         owner_id = (
@@ -280,7 +285,9 @@ def validate_social_feature(params: ManageEntityParameters):
             else target_entity.owner_id
         )
         if params.user_id == owner_id:
-            raise IndexingValidationError(f"User {params.user_id} cannot {params.action} themself")
+            raise IndexingValidationError(
+                f"User {params.user_id} cannot {params.action} themself"
+            )
 
 
 def validate_duplicate_social_feature(

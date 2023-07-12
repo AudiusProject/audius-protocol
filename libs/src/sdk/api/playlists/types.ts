@@ -132,6 +132,28 @@ export const PublishPlaylistSchema = z
 
 export type PublishPlaylistRequest = z.input<typeof PublishPlaylistSchema>
 
+export const AddTrackToPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type AddTrackToPlaylistRequest = z.input<typeof AddTrackToPlaylistSchema>
+
+export const RemoveTrackFromPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId,
+    trackIndex: z.number()
+  })
+  .strict()
+
+export type RemoveTrackFromPlaylistRequest = z.input<
+  typeof RemoveTrackFromPlaylistSchema
+>
+
 export const DeletePlaylistSchema = z
   .object({
     userId: HashId,
