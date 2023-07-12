@@ -56,4 +56,5 @@
   padding: 24px 32px 32px;
   background: var(--white);
   scroll-padding-right: 4px;
+  overflow: scroll;
 }
