@@ -86,7 +86,6 @@ type AudiusLibsConfig = {
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
-  isStorageV2Only: boolean
 }
 
 export class AudiusLibs {
@@ -111,24 +110,18 @@ export class AudiusLibs {
   static configCreatorNode(
     // creator node endpoint to fall back to on requests
     fallbackUrl: string,
-    // whether to delay connection to the node until the first request that requires a connection is made.
-    lazyConnect = false,
     // whether or not to include only specified nodes (default null)
     passList: Nullable<Set<string>> = null,
     // whether or not to exclude any nodes (default null)
     blockList: Nullable<Set<string>> = null,
     // callbacks to be invoked with metrics from requests sent to a service
-    monitoringCallbacks: Nullable<MonitoringCallbacks> = {},
-    // whether or not to enforce waiting for replication to 2/3 nodes when writing data
-    writeQuorumEnabled = false
+    monitoringCallbacks: Nullable<MonitoringCallbacks> = {}
   ) {
     return {
       fallbackUrl,
-      lazyConnect,
       passList,
       blockList,
-      monitoringCallbacks,
-      writeQuorumEnabled
+      monitoringCallbacks
     }
   }
 
@@ -339,7 +332,6 @@ export class AudiusLibs {
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
-  isStorageV2Only: boolean
 
   /**
    * Constructs an Audius Libs instance with configs.
@@ -367,7 +359,6 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage = getPlatformLocalStorage(),
-    isStorageV2Only = false
   }: AudiusLibsConfig) {
     // set version
 
@@ -418,7 +409,6 @@ export class AudiusLibs {
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
     this.localStorage = localStorage
-    this.isStorageV2Only = isStorageV2Only
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -551,36 +541,31 @@ export class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
-      let creatorNodeEndpoint = currentUser
-        ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
-          this.creatorNodeConfig.fallbackUrl
-        : this.creatorNodeConfig.fallbackUrl
 
-      // Use rendezvous to select creatorNodeEndpoint for v2 users
-      if (
-        currentUser?.is_storage_v2 &&
-        this.creatorNodeConfig.storageNodeSelector &&
-        currentUser.wallet
-      ) {
-        const [storageNode] =
-          this.creatorNodeConfig.storageNodeSelector.getNodes(
-            currentUser.wallet
+      // Use rendezvous to select creatorNodeEndpoint
+      let creatorNodeEndpoint = this.creatorNodeConfig.fallbackUrl
+      if (currentUser?.wallet) {
+        if (this.creatorNodeConfig.storageNodeSelector) {
+          const [storageNode] =
+            this.creatorNodeConfig.storageNodeSelector.getNodes(
+              currentUser.wallet
+            )
+          if (storageNode) {
+            creatorNodeEndpoint = storageNode
+          }
+        } else if (this.ethContracts) {
+          const storageV2Nodes =
+            await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+              'content-node'
+            )
+          const randomNodes = await getNStorageNodes(
+            storageV2Nodes,
+            1,
+            currentUser.wallet,
+            this.logger
           )
-        if (storageNode) {
-          creatorNodeEndpoint = storageNode
+          creatorNodeEndpoint = randomNodes[0]!
         }
-      } else if (currentUser?.is_storage_v2 && this.ethContracts) {
-        const storageV2Nodes =
-          await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
-            'content-node'
-          )
-        const randomNodes = await getNStorageNodes(
-          storageV2Nodes,
-          1,
-          currentUser.wallet,
-          this.logger
-        )
-        creatorNodeEndpoint = randomNodes[0]!
       }
 
       this.creatorNode = new CreatorNode(
@@ -588,13 +573,10 @@ export class AudiusLibs {
         creatorNodeEndpoint,
         this.isServer,
         this.userStateManager,
-        this.creatorNodeConfig.lazyConnect,
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.writeQuorumEnabled,
-        this.isStorageV2Only
+        this.creatorNodeConfig.monitoringCallbacks
       )
       await this.creatorNode.init()
     }

@@ -33,12 +33,6 @@ const mockEthContracts = (
   } as unknown as EthContracts)
 
 const mockCreatorNode = {
-  getSyncStatus: async () => {
-    return {
-      isBehind: false,
-      isConfigured: true
-    }
-  },
   monitoringCallbacks: {},
   passList: null,
   blockList: null
