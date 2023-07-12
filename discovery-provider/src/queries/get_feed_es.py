@@ -13,8 +13,7 @@ from src.utils.elasticdsl import (
 )
 
 
-def get_feed_es(args, limit=10):
-
+def get_feed_es(args, limit=10, offset=0):
     current_user_id = str(args.get("user_id"))
     feed_filter = args.get("filter", "all")
     load_reposts = feed_filter in ["repost", "all"]
@@ -263,7 +262,7 @@ def get_feed_es(args, limit=10):
         for item in sorted_feed
     ]
 
-    return sorted_feed[0:limit]
+    return sorted_feed[offset:limit]
 
 
 def following_ids_terms_lookup(current_user_id, field, explicit_ids=None):
