@@ -154,74 +154,69 @@ def is_valid_json_field(metadata, field):
     return False
 
 
-def populate_track_record_metadata(track_record, track_metadata, handle):
-    track_record.track_cid = track_metadata["track_cid"]
-    track_record.title = track_metadata["title"]
-    track_record.cover_art = track_metadata["cover_art"]
-    track_record.tags = track_metadata["tags"]
-    track_record.genre = track_metadata["genre"]
-    track_record.mood = track_metadata["mood"]
-    track_record.credits_splits = track_metadata["credits_splits"]
-    track_record.create_date = track_metadata["create_date"]
-    track_record.release_date = track_metadata["release_date"]
-    track_record.file_type = track_metadata["file_type"]
-    track_record.description = track_metadata["description"]
-    track_record.license = track_metadata["license"]
-    track_record.isrc = track_metadata["isrc"]
-    track_record.iswc = track_metadata["iswc"]
-    track_record.track_segments = track_metadata["track_segments"]
-    track_record.field_visibility = track_metadata["field_visibility"]
-    track_record.is_premium = track_metadata["is_premium"]
-    track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+def populate_track_record_metadata(track_record, track_metadata, handle, params):
 
-    if track_metadata["cover_art_sizes"]:
-        track_record.cover_art = track_metadata["cover_art_sizes"]
+    # Iterate over the track_record keys
+    # Update track_record values for which keys exist in track_metadata
+    track_record_attributes = track_record.get_attributes_dict()
+    for key, _ in track_record_attributes.items():
 
-    # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-    # made unlisted again
-    if track_record.is_unlisted:
-        track_record.is_unlisted = track_metadata["is_unlisted"]
+        # For certain fields, update track_record under certain conditions
+        if key == "is_unlisted":
+            # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
+            # made unlisted again
+            if "is_unlisted" in track_metadata and track_record.is_unlisted:
+                track_record.is_unlisted = track_metadata["is_unlisted"]
+        elif key == "premium_conditions": 
+            if "premium_conditions" in track_metadata and is_valid_json_field(track_metadata, "premium_conditions"):
+                track_record.premium_conditions = track_metadata["premium_conditions"]
 
-    # Only update `duration` if it's provided,
-    # otherwise fall back to the original value. This will allow for replacing
-    # audio files in the future
-    track_record.duration = track_metadata["duration"] or track_record.duration or 0
-    track_record.length = track_metadata["length"] or track_record.length or 0
+        elif key == "stem_of": 
+            if "stem_of" in track_metadata and is_valid_json_field(track_metadata, "stem_of"):
+                track_record.stem_of = track_metadata["stem_of"]
 
-    if is_valid_json_field(track_metadata, "premium_conditions"):
-        track_record.premium_conditions = track_metadata["premium_conditions"]
-    else:
+        elif key == "remix_of": 
+            if "remix_of" in track_metadata and is_valid_json_field(track_metadata, "remix_of"):
+                track_record.remix_of = track_metadata["remix_of"]
+
+        elif key == "download": 
+            if "download" in track_metadata:
+                track_record.download = {
+                    "is_downloadable": track_metadata["download"].get("is_downloadable")
+                    == True,
+                    "requires_follow": track_metadata["download"].get("requires_follow")
+                    == True,
+                    "cid": track_metadata["download"].get("cid", None),
+                }
+
+        elif key == "route_id":
+            track_record.route_id = helpers.create_track_route_id(
+                track_metadata["title"], handle
+            )
+
+        else:
+            # For most fields, update the track_record when the corresponding field exists
+            # in track_metadata
+            if key in track_metadata:
+                setattr(track_record, key, track_metadata[key])
+
+    # Set some default values, TODO not sure why we do this here
+    if not track_record.premium_conditions:
         track_record.premium_conditions = null()
 
-    if is_valid_json_field(track_metadata, "stem_of"):
-        track_record.stem_of = track_metadata["stem_of"]
-    else:
+    if not track_record.stem_of:
         track_record.stem_of = null()
-    if is_valid_json_field(track_metadata, "remix_of"):
-        track_record.remix_of = track_metadata["remix_of"]
-    else:
+
+    if not track_record.remix_of:
         track_record.remix_of = null()
 
-    if "download" in track_metadata:
-        track_record.download = {
-            "is_downloadable": track_metadata["download"].get("is_downloadable")
-            == True,
-            "requires_follow": track_metadata["download"].get("requires_follow")
-            == True,
-            "cid": track_metadata["download"].get("cid", None),
-        }
-    else:
+    if not track_record.download:
         track_record.download = {
             "is_downloadable": False,
             "requires_follow": False,
             "cid": None,
-        }
+    }
 
-    track_record.route_id = helpers.create_track_route_id(
-        track_metadata["title"], handle
-    )
-
-    track_record.ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
     return track_record
 
 
@@ -296,7 +291,10 @@ def get_handle(params: ManageEntityParameters):
 
 
 def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
-    populate_track_record_metadata(track, metadata, handle)
+    params.logger.info(
+        f"index.py | track.py | metadata for track {metadata}"
+    )
+    populate_track_record_metadata(track, metadata, handle, params)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:

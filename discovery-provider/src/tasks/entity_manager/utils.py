@@ -308,12 +308,19 @@ def parse_metadata(metadata, action, entity_type):
 
         cid = data["cid"]
         metadata_json = data["data"]
-        _, metadata_format = get_metadata_type_and_format(entity_type)
-        formatted_json = get_metadata_from_json(metadata_format, metadata_json)
 
-        # Only index valid changes
-        if formatted_json == metadata_format:
-            raise IndexingValidationError("no valid metadata changes detected")
+        # Don't format metadata for UPDATEs
+        # This is to support partial updates 
+        # Individual entities are responsible for updating existing records with metadata
+        if not action == Action.UPDATE:
+            _, metadata_format = get_metadata_type_and_format(entity_type)
+            formatted_json = get_metadata_from_json(metadata_format, metadata_json)
+
+            # Only index valid changes
+            if formatted_json == metadata_format:
+                raise IndexingValidationError("no valid metadata changes detected")
+        else:
+            formatted_json = metadata_json
 
         return formatted_json, cid
     except Exception as e:
