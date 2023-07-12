@@ -33,11 +33,14 @@ function* watchFetchCollection() {
       retrievedCollections = yield call(
         retrieveCollectionByPermalink,
         permalink,
-        /* fetchTracks */ false,
-        /* requiresAllTracks */ true
+        {
+          requiresAllTracks: true
+        }
       )
     } else {
-      retrievedCollections = yield call(retrieveCollections, [collectionId])
+      retrievedCollections = yield call(retrieveCollections, [collectionId], {
+        requiresAllTracks: true
+      })
     }
 
     const { collections, uids: collectionUids } = retrievedCollections
