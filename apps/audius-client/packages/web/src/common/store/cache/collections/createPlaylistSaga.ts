@@ -60,7 +60,7 @@ function* createPlaylistWorker(
     playlist.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticalySavePlaylist, playlistId, playlist, initTrack)
+  yield* call(optimisticallySavePlaylist, playlistId, playlist, initTrack)
   yield* put(
     cacheCollectionsActions.createPlaylistRequested(playlistId, noticeType)
   )
@@ -74,7 +74,7 @@ function* createPlaylistWorker(
   )
 }
 
-function* optimisticalySavePlaylist(
+function* optimisticallySavePlaylist(
   playlistId: ID,
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
