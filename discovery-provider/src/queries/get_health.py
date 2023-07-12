@@ -48,7 +48,7 @@ from src.utils.redis_constants import (
 )
 from src.utils.web3_provider import get_web3
 
-LOCAL_RPC = "http://localhost:8545"
+LOCAL_RPC = "http://chain:8545"
 
 
 logger = logging.getLogger(__name__)
