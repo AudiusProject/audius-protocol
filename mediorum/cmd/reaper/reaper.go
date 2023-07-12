@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	_ "github.com/lib/pq"
 )
@@ -19,6 +21,7 @@ var (
 	config     *Config
 	dbUrl      string
 	reaperCmd  *flag.FlagSet
+	b          *Batcher
 )
 
 type FileRow struct {
@@ -155,14 +158,25 @@ func main() {
 	fmt.Println("reaper.go main() called")
 }
 
+func _trap() {
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-interrupt
+		fmt.Printf("\ntrapped SIGINT...\n\n")
+		report(b)
+		os.Exit(0)
+	}()
+}
+
 func Run() {
 
 	_init() // flag parsing in init() causes `go test` to fail
 
-	var (
-		b   *Batcher
-		err error
-	)
+	_trap()
+
+	var err error
 
 	b, err = NewBatcher(config)
 	if err != nil {
@@ -326,7 +340,7 @@ func (b *Batcher) handleFileInDB(row FileRow) {
 		b.counter[row.Type]["count"]++
 		b.counter[row.Type]["bytes_used"] += int(fileInfo.Size())
 
-		// segments
+		// Segments
 		if row.Type == "track" {
 			if b.Config.MoveFiles {
 				// Move file to a staging delete directory

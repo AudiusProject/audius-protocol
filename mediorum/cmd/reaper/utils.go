@@ -42,7 +42,6 @@ func moveFile(source, destination string) error {
 		return err
 	}
 
-	// fmt.Println("moving from:", source, destination)
 	err = os.Rename(source, destination)
 	if err != nil {
 		log.Fatal(err)
