@@ -427,18 +427,6 @@ const config = convict({
     env: 'creatorNodeIsDebug',
     default: false
   },
-  snapbackHighestReconfigMode: {
-    doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
-    format: String,
-    env: 'snapbackHighestReconfigMode',
-    default: 'PRIMARY_AND_OR_SECONDARIES'
-  },
-  reconfigModePrimaryOnly: {
-    doc: 'Override for `snapbackHighestReconfigMode` to only reconfig primary from replica set',
-    format: Boolean,
-    env: 'reconfigModePrimaryOnly',
-    default: false
-  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
@@ -495,42 +483,6 @@ const config = convict({
     format: 'nat',
     env: 'fetchCNodeEndpointToSpIdMapIntervalMs',
     default: 600_000 // 10m
-  },
-  stateMonitoringQueueRateLimitInterval: {
-    doc: 'interval (ms) during which at most stateMonitoringQueueRateLimitJobsPerInterval monitor-state jobs will run',
-    format: 'nat',
-    env: 'stateMonitoringQueueRateLimitInterval',
-    default: 60_000 // 1m
-  },
-  stateMonitoringQueueRateLimitJobsPerInterval: {
-    doc: 'number of state monitoring jobs that can run in each interval (0 to pause queue)',
-    format: 'nat',
-    env: 'stateMonitoringQueueRateLimitJobsPerInterval',
-    default: 0
-  },
-  recoverOrphanedDataQueueRateLimitInterval: {
-    doc: 'interval (ms) during which at most recoverOrphanedDataQueueRateLimitJobsPerInterval recover-orphaned-data jobs will run',
-    format: 'nat',
-    env: 'recoverOrphanedDataQueueRateLimitInterval',
-    default: 60_000 // 1m
-  },
-  recoverOrphanedDataQueueRateLimitJobsPerInterval: {
-    doc: 'number of recover-orphaned-data jobs that can run in each interval (0 to pause queue)',
-    format: 'nat',
-    env: 'recoverOrphanedDataQueueRateLimitJobsPerInterval',
-    default: 0
-  },
-  recoverOrphanedDataNumUsersPerBatch: {
-    doc: 'number of users to fetch from redis and issue requests for (sequentially) in each batch',
-    format: 'nat',
-    env: 'recoverOrphanedDataNumUsersPerBatch',
-    default: 5
-  },
-  recoverOrphanedDataDelayMsBetweenBatches: {
-    doc: 'milliseconds to wait between processing each recoverOrphanedDataNumUsersPerBatch users',
-    format: 'nat',
-    env: 'recoverOrphanedDataDelayMsBetweenBatches',
-    default: 60_000 // 1m
   },
   debounceTime: {
     doc: 'sync debounce time in ms',
@@ -591,18 +543,6 @@ const config = convict({
     format: 'nat',
     env: 'maxManualRequestSyncJobConcurrency',
     default: 30
-  },
-  maxRecurringRequestSyncJobConcurrency: {
-    doc: 'Max bull queue concurrency for recurring sync request jobs',
-    format: 'nat',
-    env: 'maxRecurringRequestSyncJobConcurrency',
-    default: 0
-  },
-  maxUpdateReplicaSetJobConcurrency: {
-    doc: 'Max bull queue concurrency for update replica set jobs',
-    format: 'nat',
-    env: 'maxUpdateReplicaSetJobConcurrency',
-    default: 0
   },
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
@@ -689,12 +629,6 @@ const config = convict({
     env: 'contentCacheLayerEnabled',
     default: true
   },
-  reconfigNodeWhitelist: {
-    doc: 'Comma separated string - list of Content Nodes to select from for reconfig. Empty string = whitelist all.',
-    format: String,
-    env: 'reconfigNodeWhitelist',
-    default: ''
-  },
   maximumTranscodingActiveJobs: {
     doc: 'The maximum number of active jobs the TranscodingQueue can have at a given moment. Will be the number of cores in the running machine, or a custom size',
     format: 'nat',
@@ -718,30 +652,6 @@ const config = convict({
     format: String,
     env: 'audiusContentInfraSetup',
     default: ''
-  },
-  monitorStateJobLastSuccessfulRunDelayMs: {
-    doc: 'Max time delay since last monitor-state job successfully ran (milliseconds)',
-    format: 'nat',
-    env: 'monitorStateJobLastSuccessfulRunDelayMs',
-    default: 10 * 60 * 1000 // 10 mins
-  },
-  findSyncRequestsJobLastSuccessfulRunDelayMs: {
-    doc: 'Max time delay since last find-sync-requests job successfully ran (milliseconds)',
-    format: 'nat',
-    env: 'findSyncRequestsJobLastSuccessfulRunDelayMs',
-    default: 10 * 60 * 1000 // 10 mins
-  },
-  findReplicaSetUpdatesJobLastSuccessfulRunDelayMs: {
-    doc: 'Max time delay since last find-replica-set-updates job successfully ran (milliseconds)',
-    format: 'nat',
-    env: 'findReplicaSetUpdatesJobLastSuccessfulRunDelayMs',
-    default: 10 * 60 * 1000 // 10 mins
-  },
-  disableSnapback: {
-    doc: 'True to not run any snapback queues (old state machine and old syncs)',
-    format: Boolean,
-    env: 'disableSnapback',
-    default: true
   },
   mergePrimaryAndSecondaryEnabled: {
     doc: 'True to enable issuing sync requests with sync mode = mergePrimaryAndSecondary',
@@ -767,12 +677,6 @@ const config = convict({
     env: 'otelCollectorUrl',
     default: '',
     sensitive: true
-  },
-  reconfigSPIdBlacklistString: {
-    doc: 'A comma separated list of sp ids of nodes to not reconfig onto. Used to create the `reconfigSPIdBlacklist` number[] config. Defaulted to prod foundation nodes and any node > 75% storage utilization.',
-    format: String,
-    env: 'reconfigSPIdBlacklistString',
-    default: '1,4,5,7,9,10,12,13,14,15,16,19,21,28,33,35,39,43,52,58,62'
   },
   overridePassword: {
     doc: 'Used to allow manual actions to be issued on foundation nodes only',
@@ -812,18 +716,6 @@ if (fs.existsSync(pathTo('contract-config.json'))) {
     dataRegistryAddress: dataContractConfig.registryAddress
   })
 }
-
-// Set reconfigSPIdBlacklist based off of reconfigSPIdBlacklistString
-config.set(
-  'reconfigSPIdBlacklist',
-  _.isEmpty(config.get('reconfigSPIdBlacklistString'))
-    ? []
-    : config
-        .get('reconfigSPIdBlacklistString')
-        .split(',')
-        .filter((e) => e)
-        .map((e) => parseInt(e))
-)
 
 // Perform validation and error any properties are not present on schema
 config.validate()

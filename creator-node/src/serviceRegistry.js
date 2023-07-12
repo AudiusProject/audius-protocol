@@ -39,7 +39,6 @@ class ServiceRegistry {
     this.prometheusRegistry = new PrometheusRegistry() // Service that tracks metrics
     this.libs = null // instance of Audius Libs
     this.stateMachineManager = null // Service that manages user states
-    this.snapbackSM = null // Responsible for recurring sync and reconfig operations
 
     // Queues
     this.monitoringQueue = null // Recurring job to monitor node state & performance metrics
@@ -50,14 +49,8 @@ class ServiceRegistry {
     this.syncQueue = null // Handles syncing data to users' replica sets
     this.syncImmediateQueue = null // Handles syncing manual immediate jobs
     this.asyncProcessingQueue = null // Handles all jobs that should be performed asynchronously. Currently handles track upload and track hand off
-    this.monitorStateQueue = null // Handles jobs for slicing batches of users and gathering data about them
-    this.findSyncRequestsQueue = null // Handles jobs for finding sync requests
-    this.findReplicaSetUpdatesQueue = null // Handles jobs for finding replica set updates
     this.cNodeEndpointToSpIdMapQueue = null // Handles jobs for updating CNodeEndpointToSpIdMap
     this.manualSyncQueue = null // Handles jobs for issuing a manual sync request
-    this.recurringSyncQueue = null // Handles jobs for issuing a recurring sync request
-    this.updateReplicaSetQueue = null // Handles jobs for updating a replica set
-    this.recoverOrphanedDataQueue = null // Handles jobs for finding+reconciling state on nodes outside of a user's replica set
     this.stateMonitoringManager = null // Handles all the queues for monitoring state of the system
     this.stateReconciliationManager = null // Handles all the queues for reconciliting state of the system
 
@@ -128,55 +121,14 @@ class ServiceRegistry {
     const { queue: sessionExpirationQueue } = this.sessionExpirationQueue
     const { queue: skippedCidsRetryQueue } = this.skippedCIDsRetryQueue
 
-    // These queues have very large inputs and outputs, so we truncate job
-    // data and results that are nested >=5 levels or contain strings >=10,000 characters
-    const monitorStateAdapter = new BullAdapter(this.monitorStateQueue, {
-      readOnlyMode: true
-    })
-    const findSyncRequestsAdapter = new BullAdapter(
-      this.findSyncRequestsQueue,
-      {
-        readOnlyMode: true
-      }
-    )
-    const findReplicaSetUpdatesAdapter = new BullAdapter(
-      this.findReplicaSetUpdatesQueue,
-      {
-        readOnlyMode: true
-      }
-    )
-    monitorStateAdapter.setFormatter(
-      'returnValue',
-      this._truncateBull.bind(this)
-    )
-    findSyncRequestsAdapter.setFormatter('data', this._truncateBull.bind(this))
-    findSyncRequestsAdapter.setFormatter(
-      'returnValue',
-      this._truncateBull.bind(this)
-    )
-    findReplicaSetUpdatesAdapter.setFormatter(
-      'data',
-      this._truncateBull.bind(this)
-    )
-    findReplicaSetUpdatesAdapter.setFormatter(
-      'returnValue',
-      this._truncateBull.bind(this)
-    )
-
     // Dashboard to view queues at /health/bull endpoint. See https://github.com/felixmosh/bull-board#hello-world
     const serverAdapter = new ExpressAdapter()
     createBullBoard({
       queues: [
-        monitorStateAdapter,
-        findSyncRequestsAdapter,
-        findReplicaSetUpdatesAdapter,
         new BullAdapter(this.cNodeEndpointToSpIdMapQueue, {
           readOnlyMode: true
         }),
         new BullAdapter(this.manualSyncQueue, { readOnlyMode: true }),
-        new BullAdapter(this.recurringSyncQueue, { readOnlyMode: true }),
-        new BullAdapter(this.updateReplicaSetQueue, { readOnlyMode: true }),
-        new BullAdapter(this.recoverOrphanedDataQueue, { readOnlyMode: true }),
         new BullAdapter(imageProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncProcessingQueue, { readOnlyMode: true }),
         new BullAdapter(syncImmediateProcessingQueue, { readOnlyMode: true }),
@@ -287,25 +239,13 @@ class ServiceRegistry {
     // Init StateMachineManager
     this.stateMachineManager = new StateMachineManager()
     const {
-      monitorStateQueue,
-      findSyncRequestsQueue,
-      findReplicaSetUpdatesQueue,
       cNodeEndpointToSpIdMapQueue,
       manualSyncQueue,
-      recurringSyncQueue,
-      updateReplicaSetQueue,
-      recoverOrphanedDataQueue,
       stateMonitoringManager,
       stateReconciliationManager
     } = await this.stateMachineManager.init(this.libs, this.prometheusRegistry)
-    this.monitorStateQueue = monitorStateQueue
-    this.findSyncRequestsQueue = findSyncRequestsQueue
-    this.findReplicaSetUpdatesQueue = findReplicaSetUpdatesQueue
     this.cNodeEndpointToSpIdMapQueue = cNodeEndpointToSpIdMapQueue
     this.manualSyncQueue = manualSyncQueue
-    this.recurringSyncQueue = recurringSyncQueue
-    this.updateReplicaSetQueue = updateReplicaSetQueue
-    this.recoverOrphanedDataQueue = recoverOrphanedDataQueue
     this.stateMonitoringManager = stateMonitoringManager
     this.stateReconciliationManager = stateReconciliationManager
 
@@ -346,20 +286,6 @@ class ServiceRegistry {
       this.logError('cNodeEndpointToSpIdMapQueue was empty - restarting it')
       await this.stateMonitoringManager.startEndpointToSpIdMapQueue(
         this.cNodeEndpointToSpIdMapQueue
-      )
-    }
-    if (await this._isQueueEmpty(this.monitorStateQueue)) {
-      this.logError('monitorStateQueue was empty - restarting it')
-      await this.stateMonitoringManager.startMonitorStateQueue(
-        this.monitorStateQueue,
-        this.libs.discoveryProvider.discoveryProviderEndpoint
-      )
-    }
-    if (await this._isQueueEmpty(this.recoverOrphanedDataQueue)) {
-      this.logError('recoverOrphanedDataQueue was empty - restarting it')
-      await this.stateReconciliationManager.startRecoverOrphanedDataQueue(
-        this.recoverOrphanedDataQueue,
-        this.libs.discoveryProvider.discoveryProviderEndpoint
       )
     }
   }

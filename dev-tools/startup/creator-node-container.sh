@@ -46,22 +46,15 @@ export port=4000
 export redisPort=6379
 
 # Sync / SnapbackSM configs
-export stateMonitoringQueueRateLimitInterval=60000
-export stateMonitoringQueueRateLimitJobsPerInterval=0
 export snapbackModuloBase=3
 export minimumDailySyncCount=5
 export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
-export snapbackHighestReconfigMode=PRIMARY_AND_OR_SECONDARIES
 export secondaryUserSyncDailyFailureCountThreshold=100
 export maxSyncMonitoringDurationInMs=10000                     # 10sec
 export skippedCIDsRetryQueueJobIntervalMs=30000                # 30sec in ms
-export monitorStateJobLastSuccessfulRunDelayMs=600000          # 10min in ms
-export findSyncRequestsJobLastSuccessfulRunDelayMs=600000      # 10min in ms
-export findReplicaSetUpdatesJobLastSuccessfulRunDelayMs=600000 # 10min in ms
 export fetchCNodeEndpointToSpIdMapIntervalMs=10000             #10sec in ms
 export enforceWriteQuorum=true
-export recoverOrphanedDataQueueRateLimitInterval=60000 #1min in ms
 export recoverOrphanedDataQueueRateLimitJobsPerInterval=1
 export mergePrimaryAndSecondaryEnabled=true
 export maxNumberSecondsPrimaryRemainsUnhealthy=30

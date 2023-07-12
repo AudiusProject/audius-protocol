@@ -16,7 +16,6 @@ import {
   clearFilePathsToDelete,
   deleteAllCNodeUserDataFromDisk
 } from '../../diskManager'
-import SyncHistoryAggregator from '../../snapbackSM/syncHistoryAggregator'
 import DBManager from '../../dbManager'
 import {
   shouldForceResync,
@@ -705,9 +704,6 @@ const handleSyncFromPrimary = async ({
         `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${CIDsThatFailedSaveFileOp.size} skipped.`
       )
 
-      // track that sync for this user was successful
-      await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
-
       // for final log check the _secondarySyncFromPrimary function
 
       return { result: 'success' }
@@ -744,7 +740,6 @@ const handleSyncFromPrimary = async ({
     }
   } catch (e: any) {
     tracing.recordException(e)
-    await SyncHistoryAggregator.recordSyncFail(wallet)
 
     // for final log check the _secondarySyncFromPrimary function
 

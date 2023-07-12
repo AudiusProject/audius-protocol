@@ -12,7 +12,6 @@ const {
   healthCheckDuration,
   configCheck
 } = require('./healthCheckComponentService')
-const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
@@ -28,28 +27,12 @@ const router = express.Router()
 
 const numberOfCPUs = os.cpus().length
 
-
 /**
  * Controller for `health_check/sync` route, calls
  * syncHealthCheckController
  */
-const syncHealthCheckController = async (req) => {
-  const response = await syncHealthCheck(serviceRegistry)
-
-  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const syncQueueJobsTotalMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'manual_waiting' },
-    response.manualWaitingCount
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'recurring_waiting' },
-    response.recurringWaitingCount
-  )
-
-  return successResponse(response)
+const syncHealthCheckController = async (_req) => {
+  return successResponse({ message: 'route is deprecated' })
 }
 
 /**

@@ -278,29 +278,6 @@ async function _handleIssueSyncRequest({
         }
       }
     }
-
-    // Add syncs to be returned to later sync recovered orphaned data from this primary to secondaries
-    if (syncMode === SYNC_MODES.MergePrimaryThenWipeSecondary) {
-      ;[userReplicaSet.secondary1, userReplicaSet.secondary2]
-        .filter(Boolean)
-        .forEach((secondary) => {
-          syncReqsToEnqueue.push({
-            syncType: SyncType.Recurring,
-            syncMode: SYNC_MODES.SyncSecondaryFromPrimary,
-            syncRequestParameters: {
-              baseURL: secondary!,
-              url: '/sync',
-              method: 'post',
-              data: {
-                creator_node_endpoint: userReplicaSet.primary!,
-                sync_type: SyncType.Recurring,
-                wallet: [userWallet]
-              }
-            },
-            parentSpanContext: tracing.currentSpanContext()
-          })
-        })
-    }
   }
 
   /**
