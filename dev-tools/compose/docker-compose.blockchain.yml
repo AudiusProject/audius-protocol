@@ -132,6 +132,7 @@ services:
     #     reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
     #     reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
     #     valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
+    #     fake_usdc_token_private_key: "${SOLANA_USDC_TOKEN_MINT_SECRET_KEY}"
     volumes:
       - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
