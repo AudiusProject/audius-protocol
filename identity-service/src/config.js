@@ -868,6 +868,12 @@ const config = convict({
     format: String,
     env: 'ipApiKey',
     default: ''
+  },
+  solanaUSDCMintAddress: {
+    doc: 'Mint address of the USDC token on Solana',
+    format: String,
+    env: 'solanaUSDCMintAddress',
+    default: ''
   }
 })
 
@@ -908,6 +914,7 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 
     solanaMintAddress: solanaContractConfig.splToken,
+    solanaUSDCMintAddress: solanaContractConfig.fakeUSDCMint,
     solanaClaimableTokenProgramAddress:
       solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
