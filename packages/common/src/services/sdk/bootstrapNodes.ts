@@ -1,5 +1,20 @@
 import { Env } from '../env'
 
+const devBootstrapNodes = [
+  {
+    delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
+    endpoint: 'http://audius-protocol-creator-node-1'
+  },
+  {
+    delegateOwnerWallet: '0x1B569e8f1246907518Ff3386D523dcF373e769B6',
+    endpoint: 'http://audius-protocol-creator-node-2'
+  },
+  {
+    delegateOwnerWallet: '0xCBB025e7933FADfc7C830AE520Fb2FD6D28c1065',
+    endpoint: 'http://audius-protocol-creator-node-3'
+  }
+]
+
 const stagingBootstrapNodes = [
   {
     endpoint: 'https://usermetadata.staging.audius.co',
@@ -311,4 +326,4 @@ export const getBootstrapNodes = (env: Env) =>
     ? stagingBootstrapNodes
     : env.ENVIRONMENT === 'production'
     ? productionBootstrapNodes
-    : undefined
+    : devBootstrapNodes
