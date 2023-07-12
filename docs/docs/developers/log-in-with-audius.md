@@ -47,8 +47,8 @@ Don't have an API key? Get one by creating a developer app on the Audius [Settin
 
 ## Examples
 
-- Demo with React - [Demo app](https://j2jx6f.csb.app/) | [Code](https://codesandbox.io/s/log-in-with-audius-demo-j2jx6f?file=/src/App.js)
-- Demo with vanilla JS - [Demo app](https://xkogl3.csb.app/) | [Code](https://codesandbox.io/s/log-in-with-audius-demo-vanilla-js-xkogl3?file=/index.html)
+- Demo with React - [Demo app](https://nffqd5.csb.app/) | [Code](https://codesandbox.io/s/log-in-with-audius-demo-723-nffqd5?file=/package.json:170-183)
+- Demo with vanilla JS - [Demo app](https://f68xgn.csb.app/) | [Code](https://codesandbox.io/s/log-in-with-audius-demo-vanilla-js-723-f68xgn?file=/index.html)
 - [Log In Button Generator](https://9ncjui.csb.app/)
 
 ## Full Reference
@@ -189,7 +189,7 @@ Once a user has authorized your app with the `write` scope, you can easily perfo
 
 Simply initialize the SDK with your API Key and Secret and begin using the various write methods.
 
-```js title="Server-side JS
+```js title="Server-side JS"
 const audiusSdk = sdk({
   apiKey: "Your API Key goes here",
   apiSecret: "Your API Secret goes here",
@@ -203,7 +203,7 @@ const track = await audiusSdk.tracks.saveTrack({
 
 :::warning
 
-Do NOT do this if you are running the SDK on the client side, as this will make your API Secret accessible to anyone who can look at the code.
+Do NOT do this if you are running the SDK on the client side, as this will expose your API Secret.
 
 :::
 
