@@ -16,12 +16,6 @@ export const GET_NODE_USERS_DEFAULT_PAGE_SIZE = 100_000
 // Timeout for fetching a clock value for a single user (2 seconds)
 export const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000
 
-// Timeout for fetching batch clock values (10 seconds)
-export const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 1000 * 10
-
-// Max number of attempts to fetch clock statuses from /users/batch_clock_status
-export const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
-
 // Number of users to process in each batch when calculating reconfigs
 export const FIND_REPLICA_SET_UPDATES_BATCH_SIZE = 50
 

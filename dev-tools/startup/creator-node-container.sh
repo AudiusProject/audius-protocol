@@ -70,9 +70,6 @@ export maxNumberSecondsSecondaryRemainsUnhealthy=5
 # Number of missed blocks after which we would consider a discovery node unhealthy
 export discoveryNodeUnhealthyBlockDiff=10
 
-# Maximum number of wallets the /users/batch_clock_status route will accept at one time
-export maxBatchClockStatusBatchSize=5
-
 export entityManagerAddress="0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B"
 
 # Premium content

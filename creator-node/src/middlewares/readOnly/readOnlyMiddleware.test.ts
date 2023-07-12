@@ -141,37 +141,4 @@ describe('Test read-only middleware', function () {
     )
     assert.deepStrictEqual(nextCalled, false)
   })
-
-  it('Should allow request on excluded route even if read-only is enabled', function () {
-    const method = 'POST'
-    const isReadOnlyMode = true
-    const spIDNotDefined = false
-    config.set('isReadOnlyMode', isReadOnlyMode)
-    config.set('spID', 1)
-    const originalUrl = '/users/batch_clock_status'
-    let nextCalled = false
-
-    const logger = loggerFactory()
-    const req = {
-      method,
-      originalUrl,
-      logger
-    } as unknown as Request
-    const res = resFactory() as unknown as Response
-
-    readOnlyMiddleware(req, res, function () {
-      nextCalled = true
-    })
-
-    assert.deepStrictEqual(
-      canProceedInReadOnlyMode(
-        isReadOnlyMode,
-        spIDNotDefined,
-        method,
-        originalUrl
-      ),
-      true
-    )
-    assert.deepStrictEqual(nextCalled, true)
-  })
 })

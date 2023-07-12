@@ -6,8 +6,7 @@ const EXCLUDED_ROUTES: string[] = [
   '/health_check',
   '/batch_cids_exist',
   '/batch_image_cids_exist',
-  '/batch_id_to_cid',
-  '/users/batch_clock_status'
+  '/batch_id_to_cid'
 ]
 
 /**

@@ -170,7 +170,7 @@ const config = convict({
     format: String,
     env: 'endpointRateLimits',
     default:
-      '{"/image_upload":{"post":[{"expiry":60,"max":100}]},"/users":{"post":[{"expiry":60,"max":100}]},"/users/login/challenge":{"post":[{"expiry":60,"max":100}]},"/users/logout":{"post":[{"expiry":60,"max":100}]},"/users/batch_clock_status":{"post":[{"expiry":60,"max":100}]},"/track_content":{"post":[{"expiry":60,"max":100}]},"/tracks/metadata":{"post":[{"expiry":60,"max":100}]},"/tracks":{"post":[{"expiry":60,"max":100}]},"/audius_users/metadata":{"post":[{"expiry":60,"max":100}]},"/audius_users":{"post":[{"expiry":60,"max":100}]},"/sync":{"post":[{"expiry":60,"max":500}]},"/vector_clock_sync":{"post":[{"expiry":60,"max":500}]}}'
+      '{"/image_upload":{"post":[{"expiry":60,"max":100}]},"/users":{"post":[{"expiry":60,"max":100}]},"/users/login/challenge":{"post":[{"expiry":60,"max":100}]},"/users/logout":{"post":[{"expiry":60,"max":100}]},"/track_content":{"post":[{"expiry":60,"max":100}]},"/tracks/metadata":{"post":[{"expiry":60,"max":100}]},"/tracks":{"post":[{"expiry":60,"max":100}]},"/audius_users/metadata":{"post":[{"expiry":60,"max":100}]},"/audius_users":{"post":[{"expiry":60,"max":100}]},"/sync":{"post":[{"expiry":60,"max":500}]},"/vector_clock_sync":{"post":[{"expiry":60,"max":500}]}}'
   },
   rateLimitingAudiusUserReqLimit: {
     doc: 'Total requests per hour rate limit for /audius_user routes',
@@ -640,12 +640,6 @@ const config = convict({
     format: 'nat',
     env: 'maximumTranscodingWaitingJobs',
     default: os.cpus().length
-  },
-  maxBatchClockStatusBatchSize: {
-    doc: 'Maximum number of wallets the /users/batch_clock_status route will accept at one time',
-    format: 'nat',
-    env: 'maxBatchClockStatusBatchSize',
-    default: 5000
   },
   audiusContentInfraSetup: {
     doc: 'How the content node infrastructure stack is running, injected by the infra directly, not to be defined manually',
