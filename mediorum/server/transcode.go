@@ -116,31 +116,32 @@ func (ss *MediorumServer) startTranscoder() {
 func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
 	newStatus := JobStatusNew
 	busyStatus := JobStatusBusy
-	statusesToQuery := []string{newStatus, busyStatus, JobStatusError}
+	errorStatus := JobStatusError
 	if retranscode {
 		// only look for retranscode jobs
 		newStatus = JobStatusRetranscode
 		busyStatus = JobStatusBusyRetranscode
-		statusesToQuery = []string{newStatus, busyStatus}
+		errorStatus = JobStatusErrorRetranscode
 	}
 
 	uploads := []*Upload{}
-	ss.crud.DB.Where("status in ?", statusesToQuery).Find(&uploads)
+	ss.crud.DB.Where("status in ?", []string{newStatus, busyStatus, errorStatus}).Find(&uploads)
 
 	for _, upload := range uploads {
 		if upload.ErrorCount > 100 {
 			continue
 		}
 
-		myIdx := slices.Index(upload.Mirrors, myHost)
+		mirrors := upload.Mirrors
 		if retranscode {
 			if upload.TranscodedMirrors == nil {
 				ss.logger.Warn("missing full transcoded mp3 mirrors in retranscode job. skipping", "id", upload.ID)
 				continue
 			}
-			myIdx = slices.Index(upload.TranscodedMirrors, myHost)
+			mirrors = upload.TranscodedMirrors
 		}
 
+		myIdx := slices.Index(mirrors, myHost)
 		if myIdx == -1 {
 			continue
 		}
@@ -195,7 +196,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 		}
 
 		// take turns retrying errors
-		if upload.Status == JobStatusError && upload.ErrorCount%len(upload.Mirrors) == myIdx {
+		if upload.Status == errorStatus && upload.ErrorCount%len(mirrors) == myIdx {
 			logger.Info("retrying transcode error", "error_count", upload.ErrorCount)
 			work <- upload
 		}
@@ -221,12 +222,15 @@ const (
 )
 
 const (
-	JobStatusNew             = "new"
-	JobStatusRetranscode     = "retranscode_preview"
-	JobStatusBusy            = "busy"
-	JobStatusBusyRetranscode = "busy_retranscode_preview"
-	JobStatusDone            = "done"
-	JobStatusError           = "error"
+	JobStatusNew   = "new"
+	JobStatusError = "error"
+	JobStatusBusy  = "busy"
+
+	JobStatusRetranscode      = "retranscode_preview"
+	JobStatusBusyRetranscode  = "busy_retranscode_preview"
+	JobStatusErrorRetranscode = "error_retranscode_preview"
+
+	JobStatusDone = "done"
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
@@ -250,19 +254,22 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 	return temp, nil
 }
 
-type errorCallback func(err error, info ...string) error
+type errorCallback func(err error, uploadStatus string, info ...string) error
 
-func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *exec.Cmd, logger *slog.Logger) error {
-	cmd.Stdout = os.Stdout
+func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *exec.Cmd, logger *slog.Logger, onError errorCallback) error {
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return onError(err, upload.Status, "cmd.StdoutPipe")
+	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return onError(err, "cmd.StderrPipe")
+		return onError(err, upload.Status, "cmd.StderrPipe")
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		return onError(err, "cmd.Start")
+		return onError(err, upload.Status, "cmd.Start")
 	}
 
 	// WaitGroup to make sure all stdout/stderr processing is done before cmd.Wait() is called
@@ -320,14 +327,11 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 		logger.Error("stderr lines: " + stderrBuf.String())
 	}()
 
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
+	wg.Wait()
 
 	err = cmd.Wait()
 	if err != nil {
-		return err
+		return onError(err, upload.Status, "cmd.Wait")
 	}
 
 	return nil
@@ -349,14 +353,14 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		"-progress", "pipe:2",
 		destPath)
 
-	err := ss.transcodeAudio(upload, destPath, cmd, logger)
+	err := ss.transcodeAudio(upload, destPath, cmd, logger, onError)
 	if err != nil {
-		return onError(err, "transcoding audio")
+		return err
 	}
 
 	dest, err := os.Open(destPath)
 	if err != nil {
-		return onError(err, "os.Open")
+		return onError(err, upload.Status, "os.Open")
 	}
 	defer dest.Close()
 
@@ -364,12 +368,12 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 	// attempt to forward to an assigned node
 	resultHash, err := computeFileCID(dest)
 	if err != nil {
-		return onError(err, "computeFileCID")
+		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
 	upload.TranscodedMirrors, err = ss.replicateFile(resultHash, dest)
 	if err != nil {
-		return onError(err, "replicateFile")
+		return onError(err, upload.Status, "replicateFile")
 	}
 
 	upload.TranscodeResults["320"] = resultKey
@@ -416,14 +420,14 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		"-progress", "pipe:2",
 		destPath)
 
-	err := ss.transcodeAudio(upload, destPath, cmd, logger)
+	err := ss.transcodeAudio(upload, destPath, cmd, logger, onError)
 	if err != nil {
-		return onError(err, "transcoding audio")
+		return err
 	}
 
 	dest, err := os.Open(destPath)
 	if err != nil {
-		return onError(err, "opening "+destPath)
+		return onError(err, upload.Status, "os.Open")
 	}
 	defer dest.Close()
 
@@ -431,12 +435,12 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 	// attempt to forward to an assigned node
 	resultHash, err := computeFileCID(dest)
 	if err != nil {
-		return onError(err, "computeFileCID")
+		return onError(err, upload.Status, "computeFileCID")
 	}
 	resultKey := resultHash
 	mirrors, err := ss.replicateFile(resultHash, dest)
 	if err != nil {
-		return onError(err, "replicating file")
+		return onError(err, upload.Status, "replicating file")
 	}
 
 	upload.TranscodeResults[upload.SelectedPreview.String] = resultKey
@@ -449,7 +453,8 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
-	if upload.Status == JobStatusRetranscode || upload.Status == JobStatusBusyRetranscode {
+	// Differentiate between normal transcode vs retranscode jobs
+	if upload.Status == JobStatusRetranscode || upload.Status == JobStatusBusyRetranscode || upload.Status == JobStatusErrorRetranscode {
 		upload.Status = JobStatusBusyRetranscode
 	} else {
 		upload.Status = JobStatusBusy
@@ -464,10 +469,14 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
-	onError := func(err error, info ...string) error {
+	onError := func(err error, uploadStatus string, info ...string) error {
 		errMsg := fmt.Errorf("%s %s", err, strings.Join(info, " "))
 		upload.Error = errMsg.Error()
-		upload.Status = JobStatusError
+		if uploadStatus == JobStatusRetranscode || uploadStatus == JobStatusBusyRetranscode {
+			upload.Status = JobStatusErrorRetranscode
+		} else {
+			upload.Status = JobStatusError
+		}
 		upload.ErrorCount = upload.ErrorCount + 1
 		ss.crud.Update(upload)
 		logger.Error("transcode error", "err", errMsg.Error())
@@ -476,7 +485,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 	temp, err := ss.getKeyToTempFile(fileHash)
 	if err != nil {
-		return onError(err, "getting file")
+		return onError(err, upload.Status, "getting file")
 	}
 	defer temp.Close()
 
@@ -489,11 +498,11 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
 			resultHash, err := computeFileCID(out)
 			if err != nil {
-				return onError(err, "computeFileCID")
+				return onError(err, upload.Status, "computeFileCID")
 			}
 			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
-				return onError(err, "replicate")
+				return onError(err, upload.Status, "replicate")
 			}
 			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
@@ -509,11 +518,11 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
 			resultHash, err := computeFileCID(out)
 			if err != nil {
-				return onError(err, "computeFileCID")
+				return onError(err, upload.Status, "computeFileCID")
 			}
 			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
-				return onError(err, "replicate")
+				return onError(err, upload.Status, "replicate")
 			}
 			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
