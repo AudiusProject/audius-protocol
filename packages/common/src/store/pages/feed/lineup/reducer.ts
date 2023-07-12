@@ -8,7 +8,6 @@ export const initialState = {
   ...initialLineupState,
   prefix: PREFIX,
   dedupe: true,
-  containsDeleted: false,
   entryIds: new Set([])
 }
 

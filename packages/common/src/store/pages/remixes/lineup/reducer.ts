@@ -4,7 +4,6 @@ import { PREFIX } from 'store/pages/remixes/lineup/actions'
 
 export const initialState = {
   ...initialLineupState,
-  containsDeleted: false,
   prefix: PREFIX
 }
 
