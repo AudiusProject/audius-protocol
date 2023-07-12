@@ -71,20 +71,7 @@ func main() {
 		testClient := initClient()
 		loadtest.RunMain(testClient)
 	case "reaper":
-		reaperCmd := flag.NewFlagSet("reaper", flag.ExitOnError)
-		moveFiles := reaperCmd.Bool("move", false, "move files (default false)")
-		logDir := reaperCmd.String("logDir", "/tmp/reaper/logs", "directory to store job logs (default: /tmp/reaper/logs)")
-		moveDir := reaperCmd.String("moveDir", "/tmp/reaper/to_delete", "directory to move files staged for deletion (default: /tmp/reaper/to_delete)")
-		walkDir := reaperCmd.String("walkDir", "/tmp/reaper/to_walk", "directory to walk (default: /tmp/reaper/to_walk)")
-		reaperCmd.Parse(os.Args[2:])
-
-		config := reaper.Config{
-			MoveFiles: *moveFiles,
-			MoveDir:   *moveDir,
-			WalkDir:   *walkDir,
-			LogDir:    *logDir,
-		}
-		reaper.RunMain(config)
+		reaper.RunMain()
 	default:
 		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
 	}

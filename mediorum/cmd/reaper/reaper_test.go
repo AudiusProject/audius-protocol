@@ -1,7 +1,6 @@
 package reaper
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -11,23 +10,22 @@ import (
 	"testing"
 )
 
-var (
-	testConfig Config
-)
-
 func init() {
+	fmt.Println("reaper_test.go init() called")
+
 	// config
-	testConfig = Config{
+	config = &Config{
 		MoveFiles: true,
-		MoveDir:   "/tmp/reaper/to_delete",
-		WalkDir:   "/tmp/reaper/to_walk",
-		LogDir:    "/tmp/reaper/logs",
+		MoveDir:   "/tmp/reaper_test/to_delete",
+		WalkDir:   "/tmp/reaper_test/to_walk",
+		LogDir:    "/tmp/reaper_test/logs",
 		isTest:    true,
+		dbUrl:     dbUrl,
 	}
-	fmt.Printf("config: %+v\n", testConfig)
+	fmt.Printf("config: %+v\n", config)
 
 	// fixture files
-	cmd := exec.Command("cp", "-r", "./fixtures/", "/tmp/reaper")
+	cmd := exec.Command("cp", "-r", "./fixtures/", "/tmp/reaper_test")
 	_, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -35,10 +33,10 @@ func init() {
 	}
 
 	moveDirs := []string{
-		filepath.Join(testConfig.MoveDir, "not_in_db"),
-		filepath.Join(testConfig.MoveDir, "track"),
-		testConfig.WalkDir,
-		testConfig.LogDir,
+		filepath.Join(config.MoveDir, "not_in_db"),
+		filepath.Join(config.MoveDir, "track"),
+		config.WalkDir,
+		config.LogDir,
 	}
 
 	for _, dir := range moveDirs {
@@ -54,23 +52,17 @@ func init() {
 
 func TestReaper(t *testing.T) {
 
-	dbUrl := os.Getenv("dbUrl")
-	if dbUrl == "" {
-		dbUrl = "postgres://postgres:example@localhost:5454/m1"
-	}
+	var (
+		b   *Batcher
+		err error
+	)
 
-	var err error
-	conn, err := sql.Open("postgres", fmt.Sprintf("%s?sslmode=disable", dbUrl))
+	b, err = NewBatcher(config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer b.Close()
 
-	// // b := NewBatcher(&testConfig)
-	b := NewBatcher(conn, &testConfig)
-
-	// fixture db data
-	// TODO test for duplicates
 	query := `
 	DROP TABLE IF EXISTS "FilesTest";
 	CREATE TABLE "FilesTest" (
@@ -78,31 +70,31 @@ func TestReaper(t *testing.T) {
 		type TEXT
 	)`
 
-	_, err2 := b.Conn.Exec(query)
-	if err2 != nil {
-		log.Fatal("Failed to create table:", err)
+	_, err = b.DB.Exec(query)
+	if err != nil {
+		log.Fatal("Failed to create table: ", err)
 	}
 
 	data := []FileRow{
-		{StoragePath: fmt.Sprintf("%s/111/Qmaaa", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/111/Qmbbb", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/111/Qmccc", testConfig.WalkDir), Type: "copy320"},
-		{StoragePath: fmt.Sprintf("%s/222/Qmaaa", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/222/Qmbbb", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/222/Qmccc", testConfig.WalkDir), Type: "copy320"},
-		{StoragePath: fmt.Sprintf("%s/333/Qmaaa", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/333/Qmbbb", testConfig.WalkDir), Type: "track"},
-		{StoragePath: fmt.Sprintf("%s/333/Qmccc", testConfig.WalkDir), Type: "copy320"},
+		{StoragePath: fmt.Sprintf("%s/111/Qmaaa", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/111/Qmbbb", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/111/Qmccc", config.WalkDir), Type: "copy320"},
+		{StoragePath: fmt.Sprintf("%s/222/Qmaaa", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/222/Qmbbb", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/222/Qmccc", config.WalkDir), Type: "copy320"},
+		{StoragePath: fmt.Sprintf("%s/333/Qmaaa", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/333/Qmbbb", config.WalkDir), Type: "track"},
+		{StoragePath: fmt.Sprintf("%s/333/Qmccc", config.WalkDir), Type: "copy320"},
 	}
 
 	for _, row := range data {
-		_, err := b.Conn.Exec("INSERT INTO \"FilesTest\" (\"storagePath\", type) VALUES ($1, $2)", row.StoragePath, row.Type)
+		_, err := b.DB.Exec("INSERT INTO \"FilesTest\" (\"storagePath\", type) VALUES ($1, $2)", row.StoragePath, row.Type)
 		if err != nil {
-			log.Println("Failed to insert row:", err)
+			log.Println("Failed to insert row: ", err)
 		}
 	}
 
-	b.Walk(testConfig.WalkDir, true)
+	b.Walk()
 
 	expected := map[string]map[string]int{
 		"copy320": {

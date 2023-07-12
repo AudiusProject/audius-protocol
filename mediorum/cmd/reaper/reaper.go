@@ -2,8 +2,8 @@ package reaper
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,17 +12,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	NOT_IN_DB_LOG_FILE = "files_on_disk_not_in_db.txt"
-	BATCH_SIZE         = 1000
-	IS_TEST            = true
-)
-
 var (
 	FILE_TYPES = []string{"track", "copy320", "metadata", "image", "dir", "not_in_db"}
-	conn       *sql.DB
-	outfile    *os.File
-	config     Config
+	config     *Config
+	dbUrl      string
+	reaperCmd  *flag.FlagSet
 )
 
 type FileRow struct {
@@ -35,7 +29,67 @@ type Config struct {
 	MoveDir   string
 	WalkDir   string
 	LogDir    string
+	dbUrl     string
 	isTest    bool `default:"false"`
+	batchSize int  `default:"1000"`
+}
+
+type Batcher struct {
+	DB        *sql.DB
+	Outfile   *os.File
+	Iteration int
+	Batch     []string
+	Config    *Config
+	counter   map[string]map[string]int
+}
+
+func NewBatcher(config *Config) (*Batcher, error) {
+
+	var (
+		db      *sql.DB
+		err     error
+		outfile *os.File
+	)
+
+	db, err = sql.Open("postgres", fmt.Sprintf("%s?sslmode=disable", config.dbUrl))
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	outfile, err = os.Create(filepath.Join(config.LogDir, "files_on_disk_not_in_db.txt"))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Batcher{
+		DB:        db,
+		Outfile:   outfile,
+		Iteration: 0,
+		Batch:     make([]string, 0, config.batchSize),
+		Config:    config,
+		counter:   initCounter(),
+	}, nil
+}
+
+func (b *Batcher) Close() error {
+	var err error
+
+	err = b.DB.Close()
+	if err != nil {
+		return err
+	}
+
+	err = b.Outfile.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func initCounter() map[string]map[string]int {
@@ -51,64 +105,81 @@ func initCounter() map[string]map[string]int {
 	return counter
 }
 
-func RunMain(_runConfig Config) {
-	// TODO: init config
-	// config = _runConfig
+func init() {
+	fmt.Println("reaper.go init() called")
 
-	// dbUrl := os.Getenv("dbUrl")
-	// if dbUrl == "" {
-	// 	dbUrl = "postgres://postgres:example@localhost:5454/m1"
-	// }
-
-	// // TODO: fix
-	// var err error
-	// conn, err = sql.Open("postgres", fmt.Sprintf("%s?sslmode=disable", dbUrl))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer conn.Close()
-
-	// outfile, err = os.Create(filepath.Join(config.LogDir, "files_on_disk_not_in_db.txt"))
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer outfile.Close()
-
-	// // batcher := NewBatcher(&config)
-	// batcher := NewBatcher(conn, &config)
-
-	// err = batcher.Walk(config.WalkDir, config.MoveFiles)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// reportAndExit()
-}
-
-type Batcher struct {
-	Conn      *sql.DB
-	Outfile   *os.File
-	Iteration int
-	Batch     []string
-	Config    *Config
-	counter   map[string]map[string]int
-}
-
-// func NewBatcher(c *Config) *Batcher {
-func NewBatcher(conn *sql.DB, config *Config) *Batcher {
-	return &Batcher{
-		Conn:      conn,
-		Outfile:   outfile,
-		Iteration: 0,
-		Batch:     make([]string, 0, BATCH_SIZE),
-		Config:    config,
-		counter:   initCounter(),
+	dbUrl = os.Getenv("dbUrl")
+	if dbUrl == "" {
+		dbUrl = "postgres://postgres:example@localhost:5454/m1"
 	}
 }
 
-func (b *Batcher) Walk(directory string, moveFiles bool) error {
+func _init() {
+	// parsing these flags in init() causes `go test` to fail
+	reaperCmd = flag.NewFlagSet("reaper", flag.ExitOnError)
+	moveFiles := reaperCmd.Bool("move", false, "move files (default false)")
+	logDir := reaperCmd.String("logDir", "/tmp/reaper/logs", "directory to store job logs (default: /tmp/reaper/logs)")
+	moveDir := reaperCmd.String("moveDir", "/tmp/reaper/to_delete", "directory to move files staged for deletion (default: /tmp/reaper/to_delete)")
+	walkDir := reaperCmd.String("walkDir", "/tmp/reaper/to_walk", "directory to walk (default: /tmp/reaper/to_walk)")
+	reaperCmd.Parse(os.Args[2:])
 
-	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
+	config = &Config{
+		MoveFiles: *moveFiles,
+		MoveDir:   *moveDir,
+		WalkDir:   *walkDir,
+		LogDir:    *logDir,
+		dbUrl:     dbUrl,
+	}
+	fmt.Printf("config: %+v\n", config)
+
+	moveDirs := []string{
+		filepath.Join(config.MoveDir, "not_in_db"),
+		filepath.Join(config.MoveDir, "track"),
+		config.WalkDir,
+		config.LogDir,
+	}
+
+	for _, dir := range moveDirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				fmt.Println("Failed to create directory:", err)
+				return
+			}
+		}
+	}
+}
+
+func main() {
+	fmt.Println("reaper.go main() called")
+}
+
+func RunMain() {
+
+	_init()
+
+	var (
+		b   *Batcher
+		err error
+	)
+
+	b, err = NewBatcher(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer b.Close()
+
+	err = b.Walk()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	report(b)
+}
+
+func (b *Batcher) Walk() error {
+
+	err := filepath.Walk(b.Config.WalkDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -116,8 +187,8 @@ func (b *Batcher) Walk(directory string, moveFiles bool) error {
 		if info.Mode().IsRegular() {
 			b.Batch = append(b.Batch, path)
 
-			if len(b.Batch) == BATCH_SIZE {
-				b.handleBatch(moveFiles)
+			if len(b.Batch) == b.Config.batchSize {
+				b.handleBatch()
 			}
 		}
 
@@ -129,13 +200,13 @@ func (b *Batcher) Walk(directory string, moveFiles bool) error {
 	}
 
 	if len(b.Batch) > 0 {
-		b.handleBatch(moveFiles)
+		b.handleBatch()
 	}
 
 	return nil
 }
 
-func (b *Batcher) handleBatch(moveFiles bool) {
+func (b *Batcher) handleBatch() {
 	b.Iteration++
 	fmt.Printf("iteration:        %d\n", b.Iteration)
 
@@ -144,7 +215,7 @@ func (b *Batcher) handleBatch(moveFiles bool) {
 	fmt.Printf("files_not_in_db:  %d\n\n", len(rowsNotInDB))
 
 	for _, filePath := range rowsNotInDB {
-		b.handleFileNotInDB(filePath, moveFiles)
+		b.handleFileNotInDB(filePath)
 	}
 
 	for _, row := range rowsInDB {
@@ -157,11 +228,11 @@ func (b *Batcher) handleBatch(moveFiles bool) {
 func (b *Batcher) checkDB() ([]FileRow, []string) {
 	pathsSQL := strings.Join(quoteStrings(b.Batch), ",")
 	tableName := "Files"
-	if IS_TEST {
+	if config.isTest {
 		tableName = "FilesTest"
 	}
 	query := fmt.Sprintf("SELECT \"storagePath\", \"type\" FROM \"%s\" WHERE \"storagePath\" IN (%s)", tableName, pathsSQL)
-	rows, err := b.Conn.Query(query)
+	rows, err := b.DB.Query(query)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -191,7 +262,7 @@ func (b *Batcher) checkDB() ([]FileRow, []string) {
 	return rowsInDB, removeEmptyStrings(rowsNotInDB)
 }
 
-func (b *Batcher) handleFileNotInDB(filePath string, moveFiles bool) {
+func (b *Batcher) handleFileNotInDB(filePath string) {
 	defer func() {
 		if r := recover(); r != nil {
 			b.counter["not_in_db"]["error_count"]++
@@ -209,7 +280,7 @@ func (b *Batcher) handleFileNotInDB(filePath string, moveFiles bool) {
 
 	b.Outfile.WriteString(filePath + "\n")
 
-	if moveFiles {
+	if b.Config.MoveFiles {
 		// Move file to a staging delete directory
 		// Retain all subdirs in case we want to move back before deleting
 		moveFile(filePath, filepath.Join(filepath.Join(b.Config.MoveDir, "not_in_db"), filePath))
@@ -263,94 +334,4 @@ func (b *Batcher) handleFileInDB(row FileRow) {
 			}
 		}
 	}
-}
-
-func quoteStrings(strings []string) []string {
-	quotedStrings := make([]string, len(strings))
-	for i, str := range strings {
-		quotedStrings[i] = fmt.Sprintf("'%s'", str)
-	}
-	return quotedStrings
-}
-
-func removeEmptyStrings(strings []string) []string {
-	filteredStrings := make([]string, 0)
-	for _, str := range strings {
-		if str != "" {
-			filteredStrings = append(filteredStrings, str)
-		}
-	}
-	return filteredStrings
-}
-
-func contains(strings []string, str string) bool {
-	for _, s := range strings {
-		if s == str {
-			return true
-		}
-	}
-	return false
-}
-
-func moveFile(source, destination string) error {
-	err := os.MkdirAll(filepath.Dir(destination), 0755)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	// fmt.Println("moving from:", source, destination)
-	err = os.Rename(source, destination)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
-	return nil
-}
-
-func isDirectoryEmpty(dirPath string) (bool, error) {
-	dir, err := os.Open(dirPath)
-	if err != nil {
-		return false, err
-	}
-	defer dir.Close()
-
-	_, err = dir.Readdirnames(1)
-	if err == io.EOF {
-		return true, nil
-	}
-
-	return false, err
-}
-
-func report(b *Batcher) {
-	gbNotInDB := float64(b.counter["not_in_db"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbSegments := float64(b.counter["track"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbCopy320 := float64(b.counter["copy320"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbImage := float64(b.counter["image"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbMetadata := float64(b.counter["metadata"]["bytes_used"]) / (1024 * 1024 * 1024)
-	gbDir := float64(b.counter["dir"]["bytes_used"]) / (1024 * 1024 * 1024)
-
-	fmt.Printf("NOT IN DB COUNT  : %d\n", b.counter["not_in_db"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["not_in_db"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n", gbNotInDB)
-	fmt.Printf("SEGMENTS  COUNT  : %d\n", b.counter["track"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["track"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n", gbSegments)
-	fmt.Printf("COPY320   COUNT  : %d\n", b.counter["copy320"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["copy320"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n", gbCopy320)
-	fmt.Printf("IMAGE     COUNT  : %d\n", b.counter["image"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["image"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n", gbImage)
-	fmt.Printf("METADATA  COUNT  : %d\n", b.counter["metadata"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["metadata"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n", gbMetadata)
-	fmt.Printf("DIR       COUNT  : %d\n", b.counter["dir"]["count"])
-	fmt.Printf("          ERRORS : %d\n", b.counter["dir"]["error_count"])
-	fmt.Printf("          GB USED: %.2f\n\n", gbDir)
-
-	totalGBUsed := gbNotInDB + gbSegments + gbCopy320 + gbImage + gbMetadata + gbDir
-	fmt.Printf("TOTAL     GB USED: %.2f\n", totalGBUsed)
 }
