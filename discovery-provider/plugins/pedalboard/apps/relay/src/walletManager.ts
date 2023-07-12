@@ -15,44 +15,47 @@ type LockableWallet = {
 
 export class WalletManager {
     // pubKey => LockableWallet
-    private lockableWallets: Map<string, LockableWallet>
+    private lockableWallets: LockableWallet[]
 
     constructor(wallets: string) {
         const parsedWallets = parseRelayerWallets(wallets)
         if (parsedWallets.length === 0) throw new Error("No relay wallets configured")
-        const lockableWallets = new Map<string, LockableWallet>()
-        for (const wallet of parsedWallets) {
-            lockableWallets.set(wallet.publicKey, { wallet, locked: false, lockExpiration: undefined })
-        }
+        const lockableWallets = parsedWallets.map((wallet) => ({ wallet, locked: false, lockExpiration: undefined }))
         this.lockableWallets = lockableWallets
     }
     
     // randomly select next available wallet
     async selectNextWallet(): Promise<RelayerWallet> {
-        const unlockedWallets = Array.from(this.lockableWallets).filter(([_, wallet]) => !wallet.locked)
+        const unlockedWallets = this.lockableWallets.filter((wallet) => !wallet.locked)
         const randomIndex = Math.floor(Math.random() * unlockedWallets.length)
-        return unlockedWallets[randomIndex][1].wallet
+        const wallet = unlockedWallets[randomIndex].wallet
+        this.lock({ publicKey: wallet.publicKey })
+        return wallet
+    }
+
+    lock({ publicKey }: { publicKey: string}) {
+        const lockableWalletIndex = this.lockableWallets.findIndex((wallet) => wallet.wallet.publicKey === publicKey)
+        if (lockableWalletIndex === -1) throw new Error("Attempting to lock wallet that doesn't exist")
+        const lockableWallet = this.lockableWallets[lockableWalletIndex]
+        // five minutes in the future
+        const expiration = new Date(new Date().getTime() + 5 * 60000);
+        this.lockableWallets[lockableWalletIndex] = { locked: true, lockExpiration: expiration, wallet: lockableWallet.wallet }
     }
 
     release({ publicKey } : { publicKey: string } ) {
-        const lockableWallet = this.lockableWallets.get(publicKey)
-        if (lockableWallet === undefined) throw new Error("Attempting to release wallet that doesn't exist")
-        const wallet = lockableWallet.wallet
-        if (wallet === undefined) throw new Error("Wallet in lockable wallet is undefined")
-        this.lockableWallets.set(publicKey, { wallet, locked: false, lockExpiration: undefined })
+        const lockableWalletIndex = this.lockableWallets.findIndex((wallet) => wallet.wallet.publicKey === publicKey)
+        if (lockableWalletIndex === -1) throw new Error("Attempting to release wallet that doesn't exist")
+        const lockableWallet = this.lockableWallets[lockableWalletIndex]
+        this.lockableWallets[lockableWalletIndex] = { locked: false, lockExpiration: undefined, wallet: lockableWallet.wallet }
     }
 
     releaseTimedOutWallets() {
-        for (const [pubKey, lockableWallet] of this.lockableWallets) {
-            const { locked, lockExpiration } = lockableWallet
+        for (const lockableWallet of this.lockableWallets) {
+            const { locked, lockExpiration, wallet } = lockableWallet
             if (locked && lockExpiration) {
                 // expiration date has passed
                 if (new Date() > lockExpiration) {
-                    const lockableWallet = this.lockableWallets.get(pubKey)
-                    if (lockableWallet === undefined) throw new Error("Attempting to release wallet that doesn't exist")
-                    const wallet = lockableWallet.wallet
-                    if (wallet === undefined) throw new Error("Wallet in lockable wallet is undefined")
-                    this.lockableWallets.set(pubKey, { wallet, locked: false, lockExpiration: undefined })
+                    this.release({ publicKey: wallet.publicKey })
                 }
             }
         }
