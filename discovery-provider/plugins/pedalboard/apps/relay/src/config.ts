@@ -16,10 +16,10 @@ export const readConfig = (): Config => {
     dotenv.config()
     return {
         environment: process.env.environment || "local",
-        minGasPrice: parseInt(process.env.minGasPrice || "1000"),
-        highGasPrice: parseInt(process.env.minGasPrice || "100000000"),
-        ganacheGasPrice: parseInt(process.env.minGasPrice || "0"),
-        defaultGasLimit: parseInt(process.env.minGasPrice || "0"),
+        minGasPrice: parseInt(process.env.minGasPrice || (10 * Math.pow(10, 9)).toString()),
+        highGasPrice: parseInt(process.env.minGasPrice || (25 * Math.pow(10, 9)).toString()),
+        ganacheGasPrice: parseInt(process.env.minGasPrice || "39062500000"),
+        defaultGasLimit: parseInt(process.env.minGasPrice || "0xf7100"),
         rpcEndpoint: process.env.rpcEndpoint || "http://localhost:8545",
         entityManagerContractAddress: process.env.entityManagerContractAddress || "",
         entityManagerContractRegistryKey: process.env.entityManagerContractRegistryKey || "EntityManager",
