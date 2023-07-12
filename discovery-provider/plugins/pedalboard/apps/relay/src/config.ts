@@ -9,7 +9,7 @@ export type Config = {
     rpcEndpoint: string,
     entityManagerContractAddress: string,
     entityManagerContractRegistryKey: string,
-    relayWallets: string,
+    relayerWallets: string,
 }
 
 export const readConfig = (): Config => {
@@ -23,6 +23,6 @@ export const readConfig = (): Config => {
         rpcEndpoint: process.env.rpcEndpoint || "http://localhost:8545",
         entityManagerContractAddress: process.env.entityManagerContractAddress || "",
         entityManagerContractRegistryKey: process.env.entityManagerContractRegistryKey || "EntityManager",
-        relayWallets: process.env.relayWallets || '[]'
+        relayerWallets: process.env.relayerWallets || '[]'
     }
 }

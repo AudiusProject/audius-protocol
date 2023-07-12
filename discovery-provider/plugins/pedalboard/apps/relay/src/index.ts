@@ -14,9 +14,8 @@ export type SharedData = {
 const main = async () => {
   const config = readConfig()
   const web3 = new ethers.providers.JsonRpcProvider()
-  const wallets = new WalletManager(config.relayWallets)
-
-  logger.info("read config, setup web3, and created wallets")
+  const wallets = new WalletManager(config.relayerWallets)
+  logger.info({ wallets })
 
   const appData = {
     config,
@@ -40,5 +39,4 @@ const main = async () => {
     .run();
 };
 
-
-main().catch(logger.error);
+main().catch(logger.error.bind(logger));

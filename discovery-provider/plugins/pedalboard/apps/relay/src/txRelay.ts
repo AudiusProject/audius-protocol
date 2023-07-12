@@ -14,13 +14,13 @@ export type RelayedTransaction = {
 
 export const relayTransaction = async (app: App<SharedData>, req: RelayRequestType): Promise<RelayedTransaction> => {
     const requestId = uuidv4()
-    const log = (msg?: string | undefined, ...args: any[]) => logger.info(msg, requestId, ...args)
+    const log = (obj: unknown, msg?: string | undefined, ...args: any[]) => logger.info(obj, msg, requestId, ...args)
     const { web3, wallets, config } = app.viewAppData()
     const { entityManagerContractAddress, entityManagerContractRegistryKey, defaultGasLimit } = config
     const { encodedABI, contractRegistryKey } = req
     const gasLimit = req.gasLimit ?? defaultGasLimit
 
-    log("new relay request", req)
+    log({ msg: "new relay request", req })
 
     // validate transaction and select wallet
     validateSupportedContract([entityManagerContractRegistryKey], contractRegistryKey)
@@ -39,7 +39,7 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const data = encodedABI
     const gasPrice = await web3.getGasPrice() // shouldn't need with ACDC
 
-    log("gathered tx params", nonce, gasPrice)
+    log({ msg: "gathered tx params", nonce, gasPrice })
 
     // assemble, sign, and send transaction
     const transaction = { nonce, gasLimit, gasPrice, to, value, data }

@@ -1,6 +1,8 @@
-import pinoLogger from "pino"
+import pino, { stdTimeFunctions } from "pino"
 
 // set config for logger here
-const logger = pinoLogger()
-
-export { logger }
+export const logger = pino({
+    name: `relay`,
+    base: undefined,
+    timestamp: stdTimeFunctions.isoTime
+  })
