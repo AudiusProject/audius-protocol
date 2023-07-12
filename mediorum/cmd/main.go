@@ -21,6 +21,7 @@ func getenvWithDefault(key string, fallback string) string {
 }
 
 func initClient() *loadtest.TestClient {
+	fmt.Println("init client")
 	registeredPeers := []server.Peer{}
 	var err error
 
@@ -69,9 +70,9 @@ func main() {
 		metricsCmd := flag.NewFlagSet("metrics", flag.ExitOnError)
 		metricsCmd.Parse(os.Args[2:])
 		testClient := initClient()
-		loadtest.RunMain(testClient)
+		loadtest.RunM(testClient)
 	case "reaper":
-		reaper.RunMain()
+		reaper.Run()
 	default:
 		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
 	}

@@ -12,6 +12,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const BATCH_SIZE = 1000
+
 var (
 	FILE_TYPES = []string{"track", "copy320", "metadata", "image", "dir", "not_in_db"}
 	config     *Config
@@ -30,8 +32,7 @@ type Config struct {
 	WalkDir   string
 	LogDir    string
 	dbUrl     string
-	isTest    bool `default:"false"`
-	batchSize int  `default:"1000"`
+	isTest    bool
 }
 
 type Batcher struct {
@@ -61,6 +62,23 @@ func NewBatcher(config *Config) (*Batcher, error) {
 		return nil, err
 	}
 
+	reaperDirs := []string{
+		filepath.Join(config.MoveDir, "not_in_db"),
+		filepath.Join(config.MoveDir, "track"),
+		config.WalkDir,
+		config.LogDir,
+	}
+
+	for _, dir := range reaperDirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				fmt.Println("Failed to create directory:", err)
+				return nil, err
+			}
+		}
+	}
+
 	outfile, err = os.Create(filepath.Join(config.LogDir, "files_on_disk_not_in_db.txt"))
 	if err != nil {
 		return nil, err
@@ -70,7 +88,7 @@ func NewBatcher(config *Config) (*Batcher, error) {
 		DB:        db,
 		Outfile:   outfile,
 		Iteration: 0,
-		Batch:     make([]string, 0, config.batchSize),
+		Batch:     make([]string, 0, BATCH_SIZE),
 		Config:    config,
 		counter:   initCounter(),
 	}, nil
@@ -115,7 +133,6 @@ func init() {
 }
 
 func _init() {
-	// parsing these flags in init() causes `go test` to fail
 	reaperCmd = flag.NewFlagSet("reaper", flag.ExitOnError)
 	moveFiles := reaperCmd.Bool("move", false, "move files (default false)")
 	logDir := reaperCmd.String("logDir", "/tmp/reaper/logs", "directory to store job logs (default: /tmp/reaper/logs)")
@@ -130,33 +147,17 @@ func _init() {
 		LogDir:    *logDir,
 		dbUrl:     dbUrl,
 	}
+
 	fmt.Printf("config: %+v\n", config)
-
-	moveDirs := []string{
-		filepath.Join(config.MoveDir, "not_in_db"),
-		filepath.Join(config.MoveDir, "track"),
-		config.WalkDir,
-		config.LogDir,
-	}
-
-	for _, dir := range moveDirs {
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			err := os.MkdirAll(dir, 0755)
-			if err != nil {
-				fmt.Println("Failed to create directory:", err)
-				return
-			}
-		}
-	}
 }
 
 func main() {
 	fmt.Println("reaper.go main() called")
 }
 
-func RunMain() {
+func Run() {
 
-	_init()
+	_init() // flag parsing in init() causes `go test` to fail
 
 	var (
 		b   *Batcher
@@ -187,7 +188,7 @@ func (b *Batcher) Walk() error {
 		if info.Mode().IsRegular() {
 			b.Batch = append(b.Batch, path)
 
-			if len(b.Batch) == b.Config.batchSize {
+			if len(b.Batch) == BATCH_SIZE {
 				b.handleBatch()
 			}
 		}
