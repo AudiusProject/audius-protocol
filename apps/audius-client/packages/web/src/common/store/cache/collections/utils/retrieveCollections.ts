@@ -146,16 +146,13 @@ function* selectEntriesTimestamp(ids: (ID | string)[]) {
 
 export function* retrieveCollectionByPermalink(
   permalink: string,
-  /**
-   * whether or not to fetch the tracks inside the playlist
-   */
-  fetchTracks = false,
-  /**
-   * whether or not fetching this collection requires it to have all its tracks.
-   * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
-   */
-  requiresAllTracks = false
+  config?: RetrieveCollectionsConfig
 ) {
+  const {
+    fetchTracks = false,
+    requiresAllTracks = false,
+    forceRetrieveFromSource = false
+  } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield* call(retrieve, {
     ids: [permalink],
@@ -215,7 +212,7 @@ export function* retrieveCollectionByPermalink(
     },
     kind: Kind.COLLECTIONS,
     idField: 'playlist_id',
-    forceRetrieveFromSource: false,
+    forceRetrieveFromSource,
     shouldSetLoading: true,
     deleteExistingEntry: false
   })
