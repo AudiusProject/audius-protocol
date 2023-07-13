@@ -167,7 +167,7 @@ export const DeletePlaylistSchema = z
 
 export type DeletePlaylistRequest = z.input<typeof DeletePlaylistSchema>
 
-export const SavePlaylistSchema = z
+export const FavoritePlaylistSchema = z
   .object({
     userId: HashId,
     playlistId: HashId,
@@ -183,16 +183,16 @@ export const SavePlaylistSchema = z
   })
   .strict()
 
-export type SavePlaylistRequest = z.input<typeof SavePlaylistSchema>
+export type FavoritePlaylistRequest = z.input<typeof FavoritePlaylistSchema>
 
-export const UnsavePlaylistSchema = z
+export const UnfavoritePlaylistSchema = z
   .object({
     userId: HashId,
     playlistId: HashId
   })
   .strict()
 
-export type UnsavePlaylistRequest = z.input<typeof UnsavePlaylistSchema>
+export type UnfavoritePlaylistRequest = z.input<typeof UnfavoritePlaylistSchema>
 
 export const RepostPlaylistSchema = z
   .object({

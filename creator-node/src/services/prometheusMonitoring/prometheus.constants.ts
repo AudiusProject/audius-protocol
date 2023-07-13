@@ -5,8 +5,7 @@ import { exponentialBucketsRange } from './prometheusSetupUtils'
 import {
   QUEUE_NAMES as STATE_MACHINE_JOB_NAMES,
   SyncType,
-  SYNC_MODES,
-  UpdateReplicaSetJobResult
+  SYNC_MODES
   // eslint-disable-next-line import/no-unresolved
 } from '../stateMachineManager/stateMachineConstants'
 import * as config from '../../config'
@@ -164,24 +163,6 @@ export const METRIC_LABELS = Object.freeze({
       'failure_import_not_contiguous',
       'failure_inconsistent_clock'
     ]
-  },
-
-  [METRIC_NAMES[
-    `STATE_MACHINE_${STATE_MACHINE_JOB_NAMES.UPDATE_REPLICA_SET}_JOB_DURATION_SECONDS_HISTOGRAM`
-  ]]: {
-    // Whether or not the user's replica set was updated during this job
-    issuedReconfig: ['false', 'true'],
-    // The type of reconfig, if any, that happened during this job (or that would happen if reconfigs were enabled)
-    reconfigType: [
-      'one_secondary', // Only one secondary was replaced in the user's replica set
-      'multiple_secondaries', // Both secondaries were replaced in the user's replica set
-      'primary_and_or_secondaries', // A secondary gets promoted to new primary and one or both secondaries get replaced with new random nodes
-      'null' // No change was made to the user's replica set because the job short-circuited before selecting or was unable to select new node(s)
-    ],
-    // https://stackoverflow.com/questions/18111657/how-to-get-names-of-enum-entries
-    result: Object.values(UpdateReplicaSetJobResult).filter(
-      (value) => typeof value === 'string'
-    ) as string[]
   },
 
   [METRIC_NAMES.FIND_SYNC_REQUEST_COUNTS_GAUGE]: {
