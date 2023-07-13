@@ -363,12 +363,7 @@ func (ss *MediorumServer) Stop() {
 }
 
 func (ss *MediorumServer) pollForSeedingCompletion() {
-	if ss.crud.GetPercentNodesSeeded() > PercentSeededThreshold {
-		ss.isSeeding = false
-		return
-	}
-
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
 	for range ticker.C {
 		if ss.crud.GetPercentNodesSeeded() > PercentSeededThreshold {
 			ss.isSeeding = false
