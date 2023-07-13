@@ -52,14 +52,16 @@ export const NewVersionPrompt = ({
       <Text variant='h1' style={styles.text}>
         {contentText}
       </Text>
-      <Button
-        title={buttonText}
-        size='large'
-        icon={IconDownload}
-        iconPosition='left'
-        url={url}
-        onPress={onPress}
-      />
+      {!url && !onPress ? null : (
+        <Button
+          title={buttonText}
+          size='large'
+          icon={IconDownload}
+          iconPosition='left'
+          url={url}
+          onPress={onPress}
+        />
+      )}
     </View>
   )
 }
