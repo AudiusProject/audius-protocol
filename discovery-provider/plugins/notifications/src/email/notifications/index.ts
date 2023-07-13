@@ -103,7 +103,7 @@ export const getUsersCanNotifyQuery = async (
     .limit(pageCount)
     .orderBy('Users.blockchainUserId')
 
-export const appNotificationsSql = `
+const appNotificationsSql = `
 WITH latest_user_seen AS (
   SELECT DISTINCT ON (user_id)
     user_id,
@@ -408,7 +408,6 @@ const processGroupOfEmails = async (
     Object.keys(users),
     remoteConfig
   )
-
   const groupedNotifications = groupNotifications(notifications, users)
 
   const currentUtcTime = moment.utc()
