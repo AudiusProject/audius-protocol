@@ -281,6 +281,29 @@ const notificationMap = {
       </span>
     )
   },
+  ['usdc_purchase_seller'](notification) {
+    const entityName = notification.entity.name
+    const [buyerUser] = notification.users
+    const amount = notification.amount
+    return (
+      <span className={'notificationText'}>
+        <BodyText
+          text={`Congrats, ${buyerUser.name} just bought your track ${entityName} for ${amount} USDC!`}
+        />
+      </span>
+    )
+  },
+  ['usdc_purchase_buyer'](notification) {
+    const entityName = notification.entity.name
+    const [sellerUser] = notification.users
+    return (
+      <span className={'notificationText'}>
+        <BodyText
+          text={`You just purchased ${entityName} from ${sellerUser.name}!`}
+        />
+      </span>
+    )
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (

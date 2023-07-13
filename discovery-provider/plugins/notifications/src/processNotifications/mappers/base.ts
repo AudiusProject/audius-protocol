@@ -1,5 +1,7 @@
 import { Knex } from 'knex'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
+import { EntityType } from '../../email/notifications/types'
 
 export abstract class BaseNotification<Type> {
   notification: Type
@@ -10,6 +12,73 @@ export abstract class BaseNotification<Type> {
     this.notification = notification
     this.dnDB = dnDB
     this.identityDB = identityDB
+  }
+
+  async fetchEntities(entityIds: number[], entityType: string) {
+    switch (entityType) {
+      case EntityType.Track: {
+        const res: Array<{ track_id: number; title: string }> = await this.dnDB
+          .select('track_id', 'title')
+          .from<TrackRow>('tracks')
+          .where('is_current', true)
+          .whereIn(
+            'track_id',
+            entityIds.map((id) => id.toString())
+          )
+        const tracks = res.reduce((acc, track) => {
+          acc[track.track_id] = { title: track.title }
+          return acc
+        }, {} as Record<number, { title: string }>)
+        return tracks
+      }
+      case EntityType.Playlist: {
+        const res: Array<{
+          playlist_id: number
+          playlist_name: string
+          is_album: boolean
+        }> = await this.dnDB
+          .select('playlist_id', 'playlist_name', 'is_album')
+          .from<PlaylistRow>('playlists')
+          .where('is_current', true)
+          .whereIn(
+            'playlist_id',
+            entityIds.map((id) => id.toString())
+          )
+        const playlists = res.reduce((acc, playlist) => {
+          acc[playlist.playlist_id] = {
+            playlist_name: playlist.playlist_name,
+            is_album: playlist.is_album
+          }
+          return acc
+        }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
+        return playlists
+      }
+      default:
+        console.error(`Fetching entity type ${entityType} not supported`)
+    }
+  }
+
+  async getUsersBasicInfo(userIds: Array<number>) {
+    const res: Array<{
+      user_id: number
+      name: string
+      is_deactivated: boolean
+    }> = await this.dnDB
+      .select('user_id', 'name', 'is_deactivated')
+      .from<UserRow>('users')
+      .where('is_current', true)
+      .whereIn(
+        'user_id',
+        userIds.map((id) => id.toString())
+      )
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
+      return acc
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    return users
   }
 
   async incrementBadgeCount(userId: number) {

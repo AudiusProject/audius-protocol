@@ -75,37 +75,12 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     let entityType
     let entityName
 
+    const entities = this.fetchEntities([this.repostItemId], this.repostType)
     if (this.repostType === EntityType.Track) {
-      const res: Array<{ track_id: number; title: string }> = await this.dnDB
-        .select('track_id', 'title')
-        .from<TrackRow>('tracks')
-        .where('is_current', true)
-        .whereIn('track_id', [this.repostItemId])
-      const tracks = res.reduce((acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      }, {} as Record<number, { title: string }>)
-
       entityType = EntityType.Track
-      entityName = tracks[this.repostItemId]?.title
+      entityName = entities[this.repostItemId]?.title
     } else {
-      const res: Array<{
-        playlist_id: number
-        playlist_name: string
-        is_album: boolean
-      }> = await this.dnDB
-        .select('playlist_id', 'playlist_name', 'is_album')
-        .from<PlaylistRow>('playlists')
-        .where('is_current', true)
-        .whereIn('playlist_id', [this.repostItemId])
-      const playlists = res.reduce((acc, playlist) => {
-        acc[playlist.playlist_id] = {
-          playlist_name: playlist.playlist_name,
-          is_album: playlist.is_album
-        }
-        return acc
-      }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
-      const playlist = playlists[this.repostItemId]
+      const playlist = entities[this.repostItemId]
       entityType = playlist?.is_album ? EntityType.Album : EntityType.Playlist
       entityName = playlist?.playlist_name
     }
