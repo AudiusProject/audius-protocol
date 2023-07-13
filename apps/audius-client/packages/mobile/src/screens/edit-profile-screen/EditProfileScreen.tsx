@@ -33,7 +33,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   coverPhoto: {
     height: 96,
     width: '100%',
-    borderRadius: 0
+    borderRadius: 0,
+    aspectRatio: undefined
   },
   profilePicture: {
     position: 'absolute',
