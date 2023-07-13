@@ -293,3 +293,57 @@ func getenvWithDefault(key string, fallback string) string {
 	}
 	return val
 }
+
+// fetch registered nodes from chain every 30 minutes and restart if they've changed
+func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider) {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
+	ticker := time.NewTicker(1 * time.Minute) // TODO: Change to 30
+	for range ticker.C {
+		var peers, signers []server.Peer
+		var err error
+
+		eg := new(errgroup.Group)
+		eg.Go(func() error {
+			peers, err = g.Peers()
+			return err
+		})
+		eg.Go(func() error {
+			signers, err = g.Signers()
+			return err
+		})
+		if err := eg.Wait(); err != nil {
+			panic(err)
+		}
+
+		peersChanged := false
+		if len(peers) != len(ss.Config.Peers) {
+			peersChanged = true
+		} else {
+			for i, peer := range peers {
+				if peer.Host != ss.Config.Peers[i].Host || peer.Wallet != ss.Config.Peers[i].Wallet {
+					peersChanged = true
+					break
+				}
+			}
+		}
+
+		signersChanged := false
+		if len(signers) != len(ss.Config.Signers) {
+			signersChanged = true
+		} else {
+			for i, signer := range signers {
+				if signer.Host != ss.Config.Signers[i].Host || signer.Wallet != ss.Config.Signers[i].Wallet {
+					signersChanged = true
+					break
+				}
+			}
+		}
+
+		if peersChanged || signersChanged || true { // TODO: Remove || true
+			ss.Config.Peers = peers
+			ss.Config.Signers = signers
+			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers))
+			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
+		}
+	}
+}

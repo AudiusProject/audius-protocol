@@ -11,12 +11,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm/clause"
 )
 
 type PeerClient struct {
 	Host     string
+	Seeded   bool
 	outbox   chan []byte
 	crudr    *Crudr
 	logger   *slog.Logger
@@ -124,11 +126,13 @@ func (p *PeerClient) doSweep() error {
 
 	resp, err := client.Do(req)
 	if err != nil {
+		p.Seeded = true // we can't reach this peer, so we're not able to seed any further
 		return fmt.Errorf("request failed: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
+		p.Seeded = true // we can't reach this peer, so we're not able to seed any further
 		return fmt.Errorf("bad status: %d", resp.StatusCode)
 	}
 
@@ -148,12 +152,27 @@ func (p *PeerClient) doSweep() error {
 		}
 	}
 
+	// seeding is complete once there are no more ulids to sweep
+	if len(ops) == 0 {
+		p.Seeded = true
+	}
+
 	// set cursor
 	{
 		upsertClause := clause.OnConflict{UpdateAll: true}
 		err := p.crudr.DB.Clauses(upsertClause).Create(&Cursor{Host: host, LastULID: lastUlid}).Error
 		if err != nil {
 			p.logger.Info("failed to set cursor", "err", err)
+		}
+	}
+
+	// seeding is complete if the last ulid is within the last hour
+	parsedULID, err := ulid.Parse(lastUlid)
+	if err == nil {
+		ms := int64(parsedULID.Time())
+		t := time.Unix(ms/1000, (ms%1000)*1000000)
+		if time.Since(t) < time.Hour*1 {
+			p.Seeded = true
 		}
 	}
 
