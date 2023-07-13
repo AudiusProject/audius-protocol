@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
@@ -296,7 +297,7 @@ func getenvWithDefault(key string, fallback string) string {
 	return val
 }
 
-// fetch registered nodes from chain every 30 minutes and restart if they've changed
+// fetch registered nodes from chain / The Graph every 30 minutes and restart if they've changed
 func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
 	ticker := time.NewTicker(30 * time.Minute)
@@ -318,31 +319,19 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 			continue
 		}
 
-		peersChanged := false
-		if len(peers) != len(ss.Config.Peers) {
-			peersChanged = true
-		} else {
-			for i, peer := range peers {
-				if peer.Host != ss.Config.Peers[i].Host || peer.Wallet != ss.Config.Peers[i].Wallet {
-					peersChanged = true
-					break
-				}
-			}
+		var combined, configCombined []string
+
+		for _, peer := range append(peers, signers...) {
+			combined = append(combined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(peer.Host)), strings.ToLower(peer.Wallet)))
 		}
 
-		signersChanged := false
-		if len(signers) != len(ss.Config.Signers) {
-			signersChanged = true
-		} else {
-			for i, signer := range signers {
-				if signer.Host != ss.Config.Signers[i].Host || signer.Wallet != ss.Config.Signers[i].Wallet {
-					signersChanged = true
-					break
-				}
-			}
+		for _, configPeer := range append(ss.Config.Peers, ss.Config.Signers...) {
+			configCombined = append(configCombined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(configPeer.Host)), strings.ToLower(configPeer.Wallet)))
 		}
 
-		if peersChanged || signersChanged {
+		slices.Sort(combined)
+		slices.Sort(configCombined)
+		if !slices.Equal(combined, configCombined) {
 			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers))
 			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
 		}
