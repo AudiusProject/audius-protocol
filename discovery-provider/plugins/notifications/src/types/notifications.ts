@@ -228,6 +228,7 @@ export type AnnouncementNotification = {
   title: string
   short_description: string
   long_description?: string
+  push_body?: string
 }
 
 export type NotificationData =
