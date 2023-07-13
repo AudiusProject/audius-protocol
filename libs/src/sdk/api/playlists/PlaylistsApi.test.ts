@@ -337,9 +337,9 @@ describe('PlaylistsApi', () => {
     })
   })
 
-  describe('savePlaylist', () => {
-    it('saves a playlist if valid metadata is provided', async () => {
-      const result = await playlists.savePlaylist({
+  describe('favoritePlaylist', () => {
+    it('favorites a playlist if valid metadata is provided', async () => {
+      const result = await playlists.favoritePlaylist({
         userId: '7eP5n',
         playlistId: 'x5pJ3Aj'
       })
@@ -352,7 +352,7 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.savePlaylist({
+        await playlists.favoritePlaylist({
           userId: '7eP5n',
           playlistId: 1 as any
         })
@@ -360,9 +360,9 @@ describe('PlaylistsApi', () => {
     })
   })
 
-  describe('unsavePlaylist', () => {
-    it('unsaves a playlist if valid metadata is provided', async () => {
-      const result = await playlists.unsavePlaylist({
+  describe('unfavoritePlaylist', () => {
+    it('unfavorites a playlist if valid metadata is provided', async () => {
+      const result = await playlists.unfavoritePlaylist({
         userId: '7eP5n',
         playlistId: 'x5pJ3Aj'
       })
@@ -375,7 +375,7 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.unsavePlaylist({
+        await playlists.unfavoritePlaylist({
           userId: '7eP5n',
           playlistId: 1 as any
         })

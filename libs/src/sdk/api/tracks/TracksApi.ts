@@ -14,12 +14,12 @@ import {
   DeleteTrackSchema,
   RepostTrackRequest,
   RepostTrackSchema,
-  SaveTrackRequest,
-  SaveTrackSchema,
+  FavoriteTrackRequest,
+  FavoriteTrackSchema,
   UnrepostTrackRequest,
   UnrepostTrackSchema,
-  UnsaveTrackRequest,
-  UnsaveTrackSchema,
+  UnfavoriteTrackRequest,
+  UnfavoriteTrackSchema,
   UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
@@ -261,14 +261,14 @@ export class TracksApi extends TracksApiWithoutStream {
   /**
    * Favorite a track
    */
-  async saveTrack(
-    requestParameters: SaveTrackRequest,
+  async favoriteTrack(
+    requestParameters: FavoriteTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, trackId, metadata } = parseRequestParameters(
-      'saveTrack',
-      SaveTrackSchema
+      'favoriteTrack',
+      FavoriteTrackSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
@@ -288,14 +288,14 @@ export class TracksApi extends TracksApiWithoutStream {
   /**
    * Unfavorite a track
    */
-  async unsaveTrack(
-    requestParameters: UnsaveTrackRequest,
+  async unfavoriteTrack(
+    requestParameters: UnfavoriteTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, trackId } = parseRequestParameters(
-      'unsaveTrack',
-      UnsaveTrackSchema
+      'unfavoriteTrack',
+      UnfavoriteTrackSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
