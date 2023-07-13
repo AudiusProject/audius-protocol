@@ -103,13 +103,15 @@ export const getUsersCanNotifyQuery = async (
     .limit(pageCount)
     .orderBy('Users.blockchainUserId')
 
-const appNotificationsSql = `
+export const appNotificationsSql = `
 WITH latest_user_seen AS (
   SELECT DISTINCT ON (user_id)
     user_id,
     seen_at
   FROM
     notification_seen
+  WHERE
+    user_id = ANY(:user_ids)
   ORDER BY
     user_id,
     seen_at desc
