@@ -458,7 +458,6 @@ export const audiusBackend = ({
     if (imagePreloader) {
       try {
         const preloaded = await imagePreloader(imageUrl)
-        console.log('we doing this actually?')
         if (preloaded) {
           return imageUrl
         }

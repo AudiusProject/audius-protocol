@@ -19,7 +19,7 @@ export type Image = {
   size?: number
   fileType?: string
   url: string
-  file?: string
+  file?: string | File
 }
 
 export type EditPlaylistValues = Collection & {

@@ -1,15 +1,15 @@
 import WebWorker from 'services/WebWorker'
 import averageRgbWorkerFile from 'workers/averageRgb.worker.js'
-import createPlaylistArtworkWorkerFile from 'workers/createPlaylistArtwork.worker.js'
 import dominantColorWorkerFile from 'workers/dominantColor.worker.js'
+import generatePlaylistArtworkWorkerFile from 'workers/generatePlaylistArtwork.worker.js'
 import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
 import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 
 const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false)
 const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false)
 const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false)
-const createPlaylistArtworkWorker = new WebWorker(
-  createPlaylistArtworkWorkerFile,
+const generatePlaylistArtworkWorker = new WebWorker(
+  generatePlaylistArtworkWorkerFile,
   false
 )
 
@@ -52,9 +52,9 @@ export const gifPreview = async (imageUrl: string) => {
   return gifPreviewWorker.getResult(imageUrl)
 }
 
-export const createPlaylistArtwork = async (imageUrls: string[]) => {
-  createPlaylistArtworkWorker.call({ imageUrls }, imageUrls[0])
-  const artworkFile: File = await createPlaylistArtworkWorker.getResult(
+export const generatePlaylistArtwork = async (imageUrls: string[]) => {
+  generatePlaylistArtworkWorker.call({ imageUrls }, imageUrls[0])
+  const artworkFile: File = await generatePlaylistArtworkWorker.getResult(
     imageUrls[0]
   )
   const artworkUrl = URL.createObjectURL(artworkFile)

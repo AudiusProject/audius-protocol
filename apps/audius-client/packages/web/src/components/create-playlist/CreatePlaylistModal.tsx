@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common'
+import { EditPlaylistValues, Name } from '@audius/common'
 import {
   Modal,
   SegmentedControl,
@@ -16,7 +16,7 @@ import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'
 import FolderForm from './FolderForm'
-import PlaylistForm, { PlaylistFormFields } from './PlaylistForm'
+import PlaylistForm from './PlaylistForm'
 
 const messages = {
   createPlaylistTabTitle: 'Create Playlist',
@@ -30,7 +30,7 @@ type CreatePlaylistModalProps = {
   visible?: boolean
   hideFolderTab?: boolean
   onCancel: () => void
-  onCreatePlaylist: (metadata: PlaylistFormFields) => void
+  onCreatePlaylist: (metadata: EditPlaylistValues) => void
   onCreateFolder: (name: string) => void
 }
 

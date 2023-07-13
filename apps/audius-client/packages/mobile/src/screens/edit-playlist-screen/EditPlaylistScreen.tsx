@@ -50,7 +50,11 @@ export const EditPlaylistScreen = () => {
   }
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      initialStatus={{ imageLoading: false, imageGenerating: false }}
+      onSubmit={handleSubmit}
+    >
       {(formikProps) => (
         <EditPlaylistNavigator
           {...formikProps}

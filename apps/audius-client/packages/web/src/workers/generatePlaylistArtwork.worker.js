@@ -8,7 +8,7 @@ export default () => {
   /**
    * Given 4 images, return a new image with each image taking up the four corners
    */
-  const createPlaylistArtwork = ({ imageUrls }) => {
+  const generatePlaylistArtwork = ({ imageUrls }) => {
     const canvasWidth = 1000 // Adjust the width and height as per your requirements
     const canvasHeight = 1000
     const imageWidth = canvasWidth / 2
@@ -50,6 +50,6 @@ export default () => {
   // eslint-disable-next-line
   self.addEventListener('message', (e) => {
     if (!e) return
-    createPlaylistArtwork(JSON.parse(e.data))
+    generatePlaylistArtwork(JSON.parse(e.data))
   })
 }
