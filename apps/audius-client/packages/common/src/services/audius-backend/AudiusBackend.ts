@@ -599,14 +599,8 @@ export const audiusBackend = ({
 
   async function sanityChecks(audiusLibs: any) {
     try {
-      const sanityCheckOptions = {
-        skipRollover: getRemoteVar(BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK)
-      }
-      const sanityChecks = new SanityChecks(audiusLibs, sanityCheckOptions)
-      await sanityChecks.run(
-        null,
-        getBlockList(StringKeys.CONTENT_NODE_BLOCK_LIST)
-      )
+      const sanityChecks = new SanityChecks(audiusLibs)
+      await sanityChecks.run()
     } catch (e) {
       console.error(`Sanity checks failed: ${e}`)
     }
@@ -670,13 +664,9 @@ export const audiusBackend = ({
 
     const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
       userNodeUrl,
-      /* lazyConnect */ true,
       /* passList */ null,
       contentNodeBlockList,
-      monitoringCallbacks.contentNode,
-      /* writeQuorumEnabled */ await getFeatureEnabled(
-        FeatureFlags.WRITE_QUORUM_ENABLED
-      )
+      monitoringCallbacks.contentNode
     )
 
     try {
@@ -1657,31 +1647,7 @@ export const audiusBackend = ({
       setLocalStorageItem('is-mobile-user', 'true')
     }
 
-    const storageV2SignupEnabled = await getFeatureEnabled(
-      FeatureFlags.STORAGE_V2_SIGNUP
-    )
-    if (storageV2SignupEnabled) {
-      return await audiusLibs.Account.signUpV2(
-        email,
-        password,
-        metadata,
-        formFields.profilePicture,
-        formFields.coverPhoto,
-        hasWallet,
-        getHostUrl(),
-        (eventName: string, properties: Record<string, unknown>) =>
-          recordAnalytics({ eventName, properties }),
-        {
-          Request: Name.CREATE_USER_BANK_REQUEST,
-          Success: Name.CREATE_USER_BANK_SUCCESS,
-          Failure: Name.CREATE_USER_BANK_FAILURE
-        },
-        feePayerOverride,
-        true
-      )
-    }
-    // Returns { userId, error, phase }
-    return await audiusLibs.Account.signUp(
+    return await audiusLibs.Account.signUpV2(
       email,
       password,
       metadata,
@@ -1724,17 +1690,6 @@ export const audiusBackend = ({
     await waitForLibsInit()
     const host = getHostUrl()
     return audiusLibs.Account.generateRecoveryLink({ host })
-  }
-
-  async function associateAudiusUserForAuth(email: string, handle: string) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateAudiusUserForAuth(email, handle)
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
   }
 
   async function emailInUse(email: string) {
@@ -3247,7 +3202,6 @@ export const audiusBackend = ({
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
     audiusLibs: audiusLibs as AudiusLibsType,
-    associateAudiusUserForAuth,
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
