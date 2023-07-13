@@ -147,6 +147,62 @@ create_token_account_instr: List[InstructionFormat] = [
 ]
 
 
+def process_create_userbank_instruction(
+    session: Session,
+    instruction: TransactionMessageInstruction,
+    account_keys: List[str],
+    tx_sig: str,
+    timestamp: datetime.datetime,
+):
+    tx_data = instruction["data"]
+    parsed_token_data = parse_create_token_data(tx_data)
+    eth_addr = parsed_token_data["eth_address"]
+    decoded = base58.b58decode(tx_data)[1:]
+    public_key_bytes = decoded[:20]
+    mint_address = account_keys[
+        get_account_index(instruction, CREATE_MINT_ACCOUNT_INDEX)
+    ]
+    _, derived_address = get_address_pair(
+        PublicKey(mint_address), public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+    )
+    bank_acct = str(derived_address[0])
+    try:
+        # Confirm expected address is present in transaction
+        bank_acct_index = account_keys.index(bank_acct)
+        if bank_acct_index:
+            if mint_address == WAUDIO_MINT:
+                logger.info(
+                    f"index_user_bank.py | {tx_sig} Found known $AUDIO account: {eth_addr}, {bank_acct}"
+                )
+                session.add(
+                    UserBankAccount(
+                        signature=tx_sig,
+                        ethereum_address=eth_addr,
+                        bank_account=bank_acct,
+                        created_at=timestamp,
+                    )
+                )
+            elif mint_address == USDC_MINT:
+                logger.info(
+                    f"index_user_bank.py | {tx_sig} Found known $USDC account: {eth_addr}, {bank_acct}"
+                )
+                session.add(
+                    USDCUserBankAccount(
+                        signature=tx_sig,
+                        ethereum_address=eth_addr,
+                        bank_account=bank_acct,
+                        created_at=timestamp,
+                    )
+                )
+            else:
+                logger.error(
+                    f"index_user_bank.py | Unknown mint address {mint_address}. Expected AUDIO={WAUDIO_MINT} or USDC={USDC_MINT}"
+                )
+
+    except ValueError as e:
+        logger.error(e)
+
+
 def process_transfer_instruction(
     session: Session,
     redis: Redis,
@@ -333,53 +389,13 @@ def process_user_bank_tx_details(
         return
 
     if has_create_token_instruction:
-        tx_data = instruction["data"]
-        parsed_token_data = parse_create_token_data(tx_data)
-        eth_addr = parsed_token_data["eth_address"]
-        decoded = base58.b58decode(tx_data)[1:]
-        public_key_bytes = decoded[:20]
-        mint_address = account_keys[
-            get_account_index(instruction, CREATE_MINT_ACCOUNT_INDEX)
-        ]
-        _, derived_address = get_address_pair(
-            PublicKey(mint_address), public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+        process_create_userbank_instruction(
+            session=session,
+            instruction=instruction,
+            account_keys=account_keys,
+            tx_sig=tx_sig,
+            timestamp=timestamp,
         )
-        bank_acct = str(derived_address[0])
-        try:
-            # Confirm expected address is present in transaction
-            bank_acct_index = account_keys.index(bank_acct)
-            if bank_acct_index:
-                if mint_address == WAUDIO_MINT:
-                    logger.info(
-                        f"index_user_bank.py | {tx_sig} Found known $AUDIO account: {eth_addr}, {bank_acct}"
-                    )
-                    session.add(
-                        UserBankAccount(
-                            signature=tx_sig,
-                            ethereum_address=eth_addr,
-                            bank_account=bank_acct,
-                            created_at=timestamp,
-                        )
-                    )
-                elif mint_address == USDC_MINT:
-                    logger.info(
-                        f"index_user_bank.py | {tx_sig} Found known $USDC account: {eth_addr}, {bank_acct}"
-                    )
-                    session.add(
-                        USDCUserBankAccount(
-                            signature=tx_sig,
-                            ethereum_address=eth_addr,
-                            bank_account=bank_acct,
-                            created_at=timestamp,
-                        )
-                    )
-                else:
-                    logger.error(
-                        f"index_user_bank.py | Unknown mint address {mint_address}. Expected AUDIO={WAUDIO_MINT} or USDC={USDC_MINT}"
-                    )
-
-        except ValueError as e:
-            logger.error(e)
 
     elif has_transfer_instruction:
         process_transfer_instruction(
