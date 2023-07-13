@@ -103,7 +103,7 @@ export const getUsersCanNotifyQuery = async (
     .limit(pageCount)
     .orderBy('Users.blockchainUserId')
 
-const appNotificationsSql = `
+export const appNotificationsSql = `
 WITH latest_user_seen AS (
   SELECT DISTINCT ON (user_id)
     user_id,
@@ -170,6 +170,7 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
+  logger.info({ userIds, startOffset })
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
@@ -467,17 +468,17 @@ const processGroupOfEmails = async (
               }
             }
             numEmailsSent += 1
-            await identityDb
-              .insert([
-                {
-                  userId: user.blockchainUserId,
-                  emailFrequency: frequency,
-                  timestamp: currentUtcTime,
-                  createdAt: currentUtcTime,
-                  updatedAt: currentUtcTime
-                }
-              ])
-              .into('NotificationEmails')
+            // await identityDb
+            //   .insert([
+            //     {
+            //       userId: user.blockchainUserId,
+            //       emailFrequency: frequency,
+            //       timestamp: currentUtcTime,
+            //       createdAt: currentUtcTime,
+            //       updatedAt: currentUtcTime
+            //     }
+            //   ])
+            //   .into('NotificationEmails')
             return { result: Results.SENT }
           } catch (e) {
             return { result: Results.ERROR, error: e.toString() }

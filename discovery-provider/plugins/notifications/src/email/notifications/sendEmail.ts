@@ -87,7 +87,7 @@ export const sendNotificationEmail = async ({
     }
 
     // Send email
-    await sendEmail(emailParams)
+    // await sendEmail(emailParams)
 
     logger.info(
       {
