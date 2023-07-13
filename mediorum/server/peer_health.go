@@ -22,7 +22,7 @@ func (ss *MediorumServer) startHealthPoller() {
 			peer := peer
 			go func() {
 				defer wg.Done()
-				req, err := http.NewRequest("GET", peer.ApiPath("/status"), nil) // todo: switch to /internal/ok later
+				req, err := http.NewRequest("GET", peer.ApiPath("/internal/ok"), nil)
 				if err != nil {
 					return
 				}

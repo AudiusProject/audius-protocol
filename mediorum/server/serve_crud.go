@@ -13,7 +13,7 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	after := c.QueryParam("after")
 	var ops []*crudr.Op
 	ss.crud.DB.
-		Where("host = ? AND ulid >= ?", ss.Config.Self.Host, after).
+		Where("host = ? AND ulid > ?", ss.Config.Self.Host, after).
 		Limit(PullLimit).
 		Order("ulid asc").
 		Find(&ops)
