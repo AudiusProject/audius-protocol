@@ -267,20 +267,22 @@ def update_user_metadata(
     # Update user_record values for which keys exist in metadata
     user_record_attributes = user_record.get_attributes_dict()
     for key, _ in user_record_attributes.items():
-        # Update the track_record when the corresponding field exists
-        # in track_metadata
+        # Update the user_record when the corresponding field exists
+        # in metadata
         if key in metadata:
             setattr(user_record, key, metadata[key])
 
     if (
-        "collectibles" in user_record
-        and user_record["collectibles"]
-        and isinstance(user_record["collectibles"], dict)
-        and user_record["collectibles"].items()
+        "collectibles" in metadata
     ):
-        user_record.has_collectibles = True
-    else:
-        user_record.has_collectibles = False
+        if (
+            metadata["collectibles"]
+            and isinstance(metadata["collectibles"], dict)
+            and metadata["collectibles"].items()
+        ):
+            user_record.has_collectibles = True
+        else:
+            user_record.has_collectibles = False
 
     if "associated_wallets" in metadata:
         update_user_associated_wallets(

@@ -154,7 +154,7 @@ def is_valid_json_field(metadata, field):
     return False
 
 
-def populate_track_record_metadata(track_record, track_metadata, handle, params):
+def populate_track_record_metadata(track_record, track_metadata, handle):
 
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
@@ -167,6 +167,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle, params)
             # made unlisted again
             if "is_unlisted" in track_metadata and track_record.is_unlisted:
                 track_record.is_unlisted = track_metadata["is_unlisted"]
+
         elif key == "premium_conditions": 
             if "premium_conditions" in track_metadata and is_valid_json_field(track_metadata, "premium_conditions"):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
@@ -290,10 +291,7 @@ def get_handle(params: ManageEntityParameters):
 
 
 def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
-    params.logger.info(
-        f"index.py | track.py | metadata for track {metadata}"
-    )
-    populate_track_record_metadata(track, metadata, handle, params)
+    populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
