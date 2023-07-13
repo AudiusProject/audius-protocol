@@ -615,6 +615,8 @@ ___
 
 | Name | Type |
 | :------ | :------ |
+| `confirmWrite` | (`options`: { `blockHash`: `string` ; `blockNumber`: `number` ; `confirmationPollingInterval?`: `number` ; `confirmationTimeout?`: `number`  }) => `Promise`<`boolean`\> |
+| `getCurrentBlock` | () => `Promise`<{ `timestamp`: `number`  }\> |
 | `manageEntity` | (`options`: `ManageEntityOptions`) => `Promise`<{ `txReceipt`: `TransactionReceipt`  }\> |
 
 ___

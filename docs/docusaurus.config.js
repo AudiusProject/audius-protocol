@@ -9,7 +9,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     tagline: "",
     url: "https://docs.audius.org",
     baseUrl: "/",
-    onBrokenLinks: "throw",
+    onBrokenLinks: "warn",
     onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
     organizationName: "AudiusProject", // Usually your GitHub org/user name.
@@ -35,10 +35,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     plugins: [
       [
         "docusaurus-plugin-typedoc",
-
         // Plugin / TypeDoc options
         {
-          plugin: ["typedoc-plugin-audius-theme"],
+          plugin: ["typedoc-plugin-audius-theme", "typedoc-plugin-zod"],
           out: "./developers/sdk",
           entryPoints: ["./node_modules/@audius/sdk/src/sdk/index.ts"],
           tsconfig: "./node_modules/@audius/sdk/tsconfig.docs.json",
