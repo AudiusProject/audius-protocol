@@ -24,6 +24,7 @@ import {
   UpdatePlaylistRequest,
   AddTrackToPlaylistRequest,
   RemoveTrackFromPlaylistRequest,
+  UpdateProfileRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -68,8 +69,8 @@ const trackUpload = upload.fields([
 
 type MulterFiles =
   | {
-      [fieldname: string]: Express.Multer.File[];
-    }
+    [fieldname: string]: Express.Multer.File[];
+  }
   | undefined;
 
 app.post<UploadTrackRequest>(
@@ -465,6 +466,37 @@ app.post<UnrepostPlaylistRequest>("/unrepostPlaylist", async (req, res) => {
   }
 });
 
+const profileUpdate = upload.fields([
+  { name: "profilePictureFile", maxCount: 1 },
+  { name: "coverArtFile", maxCount: 1 }
+]);
+
+app.post<UpdateProfileRequest>("/updateProfile", profileUpdate as any, async (req, res) => {
+  try {
+    const profilePictureFile = (req.files as MulterFiles)?.["profilePictureFile"]?.[0];
+    const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"]?.[0];
+
+    const updateProfileRequest: UpdateProfileRequest = {
+      userId: req.body.userId,
+      profilePictureFile: profilePictureFile && {
+        buffer: profilePictureFile.buffer,
+        name: profilePictureFile.originalname
+      },
+      coverArtFile: coverArtFile && {
+        buffer: coverArtFile.buffer,
+        name: coverArtFile.originalname
+      },
+      metadata: JSON.parse(req.body.metadata),
+      onProgress: (progress: any) => console.log("Progress:", progress),
+    };
+    const result = await audiusSdk.users.updateProfile(updateProfileRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
 app.post<FollowUserRequest>("/followUser", async (req, res) => {
   try {
     const followUserRequest: FollowUserRequest = {
@@ -527,3 +559,4 @@ app.post<UnsubscribeFromUserRequest>(
     }
   }
 );
+
