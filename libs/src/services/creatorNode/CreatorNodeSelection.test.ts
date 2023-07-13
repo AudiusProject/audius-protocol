@@ -800,6 +800,7 @@ describe('test CreatorNodeSelection', () => {
     }
     // Make sure there is some variance
     assert(!primaries.every((val) => val === primaries[0]))
+    // @ts-ignore mocha is typed incorrectly
   }).timeout(10000)
 
   describe('Test preferHigherPatchForPrimary and preferHigherPatchForSecondaries', () => {
