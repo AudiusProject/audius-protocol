@@ -20,7 +20,7 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { trackDownload } from 'services/track-download'
 import { walletClient } from 'services/wallet-client'
 import { isElectron } from 'utils/clientUtil'
-import { createPlaylistArtwork } from 'utils/imageProcessingUtil'
+import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
 import { share } from 'utils/share'
 
 import { reportToSentry } from './errors/reportToSentry'
@@ -67,6 +67,6 @@ export const storeContext: CommonStoreContext = {
   ),
   audiusSdk,
   imageUtils: {
-    createPlaylistArtwork
+    generatePlaylistArtwork
   }
 }

@@ -69,6 +69,7 @@ const EditPlaylistModal = (props: EditPlaylistModalProps) => {
   }, [collection, collectionId, fetchSavedPlaylists])
 
   const { playlist_id: playlistId, is_album: isAlbum } = collection || {}
+
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const onClickDelete = () => setShowDeleteConfirmation(true)
   const onCancelDelete = () => setShowDeleteConfirmation(false)

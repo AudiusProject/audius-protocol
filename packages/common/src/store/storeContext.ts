@@ -73,7 +73,7 @@ export type CommonStoreContext = {
   openSeaClient: OpenSeaClient
   audiusSdk: () => Promise<AudiusSdk>
   imageUtils: {
-    createPlaylistArtwork: (
+    generatePlaylistArtwork: (
       urls: string[]
     ) => Promise<{ file: File; url: string }>
   }

@@ -2,6 +2,7 @@ import { MutableRefObject, useCallback, useMemo } from 'react'
 
 import {
   CreatePlaylistSource,
+  EditPlaylistValues,
   FeatureFlags,
   Name,
   accountSelectors,
@@ -22,7 +23,6 @@ import { useDispatch } from 'react-redux'
 import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
-import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
 import Pill from 'components/pill/Pill'
 import { Tooltip } from 'components/tooltip'
 import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
@@ -77,7 +77,7 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
 
   const handleSubmitPlaylist = useCallback(
     (
-      metadata: Partial<PlaylistFormFields> = {
+      metadata: Partial<EditPlaylistValues> = {
         playlist_name: messages.newPlaylistName
       }
     ) => {

@@ -12,30 +12,23 @@ const imageHeight = canvasHeight / 2
 
 const mimeType = Jimp.MIME_JPEG
 
-export async function createPlaylistArtwork(imageUrls: string[]) {
+export async function generatePlaylistArtwork(imageUrls: string[]) {
   const images = await Promise.all(
     imageUrls.map((imageUrl) => Jimp.read(imageUrl))
   )
+  const newImage = new Jimp(canvasWidth, canvasHeight)
 
-  let newImage: Jimp
+  for (let i = 0; i < 4; i++) {
+    const image = images[i]
+    if (image) {
+      image.resize(imageWidth, imageHeight)
 
-  if (images.length === 1) {
-    newImage = images[0]
-  } else {
-    newImage = new Jimp(canvasWidth, canvasHeight)
+      // Calculate the x and y position based on the quadrant
+      const x = i % 2 === 0 ? 0 : imageWidth
+      const y = i < 2 ? 0 : imageHeight
 
-    for (let i = 0; i < 4; i++) {
-      const image = images[i]
-      if (image) {
-        image.resize(imageWidth, imageHeight)
-
-        // Calculate the x and y position based on the quadrant
-        const x = i % 2 === 0 ? 0 : imageWidth
-        const y = i < 2 ? 0 : imageHeight
-
-        // Composite the image onto the canvas
-        newImage.composite(image, x, y)
-      }
+      // Composite the image onto the canvas
+      newImage.composite(image, x, y)
     }
   }
 
