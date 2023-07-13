@@ -187,9 +187,9 @@ describe('TracksApi', () => {
     })
   })
 
-  describe('saveTrack', () => {
-    it('saves a track if valid metadata is provided', async () => {
-      const result = await tracks.saveTrack({
+  describe('favoriteTrack', () => {
+    it('favorites a track if valid metadata is provided', async () => {
+      const result = await tracks.favoriteTrack({
         userId: '7eP5n',
         trackId: 'x5pJ3Aj'
       })
@@ -202,7 +202,7 @@ describe('TracksApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await tracks.saveTrack({
+        await tracks.favoriteTrack({
           userId: '7eP5n',
           trackId: 1 as any
         })
@@ -210,9 +210,9 @@ describe('TracksApi', () => {
     })
   })
 
-  describe('unsaveTrack', () => {
-    it('unsaves a track if valid metadata is provided', async () => {
-      const result = await tracks.unsaveTrack({
+  describe('unfavoriteTrack', () => {
+    it('unfavorites a track if valid metadata is provided', async () => {
+      const result = await tracks.unfavoriteTrack({
         userId: '7eP5n',
         trackId: 'x5pJ3Aj'
       })
@@ -225,7 +225,7 @@ describe('TracksApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await tracks.unsaveTrack({
+        await tracks.unfavoriteTrack({
           userId: '7eP5n',
           trackId: 1 as any
         })
