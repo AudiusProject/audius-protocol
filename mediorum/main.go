@@ -332,7 +332,7 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 		slices.Sort(combined)
 		slices.Sort(configCombined)
 		if !slices.Equal(combined, configCombined) {
-			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers))
+			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers), "combined", combined, "configCombined", configCombined)
 			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
 		}
 	}
