@@ -75,12 +75,18 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     let entityType
     let entityName
 
-    const entities = this.fetchEntities([this.repostItemId], this.repostType)
+    const entities = await this.fetchEntities(
+      [this.repostItemId],
+      this.repostType
+    )
     if (this.repostType === EntityType.Track) {
       entityType = EntityType.Track
-      entityName = entities[this.repostItemId]?.title
+      entityName = (entities[this.repostItemId] as { title: string })?.title
     } else {
-      const playlist = entities[this.repostItemId]
+      const playlist = entities[this.repostItemId] as {
+        is_album: boolean
+        playlist_name: string
+      }
       entityType = playlist?.is_album ? EntityType.Album : EntityType.Playlist
       entityName = playlist?.playlist_name
     }

@@ -31,6 +31,7 @@ export abstract class BaseNotification<Type> {
         }, {} as Record<number, { title: string }>)
         return tracks
       }
+      case EntityType.Album:
       case EntityType.Playlist: {
         const res: Array<{
           playlist_id: number
