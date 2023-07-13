@@ -264,7 +264,6 @@ def update_user_metadata(
     challenge_event_bus: ChallengeEventBus,
 ):
     # Iterate over the user_record keys
-    # Update user_record values for which keys exist in metadata
     user_record_attributes = user_record.get_attributes_dict()
     for key, _ in user_record_attributes.items():
         # Update the user_record when the corresponding field exists

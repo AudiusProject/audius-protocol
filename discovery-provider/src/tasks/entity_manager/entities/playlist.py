@@ -346,11 +346,10 @@ def process_playlist_data_event(
     metadata_cid = params.metadata_cid
 
     # Iterate over the playlist_record keys
-    # Update playlist_record values for which keys exist in playlist_metadata
     playlist_record_attributes = playlist_record.get_attributes_dict()
     for key, _ in playlist_record_attributes.items():
-        # Update the track_record when the corresponding field exists
-        # in track_metadata
+        # Update the playlist_record when the corresponding field exists
+        # in playlist_metadata
         if key in playlist_metadata:
             setattr(playlist_record, key, playlist_metadata[key])
 
