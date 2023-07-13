@@ -114,6 +114,8 @@ func startStagingOrProd(isProd bool) {
 		log.Fatal(err)
 	}
 
+	go refreshPeersAndSigners(ss, g)
+
 	ss.MustStart()
 }
 
@@ -312,7 +314,8 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 			return err
 		})
 		if err := eg.Wait(); err != nil {
-			panic(err)
+			logger.Error("failed to fetch registered nodes", "err", err)
+			continue
 		}
 
 		peersChanged := false
