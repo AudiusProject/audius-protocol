@@ -198,7 +198,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
-		isSeeding:       true,
+		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 

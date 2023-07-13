@@ -299,7 +299,7 @@ func getenvWithDefault(key string, fallback string) string {
 // fetch registered nodes from chain every 30 minutes and restart if they've changed
 func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
-	ticker := time.NewTicker(1 * time.Minute) // TODO: Change to 30
+	ticker := time.NewTicker(30 * time.Minute)
 	for range ticker.C {
 		var peers, signers []server.Peer
 		var err error
@@ -342,7 +342,7 @@ func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider)
 			}
 		}
 
-		if peersChanged || signersChanged || true { // TODO: Remove || true
+		if peersChanged || signersChanged {
 			ss.Config.Peers = peers
 			ss.Config.Signers = signers
 			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers))
