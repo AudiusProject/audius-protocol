@@ -170,7 +170,6 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
-  // NOTE: Temp while testing DM notifs on staging
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
@@ -402,8 +401,6 @@ const processGroupOfEmails = async (
     Object.keys(users).map(Number)
   )
 
-  logger.info("processEmailNotifications | built user notification settings")
-
   const notifications = await getNotifications(
     dnDb,
     frequency,
@@ -411,11 +408,8 @@ const processGroupOfEmails = async (
     Object.keys(users),
     remoteConfig
   )
-  logger.info("processEmailNotifications | got email notifications from db")
 
   const groupedNotifications = groupNotifications(notifications, users)
-
-  logger.info("processEmailNotifications | grouped notifications")
 
   const currentUtcTime = moment.utc()
   const chunkSize = 20
