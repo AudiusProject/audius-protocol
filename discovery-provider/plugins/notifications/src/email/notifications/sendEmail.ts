@@ -46,7 +46,7 @@ export const sendNotificationEmail = async ({
     return
   }
   try {
-    logger.debug(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
+    logger.info(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
     const validNotifications = notifications.filter(
       (n) => !notificationsWithoutEmail.has(n.type)
     )
@@ -55,7 +55,7 @@ export const sendNotificationEmail = async ({
       notificationCount > 1 ? 's' : ''
     } on Audius`
     if (notificationCount === 0) {
-      logger.debug(
+      logger.info(
         `renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`
       )
       return false
@@ -70,6 +70,8 @@ export const sendNotificationEmail = async ({
       identityDb,
       timezone
     })
+
+    logger.info("renderAndSendNotificationEmail | rendered email")
 
     const emailParams: MailDataRequired = {
       from: 'Audius <notify@audius.co>',
