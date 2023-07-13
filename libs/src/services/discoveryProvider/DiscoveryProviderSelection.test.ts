@@ -1,6 +1,5 @@
 import nock from 'nock'
 import assert from 'assert'
-import semver from 'semver'
 import { DiscoveryProviderSelection } from './DiscoveryProviderSelection'
 import { DISCOVERY_PROVIDER_TIMESTAMP } from './constants'
 import type { EthContracts } from '../ethContracts'
@@ -21,12 +20,6 @@ const mockEthContracts = (
       return ['1.2.2', '1.2.3'][queryIndex] as string
     },
     getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
-    hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
-      return (
-        semver.major(version1) === semver.major(version2) &&
-        semver.minor(version1) === semver.minor(version2)
-      )
-    },
     isInRegressedMode: () => {
       return false
     }
