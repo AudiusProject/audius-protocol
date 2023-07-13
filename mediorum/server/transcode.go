@@ -118,7 +118,6 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 	busyStatus := JobStatusBusy
 	errorStatus := JobStatusError
 	if retranscode {
-		// only look for retranscode jobs
 		newStatus = JobStatusRetranscode
 		busyStatus = JobStatusBusyRetranscode
 		errorStatus = JobStatusErrorRetranscode

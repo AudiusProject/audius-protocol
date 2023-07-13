@@ -99,7 +99,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// Parse X-User-Wallet header
-	userWalletHeader := c.Request().Header.Get("X-User-Wallet")
+	userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
 	userWallet := sql.NullString{Valid: false}
 	if userWalletHeader != "" {
 		userWallet = sql.NullString{
