@@ -438,6 +438,6 @@ const track = await audiusSdk.tracks.saveTrack({
 });
 ```
 
-See [Getting Started](/developers/sdk) with the SDK or [Performing Writes](./log-in-with-audius.md) for further reading.
+See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/classes) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)
