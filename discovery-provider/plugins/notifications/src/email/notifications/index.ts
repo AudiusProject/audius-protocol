@@ -2,6 +2,7 @@ import { Knex } from 'knex'
 import moment, { Moment } from 'moment-timezone'
 import { config } from '../../config'
 import {
+  AppEmailNotification,
   DMEmailNotification,
   EmailNotification
 } from '../../types/notifications'
@@ -20,6 +21,7 @@ import {
   ScheduledEmailPluginMappings
 } from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
+import { NotificationRow } from '../../types/dn'
 
 // blockchainUserId => email
 export type EmailUsers = {
@@ -170,12 +172,32 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
-  logger.info({ userIds, startOffset })
-  const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
-    start_offset: startOffset,
-    user_ids: [[userIds]]
-  })
-  let appNotifications: EmailNotification[] = appNotificationsResp.rows
+  const userSeenAts: {
+    seen_at: moment.Moment,
+    user_id: number
+}[] = await dnDb
+    .select('seen_at', 'user_id')
+    .distinctOn('user_id')
+    .from('notification_seen')
+    .whereIn('user_id', userIds)
+    .orderBy([
+        {column: 'user_id'},
+        {column: 'seen_at', order: 'desc'}
+    ])
+
+  const getNotifications = async (userId: number, lastSeen: moment.Moment): Promise<NotificationRow[]> => await dnDb
+      .select('*')
+      .from('notification')
+      .where('timestamp', '>', startOffset)
+      .andWhere('timestamp', '>', lastSeen)
+      .andWhereRaw(':columnName: && (:userIds)', { columnName: 'user_ids', userIds: [userId] })
+
+  const notificationsRes = await Promise.all(userSeenAts.map(async ({ user_id, seen_at }) => ({user_id, unseenNotifs: await getNotifications(user_id, seen_at)})))
+  const filteredNotificationRes = notificationsRes.filter(({ unseenNotifs}) => unseenNotifs.length > 0)
+  let appNotifications = filteredNotificationRes.map(({ user_id, unseenNotifs }) => ({
+    receiver_user_id: user_id,
+    ...unseenNotifs
+  }))
 
   // filter for only enabled notifications in MappingFeatureName
   // on optimizely
