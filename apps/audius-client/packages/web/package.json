@@ -49,7 +49,7 @@
     "analyzeBundle": "env-cmd ./.env/.env.bundle npm run build:prod",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
-    "install-dmg-license": "npx lerna add dmg-license --scope=audius-client --no-bootstrap && npx lerna bootstrap --no-ci",
+    "install-dmg-license": "npx lerna@6.0.1 add dmg-license --scope=audius-client --no-bootstrap && npx lerna@6.0.1 bootstrap --no-ci",
     "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
   },
   "dependencies": {
