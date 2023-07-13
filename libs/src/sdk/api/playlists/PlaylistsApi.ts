@@ -382,18 +382,23 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
 
     const updatedMetadata = {
       playlistId,
-      playlistContents: {
-        trackIds: metadata.playlistContents.map(
-          ({ trackId, metadataTimestamp, timestamp }) => ({
-            track: trackId,
-            // default to timestamp for legacy playlists
-            time: metadataTimestamp ?? timestamp
-          })
-        )
-      },
+      ...(metadata.playlistContents
+        ? {
+            playlistContents: {
+              trackIds: metadata.playlistContents.map(
+                ({ trackId, metadataTimestamp, timestamp }) => ({
+                  track: trackId,
+                  // default to timestamp for legacy playlists
+                  time: metadataTimestamp ?? timestamp
+                })
+              )
+            }
+          }
+        : {}),
       playlistName: metadata.playlistName,
-      playlistImageSizesMultihash:
-        coverArtResponse?.id ?? metadata.coverArtSizes,
+      ...(coverArtResponse
+        ? { playlistImageSizesMultihash: coverArtResponse.id }
+        : {}),
       description: metadata.description,
       isAlbum: metadata.isAlbum,
       isPrivate: metadata.isPrivate

@@ -263,37 +263,20 @@ def update_user_metadata(
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
 ):
-    # Fields also stored on chain
-    if "profile_picture" in metadata and metadata["profile_picture"]:
-        user_record.profile_picture = metadata["profile_picture"]
-
-    if "cover_photo" in metadata and metadata["cover_photo"]:
-        user_record.cover_photo = metadata["cover_photo"]
-
-    if "bio" in metadata:
-        user_record.bio = metadata["bio"]
-
-    if "name" in metadata and metadata["name"]:
-        user_record.name = metadata["name"]
-
-    if "location" in metadata and metadata["location"]:
-        user_record.location = metadata["location"]
-
-    if "artist_pick_track_id" in metadata:
-        user_record.artist_pick_track_id = metadata["artist_pick_track_id"]
-
-    # Fields with no on-chain counterpart
-    if "profile_picture_sizes" in metadata and metadata["profile_picture_sizes"]:
-        user_record.profile_picture = metadata["profile_picture_sizes"]
-
-    if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
-        user_record.cover_photo = metadata["cover_photo_sizes"]
+    # Iterate over the user_record keys
+    # Update user_record values for which keys exist in metadata
+    user_record_attributes = user_record.get_attributes_dict()
+    for key, _ in user_record_attributes.items():
+        # Update the track_record when the corresponding field exists
+        # in track_metadata
+        if key in metadata:
+            setattr(user_record, key, metadata[key])
 
     if (
-        "collectibles" in metadata
-        and metadata["collectibles"]
-        and isinstance(metadata["collectibles"], dict)
-        and metadata["collectibles"].items()
+        "collectibles" in user_record
+        and user_record["collectibles"]
+        and isinstance(user_record["collectibles"], dict)
+        and user_record["collectibles"].items()
     ):
         user_record.has_collectibles = True
     else:
@@ -319,12 +302,6 @@ def update_user_metadata(
             "sol",
         )
 
-    if "playlist_library" in metadata and metadata["playlist_library"]:
-        user_record.playlist_library = metadata["playlist_library"]
-
-    if "is_deactivated" in metadata:
-        user_record.is_deactivated = metadata["is_deactivated"]
-
     if "events" in metadata and metadata["events"]:
         update_user_events(
             session,
@@ -332,9 +309,6 @@ def update_user_metadata(
             metadata["events"],
             challenge_event_bus,
         )
-
-    if metadata.get("allow_ai_attribution"):
-        user_record.allow_ai_attribution = metadata["allow_ai_attribution"]
 
     return user_record
 

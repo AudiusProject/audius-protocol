@@ -191,22 +191,24 @@ export class TracksApi extends TracksApiWithoutStream {
     )
 
     // Upload track cover art to storage node
-    const coverArtResp = await retry3(
-      async () =>
-        await this.storage.uploadFile({
-          file: coverArtFile,
-          onProgress,
-          template: 'img_square'
-        }),
-      (e) => {
-        console.log('Retrying uploadTrackCoverArt', e)
-      }
-    )
+    const coverArtResp =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadTrackCoverArt', e)
+        }
+      ))
 
     // Update metadata to include uploaded CIDs
     const updatedMetadata = {
       ...metadata,
-      coverArtSizes: coverArtResp.id
+      ...(coverArtResp ? { coverArtSizes: coverArtResp.id } : {})
     }
 
     // Write metadata to chain

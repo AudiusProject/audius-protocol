@@ -40,14 +40,18 @@ export const createUpdatePlaylistSchema = () =>
         .omit({ genre: true })
         .merge(
           z.object({
-            coverArtSizes: z.optional(z.string()),
+            genre: z.optional(
+              z.enum(Object.values(Genre) as [Genre, ...Genre[]])
+            ),
             isPrivate: z.optional(z.boolean()),
-            playlistContents: z.array(
-              z.object({
-                timestamp: z.number(),
-                metadataTimestamp: z.optional(z.number()),
-                trackId: HashId
-              })
+            playlistContents: z.optional(
+              z.array(
+                z.object({
+                  timestamp: z.number(),
+                  metadataTimestamp: z.optional(z.number()),
+                  trackId: HashId
+                })
+              )
             )
           })
         ),

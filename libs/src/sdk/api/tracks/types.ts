@@ -121,13 +121,15 @@ export const createUpdateTrackSchema = () =>
   createUploadTrackSchema()
     .pick({
       userId: true,
-      coverArtFile: true,
       metadata: true,
       onProgress: true
     })
     .merge(
       z.object({
-        trackId: HashId
+        trackId: HashId,
+        coverArtFile: z.optional(
+          z.custom<File>((data: unknown) => isFileValid(data as File))
+        )
       })
     )
     .strict()

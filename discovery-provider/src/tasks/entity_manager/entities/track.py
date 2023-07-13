@@ -200,7 +200,6 @@ def populate_track_record_metadata(track_record, track_metadata, handle, params)
             if key in track_metadata:
                 setattr(track_record, key, track_metadata[key])
 
-    # Set some default values, TODO not sure why we do this here
     if not track_record.premium_conditions:
         track_record.premium_conditions = null()
 
