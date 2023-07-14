@@ -1,13 +1,13 @@
 import { useCallback, useEffect } from 'react'
 
 import { chatActions, chatSelectors, Status } from '@audius/common'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCompose from 'app/assets/images/iconCompose.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import Button, { ButtonType } from 'app/components/button'
-import { Screen, FlatList, ScreenContent } from 'app/components/core'
+import { Text, Screen, FlatList, ScreenContent } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -60,17 +60,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     padding: spacing(6)
   },
   startConversationTitle: {
-    fontSize: typography.fontSize.xxl,
-    fontFamily: typography.fontByWeight.bold,
     textAlign: 'center',
-    lineHeight: typography.fontSize.xxl * 1.3,
-    color: palette.neutral
+    lineHeight: typography.fontSize.xxl * 1.3
   },
   connect: {
-    fontSize: typography.fontSize.medium,
     textAlign: 'center',
     lineHeight: typography.fontSize.medium * 1.3,
-    color: palette.neutral,
     marginTop: spacing(2)
   },
   writeMessageButton: {
@@ -83,10 +78,12 @@ const ChatsEmpty = ({ onPress }: { onPress: () => void }) => {
   const styles = useStyles()
   return (
     <View style={styles.startConversationContainer}>
-      <Text style={styles.startConversationTitle}>
+      <Text style={styles.startConversationTitle} fontSize='xxl' weight='bold'>
         {messages.startConversation}
       </Text>
-      <Text style={styles.connect}>{messages.connect}</Text>
+      <Text style={styles.connect} fontSize='medium'>
+        {messages.connect}
+      </Text>
       <Button
         title={messages.writeMessage}
         renderIcon={() => <IconCompose fill={white} />}
