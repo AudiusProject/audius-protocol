@@ -39,21 +39,23 @@ export const createUpdatePlaylistSchema = () =>
       metadata: createUploadPlaylistMetadataSchema()
         .omit({ genre: true })
         .merge(
-          z.object({
-            genre: z.optional(
-              z.enum(Object.values(Genre) as [Genre, ...Genre[]])
-            ),
-            isPrivate: z.optional(z.boolean()),
-            playlistContents: z.optional(
-              z.array(
-                z.object({
-                  timestamp: z.number(),
-                  metadataTimestamp: z.optional(z.number()),
-                  trackId: HashId
-                })
+          z
+            .object({
+              genre: z.optional(
+                z.enum(Object.values(Genre) as [Genre, ...Genre[]])
+              ),
+              isPrivate: z.optional(z.boolean()),
+              playlistContents: z.optional(
+                z.array(
+                  z.object({
+                    timestamp: z.number(),
+                    metadataTimestamp: z.optional(z.number()),
+                    trackId: HashId
+                  })
+                )
               )
-            )
-          })
+            })
+            .strict()
         ),
       onProgress: z.optional(z.function().args(z.number()))
     })
