@@ -5,7 +5,6 @@ import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import { useReadOfflineOverride } from 'app/hooks/useIsOfflineModeEnabled'
 
 import { AlbumsTab } from './AlbumsTab'
 import { FavoritesDownloadSection } from './FavoritesDownloadSection'
@@ -36,7 +35,6 @@ const favoritesScreens = [
 
 export const FavoritesScreen = () => {
   useAppTabScreen()
-  useReadOfflineOverride()
 
   return (
     <Screen>

@@ -1,8 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
-
 import { COPYRIGHT_TEXT } from 'audius-client/src/utils/copyright'
-import { View, Image, TouchableWithoutFeedback } from 'react-native'
+import {
+  AUDIUS_CAREERS_LINK,
+  AUDIUS_CONTACT_EMAIL_LINK,
+  AUDIUS_DISCORD_LINK,
+  AUDIUS_HELP_LINK,
+  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_TWITTER_LINK,
+  PRIVACY_POLICY,
+  TERMS_OF_SERVICE
+} from 'audius-client/src/utils/route'
+import { View, Image } from 'react-native'
 import codePush from 'react-native-code-push'
+import { useAsync } from 'react-use'
 
 import appIcon from 'app/assets/images/appIcon.png'
 import IconCareers from 'app/assets/images/iconCareers.svg'
@@ -11,7 +20,6 @@ import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
 import { Screen, ScreenContent, Text } from 'app/components/core'
-import { toggleLocalOfflineModeOverride } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 
 import packageInfo from '../../../package.json'
@@ -33,7 +41,8 @@ const messages = {
   contact: 'Contact Us',
   careers: 'Careers at Audius',
   help: 'Help / FAQ',
-  terms: 'Terms & Privacy Policy'
+  terms: 'Terms of Service',
+  privacy: 'Privacy Policy'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -52,25 +61,11 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const AboutScreen = () => {
   const styles = useStyles()
-  const [clickCount, setClickCount] = useState(0)
-  const [codepushUpdateNumber, setCodepushUpdateNumber] = useState<
-    string | null
-  >(null)
-  const handleTitleClick = useCallback(() => {
-    if (clickCount >= 19) {
-      toggleLocalOfflineModeOverride()
-      setClickCount(0)
-    } else {
-      setClickCount(clickCount + 1)
-    }
-  }, [clickCount])
-  useEffect(() => {
-    codePush.getUpdateMetadata().then((res) => {
-      if (res) {
-        setCodepushUpdateNumber(res?.label)
-      }
-    })
-  }, [])
+
+  const { value: codePushLabel } = useAsync(async () => {
+    const metadata = await codePush.getUpdateMetadata()
+    return metadata?.label
+  })
 
   return (
     <Screen variant='secondary' title={messages.title} topbarRight={null}>
@@ -78,39 +73,38 @@ export const AboutScreen = () => {
         <View style={styles.header}>
           <Image source={appIcon} style={styles.appIcon} />
           <View>
-            <TouchableWithoutFeedback onPress={handleTitleClick}>
-              <Text variant='h2'>{messages.appName}</Text>
-            </TouchableWithoutFeedback>
+            <Text variant='h2'>{messages.appName}</Text>
             <Text variant='body2'>
               {messages.version} {appVersion}
-              {codepushUpdateNumber == null
-                ? null
-                : ` c${codepushUpdateNumber}`}
+              {!codePushLabel ? null : ` c${codePushLabel}`}
             </Text>
             <Text variant='body2'>{messages.copyright}</Text>
           </View>
         </View>
-        <SettingsRow url='https://discordapp.com/invite/yNUg2e2' firstItem>
+        <SettingsRow url={AUDIUS_DISCORD_LINK} firstItem>
           <SettingsRowLabel label={messages.discord} icon={IconDiscord} />
         </SettingsRow>
-        <SettingsRow url='https://twitter.com/AudiusProject'>
+        <SettingsRow url={AUDIUS_TWITTER_LINK}>
           <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
         </SettingsRow>
-        <SettingsRow url='https://www.instagram.com/audiusmusic/'>
+        <SettingsRow url={AUDIUS_INSTAMGRAM_LINK}>
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
         </SettingsRow>
-        <SettingsRow url='mailto:contact@audius.co'>
+        <SettingsRow url={AUDIUS_CONTACT_EMAIL_LINK}>
           <SettingsRowLabel label={messages.contact} icon={IconContact} />
         </SettingsRow>
-        <SettingsRow url='https://jobs.lever.co/audius'>
+        <SettingsRow url={AUDIUS_CAREERS_LINK}>
           <SettingsRowLabel label={messages.careers} icon={IconCareers} />
         </SettingsRow>
         <Divider />
-        <SettingsRow url='https://help.audius.co/'>
+        <SettingsRow url={AUDIUS_HELP_LINK}>
           <SettingsRowLabel label={messages.help} />
         </SettingsRow>
-        <SettingsRow url='https://audius.co/legal/terms-of-use'>
+        <SettingsRow url={`https://audius.co${TERMS_OF_SERVICE}`}>
           <SettingsRowLabel label={messages.terms} />
+        </SettingsRow>
+        <SettingsRow url={`https://audius.co${PRIVACY_POLICY}`}>
+          <SettingsRowLabel label={messages.privacy} />
         </SettingsRow>
       </ScreenContent>
     </Screen>

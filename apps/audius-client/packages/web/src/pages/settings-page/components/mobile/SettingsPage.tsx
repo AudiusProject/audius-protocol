@@ -1,4 +1,4 @@
-import { useContext, useEffect, useCallback, FC } from 'react'
+import { useContext, useEffect, FC } from 'react'
 
 import {
   ID,
@@ -116,7 +116,6 @@ const SettingsPage = (props: SettingsPageProps) => {
     profilePictureSizes,
     theme,
     toggleTheme,
-    goToRoute,
     getNotificationSettings,
     getPushNotificationSettings,
     showMatrix
@@ -144,22 +143,6 @@ const SettingsPage = (props: SettingsPageProps) => {
     profilePictureSizes,
     SquareSizes.SIZE_150_BY_150
   )
-
-  const goToHistoryPage = useCallback(() => {
-    goToRoute(HISTORY_PAGE)
-  }, [goToRoute])
-
-  const goToAccountSettingsPage = useCallback(() => {
-    goToRoute(ACCOUNT_SETTINGS_PAGE)
-  }, [goToRoute])
-
-  const goToAboutSettingsPage = useCallback(() => {
-    goToRoute(ABOUT_SETTINGS_PAGE)
-  }, [goToRoute])
-
-  const goToNotificationsSettingsPage = useCallback(() => {
-    goToRoute(NOTIFICATION_SETTINGS_PAGE)
-  }, [goToRoute])
 
   // Render out subPage if we're on one.
   if (subPage && subPage in SubPages) {
@@ -217,7 +200,7 @@ const SettingsPage = (props: SettingsPageProps) => {
         </div>
         <GroupableList>
           <Grouping>
-            <Row onClick={goToAccountSettingsPage}>
+            <Row to={ACCOUNT_SETTINGS_PAGE}>
               <div className={styles.account}>
                 <DynamicImage
                   image={profilePicture}
@@ -232,14 +215,14 @@ const SettingsPage = (props: SettingsPageProps) => {
             <Row
               prefix={<i className='emoji small headphone' />}
               title={messages.historyTitle}
-              onClick={goToHistoryPage}
+              to={HISTORY_PAGE}
             />
           </Grouping>
           <Grouping>
             <Row
               prefix={<i className='emoji small bell' />}
               title='Notifications'
-              onClick={goToNotificationsSettingsPage}
+              to={NOTIFICATION_SETTINGS_PAGE}
             />
             <Row
               prefix={<i className='emoji small waning-crescent-moon' />}
@@ -253,7 +236,7 @@ const SettingsPage = (props: SettingsPageProps) => {
             <Row
               prefix={<i className='emoji small speech-balloon' />}
               title={messages.aboutTitle}
-              onClick={goToAboutSettingsPage}
+              to={ABOUT_SETTINGS_PAGE}
             />
           </Grouping>
         </GroupableList>

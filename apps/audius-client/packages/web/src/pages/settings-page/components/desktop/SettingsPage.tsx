@@ -46,7 +46,7 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import { TERMS_OF_SERVICE } from 'utils/route'
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -71,6 +71,7 @@ const messages = {
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT,
   terms: 'Terms of Service',
+  privacy: 'Privacy Policy',
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
   darkModeOn: 'Dark',
@@ -448,12 +449,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
         <span>
           {messages.copyright} -{' '}
           <Link
-            className={styles.terms}
+            className={styles.link}
             to={TERMS_OF_SERVICE}
             target='_blank'
             rel='noreferrer'
           >
             {messages.terms}
+          </Link>{' '}
+          -{' '}
+          <Link
+            className={styles.link}
+            to={PRIVACY_POLICY}
+            target='_blank'
+            rel='noreferrer'
+          >
+            {messages.privacy}
           </Link>
         </span>
       </div>

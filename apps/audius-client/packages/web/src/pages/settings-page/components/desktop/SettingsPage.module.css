@@ -53,11 +53,11 @@
   line-height: 20px;
 }
 
-.terms {
+.link {
   color: var(--neutral-light-5);
 }
 
-.terms:hover {
+.link:hover {
   color: var(--neutral-light-2);
 }
 

@@ -9,47 +9,43 @@ import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import Page from 'components/page/Page'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
+import {
+  AUDIUS_CAREERS_LINK,
+  AUDIUS_CONTACT_EMAIL_LINK,
+  AUDIUS_DISCORD_LINK,
+  AUDIUS_HELP_LINK,
+  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_TWITTER_LINK,
+  PRIVACY_POLICY,
+  TERMS_OF_SERVICE
+} from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
 import styles from './AboutSettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
 
 const { version: appVersion } = packageInfo
 
-const links = {
-  discord: 'https://discordapp.com/invite/yNUg2e2',
-  instagram: 'https://www.instagram.com/audiusmusic/',
-  twitter: 'https://twitter.com/AudiusProject',
-  contact: 'mailto:contact@audius.co',
-  careers: 'https://jobs.lever.co/audius',
-  help: 'https://help.audius.co/',
-  terms: 'https://audius.co/legal/terms-of-use'
-}
-
 const messages = {
+  heading: 'About',
   discord: 'Join our community on Discord',
   twitter: 'Follow us on Twitter',
   instagram: 'Follow us on Instagram',
   contact: 'Contact Us',
   careers: 'Careers at Audius',
   help: 'Help / FAQ',
-  terms: 'Terms & Privacy Policy',
-
+  terms: 'Terms of Service',
+  privacy: 'Privacy Policy',
   title: 'Audius Music',
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT
 }
 
-const AboutSettingsPage = (props: SettingsPageProps) => {
-  const openLink = (link: string) => {
-    window.open(link, '_blank')
-  }
-
+const AboutSettingsPage = () => {
   return (
     <Page
-      title='About'
+      title={messages.heading}
       contentClassName={settingsPageStyles.pageContent}
       containerClassName={settingsPageStyles.page}
     >
@@ -69,32 +65,43 @@ const AboutSettingsPage = (props: SettingsPageProps) => {
             <Row
               prefix={<IconDiscord className={styles.icon} />}
               title={messages.discord}
-              onClick={() => openLink(links.discord)}
+              href={AUDIUS_DISCORD_LINK}
             />
             <Row
               prefix={<IconTwitter className={styles.icon} />}
               title={messages.twitter}
-              onClick={() => openLink(links.twitter)}
+              href={AUDIUS_TWITTER_LINK}
             />
             <Row
               prefix={<IconInstagram className={styles.icon} />}
               title={messages.instagram}
-              onClick={() => openLink(links.instagram)}
+              href={AUDIUS_INSTAMGRAM_LINK}
             />
             <Row
               prefix={<IconContact className={styles.icon} />}
               title={messages.contact}
-              onClick={() => openLink(links.contact)}
+              href={AUDIUS_CONTACT_EMAIL_LINK}
             />
             <Row
               prefix={<IconCareers className={styles.icon} />}
               title={messages.careers}
-              onClick={() => openLink(links.careers)}
+              href={AUDIUS_CAREERS_LINK}
             />
           </Grouping>
           <Grouping>
-            <Row title={messages.help} onClick={() => openLink(links.help)} />
-            <Row title={messages.terms} onClick={() => openLink(links.terms)} />
+            <Row title={messages.help} href={AUDIUS_HELP_LINK} />
+            <Row
+              title={messages.terms}
+              to={TERMS_OF_SERVICE}
+              target='_blank'
+              rel='noreferrer'
+            />
+            <Row
+              title={messages.privacy}
+              to={PRIVACY_POLICY}
+              target='_blank'
+              rel='noreferrer'
+            />
           </Grouping>
         </GroupableList>
       </div>
