@@ -59,12 +59,12 @@ def update_user_is_available_statuses(
     for user in users:
         user_id = user["userId"]
         delisted = user["delisted"]
-        delist_created_at = datetime.strptime(
+        delist_timestamp = datetime.strptime(
             user["createdAt"], DATETIME_FORMAT_STRING
         ).timestamp()
         user_delist_map[user_id] = {
             "delisted": delisted,
-            "delist_created_at": delist_created_at,
+            "delist_timestamp": delist_timestamp,
         }
 
     user_ids = set(user_delist_map.keys())
@@ -82,7 +82,7 @@ def update_user_is_available_statuses(
         # be created. This is to keep delisting unblocked despite data inconsistencies.
         def wait_for_user_to_be_indexed(user_id):
             return (
-                user_delist_map[user_id]["delist_created_at"] > current_block_timestamp
+                user_delist_map[user_id]["delist_timestamp"] > current_block_timestamp
             )
 
         missing_user_ids_to_wait_for = set(
@@ -131,12 +131,12 @@ def update_track_is_available_statuses(
     for track in tracks:
         track_id = track["trackId"]
         delisted = track["delisted"]
-        delist_created_at = datetime.strptime(
+        delist_timestamp = datetime.strptime(
             track["createdAt"], DATETIME_FORMAT_STRING
         ).timestamp()
         track_delist_map[track_id] = {
             "delisted": delisted,
-            "delist_created_at": delist_created_at,
+            "delist_timestamp": delist_timestamp,
         }
 
     track_ids = set(track_delist_map.keys())
@@ -155,7 +155,7 @@ def update_track_is_available_statuses(
 
         def wait_for_track_to_be_indexed(track_id):
             return (
-                track_delist_map[track_id]["delist_created_at"]
+                track_delist_map[track_id]["delist_timestamp"]
                 > current_block_timestamp
             )
 
