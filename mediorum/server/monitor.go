@@ -18,7 +18,7 @@ func (ss *MediorumServer) monitorCidCursors() {
 		if err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
 			ss.cachedCidCursors = cidCursors
 
-			if getPercentNodesSeededLegacy(cidCursors, ss.logger) > 50 {
+			if ss.isSeedingLegacy && getPercentNodesSeededLegacy(cidCursors, ss.logger) > 50 {
 				ss.isSeedingLegacy = false
 				ss.logger.Info("seeding legacy complete")
 			}

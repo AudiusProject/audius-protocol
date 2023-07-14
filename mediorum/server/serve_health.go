@@ -172,3 +172,23 @@ func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
 	err = json.Unmarshal(body, &legacyHealth)
 	return legacyHealth, err
 }
+
+func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			return c.JSON(500, "database not healthy")
+		}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
+		}
+
+		return next(c)
+	}
+}
