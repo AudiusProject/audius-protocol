@@ -107,6 +107,10 @@ export class TracksApi extends TracksApiWithoutStream {
       parsedMetadata,
       userId
     )
+    const options: { previewStartSeconds?: string } = {}
+    if (metadata.preview_start_seconds) {
+      options.previewStartSeconds = metadata.preview_start_seconds.toString()
+    }
 
     // Upload track audio and cover art to storage node
     const [coverArtResponse, audioResponse] = await Promise.all([
@@ -126,7 +130,8 @@ export class TracksApi extends TracksApiWithoutStream {
           await this.storage.uploadFile({
             file: trackFile,
             onProgress,
-            template: 'audio'
+            template: 'audio',
+            options
           }),
         (e) => {
           console.log('Retrying uploadTrackAudio', e)
