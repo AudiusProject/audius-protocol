@@ -10,7 +10,7 @@ from typing import List, Optional, Tuple, TypedDict, Union
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import and_, desc
+from sqlalchemy import BigInteger, and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -248,12 +248,18 @@ def get_purchase_metadata_from_memo(
                         session.query(Track.premium_conditions, Track.owner_id)
                         .filter(
                             Track.track_id == content_metadata["id"],
-                            Track.is_current == True,
+                            Track.is_current.in_(True, False),
                             Track.premium_conditions["usdc_purchase"] != None,
-                            # Does this even make sense?
-                            Track.premium_conditions["usdc_purchase"]["slot"] <= slot,
+                            Track.premium_conditions["usdc_purchase"][
+                                "slot"
+                            ].astext.cast(BigInteger)
+                            <= slot,
                         )
                         .first()
+                    )
+                else:
+                    logger.error(
+                        f"index_user_bank.py | Unknown content type {content_metadata['type']}"
                     )
                 if results:
                     premium_conditions, owner_id = results
@@ -261,7 +267,7 @@ def get_purchase_metadata_from_memo(
                         "type": PurchaseType[content_metadata["type"].lower()],
                         "id": content_metadata["id"],
                         "owner_id": owner_id,
-                        "price": int(premium_conditions[0]["usdc_purchase"]["price"])
+                        "price": int(premium_conditions["usdc_purchase"]["price"])
                         * 10000,
                     }
                 else:
