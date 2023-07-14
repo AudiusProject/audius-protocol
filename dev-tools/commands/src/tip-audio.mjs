@@ -6,9 +6,9 @@ import { parseSplWallet, initializeAudiusLibs } from "./utils.mjs";
 
 program.command("tip-audio")
   .description("Send a tip")
-  .argument("<account>", "The account to mint tokens for; can be a @handle, #userId, or splWallet")
+  .argument("<account>", "The account to tip tokens to; can be a @handle, #userId, or splWallet")
   .argument("<amount>", "The amount of tokens to tip (in wei)")
-  .option("-f, --from <from>", "The account to tip from")
+  .requiredOption("-f, --from <from>", "The account to tip from")
   .action(async (account, amount, { from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     const splWallet = await parseSplWallet(account);

@@ -1,4 +1,4 @@
-import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk"
+import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs, developmentConfig, DiscoveryNodeSelector } from "@audius/sdk"
 import { PublicKey } from "@solana/web3.js"
 
 export const initializeAudiusLibs = async (handle) => {
@@ -40,19 +40,18 @@ export const initializeAudiusLibs = async (handle) => {
     isStorageV2Only: true
   });
 
-  // This is a bad solution
   await audiusLibs.init();
-  await audiusLibs.Account.logout();
-  await audiusLibs.localStorage.removeItem("hedgehog-entropy-key")
 
   if (handle) {
+    // Log out of existing user, log in as new user, and re-init
+    await audiusLibs.Account.logout();
+    await audiusLibs.localStorage.removeItem("hedgehog-entropy-key")
     await audiusLibs.localStorage.setItem(
       "hedgehog-entropy-key",
       audiusLibs.localStorage.getItem(`handle-${handle}`),
     );
+    await audiusLibs.init();
   }
-
-  await audiusLibs.init();
 
   return audiusLibs;
 };
@@ -61,22 +60,17 @@ let audiusSdk;
 export const initializeAudiusSdk = async () => {
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
-      appName: 'audius-cmd',
-      discoveryProviderConfig: {},
-      ethWeb3Config: AudiusLibs.configEthWeb3(
-        process.env.ETH_TOKEN_ADDRESS,
-        process.env.ETH_REGISTRY_ADDRESS,
-        process.env.ETH_PROVIDER_URL,
-        process.env.ETH_OWNER_WALLET,
-      ),
-      identityServiceConfig: AudiusLibs.configIdentityService(
-        process.env.IDENTITY_SERVICE_URL,
-      ),
-      web3Config: AudiusLibs.configInternalWeb3(
-        process.env.POA_REGISTRY_ADDRESS,
-        process.env.POA_PROVIDER_URL,
-        process.env.ENTITY_MANAGER_ADDRESS
-      ),
+      appName: "audius-cmd",
+      services: {
+        discoveryNodeSelector: new DiscoveryNodeSelector({
+          healthCheckThresholds: {
+            minVersion: developmentConfig.minVersion,
+            maxBlockDiff: developmentConfig.maxBlockDiff,
+            maxSlotDiffPlays: developmentConfig.maxSlotDiffPlays,
+          },
+          bootstrapServices: developmentConfig.discoveryNodes,
+        }),
+      },
     });
   }
 
@@ -86,7 +80,7 @@ export const initializeAudiusSdk = async () => {
 export const parseUserId = async (arg) => {
   if (arg.startsWith('@')) { // @handle
     const audiusSdk = await initializeAudiusSdk();
-    const { id } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) });
+    const { data: { id } } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) });
     return AudiusUtils.decodeHashId(id);
   } else if (arg.startsWith('#')) { // #userId
     return Number(arg.slice(1));
@@ -98,8 +92,13 @@ export const parseUserId = async (arg) => {
 export const parseSplWallet = async (arg) => {
   if (arg.startsWith('@') || arg.startsWith('#') || (arg.length < 32)) { // not splWallet
     const audiusSdk = await initializeAudiusSdk();
-    const { spl_wallet } = await audiusSdk.users.getUser({ id: AudiusUtils.encodeHashId(await parseUserId(arg)) });
-    return new PublicKey(spl_wallet);
+    const audiusLibs = await initializeAudiusLibs()
+    const { data: { splWallet, ercWallet } } = await audiusSdk.users.getUser({ id: AudiusUtils.encodeHashId(await parseUserId(arg)) });
+    if (!splWallet) {
+      const { userbank } = await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded(undefined, ercWallet)
+      return userbank
+    }
+    return new PublicKey(splWallet);
   } else { // splWallet
     return new PublicKey(arg);
   }
