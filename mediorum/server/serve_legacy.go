@@ -145,7 +145,7 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 
 func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
 	var hosts []string
-	sql := `select "host" from cid_lookup where "multihash" = $1 order by random()`
+	sql := `select "host" from cid_lookup where "multihash" = $1 and "host" is not null order by random()`
 	err := pgxscan.Select(ctx, ss.pgPool, &hosts, sql, cid)
 	return hosts, err
 }
