@@ -75,7 +75,7 @@ def update_track_routes_table(
     """Creates the route for the given track"""
 
     # Check if the title is staying the same, and if so, return early
-    if track_record.title == track_metadata["title"]:
+    if "title" not in track_metadata or track_record.title == track_metadata["title"]:
         return
 
     # Get the title slug, and set the new slug to that
@@ -191,31 +191,16 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
                 }
 
         elif key == "route_id":
-            track_record.route_id = helpers.create_track_route_id(
-                track_metadata["title"], handle
-            )
+            if "title" in track_metadata:
+                track_record.route_id = helpers.create_track_route_id(
+                    track_metadata["title"], handle
+                )
 
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
             if key in track_metadata:
                 setattr(track_record, key, track_metadata[key])
-
-    if not track_record.premium_conditions:
-        track_record.premium_conditions = null()
-
-    if not track_record.stem_of:
-        track_record.stem_of = null()
-
-    if not track_record.remix_of:
-        track_record.remix_of = null()
-
-    if not track_record.download:
-        track_record.download = {
-            "is_downloadable": False,
-            "requires_follow": False,
-            "cid": None,
-    }
 
     return track_record
 

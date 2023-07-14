@@ -312,7 +312,7 @@ def parse_metadata(metadata, action, entity_type):
         # Don't format metadata for UPDATEs
         # This is to support partial updates 
         # Individual entities are responsible for updating existing records with metadata
-        if not action == Action.UPDATE:
+        if action != Action.UPDATE:
             _, metadata_format = get_metadata_type_and_format(entity_type)
             formatted_json = get_metadata_from_json(metadata_format, metadata_json)
 
