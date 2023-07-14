@@ -1,6 +1,7 @@
-import { ReactNode } from 'react'
+import { ComponentType, ReactNode } from 'react'
 
 import cn from 'classnames'
+import { Link, LinkProps } from 'react-router-dom'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 
@@ -18,7 +19,7 @@ type RowProps = {
   includeSpacing?: boolean
   // Adds an arrow to the row component if `onClick` is provided
   onClick?: () => void
-}
+} & Omit<Partial<LinkProps>, 'prefix'>
 
 /**
  * A row component to be used within a <Grouping />
@@ -29,16 +30,32 @@ const Row = ({
   body,
   children,
   onClick,
-  includeSpacing = true
+  href,
+  to,
+  includeSpacing = true,
+  ...other
 }: RowProps) => {
+  const RootComponent = (href ? 'a' : to ? Link : 'div') as ComponentType<any>
+
+  const rootProps = href
+    ? {
+        target: '_blank',
+        rel: 'norefferer'
+      }
+    : {}
+
   return (
-    <div
+    <RootComponent
       className={cn(styles.row, {
         [styles.isClickable]: !!onClick,
         [styles.hasBody]: !!children,
         [styles.includeSpacing]: includeSpacing
       })}
+      to={to}
+      href={href}
       onClick={onClick}
+      {...rootProps}
+      {...other}
     >
       <div className={styles.content}>
         {title && (
@@ -55,7 +72,7 @@ const Row = ({
         )}
       </div>
       {onClick && <IconCaretRight className={styles.iconCaretRight} />}
-    </div>
+    </RootComponent>
   )
 }
 

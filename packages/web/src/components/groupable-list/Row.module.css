@@ -40,6 +40,7 @@
   align-items: center;
   font-size: var(--font-s);
   font-weight: var(--font-medium);
+  color: var(--neutral);
 }
 
 .title i {

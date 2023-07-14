@@ -126,6 +126,7 @@ export const AUDIUS_AI_BLOG_LINK =
   'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius'
 export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
+export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
 
 // Org Links
 export const AUDIUS_ORG = 'https://audius.org'
@@ -139,6 +140,7 @@ export const AUDIUS_SIGN_UP_LINK = '/signup'
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
 export const AUDIUS_EXPLORE_LINK = '/explore'
+export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
 export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
 export const AUDIUS_PODCAST_LINK =
