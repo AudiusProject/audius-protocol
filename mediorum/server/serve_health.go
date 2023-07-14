@@ -126,11 +126,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	if !ss.Config.WalletIsRegistered {
 		status = 506
 	} else if !healthy {
-		if ss.isSeeding {
-			status = 503
-		} else {
-			status = 500
-		}
+		status = 503
 	}
 
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
@@ -180,7 +176,7 @@ func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc
 		}
 		dbHealthy := ss.databaseSize > 0
 		if !dbHealthy {
-			return c.JSON(500, "database not healthy")
+			return c.JSON(503, "database not healthy")
 		}
 		if ss.isSeeding {
 			return c.JSON(503, "seeding")
