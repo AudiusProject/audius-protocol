@@ -165,7 +165,19 @@ type TransferWAudioBalanceConfig = {
  * For it to work, you have to have the eth private key belonging to the eth public key
  * that generated the solana account
  */
-export async function transferWAudioBalance({
+export async function transferWAudioBalance(args: TransferWAudioBalanceConfig) {
+  const instructions = await createTransferInstructions(args)
+  return await args.transactionHandler.handleTransaction({
+    instructions: [
+      instructions.secpTransactionInstruction,
+      instructions.transferInstruction
+    ],
+    errorMapping: ClaimableProgramError,
+    feePayerOverride: args.feePayerKey
+  })
+}
+
+export const createTransferInstructions = async ({
   amount,
   senderEthAddress,
   senderEthPrivateKey,
@@ -176,9 +188,8 @@ export async function transferWAudioBalance({
   feePayerKey,
   claimableTokenProgramKey,
   connection,
-  mintKey,
-  transactionHandler
-}: TransferWAudioBalanceConfig) {
+  mintKey
+}: Omit<TransferWAudioBalanceConfig, 'transactionHandler'>) => {
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
 
@@ -277,17 +288,13 @@ export async function transferWAudioBalance({
   const ethAddressArr = SolanaUtils.ethAddressToArray(senderEthAddress)
   const transferDataInstr = Uint8Array.of(1, ...ethAddressArr)
 
-  const instructions = [
+  const instructions = {
     secpTransactionInstruction,
-    new TransactionInstruction({
+    transferInstruction: new TransactionInstruction({
       keys: accounts,
       programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
       data: Buffer.from(transferDataInstr)
     })
-  ]
-  return await transactionHandler.handleTransaction({
-    instructions,
-    errorMapping: ClaimableProgramError,
-    feePayerOverride: feePayerKey
-  })
+  }
+  return instructions
 }

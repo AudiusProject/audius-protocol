@@ -2,12 +2,13 @@ import solanaWeb3, {
   Connection,
   Keypair,
   PublicKey,
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL,
+  TransactionInstruction
 } from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
 
-import { transferWAudioBalance } from './transfer'
+import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import {
   createAssociatedTokenAccount,
@@ -463,6 +464,67 @@ export class SolanaWeb3Manager {
       connection: this.connection,
       mintKey: this.mints.audio,
       transactionHandler: this.transactionHandler
+    })
+  }
+
+  async purchaseContent({
+    id,
+    type,
+    splits
+  }: {
+    id: number
+    type: 'track'
+    splits: Array<{ address: string; amount: BN }>
+  }) {
+    if (!this.web3Manager) {
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
+    }
+    const senderEthAddress = this.web3Manager.getWalletAddress()
+    const senderSolanaAddress = await getBankAccountAddress(
+      senderEthAddress,
+      this.claimableTokenPDAs.usdc.pubkey,
+      this.solanaTokenKey
+    )
+    const instructions = []
+    for (const { address, amount } of splits) {
+      const { secpTransactionInstruction, transferInstruction } =
+        await createTransferInstructions({
+          amount,
+          feePayerKey: this.feePayerKey,
+          senderEthAddress,
+          senderEthPrivateKey:
+            this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
+          senderSolanaAddress,
+          recipientSolanaAddress: address,
+          claimableTokenPDA: this.claimableTokenPDAs.usdc.pubkey,
+          solanaTokenProgramKey: this.solanaTokenKey,
+          claimableTokenProgramKey: this.claimableTokenProgramKey,
+          connection: this.connection,
+          mintKey: this.mints.usdc.pubkey
+        })
+      instructions.push(secpTransactionInstruction)
+      instructions.push(transferInstruction)
+    }
+    const MEMO_PROGRAM_ID = new PublicKey(
+      'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+    )
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: new PublicKey(this.feePayerKey),
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(JSON.stringify({ id, type }))
+    })
+    return await this.transactionHandler.handleTransaction({
+      instructions: [...instructions, memoInstruction],
+      skipPreflight: true,
+      feePayerOverride: this.feePayerKey
     })
   }
 
