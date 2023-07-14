@@ -10,6 +10,8 @@ import (
 func init() {
 	fmt.Println("reaper_test.go init() called")
 
+	BATCH_SIZE = 3
+
 	config = &Config{
 		MoveFiles: true,
 		MoveDir:   "/tmp/reaper_test/to_delete",

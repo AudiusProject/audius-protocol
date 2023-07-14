@@ -12,11 +12,11 @@ import (
 	"sort"
 	"strings"
 	"syscall"
+	"time"
+	"unsafe"
 
 	_ "github.com/lib/pq"
 )
-
-const BATCH_SIZE = 1000
 
 var (
 	FILE_TYPES = []string{"track", "copy320", "metadata", "image", "dir", "not_in_db"}
@@ -24,6 +24,7 @@ var (
 	dbUrl      string
 	reaperCmd  *flag.FlagSet
 	b          *Batcher
+	BATCH_SIZE int
 )
 
 type FileRow struct {
@@ -139,6 +140,8 @@ func initCounter() map[string]map[string]int {
 func init() {
 	fmt.Println("reaper.go init() called")
 
+	BATCH_SIZE = 1000
+
 	dbUrl = os.Getenv("dbUrl")
 	if dbUrl == "" {
 		dbUrl = "postgres://postgres:example@localhost:5454/m1"
@@ -202,6 +205,89 @@ func Run() {
 	report(b)
 }
 
+func WalkTwo() {
+	filePaths := make(chan string)
+
+	// Start a goroutine to walk the directory and send file paths to the channel
+	go func() {
+		defer close(filePaths)
+		err := filepath.Walk(config.WalkDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				filePaths <- path
+			}
+			return nil
+		})
+		if err != nil {
+			fmt.Println("Error walking directory:", err)
+		}
+	}()
+
+	// Create a batch slice to hold file paths for batch processing
+	batch := make([]string, 0, BATCH_SIZE)
+
+	b, err := NewBatcher(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer b.Close()
+
+	// Process file paths in batches
+	for filePath := range filePaths {
+		batch = append(batch, filePath)
+
+		// If the batch size is reached, process the batch
+		if len(batch) == BATCH_SIZE {
+			err = processBatch(b.DB, batch)
+			if err != nil {
+				fmt.Println("Error processing batch:", err)
+			}
+			batch = batch[:0] // Reset the batch slice
+		}
+	}
+
+	// Process any remaining files in the last batch
+	if len(batch) > 0 {
+		err = processBatch(b.DB, batch)
+		if err != nil {
+			fmt.Println("Error processing final batch:", err)
+		}
+	}
+}
+
+func processBatch(db *sql.DB, batch []string) error {
+	// Perform batch processing with the file paths in the batch slice
+	// Here, you can execute your desired operations, such as querying from a PostgreSQL table
+
+	// Example: Selecting distinct rows matching the file paths in a "files" table
+	query := `SELECT DISTINCT "storagePath", "type", size FROM "FilesTest" WHERE "storagePath" = ANY($1)`
+	rows, err := db.Query(query, batch)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var rowStoragePath string
+		var rowType string
+		err := rows.Scan(&rowStoragePath, &rowType)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Path: %s, Type: %s\n", rowStoragePath, rowType)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (b *Batcher) Walk() error {
 
 	err := filepath.Walk(b.Config.WalkDir, func(path string, info os.FileInfo, err error) error {
@@ -242,6 +328,7 @@ func (b *Batcher) handleBatch() {
 	rowsInDB, rowsNotInDB := b.checkDB()
 	fmt.Printf("files_in_db:      %d\n", len(rowsInDB))
 	fmt.Printf("files_not_in_db:  %d\n\n", len(rowsNotInDB))
+	fmt.Printf("sizeof b.Batch: %d bytes\n", unsafe.Sizeof(b.Batch))
 
 	for _, filePath := range rowsNotInDB {
 		// if ! contains()
@@ -254,7 +341,9 @@ func (b *Batcher) handleBatch() {
 	}
 	rowsInDB = nil
 
-	b.Batch = b.Batch[:0]
+	// b.Batch = b.Batch[:0]
+	// Clear the Batch slice
+	b.Batch = make([]string, 0, BATCH_SIZE)
 }
 
 func (b *Batcher) checkDB() ([]FileRow, []string) {
@@ -296,6 +385,8 @@ func (b *Batcher) checkDB() ([]FileRow, []string) {
 			rowsNotInDB = append(rowsNotInDB, storagePath)
 		}
 	}
+
+	time.Sleep(time.Millisecond * 200)
 
 	return rowsInDB, rowsNotInDB
 }

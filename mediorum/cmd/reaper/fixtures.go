@@ -11,6 +11,8 @@ func generateTestFixtures(b *Batcher) error {
 
 	var err error
 
+	// directories := []string{"111", "222", "333", "444", "555", "666", "777", "888", "999", "000"}
+	// files := []string{"Qmaaa", "Qmbbb", "Qmccc", "Qmddd", "Qmeee"}
 	directories := []string{"111", "222", "333", "444"}
 	files := []string{"Qmaaa", "Qmbbb", "Qmccc"}
 
