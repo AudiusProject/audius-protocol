@@ -227,6 +227,7 @@ def process_create_userbank_instruction(
 
 
 class PurchaseMetadataDict(TypedDict):
+    owner_id: int
     price: int
     type: PurchaseType
     id: int
@@ -242,24 +243,24 @@ def get_purchase_metadata_from_memo(
             content_metadata = json.loads(memo)
             if "type" in content_metadata and "id" in content_metadata:
                 premium_conditions = None
-                if content_metadata["type"] == "TRACK":
-                    premium_conditions = (
-                        session.query(Track.premium_conditions)
+                if PurchaseType[content_metadata["type"].lower()] == PurchaseType.track:
+                    results = (
+                        session.query(Track.premium_conditions, Track.owner_id)
                         .filter(
                             Track.track_id == content_metadata["id"],
                             Track.is_current == True,
-                            # Track.premium_conditions["usdc_purchase"]["slot"] <= slot,
+                            Track.premium_conditions["usdc_purchase"] != None,
+                            # Does this even make sense?
+                            Track.premium_conditions["usdc_purchase"]["slot"] <= slot,
                         )
                         .first()
                     )
-                if (
-                    premium_conditions
-                    and "usdc_purchase" in premium_conditions[0]
-                    and "price" in premium_conditions[0]["usdc_purchase"]
-                ):
+                if results:
+                    premium_conditions, owner_id = results
                     return {
                         "type": PurchaseType[content_metadata["type"].lower()],
                         "id": content_metadata["id"],
+                        "owner_id": owner_id,
                         "price": int(premium_conditions[0]["usdc_purchase"]["price"])
                         * 10000,
                     }
@@ -278,6 +279,7 @@ def validate_purchase(
     balance_changes: dict[str, BalanceChange],
     sender_account: str,
     receiver_account: str,
+    receiver_user_id: Union[int, None],
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
     # Validate the amounts sent and received are equal
@@ -294,6 +296,11 @@ def validate_purchase(
     if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
         logger.error(
             f"index_user_bank.py | Purchase price exceeds sent amount. Sent={balance_changes[sender_account]['change']} Price={purchase_metadata['price']} | purchase_metadata={purchase_metadata} buyer={sender_account} seller={receiver_account}"
+        )
+        return False
+    if receiver_user_id != purchase_metadata["owner_id"]:
+        logger.error(
+            f"index_user_bank.py | Paid user doesn't own the content! Receiver={receiver_user_id} Owner={purchase_metadata['owner_id']}"
         )
         return False
     return True
@@ -373,6 +380,7 @@ def validate_and_index_purchase(
         balance_changes=balance_changes,
         sender_account=sender_account,
         receiver_account=receiver_account,
+        receiver_user_id=receiver_user_id,
     ):
         index_purchase(
             session=session,
