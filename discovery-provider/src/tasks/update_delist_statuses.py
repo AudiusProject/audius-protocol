@@ -376,7 +376,6 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
     db = update_delist_statuses.db
     redis = update_delist_statuses.redis
     trusted_notifier_manager = update_delist_statuses.trusted_notifier_manager
-    logger.info(f"update_delist_statuses.py | MIHCHELLE | current_block_timestamp: {current_block_timestamp}")
     if not trusted_notifier_manager:
         logger.error(
             "update_delist_statuses.py | failed to get trusted notifier from chain. not polling delist statuses"
