@@ -1,10 +1,11 @@
 import concurrent.futures
 import datetime
+import json
 import logging
 import re
 import time
 from decimal import Decimal
-from typing import List, Optional, Tuple, TypedDict
+from typing import List, Optional, Tuple, TypedDict, Union
 
 import base58
 from redis import Redis
@@ -13,10 +14,17 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.tracks.track import Track
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
     TransactionMethod,
     TransactionType,
+)
+from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_transactions_history import (
+    USDCTransactionMethod,
+    USDCTransactionsHistory,
+    USDCTransactionType,
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
@@ -28,7 +36,11 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import SPL_TOKEN_ID_PK, get_address_pair
+from src.solana.solana_helpers import (
+    SPL_TOKEN_ID_PK,
+    get_address_pair,
+    get_base_address,
+)
 from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
@@ -47,8 +59,10 @@ from src.utils.cache_solana_program import (
 )
 from src.utils.config import shared_config
 from src.utils.helpers import (
+    BalanceChange,
+    decode_all_solana_memos,
     get_account_index,
-    get_solana_tx_token_balances,
+    get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
 )
@@ -69,16 +83,25 @@ USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = PublicKey(USDC_MINT) if USDC_MINT else None
 
+# Transfer instructions don't have a mint acc arg but do have userbank authority.
+# So re-derive the claimable token PDAs for each mint here to help us determine mint later.
+WAUDIO_PDA, _ = get_base_address(WAUDIO_MINT_PUBKEY, USER_BANK_KEY)
+USDC_PDA, _ = get_base_address(USDC_MINT_PUBKEY, USER_BANK_KEY)
+
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 INITIAL_FETCH_SIZE = 10
 
-# Used to find the correct accounts for sender/receiver in the transaction
+# Used to find the correct accounts for sender/receiver in the transaction and the ClaimableTokensPDA
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
+TRANSFER_USER_BANK_PDA_INDEX = 4
 
 # Used to find the mint for a CreateTokenAccount instruction
 CREATE_MINT_ACCOUNT_INDEX = 1
+
+# Used to find the memo instruction
+TRANSFER_MEMO_INSTRUCTION_INDEX = 2
 
 
 # Recover ethereum public key from bytes array
@@ -203,10 +226,255 @@ def process_create_userbank_instruction(
         logger.error(e)
 
 
+class PurchaseMetadataDict(TypedDict):
+    price: int
+    type: PurchaseType
+    id: int
+
+
+def get_purchase_metadata_from_memo(
+    session: Session, memos: List[str], slot: int
+) -> Union[PurchaseMetadataDict, None]:
+    """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
+    for memo in memos:
+        logger.debug(f"index_user_bank.py | MEMO {memo}")
+        try:
+            content_metadata = json.loads(memo)
+            if "type" in content_metadata and "id" in content_metadata:
+                premium_conditions = None
+                if content_metadata["type"] == "TRACK":
+                    premium_conditions = (
+                        session.query(Track.premium_conditions)
+                        .filter(
+                            Track.track_id == content_metadata["id"],
+                            Track.is_current == True,
+                            # Track.premium_conditions["usdc_purchase"]["slot"] <= slot,
+                        )
+                        .first()
+                    )
+                if (
+                    premium_conditions
+                    and "usdc_purchase" in premium_conditions[0]
+                    and "price" in premium_conditions[0]["usdc_purchase"]
+                ):
+                    return {
+                        "type": PurchaseType[content_metadata["type"].lower()],
+                        "id": content_metadata["id"],
+                        "price": int(premium_conditions[0]["usdc_purchase"]["price"])
+                        * 10000,
+                    }
+                else:
+                    logger.error(
+                        f"index_user_bank.py | Couldn't find premium conditions for {content_metadata}"
+                    )
+        except json.JSONDecodeError as e:
+            logger.debug(f"index_user_bank.py | Couldn't parse memo as json {e}")
+
+    return None
+
+
+def validate_purchase(
+    purchase_metadata: PurchaseMetadataDict,
+    balance_changes: dict[str, BalanceChange],
+    sender_account: str,
+    receiver_account: str,
+):
+    """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
+    # Validate the amounts sent and received are equal
+    # TODO: Change this when payment router is going to take a cut
+    if (
+        balance_changes[sender_account]["change"]
+        + balance_changes[receiver_account]["change"]
+        != 0
+    ):
+        logger.error(
+            f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {balance_changes[sender_account]['change']}, Received = {balance_changes[receiver_account]['change']}"
+        )
+        return False
+    if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
+        logger.error(
+            f"index_user_bank.py | Purchase price exceeds sent amount. Sent={balance_changes[sender_account]['change']} Price={purchase_metadata['price']} | purchase_metadata={purchase_metadata} buyer={sender_account} seller={receiver_account}"
+        )
+        return False
+    return True
+
+
+def index_purchase(
+    session: Session,
+    receiver_user_id: Union[int, None],
+    receiver_account: str,
+    sender_user_id: int,
+    sender_account: str,
+    balance_changes: dict[str, BalanceChange],
+    purchase_metadata: PurchaseMetadataDict,
+    slot: int,
+    timestamp: datetime.datetime,
+    tx_sig: str,
+):
+    usdc_purchase = USDCPurchase(
+        slot=slot,
+        signature=tx_sig,
+        seller_user_id=receiver_user_id,
+        buyer_user_id=sender_user_id,
+        amount=purchase_metadata["price"],
+        content_type=purchase_metadata["type"],
+        content_id=purchase_metadata["id"],
+    )
+    logger.debug(
+        f"index_user_bank.py | Creating usdc_purchase for purchase {usdc_purchase}"
+    )
+    session.add(usdc_purchase)
+
+    usdc_tx_sent = USDCTransactionsHistory(
+        user_bank=sender_account,
+        slot=slot,
+        signature=tx_sig,
+        transaction_type=USDCTransactionType.purchase_content,
+        method=USDCTransactionMethod.send,
+        transaction_created_at=timestamp,
+        change=Decimal(balance_changes[sender_account]["change"]),
+        balance=Decimal(balance_changes[sender_account]["post_balance"]),
+    )
+    logger.debug(
+        f"index_user_bank.py | Creating usdc_tx_history send tx for purchase {usdc_tx_sent}"
+    )
+    session.add(usdc_tx_sent)
+    usdc_tx_received = USDCTransactionsHistory(
+        user_bank=receiver_account,
+        slot=slot,
+        signature=tx_sig,
+        transaction_type=USDCTransactionType.purchase_content,
+        method=USDCTransactionMethod.receive,
+        transaction_created_at=timestamp,
+        change=Decimal(balance_changes[receiver_account]["change"]),
+        balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+    )
+    session.add(usdc_tx_received)
+    logger.debug(
+        f"index_user_bank.py | Creating usdc_tx_history received tx for purchase {usdc_tx_received}"
+    )
+
+
+def validate_and_index_purchase(
+    session: Session,
+    receiver_user_id: Union[int, None],
+    receiver_account: str,
+    sender_user_id: int,
+    sender_account: str,
+    balance_changes: dict[str, BalanceChange],
+    purchase_metadata: Union[PurchaseMetadataDict, None],
+    slot: int,
+    timestamp: datetime.datetime,
+    tx_sig: str,
+):
+    """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
+    if purchase_metadata is not None and validate_purchase(
+        purchase_metadata=purchase_metadata,
+        balance_changes=balance_changes,
+        sender_account=sender_account,
+        receiver_account=receiver_account,
+    ):
+        index_purchase(
+            session=session,
+            receiver_user_id=receiver_user_id,
+            receiver_account=receiver_account,
+            sender_user_id=sender_user_id,
+            sender_account=sender_account,
+            balance_changes=balance_changes,
+            purchase_metadata=purchase_metadata,
+            slot=slot,
+            timestamp=timestamp,
+            tx_sig=tx_sig,
+        )
+    else:
+        # Both non-purchases and invalid purchases will be treated as transfers
+        usdc_tx_sent = USDCTransactionsHistory(
+            user_bank=sender_account,
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=USDCTransactionType.transfer,
+            method=USDCTransactionMethod.send,
+            transaction_created_at=timestamp,
+            change=Decimal(balance_changes[sender_account]["change"]),
+            balance=Decimal(balance_changes[sender_account]["post_balance"]),
+        )
+        logger.debug(f"index_user_bank.py | Creating transfer sent tx {usdc_tx_sent}")
+        session.add(usdc_tx_sent)
+        usdc_tx_received = USDCTransactionsHistory(
+            user_bank=receiver_account,
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=USDCTransactionType.transfer,
+            method=USDCTransactionMethod.receive,
+            transaction_created_at=timestamp,
+            change=Decimal(balance_changes[receiver_account]["change"]),
+            balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+        )
+        session.add(usdc_tx_received)
+        logger.debug(
+            f"index_user_bank.py | Creating transfer received tx {usdc_tx_received}"
+        )
+
+
+def index_user_tip(
+    session: Session,
+    receiver_user_id: int,
+    receiver_account: str,
+    sender_user_id: int,
+    sender_account: str,
+    balance_changes: dict[str, BalanceChange],
+    slot: int,
+    timestamp: datetime.datetime,
+    tx_sig: str,
+):
+    user_tip = UserTip(
+        signature=tx_sig,
+        amount=balance_changes[receiver_account]["change"],
+        sender_user_id=sender_user_id,
+        receiver_user_id=receiver_user_id,
+        slot=slot,
+        created_at=timestamp,
+    )
+    logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
+    session.add(user_tip)
+
+    audio_tx_sent = AudioTransactionsHistory(
+        user_bank=sender_account,
+        slot=slot,
+        signature=tx_sig,
+        transaction_type=TransactionType.tip,
+        method=TransactionMethod.send,
+        transaction_created_at=timestamp,
+        change=Decimal(balance_changes[sender_account]["change"]),
+        balance=Decimal(balance_changes[sender_account]["post_balance"]),
+        tx_metadata=str(receiver_user_id),
+    )
+    logger.debug(
+        f"index_user_bank.py | Creating audio_tx_history send tx for tip {audio_tx_sent}"
+    )
+    session.add(audio_tx_sent)
+    audio_tx_received = AudioTransactionsHistory(
+        user_bank=receiver_account,
+        slot=slot,
+        signature=tx_sig,
+        transaction_type=TransactionType.tip,
+        method=TransactionMethod.receive,
+        transaction_created_at=timestamp,
+        change=Decimal(balance_changes[receiver_account]["change"]),
+        balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+        tx_metadata=str(sender_user_id),
+    )
+    session.add(audio_tx_received)
+    logger.debug(
+        f"index_user_bank.py | Creating audio_tx_history received tx for tip {audio_tx_received}"
+    )
+
+
 def process_transfer_instruction(
     session: Session,
     redis: Redis,
     instruction: TransactionMessageInstruction,
+    memos: List[str],
     account_keys: List[str],
     meta: ResultMeta,
     tx_sig: str,
@@ -219,15 +487,54 @@ def process_transfer_instruction(
     sender_account = account_keys[sender_idx]
     receiver_account = account_keys[receiver_idx]
 
-    # Accounts to refresh balance
-    logger.info(
-        f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
-    )
-    user_id_accounts = refresh_user_balances(
-        session, redis, [sender_account, receiver_account]
-    )
-    if not user_id_accounts:
-        logger.error("index_user_bank.py | ERROR: Neither accounts are user banks")
+    userbank_authority_pda = account_keys[
+        get_account_index(instruction, TRANSFER_USER_BANK_PDA_INDEX)
+    ]
+    is_audio = userbank_authority_pda == str(WAUDIO_PDA)
+    is_usdc = userbank_authority_pda == str(USDC_PDA)
+    if not is_audio and not is_usdc:
+        logger.error(
+            f"index_user_bank.py | Unknown claimableTokenPDA in transaction. Expected {str(WAUDIO_PDA)} or {str(USDC_PDA)} but got {userbank_authority_pda}"
+        )
+        return
+
+    user_id_accounts = []
+
+    if is_audio:
+        # Accounts to refresh balance
+        logger.info(
+            f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
+        )
+        user_id_accounts = refresh_user_balances(
+            session, redis, [sender_account, receiver_account]
+        )
+        if not user_id_accounts:
+            logger.error("index_user_bank.py | ERROR: Neither accounts are user banks")
+            return
+    elif is_usdc:
+        user_id_accounts = (
+            session.query(User.user_id, USDCUserBankAccount.bank_account)
+            .join(
+                USDCUserBankAccount,
+                and_(
+                    USDCUserBankAccount.bank_account.in_(
+                        [sender_account, receiver_account]
+                    ),
+                    USDCUserBankAccount.ethereum_address == User.wallet,
+                ),
+            )
+            .filter(User.is_current == True)
+            .all()
+        )
+        if not user_id_accounts:
+            logger.error(
+                f"index_user_bank.py | ERROR: Neither accounts are user banks, {sender_account} {receiver_account}"
+            )
+            return
+    else:
+        logger.error(
+            f"index_user_bank.py | Unrecognized authority {userbank_authority_pda}. Expected one of AUDIO={WAUDIO_PDA} or USDC={USDC_PDA}"
+        )
         return
 
     sender_user_id: Optional[int] = None
@@ -238,103 +545,68 @@ def process_transfer_instruction(
         elif user_id_account[1] == receiver_account:
             receiver_user_id = user_id_account[0]
     if sender_user_id is None:
+        # This can happen if the transaction happens before the userbank was indexed - clients should take care to confirm the userbank is indexed first!
         logger.error(
             f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
         )
         return
 
-    pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
-        meta, sender_idx
+    balance_changes = get_solana_tx_token_balance_changes(
+        account_keys=account_keys, meta=meta
     )
-    pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
-        meta, receiver_idx
-    )
-    if (
-        pre_sender_balance is None
-        or pre_receiver_balance is None
-        or post_sender_balance is None
-        or post_receiver_balance is None
-    ):
-        logger.error("index_user_bank.py | ERROR: Sender or Receiver balance missing!")
-        return
-    sent_amount = pre_sender_balance - post_sender_balance
-    received_amount = post_receiver_balance - pre_receiver_balance
-    if sent_amount != received_amount:
-        logger.error(
-            f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
-        )
-        return
 
     # If there was only 1 user bank, index as a send external transfer
-    # Cannot index receive external transfers this way as those use the spl-token program
-    if len(user_id_accounts) == 1:
-        audio_transfer_sent = AudioTransactionsHistory(
+    # Cannot index receive external transfers this way as those use the spl-token program,
+    # not the claimable tokens program, so we will always have a sender_user_id
+    if receiver_user_id is None:
+        TransactionHistoryModel = (
+            AudioTransactionsHistory if is_audio else USDCTransactionsHistory
+        )
+        transfer_sent = TransactionHistoryModel(
             user_bank=sender_account,
             slot=slot,
             signature=tx_sig,
             transaction_type=TransactionType.transfer,
             method=TransactionMethod.send,
             transaction_created_at=timestamp,
-            change=Decimal(sent_amount),
-            balance=Decimal(post_sender_balance),
-            tx_metadata=receiver_account,
+            change=Decimal(balance_changes[sender_account]["change"]),
+            balance=Decimal(balance_changes[sender_account]["post_balance"]),
         )
-        logger.debug(
-            f"index_user_bank.py | Creating audio_transfer_sent {audio_transfer_sent}"
-        )
-        session.add(audio_transfer_sent)
-
+        if isinstance(transfer_sent, AudioTransactionsHistory):
+            transfer_sent.tx_metadata = receiver_account
+        logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
     # If there are two userbanks to update, it was a transfer from user to user
-    # Index as a user_tip
-    elif len(user_id_accounts) == 2:
-        if receiver_user_id is None:
-            logger.error(
-                f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
+    else:
+        if is_audio:
+            index_user_tip(
+                session=session,
+                receiver_user_id=receiver_user_id,
+                receiver_account=receiver_account,
+                sender_user_id=sender_user_id,
+                sender_account=sender_account,
+                balance_changes=balance_changes,
+                slot=slot,
+                timestamp=timestamp,
+                tx_sig=tx_sig,
             )
-            return
-
-        user_tip = UserTip(
-            signature=tx_sig,
-            amount=sent_amount,
-            sender_user_id=sender_user_id,
-            receiver_user_id=receiver_user_id,
-            slot=slot,
-            created_at=timestamp,
-        )
-        logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
-        session.add(user_tip)
-        challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
-
-        audio_tx_sent = AudioTransactionsHistory(
-            user_bank=sender_account,
-            slot=slot,
-            signature=tx_sig,
-            transaction_type=TransactionType.tip,
-            method=TransactionMethod.send,
-            transaction_created_at=timestamp,
-            change=Decimal(sent_amount),
-            balance=Decimal(post_sender_balance),
-            tx_metadata=str(receiver_user_id),
-        )
-        logger.debug(
-            f"index_user_bank.py | Creating audio_tx_history send tx for tip {audio_tx_sent}"
-        )
-        session.add(audio_tx_sent)
-        audio_tx_received = AudioTransactionsHistory(
-            user_bank=receiver_account,
-            slot=slot,
-            signature=tx_sig,
-            transaction_type=TransactionType.tip,
-            method=TransactionMethod.receive,
-            transaction_created_at=timestamp,
-            change=Decimal(received_amount),
-            balance=Decimal(post_receiver_balance),
-            tx_metadata=str(sender_user_id),
-        )
-        session.add(audio_tx_received)
-        logger.debug(
-            f"index_user_bank.py | Creating audio_tx_history received tx for tip {audio_tx_received}"
-        )
+            challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
+        elif is_usdc:
+            # Index as a purchase of some content
+            purchase_metadata = get_purchase_metadata_from_memo(
+                session=session, memos=memos, slot=slot
+            )
+            validate_and_index_purchase(
+                session=session,
+                receiver_user_id=receiver_user_id,
+                receiver_account=receiver_account,
+                sender_user_id=sender_user_id,
+                sender_account=sender_account,
+                balance_changes=balance_changes,
+                purchase_metadata=purchase_metadata,
+                slot=slot,
+                timestamp=timestamp,
+                tx_sig=tx_sig,
+            )
 
 
 class CreateTokenAccount(TypedDict):
@@ -402,6 +674,7 @@ def process_user_bank_tx_details(
             session=session,
             redis=redis,
             instruction=instruction,
+            memos=decode_all_solana_memos(tx_message=tx_message),
             account_keys=account_keys,
             meta=meta,
             tx_sig=tx_sig,
