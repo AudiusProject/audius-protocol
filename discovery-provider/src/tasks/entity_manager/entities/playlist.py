@@ -281,8 +281,9 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for track in playlist_tracks:
             track_id = track["track"]
-            metadata_time = track["metadata_time"]
-            metadata_index_time_dict[track_id][metadata_time] = track["time"]
+            if "metadata_time" in track:
+                metadata_time = track["metadata_time"]
+                metadata_index_time_dict[track_id][metadata_time] = track["time"]
 
         updated_tracks = []
         for track in playlist_metadata["playlist_contents"]["track_ids"]:
