@@ -217,6 +217,12 @@ services:
       file: docker-compose.blockchain.yml
       service: solana-test-validator
     <<: *common
+  
+  solana-test-validator-build:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: solana-test-validator-build
+    <<: *common
 
 volumes:
   poa-contracts-abis:
