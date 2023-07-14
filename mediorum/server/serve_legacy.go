@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -18,24 +19,25 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	logger := ss.logger.With("cid", cid)
 	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 
-	// lookup on-disk storage path
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
-	if err == pgx.ErrNoRows {
-		return ss.redirectToCid(c, cid)
-	} else if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		logger.Error("error querying cid storage path", "err", err)
-		return err
+	}
+
+	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
+	if diskPath == "" {
+		return ss.redirectToCid(c, cid)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-	isAudioFile := isAudioFile(storagePath)
+	isAudioFile := isAudioFile(diskPath)
 	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
 		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
-	if err = c.File(storagePath); err != nil {
-		logger.Error("error serving cid", "err", err, "storagePath", storagePath)
+	if err = c.File(diskPath); err != nil {
+		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, cid)
 	}
 
@@ -55,20 +57,22 @@ func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
 
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
-	if err == pgx.ErrNoRows {
-		return ss.redirectToCid(c, cid)
-	} else if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		logger.Error("error querying cid storage path", "err", err)
-		return err
+	}
+
+	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
+	if diskPath == "" {
+		return ss.redirectToCid(c, cid)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-	isAudioFile := isAudioFile(storagePath)
+	isAudioFile := isAudioFile(diskPath)
 	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
 		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
-	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
+	if _, err := os.Stat(diskPath); os.IsNotExist(err) {
 		return ss.redirectToCid(c, cid)
 	}
 
@@ -84,15 +88,24 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	sql := `select "storagePath" from "Files" where "dirMultihash" = $1 and "fileName" = $2`
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, dirCid, fileName).Scan(&storagePath)
-	if err == pgx.ErrNoRows {
-		return ss.redirectToCid(c, dirCid)
-	} else if err != nil {
+	if err != nil && err != pgx.ErrNoRows {
 		logger.Error("error querying dirCid storage path", "err", err)
-		return err
 	}
 
-	if err = c.File(storagePath); err != nil {
-		logger.Error("error serving dirCid", "err", err, "storagePath", storagePath)
+	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
+	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
+	if diskPath == "" {
+		return ss.redirectToCid(c, dirCid)
+	}
+
+	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+	isAudioFile := isAudioFile(diskPath)
+	if isAudioFile {
+		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
+	}
+
+	if err = c.File(diskPath); err != nil {
+		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, dirCid)
 	}
 
@@ -109,7 +122,7 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 
 	hosts, err := ss.findHostsWithCid(ctx, cid)
 	if err != nil {
-		return err
+		return c.String(500, "error redirecting:"+err.Error())
 	}
 
 	logger := ss.logger.With("cid", cid)
@@ -151,4 +164,58 @@ func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool
 		ss.logger.Error("isCidBlacklisted error", "err", err, "cid", cid)
 	}
 	return blacklisted
+}
+
+// Try all fallback file paths for a given CID, and return "" if the file doesn't exist at any path. See creator-node/fsutils.ts
+func getDiskPathOnlyIfFileExists(storagePath, dirMultihash, multihash string) string {
+	// happy path: file exists at the expected storage path
+	diskPath := storagePath
+	if _, err := os.Stat(diskPath); err == nil {
+		return diskPath
+	}
+
+	// try computing the path different ways that were previously used by the legacy creator node
+	if dirMultihash != "" {
+		diskPath = computeFilePathInDir(dirMultihash, multihash)
+		if _, err := os.Stat(diskPath); err == nil {
+			return diskPath
+		}
+	}
+	diskPath = computeFilePath(multihash)
+	if _, err := os.Stat(diskPath); err == nil {
+		return diskPath
+	}
+	diskPath = computeLegacyFilePath(multihash)
+	if _, err := os.Stat(diskPath); err == nil {
+		return diskPath
+	}
+
+	// we tried everything, and there's no other location we can think of to find the CID at
+	return ""
+}
+
+const DiskStoragePath string = "/file_storage"
+
+func computeLegacyFilePath(cid string) string {
+	return filepath.Join(DiskStoragePath, cid)
+}
+
+func computeFilePathInDir(dirName string, cid string) string {
+	parentDirPath := computeFilePath(dirName)
+	return filepath.Join(parentDirPath, cid)
+}
+
+func computeFilePath(cid string) string {
+	storageLocationForCid := getStorageLocationForCID(cid)
+	return filepath.Join(storageLocationForCid, cid)
+}
+
+func getStorageLocationForCID(cid string) string {
+	directoryID := cid[len(cid)-4 : len(cid)-1]
+	storageLocationForCid := filepath.Join(
+		DiskStoragePath,
+		"files",
+		directoryID,
+	)
+	return storageLocationForCid
 }

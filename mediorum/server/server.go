@@ -76,6 +76,7 @@ type MediorumServer struct {
 	storagePathUsed uint64
 	storagePathSize uint64
 	databaseSize    uint64
+	isSeeding       bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -88,6 +89,8 @@ type MediorumServer struct {
 var (
 	apiBasePath = ""
 )
+
+const PercentSeededThreshold = 50
 
 func New(config MediorumConfig) (*MediorumServer, error) {
 	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
@@ -195,6 +198,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
+		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 
@@ -223,6 +227,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads)
 	routes.GET("/uploads/:id", ss.getUpload)
+	routes.POST("/uploads/:id", ss.updateUpload, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload)
 	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
@@ -233,27 +238,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:cid", ss.getBlob, ss.ensureNotDelisted)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireSignature)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireSignature)
+	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
-
-	// todo: use `/internal/ok` instead... this is just needed for transition
-	routes.GET("/status", func(c echo.Context) error {
-		status := 200
-		if !ss.Config.WalletIsRegistered {
-			status = 506
-		}
-		dbHealthy := ss.databaseSize > 0
-		if !dbHealthy {
-			status = 500
-		}
-		return c.JSON(status, map[string]any{
-			"host":                 ss.Config.Self.Host,
-			"wallet":               ss.Config.Self.Wallet,
-			"wallet_is_registered": ss.Config.WalletIsRegistered,
-		})
-	})
 
 	// -------------------
 	// internal
@@ -262,9 +250,15 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
 		dbHealthy := ss.databaseSize > 0
 		if !dbHealthy {
-			c.JSON(500, "database not healthy")
+			return c.JSON(500, "database not healthy")
+		}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
 		}
 		return c.String(200, "OK")
 	})
@@ -331,6 +325,8 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.startPollingDelistStatuses()
 
+		go ss.pollForSeedingCompletion()
+
 	}
 
 	go ss.monitorDiskAndDbStatus()
@@ -365,4 +361,14 @@ func (ss *MediorumServer) Stop() {
 
 	ss.logger.Debug("bye")
 
+}
+
+func (ss *MediorumServer) pollForSeedingCompletion() {
+	ticker := time.NewTicker(10 * time.Second)
+	for range ticker.C {
+		if ss.crud.GetPercentNodesSeeded() > PercentSeededThreshold {
+			ss.isSeeding = false
+			return
+		}
+	}
 }

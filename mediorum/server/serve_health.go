@@ -30,6 +30,7 @@ type healthCheckResponseData struct {
 	Healthy                   bool                       `json:"healthy"`
 	Version                   string                     `json:"version"`
 	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding                 bool                       `json:"isSeeding"`
 	BuiltAt                   string                     `json:"builtAt"`
 	StartedAt                 time.Time                  `json:"startedAt"`
 	SPID                      int                        `json:"spID"`
@@ -62,7 +63,7 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
-	healthy := ss.databaseSize > 0
+	healthy := ss.databaseSize > 0 && !ss.isSeeding
 
 	// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
@@ -80,6 +81,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Healthy:                   healthy,
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
+		IsSeeding:                 ss.isSeeding,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
 		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
@@ -122,7 +124,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	if !ss.Config.WalletIsRegistered {
 		status = 506
 	} else if !healthy {
-		status = 500
+		if ss.isSeeding {
+			status = 503
+		} else {
+			status = 500
+		}
 	}
 
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))

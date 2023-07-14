@@ -2,10 +2,10 @@ import {
   DiscoveryNodeSelector,
   EntityManager,
   RepostTrackRequest,
-  SaveTrackRequest,
+  FavoriteTrackRequest,
   sdk,
   UnrepostTrackRequest,
-  UnsaveTrackRequest,
+  UnfavoriteTrackRequest,
   UpdateTrackRequest,
   FollowUserRequest,
   UnfollowUserRequest,
@@ -15,15 +15,16 @@ import {
   SubscribeToUserRequest,
   UnsubscribeFromUserRequest,
   RepostPlaylistRequest,
-  SavePlaylistRequest,
+  FavoritePlaylistRequest,
   UnrepostPlaylistRequest,
-  UnsavePlaylistRequest,
+  UnfavoritePlaylistRequest,
   UploadPlaylistRequest,
   CreatePlaylistRequest,
   PublishPlaylistRequest,
   UpdatePlaylistRequest,
   AddTrackToPlaylistRequest,
   RemoveTrackFromPlaylistRequest,
+  UpdateProfileRequest,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -68,8 +69,8 @@ const trackUpload = upload.fields([
 
 type MulterFiles =
   | {
-      [fieldname: string]: Express.Multer.File[];
-    }
+    [fieldname: string]: Express.Multer.File[];
+  }
   | undefined;
 
 app.post<UploadTrackRequest>(
@@ -158,14 +159,14 @@ app.post<DeleteTrackRequest>("/deleteTrack", async (req, res) => {
   }
 });
 
-app.post<SaveTrackRequest>("/saveTrack", async (req, res) => {
+app.post<FavoriteTrackRequest>("/favoriteTrack", async (req, res) => {
   try {
-    const saveTrackRequest: SaveTrackRequest = {
+    const favoriteTrackRequest: FavoriteTrackRequest = {
       userId: req.body.userId,
       trackId: req.body.trackId,
       metadata: req.body.metadata,
     };
-    const result = await audiusSdk.tracks.saveTrack(saveTrackRequest);
+    const result = await audiusSdk.tracks.favoriteTrack(favoriteTrackRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -173,13 +174,13 @@ app.post<SaveTrackRequest>("/saveTrack", async (req, res) => {
   }
 });
 
-app.post<UnsaveTrackRequest>("/unsaveTrack", async (req, res) => {
+app.post<UnfavoriteTrackRequest>("/unfavoriteTrack", async (req, res) => {
   try {
-    const unsaveTrackRequest: UnsaveTrackRequest = {
+    const unfavoriteTrackRequest: UnfavoriteTrackRequest = {
       userId: req.body.userId,
       trackId: req.body.trackId,
     };
-    const result = await audiusSdk.tracks.unsaveTrack(unsaveTrackRequest);
+    const result = await audiusSdk.tracks.unfavoriteTrack(unfavoriteTrackRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -401,14 +402,14 @@ app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
   }
 });
 
-app.post<SavePlaylistRequest>("/savePlaylist", async (req, res) => {
+app.post<FavoritePlaylistRequest>("/favoritePlaylist", async (req, res) => {
   try {
-    const savePlaylistRequest: SavePlaylistRequest = {
+    const favoritePlaylistRequest: FavoritePlaylistRequest = {
       userId: req.body.userId,
       playlistId: req.body.playlistId,
       metadata: req.body.metadata,
     };
-    const result = await audiusSdk.playlists.savePlaylist(savePlaylistRequest);
+    const result = await audiusSdk.playlists.favoritePlaylist(favoritePlaylistRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -416,14 +417,14 @@ app.post<SavePlaylistRequest>("/savePlaylist", async (req, res) => {
   }
 });
 
-app.post<UnsavePlaylistRequest>("/unsavePlaylist", async (req, res) => {
+app.post<UnfavoritePlaylistRequest>("/unfavoritePlaylist", async (req, res) => {
   try {
-    const unsavePlaylistRequest: UnsavePlaylistRequest = {
+    const unfavoritePlaylistRequest: UnfavoritePlaylistRequest = {
       userId: req.body.userId,
       playlistId: req.body.playlistId,
     };
-    const result = await audiusSdk.playlists.unsavePlaylist(
-      unsavePlaylistRequest
+    const result = await audiusSdk.playlists.unfavoritePlaylist(
+      unfavoritePlaylistRequest
     );
     res.send(result);
   } catch (e) {
@@ -458,6 +459,37 @@ app.post<UnrepostPlaylistRequest>("/unrepostPlaylist", async (req, res) => {
     const result = await audiusSdk.playlists.unrepostPlaylist(
       unrepostPlaylistRequest
     );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+const profileUpdate = upload.fields([
+  { name: "profilePictureFile", maxCount: 1 },
+  { name: "coverArtFile", maxCount: 1 }
+]);
+
+app.post<UpdateProfileRequest>("/updateProfile", profileUpdate as any, async (req, res) => {
+  try {
+    const profilePictureFile = (req.files as MulterFiles)?.["profilePictureFile"]?.[0];
+    const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"]?.[0];
+
+    const updateProfileRequest: UpdateProfileRequest = {
+      userId: req.body.userId,
+      profilePictureFile: profilePictureFile && {
+        buffer: profilePictureFile.buffer,
+        name: profilePictureFile.originalname
+      },
+      coverArtFile: coverArtFile && {
+        buffer: coverArtFile.buffer,
+        name: coverArtFile.originalname
+      },
+      metadata: JSON.parse(req.body.metadata),
+      onProgress: (progress: any) => console.log("Progress:", progress),
+    };
+    const result = await audiusSdk.users.updateProfile(updateProfileRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -527,3 +559,4 @@ app.post<UnsubscribeFromUserRequest>(
     }
   }
 );
+

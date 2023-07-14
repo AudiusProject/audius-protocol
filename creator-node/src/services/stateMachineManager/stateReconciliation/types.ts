@@ -63,35 +63,12 @@ export type NewReplicaSet = {
   issueReconfig: boolean
   reconfigType: string | null
 }
-export type UpdateReplicaSetUser = {
-  wallet: string
-  userId: number
-  primary: string
-  secondary1: string
-  secondary2: string
-}
 export type UserInfo = {
   clock: number
   filesHash: string
 }
 export type ReplicaToUserInfoMap = {
   [endpoint: string]: UserInfo
-}
-export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
-  UpdateReplicaSetUser & {
-    nodesToReconfigOffOf: string[]
-    replicaToUserInfoMap: ReplicaToUserInfoMap
-    parentSpanContext?: SpanContext
-  }
-export type UpdateReplicaSetJobParams =
-  UpdateReplicaSetJobParamsWithoutEnabledReconfigModes & {
-    enabledReconfigModes: string[]
-  }
-export type UpdateReplicaSetJobReturnValue = {
-  errorMsg: string
-  issuedReconfig: boolean
-  newReplicaSet: NewReplicaSet
-  healthyNodes: string[]
 }
 
 // Recover orphaned data job

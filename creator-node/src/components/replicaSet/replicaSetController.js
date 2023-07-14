@@ -10,13 +10,6 @@ const {
 } = require('../../apiHelpers')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const {
-  getReplicaSetSpIdsByUserId
-} = require('../../services/ContentNodeInfoManager')
-const {
-  SyncType,
-  SYNC_MODES
-} = require('../../services/stateMachineManager/stateMachineConstants')
-const {
   getSyncStatus,
   setSyncStatus,
   verifySPOverride
@@ -182,131 +175,6 @@ const syncRouteController = instrumentTracing({
   }
 })
 
-/**
- * Adds a job to manualSyncQueue to issue a sync to secondary with syncMode MergePrimaryAndSecondary
- * @notice This will only work if called on a primary for a user
- */
-const mergePrimaryAndSecondaryController = async (req, _res) => {
-  const serviceRegistry = req.app.get('serviceRegistry')
-  if (_.isEmpty(serviceRegistry?.recurringSyncQueue)) {
-    return errorResponseServerError(
-      'Recurring Sync Queue is not up and running yet'
-    )
-  }
-  const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
-
-  const selfEndpoint = config.get('creatorNodeEndpoint')
-
-  const wallet = req.query.wallet
-  const endpoint = req.query.endpoint
-  const forceWipe = req.query.forceWipe
-  const syncEvenIfDisabled = req.query.syncEvenIfDisabled
-
-  if (!wallet || !endpoint) {
-    return errorResponseBadRequest(`Must provide wallet and endpoint params`)
-  }
-
-  const syncType = SyncType.Recurring
-  const syncMode = forceWipe
-    ? SYNC_MODES.MergePrimaryThenWipeSecondary
-    : SYNC_MODES.MergePrimaryAndSecondary
-
-  const syncRequestParameters = {
-    baseURL: endpoint,
-    url: '/sync',
-    method: 'post',
-    data: {
-      wallet: [wallet],
-      creator_node_endpoint: selfEndpoint,
-      sync_type: syncType,
-      sync_even_if_disabled: syncEvenIfDisabled,
-      forceWipe: !!forceWipe
-    }
-  }
-
-  await recurringSyncQueue.add(
-    'recurring-sync',
-    {
-      syncType,
-      syncMode,
-      syncRequestParameters
-    },
-    { lifo: !!forceWipe }
-  )
-
-  return successResponse()
-}
-
-/**
- * Changes a user's replica set. Gated by`devMode` env var to only work locally.
- */
-const manuallyUpdateReplicaSetController = async (req, _res) => {
-  const audiusLibs = req.app.get('audiusLibs')
-  const serviceRegistry = req.app.get('serviceRegistry')
-  const { nodeConfig: config } = serviceRegistry
-
-  const overridePassword = req.query.overridePassword
-  const override = verifySPOverride(overridePassword)
-
-  // If override not provided AND devMode not enabled, error
-  if (!override && !config.get('devMode')) {
-    return errorResponseBadRequest('This route is disabled')
-  }
-
-  const userId = parseInt(req.query.userId)
-  const newPrimarySpId = parseInt(req.query.newPrimarySpId)
-  const newSecondary1SpId = parseInt(req.query.newSecondary1SpId)
-  const newSecondary2SpId = parseInt(req.query.newSecondary2SpId)
-
-  if (!userId) {
-    return errorResponseBadRequest(
-      `Must provide userId param (the user whose replica set will be updated)`
-    )
-  }
-  if (!newPrimarySpId || !newSecondary1SpId || !newSecondary2SpId) {
-    return errorResponseBadRequest(
-      'Must provide a new replica set via the following params: newPrimarySpId, newSecondary1SpId, newSecondary2SpId'
-    )
-  }
-
-  const newReplicaSetSPIds = [
-    newPrimarySpId,
-    newSecondary1SpId,
-    newSecondary2SpId
-  ]
-  const newSecondarySpIds = [newSecondary1SpId, newSecondary2SpId]
-
-  const currentSpIds = await getReplicaSetSpIdsByUserId({
-    libs: serviceRegistry.libs,
-    userId,
-    parentLogger: req.logger,
-    logger: req.logger
-  })
-
-  const { blockNumber } = await audiusLibs.User.updateEntityManagerReplicaSet({
-    userId,
-    primary: newPrimarySpId,
-    secondaries: newSecondarySpIds,
-    oldPrimary: currentSpIds.primaryId,
-    oldSecondaries: currentSpIds.secondaryIds
-  })
-
-  // Wait for blockhash/blockNumber to be indexed
-  try {
-    await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
-      userId,
-      newReplicaSetSPIds,
-      blockNumber
-    )
-  } catch (e) {
-    return errorResponseServerError(
-      `Failed via EntityManager - Indexing unable to confirm updated replica set`
-    )
-  }
-
-  return successResponse({ msg: 'Success via EntityManager' })
-}
-
 // Routes
 
 router.get(
@@ -323,14 +191,6 @@ router.post(
       : ensureStorageMiddleware(req, res, next)
   },
   handleResponse(syncRouteController)
-)
-router.post(
-  '/merge_primary_and_secondary',
-  handleResponse(mergePrimaryAndSecondaryController)
-)
-router.post(
-  '/manually_update_replica_set',
-  handleResponse(manuallyUpdateReplicaSetController)
 )
 
 module.exports = router

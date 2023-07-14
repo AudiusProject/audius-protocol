@@ -94,15 +94,6 @@ it('should call addUser and verify new creator', async function () {
     coverPhotoMultihashDecoded.digest,
     `Transaction failed - ${coverPhotoMultihashDecoded.digest}`
   )
-
-  const updateCreatorNodeEndpointResp = await audiusInstance.contracts.UserFactoryClient.updateCreatorNodeEndpoint(
-    userId, metadata.creator_node_endpoint
-  )
-  assert.deepStrictEqual(
-    updateCreatorNodeEndpointResp.creatorNodeEndpoint,
-    metadata.creator_node_endpoint,
-    `Transaction failed - ${metadata.creator_node_endpoint}`
-  )
 })
 
 it('should verify handle is not valid', async function () {
