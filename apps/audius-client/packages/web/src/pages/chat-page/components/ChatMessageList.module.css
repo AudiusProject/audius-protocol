@@ -6,8 +6,10 @@
 .listRoot {
   display: flex;
   flex-direction: column-reverse;
+  justify-content: flex-end;
   gap: 8px;
   padding: 32px;
+  height: 100%;
 }
 
 .separator {

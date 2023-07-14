@@ -676,7 +676,7 @@ export const ChatScreen = () => {
               </View>
             )}
 
-            {canSendMessage ? (
+            {canSendMessage && chat ? (
               <View
                 style={styles.composeView}
                 onLayout={measureChatContainerBottom}
