@@ -62,6 +62,12 @@ export class TrackUploadHelper extends BaseAPI {
       ...trackMetadata,
       trackSegments: [],
       trackCid: audioResponse.results['320'],
+      previewCid: trackMetadata.previewStartSeconds
+        ? audioResponse.results[
+            `320_preview|${trackMetadata.previewStartSeconds}`
+          ]
+        : trackMetadata.previewCid,
+      audioUploadId: audioResponse.id,
       download: trackMetadata.download?.isDownloadable
         ? {
             ...trackMetadata.download,

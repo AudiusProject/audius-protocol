@@ -21,13 +21,20 @@ export type StorageService = {
   }) => Promise<UploadResponse>
 }
 
-export type ProcessingStatus = 'new' | 'busy' | 'done' | 'error'
+export type ProcessingStatus =
+  | 'new'
+  | 'busy'
+  | 'done'
+  | 'error'
+  | 'retranscode_preview'
+  | 'busy_retranscode_preview'
+  | 'error_retranscode_preview'
 
 export type UploadResponse = {
   id: string
   status: ProcessingStatus
   results: {
-    '320': string
+    [key: string]: string
   }
   probe: {
     format: {

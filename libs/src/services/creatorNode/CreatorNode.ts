@@ -276,7 +276,10 @@ export class CreatorNode {
       try {
         const resp = await this.getProcessingStatusV2(id)
         if (resp?.status === 'done') return resp
-        if (resp?.status === 'error') {
+        if (
+          resp?.status === 'error' ||
+          resp?.status === 'error_retranscode_preview'
+        ) {
           throw new Error(
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
           )
