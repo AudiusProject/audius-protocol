@@ -1,4 +1,5 @@
 import type { AnnouncementNotification as AnnouncementNotificationType } from '@audius/common'
+import { View } from 'react-native'
 import Markdown from 'react-native-markdown-display'
 
 import IconAudius from 'app/assets/images/iconAudius.svg'
@@ -6,7 +7,6 @@ import { makeStyles } from 'app/styles'
 
 import {
   NotificationHeader,
-  NotificationText,
   NotificationTile,
   NotificationTitle
 } from '../Notification'
@@ -45,14 +45,19 @@ export const AnnouncementNotification = (
     <NotificationTile notification={notification}>
       <NotificationHeader icon={IconAudius}>
         <NotificationTitle>
-          <Markdown style={{ body: styles.title, link: styles.title }}>
-            {title}
-          </Markdown>
+          <View>
+            <Markdown
+              style={{ body: styles.title, link: styles.title }}
+              mergeStyle
+            >
+              {title}
+            </Markdown>
+          </View>
         </NotificationTitle>
       </NotificationHeader>
-      <NotificationText>
+      <View>
         <Markdown style={styles}>{shortDescription}</Markdown>
-      </NotificationText>
+      </View>
     </NotificationTile>
   )
 }
