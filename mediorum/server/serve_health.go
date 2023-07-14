@@ -31,6 +31,7 @@ type healthCheckResponseData struct {
 	Version                   string                     `json:"version"`
 	Service                   string                     `json:"service"` // used by registerWithDelegate()
 	IsSeeding                 bool                       `json:"isSeeding"`
+	IsSeedingLegacy           bool                       `json:"isSeedingLegacy"`
 	BuiltAt                   string                     `json:"builtAt"`
 	StartedAt                 time.Time                  `json:"startedAt"`
 	SPID                      int                        `json:"spID"`
@@ -63,7 +64,7 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
-	healthy := ss.databaseSize > 0 && !ss.isSeeding
+	healthy := ss.databaseSize > 0 && !ss.isSeeding && !ss.isSeedingLegacy
 
 	// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
@@ -82,6 +83,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
 		IsSeeding:                 ss.isSeeding,
+		IsSeedingLegacy:           ss.isSeedingLegacy,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
 		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
