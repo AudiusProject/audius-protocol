@@ -254,21 +254,21 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// public: uploads
-	routes.GET("/uploads", ss.getUploads)
-	routes.GET("/uploads/:id", ss.getUpload)
-	routes.POST("/uploads/:id", ss.updateUpload, ss.requireUserSignature)
-	routes.POST("/uploads", ss.postUpload)
+	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
+	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
+	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
+	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
 	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	routes.GET("/ipfs/:cid", ss.getBlob, ss.ensureNotDelisted)
-	routes.GET("/content/:cid", ss.getBlob, ss.ensureNotDelisted)
-	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
 
@@ -278,40 +278,14 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// TODO: remove after all nodes upgrade to v0.3.98
 	routes.GET("/status", func(c echo.Context) error {
-		if !ss.Config.WalletIsRegistered {
-			return c.JSON(506, "wallet not registered")
-		}
-		dbHealthy := ss.databaseSize > 0
-		if !dbHealthy {
-			return c.JSON(500, "database not healthy")
-		}
-		if ss.isSeeding {
-			return c.JSON(503, "seeding")
-		}
-		if ss.isSeedingLegacy {
-			return c.JSON(503, "seeding legacy")
-		}
 		return c.String(200, "OK")
-	})
+	}, ss.requireHealthy)
 
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
-		if !ss.Config.WalletIsRegistered {
-			return c.JSON(506, "wallet not registered")
-		}
-		dbHealthy := ss.databaseSize > 0
-		if !dbHealthy {
-			return c.JSON(500, "database not healthy")
-		}
-		if ss.isSeeding {
-			return c.JSON(503, "seeding")
-		}
-		if ss.isSeedingLegacy {
-			return c.JSON(503, "seeding legacy")
-		}
 		return c.String(200, "OK")
-	})
+	}, ss.requireHealthy)
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
