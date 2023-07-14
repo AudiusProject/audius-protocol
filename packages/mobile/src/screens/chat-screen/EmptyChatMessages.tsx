@@ -1,6 +1,7 @@
-import { View, Text, Image } from 'react-native'
+import { View, Image } from 'react-native'
 
 import WavingHand from 'app/assets/images/emojis/waving-hand-sign.png'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -31,17 +32,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(16)
   },
   title: {
-    fontSize: typography.fontSize.xxl,
-    color: palette.neutral,
-    fontFamily: typography.fontByWeight.bold,
     lineHeight: typography.fontSize.xxl * 1.3
   },
   text: {
     marginTop: spacing(2),
-    marginRight: spacing(6),
-    fontSize: typography.fontSize.large,
-    lineHeight: typography.fontSize.large * 1.3,
-    color: palette.neutral
+    paddingRight: spacing(6),
+    lineHeight: typography.fontSize.large * 1.3
   }
 }))
 
@@ -51,8 +47,12 @@ export const EmptyChatMessages = () => {
     <View style={styles.root}>
       <Image style={styles.wavingHand} source={WavingHand} />
       <View style={styles.textContainer}>
-        <Text style={styles.title}>{messages.sayHello}</Text>
-        <Text style={styles.text}>{messages.firstImpressions}</Text>
+        <Text style={styles.title} fontSize='xxl' weight='bold'>
+          {messages.sayHello}
+        </Text>
+        <Text style={styles.text} fontSize='large'>
+          {messages.firstImpressions}
+        </Text>
       </View>
     </View>
   )
