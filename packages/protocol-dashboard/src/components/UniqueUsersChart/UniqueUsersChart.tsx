@@ -35,7 +35,7 @@ const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
       labels={labels}
       selection={bucket}
       error={error}
-      options={[Bucket.ALL_TIME, Bucket.MONTH]}
+      options={[Bucket.ALL_TIME, Bucket.MONTH, Bucket.WEEK]}
       onSelectOption={(option: string) => setBucket(option as Bucket)}
       showLeadingDay
     />
