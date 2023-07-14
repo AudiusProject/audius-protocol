@@ -17,6 +17,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -77,6 +78,7 @@ type MediorumServer struct {
 	storagePathSize uint64
 	databaseSize    uint64
 	isSeeding       bool
+	isSeedingLegacy bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -151,7 +153,42 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	pgConfig, _ := pgxpool.ParseConfig(config.PostgresDSN)
 	pgPool, err := pgxpool.NewWithConfig(context.Background(), pgConfig)
 	if err != nil {
-		log.Println("dial postgres failed", err)
+		logger.Error("dial postgres failed", "err", err)
+	}
+
+	// clean up incompatible schema (probably from an earlier version)
+	// if cid_lookup has wrong schema, do tx to drop and truncate
+	var columnNames []string
+	sql := `
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_name = 'cid_lookup' AND column_name NOT IN ('multihash', 'host')
+`
+	err = pgxscan.Select(context.Background(), pgPool, &columnNames, sql)
+	if err != nil {
+		logger.Error("Failed to execute query to check for invalid cid_lookup schema", "err", err)
+	} else {
+		if len(columnNames) > 0 {
+			logger.Warn("Found invalid cid_lookup schema, dropping and truncating table")
+			sql = `begin; truncate mediorum_migrations; drop table cid_lookup; drop table cid_cursor; drop table cid_log; commit;`
+			_, err = pgPool.Exec(context.Background(), sql)
+			if err != nil {
+				logger.Error("Failed to drop and truncate tables related to invalid schema for cid_lookup", "err", err)
+				os.Exit(1)
+			} else {
+				logger.Info("Successfully dropped and truncated tables related to invalid schema for cid_lookup. Restarting...")
+				os.Exit(0)
+			}
+		}
+	}
+
+	// if cid_lookup has null hosts, log warning
+	var nullHostExists bool
+	err = pgPool.QueryRow(context.Background(), `SELECT EXISTS(SELECT 1 FROM cid_lookup WHERE host IS NULL)`).Scan(&nullHostExists)
+	if err != nil {
+		logger.Error("Failed to execute query to check for null hosts in cid_lookup", "err", err)
+	} else if nullHostExists {
+		logger.Warn("Found null host(s) in cid_lookup")
 	}
 
 	// crud
@@ -170,12 +207,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	if config.TrustedNotifierID > 0 {
 		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID), config.Self.Wallet)
 		if err == nil {
-			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
+			logger.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
-			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
+			logger.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
 		}
 	} else {
-		slog.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
+		logger.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
 	}
 
 	// echoServer server
@@ -199,6 +236,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
+		isSeedingLegacy: config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 
@@ -246,6 +284,24 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal
 	internalApi := routes.Group("/internal")
 
+	// TODO: remove after all nodes upgrade to v0.3.98
+	routes.GET("/status", func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			return c.JSON(500, "database not healthy")
+		}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
+		}
+		return c.String(200, "OK")
+	})
+
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
@@ -258,6 +314,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 		if ss.isSeeding {
 			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
 		}
 		return c.String(200, "OK")
 	})
