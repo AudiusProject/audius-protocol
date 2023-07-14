@@ -1,6 +1,7 @@
 import json
 import logging
 
+from psycopg2.errors import UniqueViolation
 from src.exceptions import IndexingValidationError
 from src.models.notifications.notification import (
     Notification,
@@ -81,7 +82,10 @@ def create_notification(params: ManageEntityParameters):
         user_ids=user_ids,
     )
     key = params.block_datetime
-    params.add_notification_record(key, notification)
+    try:
+        params.add_notification_record(key, notification)
+    except UniqueViolation as e:
+        logger.warn(f"received duplicate notification, ignoring {e}")
 
 
 def validate_view_playlist_tx(params: ManageEntityParameters):
