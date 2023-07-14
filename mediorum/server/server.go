@@ -182,15 +182,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 	}
 
-	// if cid_lookup has null hosts, log warning
-	var nullHostExists bool
-	err = pgPool.QueryRow(context.Background(), `SELECT EXISTS(SELECT 1 FROM cid_lookup WHERE host IS NULL)`).Scan(&nullHostExists)
-	if err != nil {
-		logger.Error("Failed to execute query to check for null hosts in cid_lookup", "err", err)
-	} else if nullHostExists {
-		logger.Warn("Found null host(s) in cid_lookup")
-	}
-
 	// crud
 	peerHosts := []string{}
 	for _, peer := range config.Peers {
