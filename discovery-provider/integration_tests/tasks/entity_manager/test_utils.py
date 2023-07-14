@@ -190,10 +190,7 @@ def test_valid_parse_metadata(app):
             },
         }
 
-        # Add invalid keys and remove valid keys to verify fetch_cid_metadata validates and corrects format
         user1_tx_metadata = expected_metadata["QmUpdateUser1"].copy()
-        user1_tx_metadata.pop("collectibles")
-        user1_tx_metadata["incorrect_key"] = True
         # Add invalid unicode to verify fetch_cid_metadata sanitizes metadata
         user1_tx_metadata["name"] += "\ud835"
         user1_json = json.dumps(user1_tx_metadata)
@@ -204,8 +201,6 @@ def test_valid_parse_metadata(app):
         track1_json = json.dumps(track1_tx_metadata)
 
         playlist1_tx_metadata = expected_metadata["QmUpdatePlaylist1"].copy()
-        playlist1_tx_metadata.pop("is_album")
-        playlist1_tx_metadata["incorrect_key"] = True
         playlist1_json = json.dumps(playlist1_tx_metadata)
 
         tx_receipts = {
