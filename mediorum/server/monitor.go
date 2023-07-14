@@ -20,6 +20,7 @@ func (ss *MediorumServer) monitorCidCursors() {
 
 			if getPercentNodesSeededLegacy(cidCursors, ss.logger) > 50 {
 				ss.isSeedingLegacy = false
+				ss.logger.Info("seeding legacy complete")
 			}
 		}
 	}
@@ -76,7 +77,7 @@ func getDatabaseSize(p *pgxpool.Pool) (uint64, error) {
 
 func getPercentNodesSeededLegacy(cidCursors []cidCursor, logger *slog.Logger) float64 {
 	// we're still seeding from each node until its cursor is after 2023-06-01
-	cutoff, err := time.Parse(time.RFC3339, "2023-06-01T00:00:00Z00:00")
+	cutoff, err := time.Parse(time.RFC3339, "2023-06-01T00:00:00Z")
 	if err != nil {
 		logger.Error("error parsing seeding cutoff", "err", err)
 		return 0
