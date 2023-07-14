@@ -9,16 +9,34 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slog"
 )
 
 func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	var payload []byte
 	var err error
+
+	// helper function to log error if present
+	logError := func(err error) error {
+		if err != nil {
+			slog.Warn("ReadSignedRequest error", "err", err)
+		}
+		return err
+	}
+
 	if c.Request().Method == "GET" {
 		// Check that timestamp is not too old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli()-timestamp > SignatureTimeToLiveMs {
-			return nil, "", errors.New("invalid timestamp")
+		if err != nil {
+			return nil, "", logError(err)
+		}
+
+		tsAge := time.Now().UnixMilli() - timestamp
+		if tsAge < 0 {
+			tsAge *= -1
+		}
+		if tsAge > SignatureTimeToLiveMs {
+			return nil, "", logError(errors.New("timestamp too old"))
 		}
 
 		// Strip out the app_name query parameter to get the true signature payload
@@ -33,12 +51,12 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 		err = errors.New("Unsupported request method " + c.Request().Method)
 	}
 	if err != nil {
-		return nil, "", err
+		return nil, "", logError(err)
 	}
 
 	sigHex := c.Request().Header.Get(SigHeader)
 	wallet, err := ReadSigned(sigHex, payload)
-	return payload, wallet, err
+	return payload, wallet, logError(err)
 }
 
 func ReadSigned(signatureHex string, signedData []byte) (string, error) {
