@@ -132,13 +132,13 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.391"
+        versionName "1.1.392"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
     }
 
-    productFlavors { 
+    productFlavors {
         prod {
             resValue "string", "CodePushDeploymentKey", '"09yN4-3LHKp_GVKFJEOoDDRqx2o3fJirP5nZf"'
             manifestPlaceholders = [
