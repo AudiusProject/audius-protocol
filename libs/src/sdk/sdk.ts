@@ -83,13 +83,22 @@ type SdkConfig = {
    * API secret, required for writes
    */
   apiSecret?: string
+
+  /**
+   * Use selected discovery provider for writes
+   */
+  useDiscoveryRelay?: boolean
 }
 
 /**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
-  const { appName, apiKey } = config
+  const { appName, apiKey, useDiscoveryRelay } = config
+
+  if (useDiscoveryRelay !== undefined && useDiscoveryRelay) {
+    console.warn("useDiscoveryRelay is configured and considered unstable, unexpected behavior may occur")
+  }
 
   // Initialize services
   const services = initializeServices(config)
