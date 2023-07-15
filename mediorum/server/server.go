@@ -17,7 +17,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -154,32 +153,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	pgPool, err := pgxpool.NewWithConfig(context.Background(), pgConfig)
 	if err != nil {
 		logger.Error("dial postgres failed", "err", err)
-	}
-
-	// clean up incompatible schema (probably from an earlier version)
-	// if cid_lookup has wrong schema, do tx to drop and truncate
-	var columnNames []string
-	sql := `
-    SELECT column_name
-    FROM information_schema.columns
-    WHERE table_name = 'cid_lookup' AND column_name NOT IN ('multihash', 'host')
-`
-	err = pgxscan.Select(context.Background(), pgPool, &columnNames, sql)
-	if err != nil {
-		logger.Error("Failed to execute query to check for invalid cid_lookup schema", "err", err)
-	} else {
-		if len(columnNames) > 0 {
-			logger.Warn("Found invalid cid_lookup schema, dropping and truncating table")
-			sql = `begin; truncate mediorum_migrations; drop table cid_lookup; drop table cid_cursor; drop table cid_log; commit;`
-			_, err = pgPool.Exec(context.Background(), sql)
-			if err != nil {
-				logger.Error("Failed to drop and truncate tables related to invalid schema for cid_lookup", "err", err)
-				os.Exit(1)
-			} else {
-				logger.Info("Successfully dropped and truncated tables related to invalid schema for cid_lookup. Restarting...")
-				os.Exit(0)
-			}
-		}
 	}
 
 	// crud
