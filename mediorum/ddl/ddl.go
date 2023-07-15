@@ -32,8 +32,8 @@ func Migrate(db *sql.DB) {
 	runMigration(db, delistStatusesDDL)
 
 	// stagger re-seeding between 1-3hrs. TODO: safe to remove after everyone runs it once
-	min := time.Duration(60)
-	max := time.Duration(180)
+	min := time.Duration(2)
+	max := time.Duration(5)
 	diff := max.Minutes() - min.Minutes()
 	randomTime := min + time.Duration(rand.Float64()*diff)*time.Minute
 	time.AfterFunc(randomTime, func() {
