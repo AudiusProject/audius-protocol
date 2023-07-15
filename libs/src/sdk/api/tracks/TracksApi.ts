@@ -109,7 +109,8 @@ export class TracksApi extends TracksApiWithoutStream {
     )
     const uploadOptions: { [key: string]: string } = {}
     if (metadata.previewStartSeconds) {
-      uploadOptions['previewStartSeconds'] = metadata.previewStartSeconds.toString()
+      uploadOptions['previewStartSeconds'] =
+        metadata.previewStartSeconds.toString()
     }
 
     // Upload track audio and cover art to storage node

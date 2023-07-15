@@ -45,6 +45,10 @@ jest
   .mockImplementation(async () => ({}))
 
 jest
+  .spyOn(TrackUploadHelper.prototype, 'transformTrackUploadMetadata' as any)
+  .mockImplementation(async () => ({}))
+
+jest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
