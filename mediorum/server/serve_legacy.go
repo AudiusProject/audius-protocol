@@ -176,12 +176,16 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, checkAllNode
 	// check all healthy hosts via HEAD request to see if they have the cid but aren't in cid_lookup
 	if checkAllNodes {
 		for _, host := range healthyHosts {
+			if host == ss.Config.Self.Host {
+				continue
+			}
 			dest := replaceHost(*c.Request().URL, host)
 			req, err := http.NewRequest("HEAD", "https:"+dest.String(), nil)
 			if err != nil {
 				logger.Error("error creating HEAD request", "err", err)
 				continue
 			}
+			req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 			resp, err := http.DefaultClient.Do(req)
 			if err != nil {
 				logger.Error("error sending HEAD request", "err", err)
