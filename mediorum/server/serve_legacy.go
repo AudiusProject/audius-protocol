@@ -177,7 +177,7 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, checkAllNode
 	if checkAllNodes {
 		for _, host := range healthyHosts {
 			dest := replaceHost(*c.Request().URL, host)
-			req, err := http.NewRequest("HEAD", dest.String(), nil)
+			req, err := http.NewRequest("HEAD", "https:"+dest.String(), nil)
 			if err != nil {
 				logger.Error("error creating HEAD request", "err", err)
 				continue
