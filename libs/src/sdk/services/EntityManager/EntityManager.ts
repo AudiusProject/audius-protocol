@@ -84,7 +84,19 @@ export class EntityManager implements EntityManagerService {
       signature
     )
 
-    const response = await fetch(`${this.config.identityServiceUrl}/relay`, {
+    const relayUrl = async (): Promise<string> => {
+      const useDiscoveryRelay = this.config.useDiscoveryRelay
+      if (useDiscoveryRelay === undefined || !useDiscoveryRelay) {
+        return this.config.identityServiceUrl
+      }
+      const discoveryEndpoint = await this.config.discoveryNodeSelector.getSelectedEndpoint()
+      if (discoveryEndpoint === null) {
+        return this.config.identityServiceUrl
+      }
+      return discoveryEndpoint
+    }
+
+    const response = await fetch(`${await relayUrl()}/relay`, {
       method: 'POST',
       headers: new Headers({
         'Content-Type': 'application/json'

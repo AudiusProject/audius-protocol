@@ -146,7 +146,8 @@ const initializeServices = (config: SdkConfig) => {
   const defaultEntityManager = new EntityManager({
     ...defaultEntityManagerConfig,
     discoveryNodeSelector:
-      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector,
+    useDiscoveryRelay: config.useDiscoveryRelay
   })
 
   const defaultStorage = new Storage({ storageNodeSelector })
