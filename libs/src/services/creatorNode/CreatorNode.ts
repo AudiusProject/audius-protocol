@@ -173,9 +173,10 @@ export class CreatorNode {
     onProgress: ProgressCB = () => {}
   ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
-    const audioUploadOpts: { previewStartSeconds?: string } = {}
+    const audioUploadOpts: { [key: string]: string } = {}
     if (updatedMetadata.preview_start_seconds) {
-      audioUploadOpts.previewStartSeconds = updatedMetadata.preview_start_seconds.toString()
+      audioUploadOpts['previewStartSeconds'] =
+        updatedMetadata.preview_start_seconds.toString()
     }
 
     // Upload audio and cover art
@@ -221,7 +222,7 @@ export class CreatorNode {
   async uploadTrackAudioV2(
     file: File,
     onProgress: ProgressCB = () => {},
-    options?: { previewStartSeconds?: string }
+    options?: { [key: string]: string }
   ) {
     return await this.uploadFileV2(file, onProgress, 'audio', options)
   }
@@ -242,7 +243,7 @@ export class CreatorNode {
     file: File,
     onProgress: ProgressCB,
     template: 'audio' | 'img_square' | 'img_backdrop',
-    options?: { previewStartSeconds?: string }
+    options?: { [key: string]: string }
   ) {
     const { headers, formData } = this.createFormDataAndUploadHeadersV2(file, {
       template,

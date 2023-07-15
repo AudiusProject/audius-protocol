@@ -13,11 +13,13 @@ export type StorageService = {
   uploadFile: ({
     file,
     onProgress,
-    template
+    template,
+    options
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
+    options?: { [key: string]: string }
   }) => Promise<UploadResponse>
 }
 

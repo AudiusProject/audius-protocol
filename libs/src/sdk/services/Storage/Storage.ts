@@ -50,7 +50,7 @@ export class Storage implements StorageService {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
-    options?: { [previewStartSeconds: string]: string }
+    options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)

@@ -107,9 +107,9 @@ export class TracksApi extends TracksApiWithoutStream {
       parsedMetadata,
       userId
     )
-    const options: { previewStartSeconds?: string } = {}
-    if (metadata.preview_start_seconds) {
-      options.previewStartSeconds = metadata.preview_start_seconds.toString()
+    const uploadOptions: { [key: string]: string } = {}
+    if (metadata.previewStartSeconds) {
+      uploadOptions['previewStartSeconds'] = metadata.previewStartSeconds.toString()
     }
 
     // Upload track audio and cover art to storage node
@@ -131,7 +131,7 @@ export class TracksApi extends TracksApiWithoutStream {
             file: trackFile,
             onProgress,
             template: 'audio',
-            options
+            options: uploadOptions
           }),
         (e) => {
           console.log('Retrying uploadTrackAudio', e)
