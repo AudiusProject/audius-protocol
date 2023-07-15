@@ -3,7 +3,9 @@ package registrar
 import (
 	"encoding/json"
 	"io/ioutil"
+	"mediorum/httputil"
 	"mediorum/server"
+	"strings"
 )
 
 type NodeResponse struct {
@@ -64,8 +66,8 @@ func (p *audiusApiGatewayProvider) getNodes(path string) ([]server.Peer, error) 
 	var peers []server.Peer
 	for _, node := range nodeResponse.Data {
 		peer := server.Peer{
-			Host:   node.Endpoint,
-			Wallet: node.DelegateOwnerWallet,
+			Host:   httputil.RemoveTrailingSlash(strings.ToLower(node.Endpoint)),
+			Wallet: strings.ToLower(node.DelegateOwnerWallet),
 		}
 		peers = append(peers, peer)
 	}
