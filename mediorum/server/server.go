@@ -263,9 +263,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return c.NoContent(http.StatusNoContent)
 	})
 
+	routes.HEAD("/ipfs/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
 	routes.GET("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/content/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
 	routes.GET("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/ipfs/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/content/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
 	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
