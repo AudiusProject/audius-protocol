@@ -146,6 +146,31 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	}
 }
 
+func (ss *MediorumServer) headBlobByJobIDAndVariant(c echo.Context) error {
+	jobID := c.Param("jobID")
+	variant := c.Param("variant")
+
+	if isLegacyCID(jobID) {
+		c.SetParamNames("dirCid", "fileName")
+		c.SetParamValues(jobID, variant)
+		return ss.headLegacyDirCid(c)
+	} else {
+		var upload *Upload
+		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
+		if err != nil {
+			return err
+		}
+		cid, ok := upload.TranscodeResults[variant]
+		if !ok {
+			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+			return c.String(400, msg)
+		}
+		c.SetParamNames("cid")
+		c.SetParamValues(cid)
+		return ss.headBlob(c)
+	}
+}
+
 func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
 	f, err := fh.Open()
 	if err != nil {

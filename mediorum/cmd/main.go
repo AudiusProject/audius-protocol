@@ -24,13 +24,13 @@ func initClient() *loadtest.TestClient {
 
 	switch env := os.Getenv("MEDIORUM_ENV"); env {
 	case "prod":
-		g := registrar.NewGraphProd()
+		g := registrar.NewAudiusApiGatewayProd()
 		registeredPeers, err = g.Peers()
 		if err != nil {
 			panic(err)
 		}
 	case "stage":
-		g := registrar.NewGraphStaging()
+		g := registrar.NewAudiusApiGatewayStaging()
 		registeredPeers, err = g.Peers()
 		if err != nil {
 			panic(err)
