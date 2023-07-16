@@ -16,7 +16,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const NumRandNodesToCheckOn404 = 10
+const NumRandNodesToCheckOn404 = 5
 
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	ctx := c.Request().Context()
