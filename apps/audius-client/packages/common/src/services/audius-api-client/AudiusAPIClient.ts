@@ -1924,6 +1924,11 @@ export class AudiusAPIClient {
       // initialization state if needed before retrying
       if (this.initializationState.type === 'manual') {
         await this.waitForLibsInit()
+        this.initializationState = {
+          type: 'libs',
+          state: 'initialized',
+          endpoint: this.initializationState.endpoint
+        }
       }
       return this._getResponse(path, sanitizedParams, retry, pathType)
     }
