@@ -16,9 +16,6 @@ __pycache__/
 # Virtualenv generated info
 venv/
 
-# Generated from alembic
-*.egg-info/
-
 # Do not commit contract updates
 contract_config.ini
 eth_contract_config.ini
