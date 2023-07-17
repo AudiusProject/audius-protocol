@@ -27,6 +27,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
+	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
@@ -52,6 +53,7 @@ require (
 	github.com/multiformats/go-base36 v0.1.0 // indirect
 	github.com/multiformats/go-multibase v0.0.3 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
+	github.com/panmari/cuckoofilter v1.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
