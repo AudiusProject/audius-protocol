@@ -196,7 +196,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	for _, blob := range blobs {
 		// do a check server is up and has blob
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
+			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
 	}
@@ -243,7 +243,7 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 	}
 	for _, blob := range blobs {
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
+			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
 	}
