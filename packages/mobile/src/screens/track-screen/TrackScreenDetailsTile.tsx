@@ -125,11 +125,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   hiddenTrackLabel: {
     marginTop: spacing(1),
     marginLeft: spacing(2),
-    color: palette.accentOrange,
     fontFamily: typography.fontByWeight.demiBold,
     fontSize: 14,
     letterSpacing: 2,
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    color: palette.neutralLight4
   },
 
   bottomContent: {
@@ -212,8 +212,7 @@ export const TrackScreenDetailsTile = ({
   )
   const styles = useStyles()
   const navigation = useNavigation()
-  const { accentOrange, white, aiPrimary, aiSecondary, neutralLight4 } =
-    useThemeColors()
+  const { white, aiPrimary, aiSecondary, neutralLight4 } = useThemeColors()
 
   const isOfflineEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
@@ -465,7 +464,7 @@ export const TrackScreenDetailsTile = ({
   const renderHeader = () => {
     return is_unlisted ? (
       <View style={styles.hiddenDetailsTileWrapper}>
-        <IconHidden fill={accentOrange} />
+        <IconHidden fill={neutralLight4} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
       </View>
     ) : (
