@@ -30,7 +30,6 @@
     "web3": "^1.10.0"
   },
   "devDependencies": {
-    "@audius/sdk": "^2.0.3-beta.20",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.2.5",
     "eslint-config-custom": "*",

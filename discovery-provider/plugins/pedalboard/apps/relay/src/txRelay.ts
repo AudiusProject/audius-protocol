@@ -17,8 +17,7 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const log = (obj: unknown, msg?: string | undefined, ...args: any[]) => logger.info(obj, msg, requestId, ...args)
     const { web3, wallets, config } = app.viewAppData()
     const { entityManagerContractAddress, entityManagerContractRegistryKey, defaultGasLimit } = config
-    const { encodedABI, contractRegistryKey } = req
-    const gasLimit = req.gasLimit ?? defaultGasLimit
+    const { encodedABI, contractRegistryKey, gasLimit } = req
 
     log({ msg: "new relay request", req })
 
@@ -26,7 +25,8 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     validateSupportedContract([entityManagerContractRegistryKey], contractRegistryKey)
     await validateTransactionData(encodedABI)
     const { privateKey, publicKey } = await wallets.selectNextWallet()
-    const senderWallet = new Wallet(privateKey)
+    const senderWallet = new Wallet(privateKey, web3)
+    logger.info({ senderWallet })
     const address = senderWallet.address
     if (address !== publicKey) throw new Error("Invalid relayerPublicKey")
 
@@ -37,12 +37,11 @@ export const relayTransaction = async (app: App<SharedData>, req: RelayRequestTy
     const to = entityManagerContractAddress
     const value = '0x00'
     const data = encodedABI
-    const gasPrice = await web3.getGasPrice() // shouldn't need with ACDC
 
-    log({ msg: "gathered tx params", nonce, gasPrice })
+    log({ msg: "gathered tx params", nonce })
 
     // assemble, sign, and send transaction
-    const transaction = { nonce, gasLimit, gasPrice, to, value, data }
+    const transaction = { nonce, gasLimit, to, value, data }
     await senderWallet.signTransaction(transaction)
     const submit = await senderWallet.sendTransaction(transaction)
 

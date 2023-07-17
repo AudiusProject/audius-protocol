@@ -1,4 +1,5 @@
 import { decodeAbi } from "./abi"
+import { logger } from "./logger"
 import { ManageEntityParameters } from "./types/entityManager"
 
 /// async in case we need to make a db call
@@ -8,6 +9,7 @@ export const validateTransactionData = async (encodedABI: string): Promise<Manag
     // TODO: maybe check transactions table? this is no longer possible with the way identity works
     // TODO: filter replica set updates
     // if (failed) throw new Error("validation failed")
+    logger.info("transaction data validated")
     return decoded
 }
 
