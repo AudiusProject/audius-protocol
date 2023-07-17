@@ -3,8 +3,7 @@ import { spacing } from 'app/styles/spacing'
 
 export const useStyles = makeStyles(({ palette }) => ({
   statItem: {
-    ...flexRowCentered(),
-    marginHorizontal: spacing(2.5)
+    ...flexRowCentered()
   },
   statTextContainer: {
     flexDirection: 'row',

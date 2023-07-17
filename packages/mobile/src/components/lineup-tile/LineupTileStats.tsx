@@ -24,6 +24,7 @@ import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/T
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeTag'
@@ -42,33 +43,38 @@ const formatPlayCount = (playCount?: number) => {
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
-  stats: {
+  root: {
     flexDirection: 'row',
     alignItems: 'stretch',
     paddingVertical: spacing(2),
-    marginHorizontal: spacing(2.5)
+    marginHorizontal: spacing(2.5),
+    justifyContent: 'space-between'
+  },
+  stats: {
+    flexDirection: 'row',
+    gap: spacing(4)
   },
   listenCount: {
     ...flexRowCentered(),
-    justifyContent: 'center',
-    marginLeft: 'auto'
+    justifyContent: 'center'
   },
   leftStats: {
-    ...flexRowCentered()
+    ...flexRowCentered(),
+    gap: spacing(4)
+  },
+  statItem: {
+    gap: spacing(1)
   },
   disabledStatItem: {
     opacity: 0.5
   },
-  statIcon: {
-    marginLeft: 4
-  },
   favoriteStat: {
-    height: 14,
-    width: 14
+    height: spacing(3.5),
+    width: spacing(3.5)
   },
   repostStat: {
-    height: 16,
-    width: 16
+    height: spacing(4),
+    width: spacing(4)
   }
 }))
 
@@ -128,68 +134,72 @@ export const LineupTileStats = ({
   }, [dispatch, id, navigation, repostType])
 
   const downloadStatusIndicator = isCollection ? (
-    <CollectionDownloadStatusIndicator size={18} collectionId={id} />
+    <CollectionDownloadStatusIndicator size={spacing(4)} collectionId={id} />
   ) : (
-    <TrackDownloadStatusIndicator size={18} trackId={id} />
+    <TrackDownloadStatusIndicator size={spacing(4)} trackId={id} />
   )
 
   const isReadonly = variant === 'readonly'
 
   return (
-    <View style={styles.stats}>
-      {isTrending ? (
-        <LineupTileRankIcon showCrown={showRankIcon} index={index} />
-      ) : null}
-      {premiumConditions ? (
-        <LineupTilePremiumContentTypeTag
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
-          isOwner={isOwner}
-        />
-      ) : null}
-      {hasEngagement && !isUnlisted && (
-        <View style={styles.leftStats}>
-          <TouchableOpacity
-            style={[
-              trackTileStyles.statItem,
-              !repostCount ? styles.disabledStatItem : null
-            ]}
-            disabled={!repostCount || isReadonly}
-            onPress={handlePressReposts}
-          >
-            <Text style={trackTileStyles.statText}>
-              {formatCount(repostCount)}
-            </Text>
-            <IconRepost
-              height={16}
-              width={16}
-              fill={neutralLight4}
-              style={[styles.statIcon, styles.repostStat]}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              trackTileStyles.statItem,
-              !saveCount ? styles.disabledStatItem : null
-            ]}
-            disabled={!saveCount || isReadonly}
-            onPress={handlePressFavorites}
-          >
-            <Text style={trackTileStyles.statText}>
-              {formatCount(saveCount)}
-            </Text>
-            <IconHeart
-              style={[styles.statIcon, styles.favoriteStat]}
-              height={14}
-              width={14}
-              fill={neutralLight4}
-            />
-          </TouchableOpacity>
-          <View style={[trackTileStyles.statItem]}>
-            {downloadStatusIndicator}
+    <View style={styles.root}>
+      <View style={styles.stats}>
+        {isTrending ? (
+          <LineupTileRankIcon showCrown={showRankIcon} index={index} />
+        ) : null}
+        {premiumConditions ? (
+          <LineupTilePremiumContentTypeTag
+            premiumConditions={premiumConditions}
+            doesUserHaveAccess={doesUserHaveAccess}
+            isOwner={isOwner}
+          />
+        ) : null}
+        {hasEngagement && !isUnlisted && (
+          <View style={styles.leftStats}>
+            <TouchableOpacity
+              style={[
+                trackTileStyles.statItem,
+                styles.statItem,
+                !repostCount ? styles.disabledStatItem : null
+              ]}
+              disabled={!repostCount || isReadonly}
+              onPress={handlePressReposts}
+            >
+              <Text style={trackTileStyles.statText}>
+                {formatCount(repostCount)}
+              </Text>
+              <IconRepost
+                height={spacing(4)}
+                width={spacing(4)}
+                fill={neutralLight4}
+                style={styles.repostStat}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                trackTileStyles.statItem,
+                styles.statItem,
+                !saveCount ? styles.disabledStatItem : null
+              ]}
+              disabled={!saveCount || isReadonly}
+              onPress={handlePressFavorites}
+            >
+              <Text style={trackTileStyles.statText}>
+                {formatCount(saveCount)}
+              </Text>
+              <IconHeart
+                style={styles.favoriteStat}
+                height={spacing(3.5)}
+                width={spacing(3.5)}
+                fill={neutralLight4}
+              />
+            </TouchableOpacity>
+            <View style={[trackTileStyles.statItem]}>
+              {downloadStatusIndicator}
+            </View>
           </View>
-        </View>
-      )}
+        )}
+      </View>
       {premiumConditions && !isOwner ? (
         <LockedStatusBadge
           locked={!doesUserHaveAccess}
