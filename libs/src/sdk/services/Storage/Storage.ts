@@ -38,19 +38,25 @@ export class Storage implements StorageService {
    * @param file
    * @param onProgress
    * @param template
+   * @param options
    * @returns
    */
   async uploadFile({
     file,
     onProgress,
-    template
+    template,
+    options = {}
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
+    options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
+    Object.keys(options).forEach((key) => {
+      formData.append(key, `${options[key]}`)
+    })
     // TODO: Test this in a browser env
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
 
@@ -96,7 +102,10 @@ export class Storage implements StorageService {
         if (resp?.status === 'done') {
           return resp
         }
-        if (resp?.status === 'error') {
+        if (
+          resp?.status === 'error' ||
+          resp?.status === 'error_retranscode_preview'
+        ) {
           throw new Error(
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
           )

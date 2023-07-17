@@ -116,6 +116,12 @@ export interface TrackFull {
      * @type {string}
      * @memberof TrackFull
      */
+    previewCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
     mood?: string;
     /**
      * 
@@ -351,6 +357,18 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     aiAttributionUserId?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFull
+     */
+    audioUploadId?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFull
+     */
+    previewStartSeconds?: number;
 }
 
 /**
@@ -392,6 +410,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
         'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
+        'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
@@ -432,6 +451,8 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
         'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
         'aiAttributionUserId': !exists(json, 'ai_attribution_user_id') ? undefined : json['ai_attribution_user_id'],
+        'audioUploadId': !exists(json, 'audio_upload_id') ? undefined : json['audio_upload_id'],
+        'previewStartSeconds': !exists(json, 'preview_start_seconds') ? undefined : json['preview_start_seconds'],
     };
 }
 
@@ -449,6 +470,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'genre': value.genre,
         'id': value.id,
         'track_cid': value.trackCid,
+        'preview_cid': value.previewCid,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': FullRemixParentToJSON(value.remixOf),
@@ -489,6 +511,8 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'premium_conditions': value.premiumConditions,
         'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
         'ai_attribution_user_id': value.aiAttributionUserId,
+        'audio_upload_id': value.audioUploadId,
+        'preview_start_seconds': value.previewStartSeconds,
     };
 }
 

@@ -13,21 +13,30 @@ export type StorageService = {
   uploadFile: ({
     file,
     onProgress,
-    template
+    template,
+    options
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
+    options?: { [key: string]: string }
   }) => Promise<UploadResponse>
 }
 
-export type ProcessingStatus = 'new' | 'busy' | 'done' | 'error'
+export type ProcessingStatus =
+  | 'new'
+  | 'busy'
+  | 'done'
+  | 'error'
+  | 'retranscode_preview'
+  | 'busy_retranscode_preview'
+  | 'error_retranscode_preview'
 
 export type UploadResponse = {
   id: string
   status: ProcessingStatus
   results: {
-    '320': string
+    [key: string]: string
   }
   probe: {
     format: {

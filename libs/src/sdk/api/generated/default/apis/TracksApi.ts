@@ -55,6 +55,7 @@ export interface SearchTracksRequest {
 
 export interface StreamTrackRequest {
     trackId: string;
+    preview?: boolean;
     userSignature?: string;
     userData?: string;
     premiumContentSignature?: string;
@@ -247,6 +248,10 @@ export class TracksApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (requestParameters.preview !== undefined) {
+            queryParameters['preview'] = requestParameters.preview;
+        }
 
         if (requestParameters.userSignature !== undefined) {
             queryParameters['user_signature'] = requestParameters.userSignature;
