@@ -1,10 +1,11 @@
 import { useCallback } from 'react'
 
 import { chatActions, chatSelectors } from '@audius/common'
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconError from 'app/assets/images/iconError.svg'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -24,7 +25,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginTop: spacing(2)
   },
   errorText: {
-    fontSize: typography.fontSize.xs,
     letterSpacing: 0.2,
     color: palette.accentRed
   },
@@ -71,7 +71,9 @@ export const ResendMessageButton = ({
           width={styles.iconError.width}
           height={styles.iconError.height}
         />
-        <Text style={styles.errorText}>{messages.error}</Text>
+        <Text style={styles.errorText} fontSize='xs'>
+          {messages.error}
+        </Text>
       </View>
     </TouchableOpacity>
   )

@@ -9,12 +9,13 @@ import {
   formatCount
 } from '@audius/common'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
-import { Text, View, TouchableOpacity, Keyboard } from 'react-native'
+import { View, TouchableOpacity, Keyboard } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconBlockMessages from 'app/assets/images/iconBlockMessages.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -76,7 +77,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     color: palette.neutral
   },
   followContainer: {
-    marginTop: spacing(1),
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -90,7 +90,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   followersContainer: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    gap: spacing(1)
   },
   ctaContainer: {
     display: 'flex',
@@ -103,17 +104,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderRadius: spacing(1),
     paddingHorizontal: spacing(4),
     paddingVertical: spacing(1.5)
-  },
-  followersCount: {
-    marginHorizontal: spacing(1),
-    color: palette.neutralLight4,
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.bold
-  },
-  followers: {
-    color: palette.neutralLight4,
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.medium
   },
   iconUser: {
     height: spacing(4),
@@ -131,11 +121,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fill: palette.neutral
   },
   followsYouTag: {
-    fontSize: typography.fontSize.xxs,
-    fontFamily: typography.fontByWeight.heavy,
     letterSpacing: 0.64,
-    textTransform: 'uppercase',
-    color: palette.neutralLight4,
     borderWidth: 1,
     borderRadius: spacing(1),
     borderColor: palette.neutralLight4,
@@ -239,10 +225,16 @@ export const ChatUserListItem = ({ userId }: ChatUserListItemProps) => {
                       height={styles.iconUser.height}
                       width={styles.iconUser.width}
                     />
-                    <Text style={styles.followersCount}>
+                    <Text fontSize='small' weight='bold' color='neutralLight4'>
                       {formatCount(user.follower_count)}
                     </Text>
-                    <Text style={styles.followers}>{messages.followers}</Text>
+                    <Text
+                      fontSize='small'
+                      color='neutralLight4'
+                      weight='medium'
+                    >
+                      {messages.followers}
+                    </Text>
                   </>
                 ) : (
                   <View style={styles.ctaContainer}>
@@ -258,7 +250,15 @@ export const ChatUserListItem = ({ userId }: ChatUserListItemProps) => {
                 )}
               </View>
               {user.does_follow_current_user && canCreateChat ? (
-                <Text style={styles.followsYouTag}>{messages.followsYou}</Text>
+                <Text
+                  fontSize='xxs'
+                  weight='heavy'
+                  color='neutralLight4'
+                  textTransform='uppercase'
+                  style={styles.followsYouTag}
+                >
+                  {messages.followsYou}
+                </Text>
               ) : null}
             </View>
           </View>
