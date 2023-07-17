@@ -29,11 +29,11 @@ import {
   RemoveTrackFromPlaylistSchema,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
-  SavePlaylistRequest,
-  SavePlaylistSchema,
+  FavoritePlaylistRequest,
+  FavoritePlaylistSchema,
   UnrepostPlaylistSchema,
-  UnsavePlaylistRequest,
-  UnsavePlaylistSchema,
+  UnfavoritePlaylistRequest,
+  UnfavoritePlaylistSchema,
   UpdatePlaylistRequest,
   UploadPlaylistRequest
 } from './types'
@@ -156,18 +156,19 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           console.log('Retrying uploadPlaylistCoverArt', e)
         }
       ),
-      ...trackFiles.map((trackFile) =>
-        retry3(
-          async () =>
-            await this.storage.uploadFile({
-              file: trackFile,
-              onProgress,
-              template: 'audio'
-            }),
-          (e) => {
-            console.log('Retrying uploadTrackAudio', e)
-          }
-        )
+      ...trackFiles.map(
+        async (trackFile) =>
+          await retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: trackFile,
+                onProgress,
+                template: 'audio'
+              }),
+            (e) => {
+              console.log('Retrying uploadTrackAudio', e)
+            }
+          )
       )
     ])
 
@@ -447,14 +448,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   /**
    * Favorite a playlist or album
    */
-  async savePlaylist(
-    requestParameters: SavePlaylistRequest,
+  async favoritePlaylist(
+    requestParameters: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, playlistId, metadata } = parseRequestParameters(
-      'savePlaylist',
-      SavePlaylistSchema
+      'favoritePlaylist',
+      FavoritePlaylistSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
@@ -474,14 +475,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   /**
    * Unfavorite a playlist or album
    */
-  async unsavePlaylist(
-    requestParameters: UnsavePlaylistRequest,
+  async unfavoritePlaylist(
+    requestParameters: UnfavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, playlistId } = parseRequestParameters(
-      'unsavePlaylist',
-      UnsavePlaylistSchema
+      'unfavoritePlaylist',
+      UnfavoritePlaylistSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
@@ -528,7 +529,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unrepost a track
    */
   async unrepostPlaylist(
-    requestParameters: SavePlaylistRequest,
+    requestParameters: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs

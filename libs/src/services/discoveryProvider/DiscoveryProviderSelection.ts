@@ -12,7 +12,7 @@ import {
   REGRESSED_MODE_TIMEOUT
 } from './constants'
 import semver from 'semver'
-import type { EthContracts } from '../ethContracts'
+import { EthContracts, isVersionAtLeastSameMajorMinor } from '../ethContracts'
 import type { AxiosResponse } from 'axios'
 import type { Maybe, Nullable } from '../../utils'
 import type { LocalStorage } from '../../utils/localStorage'
@@ -211,13 +211,8 @@ export class DiscoveryProviderSelection extends ServiceSelection {
     if (service !== DISCOVERY_SERVICE_NAME) return false
     if (!semver.valid(version)) return false
 
-    // If this service is not the same major/minor as what's on chain, reject
-    if (
-      !this.ethContracts.hasSameMajorAndMinorVersion(
-        this.currentVersion,
-        version
-      )
-    ) {
+    // If this service is not at least the version on chain, reject
+    if (!isVersionAtLeastSameMajorMinor(this.currentVersion, version)) {
       return false
     }
 
@@ -319,7 +314,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
       let isVersionOk = false
       for (let i = 0; i < (this.validVersions as string[]).length; ++i) {
         if (
-          this.ethContracts.hasSameMajorAndMinorVersion(
+          isVersionAtLeastSameMajorMinor(
             this.validVersions?.[i] as string,
             version
           )

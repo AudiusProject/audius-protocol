@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import _ from 'lodash'
-import type { EthContracts } from '../ethContracts'
+import { EthContracts, isVersionAtLeastSameMajorMinor } from '../ethContracts'
 
 import {
   ServiceSelection,
@@ -317,7 +317,7 @@ export class CreatorNodeSelection extends ServiceSelection {
       //      use existing value from `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
-        const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
+        const versionIsUpToDate = isVersionAtLeastSameMajorMinor(
           this.currentVersion as string,
           resp.response.data.data.version
         )

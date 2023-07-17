@@ -43,7 +43,6 @@ export enum Table {
   AggregateTrack = "aggregate_track",
   AggregateUser = "aggregate_user",
   AggregateUserTips = "aggregate_user_tips",
-  AlembicVersion = "alembic_version",
   AppDelegates = "app_delegates",
   AppNameMetrics = "app_name_metrics",
   AssociatedWallets = "associated_wallets",
@@ -125,7 +124,6 @@ export type Tables = {
   aggregate_track: AggregateTrack;
   aggregate_user: AggregateUser;
   aggregate_user_tips: AggregateUserTips;
-  alembic_version: AlembicVersion;
   app_delegates: AppDelegates;
   app_name_metrics: AppNameMetrics;
   associated_wallets: AssociatedWallets;
@@ -287,10 +285,6 @@ export type AggregateUserTips = {
   sender_user_id: number;
   receiver_user_id: number;
   amount: string;
-};
-
-export type AlembicVersion = {
-  version_num: string;
 };
 
 export type AppDelegates = {

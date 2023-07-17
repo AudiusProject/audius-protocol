@@ -1,6 +1,5 @@
 import nock from 'nock'
 import assert from 'assert'
-import semver from 'semver'
 
 import { CREATOR_NODE_SERVICE_NAME } from './constants'
 import { CreatorNodeSelection } from './CreatorNodeSelection'
@@ -21,12 +20,6 @@ const mockEthContracts = (
       return ['1.2.2', '1.2.3'][queryIndex] as string
     },
     getServiceProviderList: async () => urls.map((u) => ({ endpoint: u })),
-    hasSameMajorAndMinorVersion: (version1: string, version2: string) => {
-      return (
-        semver.major(version1) === semver.major(version2) &&
-        semver.minor(version1) === semver.minor(version2)
-      )
-    },
     isInRegressedMode: () => {
       return false
     }
@@ -801,7 +794,8 @@ describe('test CreatorNodeSelection', () => {
     }
     // Make sure there is some variance
     assert(!primaries.every((val) => val === primaries[0]))
-  }, 10000)
+    // @ts-ignore mocha is typed incorrectly
+  }).timeout(10000)
 
   describe('Test preferHigherPatchForPrimary and preferHigherPatchForSecondaries', () => {
     it('Selects highest version nodes when preferHigherPatchForPrimary and preferHigherPatchForSecondaries are enabled', async () => {

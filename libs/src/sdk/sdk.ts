@@ -139,13 +139,14 @@ const initializeServices = (config: SdkConfig) => {
     discoveryNodeSelector:
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
+  const entityManager = config.services?.entityManager ?? defaultEntityManager
 
   const defaultStorage = new Storage({ storageNodeSelector })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    entityManager: defaultEntityManager,
+    entityManager,
     storage: defaultStorage,
     auth: defaultAuthService
   }
@@ -177,6 +178,7 @@ const initializeApis = ({
   )
   const users = new UsersApi(
     generatedApiClientConfig,
+    services.storage,
     services.entityManager,
     services.auth
   )
