@@ -69,7 +69,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     ...flexRowCentered(),
     justifyContent: 'space-between',
     marginHorizontal: spacing(2),
-    marginVertical: spacing(1)
+    marginVertical: spacing(1),
+    backgroundColor: palette.accentGreen
   },
   title: {
     fontFamily: typography.fontByWeight.heavy,
@@ -120,14 +121,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   collectionChainImage: {
     top: -spacing(0.25),
     left: -spacing(1.25)
-  },
-  iconLockContainer: {
-    backgroundColor: palette.neutralLight4,
-    paddingHorizontal: spacing(2),
-    borderRadius: spacing(10)
-  },
-  icon: {
-    color: palette.white
   },
   mainButton: {
     marginTop: spacing(3),
