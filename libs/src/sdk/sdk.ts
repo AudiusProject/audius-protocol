@@ -83,22 +83,13 @@ type SdkConfig = {
    * API secret, required for writes
    */
   apiSecret?: string
-
-  /**
-   * Use selected discovery provider for writes
-   */
-  useDiscoveryRelay?: boolean
 }
 
 /**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
-  const { appName, apiKey, useDiscoveryRelay } = config
-
-  if (useDiscoveryRelay !== undefined && useDiscoveryRelay) {
-    console.warn("useDiscoveryRelay is configured and considered unstable, unexpected behavior may occur")
-  }
+  const { appName, apiKey } = config
 
   // Initialize services
   const services = initializeServices(config)
@@ -146,16 +137,16 @@ const initializeServices = (config: SdkConfig) => {
   const defaultEntityManager = new EntityManager({
     ...defaultEntityManagerConfig,
     discoveryNodeSelector:
-      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector,
-    useDiscoveryRelay: config.useDiscoveryRelay
+      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
+  const entityManager = config.services?.entityManager ?? defaultEntityManager
 
   const defaultStorage = new Storage({ storageNodeSelector })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    entityManager: defaultEntityManager,
+    entityManager,
     storage: defaultStorage,
     auth: defaultAuthService
   }
