@@ -43,10 +43,6 @@ export class EntityManager implements EntityManagerService {
       EntityManagerABI as AbiItem[],
       this.config.contractAddress
     )
-    const useDiscoveryRelay = this.config.useDiscoveryRelay
-    if (useDiscoveryRelay !== undefined && useDiscoveryRelay) {
-      console.warn("useDiscoveryRelay is configured and considered unstable, unexpected behavior may occur")
-    }
   }
 
   /**
