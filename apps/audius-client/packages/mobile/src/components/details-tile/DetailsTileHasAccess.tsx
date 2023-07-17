@@ -1,25 +1,31 @@
-import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import type { PremiumConditions, User } from '@audius/common'
-import { usePremiumConditionsEntity } from '@audius/common'
+import {
+  formatUSDCWeiToUSDString,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
+  isPremiumContentUSDCPurchaseGated,
+  usePremiumConditionsEntity
+} from '@audius/common'
 import type { ViewStyle } from 'react-native'
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 
+import IconCart from 'app/assets/images/iconCart.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
-import IconUnlocked from 'app/assets/images/iconUnlocked.svg'
-import IconVerified from 'app/assets/images/iconVerified.svg'
-import { useLink } from 'app/components/core'
+import { useLink, Text, LockedStatusBadge } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { useColor, useThemePalette } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 const messages = {
   unlocked: 'UNLOCKED',
   collectibleGated: 'COLLECTIBLE GATED',
   specialAccess: 'SPECIAL ACCESS',
+  payToUnlock: 'Pay to Unlock',
   unlockedCollectibleGatedPrefix: 'A Collectible from ',
   unlockedCollectibleGatedSuffix:
     ' was found in a linked wallet. This track is now available.',
@@ -31,31 +37,36 @@ const messages = {
   unlockedTipGatedPrefix: 'Thank you for supporting ',
   unlockedTipGatedSuffix:
     ' by sending them a tip! This track is now available.',
-  ownerTipGated: 'Users can unlock access by sending you a tip!'
+  ownerTipGated: 'Users can unlock access by sending you a tip!',
+  unlockedUSDCPurchasePrefix:
+    'You’ve purchased this track. Thank you for supporting ',
+  unlockedUSDCPurchaseSuffix: '.',
+  ownerUSDCPurchase: (price: string) =>
+    `Users can unlock access to this track for a one time purchase of $${price}`
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
-    marginBottom: spacing(4),
     padding: spacing(4),
     backgroundColor: palette.neutralLight10,
     borderWidth: 1,
     borderColor: palette.neutralLight7,
-    borderRadius: spacing(2)
-  },
-  headerContainer: {
-    ...flexRowCentered(),
-    marginBottom: spacing(2),
-    justifyContent: 'space-between'
+    borderRadius: spacing(2),
+    gap: spacing(2)
   },
   titleContainer: {
-    ...flexRowCentered()
+    ...flexRowCentered(),
+    justifyContent: 'space-between',
+    gap: spacing(2)
+  },
+  ownerTitleContainer: {
+    justifyContent: 'flex-start'
   },
   title: {
-    marginLeft: spacing(2),
     fontFamily: typography.fontByWeight.heavy,
     fontSize: typography.fontSize.medium,
-    color: palette.neutral
+    color: palette.neutral,
+    textTransform: 'uppercase'
   },
   descriptionContainer: {
     ...flexRowCentered(),
@@ -66,88 +77,105 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     fontFamily: typography.fontByWeight.demiBold,
     fontSize: typography.fontSize.medium,
     color: palette.neutral,
-    lineHeight: spacing(6)
-  },
-  checkIcon: {
-    width: spacing(6),
-    height: spacing(6)
+    lineHeight: typography.fontSize.medium * 1.3
   },
   name: {
     color: palette.secondary
-  },
-  bottomMargin: {
-    marginBottom: spacing(2)
   }
 }))
 
 type HasAccessProps = {
-  renderDescription: () => ReactNode
-  isCollectibleGated?: boolean
+  premiumConditions: PremiumConditions
+  handlePressCollection: () => void
   style?: ViewStyle
 }
 
-const DetailsTileUnlockedSection = ({
-  renderDescription,
-  style
-}: HasAccessProps) => {
-  const styles = useStyles()
-  const palette = useThemePalette()
-
-  return (
-    <View style={[styles.root, style]}>
-      <View style={styles.headerContainer}>
-        <View style={styles.titleContainer}>
-          <IconUnlocked fill={palette.neutral} />
-          <Text style={styles.title}>{messages.unlocked}</Text>
-        </View>
-        <IconVerified
-          style={styles.checkIcon}
-          fill={palette.accentGreen}
-          fillSecondary={palette.staticWhite}
-        />
-      </View>
-      {renderDescription()}
-    </View>
-  )
-}
-
 const DetailsTileOwnerSection = ({
-  renderDescription,
-  isCollectibleGated,
-  style
+  premiumConditions,
+  handlePressCollection
 }: HasAccessProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
 
-  return (
-    <View style={[styles.root, style]}>
-      <View style={[styles.titleContainer, styles.bottomMargin]}>
-        {isCollectibleGated ? (
+  if (isPremiumContentCollectibleGated(premiumConditions)) {
+    return (
+      <View style={styles.root}>
+        <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
           <IconCollectible fill={neutral} width={16} height={16} />
-        ) : (
-          <IconSpecialAccess fill={neutral} width={16} height={16} />
-        )}
-        <Text style={styles.title}>
-          {isCollectibleGated
-            ? messages.collectibleGated
-            : messages.specialAccess}
-        </Text>
+          <Text style={styles.title}>{messages.collectibleGated}</Text>
+        </View>
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>
+              {messages.ownerCollectibleGatedPrefix}
+            </Text>
+            <Text
+              onPress={handlePressCollection}
+              style={[styles.description, styles.name]}
+            >
+              {premiumConditions.nft_collection?.name}
+            </Text>
+          </Text>
+        </View>
       </View>
-      {renderDescription()}
-    </View>
-  )
+    )
+  }
+  if (
+    isPremiumContentFollowGated(premiumConditions) ||
+    isPremiumContentTipGated(premiumConditions)
+  ) {
+    return (
+      <View style={styles.root}>
+        <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
+          <IconSpecialAccess fill={neutral} width={16} height={16} />
+          <Text style={styles.title}>{messages.specialAccess}</Text>
+        </View>
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>
+              {isPremiumContentFollowGated(premiumConditions)
+                ? messages.ownerFollowGated
+                : messages.ownerTipGated}
+            </Text>
+          </Text>
+        </View>
+      </View>
+    )
+  }
+  if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    return (
+      <View style={styles.root}>
+        <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
+          <IconCart fill={neutral} width={16} height={16} />
+          <Text style={styles.title}>{messages.payToUnlock}</Text>
+        </View>
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>
+              {messages.ownerUSDCPurchase(
+                formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+              )}
+            </Text>
+          </Text>
+        </View>
+      </View>
+    )
+  }
+  return null
 }
 
 type DetailsTileHasAccessProps = {
   premiumConditions: PremiumConditions
   isOwner: boolean
   style?: ViewStyle
+  trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
 }
 
 export const DetailsTileHasAccess = ({
   premiumConditions,
   isOwner,
-  style
+  style,
+  trackArtist
 }: DetailsTileHasAccessProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
@@ -164,38 +192,12 @@ export const DetailsTileHasAccess = ({
     [navigation]
   )
 
-  const renderOwnerDescription = useCallback(() => {
-    if (nftCollection) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.ownerCollectibleGatedPrefix}
-            </Text>
-            <Text
-              onPress={handlePressCollection}
-              style={[styles.description, styles.name]}
-            >
-              {nftCollection.name}
-            </Text>
-          </Text>
-        </View>
-      )
-    }
-
-    return (
-      <View style={styles.descriptionContainer}>
-        <Text>
-          <Text style={styles.description}>
-            {followee ? messages.ownerFollowGated : messages.ownerTipGated}
-          </Text>
-        </Text>
-      </View>
-    )
-  }, [nftCollection, followee, handlePressCollection, styles])
-
   const renderUnlockedSpecialAccessDescription = useCallback(
-    (args: { entity: User; prefix: string; suffix: string }) => {
+    (args: {
+      entity: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
+      prefix: string
+      suffix: string
+    }) => {
       const { entity, prefix, suffix } = args
       return (
         <View style={styles.descriptionContainer}>
@@ -222,7 +224,8 @@ export const DetailsTileHasAccess = ({
   )
 
   const renderUnlockedDescription = useCallback(() => {
-    if (nftCollection) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
+      if (!nftCollection) return null
       return (
         <View style={styles.descriptionContainer}>
           <Text>
@@ -242,48 +245,67 @@ export const DetailsTileHasAccess = ({
         </View>
       )
     }
-    if (followee) {
+    if (isPremiumContentFollowGated(premiumConditions)) {
+      if (!followee) return null
       return renderUnlockedSpecialAccessDescription({
         entity: followee,
         prefix: messages.unlockedFollowGatedPrefix,
         suffix: messages.unlockedFollowGatedSuffix
       })
     }
-    if (tippedUser) {
+    if (isPremiumContentTipGated(premiumConditions)) {
+      if (!tippedUser) return null
       return renderUnlockedSpecialAccessDescription({
         entity: tippedUser,
         prefix: messages.unlockedTipGatedPrefix,
         suffix: messages.unlockedTipGatedSuffix
       })
     }
-
-    console.warn(
-      'No entity for premium conditions... should not have reached here.'
-    )
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      if (!trackArtist) return null
+      return renderUnlockedSpecialAccessDescription({
+        entity: trackArtist,
+        prefix: messages.unlockedUSDCPurchasePrefix,
+        suffix: messages.unlockedUSDCPurchaseSuffix
+      })
+    }
     return null
   }, [
+    premiumConditions,
     nftCollection,
-    followee,
-    tippedUser,
+    styles.descriptionContainer,
+    styles.description,
+    styles.name,
     handlePressCollection,
+    followee,
     renderUnlockedSpecialAccessDescription,
-    styles
+    tippedUser,
+    trackArtist
   ])
 
   if (isOwner) {
     return (
       <DetailsTileOwnerSection
-        renderDescription={renderOwnerDescription}
-        isCollectibleGated={!!nftCollection}
-        style={style}
+        premiumConditions={premiumConditions}
+        handlePressCollection={handlePressCollection}
       />
     )
   }
 
   return (
-    <DetailsTileUnlockedSection
-      renderDescription={renderUnlockedDescription}
-      style={style}
-    />
+    <View style={[styles.root, style]}>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{messages.unlocked}</Text>
+        <LockedStatusBadge
+          locked={false}
+          variant={
+            isPremiumContentUSDCPurchaseGated(premiumConditions)
+              ? 'purchase'
+              : 'gated'
+          }
+        />
+      </View>
+      {renderUnlockedDescription()}
+    </View>
   )
 }

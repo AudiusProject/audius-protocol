@@ -1,6 +1,10 @@
 import { ChangeEvent, useCallback } from 'react'
 
-import { accountSelectors, TrackAvailabilityType } from '@audius/common'
+import {
+  accountSelectors,
+  isPremiumContentFollowGated,
+  TrackAvailabilityType
+} from '@audius/common'
 import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -29,9 +33,11 @@ export const SpecialAccessAvailability = ({
   disabled
 }: TrackAvailabilitySelectionProps) => {
   const accountUserId = useSelector(getUserId)
-  const specialAccessType = state.premium_conditions?.tip_user_id
-    ? SpecialAccessType.TIP
-    : SpecialAccessType.FOLLOW
+  const specialAccessType = isPremiumContentFollowGated(
+    state.premium_conditions
+  )
+    ? SpecialAccessType.FOLLOW
+    : SpecialAccessType.TIP
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

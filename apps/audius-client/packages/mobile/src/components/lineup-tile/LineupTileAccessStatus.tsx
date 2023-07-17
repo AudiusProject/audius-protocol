@@ -1,52 +1,74 @@
-import type { ID } from '@audius/common'
-import { premiumContentSelectors } from '@audius/common'
+import type { ID, PremiumConditions } from '@audius/common'
+import {
+  isPremiumContentUSDCPurchaseGated,
+  premiumContentSelectors
+} from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconLock from 'app/assets/images/iconLock.svg'
 import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
 const { getPremiumTrackStatusMap } = premiumContentSelectors
 
 const messages = {
-  unlocking: 'UNLOCKING',
-  locked: 'LOCKED'
+  unlocking: 'Unlocking',
+  locked: 'Locked'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
     ...flexRowCentered(),
-    marginTop: spacing(1),
-    paddingVertical: spacing(0.5),
-    paddingHorizontal: spacing(2),
-    backgroundColor: palette.white,
-    borderWidth: 1,
-    borderColor: palette.neutralLight4,
-    borderRadius: spacing(0.5)
+    paddingVertical: spacing(1),
+    paddingHorizontal: spacing(3),
+    backgroundColor: palette.accentBlue,
+    borderRadius: spacing(1),
+    gap: spacing(1)
   },
   text: {
-    marginLeft: spacing(2.5),
     fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.medium,
-    color: palette.neutralLight4
+    fontSize: typography.fontSize.small,
+    color: palette.staticWhite
+  },
+  loadingSpinner: {
+    width: spacing(4),
+    height: spacing(4)
+  },
+  usdcPurchase: {
+    backgroundColor: palette.specialLightGreen1
   }
 }))
 
-export const LineupTileAccessStatus = ({ trackId }: { trackId: ID }) => {
+export const LineupTileAccessStatus = ({
+  trackId,
+  premiumConditions
+}: {
+  trackId: ID
+  premiumConditions: PremiumConditions
+}) => {
   const styles = useStyles()
+  const isUSDCEnabled = useIsUSDCEnabled()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId]
-  const neutralLight4 = useColor('neutralLight4')
+  const staticWhite = useColor('staticWhite')
 
   return (
-    <View style={styles.root}>
+    <View
+      style={[
+        styles.root,
+        isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
+          ? styles.usdcPurchase
+          : null
+      ]}
+    >
       {premiumTrackStatus === 'UNLOCKING' ? (
-        <LoadingSpinner />
+        <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
       ) : (
-        <IconLock fill={neutralLight4} width={16} height={16} />
+        <IconLock fill={staticWhite} width={16} height={16} />
       )}
       <Text style={styles.text}>
         {premiumTrackStatus === 'UNLOCKING'

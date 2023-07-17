@@ -32,6 +32,25 @@
   height: var(--unit-8);
 }
 
+.button.large {
+  padding: var(--unit-5) var(--unit-6);
+  height: var(--unit-15);
+  gap: var(--unit-2);
+}
+
+.button.large .textLabel {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.25px;
+  line-height: var(--unit-5);
+  text-transform: uppercase;
+}
+
+.button.large .icon,
+.button.large .icon.left {
+  margin-right: 0;
+}
+
 .button.tiny {
   height: var(--unit-7);
   padding-left: var(--unit-4);
@@ -43,6 +62,10 @@
 }
 
 .button.small .icon svg {
+  width: var(--unit-4);
+}
+
+.button.tiny .icon svg {
   width: var(--unit-4);
 }
 
@@ -164,13 +187,13 @@
 /* Secondary Button */
 
 .secondary {
-  border: 1px solid var(--primary-dark-1);
+  border: 1px solid var(--neutral-light-5);
   border-radius: 4px;
   background: var(--white);
 }
 
 .secondary .textLabel {
-  color: var(--primary);
+  color: var(--text-default);
   font-size: var(--font-l);
   font-weight: var(--font-bold);
 }
@@ -187,28 +210,35 @@
 
 .secondary .icon path,
 .secondary .icon use {
-  fill: var(--primary);
+  fill: var(--text-default);
 }
 
 .secondary.includeHoverAnimations:hover:enabled {
   transform: var(--grow);
-  border: 1px solid var(--primary-dark-2);
-  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .secondary.includeHoverAnimations:hover:enabled .textLabel {
-  color: var(--primary-secondary-text);
+  color: var(--primary);
 }
 
 .secondary.includeHoverAnimations:hover:enabled .icon path,
 .secondary.includeHoverAnimations:hover:enabled .icon use {
-  fill: var(--primary-secondary-text);
+  fill: var(--primary);
 }
 
 .secondary.includeHoverAnimations:active:enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
-  border: 1px solid var(--primary-dark-2);
-  background: var(--primary-dark-2);
+  border-color: var(--primary-dark-2);
+}
+
+.secondary.includeHoverAnimations:active:enabled .textLabel {
+  color: var(--primary-dark-2)
+}
+
+.secondary.includeHoverAnimations:active:enabled .icon path,
+.secondary.includeHoverAnimations:active:enabled .icon use {
+  fill: var(--primary-dark-2);
 }
 
 /* Tertiary Button */

@@ -1,21 +1,22 @@
 import { ReactNode, useCallback } from 'react'
 
 import {
-  FeatureFlags,
   FieldVisibility,
   premiumContentSelectors,
-  ID
+  ID,
+  PremiumConditions,
+  Nullable
 } from '@audius/common'
-import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useFlag } from 'hooks/useRemoteConfig'
+import typeStyles from 'components/typography/typography.module.css'
+
+import { PremiumConditionsPill } from '../PremiumConditionsPill'
 
 import styles from './TrackTile.module.css'
 
@@ -24,8 +25,8 @@ const { getPremiumTrackStatusMap } = premiumContentSelectors
 const messages = {
   repostLabel: 'Repost',
   unrepostLabel: 'Unrepost',
-  unlocking: 'UNLOCKING',
-  locked: 'LOCKED'
+  unlocking: 'Unlocking',
+  locked: 'Locked'
 }
 
 type BottomRowProps = {
@@ -44,6 +45,7 @@ type BottomRowProps = {
   showIconButtons?: boolean
   isTrack?: boolean
   trackId?: ID
+  premiumConditions?: Nullable<PremiumConditions>
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
@@ -65,13 +67,11 @@ export const BottomRow = ({
   showIconButtons,
   isTrack,
   trackId,
+  premiumConditions,
   onClickRepost,
   onClickFavorite,
   onClickShare
 }: BottomRowProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = trackId && premiumTrackStatusMap[trackId]
 
@@ -109,21 +109,14 @@ export const BottomRow = ({
     )
   }
 
-  if (isGatedContentEnabled && isTrack && !isLoading && !doesUserHaveAccess) {
+  if (isTrack && premiumConditions && !isLoading && !doesUserHaveAccess) {
     return (
-      <div className={styles.bottomRow}>
-        {premiumTrackStatus === 'UNLOCKING' ? (
-          <div className={styles.premiumContent}>
-            <LoadingSpinner className={styles.spinner} />
-            {messages.unlocking}
-          </div>
-        ) : (
-          <div className={styles.premiumContent}>
-            <IconLock />
-            {messages.locked}
-          </div>
-        )}
-        {!isLoading ? <div>{rightActions}</div> : null}
+      <div className={cn(typeStyles.titleSmall, styles.bottomRow)}>
+        <PremiumConditionsPill
+          premiumConditions={premiumConditions}
+          unlocking={premiumTrackStatus === 'UNLOCKING'}
+        />
+        <div>{rightActions}</div>
       </div>
     )
   }

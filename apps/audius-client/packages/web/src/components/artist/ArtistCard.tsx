@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import FollowButton from 'components/follow-button/FollowButton'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
 
 import styles from './ArtistCard.module.css'

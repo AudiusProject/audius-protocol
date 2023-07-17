@@ -1,12 +1,15 @@
 import { useCallback } from 'react'
 
 import {
+  isPremiumContentCollectibleGated,
+  getDogEarType,
   premiumContentActions,
   SquareSizes,
   Track,
   useLockedContent,
   usePremiumContentAccess,
-  User
+  User,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import {
   IconLock,
@@ -14,12 +17,14 @@ import {
   ModalHeader,
   ModalTitle,
   IconCollectible,
-  IconSpecialAccess
+  IconSpecialAccess,
+  IconCart
 } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -35,7 +40,8 @@ const { resetLockedContentId } = premiumContentActions
 const messages = {
   howToUnlock: 'HOW TO UNLOCK',
   collectibleGated: 'COLLECTIBLE GATED',
-  specialAccess: 'SPECIAL ACCESS'
+  specialAccess: 'SPECIAL ACCESS',
+  premiumContent: 'PREMIUM CONTENT'
 }
 
 const TrackDetails = ({ track, owner }: { track: Track; owner: User }) => {
@@ -50,8 +56,27 @@ const TrackDetails = ({ track, owner }: { track: Track; owner: User }) => {
     SquareSizes.SIZE_150_BY_150,
     ''
   )
+
+  const dogEarType = getDogEarType({
+    doesUserHaveAccess: false,
+    isOwner: false,
+    premiumConditions
+  })
   const label = `${title} by ${owner.name}`
-  const isCollectibleGated = !!premiumConditions?.nft_collection
+  const isCollectibleGated = isPremiumContentCollectibleGated(premiumConditions)
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
+
+  let IconComponent = IconSpecialAccess
+  let message = messages.specialAccess
+
+  if (isCollectibleGated) {
+    IconComponent = IconCollectible
+    message = messages.collectibleGated
+  } else if (isUSDCPurchaseGated) {
+    IconComponent = IconCart
+    message = messages.premiumContent
+  }
 
   return (
     <div className={styles.trackDetails}>
@@ -61,14 +86,11 @@ const TrackDetails = ({ track, owner }: { track: Track; owner: User }) => {
         image={image}
         aria-label={label}
       />
+      {dogEarType ? <DogEar type={dogEarType} /> : null}
       <div>
         <div className={styles.premiumContentLabel}>
-          {isCollectibleGated ? <IconCollectible /> : <IconSpecialAccess />}
-          <span>
-            {isCollectibleGated
-              ? messages.collectibleGated
-              : messages.specialAccess}
-          </span>
+          <IconComponent />
+          <span>{message}</span>
         </div>
         <p className={styles.trackTitle}>{title}</p>
         <div className={styles.trackOwner}>
@@ -135,6 +157,7 @@ export const LockedContentModal = () => {
               wrapperClassName={styles.premiumTrackSectionWrapper}
               className={styles.premiumTrackSection}
               buttonClassName={styles.premiumTrackSectionButton}
+              ownerId={owner.user_id}
             />
           </div>
         )}

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -14,7 +13,6 @@ import {
 import { useAsync } from 'react-use'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { localStorage } from 'services/local-storage'
 
 import styles from './GatedContentUploadPromptModal.module.css'
@@ -42,26 +40,18 @@ type GatedContentUploadPromptModalProps = {
 export const GatedContentUploadPromptModal = ({
   onSubmit
 }: GatedContentUploadPromptModalProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
-    FeatureFlags.SPECIAL_ACCESS_ENABLED
-  )
-
   const [isOpen, setIsOpen] = useState(false)
   const { value: seen } = useAsync(() =>
     localStorage.getItem(GATED_CONTENT_UPLOAD_PROMPT_MODAL_SEEN_KEY)
   )
 
   useEffect(() => {
-    const shouldOpen =
-      isGatedContentEnabled && isSpecialAccessEnabled && seen === null
+    const shouldOpen = seen === null
     if (shouldOpen) {
       setIsOpen(true)
       localStorage.setItem(GATED_CONTENT_UPLOAD_PROMPT_MODAL_SEEN_KEY, 'true')
     }
-  }, [isGatedContentEnabled, isSpecialAccessEnabled, seen, setIsOpen])
+  }, [seen, setIsOpen])
 
   const handleSubmit = useCallback(() => {
     onSubmit()

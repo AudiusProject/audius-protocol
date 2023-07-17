@@ -28,7 +28,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
@@ -79,7 +78,6 @@ export const TrackTileComponent = ({
   variant,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -141,9 +139,7 @@ export const TrackTileComponent = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const overflowActions = [
-      !isGatedContentEnabled || !isPremium
-        ? OverflowAction.ADD_TO_PLAYLIST
-        : null,
+      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -167,7 +163,6 @@ export const TrackTileComponent = ({
   }, [
     track_id,
     genre,
-    isGatedContentEnabled,
     isPremium,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,

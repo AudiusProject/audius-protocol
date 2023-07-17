@@ -1,11 +1,11 @@
 .trackHeader {
-  padding: 16px 24px 0px;
+  padding: var(--unit-4);
   width: 100%;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
+  gap: var(--unit-4);
   align-items: center;
   background: var(--white);
-
   border: 1px solid var(--neutral-light-8);
   border-radius: 6px;
   overflow: hidden;
@@ -14,7 +14,6 @@
 }
 
 .typeLabel {
-  margin-bottom: 15px;
   height: 18px;
   color: var(--neutral-light-4);
   font-family: var(--font-family);
@@ -28,7 +27,6 @@
 .coverArt {
   height: 195px;
   width: 195px;
-  margin-bottom: 23px;
 }
 
 .imageWrapper {
@@ -45,7 +43,6 @@
   font-weight: var(--font-bold);
   line-height: 25px;
   text-align: center;
-  margin-bottom: 8px;
 }
 
 .artist {
@@ -54,8 +51,8 @@
   font-size: var(--font-l);
   font-weight: var(--font-medium);
   line-height: 24px;
+  justify-content: center;
   text-align: center;
-  margin-bottom: 16px;
   display: flex;
   align-items: center;
 }
@@ -73,35 +70,10 @@
   margin-left: 8px;
 }
 
-/* Button Section */
-.buttonSection {
-  width: 100%;
-  display: inline-flex;
-  flex-direction: column;
-  margin-bottom: 12px;
-}
-
-.playAllButton {
-  width: 100%;
+.titleArtistSection {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px !important;
-}
-
-.playAllButton .playAllButtonText {
-  color: var(--darkmode-static-white);
-  font-family: var(--font-family);
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.71px;
-  line-height: normal;
-  text-align: center;
-}
-
-.playAllButton svg {
-  width: 24px !important;
-  height: 24px !important;
+  flex-direction: column;
+  gap: var(--unit-3);
 }
 
 .buttonContainer {
@@ -119,18 +91,6 @@
   display: inline-flex;
   flex-wrap: wrap;
   width: 100%;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--neutral-light-7);
-  margin-bottom: 12px;
-}
-
-/* Info Label Section */
-.infoLabelsSection {
-  display: inline-flex;
-  justify-content: space-evenly;
-  margin-bottom: 16px;
-  margin-top: 24px;
-  width: 100%;
 }
 
 .trackHeader > span {
@@ -139,16 +99,11 @@
 
 .description {
   color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  line-height: 26px;
   text-align: left;
   white-space: pre-line;
   text-overflow: ellipsis;
   overflow: hidden;
   width: 100%;
-  margin-bottom: 24px;
 }
 
 .description > a {
@@ -166,22 +121,16 @@
 
 /* Info Section */
 .infoSection {
-  border-top: 1px solid var(--neutral-light-7);
-  display: inline-flex;
+  display: flex;
+  gap: var(--unit-4);
   flex-wrap: wrap;
   width: 100%;
-  padding: 24px 0px 8px;
 }
-
-.infoSection.noStats {
-  border: none;
-}
-
 .infoFact {
   flex: 1;
   display: flex;
+  gap: var(--unit-2);
   text-align: left;
-  margin-bottom: 16px;
   width: 50%;
 }
 
@@ -192,7 +141,6 @@
   font-weight: var(--font-bold);
   letter-spacing: 0.35px;
   text-transform: uppercase;
-  margin-right: 8px;
   display: flex;
   align-items: center;
 }
@@ -218,22 +166,18 @@
 
 /* Download Buttons Container */
 .downloadButtonsContainer {
-  border-top: 1px solid var(--neutral-light-7);
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 0px;
 }
 
 /* Tags */
 .tags {
-  border-top: 1px solid var(--neutral-light-7);
   width: 100%;
   display: inline-flex;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 16px 0px;
 }
 
 .tag {
@@ -279,10 +223,6 @@
   margin-bottom: 24px;
 }
 
-.hiddenTrackHeaderWrapper {
-  margin-bottom: 12px;
-}
-
 .DogEar {
   position: relative;
   top: -10px;
@@ -293,26 +233,20 @@
   display: flex;
   align-items: center;
   gap: var(--unit-2);
-  color: var(--accent-blue);
 }
 
 .premiumContentLabel svg {
-  width: var(--unit-6);
-  height: var(--unit-6);
+  width: calc(var(--unit) * 4.5);
+  height: calc(var(--unit) * 4.5);
 }
 
 .premiumContentLabel path {
-  fill: var(--accent-blue);
+  fill: var(--text-subdued);
 }
 
 .premiumTrackSectionWrapper {
   margin: 0;
   background: var(--neutral-light-10);
-}
-
-.premiumTrackSectionWrapper.unlockedSection {
-  width: 100%;
-  margin: 0 0 var(--unit-4) 0;
 }
 
 .premiumTrackSection {
@@ -344,8 +278,13 @@
       var(--ai-secondary) 100%
     ),
     var(--ai-primary);
-  margin-bottom: 16px;
   width: 100%;
   display: flex;
   justify-content: center;
+}
+
+.withSectionDivider {
+  width: 100%;
+  padding-top: var(--unit-4);
+  border-top: 1px solid var(--neutral-light-9);
 }

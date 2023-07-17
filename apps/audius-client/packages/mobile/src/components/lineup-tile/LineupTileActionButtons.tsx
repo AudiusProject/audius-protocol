@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common'
+import type { ID, Nullable, PremiumConditions } from '@audius/common'
 import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -6,7 +6,6 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -21,6 +20,7 @@ type Props = {
   isShareHidden?: boolean
   isUnlisted?: boolean
   trackId?: ID
+  premiumConditions?: Nullable<PremiumConditions>
   doesUserHaveAccess?: boolean
   onPressOverflow?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
@@ -32,9 +32,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   bottomButtons: {
     ...flexRowCentered(),
     justifyContent: 'space-between',
-    marginVertical: spacing(0.5),
     marginHorizontal: spacing(3),
-    height: spacing(9),
     borderTopWidth: 1,
     borderTopColor: palette.neutralLight8
   },
@@ -46,7 +44,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(8)
   },
   leftButtons: {
-    ...flexRowCentered()
+    ...flexRowCentered(),
+    marginVertical: spacing(2)
   }
 }))
 
@@ -59,12 +58,12 @@ export const LineupTileActionButtons = ({
   isUnlisted,
   trackId,
   doesUserHaveAccess = false,
+  premiumConditions,
   onPressOverflow,
   onPressRepost,
   onPressSave,
   onPressShare
 }: Props) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { neutralLight4 } = useThemeColors()
   const styles = useStyles()
 
@@ -108,16 +107,18 @@ export const LineupTileActionButtons = ({
     />
   )
 
-  const showPremiumAccessStatus =
-    isGatedContentEnabled && trackId && !doesUserHaveAccess
+  const showPremiumAccessStatus = trackId && !doesUserHaveAccess
   const showLeftButtons = !showPremiumAccessStatus && !isUnlisted
 
   return (
     <View style={styles.bottomButtons}>
       <View style={styles.leftButtons}>
-        {showPremiumAccessStatus && (
-          <LineupTileAccessStatus trackId={trackId} />
-        )}
+        {showPremiumAccessStatus && premiumConditions != null ? (
+          <LineupTileAccessStatus
+            trackId={trackId}
+            premiumConditions={premiumConditions}
+          />
+        ) : null}
         {showLeftButtons && (
           <>
             {repostButton}

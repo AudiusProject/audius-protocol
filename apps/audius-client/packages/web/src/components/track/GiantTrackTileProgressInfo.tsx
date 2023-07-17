@@ -59,7 +59,7 @@ export const GiantTrackTileProgressInfo = ({
         </div>
       )
     }
-  } else {
-    return <p className={styles.progressText}>{messages.unplayed}</p>
   }
+
+  return <p className={styles.progressText}>{messages.unplayed}</p>
 }

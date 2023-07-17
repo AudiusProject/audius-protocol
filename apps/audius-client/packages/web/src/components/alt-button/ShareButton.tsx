@@ -13,6 +13,7 @@ type ShareButtonProps = {
   isMatrixMode: boolean
   isDarkMode: boolean
   className?: string
+  wrapperClassName?: string
   stopPropagation?: boolean
   isShareHidden?: boolean
 }
@@ -27,6 +28,7 @@ const ShareButton = ({
   onClick,
   isDarkMode,
   className,
+  wrapperClassName,
   isMatrixMode,
   stopPropagation = true,
   isShareHidden = false
@@ -35,17 +37,21 @@ const ShareButton = ({
 
   return (
     <div
-      className={cn(styles.icon, className, {
+      className={cn(wrapperClassName, {
         [styles.isHidden]: isShareHidden
       })}
-      style={{
-        backgroundImage: `url(${icon})`
-      }}
       onClick={(e) => {
         onClick(e)
         stopPropagation && e.stopPropagation()
       }}
-    />
+    >
+      <div
+        className={cn(styles.icon, className)}
+        style={{
+          backgroundImage: `url(${icon})`
+        }}
+      />
+    </div>
   )
 }
 

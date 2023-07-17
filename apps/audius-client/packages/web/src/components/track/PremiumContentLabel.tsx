@@ -1,17 +1,23 @@
-import { PremiumConditions, FeatureFlags, Nullable } from '@audius/common'
-import { IconCollectible, IconSpecialAccess, IconUnlocked } from '@audius/stems'
+import {
+  PremiumConditions,
+  Nullable,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 
-import { useFlag } from 'hooks/useRemoteConfig'
-
-import styles from './desktop/TrackTile.module.css'
+import styles from './PremiumContentLabel.module.css'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
-  unlocked: 'Unlocked'
+  premium: 'Premium'
 }
 
+/** Renders a label indicating a premium content type. If the user does
+ * not yet have access or is the owner, the label will be in an accented color.
+ */
 export const PremiumContentLabel = ({
   premiumConditions,
   doesUserHaveAccess,
@@ -21,36 +27,25 @@ export const PremiumContentLabel = ({
   doesUserHaveAccess: boolean
   isOwner: boolean
 }) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
+  const showColor = isOwner || !doesUserHaveAccess
+  let message = messages.specialAccess
+  let IconComponent = IconSpecialAccess
+  let colorStyle = styles.gatedContent
 
-  if (!isGatedContentEnabled) {
-    return null
+  if (isPremiumContentCollectibleGated(premiumConditions)) {
+    message = messages.collectibleGated
+    IconComponent = IconCollectible
   }
-
-  if (!isOwner && doesUserHaveAccess) {
-    return (
-      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
-        <IconUnlocked className={styles.topRightIcon} />
-        {messages.unlocked}
-      </div>
-    )
-  }
-
-  if (premiumConditions?.nft_collection) {
-    return (
-      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
-        <IconCollectible className={styles.topRightIcon} />
-        {messages.collectibleGated}
-      </div>
-    )
+  if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    message = messages.premium
+    IconComponent = IconCart
+    colorStyle = styles.premiumContent
   }
 
   return (
-    <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
-      <IconSpecialAccess className={styles.topRightIcon} />
-      {messages.specialAccess}
+    <div className={cn(styles.labelContainer, { [colorStyle]: showColor })}>
+      <IconComponent className={styles.icon} />
+      {message}
     </div>
   )
 }

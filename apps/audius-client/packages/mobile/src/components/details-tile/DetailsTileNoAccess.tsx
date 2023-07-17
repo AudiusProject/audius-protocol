@@ -8,7 +8,12 @@ import {
   usersSocialActions,
   tippingActions,
   usePremiumConditionsEntity,
-  premiumContentSelectors
+  premiumContentSelectors,
+  isPremiumContentUSDCPurchaseGated,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
+  formatUSDCWeiToUSDString
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { View, Text, Image } from 'react-native'
@@ -16,17 +21,16 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
 import IconFollow from 'app/assets/images/iconFollow.svg'
-import IconLock from 'app/assets/images/iconLock.svg'
 import IconTip from 'app/assets/images/iconTip.svg'
 import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
-import { Button, useLink } from 'app/components/core'
+import { Button, LockedStatusBadge, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
+import { spacing } from 'app/styles/spacing'
 
 const { getPremiumTrackStatusMap } = premiumContentSelectors
 const { followUser } = usersSocialActions
@@ -38,6 +42,7 @@ const messages = {
   goToCollection: 'Go To Collection',
   followArtist: 'Follow Artist',
   sendTip: 'Send Tip',
+  buy: (price: string) => `Buy $${price}`,
   lockedCollectibleGated:
     'To unlock this track, you must link a wallet containing a collectible from:',
   unlockingCollectibleGatedPrefix: 'A Collectible from ',
@@ -48,52 +53,51 @@ const messages = {
   lockedTipGatedPrefix: 'Send ',
   lockedTipGatedSuffix: ' a tip.',
   unlockingTipGatedPrefix: 'Thank you for supporting ',
-  unlockingTipGatedSuffix: ' by sending them a tip!'
+  unlockingTipGatedSuffix: ' by sending them a tip!',
+  lockedUSDCPurchase: 'Unlock access with a one-time purchase!'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
-    padding: spacing(4),
+    padding: spacing(2),
     backgroundColor: palette.neutralLight10,
     borderWidth: 1,
     borderColor: palette.neutralLight7,
     borderRadius: spacing(2)
   },
-  headerContainer: {
-    ...flexRowCentered(),
-    marginBottom: spacing(2),
-    justifyContent: 'space-between'
-  },
   titleContainer: {
-    ...flexRowCentered()
+    ...flexRowCentered(),
+    justifyContent: 'space-between',
+    marginHorizontal: spacing(2),
+    marginVertical: spacing(1)
   },
   title: {
-    marginLeft: spacing(2),
     fontFamily: typography.fontByWeight.heavy,
     fontSize: typography.fontSize.medium,
     color: palette.neutral
   },
   descriptionContainer: {
     ...flexRowCentered(),
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    margin: spacing(2)
   },
   description: {
     flexShrink: 0,
     fontFamily: typography.fontByWeight.demiBold,
     fontSize: typography.fontSize.medium,
     color: palette.neutral,
-    lineHeight: spacing(6)
+    lineHeight: typography.fontSize.medium * 1.3
   },
   name: {
     color: palette.secondary
   },
   collectionContainer: {
     ...flexRowCentered(),
-    marginTop: spacing(2)
+    marginTop: spacing(2),
+    gap: spacing(6)
   },
   collectionImages: {
-    ...flexRowCentered(),
-    marginRight: spacing(6)
+    ...flexRowCentered()
   },
   collectionImage: {
     borderWidth: 1,
@@ -111,57 +115,66 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     height: spacing(6),
     borderWidth: 1,
     borderColor: palette.neutralLight7,
-    borderRadius: 16
+    borderRadius: spacing(4)
   },
   collectionChainImage: {
     top: -spacing(0.25),
     left: -spacing(1.25)
   },
+  iconLockContainer: {
+    backgroundColor: palette.neutralLight4,
+    paddingHorizontal: spacing(2),
+    borderRadius: spacing(10)
+  },
   icon: {
     color: palette.white
   },
   mainButton: {
-    marginTop: spacing(7)
+    marginTop: spacing(3),
+    backgroundColor: palette.accentBlue
   },
-  bottomMargin: {
-    marginBottom: spacing(2)
+  buyButton: {
+    backgroundColor: palette.specialLightGreen1
+  },
+  loadingSpinner: {
+    width: spacing(5),
+    height: spacing(5)
   }
 }))
 
 type NoAccessProps = {
   renderDescription: () => ReactNode
+  premiumConditions: PremiumConditions
   isUnlocking: boolean
   style?: ViewStyle
 }
 
 const DetailsTileNoAccessSection = ({
   renderDescription,
+  premiumConditions,
   isUnlocking,
   style
 }: NoAccessProps) => {
   const styles = useStyles()
-  const neutral = useColor('neutral')
-
-  if (isUnlocking) {
-    return (
-      <View style={[styles.root, style]}>
-        <View style={styles.headerContainer}>
-          <View style={styles.titleContainer}>
-            <IconLock fill={neutral} width={16} height={16} />
-            <Text style={styles.title}>{messages.unlocking}</Text>
-          </View>
-          <LoadingSpinner />
-        </View>
-        {renderDescription()}
-      </View>
-    )
-  }
 
   return (
     <View style={[styles.root, style]}>
-      <View style={[styles.titleContainer, styles.bottomMargin]}>
-        <IconLock fill={neutral} width={16} height={16} />
-        <Text style={styles.title}>{messages.howToUnlock}</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>
+          {isUnlocking ? messages.unlocking : messages.howToUnlock}
+        </Text>
+        {isUnlocking ? (
+          <LoadingSpinner style={styles.loadingSpinner} />
+        ) : (
+          <LockedStatusBadge
+            locked={true}
+            variant={
+              isPremiumContentUSDCPurchaseGated(premiumConditions)
+                ? 'purchase'
+                : 'gated'
+            }
+          />
+        )}
       </View>
       {renderDescription()}
     </View>
@@ -225,7 +238,7 @@ export const DetailsTileNoAccess = ({
             {entity.name}
           </Text>
           <UserBadges
-            badgeSize={16}
+            badgeSize={spacing(4)}
             user={entity}
             nameStyle={styles.description}
             hideName
@@ -238,33 +251,42 @@ export const DetailsTileNoAccess = ({
   )
 
   const renderLockedDescription = useCallback(() => {
-    if (nftCollection) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
+      if (!nftCollection) return null
       return (
-        <View style={styles.descriptionContainer}>
-          <Text style={styles.description}>
-            {messages.lockedCollectibleGated}
-          </Text>
-          <View style={styles.collectionContainer}>
-            {nftCollection.imageUrl && (
-              <View style={styles.collectionImages}>
-                <Image
-                  source={{ uri: nftCollection.imageUrl }}
-                  style={styles.collectionImage}
-                />
-                <View style={styles.collectionChainImageContainer}>
-                  {nftCollection.chain === Chain.Eth ? (
-                    <LogoEth style={styles.collectionChainImage} height={16} />
-                  ) : (
-                    <LogoSol style={styles.collectionChainImage} height={16} />
-                  )}
+        <>
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.description}>
+              {messages.lockedCollectibleGated}
+            </Text>
+            <View style={styles.collectionContainer}>
+              {nftCollection.imageUrl && (
+                <View style={styles.collectionImages}>
+                  <Image
+                    source={{ uri: nftCollection.imageUrl }}
+                    style={styles.collectionImage}
+                  />
+                  <View style={styles.collectionChainImageContainer}>
+                    {nftCollection.chain === Chain.Eth ? (
+                      <LogoEth
+                        style={styles.collectionChainImage}
+                        height={spacing(4)}
+                      />
+                    ) : (
+                      <LogoSol
+                        style={styles.collectionChainImage}
+                        height={spacing(4)}
+                      />
+                    )}
+                  </View>
                 </View>
-              </View>
-            )}
-            <Text style={styles.description}>{nftCollection.name}</Text>
+              )}
+              <Text style={styles.description}>{nftCollection.name}</Text>
+            </View>
           </View>
           <Button
             style={styles.mainButton}
-            styles={{ icon: { width: 16, height: 16 } }}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             title={messages.goToCollection}
             size='large'
             iconPosition='right'
@@ -272,19 +294,20 @@ export const DetailsTileNoAccess = ({
             onPress={handlePressCollection}
             fullWidth
           />
-        </View>
+        </>
       )
     }
-    if (followee) {
+    if (isPremiumContentFollowGated(premiumConditions)) {
+      if (!followee) return null
       return (
-        <View>
+        <>
           {renderLockedSpecialAccessDescription({
             entity: followee,
             prefix: messages.lockedFollowGatedPrefix
           })}
           <Button
             style={styles.mainButton}
-            styles={{ icon: { width: 16, height: 16 } }}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             title={messages.followArtist}
             size='large'
             iconPosition='left'
@@ -292,12 +315,13 @@ export const DetailsTileNoAccess = ({
             onPress={handleFollowArtist}
             fullWidth
           />
-        </View>
+        </>
       )
     }
-    if (tippedUser) {
+    if (isPremiumContentTipGated(premiumConditions)) {
+      if (!tippedUser) return null
       return (
-        <View style={styles.descriptionContainer}>
+        <>
           {renderLockedSpecialAccessDescription({
             entity: tippedUser,
             prefix: messages.lockedTipGatedPrefix,
@@ -305,7 +329,7 @@ export const DetailsTileNoAccess = ({
           })}
           <Button
             style={styles.mainButton}
-            styles={{ icon: { width: 16, height: 16 } }}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             title={messages.sendTip}
             size='large'
             iconPosition='right'
@@ -313,7 +337,30 @@ export const DetailsTileNoAccess = ({
             onPress={handleSendTip}
             fullWidth
           />
-        </View>
+        </>
+      )
+    }
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      return (
+        <>
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.description}>
+              {messages.lockedUSDCPurchase}
+            </Text>
+          </View>
+          <Button
+            style={[styles.mainButton, styles.buyButton]}
+            styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+            title={messages.buy(
+              formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+            )}
+            size='large'
+            onPress={() => {
+              console.log('Buy button pressed')
+            }}
+            fullWidth
+          />
+        </>
       )
     }
 
@@ -322,14 +369,23 @@ export const DetailsTileNoAccess = ({
     )
     return null
   }, [
+    premiumConditions,
     nftCollection,
-    followee,
-    tippedUser,
+    styles.descriptionContainer,
+    styles.description,
+    styles.collectionContainer,
+    styles.collectionImages,
+    styles.collectionImage,
+    styles.collectionChainImageContainer,
+    styles.collectionChainImage,
+    styles.mainButton,
+    styles.buyButton,
     handlePressCollection,
+    followee,
     renderLockedSpecialAccessDescription,
     handleFollowArtist,
-    handleSendTip,
-    styles
+    tippedUser,
+    handleSendTip
   ])
 
   const renderUnlockingSpecialAccessDescription = useCallback(
@@ -346,7 +402,7 @@ export const DetailsTileNoAccess = ({
               {entity.name}
             </Text>
             <UserBadges
-              badgeSize={16}
+              badgeSize={spacing(4)}
               user={entity}
               nameStyle={styles.description}
               hideName
@@ -415,6 +471,7 @@ export const DetailsTileNoAccess = ({
       renderDescription={
         isUnlocking ? renderUnlockingDescription : renderLockedDescription
       }
+      premiumConditions={premiumConditions}
       isUnlocking={isUnlocking}
       style={style}
     />

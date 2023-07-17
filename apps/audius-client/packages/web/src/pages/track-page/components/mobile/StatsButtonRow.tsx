@@ -11,6 +11,7 @@ const messages = {
 }
 
 type StatsButtonRowProps = {
+  className?: string
   showListenCount: boolean
   showFavoriteCount: boolean
   showRepostCount: boolean
@@ -23,6 +24,7 @@ type StatsButtonRowProps = {
 
 // A row of stats, visible on playlist and tracks pages.
 const StatsButtonRow = ({
+  className,
   showListenCount,
   showFavoriteCount,
   showRepostCount,
@@ -62,7 +64,7 @@ const StatsButtonRow = ({
   return (
     <>
       {(showListenCount || showFavoriteCount || showRepostCount) && (
-        <div className={styles.statsContainer}>
+        <div className={cn(styles.statsContainer, className)}>
           {showListenCount && renderListenCount()}
           {showFavoriteCount && renderFavoriteCount()}
           {showRepostCount && renderRepostCount()}

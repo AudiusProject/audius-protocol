@@ -11,16 +11,12 @@ import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
-import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
-import IconUnlocked from 'app/assets/images/iconUnlocked.svg'
 import Text from 'app/components/text'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered } from 'app/styles'
-import { useColor, useThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 import { ProgressBar } from '../progress-bar'
 
@@ -109,14 +105,6 @@ type Props = {
    */
   showArtistPick?: boolean
   /**
-   * Whether logged in user is owner
-   */
-  isOwner?: boolean
-  /**
-   * Whether logged in user has access
-   */
-  doesUserHaveAccess?: boolean
-  /**
    * Premium conditions to determine what icon and label to show
    */
   premiumConditions?: Nullable<PremiumConditions>
@@ -129,17 +117,13 @@ export const LineupTileTopRight = ({
   isLongFormContent,
   isUnlisted,
   showArtistPick,
-  isOwner,
-  doesUserHaveAccess,
   premiumConditions
 }: Props) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { neutralLight4, secondary } = useThemeColors()
-  const accentBlue = useColor('accentBlue')
   const trackTileStyles = useTrackTileStyles()
   const currentUserId = useSelector(getUserId)
   const playbackPositionInfo = useSelector((state) =>
@@ -163,32 +147,7 @@ export const LineupTileTopRight = ({
 
   return (
     <View style={styles.topRight}>
-      {isGatedContentEnabled &&
-      !!premiumConditions &&
-      !isOwner &&
-      doesUserHaveAccess ? (
-        <LineupTileTopRightItem
-          icon={IconUnlocked}
-          label=''
-          color={accentBlue}
-        />
-      ) : null}
-      {isGatedContentEnabled &&
-      !!premiumConditions &&
-      (isOwner || !doesUserHaveAccess) ? (
-        <LineupTileTopRightItem
-          icon={
-            premiumConditions.nft_collection
-              ? IconCollectible
-              : IconSpecialAccess
-          }
-          label=''
-          color={accentBlue}
-        />
-      ) : null}
-      {(!isGatedContentEnabled || !premiumConditions) &&
-      showArtistPick &&
-      isArtistPick ? (
+      {!premiumConditions && showArtistPick && isArtistPick ? (
         <LineupTileTopRightItem
           icon={IconStar}
           label={messages.artistPick}

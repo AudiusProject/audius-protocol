@@ -1,6 +1,6 @@
 import { memo, useEffect } from 'react'
 
-import { CoverArtSizes, SquareSizes, Remix } from '@audius/common'
+import { CoverArtSizes, SquareSizes, Remix, Nullable } from '@audius/common'
 
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
@@ -11,8 +11,8 @@ import styles from './GiantArtwork.module.css'
 
 type GiantArtworkProps = {
   trackId: number
-  coverArtSizes: CoverArtSizes
-  coSign: Remix
+  coverArtSizes: Nullable<CoverArtSizes>
+  coSign: Nullable<Remix>
   callback: () => void
 }
 

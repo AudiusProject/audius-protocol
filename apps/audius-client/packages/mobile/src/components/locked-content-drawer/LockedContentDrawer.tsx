@@ -5,7 +5,8 @@ import {
   useLockedContent,
   premiumContentActions,
   SquareSizes,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  isPremiumContentCollectibleGated
 } from '@audius/common'
 import { Dimensions, View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -90,6 +91,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     fontSize: typography.fontSize.medium
   },
   premiumTrackSection: {
+    marginHorizontal: spacing(2),
     marginBottom: 0,
     borderWidth: 0,
     backgroundColor: 'transparent'
@@ -104,7 +106,9 @@ type TrackDetailsProps = {
 const TrackDetails = ({ track, owner }: TrackDetailsProps) => {
   const styles = useStyles()
   const accentBlue = useColor('accentBlue')
-  const isCollectibleGated = !!track.premium_conditions?.nft_collection
+  const isCollectibleGated = isPremiumContentCollectibleGated(
+    track.premium_conditions
+  )
 
   return (
     <View style={styles.trackDetails}>

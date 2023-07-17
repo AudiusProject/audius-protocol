@@ -15,13 +15,13 @@ import {
   SquareSizes,
   CoverArtSizes,
   pluralize,
-  imageBlank as placeholderArt
+  imageBlank as placeholderArt,
+  DogEarType
 } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import ActionsTab from 'components/actions-tab/ActionsTab'
-import { DogEarType } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'
 import RepostFavoritesStats, {

@@ -35,6 +35,13 @@ const theme = {
 
   '--accent-red-dark-1': '#C43047',
 
+  '--special-light-green': '#13c65a',
+
+  /* Semantic text */
+  '--text-default': 'var(--neutral)',
+  '--text-subdued': 'var(--neutral-light-4)',
+  '--text-disabled': 'var(--neutral-light-7)',
+
   '--page-header-gradient-color-1': '#7652CC',
   '--page-header-gradient-color-2': '#B05CE6',
 

@@ -10,6 +10,7 @@ import {
   CollectionTrack,
   CollectionPageTrackRecord,
   CollectionsPageType,
+  DogEarType,
   FeatureFlags
 } from '@audius/common'
 
@@ -19,7 +20,6 @@ import {
 } from 'components/collectibles-playlist-table/CollectiblesPlaylistTable'
 import { CollectionHeader } from 'components/collection/desktop/CollectionHeader'
 import { Divider } from 'components/divider'
-import { DogEarType } from 'components/dog-ear'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'

@@ -11,6 +11,7 @@ type MoreButtonProps = {
   isDarkMode: boolean
   isMatrixMode: boolean
   className?: string
+  wrapperClassName?: string
   stopPropagation?: boolean
 }
 
@@ -25,21 +26,26 @@ const MoreButton = ({
   isDarkMode,
   isMatrixMode,
   className,
+  wrapperClassName,
   stopPropagation = true
 }: MoreButtonProps) => {
   const icon = iconMap[isMatrixMode ? 'matrix' : isDarkMode ? 'dark' : 'light']
 
   return (
     <div
-      className={cn(styles.icon, className)}
-      style={{
-        backgroundImage: `url(${icon})`
-      }}
+      className={wrapperClassName}
       onClick={(e) => {
         onClick()
         stopPropagation && e.stopPropagation()
       }}
-    />
+    >
+      <div
+        className={cn(styles.icon, className)}
+        style={{
+          backgroundImage: `url(${icon})`
+        }}
+      />
+    </div>
   )
 }
 

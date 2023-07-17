@@ -27,7 +27,6 @@ import IconLock from 'app/assets/images/iconLock.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, font, makeStyles } from 'app/styles'
 import { useColor, useThemeColors } from 'app/utils/theme'
@@ -200,7 +199,6 @@ type TrackListItemComponentProps = TrackListItemProps & {
 }
 
 const TrackListItemComponent = (props: TrackListItemComponentProps) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const {
     contextPlaylistId,
     contextPlaylist,
@@ -305,9 +303,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null,
-      !isGatedContentEnabled || !isPremium
-        ? OverflowAction.ADD_TO_PLAYLIST
-        : null,
+      !isPremium ? OverflowAction.ADD_TO_PLAYLIST : null,
       isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
@@ -335,7 +331,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isTrackOwner,
     has_current_user_reposted,
     has_current_user_saved,
-    isGatedContentEnabled,
     isPremium,
     isNewPodcastControlsEnabled,
     isLongFormContent,

@@ -1,4 +1,10 @@
-import { IconCollectible, IconLock, IconSpecialAccess } from '@audius/stems'
+import { DogEarType } from '@audius/common'
+import {
+  IconCart,
+  IconCollectible,
+  IconLock,
+  IconSpecialAccess
+} from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconHidden } from 'assets/img/iconHidden.svg'
@@ -7,14 +13,6 @@ import { isMobile } from 'utils/clientUtil'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './DogEar.module.css'
-
-export enum DogEarType {
-  STAR = 'star',
-  HIDDEN = 'hidden',
-  LOCKED = 'locked',
-  COLLECTIBLE_GATED = 'collectible gated',
-  SPECIAL_ACCESS = 'special access'
-}
 
 export type DogEarProps = {
   type: DogEarType
@@ -36,6 +34,8 @@ export const DogEar = (props: DogEarProps) => {
         return <IconLock />
       case DogEarType.COLLECTIBLE_GATED:
         return <IconCollectible />
+      case DogEarType.USDC_PURCHASE:
+        return <IconCart />
       case DogEarType.SPECIAL_ACCESS:
         return <IconSpecialAccess />
     }
@@ -55,6 +55,7 @@ export const DogEar = (props: DogEarProps) => {
             DogEarType.SPECIAL_ACCESS,
             DogEarType.LOCKED
           ].includes(type),
+          [styles.purchase]: type === DogEarType.USDC_PURCHASE,
           [styles.star]: type === DogEarType.STAR,
           [styles.hidden]: type === DogEarType.HIDDEN
         })}

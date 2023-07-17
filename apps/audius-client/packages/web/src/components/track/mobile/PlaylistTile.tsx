@@ -278,6 +278,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
               toggleRepost={props.toggleRepost}
               onShare={props.onShare}
               onClickOverflow={props.onClickOverflow}
+              isLoading={props.isLoading}
               isOwner={props.isOwner}
               isDarkMode={props.darkMode}
               isMatrixMode={props.isMatrix}

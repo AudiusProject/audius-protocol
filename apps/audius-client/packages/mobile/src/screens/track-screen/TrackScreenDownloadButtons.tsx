@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -94,7 +93,6 @@ export const TrackScreenDownloadButtons = ({
   isOwner,
   trackId
 }: TrackScreenDownloadButtonsProps) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const dispatch = useDispatch()
 
   const handleDownload = useCallback(
@@ -125,7 +123,7 @@ export const TrackScreenDownloadButtons = ({
     return null
   }
 
-  if (isGatedContentEnabled && !isOwner && !doesUserHaveAccess) {
+  if (!isOwner && !doesUserHaveAccess) {
     return null
   }
 

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
-import { collectiblesSelectors } from '@audius/common'
+import {
+  collectiblesSelectors,
+  isPremiumContentCollectibleGated
+} from '@audius/common'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -172,7 +175,9 @@ export const CollectibleGatedAvailability = ({
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
-    previousPremiumConditions?.nft_collection
+    isPremiumContentCollectibleGated(previousPremiumConditions)
+      ? previousPremiumConditions.nft_collection
+      : undefined
   )
 
   // Update nft collection gate when availability selection changes
@@ -191,7 +196,7 @@ export const CollectibleGatedAvailability = ({
 
   // Update nft collection gate when nft collection selection changes
   useEffect(() => {
-    if (premiumConditions?.nft_collection) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       setSelectedNFTCollection(premiumConditions.nft_collection)
     }
   }, [premiumConditions])
@@ -253,18 +258,18 @@ export const CollectibleGatedAvailability = ({
             </Text>
             <IconCaretRight fill={neutralLight4} width={16} height={16} />
           </View>
-          {premiumConditions?.nft_collection && (
+          {isPremiumContentCollectibleGated(premiumConditions) && (
             <View>
               <Text style={styles.ownersOf}>{messages.ownersOf}</Text>
               <View style={styles.collection}>
-                {premiumConditions.nft_collection.imageUrl && (
+                {premiumConditions.nft_collection?.imageUrl && (
                   <Image
                     source={{ uri: premiumConditions.nft_collection.imageUrl }}
                     style={styles.logo}
                   />
                 )}
                 <Text style={styles.collectionName}>
-                  {premiumConditions.nft_collection.name}
+                  {premiumConditions.nft_collection?.name}
                 </Text>
               </View>
             </View>

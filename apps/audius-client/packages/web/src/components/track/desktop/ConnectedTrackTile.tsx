@@ -373,7 +373,7 @@ const ConnectedTrackTile = ({
   const disableActions = false
   const showSkeleton = loading
 
-  const renderTrackTile = () => (
+  const tileContent = (
     <TrackTile
       size={size}
       order={order}
@@ -419,7 +419,7 @@ const ConnectedTrackTile = ({
   )
 
   if (isPremium) {
-    return renderTrackTile()
+    return tileContent
   }
 
   return (
@@ -431,7 +431,7 @@ const ConnectedTrackTile = ({
       isDisabled={disableActions || showSkeleton}
       link={fullTrackPage(permalink)}
     >
-      {renderTrackTile()}
+      {tileContent}
     </Draggable>
   )
 }

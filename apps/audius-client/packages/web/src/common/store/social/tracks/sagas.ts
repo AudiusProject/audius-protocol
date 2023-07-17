@@ -14,7 +14,6 @@ import {
   tracksSocialActions as socialActions,
   waitForValue,
   QueryParams,
-  FeatureFlags,
   premiumContentSelectors,
   encodeHashId,
   getQueryParams
@@ -650,24 +649,17 @@ function* downloadTrack({
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const apiClient = yield* getContext('apiClient')
     const trackDownload = yield* getContext('trackDownload')
-    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-    const isGatedContentEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GATED_CONTENT_ENABLED
-    )
     let queryParams: QueryParams = {}
-    if (isGatedContentEnabled) {
-      const premiumTrackSignatureMap = yield* select(
-        getPremiumTrackSignatureMap
-      )
-      const premiumContentSignature =
-        track.premium_content_signature ||
-        premiumTrackSignatureMap[track.track_id]
-      queryParams = yield* call(getQueryParams, {
-        audiusBackendInstance,
-        premiumContentSignature
-      })
-    }
+
+    const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
+    const premiumContentSignature =
+      track.premium_content_signature ||
+      premiumTrackSignatureMap[track.track_id]
+    queryParams = yield* call(getQueryParams, {
+      audiusBackendInstance,
+      premiumContentSignature
+    })
+
     queryParams.filename = filename
 
     const encodedTrackId = encodeHashId(track.track_id)

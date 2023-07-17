@@ -5,21 +5,20 @@
 }
 
 .label {
-  text-transform: uppercase;
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  letter-spacing: 3px;
-  line-height: 18px;
-
+  display: flex;
+  align-items: center;
+  color: var(--text-subdued);
+  gap: var(--unit-2);
+  letter-spacing: 2px;
   user-select: none;
+  text-transform: uppercase;
 }
 
 .icon {
-  height: var(--unit-4);
-  width: var(--unit-4);
+  width: calc(var(--unit) * 4.5);
+  height: calc(var(--unit) * 4.5);
 }
 
 .icon path {
-  fill: var(--neutral-light-4);
+  fill: var(--text-subdued);
 }

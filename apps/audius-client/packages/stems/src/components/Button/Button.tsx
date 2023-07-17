@@ -12,7 +12,8 @@ import { ButtonProps, Type, Size } from './types'
 const SIZE_STYLE_MAP = {
   [Size.TINY]: styles.tiny,
   [Size.SMALL]: styles.small,
-  [Size.MEDIUM]: styles.medium
+  [Size.MEDIUM]: styles.medium,
+  [Size.LARGE]: styles.large
 }
 
 const TYPE_STYLE_MAP = {

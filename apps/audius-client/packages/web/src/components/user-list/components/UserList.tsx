@@ -10,7 +10,7 @@ import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import ArtistChip from 'components/artist/ArtistChip'
-import FollowButton from 'components/follow-button/FollowButton'
+import { FollowButton } from 'components/follow-button/FollowButton'
 import { MountPlacement } from 'components/types'
 
 import styles from './UserList.module.css'

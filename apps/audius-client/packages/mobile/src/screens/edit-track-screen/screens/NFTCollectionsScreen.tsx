@@ -1,7 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
-import { Chain, collectiblesSelectors } from '@audius/common'
+import {
+  Chain,
+  collectiblesSelectors,
+  isPremiumContentCollectibleGated
+} from '@audius/common'
 import { useField } from 'formik'
 import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -105,6 +109,7 @@ export const NFTCollectionsScreen = () => {
   )
 
   const value = useMemo(() => {
+    if (!isPremiumContentCollectibleGated(premiumConditions)) return ''
     if (Chain.Eth === premiumConditions?.nft_collection?.chain) {
       return premiumConditions.nft_collection.slug
     }
@@ -144,7 +149,7 @@ export const NFTCollectionsScreen = () => {
   )
 
   const handleSubmit = useCallback(() => {
-    if (premiumConditions?.nft_collection) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       navigation.goBack()
     }
   }, [premiumConditions, navigation])
@@ -182,7 +187,7 @@ export const NFTCollectionsScreen = () => {
           fullWidth
           title={messages.done}
           onPress={handleSubmit}
-          disabled={!premiumConditions?.nft_collection}
+          disabled={!isPremiumContentCollectibleGated(premiumConditions)}
         />
       }
       footer={renderFooter()}

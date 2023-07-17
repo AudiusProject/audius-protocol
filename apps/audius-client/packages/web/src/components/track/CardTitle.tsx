@@ -1,8 +1,15 @@
-import { FeatureFlags, PremiumConditions } from '@audius/common'
-import { IconCollectible, IconSpecialAccess } from '@audius/stems'
+import {
+  FeatureFlags,
+  Nullable,
+  PremiumConditions,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
+import { IconCart, IconCollectible, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
+import typeStyles from 'components/typography/typography.module.css'
 import { useFlag } from 'hooks/useRemoteConfig'
 import HiddenTrackHeader from 'pages/track-page/components/HiddenTrackHeader'
 
@@ -14,7 +21,8 @@ const messages = {
   remixTitle: 'REMIX',
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
-  specialAccess: 'SPECIAL ACCESS'
+  specialAccess: 'SPECIAL ACCESS',
+  premiumContent: 'PREMIUM TRACK'
 }
 
 type CardTitleProps = {
@@ -23,7 +31,7 @@ type CardTitleProps = {
   isRemix: boolean
   isPremium: boolean
   isPodcast: boolean
-  premiumConditions: PremiumConditions
+  premiumConditions: Nullable<PremiumConditions>
 }
 
 export const CardTitle = ({
@@ -34,50 +42,35 @@ export const CardTitle = ({
   isPodcast,
   premiumConditions
 }: CardTitleProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  let content
+  const extraStyles = []
 
-  if (isGatedContentEnabled && isPremium) {
-    return (
-      <div
-        className={cn(styles.headerContainer, className, styles.premiumContent)}
-      >
-        {premiumConditions?.nft_collection ? (
-          <div className={styles.typeLabel}>
-            <IconCollectible />
-            {messages.collectibleGated}
-          </div>
-        ) : (
-          <div className={styles.typeLabel}>
-            <IconSpecialAccess />
-            {messages.specialAccess}
-          </div>
-        )}
+  if (isPremium) {
+    extraStyles.push(styles.premiumContent)
+    let icon
+    let message
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
+      icon = <IconCollectible />
+      message = messages.collectibleGated
+    } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      icon = <IconCart />
+      message = messages.premiumContent
+    } else {
+      icon = <IconSpecialAccess />
+      message = messages.specialAccess
+    }
+    content = (
+      <div className={cn(styles.typeLabel, styles.premiumContentLabel)}>
+        {icon}
+        {message}
       </div>
     )
-  }
-
-  if (!isUnlisted) {
-    return (
-      <div className={cn(styles.headerContainer, className)}>
-        <div className={styles.typeLabel}>
-          {isRemix
-            ? messages.remixTitle
-            : isPodcast && isNewPodcastControlsEnabled
-            ? messages.podcastTitle
-            : messages.trackTitle}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className={cn(styles.headerContainer, className)}>
+  } else {
+    content = isUnlisted ? (
       <Tooltip
         text={messages.hiddenTrackTooltip}
         mouseEnterDelay={0}
@@ -87,6 +80,28 @@ export const CardTitle = ({
           <HiddenTrackHeader />
         </div>
       </Tooltip>
+    ) : (
+      <div className={styles.typeLabel}>
+        {isRemix
+          ? messages.remixTitle
+          : isPodcast && isNewPodcastControlsEnabled
+          ? messages.podcastTitle
+          : messages.trackTitle}
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className={cn(
+        typeStyles.titleSmall,
+        typeStyles.titleWeak,
+        styles.headerContainer,
+        className,
+        ...extraStyles
+      )}
+    >
+      {content}
     </div>
   )
 }

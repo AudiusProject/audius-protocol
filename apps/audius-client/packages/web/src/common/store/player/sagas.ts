@@ -79,10 +79,6 @@ export function* watchPlay() {
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
-    const isGatedContentEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GATED_CONTENT_ENABLED
-    )
 
     if (trackId) {
       // Load and set end action.
@@ -109,16 +105,14 @@ export function* watchPlay() {
       const encodedTrackId = encodeHashId(trackId)
 
       let queryParams: QueryParams = {}
-      if (isGatedContentEnabled) {
-        const premiumTrackSignatureMap = yield* select(
-          getPremiumTrackSignatureMap
-        )
-        const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
-        queryParams = yield* call(getQueryParams, {
-          audiusBackendInstance,
-          premiumContentSignature
-        })
-      }
+      const premiumTrackSignatureMap = yield* select(
+        getPremiumTrackSignatureMap
+      )
+      const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
+      queryParams = yield* call(getQueryParams, {
+        audiusBackendInstance,
+        premiumContentSignature
+      })
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
         queryParams
@@ -201,8 +195,7 @@ export function* watchPlay() {
 
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
-    const doesUserHaveAccess =
-      !isGatedContentEnabled || (yield* call(doesUserHaveTrackAccess, track))
+    const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
     if (doesUserHaveAccess) {
       audioPlayer.play()
       yield* put(playSucceeded({ uid, trackId }))

@@ -2,7 +2,15 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { Chain, ID, PremiumConditions, Track } from 'models'
+import {
+  Chain,
+  ID,
+  PremiumConditions,
+  Track,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated
+} from 'models'
 import { getAccountUser } from 'store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
 import { premiumContentSelectors } from 'store/premium-content'
@@ -29,7 +37,9 @@ export const usePremiumContentAccess = (track: Nullable<Partial<Track>>) => {
     const hasPremiumContentSignature =
       !!track.premium_content_signature ||
       !!(trackId && premiumTrackSignatureMap[trackId])
-    const isCollectibleGated = !!track.premium_conditions?.nft_collection
+    const isCollectibleGated = isPremiumContentCollectibleGated(
+      track.premium_conditions
+    )
     const isSignatureToBeFetched =
       isCollectibleGated &&
       !!trackId &&
@@ -67,7 +77,9 @@ export const usePremiumContentAccessMap = (tracks: Partial<Track>[]) => {
       const hasPremiumContentSignature = !!(
         track.premium_content_signature || premiumTrackSignatureMap[trackId]
       )
-      const isCollectibleGated = !!track.premium_conditions?.nft_collection
+      const isCollectibleGated = isPremiumContentCollectibleGated(
+        track.premium_conditions
+      )
       const isSignatureToBeFetched =
         isCollectibleGated &&
         premiumTrackSignatureMap[trackId] === undefined &&
@@ -88,11 +100,15 @@ export const usePremiumContentAccessMap = (tracks: Partial<Track>[]) => {
 export const usePremiumConditionsEntity = (
   premiumConditions: Nullable<PremiumConditions>
 ) => {
-  const {
-    follow_user_id: followUserId,
-    tip_user_id: tipUserId,
-    nft_collection: nftCollection
-  } = premiumConditions ?? {}
+  const followUserId = isPremiumContentFollowGated(premiumConditions)
+    ? premiumConditions?.follow_user_id
+    : null
+  const tipUserId = isPremiumContentTipGated(premiumConditions)
+    ? premiumConditions?.tip_user_id
+    : null
+  const nftCollection = isPremiumContentCollectibleGated(premiumConditions)
+    ? premiumConditions?.nft_collection
+    : null
 
   const users = useSelector((state: CommonState) =>
     getUsers(state, {

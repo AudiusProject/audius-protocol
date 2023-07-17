@@ -2,7 +2,7 @@
   position: relative;
   background: var(--white);
   border: 1px solid var(--neutral-light-8);
-  border-radius: 8px 8px 0px 0px;
+  border-radius: var(--unit-2) var(--unit-2) 0px 0px;
   display: inline-flex;
   overflow: hidden;
   width: 100%;
@@ -12,7 +12,7 @@
 
 .container.standalone {
   transform: scale3d(1, 1, 1);
-  border-radius: 8px;
+  border-radius: var(--unit-2);
   box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px rgba(133, 129, 153, 0.1);
 }
@@ -28,15 +28,15 @@
 }
 
 .container.large.standalone {
-  margin-bottom: 16px;
+  margin-bottom: var(--unit-4);
 }
 
 .container.small.standalone {
-  margin-bottom: 12px;
+  margin-bottom: var(--unit-3);
 }
 
 .container.large {
-  height: 154px;
+  height: 144px;
 }
 
 .container.small {
@@ -44,7 +44,7 @@
 }
 
 .order {
-  flex: 0 0 32px;
+  flex: 0 0 var(--unit-8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -57,7 +57,7 @@
 
 .crownContainer {
   position: absolute;
-  top: 48px;
+  top: var(--unit-12);
 }
 
 .crownContainer svg {
@@ -72,23 +72,23 @@
 .large .imageContainer {
   flex: 0 0 128px;
   height: 128px;
-  margin: 12px 0px;
+  margin: var(--unit-2) 0px;
 }
 
 /* If the ordering is not present, add extra space to the left */
 .large .imageContainer.leftSpacing {
-  margin-left: 12px;
+  margin-left: var(--unit-2);
 }
 
 .small .imageContainer {
   flex: 0 0 108px;
   height: 108px;
-  margin: 8px 0px;
+  margin: var(--unit-2) 0px;
 }
 
 /* If the ordering is not present, add extra space to the left */
 .small .imageContainer.leftSpacing {
-  margin-left: 8px;
+  margin-left: var(--unit-2);
 }
 
 .container:hover .artworkIcon {
@@ -104,7 +104,7 @@
   flex-direction: column;
   overflow: hidden;
   flex: 1 1 auto;
-  padding: 10px 12px 8px 18px;
+  padding: var(--unit-2) var(--unit-3) var(--unit-2) 18px;
 }
 
 .topSection {
@@ -113,20 +113,11 @@
   flex-direction: column;
 }
 
-.large .withoutHeader .headerRow {
-  height: 10px;
-}
-
 /* Playlist or Album Header */
 .headerRow {
-  margin-top: 2px;
-  margin-bottom: 4px;
-
-  font-style: normal;
-  font-weight: var(--font-medium);
-  font-size: var(--font-xs);
   letter-spacing: 2.5px;
   text-align: left;
+  height: var(--unit-3);
 
   /* Neutral Light 4 [day] */
   color: var(--neutral-light-4);
@@ -137,29 +128,21 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  line-height: normal;
   user-select: none;
   margin-right: 132px;
   padding-bottom: 2px;
 }
 
 .titleRow .skeleton {
-  height: 20px;
-}
-
-.withPremium {
-  margin-right: 188px;
+  height: var(--unit-5);
 }
 
 .container .premiumDogEarContainer {
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.25),
-    inset 4px 4px 8px rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
+    inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
 }
 
 .title {
-  font-style: normal;
-  font-weight: var(--font-bold);
-  font-size: var(--font-m);
   color: var(--neutral);
 }
 
@@ -187,19 +170,19 @@
 }
 
 .creatorRow .skeleton {
-  height: 16px;
+  height: var(--unit-4);
 }
 
 .large .creatorRow {
-  margin-bottom: 4px;
+  margin-bottom: var(--unit-1);
 }
 
 .small .creatorRow {
-  margin-bottom: 12px;
+  margin-bottom: var(--unit-2);
 }
 
 .large .withoutHeader .creatorRow {
-  margin-bottom: 8px;
+  margin-bottom: var(--unit-2);
 }
 
 .creatorRow .by {
@@ -208,7 +191,7 @@
   font-size: var(--font-m);
   color: var(--neutral-light-6);
 
-  margin-right: 4px;
+  margin-right: var(--unit-1);
 }
 
 .creatorRow .name {
@@ -242,8 +225,13 @@
   visibility: hidden;
 }
 
+.socialsRow {
+  display: flex;
+  gap: var(--unit-4);
+}
+
 .large .socialsRow .skeleton {
-  height: 24px;
+  height: var(--unit-6);
 }
 
 .small .socialsRow .skeleton {
@@ -251,13 +239,13 @@
 }
 
 .large .socialsRow {
-  height: 24px;
+  height: var(--unit-6);
   margin-right: 80px;
 }
 
 .small .socialsRow {
   height: 18px;
-  margin-right: 80px;
+  margin-right: var(--unit-20);
 }
 
 .socialInfo {
@@ -271,14 +259,12 @@
   position: absolute;
   top: 0;
   right: 0;
-  display: inline-flex;
+  display: flex;
+  align-items: center;
+  gap: var(--unit-4);
 }
 
 .duration {
-  font-style: normal;
-  font-weight: var(--font-medium);
-  font-size: var(--font-xs);
-
   text-align: right;
   letter-spacing: 0.2px;
 
@@ -287,8 +273,8 @@
 }
 
 .topRightIcon {
-  height: 16px;
-  width: 16px;
+  height: var(--unit-4);
+  width: var(--unit-4);
   margin-right: 6px;
 }
 
@@ -297,28 +283,20 @@
 }
 
 .topRightIconLabel {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  flex: 1 0 auto;
 
-  font-weight: var(--font-medium);
-  font-size: var(--font-xs);
   color: var(--neutral-light-4);
-
-  margin-top: -3px;
-  margin-right: 12px;
 }
-
-.topRightIconLabel.premiumContent {
-  color: var(--accent-blue);
-}
-
-.topRightIconLabel.premiumContent path {
-  fill: var(--accent-blue);
+.large .topRight {
+  /* Matches header row height for large tile variant */
+  line-height: var(--unit-3);
 }
 
 .progressTextContainer {
   display: flex;
-  gap: 12px;
+  gap: var(--unit-3);
   align-items: center;
 }
 
@@ -327,45 +305,33 @@
 }
 
 .progressTextSlider {
-  height: 4px;
+  height: var(--unit-1);
   width: 128px;
 }
 
 .completeText {
   display: flex;
-  gap: 4px;
+  gap: var(--unit-1);
   align-items: center;
   color: var(--secondary);
 }
 
 .completeIcon {
-  height: 12px;
-  width: 12px;
+  height: var(--unit-3);
+  width: var(--unit-3);
 }
 .completeIcon path {
   fill: var(--secondary);
 }
 
 .bottomRight {
+  bottom: 0;
   position: absolute;
   right: 0;
   display: inline-flex;
 }
 
-.large .bottomRight {
-  bottom: 0;
-}
-
-.small .bottomRight {
-  bottom: 8px;
-}
-
 .plays {
-  font-style: normal;
-  font-weight: var(--font-medium);
-  font-size: var(--font-xs);
-  line-height: 11px;
-
   text-align: right;
   letter-spacing: 0.2px;
   color: var(--neutral-light-4);
@@ -380,16 +346,16 @@
 }
 
 .large .divider {
-  margin: 6px 10px 8px 0px;
+  margin: var(--unit-2) 10px var(--unit-2) 0px;
 }
 
 /* If Header (Playlist or Album) is not present, add more spacing up top */
 .large .withoutHeader .divider {
-  margin: 12px 10px 8px 0px;
+  margin: var(--unit-2) 10px var(--unit-2) 0px;
 }
 
 .small .divider {
-  margin: 2px 13px 6px 0px;
+  margin: var(--unit-2) 13px 6px 0px;
 }
 
 /* Bottom Row Track TIle */
@@ -400,43 +366,19 @@
   width: 100%;
 }
 
-.bottomRow .premiumContent {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  padding: 2px 8px;
-  border: 1px solid var(--neutral-light-4);
-  border-radius: 2px;
-  font-weight: var(--font-bold);
-  color: var(--neutral-light-4);
-}
-
-.bottomRow .premiumContent svg {
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-}
-
-.bottomRow .premiumContent path {
-  fill: var(--neutral-light-4);
-}
-
 .bottomRow .iconButtons {
-  display: inline-flex;
+  display: flex;
+  gap: var(--unit-8);
 }
 
 .bottomRow .iconButtonContainer {
   position: relative;
 }
 
-.bottomRow .iconButtonContainer:not(:last-child) {
-  margin-right: 32px;
-}
-
 .bottomRow .iconButton {
   display: flex;
-  height: 24px;
-  width: 24px;
+  height: var(--unit-6);
+  width: var(--unit-6);
   align-items: center;
   transform: scale3d(1, 1, 1);
   transition: all 0.12s ease-in-out !important;
@@ -459,17 +401,17 @@
 }
 
 .iconShareContainer {
-  height: 24px;
-  width: 24px;
+  height: var(--unit-6);
+  width: var(--unit-6);
 }
 
 /* Make the icon buttons a larger click target */
 .bottomRow .iconButton:after {
   content: '';
-  padding: 16px;
+  padding: var(--unit-4);
   position: absolute;
-  left: -4px;
-  top: -4px;
+  left: var(--negative-unit);
+  top: var(--negative-unit);
 }
 
 .iconKebabHorizontal path {
@@ -481,7 +423,7 @@
   transition: all 0.07s ease-in-out !important;
   display: flex;
   align-items: center;
-  height: 24px;
+  height: var(--unit-6);
 }
 
 .menuContainer:hover {
@@ -490,10 +432,4 @@
 
 .menuContainer:active {
   transform: scale3d(0.95, 0.95, 0.95);
-}
-
-.spinner {
-  margin-right: 8px;
-  height: 16px;
-  width: 16px;
 }

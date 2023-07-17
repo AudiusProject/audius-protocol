@@ -22,7 +22,6 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  FeatureFlags,
   playbackRateValueMap
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
@@ -41,7 +40,6 @@ import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButton
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -124,9 +122,6 @@ const NowPlaying = g(
     goToRoute,
     dominantColors
   }) => {
-    const { isEnabled: isGatedContentEnabled } = useFlag(
-      FeatureFlags.GATED_CONTENT_ENABLED
-    )
     const { uid, track, user, collectible } = currentQueueItem
 
     // Keep a ref for the artwork and dynamically resize the width of the
@@ -300,7 +295,7 @@ const NowPlaying = g(
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
           : null,
-        !collectible && (!isGatedContentEnabled || !track?.is_premium)
+        !collectible && !track?.is_premium
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,
@@ -319,7 +314,6 @@ const NowPlaying = g(
       currentUserId,
       owner_id,
       collectible,
-      isGatedContentEnabled,
       has_current_user_reposted,
       has_current_user_saved,
       track,

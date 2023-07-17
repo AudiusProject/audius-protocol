@@ -62,6 +62,13 @@ root {
   --accent-blue: #1ba1f1;
   --accent-purple: #8e51cf;
 
+  --special-light-green: #13c65a;
+
+  /* Semantic text */
+  --text-default: var(--neutral);
+  --text-subdued: var(--neutral-light-4);
+  --text-disabled: var(--neutral-light-7);
+
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient-color-1: #5b23e1;

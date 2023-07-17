@@ -37,3 +37,4 @@ export type ColorValue =
   | 'accentOrangeLight1'
   | 'accentPurple'
   | 'accentBlue'
+  | 'specialLightGreen'
