@@ -8,16 +8,16 @@ export const relayHandler = async (
   req: RelayRequestType
 ): Promise<RelayResponseType> => {
   try {
-    const { receipt } = await relayTransaction(app, req)
+    const { receipt } = await relayTransaction(app, req);
     return {
       receipt: {
         blockHash: receipt.blockHash,
-        blockNumber: receipt.blockNumber
-      }
-    }
+        blockNumber: receipt.blockNumber,
+      },
+    };
   } catch (e) {
     // return useful error back to caller from here
-    console.error("relay error = ", e)
-    throw e
+    console.error("relay error = ", e);
+    throw e;
   }
 };

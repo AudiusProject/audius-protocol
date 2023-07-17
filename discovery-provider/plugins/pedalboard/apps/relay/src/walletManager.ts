@@ -1,77 +1,44 @@
-import { App } from "basekit/src"
-import { SharedData } from "."
-import { logger } from "./logger"
-
-export type RelayerWallet = {
-    publicKey: string,
-    privateKey: string,
-}
-
-type LockableWallet = {
-    wallet: RelayerWallet,
-    locked: boolean,
-    lockExpiration: Date | undefined
-}
+import { App } from "basekit/src";
+import { logger } from "./logger";
+import { Wallet, providers } from "ethers";
+import { SharedData } from ".";
 
 export class WalletManager {
-    // pubKey => LockableWallet
-    private lockableWallets: LockableWallet[]
+  private walletQueue: Wallet[];
+  private web3: providers.JsonRpcProvider;
 
-    constructor(wallets: string) {
-        const parsedWallets = parseRelayerWallets(wallets)
-        if (parsedWallets.length === 0) throw new Error("No relay wallets configured")
-        const lockableWallets = parsedWallets.map((wallet) => ({ wallet, locked: false, lockExpiration: undefined }))
-        this.lockableWallets = lockableWallets
-    }
-    
-    // randomly select next available wallet
-    async selectNextWallet(): Promise<RelayerWallet> {
-        const unlockedWallets = this.lockableWallets.filter((wallet) => !wallet.locked)
-        const randomIndex = Math.floor(Math.random() * unlockedWallets.length)
-        const wallet = unlockedWallets[randomIndex].wallet
-        this.lock({ publicKey: wallet.publicKey })
-        return wallet
-    }
+  constructor(web3: providers.JsonRpcProvider) {
+    this.web3 = web3;
+    this.walletQueue = this.generateWallets();
+  }
 
-    lock({ publicKey }: { publicKey: string}) {
-        const lockableWalletIndex = this.lockableWallets.findIndex((wallet) => wallet.wallet.publicKey === publicKey)
-        if (lockableWalletIndex === -1) throw new Error("Attempting to lock wallet that doesn't exist")
-        const lockableWallet = this.lockableWallets[lockableWalletIndex]
-        // five minutes in the future
-        const expiration = new Date(new Date().getTime() + 5 * 60000);
-        this.lockableWallets[lockableWalletIndex] = { locked: true, lockExpiration: expiration, wallet: lockableWallet.wallet }
+  // picks next wallet from the top and rotates it to the back
+  selectNextWallet(): Wallet {
+    const nextWallet = this.walletQueue.shift();
+    if (nextWallet === undefined) {
+      // should be impossible since we requeue the wallet
+      logger.warn("wallet queue is empty, regenerating");
+      this.walletQueue = this.generateWallets();
+      return this.selectNextWallet();
     }
+    this.walletQueue.push(nextWallet);
+    return nextWallet;
+  }
 
-    release({ publicKey } : { publicKey: string } ) {
-        const lockableWalletIndex = this.lockableWallets.findIndex((wallet) => wallet.wallet.publicKey === publicKey)
-        if (lockableWalletIndex === -1) throw new Error("Attempting to release wallet that doesn't exist")
-        const lockableWallet = this.lockableWallets[lockableWalletIndex]
-        this.lockableWallets[lockableWalletIndex] = { locked: false, lockExpiration: undefined, wallet: lockableWallet.wallet }
-    }
+  // external function for holders of the class to refresh wallets for whatever reason
+  regenerateAllWallets() {
+    this.walletQueue = this.generateWallets();
+  }
 
-    releaseTimedOutWallets() {
-        for (const lockableWallet of this.lockableWallets) {
-            const { locked, lockExpiration, wallet } = lockableWallet
-            if (locked && lockExpiration) {
-                // expiration date has passed
-                if (new Date() > lockExpiration) {
-                    this.release({ publicKey: wallet.publicKey })
-                }
-            }
-        }
-    }
+  private generateWallets(): Wallet[] {
+    return [...Array(30).keys()].map((_) =>
+      Wallet.createRandom().connect(this.web3)
+    );
+  }
 }
 
-// runs on an interval and releases any wallets that are left locked
-// and hit their timeout
-export const releaseWallets = async (app: App<SharedData>) => {
-    const { wallets } = app.viewAppData()
-    wallets.releaseTimedOutWallets()
-    logger.info("released expired wallet locks")
-}
-
-// expects a string of the format '[{"privateKey": "", "publicKey": ""}, ...]' and parses it into
-// a typesafe array of RelayerWallet
-export const parseRelayerWallets = (relayerWalletsStr: string): RelayerWallet[] => {
-    return JSON.parse(relayerWalletsStr) as RelayerWallet[]
-}
+export const regenerateWallets = async (app: App<SharedData>) => {
+  const { wallets } = app.viewAppData();
+  wallets.regenerateAllWallets();
+  logger.info("regenerated all signing wallets");
+};
