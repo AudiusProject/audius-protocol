@@ -30,6 +30,8 @@ type healthCheckResponseData struct {
 	Healthy                   bool                       `json:"healthy"`
 	Version                   string                     `json:"version"`
 	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding                 bool                       `json:"isSeeding"`
+	IsSeedingLegacy           bool                       `json:"isSeedingLegacy"`
 	BuiltAt                   string                     `json:"builtAt"`
 	StartedAt                 time.Time                  `json:"startedAt"`
 	SPID                      int                        `json:"spID"`
@@ -62,16 +64,26 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
+	healthy := ss.databaseSize > 0 && !ss.isSeeding && !ss.isSeedingLegacy
+
+	// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
 	legacyHealth, err := ss.fetchCreatorNodeHealth()
+	if ss.Config.Env == "stage" || ss.Config.Env == "prod" {
+		if err != nil {
+			healthy = false
+		}
+	}
 
 	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                   err == nil && ss.databaseSize > 0,
+		Healthy:                   healthy,
 		Version:                   legacyHealth.Version,
 		Service:                   legacyHealth.Service,
+		IsSeeding:                 ss.isSeeding,
+		IsSeedingLegacy:           ss.isSeedingLegacy,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
 		SelectedDiscoveryProvider: legacyHealth.SelectedDiscoveryProvider,
@@ -113,6 +125,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	status := 200
 	if !ss.Config.WalletIsRegistered {
 		status = 506
+	} else if !healthy {
+		status = 503
 	}
 
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
@@ -153,4 +167,24 @@ func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
 
 	err = json.Unmarshal(body, &legacyHealth)
 	return legacyHealth, err
+}
+
+func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			return c.JSON(503, "database not healthy")
+		}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
+		}
+
+		return next(c)
+	}
 }

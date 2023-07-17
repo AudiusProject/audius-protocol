@@ -2,9 +2,27 @@ import { Auth } from '../../services/Auth/Auth'
 import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { EntityManager } from '../../services/EntityManager'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { Storage } from '../../services/Storage'
 import { UsersApi } from './UsersApi'
 
 jest.mock('../../services/EntityManager')
+
+jest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
+  return {
+    id: 'a',
+    status: 'done',
+    results: {
+      '320': 'a'
+    },
+    probe: {
+      format: {
+        duration: '10'
+      }
+    }
+  }
+})
 
 jest
   .spyOn(EntityManager.prototype, 'manageEntity')
@@ -21,13 +39,84 @@ describe('UsersApi', () => {
   let users: UsersApi
 
   const auth = new Auth()
+  const discoveryNodeSelector = new DiscoveryNodeSelector()
+  const storageNodeSelector = new StorageNodeSelector({
+    auth,
+    discoveryNodeSelector
+  })
 
   beforeAll(() => {
-    users = new UsersApi(new Configuration(), new EntityManager(), auth)
+    users = new UsersApi(
+      new Configuration(),
+      new Storage({ storageNodeSelector }),
+      new EntityManager(),
+      auth
+    )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
     jest.spyOn(console, 'debug').mockImplementation(() => {})
     jest.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  describe('updateProfile', () => {
+    it('updates the user profile if valid metadata is provided', async () => {
+      const result = await users.updateProfile({
+        userId: '7eP5n',
+        profilePictureFile: {
+          buffer: Buffer.from([]),
+          name: 'profilePicture'
+        },
+        coverArtFile: {
+          buffer: Buffer.from([]),
+          name: 'coverArt'
+        },
+        metadata: {
+          name: 'name',
+          bio: 'bio',
+          location: 'location',
+          artistPickTrackId: 1,
+          isDeactivated: false
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('updates the user profile if partial valid metadata is provided', async () => {
+      const result = await users.updateProfile({
+        userId: '7eP5n',
+        metadata: {
+          bio: 'The bio has been updated'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.updateProfile({
+          userId: '7eP5n',
+          metadata: {
+            asdf: '123'
+          } as any
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid request is sent', async () => {
+      await expect(async () => {
+        await users.updateProfile({
+          metadata: { bio: 'New bio' }
+        } as any)
+      }).rejects.toThrow()
+    })
   })
 
   describe('followUser', () => {

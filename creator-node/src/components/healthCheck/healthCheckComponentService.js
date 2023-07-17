@@ -28,7 +28,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {number} numberOfCPUs the number of CPUs on this machine
  */
 const healthCheck = async (
-  { libs, snapbackSM } = {},
+  { libs, _snapbackSM } = {},
   logger,
   getMonitors,
   getTranscodeQueueJobs,
@@ -72,13 +72,7 @@ const healthCheck = async (
     dailySyncSuccessCount,
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
-    latestSyncFailTimestamp,
-    latestMonitorStateJobStart,
-    latestMonitorStateJobSuccess,
-    latestFindSyncRequestsJobStart,
-    latestFindSyncRequestsJobSuccess,
-    latestFindReplicaSetUpdatesJobStart,
-    latestFindReplicaSetUpdatesJobSuccess
+    latestSyncFailTimestamp
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -96,19 +90,8 @@ const healthCheck = async (
     MONITORS.DAILY_SYNC_SUCCESS_COUNT,
     MONITORS.DAILY_SYNC_FAIL_COUNT,
     MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
-    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP,
-    MONITORS.LATEST_MONITOR_STATE_JOB_START,
-    MONITORS.LATEST_MONITOR_STATE_JOB_SUCCESS,
-    MONITORS.LATEST_FIND_SYNC_REQUESTS_JOB_START,
-    MONITORS.LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS,
-    MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_START,
-    MONITORS.LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
+    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
   ])
-
-  let currentSnapbackReconfigMode
-  if (snapbackSM) {
-    currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
-  }
 
   const { active: transcodeActive, waiting: transcodeWaiting } =
     await getTranscodeQueueJobs()
@@ -176,46 +159,15 @@ const healthCheck = async (
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
     latestSyncFailTimestamp,
-    currentSnapbackReconfigMode,
     manualSyncsDisabled,
     snapbackModuloBase,
     snapbackUsersPerJob,
-    stateMonitoringQueueRateLimitInterval: config.get(
-      'stateMonitoringQueueRateLimitInterval'
-    ),
-    stateMonitoringQueueRateLimitJobsPerInterval: config.get(
-      'stateMonitoringQueueRateLimitJobsPerInterval'
-    ),
-    recoverOrphanedDataQueueRateLimitInterval: config.get(
-      'recoverOrphanedDataQueueRateLimitInterval'
-    ),
-    recoverOrphanedDataQueueRateLimitJobsPerInterval: config.get(
-      'recoverOrphanedDataQueueRateLimitJobsPerInterval'
-    ),
     transcodeActive,
     transcodeWaiting,
     transcodeQueueIsAvailable: isAvailable,
     shouldHandleTranscode,
     asyncProcessingQueue: asyncProcessingQueueJobs,
-    solDelegatePublicKeyBase58,
-    stateMachineJobs: {
-      latestMonitorStateJobStart: parseDateOrNull(latestMonitorStateJobStart),
-      latestMonitorStateJobSuccess: parseDateOrNull(
-        latestMonitorStateJobSuccess
-      ),
-      latestFindSyncRequestsJobStart: parseDateOrNull(
-        latestFindSyncRequestsJobStart
-      ),
-      latestFindSyncRequestsJobSuccess: parseDateOrNull(
-        latestFindSyncRequestsJobSuccess
-      ),
-      latestFindReplicaSetUpdatesJobStart: parseDateOrNull(
-        latestFindReplicaSetUpdatesJobStart
-      ),
-      latestFindReplicaSetUpdatesJobSuccess: parseDateOrNull(
-        latestFindReplicaSetUpdatesJobSuccess
-      )
-    }
+    solDelegatePublicKeyBase58
   }
 
   if (libs) {
@@ -239,10 +191,6 @@ const healthCheck = async (
   }
 
   return response
-}
-
-const parseDateOrNull = (date) => {
-  return date ? new Date(parseInt(date)).toISOString() : null
 }
 
 // TODO remove verbose health check after fully deprecated

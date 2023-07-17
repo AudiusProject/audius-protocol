@@ -1,10 +1,13 @@
 package server
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
-	"net/url"
+	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -36,13 +39,94 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	return c.JSON(200, upload)
 }
 
+type UpdateUploadBody struct {
+	PreviewStartSeconds string `json:"previewStartSeconds"`
+}
+
+func (ss *MediorumServer) updateUpload(c echo.Context) error {
+	var upload *Upload
+	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
+	if err != nil {
+		return err
+	}
+
+	// Validate signer wallet matches uploader's wallet
+	signerWallet := c.Request().Header.Get("x-signer-wallet")
+	if signerWallet == "" {
+		return c.String(http.StatusBadRequest, "error recovering wallet from signature")
+	}
+	if !upload.UserWallet.Valid {
+		return c.String(http.StatusBadRequest, "upload cannot be updated because it does not have an associated user wallet")
+	}
+	if signerWallet != upload.UserWallet.String {
+		return c.String(http.StatusUnauthorized, "request signer's wallet does not match uploader's wallet")
+	}
+
+	body := new(UpdateUploadBody)
+	if err := c.Bind(body); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	selectedPreview := sql.NullString{Valid: false}
+	if body.PreviewStartSeconds != "" {
+		previewStartSeconds, err := strconv.ParseFloat(body.PreviewStartSeconds, 64)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
+		}
+		selectedPreviewString := fmt.Sprintf("320_preview|%g", previewStartSeconds)
+		selectedPreview = sql.NullString{
+			Valid:  true,
+			String: selectedPreviewString,
+		}
+	}
+
+	// Update supported editable fields
+
+	// Do not support deleting previews
+	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
+		upload.SelectedPreview = selectedPreview
+		upload.UpdatedAt = time.Now().UTC()
+		upload.Status = JobStatusRetranscode
+
+		err = ss.crud.Update(upload)
+		if err != nil {
+			ss.logger.Warn("update upload failed", "err", err)
+		}
+	}
+
+	return c.JSON(200, upload)
+}
+
 func (ss *MediorumServer) postUpload(c echo.Context) error {
+	// Parse X-User-Wallet header
+	userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
+	userWallet := sql.NullString{Valid: false}
+	if userWalletHeader != "" {
+		userWallet = sql.NullString{
+			String: userWalletHeader,
+			Valid:  true,
+		}
+	}
+
 	// Multipart form
 	form, err := c.MultipartForm()
 	if err != nil {
 		return err
 	}
 	template := JobTemplate(c.FormValue("template"))
+	selectedPreview := sql.NullString{Valid: false}
+	previewStart := c.FormValue("previewStartSeconds")
+	if previewStart != "" {
+		previewStartSeconds, err := strconv.ParseFloat(previewStart, 64)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "error parsing previewStartSeconds: "+err.Error())
+		}
+		selectedPreviewString := fmt.Sprintf("320_preview|%g", previewStartSeconds)
+		selectedPreview = sql.NullString{
+			Valid:  true,
+			String: selectedPreviewString,
+		}
+	}
 	files := form.File[filesFormFieldName]
 	defer form.RemoveAll()
 
@@ -61,12 +145,16 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		go func() {
 			defer wg.Done()
 
+			now := time.Now().UTC()
 			upload := &Upload{
 				ID:               ulid.Make().String(),
+				UserWallet:       userWallet,
 				Status:           JobStatusNew,
 				Template:         template,
+				SelectedPreview:  selectedPreview,
 				CreatedBy:        ss.Config.Self.Host,
-				CreatedAt:        time.Now().UTC(),
+				CreatedAt:        now,
+				UpdatedAt:        now,
 				OrigFileName:     formFile.Filename,
 				TranscodeResults: map[string]string{},
 			}
@@ -116,11 +204,11 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
-	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
-		contentDisposition := url.QueryEscape(filenameForDownload)
-		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+		contentDisposition := mime.QEncoding.Encode("utf-8", filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
 	jobID := c.Param("jobID")
@@ -143,6 +231,31 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.SetParamNames("cid")
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
+	}
+}
+
+func (ss *MediorumServer) headBlobByJobIDAndVariant(c echo.Context) error {
+	jobID := c.Param("jobID")
+	variant := c.Param("variant")
+
+	if isLegacyCID(jobID) {
+		c.SetParamNames("dirCid", "fileName")
+		c.SetParamValues(jobID, variant)
+		return ss.headLegacyDirCid(c)
+	} else {
+		var upload *Upload
+		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
+		if err != nil {
+			return err
+		}
+		cid, ok := upload.TranscodeResults[variant]
+		if !ok {
+			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+			return c.String(400, msg)
+		}
+		c.SetParamNames("cid")
+		c.SetParamValues(cid)
+		return ss.headBlob(c)
 	}
 }
 

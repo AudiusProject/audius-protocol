@@ -146,25 +146,3 @@ const METRICS = Object.freeze({
   ...
 })
 ```
-
-Consumption inside `src/components/healthCheck/healthCheckController : syncHealthCheckController()`
-```
-const syncHealthCheckController = async (req) => {
-  const response = await syncHealthCheck(serviceRegistry)
-
-  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
-  const syncQueueJobsTotalMetric = prometheusRegistry.getMetric(
-    prometheusRegistry.metricNames.SYNC_QUEUE_JOBS_TOTAL_GAUGE
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'manual_waiting' },
-    response.manualWaitingCount
-  )
-  syncQueueJobsTotalMetric.set(
-    { status: 'recurring_waiting' },
-    response.recurringWaitingCount
-  )
-
-  return successResponse(response)
-}
-```

@@ -20,9 +20,9 @@ custom_edit_url: null
 
 ___
 
-### created\_at
+### createdAt
 
- **created\_at**: `string`
+ **createdAt**: `string`
 
 **`memberof`** Tip
 

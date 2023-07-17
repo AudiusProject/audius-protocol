@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Dict, TypedDict
+from typing import Dict, TypedDict, Union
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -28,6 +28,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     get_metadata_type_and_format,
     parse_metadata,
+    validate_signer,
 )
 from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
@@ -75,13 +76,8 @@ def validate_user_tx(params: ManageEntityParameters):
             )
     elif params.action == Action.UPDATE:
         # update / delete specific validations
-        if user_id not in params.existing_records[EntityType.USER]:
-            raise IndexingValidationError(f"Invalid User Transaction, user {user_id} does not exist")
-        wallet = params.existing_records[EntityType.USER][user_id].wallet
-        if wallet and wallet.lower() != params.signer.lower():
-            raise IndexingValidationError(
-                "Invalid User Transaction, user wallet signer does not match"
-            )
+        validate_signer(params)
+
     elif params.action == Action.VERIFY:
         verifier_address = get_verifier_address()
         if not verifier_address or verifier_address.lower() != params.signer.lower():
@@ -95,6 +91,8 @@ def validate_user_tx(params: ManageEntityParameters):
 
 
 def validate_user_metadata(session, user_record: User, user_metadata: Dict):
+    if not isinstance(user_metadata, dict):
+        raise IndexingValidationError("Invalid user metadata")
     # If the user's handle is not set, validate that it is unique
     if not user_record.handle:
         handle_lower = validate_user_handle(user_metadata["handle"])
@@ -128,7 +126,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
             )
 
 
-def validate_user_handle(handle: str):
+def validate_user_handle(handle: Union[str, None]):
+    if not handle:
+        raise IndexingValidationError("Handle is missing")
     handle = handle.lower()
     if handle != re.sub(r"[^a-z0-9_\.]", "", handle):
         raise IndexingValidationError(f"Handle {handle} contains illegal characters")
@@ -212,7 +212,7 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
 def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
-    user_id = params.entity_id
+    user_id = params.user_id
     existing_user = params.existing_records[EntityType.USER][user_id]
     if (
         user_id in params.new_records[EntityType.USER]

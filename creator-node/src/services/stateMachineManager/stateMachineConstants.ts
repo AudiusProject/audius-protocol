@@ -16,12 +16,6 @@ export const GET_NODE_USERS_DEFAULT_PAGE_SIZE = 100_000
 // Timeout for fetching a clock value for a single user (2 seconds)
 export const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000
 
-// Timeout for fetching batch clock values (10 seconds)
-export const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 1000 * 10
-
-// Max number of attempts to fetch clock statuses from /users/batch_clock_status
-export const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
-
 // Number of users to process in each batch when calculating reconfigs
 export const FIND_REPLICA_SET_UPDATES_BATCH_SIZE = 50
 
@@ -53,8 +47,6 @@ export const QUEUE_HISTORY = Object.freeze({
   MANUAL_SYNC: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recurring sync queue
   RECURRING_SYNC: 1_000,
-  // Max number of completed/failed jobs to keep in redis for the update-replica-set queue
-  UPDATE_REPLICA_SET: 1_000,
   // Max number of completed/failed jobs to keep in redis for the recover-orphaned-data queue
   RECOVER_ORPHANED_DATA: 1_000
 })
@@ -72,8 +64,6 @@ export const QUEUE_NAMES = {
   MANUAL_SYNC: 'manual-sync-queue',
   // Queue to issue a recurring sync
   RECURRING_SYNC: 'recurring-sync-queue',
-  // Queue to update a replica set
-  UPDATE_REPLICA_SET: 'update-replica-set-queue',
   // Queue to search for nodes with orphaned data and merge it into a Replica Set
   RECOVER_ORPHANED_DATA: 'recover-orphaned-data-queue'
 } as const
@@ -95,45 +85,8 @@ export const MAX_QUEUE_RUNTIMES = Object.freeze({
   MANUAL_SYNC: 1 /* min */ * 60 * 1000,
   // Max millis to run a recurring sync job for before marking it as stalled
   RECURRING_SYNC: 6 /* min */ * 60 * 1000,
-  // Max millis to run an update-replica-set job for before marking it as stalled
-  UPDATE_REPLICA_SET: 5 /* min */ * 60 * 1000,
   // Max millis to run a recover-orphaned-data job for before marking it as stalled
   RECOVER_ORPHANED_DATA: 3 /* hours */ * 60 /* min */ * 60 * 1000
-})
-
-/**
- * Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
- * The `key` of the reconfig states is used to identify the current reconfig mode.
- * The `value` of the reconfig states is used in the superset logic of determining which type of reconfig is enabled.
- */
-export const RECONFIG_MODES = Object.freeze({
-  // Reconfiguration is entirely disabled
-  RECONFIG_DISABLED: {
-    key: 'RECONFIG_DISABLED',
-    value: 0
-  },
-  // Reconfiguration is enabled only if one secondary is unhealthy
-  ONE_SECONDARY: {
-    key: 'ONE_SECONDARY',
-    value: 1
-  },
-  // Reconfiguration is enabled for one secondary and multiple secondaries (currently two secondaries)
-  MULTIPLE_SECONDARIES: {
-    key: 'MULTIPLE_SECONDARIES',
-    value: 2
-  },
-  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary
-  PRIMARY_AND_OR_SECONDARIES: {
-    key: 'PRIMARY_AND_OR_SECONDARIES',
-    value: 3
-  },
-  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary,
-  // and entire replica set
-  // Note: this mode will probably be disabled.
-  ENTIRE_REPLICA_SET: {
-    key: 'ENTIRE_REPLICA_SET',
-    value: 4
-  }
 })
 
 // Describes the type of sync operation
@@ -162,20 +115,6 @@ export const FETCH_FILES_HASH_MAX_TIMEOUT_MS = 10_000
 
 // Seconds to hold the cache of healthy content nodes for update-replica-set jobs
 export const HEALTHY_SERVICES_TTL_SEC = 60 /* 1 min */
-
-export enum UpdateReplicaSetJobResult {
-  Success = 'success',
-  SuccessIssueReconfigDisabled = 'success_issue_reconfig_disabled',
-  FailureFindHealthyNodes = 'failure_find_healthy_nodes',
-  SkipUpdateReplicaSet = 'skip_update_replica_set',
-  FailureNoHealthyNodes = 'failure_no_healthy_nodes',
-  FailureNoValidSP = 'failure_no_valid_sp',
-  FailureToUpdateReplicaSet = 'failure_to_update_replica_set',
-  FailureIssueUpdateReplicaSet = 'failure_issue_update_replica_set',
-  FailureDetermineNewReplicaSet = 'failure_determine_new_replica_set',
-  FailureGetCurrentReplicaSet = 'failure_get_current_replica_set',
-  FailureInitAudiusLibs = 'failure_init_audius_libs'
-}
 
 // Number of users to query in each orphaned data recovery query to Discovery and to its own db
 export const ORPHANED_DATA_NUM_USERS_PER_QUERY = 2000

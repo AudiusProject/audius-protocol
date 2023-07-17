@@ -6,6 +6,59 @@ import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
 
+const CreatePlaylistMetadataSchema = z
+  .object({
+    description: z.optional(z.string().max(1000)),
+    playlistName: z.string(),
+    isPrivate: z.optional(z.boolean())
+  })
+  .strict()
+
+export const CreatePlaylistSchema = z
+  .object({
+    coverArtFile: z.optional(
+      z.custom<File>((data: unknown) => isFileValid(data as File))
+    ),
+    metadata: CreatePlaylistMetadataSchema,
+    onProgress: z.optional(z.function().args(z.number())),
+    trackIds: z.optional(z.array(HashId)),
+    userId: HashId
+  })
+  .strict()
+
+export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
+
+export const createUpdatePlaylistSchema = () =>
+  z
+    .object({
+      userId: HashId,
+      playlistId: HashId,
+      coverArtFile: z.optional(
+        z.custom<File>((data: unknown) => isFileValid(data as File))
+      ),
+      metadata: createUploadPlaylistMetadataSchema()
+        .omit({ genre: true })
+        .merge(
+          z.object({
+            coverArtSizes: z.optional(z.string()),
+            isPrivate: z.optional(z.boolean()),
+            playlistContents: z.array(
+              z.object({
+                timestamp: z.number(),
+                metadataTimestamp: z.optional(z.number()),
+                trackId: HashId
+              })
+            )
+          })
+        ),
+      onProgress: z.optional(z.function().args(z.number()))
+    })
+    .strict()
+
+export type UpdatePlaylistRequest = z.input<
+  ReturnType<typeof createUpdatePlaylistSchema>
+>
+
 const createUploadPlaylistMetadataSchema = () =>
   z
     .object({
@@ -39,8 +92,10 @@ const createPlaylistTrackMetadataSchema = () =>
     tags: true
   })
 
-// PlaylistTrackMetadata is less strict than TrackMetadata because
-// `genre`, `mood`, and `tags` are optional
+/**
+ * PlaylistTrackMetadata is less strict than TrackMetadata because
+ * `genre`, `mood`, and `tags` are optional
+ */
 export type PlaylistTrackMetadata = z.infer<
   ReturnType<typeof createPlaylistTrackMetadataSchema>
 >
@@ -68,7 +123,47 @@ export type UploadPlaylistRequest = z.input<
   ReturnType<typeof createUploadPlaylistSchema>
 >
 
-export const SavePlaylistSchema = z
+export const PublishPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId
+  })
+  .strict()
+
+export type PublishPlaylistRequest = z.input<typeof PublishPlaylistSchema>
+
+export const AddTrackToPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type AddTrackToPlaylistRequest = z.input<typeof AddTrackToPlaylistSchema>
+
+export const RemoveTrackFromPlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId,
+    trackIndex: z.number()
+  })
+  .strict()
+
+export type RemoveTrackFromPlaylistRequest = z.input<
+  typeof RemoveTrackFromPlaylistSchema
+>
+
+export const DeletePlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId
+  })
+  .strict()
+
+export type DeletePlaylistRequest = z.input<typeof DeletePlaylistSchema>
+
+export const FavoritePlaylistSchema = z
   .object({
     userId: HashId,
     playlistId: HashId,
@@ -84,16 +179,16 @@ export const SavePlaylistSchema = z
   })
   .strict()
 
-export type SavePlaylistRequest = z.input<typeof SavePlaylistSchema>
+export type FavoritePlaylistRequest = z.input<typeof FavoritePlaylistSchema>
 
-export const UnsavePlaylistSchema = z
+export const UnfavoritePlaylistSchema = z
   .object({
     userId: HashId,
     playlistId: HashId
   })
   .strict()
 
-export type UnsavePlaylistRequest = z.input<typeof UnsavePlaylistSchema>
+export type UnfavoritePlaylistRequest = z.input<typeof UnfavoritePlaylistSchema>
 
 export const RepostPlaylistSchema = z
   .object({

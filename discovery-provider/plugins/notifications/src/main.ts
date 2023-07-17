@@ -20,6 +20,7 @@ import {
 import { Server } from './server'
 import { configureWebPush } from './web'
 import { configureAnnouncement } from './processNotifications/mappers/announcement'
+import { logMemStats } from './utils/memStats'
 
 export class Processor {
   discoveryDB: Knex
@@ -59,6 +60,9 @@ export class Processor {
 
     // setup announcements
     configureAnnouncement()
+
+    // log memory stats on startup
+    logMemStats()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
@@ -147,7 +151,6 @@ export class Processor {
         )
         this.lastWeeklyEmailSent = moment.utc()
       }
-      logger.info('Completed processing scheduled emails')
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }

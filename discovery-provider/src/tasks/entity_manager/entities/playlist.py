@@ -106,8 +106,6 @@ def get_playlist_events_tx(update_task, event_type, tx_receipt):
 def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise IndexingValidationError(f"User {user_id} does not exist")
 
     validate_signer(params)
 
@@ -342,7 +340,7 @@ def process_playlist_data_event(
     params: ManageEntityParameters,
     playlist_record,
 ):
-    playlist_metadata = params.playlist_metadata
+    playlist_metadata = params.metadata
     block_integer_time = params.block_integer_time
     block_datetime = params.block_datetime
     metadata_cid = params.metadata_cid

@@ -49,6 +49,12 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
 const devConfig: ServicesConfig = {
   minVersion: '0.0.0',
   discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
+  storageNodes: [
+    {
+      delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',
+      endpoint: 'http://audius-protocol-creator-node-1'
+    }
+  ],
   entityManagerContractAddress: '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B',
   web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
   identityServiceUrl: 'http://audius-protocol-identity-service-1'
@@ -84,12 +90,25 @@ const generateServicesConfig = async (
       'discovery-node'
     )
   if (!discoveryNodes || discoveryNodes.length === 0) {
-    throw Error('Services not found')
+    throw Error('Discovery node services not found')
   }
+  const storageNodes =
+    await contracts.ServiceProviderFactoryClient.getServiceProviderList(
+      'content-node'
+    )
+
+  if (!storageNodes || storageNodes.length === 0) {
+    throw Error('Storage node services not found')
+  }
+
   const minVersion = await contracts.getCurrentVersion('discovery-node')
   return {
     minVersion,
     discoveryNodes: discoveryNodes.map((node) => node.endpoint),
+    storageNodes: storageNodes.map(({ endpoint, delegateOwnerWallet }) => ({
+      endpoint,
+      delegateOwnerWallet
+    })),
     web3ProviderUrl: config.WEB3_PROVIDER_URL,
     entityManagerContractAddress: config.ENTITY_MANAGER_CONTRACT_ADDRESS,
     identityServiceUrl: config.IDENTITY_SERVICE_URL

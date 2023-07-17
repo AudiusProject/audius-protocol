@@ -11,5 +11,3 @@ custom_edit_url: null
 ### url
 
  **url**: `string`
-
-URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path

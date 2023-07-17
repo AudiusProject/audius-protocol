@@ -317,18 +317,6 @@ export class EthContracts {
     )
   }
 
-  /**
-   * Determines whether the major and minor versions are equal
-   * @param version1 string 1
-   * @param version2 string 2
-   */
-  hasSameMajorAndMinorVersion(version1: string, version2: string) {
-    return (
-      semver.major(version1) === semver.major(version2) &&
-      semver.minor(version1) === semver.minor(version2)
-    )
-  }
-
   async getServiceProviderList(spType: string) {
     return await this.ServiceProviderFactoryClient.getServiceProviderList(
       spType
@@ -346,4 +334,23 @@ export class EthContracts {
   async getServiceTypeInfo(spType: string) {
     return await this.ServiceTypeManagerClient.getServiceTypeInfo(spType)
   }
+}
+
+/**
+ * Determines whether version2's major/minor versions are greater than or
+ * equal to version1's major/minor.
+ * @param version1 string 1
+ * @param version2 string 2
+ */
+export const isVersionAtLeastSameMajorMinor = (
+  version1: string,
+  version2: string
+) => {
+  const version1MajorMinor = `${semver.major(version1)}.${semver.minor(
+    version1
+  )}.0`
+  const version2MajorMinor = `${semver.major(version2)}.${semver.minor(
+    version2
+  )}.0`
+  return semver.gte(version2MajorMinor, version1MajorMinor)
 }

@@ -5,7 +5,6 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
-import requests
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
@@ -435,36 +434,26 @@ class TrackStream(Resource):
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_stream_info(decoded_id)
 
-        track = info["track"]
-        if not track:
+        track = info.get("track")
+        if not track or not track.get("track_cid"):
+            logger.error(
+                f"tracks.py | stream | Track with id {track_id} may not exist or has no track_cid. Please investigate."
+            )
             abort_not_found(track_id, ns)
 
         track_cid = track["track_cid"].strip()
-        if not track_cid:
+        redis = redis_connection.get_redis()
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
             logger.error(
-                f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
+                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
             )
             abort_not_found(track_id, ns)
 
-        is_storage_v2 = not (len(track_cid) == 46 and track_cid.startswith("Qm"))
-        if is_storage_v2:
-            redis = redis_connection.get_redis()
-            healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-            if not healthy_nodes:
-                logger.error(
-                    f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
-                )
-                abort_not_found(track_id, ns)
-
-            rendezvous = RendezvousHash(
-                *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-            )
-            content_node = rendezvous.get(track_cid)
-        elif info["creator_nodes"]:
-            content_nodes = info["creator_nodes"].split(",")
-            content_node = content_nodes[0]
-        else:
-            abort_not_found(track_id, ns)
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+        content_node = rendezvous.get(track_cid)
 
         request_args = stream_parser.parse_args()
 
@@ -472,10 +461,10 @@ class TrackStream(Resource):
         signature = get_track_stream_signature(
             {
                 "track": track,
-                "user_data": request_args.get("user_data", None),
-                "user_signature": request_args.get("user_signature", None),
+                "user_data": request_args.get("user_data"),
+                "user_signature": request_args.get("user_signature"),
                 "premium_content_signature": request_args.get(
-                    "premium_content_signature", None
+                    "premium_content_signature"
                 ),
             }
         )
@@ -486,26 +475,16 @@ class TrackStream(Resource):
         skip_play_count = request_args.get("skip_play_count", False)
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
-        filename = request_args.get("filename", None)
+        filename = request_args.get("filename")
         if filename:
             params["filename"] = filename
 
         base_path = f"tracks/cidstream/{track_cid}"
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
-        # Try primary first then fallback to replica set
-        # Perform a partial content request to verify 206 success
-        for creator_node in info["creator_nodes"].split(","):
-            stream_url = urljoin(creator_node, path)
-            headers = {"Range": "bytes=0-1"}
-            try:
-                # skip play count for test stream
-                response = requests.get(stream_url + "&skip_play_count=true", headers=headers)
-                if response.status_code == 206:
-                    return stream_url
-            except:
-                pass
-        abort_not_found(track_id, ns)
+
+        stream_url = urljoin(content_node, path)
+        return stream_url
 
 
 track_search_result = make_response(

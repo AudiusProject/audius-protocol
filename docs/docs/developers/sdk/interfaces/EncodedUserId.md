@@ -12,8 +12,8 @@ custom_edit_url: null
 
 ## Properties
 
-### user\_id
+### userId
 
- `Optional` **user\_id**: `string`
+ `Optional` **userId**: `string`
 
 **`memberof`** EncodedUserId

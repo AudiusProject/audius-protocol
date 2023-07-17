@@ -47,7 +47,7 @@ const userReqLimiter = rateLimit({
   }),
   max: config.get('rateLimitingUserReqLimit'), // max requests per hour
   keyGenerator: ipKeyGenerator,
-  // skip rate limit on `/users/clock_status` and `/users/batch_clock_status` routes if valid signature provided
+  // skip rate limit on `/users/clock_status` routes if valid signature provided
   skip: async (req) => {
     const { libs } = req.app.get('serviceRegistry')
     const { timestamp, signature, spID } = req.query
@@ -58,10 +58,7 @@ const userReqLimiter = rateLimit({
       return false
     }
 
-    if (
-      path.includes('/users/clock_status') ||
-      path.includes('/users/batch_clock_status')
-    ) {
+    if (path.includes('/users/clock_status')) {
       try {
         await verifyRequesterIsValidSP({
           spID,

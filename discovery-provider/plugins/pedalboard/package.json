@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@audius/libs": "^1.2.118",
+    "@audius/sdk": "3.0.3-beta.77",
     "@slack/bolt": "^3.13.1",
     "@slack/web-api": "^6.8.1",
     "@types/node-fetch": "^2.6.4",

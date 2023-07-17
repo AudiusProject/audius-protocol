@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timezone
 from time import time
 from unittest.mock import MagicMock, patch
 
@@ -8,6 +9,14 @@ from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.queries.get_health import get_health
 from src.utils.redis_constants import (
+    TRACK_DELIST_DISCREPANCIES_KEY,
+    TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+    TRACK_DELIST_STATUS_CURSOR_CHECK_KEY,
+    TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
+    USER_DELIST_DISCREPANCIES_KEY,
+    USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+    USER_DELIST_STATUS_CURSOR_CHECK_KEY,
+    USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
     challenges_last_processed_event_redis_key,
     latest_block_hash_redis_key,
     latest_block_redis_key,
@@ -124,6 +133,29 @@ def cache_play_health_vars(redis_mock):
     )
 
 
+def cache_trusted_notifier_discrepancies_vars(redis_mock):
+    redis_mock.set(
+        USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
+        datetime.now(timezone.utc).timestamp(),
+    )
+    redis_mock.set(USER_DELIST_STATUS_CURSOR_CHECK_KEY, "ok")
+    redis_mock.set(
+        TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
+        datetime.now(timezone.utc).timestamp(),
+    )
+    redis_mock.set(TRACK_DELIST_STATUS_CURSOR_CHECK_KEY, "ok")
+    redis_mock.set(
+        USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+        datetime.now(timezone.utc).timestamp(),
+    )
+    redis_mock.set(USER_DELIST_DISCREPANCIES_KEY, "[]")
+    redis_mock.set(
+        TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+        datetime.now(timezone.utc).timestamp(),
+    )
+    redis_mock.set(TRACK_DELIST_DISCREPANCIES_KEY, "[]")
+
+
 def test_get_health(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data"""
 
@@ -135,6 +167,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up db state
@@ -177,6 +210,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up redis state
@@ -224,6 +258,7 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up redis state
@@ -269,6 +304,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up db state
@@ -310,6 +346,7 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up redis state
@@ -358,6 +395,7 @@ def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up db state
@@ -395,6 +433,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up db state
@@ -446,6 +485,7 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
 
     web3_mock.eth.get_block = get_block
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -501,6 +541,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up db state
@@ -556,6 +597,7 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
         return block
 
     cache_play_health_vars(redis_mock)
+    cache_trusted_notifier_discrepancies_vars(redis_mock)
     web3_mock.eth.get_block = get_block
 
     # Set up redis state

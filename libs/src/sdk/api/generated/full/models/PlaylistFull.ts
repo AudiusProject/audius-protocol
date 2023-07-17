@@ -95,6 +95,12 @@ export interface PlaylistFull {
     playlistName: string;
     /**
      * 
+     * @type {Array<PlaylistAddedTimestamp>}
+     * @memberof PlaylistFull
+     */
+    playlistContents: Array<PlaylistAddedTimestamp>;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -117,6 +123,12 @@ export interface PlaylistFull {
      * @memberof PlaylistFull
      */
     user: UserFull;
+    /**
+     * 
+     * @type {string}
+     * @memberof PlaylistFull
+     */
+    coverArtSizes?: string;
     /**
      * 
      * @type {number}
@@ -197,12 +209,6 @@ export interface PlaylistFull {
     coverArt?: string;
     /**
      * 
-     * @type {string}
-     * @memberof PlaylistFull
-     */
-    coverArtSizes?: string;
-    /**
-     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -217,6 +223,7 @@ export function instanceOfPlaylistFull(value: object): boolean {
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "isAlbum" in value;
     isInstance = isInstance && "playlistName" in value;
+    isInstance = isInstance && "playlistContents" in value;
     isInstance = isInstance && "repostCount" in value;
     isInstance = isInstance && "favoriteCount" in value;
     isInstance = isInstance && "totalPlayCount" in value;
@@ -252,10 +259,12 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'id': json['id'],
         'isAlbum': json['is_album'],
         'playlistName': json['playlist_name'],
+        'playlistContents': ((json['playlist_contents'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
         'repostCount': json['repost_count'],
         'favoriteCount': json['favorite_count'],
         'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'blocknumber': json['blocknumber'],
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
@@ -269,7 +278,6 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'userId': json['user_id'],
         'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'trackCount': json['track_count'],
     };
 }
@@ -289,10 +297,12 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'id': value.id,
         'is_album': value.isAlbum,
         'playlist_name': value.playlistName,
+        'playlist_contents': ((value.playlistContents as Array<any>).map(PlaylistAddedTimestampToJSON)),
         'repost_count': value.repostCount,
         'favorite_count': value.favoriteCount,
         'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
+        'cover_art_sizes': value.coverArtSizes,
         'blocknumber': value.blocknumber,
         'created_at': value.createdAt,
         'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
@@ -306,7 +316,6 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'user_id': value.userId,
         'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
         'cover_art': value.coverArt,
-        'cover_art_sizes': value.coverArtSizes,
         'track_count': value.trackCount,
     };
 }
