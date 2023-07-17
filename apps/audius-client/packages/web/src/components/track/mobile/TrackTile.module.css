@@ -87,6 +87,7 @@
   align-items: center;
   transform: scale(1);
   transition: transform 0.07s ease-in-out;
+  gap: var(--unit-1);
 }
 
 .statItem:active {
@@ -276,7 +277,6 @@
 .favoriteButton {
   height: calc(var(--unit) * 3.5);
   width: calc(var(--unit) * 3.5);
-  margin-left: var(--unit-1);
 }
 
 .readonly .repostButtonWrapper:hover {
@@ -286,7 +286,6 @@
 .repostButton {
   height: var(--unit-4);
   width: var(--unit-4);
-  margin-left: var(--unit-1);
 }
 
 .hide {

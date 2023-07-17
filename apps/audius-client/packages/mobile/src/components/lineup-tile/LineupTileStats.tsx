@@ -165,15 +165,15 @@ export const LineupTileStats = ({
               disabled={!repostCount || isReadonly}
               onPress={handlePressReposts}
             >
-              <Text style={trackTileStyles.statText}>
-                {formatCount(repostCount)}
-              </Text>
               <IconRepost
                 height={spacing(4)}
                 width={spacing(4)}
                 fill={neutralLight4}
                 style={styles.repostStat}
               />
+              <Text style={trackTileStyles.statText}>
+                {formatCount(repostCount)}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -184,15 +184,15 @@ export const LineupTileStats = ({
               disabled={!saveCount || isReadonly}
               onPress={handlePressFavorites}
             >
-              <Text style={trackTileStyles.statText}>
-                {formatCount(saveCount)}
-              </Text>
               <IconHeart
                 style={styles.favoriteStat}
                 height={spacing(3.5)}
                 width={spacing(3.5)}
                 fill={neutralLight4}
               />
+              <Text style={trackTileStyles.statText}>
+                {formatCount(saveCount)}
+              </Text>
             </TouchableOpacity>
             <View style={[trackTileStyles.statItem]}>
               {downloadStatusIndicator}
