@@ -48,7 +48,10 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
     "/disbursetest",
     async (args) => await disburse(app, args, true)
   );
-  slackApp.command("/trending", async (args) => await trending(app, args));
+  slackApp.command(
+    "/trending",
+    async (args) => await trending(app, args)
+  )
 
   return new Ok(slackApp);
 };
@@ -78,26 +81,19 @@ const trending = async (
 ): Promise<void> => {
   const { command, ack, respond } = args;
   await ack();
-  const text = command.text;
-  if (text !== undefined && text.trim() !== "")
-    await announceTopFiveTrending(app, text);
-  else {
-    await announceTopFiveTrending(app);
-  }
-};
+  const text = command.text
+  if (text !== undefined && text.trim() !== "") await announceTopFiveTrending(app, text)
+  else { await announceTopFiveTrending(app) }
+}
 
 export const formatDisbursementTable = (
   challenges: ChallengeDisbursementUserbankFriendly[]
 ): string => {
-  const matrix = challenges.map((challenge) => [
-    challenge.challenge_id,
-    challenge.handle,
-    challenge.slot,
-  ]);
-  console.log(matrix);
-  return new AsciiTable3("Challenge Disbursements")
-    .setHeading("Challenge", "Handle", "Slot")
-    .setAlign(3, AlignmentEnum.CENTER)
-    .addRowMatrix(matrix)
-    .toString();
-};
+  const matrix = challenges.map((challenge) => [challenge.challenge_id, challenge.handle, challenge.slot])
+  console.log(matrix)
+  return new AsciiTable3("Challenge Disbursements").setHeading(
+    "Challenge",
+    "Handle",
+    "Slot"
+  ).setAlign(3, AlignmentEnum.CENTER).addRowMatrix(matrix).toString()
+      }

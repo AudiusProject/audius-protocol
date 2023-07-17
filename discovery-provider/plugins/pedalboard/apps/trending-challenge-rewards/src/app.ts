@@ -36,13 +36,13 @@ export const onDisburse = async (
   if (token === undefined) return new Err("SLACK_BOT_TOKEN undefined");
   const client = new WebClient(token);
 
-  console.log(`doing ${dryRun ? "a dry run" : "the real deal"}`);
+  console.log(`doing ${dryRun ? "a dry run" : "the real deal"}`)
 
   const completedBlockRes = await findStartingBlock(db);
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
-  const trimmedSpecifier = specifier.split(":")[0];
+  const trimmedSpecifier = specifier.split(":")[0]
 
   const nodeGroups = await assembleNodeGroups(libs);
 
@@ -53,10 +53,7 @@ export const onDisburse = async (
     trimmedSpecifier
   );
 
-  const normal = await getChallengesDisbursementsUserbanks(
-    db,
-    trimmedSpecifier
-  );
+  const normal = await getChallengesDisbursementsUserbanks(db, trimmedSpecifier)
   console.log("friendly = ", JSON.stringify(friendly));
   const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
@@ -108,25 +105,23 @@ const assembleNodeGroups = async (
 
   const groups = new Map<string, Node[]>();
   for (const node of nodes) {
-    const ownerNodes = groups.get(node.owner);
-    if (ownerNodes === undefined) {
-      groups.set(node.owner, [
-        {
+      const ownerNodes = groups.get(node.owner);
+      if (ownerNodes === undefined) {
+      groups.set(node.owner, [{
           endpoint: node.endpoint,
           spID: node.spID,
           owner: node.owner,
           delegateOwnerWallet: node.delegateOwnerWallet,
-        },
-      ]);
-    } else {
+      }]);
+      } else {
       ownerNodes.push({
-        endpoint: node.endpoint,
-        spID: node.spID,
-        owner: node.owner,
-        delegateOwnerWallet: node.delegateOwnerWallet,
+          endpoint: node.endpoint,
+          spID: node.spID,
+          owner: node.owner,
+          delegateOwnerWallet: node.delegateOwnerWallet,
       });
       groups.set(node.owner, ownerNodes);
-    }
+      }
   }
 
   return groups;
@@ -235,7 +230,7 @@ const getAllChallenges = async (
         }
 
         for (const node of nodeGroup) {
-          console.log("attesting node ", node);
+          console.log("attesting node ", node)
           const canAttest = await canSuccessfullyAttest(
             node.endpoint,
             challenge.specifier,
@@ -294,13 +289,13 @@ const getAllChallenges = async (
       maxAggregationAttempts: 1,
       endpoints: possibleNodeSet,
       feePayerOverride,
-      logger: console,
-    };
+      logger: console
+    }
 
-    console.log({ args });
+    console.log({ args })
 
     if (!dryRun) {
-      console.log("submitting");
+      console.log("submitting")
       const { error } = await rewards.submitAndEvaluate(args);
 
       if (error) {
@@ -317,8 +312,8 @@ const getAllChallenges = async (
   console.log(
     `All done. Impossible challenges: ${
       impossibleChallenges.length
-    }: ${JSON.stringify(impossibleChallenges)}, possible challenges: ${
-      possibleChallenges.length
-    } ${JSON.stringify(possibleChallenges)}`
+    }: ${JSON.stringify(
+      impossibleChallenges
+    )}, possible challenges: ${possibleChallenges.length} ${JSON.stringify(possibleChallenges)}`
   );
 };
