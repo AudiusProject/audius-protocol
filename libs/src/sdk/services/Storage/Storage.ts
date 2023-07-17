@@ -65,6 +65,7 @@ export class Storage implements StorageService {
     const response = await axios({
       method: 'post',
       url: `${contentNodeEndpoint}/uploads`,
+      maxContentLength: Infinity,
       data: formData,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
