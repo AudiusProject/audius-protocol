@@ -19,7 +19,8 @@ export enum Type {
 export enum Size {
   TINY = 'tiny',
   SMALL = 'small',
-  MEDIUM = 'medium'
+  MEDIUM = 'medium',
+  LARGE = 'large'
 }
 
 type BaseButtonProps = Omit<

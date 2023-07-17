@@ -1,6 +1,7 @@
 import { Story } from '@storybook/react'
 
 import * as Icons from 'components/Icons'
+import { ButtonSize } from 'index'
 
 import { Button } from './Button'
 import { ButtonProps, Type } from './types'
@@ -17,7 +18,12 @@ const baseProps: ButtonProps = {
 }
 
 const Template: Story<ButtonProps> = (args) => (
-  <Button {...baseProps} {...args} />
+  <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
+    <Button {...baseProps} size={ButtonSize.TINY} {...args} />
+    <Button {...baseProps} size={ButtonSize.SMALL} {...args} />
+    <Button {...baseProps} size={ButtonSize.MEDIUM} {...args} />
+    <Button {...baseProps} size={ButtonSize.LARGE} {...args} />
+  </div>
 )
 
 const BackgroundTemplate: Story<ButtonProps> = (args) => (

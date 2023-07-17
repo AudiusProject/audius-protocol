@@ -1,7 +1,6 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 
 import {
-  FeatureFlags,
   ID,
   Nullable,
   PremiumConditions,
@@ -12,7 +11,6 @@ import {
 import {
   Modal,
   Button,
-  ButtonSize,
   ButtonType,
   ModalContent,
   ModalHeader,
@@ -27,7 +25,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import Switch from 'components/switch/Switch'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { fullTrackPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
@@ -123,10 +120,6 @@ const RemixSettingsModal = ({
   hideRemixes,
   onToggleHideRemixes
 }: RemixSettingsModalProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [url, setUrl] = useState<string | null>(null)
@@ -171,138 +164,67 @@ const RemixSettingsModal = ({
     onClose(trackId)
   }, [onClose, track, isInvalidTrack, url])
 
-  if (isGatedContentEnabled) {
-    return (
-      <Modal
-        isOpen={isOpen}
-        onClose={onCloseModal}
-        wrapperClassName={styles.remixSettingsModalContainer}
-        dismissOnClickOutside
-      >
-        <ModalHeader
-          className={styles.remixSettingsModalHeader}
-          onClose={onCloseModal}
-          showDismissButton
-          dismissButtonClassName={styles.remixSettingsModalHeaderDismissButton}
-        >
-          <ModalTitle
-            title={messages.title}
-            icon={<IconRemix className={styles.remixSettingsModalTitleIcon} />}
-          />
-        </ModalHeader>
-        <ModalContent>
-          {isPremium ? (
-            <HelpCallout
-              className={styles.disableInfo}
-              content={`${messages.changeAvailabilityPrefix} ${
-                'nft_collection' in (premiumConditions ?? {})
-                  ? messages.collectibleGated
-                  : messages.specialAccess
-              } ${messages.changeAvailabilitySuffix}`}
-            />
-          ) : null}
-          <div className={styles.toggleRow}>
-            <span className={cn({ [styles.remixDisabled]: isPremium })}>
-              {messages.markAsRemix}
-            </span>
-            <Switch
-              isOn={isRemix}
-              handleToggle={(e) => {
-                setIsRemix(!isRemix)
-                if (isRemix) {
-                  onChangeField('remix_of', null)
-                  reset()
-                  setUrl(null)
-                }
-              }}
-              isDisabled={isPremium}
-            />
-          </div>
-
-          <div
-            className={cn(styles.subtext, {
-              [styles.remixDisabled]: isPremium
-            })}
-          >
-            {messages.pasteLink}
-          </div>
-          <Input
-            inputRef={inputRef}
-            value={url}
-            placeholder={messages.enterLink}
-            size='large'
-            onChange={onChange}
-            disabled={isPremium}
-          />
-          {url && (
-            <div className={styles.bottom}>
-              {isInvalidTrack ? (
-                <div className={styles.error}>{messages.error}</div>
-              ) : (
-                <TrackInfo user={user} track={track} />
-              )}
-            </div>
-          )}
-
-          <div className={styles.divider} />
-
-          <div className={styles.toggleRow}>
-            <span className={cn({ [styles.remixDisabled]: isPremium })}>
-              {messages.hideOtherRemixes}
-            </span>
-            <Switch
-              isOn={!!hideRemixes || isPremium}
-              handleToggle={() => onToggleHideRemixes?.()}
-              isDisabled={isPremium}
-              allowCheckedWhileDisabled
-            />
-          </div>
-          <div
-            className={cn(styles.subtext, {
-              [styles.remixDisabled]: isPremium
-            })}
-          >
-            {messages.preventOtherRemixes}
-          </div>
-
-          <div className={styles.doneButtonContainer}>
-            <Button
-              textClassName={styles.doneButton2}
-              text={messages.done2}
-              type={ButtonType.PRIMARY_ALT}
-              onClick={onCloseModal}
-            />
-          </div>
-        </ModalContent>
-      </Modal>
-    )
-  }
-
   return (
     <Modal
       isOpen={isOpen}
       onClose={onCloseModal}
-      showTitleHeader
-      title={messages.title}
-      subtitle={messages.subtitle}
+      wrapperClassName={styles.remixSettingsModalContainer}
       dismissOnClickOutside
-      showDismissButton
-      // Since this can be nested in the edit track modal
-      // Appear on top of it
-      zIndex={1002}
-      bodyClassName={styles.modalContainer}
-      headerContainerClassName={styles.modalHeader}
-      titleClassName={styles.modalTitle}
-      subtitleClassName={styles.modalSubtitle}
     >
-      <div className={styles.content}>
-        <div className={styles.info}>{messages.remixOf}</div>
+      <ModalHeader
+        className={styles.remixSettingsModalHeader}
+        onClose={onCloseModal}
+        showDismissButton
+        dismissButtonClassName={styles.remixSettingsModalHeaderDismissButton}
+      >
+        <ModalTitle
+          title={messages.title}
+          icon={<IconRemix className={styles.remixSettingsModalTitleIcon} />}
+        />
+      </ModalHeader>
+      <ModalContent>
+        {isPremium ? (
+          <HelpCallout
+            className={styles.disableInfo}
+            content={`${messages.changeAvailabilityPrefix} ${
+              'nft_collection' in (premiumConditions ?? {})
+                ? messages.collectibleGated
+                : messages.specialAccess
+            } ${messages.changeAvailabilitySuffix}`}
+          />
+        ) : null}
+        <div className={styles.toggleRow}>
+          <span className={cn({ [styles.remixDisabled]: isPremium })}>
+            {messages.markAsRemix}
+          </span>
+          <Switch
+            isOn={isRemix}
+            handleToggle={(e) => {
+              setIsRemix(!isRemix)
+              if (isRemix) {
+                onChangeField('remix_of', null)
+                reset()
+                setUrl(null)
+              }
+            }}
+            isDisabled={isPremium}
+          />
+        </div>
+
+        <div
+          className={cn(styles.subtext, {
+            [styles.remixDisabled]: isPremium
+          })}
+        >
+          {messages.pasteLink}
+        </div>
         <Input
           inputRef={inputRef}
           value={url}
-          placeholder=''
-          size='small'
+          placeholder={messages.enterLink}
+          size='large'
           onChange={onChange}
+          disabled={isPremium}
         />
         {url && (
           <div className={styles.bottom}>
@@ -313,14 +235,37 @@ const RemixSettingsModal = ({
             )}
           </div>
         )}
-      </div>
-      <Button
-        className={styles.doneButton}
-        text={messages.done}
-        size={ButtonSize.TINY}
-        type={ButtonType.SECONDARY}
-        onClick={onCloseModal}
-      />
+
+        <div className={styles.divider} />
+
+        <div className={styles.toggleRow}>
+          <span className={cn({ [styles.remixDisabled]: isPremium })}>
+            {messages.hideOtherRemixes}
+          </span>
+          <Switch
+            isOn={!!hideRemixes || isPremium}
+            handleToggle={() => onToggleHideRemixes?.()}
+            isDisabled={isPremium}
+            allowCheckedWhileDisabled
+          />
+        </div>
+        <div
+          className={cn(styles.subtext, {
+            [styles.remixDisabled]: isPremium
+          })}
+        >
+          {messages.preventOtherRemixes}
+        </div>
+
+        <div className={styles.doneButtonContainer}>
+          <Button
+            textClassName={styles.doneButton2}
+            text={messages.done2}
+            type={ButtonType.PRIMARY_ALT}
+            onClick={onCloseModal}
+          />
+        </div>
+      </ModalContent>
     </Modal>
   )
 }

@@ -5,6 +5,9 @@ import {
   collectiblesSelectors,
   FeatureFlags,
   FieldVisibility,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
   Nullable,
   PremiumConditions,
   TrackAvailabilityType
@@ -110,19 +113,21 @@ export const TrackAvailabilityModalForm = () => {
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   const initialValues = useMemo(() => {
+    const isTipGated = isPremiumContentTipGated(premiumConditionsValue)
+    const isFollowGated = isPremiumContentFollowGated(premiumConditionsValue)
+    const isCollectibleGated = isPremiumContentCollectibleGated(
+      premiumConditionsValue
+    )
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlistedValue)
     set(initialValues, IS_PREMIUM, isPremiumValue)
     set(initialValues, PREMIUM_CONDITIONS, premiumConditionsValue)
 
     let availabilityType = TrackAvailabilityType.PUBLIC
-    if (
-      premiumConditionsValue?.follow_user_id ||
-      premiumConditionsValue?.tip_user_id
-    ) {
+    if (isFollowGated || isTipGated) {
       availabilityType = TrackAvailabilityType.SPECIAL_ACCESS
     }
-    if (premiumConditionsValue?.nft_collection) {
+    if (isCollectibleGated) {
       availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
     }
     if (
@@ -138,9 +143,7 @@ export const TrackAvailabilityModalForm = () => {
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
-      premiumConditionsValue?.tip_user_id
-        ? SpecialAccessType.TIP
-        : SpecialAccessType.FOLLOW
+      isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
     return initialValues as TrackAvailabilityFormValues
   }, [
@@ -254,12 +257,20 @@ const TrackAvailabilityFields = (props: TrackAvailabilityFieldsProps) => {
           break
         }
         case TrackAvailabilityType.SPECIAL_ACCESS: {
-          if (!accountUserId || premiumConditionsValue?.tip_user_id) break
+          if (
+            !accountUserId ||
+            isPremiumContentTipGated(premiumConditionsValue)
+          )
+            break
           setPremiumConditionsValue({ follow_user_id: accountUserId })
           break
         }
         case TrackAvailabilityType.COLLECTIBLE_GATED:
-          if (!accountUserId || premiumConditionsValue?.nft_collection) break
+          if (
+            !accountUserId ||
+            isPremiumContentCollectibleGated(premiumConditionsValue)
+          )
+            break
           setPremiumConditionsValue(null)
           break
         case TrackAvailabilityType.HIDDEN:

@@ -1,14 +1,15 @@
 import { memo } from 'react'
 
-import { FeatureFlags, PremiumTrackStatus } from '@audius/common'
-import { IconLock } from '@audius/stems'
+import { Nullable, PremiumConditions, PremiumTrackStatus } from '@audius/common'
+import cn from 'classnames'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useFlag } from 'hooks/useRemoteConfig'
+import typeStyles from 'components/typography/typography.module.css'
+
+import { PremiumConditionsPill } from '../PremiumConditionsPill'
 
 import styles from './BottomButtons.module.css'
 
@@ -19,111 +20,95 @@ type BottomButtonsProps = {
   toggleRepost: () => void
   onClickOverflow: () => void
   onShare: () => void
+  isLoading: boolean
   isOwner: boolean
   isDarkMode: boolean
   isUnlisted?: boolean
   isShareHidden?: boolean
   isTrack?: boolean
   doesUserHaveAccess?: boolean
+  premiumConditions?: Nullable<PremiumConditions>
   premiumTrackStatus?: PremiumTrackStatus
   isMatrixMode: boolean
 }
 
-const messages = {
-  locked: 'LOCKED',
-  unlocking: 'UNLOCKING'
-}
-
 const BottomButtons = (props: BottomButtonsProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
+  const moreButton = (
+    <MoreButton
+      wrapperClassName={styles.button}
+      className={styles.buttonContent}
+      onClick={props.onClickOverflow}
+      isDarkMode={props.isDarkMode}
+      isMatrixMode={props.isMatrixMode}
+    />
   )
 
-  const repostButton = () => {
+  // Premium condition without access
+  if (
+    props.isTrack &&
+    !props.isLoading &&
+    props.premiumConditions &&
+    !props.doesUserHaveAccess
+  ) {
     return (
-      <RepostButton
-        onClick={() => props.toggleRepost()}
-        isActive={props.hasReposted}
-        isDisabled={props.isOwner}
-        isUnlisted={props.isUnlisted}
-        isDarkMode={props.isDarkMode}
-        isMatrixMode={props.isMatrixMode}
-      />
-    )
-  }
-
-  const favoriteButton = () => {
-    return (
-      <FavoriteButton
-        onClick={() => props.toggleSave()}
-        isActive={props.hasSaved}
-        isDisabled={props.isOwner}
-        isUnlisted={props.isUnlisted}
-        isDarkMode={props.isDarkMode}
-        isMatrixMode={props.isMatrixMode}
-      />
-    )
-  }
-
-  const shareButton = () => {
-    return (
-      <ShareButton
-        onClick={props.onShare}
-        isDarkMode={props.isDarkMode}
-        isMatrixMode={props.isMatrixMode}
-        isShareHidden={props.isShareHidden}
-      />
-    )
-  }
-
-  const premiumStatus = () => {
-    return props.premiumTrackStatus === 'UNLOCKING' ? (
-      <div className={styles.premiumContent}>
-        <LoadingSpinner className={styles.spinner} />
-        {messages.unlocking}
-      </div>
-    ) : (
-      <div className={styles.premiumContent}>
-        <IconLock />
-        {messages.locked}
+      <div className={cn(typeStyles.titleSmall, styles.bottomButtons)}>
+        <div className={styles.premiumContentContainer}>
+          <PremiumConditionsPill
+            premiumConditions={props.premiumConditions}
+            unlocking={props.premiumTrackStatus === 'UNLOCKING'}
+          />
+        </div>
+        {moreButton}
       </div>
     )
   }
 
-  const moreButton = () => {
-    return (
-      <MoreButton
-        onClick={props.onClickOverflow}
-        isDarkMode={props.isDarkMode}
-        isMatrixMode={props.isMatrixMode}
-      />
-    )
-  }
-
-  if (isGatedContentEnabled && props.isTrack && !props.doesUserHaveAccess) {
-    return (
-      <div className={styles.bottomButtons}>
-        {premiumStatus()}
-        {moreButton()}
-      </div>
-    )
-  }
+  const shareButton = (
+    <ShareButton
+      wrapperClassName={styles.button}
+      className={styles.buttonContent}
+      onClick={props.onShare}
+      isDarkMode={props.isDarkMode}
+      isMatrixMode={props.isMatrixMode}
+      isShareHidden={props.isShareHidden}
+    />
+  )
 
   if (props.isUnlisted) {
     return (
       <div className={styles.bottomButtons}>
-        {shareButton()}
-        {moreButton()}
+        <div className={styles.actions}>{shareButton}</div>
+        {moreButton}
       </div>
     )
   }
 
   return (
     <div className={styles.bottomButtons}>
-      {repostButton()}
-      {favoriteButton()}
-      {shareButton()}
-      {moreButton()}
+      <div className={styles.actions}>
+        <RepostButton
+          wrapperClassName={styles.button}
+          className={styles.buttonContent}
+          onClick={props.toggleRepost}
+          isActive={props.hasReposted}
+          isDisabled={props.isOwner}
+          isUnlisted={props.isUnlisted}
+          isDarkMode={props.isDarkMode}
+          isMatrixMode={props.isMatrixMode}
+        />
+        <FavoriteButton
+          wrapperClassName={styles.button}
+          className={styles.buttonContent}
+          onClick={props.toggleSave}
+          isActive={props.hasSaved}
+          isDisabled={props.isOwner}
+          isUnlisted={props.isUnlisted}
+          isDarkMode={props.isDarkMode}
+          isMatrixMode={props.isMatrixMode}
+        />
+        {shareButton}
+      </div>
+      {moreButton}
     </div>
   )
 }

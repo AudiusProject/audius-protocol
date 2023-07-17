@@ -7,9 +7,10 @@ import {
   Nullable,
   premiumContentSelectors,
   premiumContentActions,
-  FeatureFlags,
   formatLineupTileDuration,
-  Genre
+  Genre,
+  getDogEarType,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -21,13 +22,16 @@ import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
-import { DogEar, DogEarType } from 'components/dog-ear'
+import { DogEar } from 'components/dog-ear'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
 import { TrackTileProps } from 'components/track/types'
+import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { profilePage } from 'utils/route'
+
+import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
+import { messages } from '../trackTileMessages'
 
 import BottomButtons from './BottomButtons'
 import styles from './TrackTile.module.css'
@@ -35,15 +39,6 @@ import TrackTileArt from './TrackTileArt'
 
 const { setLockedContentId } = premiumContentActions
 const { getPremiumTrackStatusMap } = premiumContentSelectors
-
-const messages = {
-  artistPick: "Artist's Pick",
-  coSign: 'Co-Sign',
-  reposted: 'Reposted',
-  favorited: 'Favorited',
-  hiddenTrack: 'Hidden Track',
-  repostedAndFavorited: 'Reposted & Favorited'
-}
 
 type ExtraProps = {
   permalink: string
@@ -58,14 +53,49 @@ type ExtraProps = {
   darkMode: boolean
   isMatrix: boolean
   isPremium: boolean
-  premiumConditions: Nullable<PremiumConditions>
+  premiumConditions?: Nullable<PremiumConditions>
   doesUserHaveAccess: boolean
 }
 
-const formatListenCount = (listenCount?: number) => {
-  if (!listenCount) return null
-  const suffix = listenCount === 1 ? 'Play' : 'Plays'
-  return `${formatCount(listenCount)} ${suffix}`
+type CombinedProps = TrackTileProps & ExtraProps
+
+const renderLockedOrPlaysContent = ({
+  doesUserHaveAccess,
+  fieldVisibility,
+  isOwner,
+  isPremium,
+  listenCount,
+  variant
+}: Pick<
+  CombinedProps,
+  | 'doesUserHaveAccess'
+  | 'fieldVisibility'
+  | 'isOwner'
+  | 'isPremium'
+  | 'listenCount'
+> &
+  Pick<LockedStatusBadgeProps, 'variant'>) => {
+  if (isPremium && !isOwner) {
+    return <LockedStatusBadge locked={!doesUserHaveAccess} variant={variant} />
+  }
+
+  const hidePlays = fieldVisibility
+    ? fieldVisibility.play_count === false
+    : false
+
+  return (
+    listenCount !== undefined &&
+    listenCount > 0 && (
+      <div
+        className={cn(styles.plays, {
+          [styles.isHidden]: hidePlays
+        })}
+      >
+        {formatCount(listenCount)}
+        {messages.getPlays(listenCount)}
+      </div>
+    )
+  )
 }
 
 const formatCoSign = ({
@@ -95,14 +125,14 @@ export const RankIcon = ({
   className?: string
 }) => {
   return isVisible ? (
-    <div className={cn(styles.rankContainer, className)}>
+    <div className={cn(typeStyles.bodyXsmall, styles.rankContainer, className)}>
       {showCrown ? <IconCrown /> : <IconTrending />}
       {index + 1}
     </div>
   ) : null
 }
 
-const TrackTile = (props: TrackTileProps & ExtraProps) => {
+const TrackTile = (props: CombinedProps) => {
   const {
     id,
     uid,
@@ -116,13 +146,16 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     togglePlay,
     coSign,
     darkMode,
+    fieldVisibility,
     isActive,
     isMatrix,
     userId,
+    isArtistPick,
     isOwner,
     isUnlisted,
     isLoading,
     isPremium,
+    listenCount,
     premiumConditions,
     doesUserHaveAccess,
     isTrending,
@@ -136,15 +169,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     variant,
     containerClassName
   } = props
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
 
   const hideShare: boolean = props.fieldVisibility
     ? props.fieldVisibility.share === false
-    : false
-  const hidePlays = props.fieldVisibility
-    ? props.fieldVisibility.play_count === false
     : false
 
   const dispatch = useDispatch()
@@ -154,19 +181,17 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   const premiumTrackStatus = trackId
     ? premiumTrackStatusMap[trackId]
     : undefined
+  const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
 
-  const showPremiumDogEar =
-    isGatedContentEnabled &&
-    !isLoading &&
-    premiumConditions &&
-    (isOwner || !doesUserHaveAccess)
-  const DogEarIconType = showPremiumDogEar
-    ? isOwner
-      ? premiumConditions.nft_collection
-        ? DogEarType.COLLECTIBLE_GATED
-        : DogEarType.SPECIAL_ACCESS
-      : DogEarType.LOCKED
-    : null
+  const DogEarIconType = isLoading
+    ? undefined
+    : getDogEarType({
+        premiumConditions,
+        isOwner,
+        doesUserHaveAccess,
+        isArtistPick,
+        isUnlisted
+      })
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
@@ -222,37 +247,27 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
         containerClassName
       )}
     >
-      {showPremiumDogEar && DogEarIconType ? (
-        <DogEar
-          type={DogEarIconType}
-          containerClassName={styles.premiumDogEarContainer}
-        />
-      ) : null}
-      {!showPremiumDogEar && props.showArtistPick && props.isArtistPick ? (
-        <DogEar type={DogEarType.STAR} />
-      ) : null}
-      {props.isUnlisted && <DogEar type={DogEarType.HIDDEN} />}
+      {DogEarIconType ? <DogEar type={DogEarIconType} /> : null}
       <div className={styles.mainContent} onClick={handleClick}>
-        <div className={cn(styles.topRight, styles.statText)}>
-          {props.showArtistPick && props.isArtistPick && (
+        <div
+          className={cn(
+            typeStyles.bodyXSmall,
+            styles.topRight,
+            styles.statText
+          )}
+        >
+          {isArtistPick ? (
             <div className={styles.topRightIcon}>
               <IconStar />
               {messages.artistPick}
             </div>
-          )}
-          {!isLoading && isPremium ? (
-            <PremiumContentLabel
-              premiumConditions={premiumConditions}
-              doesUserHaveAccess={!!doesUserHaveAccess}
-              isOwner={isOwner}
-            />
           ) : null}
-          {props.isUnlisted && (
+          {props.isUnlisted ? (
             <div className={styles.topRightIcon}>
               <IconHidden />
               {messages.hiddenTrack}
             </div>
-          )}
+          ) : null}
           <div className={cn(styles.duration, fadeIn)}>
             {duration
               ? formatLineupTileDuration(
@@ -283,7 +298,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             })}
           >
             <a
-              className={styles.title}
+              className={cn(typeStyles.titleMedium, styles.title)}
               href={permalink}
               onClick={props.goToTrackPage}
             >
@@ -322,18 +337,22 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             </a>
           </div>
           {coSign && (
-            <div className={styles.coSignLabel}>{messages.coSign}</div>
+            <div
+              className={cn(
+                typeStyles.labelSmall,
+                typeStyles.labelStrong,
+                styles.coSignLabel
+              )}
+            >
+              {messages.coSign}
+            </div>
           )}
         </div>
         {coSign ? (
-          <div className={styles.coSignText}>
+          <div className={cn(typeStyles.bodyXSmall, styles.coSignText)}>
             <div className={styles.name}>
               {coSign.user.name}
-              <UserBadges
-                userId={coSign.user.user_id}
-                className={styles.iconVerified}
-                badgeSize={8}
-              />
+              <UserBadges userId={coSign.user.user_id} badgeSize={8} />
             </div>
             {formatCoSign({
               hasReposted: coSign.has_remix_author_reposted,
@@ -341,63 +360,79 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             })}
           </div>
         ) : null}
-        <div className={cn(styles.stats, styles.statText)}>
-          <RankIcon
-            showCrown={showRankIcon}
-            index={index}
-            isVisible={isTrending && artworkLoaded && !showSkeleton}
-            className={styles.rankIconContainer}
-          />
-          {!!(props.repostCount || props.saveCount) && (
-            <>
-              <div
-                className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.repostCount,
-                  [styles.isHidden]: props.isUnlisted
-                })}
-                onClick={
-                  props.repostCount && !isReadonly
-                    ? props.makeGoToRepostsPage(id)
-                    : undefined
-                }
-              >
-                {formatCount(props.repostCount)}
-                <RepostButton
-                  iconMode
-                  isMatrixMode={isMatrix}
-                  isDarkMode={darkMode}
-                  className={styles.repostButton}
-                  wrapperClassName={styles.repostButtonWrapper}
-                />
-              </div>
-              <div
-                className={cn(styles.statItem, fadeIn, {
-                  [styles.disabledStatItem]: !props.saveCount,
-                  [styles.isHidden]: props.isUnlisted
-                })}
-                onClick={
-                  props.saveCount && !isReadonly
-                    ? props.makeGoToFavoritesPage(id)
-                    : undefined
-                }
-              >
-                {formatCount(props.saveCount)}
-                <FavoriteButton
-                  iconMode
-                  isDarkMode={darkMode}
-                  isMatrixMode={isMatrix}
-                  className={styles.favoriteButton}
-                  wrapperClassName={styles.favoriteButtonWrapper}
-                />
-              </div>
-            </>
-          )}
+        <div className={cn(typeStyles.bodyXSmall, styles.statsRow)}>
+          <div className={styles.stats}>
+            <RankIcon
+              showCrown={showRankIcon}
+              index={index}
+              isVisible={isTrending && artworkLoaded && !showSkeleton}
+              className={styles.rankIconContainer}
+            />
+            {!isLoading && isPremium ? (
+              <PremiumContentLabel
+                premiumConditions={premiumConditions}
+                doesUserHaveAccess={!!doesUserHaveAccess}
+                isOwner={isOwner}
+              />
+            ) : null}
+            {!(props.repostCount || props.saveCount) ? null : (
+              <>
+                <div
+                  className={cn(styles.statItem, fadeIn, {
+                    [styles.disabledStatItem]: !props.repostCount,
+                    [styles.isHidden]: props.isUnlisted
+                  })}
+                  onClick={
+                    props.repostCount && !isReadonly
+                      ? props.makeGoToRepostsPage(id)
+                      : undefined
+                  }
+                >
+                  {formatCount(props.repostCount)}
+                  <RepostButton
+                    iconMode
+                    isMatrixMode={isMatrix}
+                    isDarkMode={darkMode}
+                    className={styles.repostButton}
+                    wrapperClassName={styles.repostButtonWrapper}
+                  />
+                </div>
+                <div
+                  className={cn(styles.statItem, fadeIn, {
+                    [styles.disabledStatItem]: !props.saveCount,
+                    [styles.isHidden]: props.isUnlisted
+                  })}
+                  onClick={
+                    props.saveCount && !isReadonly
+                      ? props.makeGoToFavoritesPage(id)
+                      : undefined
+                  }
+                >
+                  {formatCount(props.saveCount)}
+                  <FavoriteButton
+                    iconMode
+                    isDarkMode={darkMode}
+                    isMatrixMode={isMatrix}
+                    className={styles.favoriteButton}
+                    wrapperClassName={styles.favoriteButtonWrapper}
+                  />
+                </div>
+              </>
+            )}
+          </div>
           <div
-            className={cn(styles.listenCount, fadeIn, {
-              [styles.isHidden]: hidePlays
-            })}
+            className={cn(typeStyles.bodyXSmall, styles.bottomRight, fadeIn)}
           >
-            {formatListenCount(props.listenCount)}
+            {!isLoading
+              ? renderLockedOrPlaysContent({
+                  doesUserHaveAccess,
+                  fieldVisibility,
+                  isOwner,
+                  isPremium,
+                  listenCount,
+                  variant: isPurchase ? 'premium' : 'gated'
+                })
+              : null}
           </div>
         </div>
         {!isReadonly ? (
@@ -409,8 +444,10 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
             isOwner={isOwner}
+            isLoading={isLoading}
             isUnlisted={isUnlisted}
             doesUserHaveAccess={doesUserHaveAccess}
+            premiumConditions={premiumConditions}
             premiumTrackStatus={premiumTrackStatus}
             isShareHidden={hideShare}
             isDarkMode={darkMode}

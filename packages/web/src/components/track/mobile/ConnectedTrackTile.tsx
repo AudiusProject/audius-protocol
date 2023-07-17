@@ -139,16 +139,13 @@ const ConnectedTrackTile = ({
 
   const isOwner = user_id === currentUserId
 
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { isUserAccessTBD, doesUserHaveAccess } =
     usePremiumContentAccess(trackWithFallback)
-  const loading = isBuffering || isUserAccessTBD
+  const loading = isLoading || isUserAccessTBD
 
   const toggleSave = (trackId: ID) => {
     if (has_current_user_saved) {
@@ -200,21 +197,20 @@ const ConnectedTrackTile = ({
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const repostAction =
-      !isOwner && (!isGatedContentEnabled || doesUserHaveAccess)
+      !isOwner && doesUserHaveAccess
         ? has_current_user_reposted
           ? OverflowAction.UNREPOST
           : OverflowAction.REPOST
         : null
     const favoriteAction =
-      !isOwner && (!isGatedContentEnabled || doesUserHaveAccess)
+      !isOwner && doesUserHaveAccess
         ? has_current_user_saved
           ? OverflowAction.UNFAVORITE
           : OverflowAction.FAVORITE
         : null
-    const addToPlaylistAction =
-      !isGatedContentEnabled || !isPremium
-        ? OverflowAction.ADD_TO_PLAYLIST
-        : null
+    const addToPlaylistAction = !isPremium
+      ? OverflowAction.ADD_TO_PLAYLIST
+      : null
     const overflowActions = [
       repostAction,
       favoriteAction,
@@ -258,8 +254,7 @@ const ConnectedTrackTile = ({
       fieldVisibility={field_visibility}
       coSign={_co_sign}
       // Artist Pick
-      showArtistPick={showArtistPick}
-      isArtistPick={artist_pick_track_id === track_id}
+      isArtistPick={showArtistPick && artist_pick_track_id === track_id}
       // Artist
       artistHandle={handle}
       artistName={name}

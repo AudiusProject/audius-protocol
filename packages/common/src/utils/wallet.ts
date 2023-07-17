@@ -1,7 +1,14 @@
 import BN from 'bn.js'
 import JSBI from 'jsbi'
 
-import { BNAudio, BNWei, StringAudio, StringWei } from 'models/Wallet'
+import {
+  BNAudio,
+  BNUSDC,
+  BNWei,
+  StringAudio,
+  StringUSDC,
+  StringWei
+} from 'models/Wallet'
 import {
   WEI,
   trimRightZeros,
@@ -12,6 +19,7 @@ import {
 } from 'utils/formatUtil'
 import { Nullable } from 'utils/typeUtils'
 
+/** AUDIO utils */
 const WEI_DECIMALS = 18 // 18 decimals on ETH AUDIO
 const SPL_DECIMALS = 8 // 8 decimals on SPL AUDIO
 
@@ -102,14 +110,6 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-export const shortenSPLAddress = (addr: string) => {
-  return `${addr.substring(0, 4)}...${addr.substr(addr.length - 5)}`
-}
-
-export const shortenEthAddress = (addr: string) => {
-  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
-}
-
 export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
   const divisor = JSBI.BigInt(10 ** decimals)
   const quotient = JSBI.divide(amount, divisor)
@@ -133,4 +133,40 @@ export const convertWAudioToWei = (amount: BN) => {
 export const convertWeiToWAudio = (amount: BN) => {
   const decimals = WEI_DECIMALS - SPL_DECIMALS
   return amount.div(new BN('1'.padEnd(decimals + 1, '0')))
+}
+
+/** USDC Utils */
+export const BN_USDC_WEI = new BN('1000000')
+export const BN_USDC_CENT_WEI = new BN('10000')
+const BN_USDC_WEI_ROUNDING_FRACTION = new BN('9999')
+
+/** Round a USDC value as a BN up to the nearest cent and return as a BN */
+export const ceilingBNUSDCToNearestCent = (value: BNUSDC): BNUSDC => {
+  return value
+    .add(BN_USDC_WEI_ROUNDING_FRACTION)
+    .div(BN_USDC_CENT_WEI)
+    .mul(BN_USDC_CENT_WEI) as BNUSDC
+}
+
+/** Formats a USDC wei string (full precision) to a fixed string suitable for
+display as a dollar amount. Note: will lose precision by rounding _up_ to nearest cent */
+export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
+  // Since we only need two digits of precision, we will multiply up by 1000
+  // with BN, divide by $1 Wei, ceiling up to the nearest cent,
+  //  and then convert to JS number and divide back down before formatting to
+  // two decimal places.
+  const cents =
+    ceilingBNUSDCToNearestCent(new BN(amount) as BNUSDC)
+      .div(BN_USDC_CENT_WEI)
+      .toNumber() / 100
+  return formatNumberCommas(cents.toFixed(precision))
+}
+
+/** General Wallet Utils */
+export const shortenSPLAddress = (addr: string) => {
+  return `${addr.substring(0, 4)}...${addr.substr(addr.length - 5)}`
+}
+
+export const shortenEthAddress = (addr: string) => {
+  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
 }

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { PremiumConditions, Nullable } from '@audius/common'
-import { accountSelectors } from '@audius/common'
+import {
+  accountSelectors,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated
+} from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -172,11 +176,14 @@ export const SpecialAccessAvailability = ({
         <View style={styles.selectionContainer}>
           <TouchableOpacity
             onPress={handlePressFollowers}
-            disabled={isContentDisabled || !!premiumConditions?.follow_user_id}
+            disabled={
+              isContentDisabled ||
+              isPremiumContentFollowGated(premiumConditions)
+            }
           >
             <View style={styles.followersOnly}>
               <RadioButton
-                checked={!!premiumConditions?.follow_user_id}
+                checked={isPremiumContentFollowGated(premiumConditions)}
                 disabled={isContentDisabled}
                 style={styles.radio}
               />
@@ -187,11 +194,13 @@ export const SpecialAccessAvailability = ({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handlePressSupporters}
-            disabled={isContentDisabled || !!premiumConditions?.tip_user_id}
+            disabled={
+              isContentDisabled || isPremiumContentTipGated(premiumConditions)
+            }
           >
             <View style={styles.supportersOnly}>
               <RadioButton
-                checked={!!premiumConditions?.tip_user_id}
+                checked={isPremiumContentTipGated(premiumConditions)}
                 disabled={isContentDisabled}
                 style={styles.radio}
               />

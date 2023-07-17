@@ -4,8 +4,7 @@ import {
   ID,
   SquareSizes,
   CoverArtSizes,
-  useLoadImageWithTimeout,
-  FeatureFlags
+  useLoadImageWithTimeout
 } from '@audius/common'
 import {
   PbIconPlay as IconPlay,
@@ -19,7 +18,6 @@ import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './Artwork.module.css'
@@ -55,12 +53,8 @@ export const ArtworkIcon = ({
   doesUserHaveAccess?: boolean
   isTrack?: boolean
 }) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-
   let artworkIcon
-  if (isGatedContentEnabled && isTrack && !doesUserHaveAccess) {
+  if (isTrack && !doesUserHaveAccess) {
     artworkIcon = <IconLock width={36} height={36} />
   } else if (isBuffering) {
     artworkIcon = <LoadingSpinner className={styles.spinner} />

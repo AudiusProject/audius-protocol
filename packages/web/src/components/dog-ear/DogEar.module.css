@@ -20,6 +20,10 @@
   background: var(--accent-blue);
 }
 
+.purchase {
+  background: var(--special-light-green);
+}
+
 .star {
   background: linear-gradient(314.61deg, #7e1bcc 0%, #a22feb 100%);
 }

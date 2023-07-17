@@ -18,7 +18,6 @@ import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
@@ -33,19 +32,14 @@ const remixLinkInputDebounceMs = 1000
 
 const messages = {
   screenTitle: 'Remix Settings',
-  isRemixLabel: 'This Track is a Remix',
   markRemix: 'Mark This Track as a Remix',
   isRemixLinkDescription: 'Paste the link to the Audius track you’ve remixed.',
-  hideRemixLabel: 'Hide Remixes on Track Page',
   hideRemixesDescription:
     'Enabling this option will prevent other user’s remixes from appearing on your track page.',
   hideRemixes: 'Hide Remixes of this Track',
-  hideRemixDescription:
-    'Hide remixes of this track to prevent them from showing on your track page.',
   done: 'Done',
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
-  remixUrlPlaceholder: 'Track URL',
   enterLink: 'Enter an Audius Link',
   changeAvailbilityPrefix: 'Availablity is set to ',
   changeAvailbilitySuffix:
@@ -93,7 +87,6 @@ const descriptionProps: TextProps = {
 }
 
 export const RemixSettingsScreen = () => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const styles = useStyles()
   const [{ value: remixOf }, , { setValue: setRemixOf }] =
     useField<RemixOfField>('remix_of')
@@ -235,11 +228,7 @@ export const RemixSettingsScreen = () => {
             />
           ) : null}
           <View style={styles.option}>
-            <Text {...labelProps}>
-              {isGatedContentEnabled
-                ? messages.markRemix
-                : messages.isRemixLabel}
-            </Text>
+            <Text {...labelProps}>{messages.markRemix}</Text>
             <Switch
               value={isTrackRemix}
               onValueChange={handleChangeIsRemix}
@@ -255,11 +244,7 @@ export const RemixSettingsScreen = () => {
                 styles={{ root: styles.inputRoot, input: styles.input }}
                 value={remixOfInput}
                 onChangeText={handleChangeLink}
-                placeholder={
-                  isGatedContentEnabled
-                    ? messages.enterLink
-                    : messages.remixUrlPlaceholder
-                }
+                placeholder={messages.enterLink}
                 onFocus={handleFocus}
                 returnKeyType='done'
               />
@@ -281,22 +266,14 @@ export const RemixSettingsScreen = () => {
         <Divider />
         <View style={styles.setting}>
           <View style={styles.option}>
-            <Text {...labelProps}>
-              {isGatedContentEnabled
-                ? messages.hideRemixes
-                : messages.hideRemixLabel}
-            </Text>
+            <Text {...labelProps}>{messages.hideRemixes}</Text>
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
               isDisabled={isPremium}
             />
           </View>
-          <Text {...descriptionProps}>
-            {isGatedContentEnabled
-              ? messages.hideRemixesDescription
-              : messages.hideRemixDescription}
-          </Text>
+          <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>
         </View>
         <Divider />
       </View>

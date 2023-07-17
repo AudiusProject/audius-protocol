@@ -138,6 +138,7 @@ export const trimRightZeros = (number: string) => {
 
 export const AUDIO = 100000000
 export const WEI = new BN('1000000000000000000')
+export const USDC = new BN('1000000')
 
 export const checkOnlyNumeric = (number: string) => {
   const reg = /^\d+$/

@@ -2,9 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
 import {
-  removeNullable,
   TrackAvailabilityType,
-  collectiblesSelectors
+  collectiblesSelectors,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
+  isPremiumContentCollectibleGated
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
@@ -12,8 +14,6 @@ import { useSelector } from 'react-redux'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
-import { useIsCollectibleGatedEnabled } from 'app/hooks/useIsCollectibleGatedEnabled'
-import { useIsSpecialAccessEnabled } from 'app/hooks/useIsSpecialAccessEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -69,9 +69,6 @@ const MarkedAsRemix = () => {
 }
 
 export const TrackAvailabilityScreen = () => {
-  const isSpecialAccessEnabled = useIsSpecialAccessEnabled()
-  const isCollectibleGatedEnabled = useIsCollectibleGatedEnabled()
-
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
   const [{ value: isPremium }] = useField<boolean>('is_premium')
@@ -110,11 +107,11 @@ export const TrackAvailabilityScreen = () => {
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
-      initialPremiumConditions?.follow_user_id ||
-      initialPremiumConditions?.tip_user_id
+      isPremiumContentFollowGated(initialPremiumConditions) ||
+      isPremiumContentTipGated(initialPremiumConditions)
     )
   const isInitiallyCollectibleGated =
-    !isUpload && !!initialPremiumConditions?.nft_collection
+    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
   const isInitiallyHidden = !isUpload && initialValues.is_unlisted
 
   const noCollectibleGate =
@@ -135,28 +132,27 @@ export const TrackAvailabilityScreen = () => {
   const [availability, setAvailability] =
     useState<TrackAvailabilityType>(initialAvailability)
 
-  // we only care about what the initial value was here
-  // eslint-disable-next-line
-  const previousPremiumConditions = useMemo(() => premiumConditions ?? initialPremiumConditions, [])
+  const previousPremiumConditions = useMemo(
+    () => premiumConditions ?? initialPremiumConditions,
+    // we only care about what the initial value was here
+    // eslint-disable-next-line
+    []
+  )
 
   const data: ListSelectionData[] = [
     { label: publicAvailability, value: publicAvailability },
-    isSpecialAccessEnabled
-      ? {
-          label: specialAccessAvailability,
-          value: specialAccessAvailability,
-          disabled: noSpecialAccess
-        }
-      : null,
-    isCollectibleGatedEnabled
-      ? {
-          label: collectibleGatedAvailability,
-          value: collectibleGatedAvailability,
-          disabled: noCollectibleGate
-        }
-      : null,
+    {
+      label: specialAccessAvailability,
+      value: specialAccessAvailability,
+      disabled: noSpecialAccess
+    },
+    {
+      label: collectibleGatedAvailability,
+      value: collectibleGatedAvailability,
+      disabled: noCollectibleGate
+    },
     { label: hiddenAvailability, value: hiddenAvailability, disabled: noHidden }
-  ].filter(removeNullable)
+  ]
 
   const items = {
     [publicAvailability]: (
@@ -165,26 +161,22 @@ export const TrackAvailabilityScreen = () => {
       />
     )
   }
-  if (isSpecialAccessEnabled) {
-    items[specialAccessAvailability] = (
-      <SpecialAccessAvailability
-        selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-        disabled={noSpecialAccess}
-        disabledContent={noSpecialAccessOptions}
-        previousPremiumConditions={previousPremiumConditions}
-      />
-    )
-  }
-  if (isCollectibleGatedEnabled) {
-    items[collectibleGatedAvailability] = (
-      <CollectibleGatedAvailability
-        selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
-        disabled={noCollectibleGate}
-        disabledContent={noCollectibleDropdown}
-        previousPremiumConditions={previousPremiumConditions}
-      />
-    )
-  }
+  items[specialAccessAvailability] = (
+    <SpecialAccessAvailability
+      selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
+      disabled={noSpecialAccess}
+      disabledContent={noSpecialAccessOptions}
+      previousPremiumConditions={previousPremiumConditions}
+    />
+  )
+  items[collectibleGatedAvailability] = (
+    <CollectibleGatedAvailability
+      selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
+      disabled={noCollectibleGate}
+      disabledContent={noCollectibleDropdown}
+      previousPremiumConditions={previousPremiumConditions}
+    />
+  )
   items[hiddenAvailability] = (
     <HiddenAvailability
       selected={availability === TrackAvailabilityType.HIDDEN}

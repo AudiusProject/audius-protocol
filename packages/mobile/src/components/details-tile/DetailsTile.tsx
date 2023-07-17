@@ -8,7 +8,9 @@ import {
   squashNewLines,
   accountSelectors,
   playerSelectors,
-  playbackPositionSelectors
+  playbackPositionSelectors,
+  getDogEarType,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -18,17 +20,9 @@ import IconPlay from 'app/assets/images/iconPlay.svg'
 import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
-import {
-  Button,
-  Hyperlink,
-  Tile,
-  DogEar,
-  DogEarType,
-  Text
-} from 'app/components/core'
+import { Button, Hyperlink, Tile, DogEar, Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -48,7 +42,8 @@ const messages = {
   play: 'play',
   pause: 'pause',
   resume: 'resume',
-  replay: 'replay'
+  replay: 'replay',
+  preview: 'preview'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -64,109 +59,84 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: '100%'
   },
   topContentBody: {
-    paddingHorizontal: spacing(2)
+    paddingHorizontal: spacing(2),
+    gap: spacing(4)
   },
-
   typeLabel: {
-    marginTop: spacing(2),
-    marginBottom: spacing(2),
-    height: 18,
-    color: palette.neutralLight4,
-    fontSize: typography.fontSize.xs,
     letterSpacing: 3,
-    textAlign: 'center',
-    textTransform: 'uppercase'
+    textAlign: 'center'
   },
-
   coverArt: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: spacing(2),
     height: 195,
     width: 195,
-    marginBottom: spacing(6),
     alignSelf: 'center'
   },
-
-  title: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: spacing(4)
+  titleContainer: {
+    gap: spacing(1)
   },
-
+  title: {
+    fontSize: typography.fontSize.large,
+    textAlign: 'center'
+  },
   artistContainer: {
     ...flexRowCentered(),
-    marginBottom: spacing(4),
     alignSelf: 'center'
   },
-
   badge: {
     marginLeft: spacing(1)
   },
-
   descriptionContainer: {
-    width: '100%'
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight7
   },
-
   description: {
     ...typography.body,
     color: palette.neutralLight2,
     textAlign: 'left',
     width: '100%',
-    marginBottom: spacing(6)
+    marginBottom: spacing(4)
   },
-
   buttonSection: {
     width: '100%',
-    marginBottom: spacing(3)
+    gap: spacing(4)
   },
-
   playButtonText: {
     textTransform: 'uppercase'
   },
-
   playButtonIcon: {
-    height: 20,
-    width: 20
+    height: spacing(5),
+    width: spacing(5)
   },
-
   infoSection: {
     flexWrap: 'wrap',
     flexDirection: 'row',
-    width: '100%',
-    paddingTop: spacing(4)
+    width: '100%'
   },
-
   noStats: {
     borderWidth: 0
   },
-
   infoFact: {
     ...flexRowCentered(),
     flexBasis: '50%',
     marginBottom: spacing(4)
   },
-
   infoLabel: {
     ...flexRowCentered(),
-    color: palette.neutralLight5,
-    fontSize: 14,
-    lineHeight: 14,
-    textTransform: 'uppercase',
+    lineHeight: typography.fontSize.small,
     marginRight: spacing(2)
   },
-
   infoValue: {
-    lineHeight: 14,
     flexShrink: 1,
-    color: palette.neutral,
-    fontSize: 14
+    fontSize: typography.fontSize.small,
+    lineHeight: typography.fontSize.small
   },
-
   infoIcon: {
     marginTop: -spacing(1)
   },
-
   link: {
     color: palette.primary
   }
@@ -214,7 +184,6 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { doesUserHaveAccess } = usePremiumContentAccess(
     track ? (track as unknown as Track) : null
   )
@@ -240,6 +209,8 @@ export const DetailsTile = ({
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
   const aiAttributionUserId = track?.ai_attribution_user_id
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -258,30 +229,24 @@ export const DetailsTile = ({
   }, [onPressPlay])
 
   const renderDogEar = () => {
-    const showPremiumDogEar =
-      isGatedContentEnabled &&
-      premiumConditions &&
-      (isOwner || !doesUserHaveAccess)
-
-    const dogEarType = showPremiumDogEar
-      ? isOwner
-        ? premiumConditions.nft_collection
-          ? DogEarType.COLLECTIBLE_GATED
-          : DogEarType.SPECIAL_ACCESS
-        : DogEarType.LOCKED
-      : null
-
-    if (showPremiumDogEar && dogEarType) {
-      return <DogEar type={dogEarType} />
-    }
-    return null
+    const dogEarType = getDogEarType({
+      isOwner,
+      premiumConditions
+    })
+    return dogEarType ? <DogEar type={dogEarType} /> : null
   }
 
   const renderDetailLabels = () => {
     return detailLabels.map((infoFact) => {
       return (
         <View key={infoFact.label} style={styles.infoFact}>
-          <Text style={styles.infoLabel} weight='bold'>
+          <Text
+            style={styles.infoLabel}
+            weight='bold'
+            color='neutralLight5'
+            fontSize='small'
+            textTransform='uppercase'
+          >
             {infoFact.label}
           </Text>
           <Text
@@ -324,6 +289,25 @@ export const DetailsTile = ({
       ? IconRepeat
       : IconPlay
 
+  const PreviewButton = () => (
+    <Button
+      variant='commonAlt'
+      styles={{
+        text: styles.playButtonText,
+        icon: styles.playButtonIcon
+      }}
+      title={isPlaying ? messages.pause : messages.preview}
+      size='large'
+      iconPosition='left'
+      icon={isPlaying ? IconPause : PlayIcon}
+      onPress={() => {
+        console.log('Preview button pressed')
+      }}
+      disabled={!isPlayable}
+      fullWidth
+    />
+  )
+
   return (
     <Tile styles={{ root: styles.root, content: styles.tileContent }}>
       <View style={styles.topContent}>
@@ -331,44 +315,49 @@ export const DetailsTile = ({
         {renderHeader ? (
           renderHeader()
         ) : (
-          <Text style={styles.typeLabel} weight='medium'>
+          <Text
+            style={styles.typeLabel}
+            color='neutralLight4'
+            fontSize='xs'
+            weight='medium'
+            textTransform='uppercase'
+          >
             {headerText}
           </Text>
         )}
         <View style={styles.topContentBody}>
           {imageElement}
-          <Text style={styles.title} weight='bold'>
-            {title}
-          </Text>
-          {user ? (
-            <TouchableOpacity onPress={handlePressArtistName}>
-              <View style={styles.artistContainer}>
-                <Text fontSize='large' color='secondary'>
-                  {user.name}
-                </Text>
-                <UserBadges
-                  style={styles.badge}
-                  badgeSize={16}
-                  user={user}
-                  hideName
-                />
-              </View>
-            </TouchableOpacity>
-          ) : null}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title} weight='bold'>
+              {title}
+            </Text>
+            {user ? (
+              <TouchableOpacity onPress={handlePressArtistName}>
+                <View style={styles.artistContainer}>
+                  <Text fontSize='large' color='secondary'>
+                    {user.name}
+                  </Text>
+                  <UserBadges
+                    style={styles.badge}
+                    badgeSize={16}
+                    user={user}
+                    hideName
+                  />
+                </View>
+              </TouchableOpacity>
+            ) : null}
+          </View>
           {isLongFormContent && isNewPodcastControlsEnabled ? (
             <DetailsProgressInfo track={track} />
           ) : null}
           <View style={styles.buttonSection}>
-            {isGatedContentEnabled &&
-              !doesUserHaveAccess &&
-              premiumConditions &&
-              trackId && (
-                <DetailsTileNoAccess
-                  trackId={trackId}
-                  premiumConditions={premiumConditions}
-                />
-              )}
-            {!isGatedContentEnabled || doesUserHaveAccess ? (
+            {!doesUserHaveAccess && !isOwner && premiumConditions && trackId ? (
+              <DetailsTileNoAccess
+                trackId={trackId}
+                premiumConditions={premiumConditions}
+              />
+            ) : null}
+            {doesUserHaveAccess || isOwner ? (
               <Button
                 styles={{
                   text: styles.playButtonText,
@@ -382,6 +371,16 @@ export const DetailsTile = ({
                 disabled={!isPlayable}
                 fullWidth
               />
+            ) : null}
+            {(doesUserHaveAccess || isOwner) && premiumConditions ? (
+              <DetailsTileHasAccess
+                premiumConditions={premiumConditions}
+                isOwner={isOwner}
+                trackArtist={user}
+              />
+            ) : null}
+            {isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) ? (
+              <PreviewButton />
             ) : null}
             <DetailsTileActionButtons
               hasReposted={!!hasReposted}
@@ -405,12 +404,6 @@ export const DetailsTile = ({
           {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
             <DetailsTileAiAttribution userId={aiAttributionUserId} />
           ) : null}
-          {isGatedContentEnabled && doesUserHaveAccess && premiumConditions && (
-            <DetailsTileHasAccess
-              premiumConditions={premiumConditions}
-              isOwner={isOwner}
-            />
-          )}
           {!isPublished ? null : (
             <DetailsTileStats
               favoriteCount={saveCount}

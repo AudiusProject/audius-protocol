@@ -17,10 +17,13 @@ import {
   PremiumContentSignature,
   PremiumTrackStatus,
   Track,
-  TrackMetadata
+  TrackMetadata,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated
 } from 'models'
 import { User } from 'models/User'
-import { FeatureFlags, IntKeys } from 'services/remote-config'
+import { IntKeys } from 'services/remote-config'
 import { accountSelectors } from 'store/account'
 import { cacheActions, cacheTracksSelectors } from 'store/cache'
 import { collectiblesActions } from 'store/collectibles'
@@ -136,7 +139,11 @@ function* getTokenIdMap({
       // skip this track entry if it is not premium or if it is not gated on an nft collection
       const { is_premium: isPremium, premium_conditions: premiumConditions } =
         tracks[trackId]
-      if (!isPremium || !premiumConditions || !premiumConditions.nft_collection)
+      if (
+        !isPremium ||
+        !premiumConditions ||
+        !isPremiumContentCollectibleGated(premiumConditions)
+      )
         return
 
       // Set the token ids for ERC1155 nfts as the balanceOf contract method
@@ -155,7 +162,7 @@ function* getTokenIdMap({
         )
       }
 
-      if (nftCollection.chain === Chain.Eth) {
+      if (nftCollection?.chain === Chain.Eth) {
         // skip this track entry if user does not own an nft from its nft collection gate
         const tokenIds = ethContractMap[nftCollection.address]
         if (!tokenIds || !tokenIds.length) return
@@ -166,7 +173,7 @@ function* getTokenIdMap({
           nftCollection.standard === 'ERC1155'
             ? ethContractMap[nftCollection.address]
             : []
-      } else if (nftCollection.chain === Chain.Sol) {
+      } else if (nftCollection?.chain === Chain.Sol) {
         if (solCollectionMintSet.has(nftCollection.address)) {
           // add trackId to trackMap, no need for tokenIds here
           trackMap[trackId] = []
@@ -233,8 +240,8 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
     }
 
     const hasNoSignature = !premiumContentSignature
-    const isFollowGated = !!premiumConditions?.follow_user_id
-    const isTipGated = !!premiumConditions?.tip_user_id
+    const isFollowGated = isPremiumContentFollowGated(premiumConditions)
+    const isTipGated = isPremiumContentTipGated(premiumConditions)
     const shouldHaveSignature =
       (isFollowGated && followeeIds.includes(ownerId)) ||
       (isTipGated && tippedUserIds.includes(ownerId))
@@ -338,16 +345,6 @@ function* updateGatedTrackAccess(
     | ReturnType<typeof cacheActions.addSucceeded>
     | ReturnType<typeof cacheActions.update>
 ) {
-  // Halt if premium content not enabled
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isGatedContentEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-  if (!isGatedContentEnabled) {
-    return
-  }
-
   const account = yield* select(getAccountUser)
 
   // Halt if nfts fetched are not for logged in account
@@ -483,9 +480,12 @@ function* pollPremiumTrack({
         yield* put(showConfetti())
       }
 
-      const eventName = track.premium_conditions?.follow_user_id
+      if (!track.premium_conditions) {
+        return
+      }
+      const eventName = isPremiumContentFollowGated(track.premium_conditions)
         ? Name.FOLLOW_GATED_TRACK_UNLOCKED
-        : track.premium_conditions?.tip_user_id
+        : isPremiumContentTipGated(track.premium_conditions)
         ? Name.TIP_GATED_TRACK_UNLOCKED
         : null
       if (eventName) {
@@ -544,8 +544,8 @@ function* updateSpecialAccessTracks(
     } = cachedTracks[id]
     const isGated =
       gate === 'follow'
-        ? premiumConditions?.follow_user_id
-        : premiumConditions?.tip_user_id
+        ? isPremiumContentFollowGated(premiumConditions)
+        : isPremiumContentTipGated(premiumConditions)
     if (isGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
       trackParamsMap[id] = parseTrackRouteFromPermalink(permalink)
@@ -588,7 +588,7 @@ function* handleUnfollowUser(
     const id = parseInt(trackId)
     const { owner_id: ownerId, premium_conditions: premiumConditions } =
       cachedTracks[id]
-    const isFollowGated = premiumConditions?.follow_user_id
+    const isFollowGated = isPremiumContentFollowGated(premiumConditions)
     if (isFollowGated && ownerId === action.userId) {
       statusMap[id] = 'LOCKED'
     }

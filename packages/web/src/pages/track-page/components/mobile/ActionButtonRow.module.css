@@ -45,9 +45,7 @@
   display: flex;
   justify-content: center;
   align-items: stretch;
-  border-bottom: 1px solid var(--neutral-light-7);
-  height: 60px;
-  padding: 12px 0px 8px;
+  height: var(--unit-8);
 }
 
 .animatedIconWrapper {

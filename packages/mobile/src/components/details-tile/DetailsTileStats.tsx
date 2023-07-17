@@ -26,8 +26,7 @@ type DetailsTileStatsProps = {
 const useStyles = makeStyles(({ palette }) => ({
   statsContainer: {
     ...flexRowCentered(),
-    justifyContent: 'center',
-    marginBottom: 12
+    justifyContent: 'center'
   },
   countLabel: {
     fontSize: 16,

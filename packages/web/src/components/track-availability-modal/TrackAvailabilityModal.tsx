@@ -1,13 +1,13 @@
 import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
 import {
-  FeatureFlags,
   PremiumConditions,
   accountSelectors,
   TrackAvailabilityType,
   collectiblesSelectors,
   Nullable,
-  Track
+  Track,
+  isPremiumContentCollectibleGated
 } from '@audius/common'
 import {
   Modal,
@@ -29,7 +29,6 @@ import { useSelector } from 'react-redux'
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import { CollectibleGatedAvailability } from './CollectibleGatedAvailability'
 import { HiddenAvailability } from './HiddenAvailability'
@@ -139,12 +138,6 @@ const TrackAvailabilityModal = ({
   didUpdateState,
   onClose
 }: TrackAvailabilityModalProps) => {
-  const { isEnabled: isCollectibleGatedEnabled } = useFlag(
-    FeatureFlags.COLLECTIBLE_GATED_ENABLED
-  )
-  const { isEnabled: isSpecialAccessEnabled } = useFlag(
-    FeatureFlags.SPECIAL_ACCESS_ENABLED
-  )
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
   )
@@ -159,11 +152,11 @@ const TrackAvailabilityModal = ({
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
-      initialPremiumConditions?.follow_user_id ||
-      initialPremiumConditions?.tip_user_id
+      'follow_user_id' in (initialPremiumConditions ?? {}) ||
+      'tip_user_id' in (initialPremiumConditions ?? {})
     )
   const isInitiallyCollectibleGated =
-    !isUpload && !!initialPremiumConditions?.nft_collection
+    !isUpload && 'nft_collection' in (initialPremiumConditions ?? {})
   const isInitiallyHidden = !isUpload && initialForm.is_unlisted
 
   const noCollectibleGate =
@@ -185,10 +178,12 @@ const TrackAvailabilityModal = ({
   )
 
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
-    metadataState.premium_conditions?.nft_collection
+    isPremiumContentCollectibleGated(metadataState.premium_conditions)
+      ? metadataState.premium_conditions.nft_collection
+      : undefined
   )
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
-    !('nft_collection' in (metadataState.premium_conditions ?? {}))
+    !isPremiumContentCollectibleGated(metadataState.premium_conditions)
       ? metadataState.premium_conditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
@@ -224,7 +219,7 @@ const TrackAvailabilityModal = ({
 
         // Keep track of previously selected collectible and special access gates
         // in case the user switches back and forth between radio items
-        if (premiumConditions.nft_collection) {
+        if (isPremiumContentCollectibleGated(premiumConditions)) {
           setSelectedNFTCollection(premiumConditions.nft_collection)
         } else {
           setSelectedSpecialAccessGate(premiumConditions)
@@ -314,43 +309,41 @@ const TrackAvailabilityModal = ({
             description={messages.publicSubtitle}
             value={TrackAvailabilityType.PUBLIC}
           />
-          {isSpecialAccessEnabled ? (
-            <ModalRadioItem
-              icon={<IconSpecialAccess />}
-              label={messages.specialAccess}
-              description={messages.specialAccessSubtitle}
-              value={TrackAvailabilityType.SPECIAL_ACCESS}
-              disabled={noSpecialAccess}
-              checkedContent={
-                <SpecialAccessAvailability
-                  state={metadataState}
-                  onStateUpdate={updatePremiumContentFields}
-                  disabled={noSpecialAccessOptions}
-                />
-              }
-            />
-          ) : null}
-          {isCollectibleGatedEnabled ? (
-            <ModalRadioItem
-              icon={<IconCollectible />}
-              label={messages.collectibleGated}
-              value={TrackAvailabilityType.COLLECTIBLE_GATED}
-              disabled={noCollectibleGate}
-              description={
-                <CollectibleGatedDescription
-                  hasCollectibles={hasCollectibles}
-                  isUpload={isUpload}
-                />
-              }
-              checkedContent={
-                <CollectibleGatedAvailability
-                  state={metadataState}
-                  onStateUpdate={updatePremiumContentFields}
-                  disabled={noCollectibleDropdown}
-                />
-              }
-            />
-          ) : null}
+
+          <ModalRadioItem
+            icon={<IconSpecialAccess />}
+            label={messages.specialAccess}
+            description={messages.specialAccessSubtitle}
+            value={TrackAvailabilityType.SPECIAL_ACCESS}
+            disabled={noSpecialAccess}
+            checkedContent={
+              <SpecialAccessAvailability
+                state={metadataState}
+                onStateUpdate={updatePremiumContentFields}
+                disabled={noSpecialAccessOptions}
+              />
+            }
+          />
+
+          <ModalRadioItem
+            icon={<IconCollectible />}
+            label={messages.collectibleGated}
+            value={TrackAvailabilityType.COLLECTIBLE_GATED}
+            disabled={noCollectibleGate}
+            description={
+              <CollectibleGatedDescription
+                hasCollectibles={hasCollectibles}
+                isUpload={isUpload}
+              />
+            }
+            checkedContent={
+              <CollectibleGatedAvailability
+                state={metadataState}
+                onStateUpdate={updatePremiumContentFields}
+                disabled={noCollectibleDropdown}
+              />
+            }
+          />
           <ModalRadioItem
             icon={<IconHidden />}
             label={messages.hidden}

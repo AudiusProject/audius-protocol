@@ -11,8 +11,6 @@ import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { PickArtworkField, TextField } from 'app/components/fields'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
-import { useIsSpecialAccessEnabled } from 'app/hooks/useIsSpecialAccessEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -74,13 +72,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
-  const isGatedContentEnabled = useIsGatedContentEnabled()
-  const isSpecialAccessEnabled = useIsSpecialAccessEnabled()
-
   useOneTimeDrawer({
     key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
-    name: 'GatedContentUploadPrompt',
-    disabled: !isGatedContentEnabled || !isSpecialAccessEnabled
+    name: 'GatedContentUploadPrompt'
   })
 
   const handlePressBack = useCallback(() => {

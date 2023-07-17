@@ -1,8 +1,9 @@
 import { ReactNode, ComponentType, ComponentProps, ElementType } from 'react'
 
+import { DogEarType } from '@audius/common'
 import cn from 'classnames'
 
-import { DogEar, DogEarType } from 'components/dog-ear'
+import { DogEar } from 'components/dog-ear'
 
 import styles from './Tile.module.css'
 

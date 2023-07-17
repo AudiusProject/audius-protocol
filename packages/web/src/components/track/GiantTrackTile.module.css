@@ -13,7 +13,7 @@
   position: relative;
   background-color: var(--neutral-light-10);
 
-  padding: 24px;
+  padding: var(--unit-6);
 }
 
 .infoSection {
@@ -26,7 +26,7 @@
   overflow-x: hidden;
   overflow-y: hidden;
   overflow-wrap: break-word;
-  padding-bottom: 4px;
+  padding-bottom: var(--unit-1);
   margin-bottom: -4px;
 }
 
@@ -37,35 +37,33 @@
 }
 
 .typeLabel {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  display: flex;
+  align-items: center;
+  color: var(--text-subdued);
+  gap: var(--unit-2);
   letter-spacing: 3.5px;
-  line-height: 28px;
-
+  text-transform: uppercase;
   user-select: none;
 }
 
 .premiumContent .typeLabel {
-  display: flex;
-  align-items: center;
-  color: var(--accent-blue);
   letter-spacing: 2px;
 }
 
-.premiumContent svg {
-  margin-right: 10px;
+.premiumContentLabel svg {
+  width: calc(var(--unit) * 4.5);
+  height: calc(var(--unit) * 4.5);
 }
 
-.premiumContent path {
-  fill: var(--accent-blue);
+.premiumContentLabel path {
+  fill: var(--text-subdued);
 }
 
 .title {
   color: var(--neutral);
   font-size: 38px;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: var(--unit-3);
   width: 100%;
   position: relative;
   min-height: 38px;
@@ -78,7 +76,7 @@
 .trackLength {
   padding-left: 18px;
   color: var(--neutral-light-4);
-  font-size: 12px;
+  font-size: var(--unit-3);
   font-weight: 600;
 }
 
@@ -101,7 +99,7 @@
   color: var(--secondary);
   font-size: var(--font-l);
   font-weight: var(--font-medium);
-  padding-left: 4px;
+  padding-left: var(--unit-1);
   align-items: center;
 }
 
@@ -115,27 +113,12 @@
   margin-top: 7px;
   display: flex;
   align-items: center;
+  gap: var(--unit-6);
   flex-wrap: wrap;
 }
 
 .playSection > * {
-  margin-top: 16px;
-}
-
-.playButton {
-  width: 180px !important;
-  height: 60px !important;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  margin-right: 24px;
-}
-
-.playButton .playButtonText {
-  font-size: var(--font-xl);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.71px;
-  text-transform: uppercase;
+  margin-top: var(--unit-4);
 }
 
 .infoSection .numberOfListens {
@@ -148,7 +131,7 @@
   color: var(--neutral-light-5);
   font-size: var(--font-l);
   font-weight: bold;
-  padding-left: 8px;
+  padding-left: var(--unit-2);
 }
 
 .infoSection .firstListen {
@@ -171,14 +154,14 @@
 }
 
 .progressTextSlider {
-  height: 4px;
+  height: var(--unit-1);
   width: 140px;
 }
 
 .completeText {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--unit-1);
 }
 
 .completeTextIcon {
@@ -204,7 +187,7 @@
 }
 
 .commonButtonSection > * {
-  margin-right: 16px;
+  margin-right: var(--unit-4);
 }
 
 .menuKebabContainer {
@@ -215,30 +198,29 @@
 }
 
 .premiumContentSection {
-  margin: 0 24px 24px 24px;
-  padding: 16px;
+  margin: 0 var(--unit-6) var(--unit-6) var(--unit-6);
+  padding: var(--unit-4);
   background: var(--white);
   border: 1px solid var(--neutral-light-7);
-  border-radius: 8px;
+  border-radius: var(--unit-2);
 }
 
 .premiumContentSectionLocked {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--unit-4);
 }
 
 .premiumContentSectionTitle {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  font-weight: var(--font-heavy);
-  font-size: var(--font-m);
+  gap: var(--unit-2);
+  margin-bottom: var(--unit-2);
 }
 
 .premiumContentSectionDescription {
-  font-weight: var(--font-demi-bold);
+  text-align: left;
 }
 
 .premiumContentSectionDescription > p {
@@ -247,16 +229,21 @@
 }
 
 .premiumContentSectionDescription img {
-  width: 32px;
-  height: 32px;
+  width: var(--unit-8);
+  height: var(--unit-8);
   border: 1px solid var(--neutral-light-7);
-  border-radius: 4px;
+  border-radius: var(--unit-1);
+}
+
+.premiumContentDescriptionContainer {
+  display: flex;
+  flex-direction: column;
 }
 
 .premiumContentSectionCollection {
   display: flex;
   align-items: center;
-  margin-top: 8px;
+  margin-top: var(--unit-2);
   width: fit-content;
 }
 
@@ -278,8 +265,8 @@
 }
 
 .premiumContentSectionButton .buttonIcon svg {
-  width: 16px;
-  height: 16px;
+  width: var(--unit-4);
+  height: var(--unit-4);
 }
 
 .premiumContentSectionButton .followButton {
@@ -307,31 +294,25 @@
   color: var(--secondary-dark-2);
 }
 
-.lockedIcon,
-.unlockedIcon,
-.collectibleIcon,
-.specialAccessIcon {
-  margin-right: 8px;
-  width: 16px;
-  height: 16px;
+.gatedContentIcon {
+  margin-right: var(--unit-2);
+  width: var(--unit-4);
+  height: var(--unit-4);
 }
 
-.lockedIcon path,
-.unlockedIcon path,
-.collectibleIcon path,
-.specialAccessIcon path {
+.gatedContentIcon path {
   fill: var(--neutral);
 }
 
 .badges {
   display: flex;
   position: absolute;
-  right: 24px;
+  right: var(--unit-6);
   justify-content: flex-end;
 }
 
 .badgeIcon {
-  margin-left: 4px;
+  margin-left: var(--unit-1);
 }
 
 .badgeIcon svg {
@@ -345,29 +326,15 @@
       var(--ai-secondary) 100%
     ),
     var(--ai-primary);
-  margin-right: 8px;
+  margin-right: var(--unit-2);
 }
 
 .suffix {
-  margin-left: 4px;
-}
-
-.verifiedGreenIcon {
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-}
-
-.verifiedGreenIcon path:nth-child(1) {
-  fill: var(--accent-green);
-}
-
-.verifiedGreenIcon path:nth-child(2) {
-  fill: var(--static-white);
+  margin-left: var(--unit-1);
 }
 
 .bottomSection {
-  padding: 20px 24px 20px;
+  padding: var(--unit-5) var(--unit-6) var(--unit-5);
   border-top: 1px solid var(--neutral-light-8);
 }
 
@@ -378,7 +345,7 @@
 
 .infoLabelsSection .infoLabelPlacement {
   display: inline-block;
-  padding-right: 24px;
+  padding-right: var(--unit-6);
 }
 
 .description {
@@ -403,8 +370,8 @@
 }
 
 .tagSection .tagFormatting {
-  margin-right: 8px;
-  margin-bottom: 8px;
+  margin-right: var(--unit-2);
+  margin-bottom: var(--unit-2);
 }
 
 .downloadButtonsContainer {
@@ -415,7 +382,7 @@
 }
 
 .verified {
-  margin-left: 8px;
+  margin-left: var(--unit-2);
   display: inline-block;
   position: relative;
   top: 2px;
@@ -427,7 +394,7 @@
 }
 
 .headerContainer {
-  padding-top: 20px;
+  padding-top: var(--unit-5);
   padding-bottom: 22px;
   display: flex;
 }
@@ -453,45 +420,29 @@
 }
 
 .statsSection {
-  margin-top: 20px;
+  margin-top: var(--unit-5);
   min-height: 26px;
   display: flex;
   align-items: center;
 }
 
 .spinner {
-  display: block;
-  height: 16px;
-  width: 16px;
+  height: var(--unit-6);
+  width: var(--unit-6);
 }
 
-.spinner g path {
-  stroke: var(--static-white) !important;
-}
-
-.premiumContentSectionDescription > div {
-  display: flex;
-  align-items: center;
-  text-align: left;
-  line-height: 150%;
-  flex-wrap: wrap;
+.spinner path {
+  stroke: var(--neutral-light-4);
 }
 
 .premiumContentSectionDescription > div > span {
-  flex-shrink: 0;
   text-align: left;
-  line-height: 150%;
   max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
-.premiumContentSectionDescription .spinner {
-  margin-right: 8px;
-  height: 24px;
-  width: 24px;
-}
-
-.premiumContentSectionDescription .spinner path {
-  stroke: var(--neutral-light-4) !important;
+.collectibleGatedDescription {
+  margin-left: var(--unit-8);
 }
 
 .collectionIconsContainer {
@@ -511,7 +462,7 @@
 }
 
 .premiumTrackOwner {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   color: var(--secondary);
 }
@@ -531,7 +482,21 @@
     flex-direction: column;
   }
 
+  .premiumContentDescriptionContainer {
+    width: 100%;
+  }
+
+  .premiumContentSectionTitle:not(.isOwner) {
+    width: 100%;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+  }
+
   .premiumContentSectionButton {
     width: 100%;
+  }
+
+  .collectibleGatedDescription {
+    margin-left: 0;
   }
 }

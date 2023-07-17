@@ -1,16 +1,24 @@
 import { useCallback } from 'react'
 
-import type { ID, FavoriteType, RepostType } from '@audius/common'
+import type {
+  ID,
+  FavoriteType,
+  RepostType,
+  PremiumConditions,
+  Nullable
+} from '@audius/common'
 import {
   formatCount,
   repostsUserListActions,
-  favoritesUserListActions
+  favoritesUserListActions,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
+import { LockedStatusBadge } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import Text from 'app/components/text'
@@ -18,6 +26,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeTag'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
@@ -32,14 +41,12 @@ const formatPlayCount = (playCount?: number) => {
   return `${formatCount(playCount)} ${suffix}`
 }
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   stats: {
     flexDirection: 'row',
-    flex: 0,
     alignItems: 'stretch',
-    paddingVertical: 2,
-    marginRight: 10,
-    height: 26
+    paddingVertical: spacing(2),
+    marginHorizontal: spacing(2.5)
   },
   listenCount: {
     ...flexRowCentered(),
@@ -79,6 +86,9 @@ type Props = {
   repostCount: number
   saveCount: number
   showRankIcon?: boolean
+  doesUserHaveAccess?: boolean
+  premiumConditions: Nullable<PremiumConditions>
+  isOwner: boolean
 }
 
 export const LineupTileStats = ({
@@ -94,7 +104,10 @@ export const LineupTileStats = ({
   playCount,
   repostCount,
   saveCount,
-  showRankIcon
+  showRankIcon,
+  doesUserHaveAccess,
+  premiumConditions,
+  isOwner
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -126,6 +139,13 @@ export const LineupTileStats = ({
     <View style={styles.stats}>
       {isTrending ? (
         <LineupTileRankIcon showCrown={showRankIcon} index={index} />
+      ) : null}
+      {premiumConditions ? (
+        <LineupTilePremiumContentTypeTag
+          premiumConditions={premiumConditions}
+          doesUserHaveAccess={doesUserHaveAccess}
+          isOwner={isOwner}
+        />
       ) : null}
       {hasEngagement && !isUnlisted && (
         <View style={styles.leftStats}>
@@ -170,7 +190,16 @@ export const LineupTileStats = ({
           </View>
         </View>
       )}
-      {!hidePlays ? (
+      {premiumConditions && !isOwner ? (
+        <LockedStatusBadge
+          locked={!doesUserHaveAccess}
+          variant={
+            isPremiumContentUSDCPurchaseGated(premiumConditions)
+              ? 'purchase'
+              : 'gated'
+          }
+        />
+      ) : !hidePlays ? (
         <Text style={[trackTileStyles.statText, styles.listenCount]}>
           {formatPlayCount(playCount)}
         </Text>

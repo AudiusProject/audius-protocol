@@ -48,7 +48,6 @@ import { useAsync, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
@@ -170,7 +169,6 @@ export const Audio = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
   const { storageNodeSelector } = useAppContext()
 
@@ -291,7 +289,7 @@ export const Audio = () => {
 
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
-        } else if (isGatedContentEnabled) {
+        } else {
           const premiumContentSignature =
             premium_content_signature || premiumTrackSignatureMap[trackId]
           queryParamsMap[trackId] = await getQueryParams({
@@ -304,12 +302,7 @@ export const Audio = () => {
       setGatedQueryParamsMap(queryParamsMap)
       return queryParamsMap
     },
-    [
-      isGatedContentEnabled,
-      premiumTrackSignatureMap,
-      gatedQueryParamsMap,
-      setGatedQueryParamsMap
-    ]
+    [premiumTrackSignatureMap, gatedQueryParamsMap, setGatedQueryParamsMap]
   )
 
   useTrackPlayerEvents(playerEvents, async (event) => {
@@ -366,10 +359,6 @@ export const Audio = () => {
 
           // Skip track if user does not have access i.e. for an unlocked premium track
           const doesUserHaveAccess = (() => {
-            if (!isGatedContentEnabled) {
-              return true
-            }
-
             if (!track) return false
 
             const {

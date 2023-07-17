@@ -33,6 +33,11 @@ const theme = {
   '--white': '#1F211F',
   '--darkmode-static-white': 'var(--white)',
 
+  /* Semantic text */
+  '--text-default': 'var(--neutral)',
+  '--text-subdued': 'var(--neutral-light-4)',
+  '--text-disabled': 'var(--neutral-light-7)',
+
   '--page-header-gradient-color-1': '#4FF069',
   '--page-header-gradient-color-2': '#09BD51',
   '--page-header-gradient':

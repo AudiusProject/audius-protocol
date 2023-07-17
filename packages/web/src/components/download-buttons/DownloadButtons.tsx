@@ -5,8 +5,7 @@ import {
   ButtonState,
   ButtonType,
   useDownloadTrackButtons,
-  toastActions,
-  FeatureFlags
+  toastActions
 } from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -21,7 +20,6 @@ import {
 } from 'common/store/pages/signon/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './DownloadButtons.module.css'
@@ -145,9 +143,6 @@ const DownloadButtons = ({
   onDownload,
   className
 }: DownloadButtonsProps) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
   const dispatch = useDispatch()
   const { location } = useHistory()
   const { pathname } = location
@@ -172,7 +167,7 @@ const DownloadButtons = ({
     return null
   }
 
-  if (isGatedContentEnabled && !isOwner && !doesUserHaveAccess) {
+  if (!isOwner && !doesUserHaveAccess) {
     return null
   }
 

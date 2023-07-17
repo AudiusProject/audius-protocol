@@ -1,38 +1,32 @@
 .bottomButtons {
-  margin: 2px 12px;
+  align-items: center;
   border-top: 1px solid var(--neutral-light-8);
-  height: 36px;
   display: flex;
-  align-items: center;
+  height: var(--unit-32);
+  justify-content: space-between;
 }
 
-.bottomButtons > * {
+.actions {
+  align-items: center;
   display: flex;
+  gap: var(--unit-8);
+  justify-content: flex-start;
+}
+
+.button {
+  display: flex;
+  align-items: flex-end;
   justify-content: center;
-  align-items: center;
-  margin: 0px 16px;
+  width: var(--unit-8);
+  height: var(--unit-8);
 }
 
-.bottomButtons button {
-  height: 32px;
-  width: 32px;
+.buttonContent {
+  width: var(--unit-6);
+  height: var(--unit-6);
 }
 
-.bottomButtons > *:last-child {
-  margin-left: auto;
-  margin-right: 0px;
-}
-
-.bottomButtons > *:first-child {
-  margin-left: 0px;
-}
-
-.bottomButton svg {
-  height: 24px !important;
-  width: 24px !important;
-}
-
-.bottomButtons path {
+.button path {
   fill: var(--neutral) !important;
 }
 
@@ -44,11 +38,6 @@
   fill: var(--neutral-light-8) !important;
 }
 
-.repostsButton svg {
-  height: 30px !important;
-  width: 30px !important;
-}
-
 .tinted path {
   fill: var(--neutral-light-4);
 }
@@ -56,32 +45,32 @@
 .share {
   position: relative;
   top: -1px;
-  height: 32px;
-  width: 32px;
+  height: var(--unit-8);
+  width: var(--unit-8);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.share svg {
-  width: 18px !important;
-  height: 18px !important;
+.overflow {
+  height: var(--unit-8);
+  width: var(--unit-8);
 }
 
-.overflow {
-  height: 32px;
-  width: 32px;
+.premiumContentContainer {
+  height: var(--unit-8);
+  padding-top: var(--unit-2);
 }
 
 .premiumContent {
+  align-items: center;
+  background-color: var(--accent-blue);
+  border-radius: var(--unit-1);
+  color: var(--static-white);
   display: flex;
-  gap: var(--unit-2);
-  padding: 2px var(--unit-2);
-  font-weight: var(--font-bold);
-  background: var(--white);
-  color: var(--neutral-light-4);
-  border: 1px solid var(--neutral-light-4);
-  border-radius: 2px;
+  gap: var(--unit-1);
+  height: var(--unit-6);
+  padding: var(--unit-2) var(--unit-3);
 }
 
 .premiumContent svg {
@@ -90,14 +79,14 @@
 }
 
 .premiumContent path {
-  /*
-  Overriding another line which also has !important.
-  Since this is mobile web, not super keen to spend more time cleaning this particular piece up.
-  */
-  fill: var(--neutral-light-4) !important;
+  fill: var(--static-white);
 }
 
 .spinner {
   height: var(--unit-4);
   width: var(--unit-4);
+}
+
+.spinner g path {
+  stroke: var(--static-white);
 }

@@ -51,11 +51,11 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     gap: spacing(8),
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight7,
-    paddingVertical: spacing(4)
+    paddingBottom: spacing(4)
   },
   actionButton: {
-    width: 32,
-    height: 32
+    width: spacing(8),
+    height: spacing(8)
   }
 }))
 

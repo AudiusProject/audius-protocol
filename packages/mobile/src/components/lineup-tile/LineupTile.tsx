@@ -4,14 +4,14 @@ import {
   accountSelectors,
   Genre,
   premiumContentActions,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  getDogEarType
 } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { DogEar, DogEarType } from 'app/components/core'
+import { DogEar } from 'app/components/core'
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
-import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
@@ -54,13 +54,13 @@ export const LineupTile = ({
   styles,
   TileProps
 }: LineupTileProps) => {
-  const isGatedContentEnabled = useIsGatedContentEnabled()
   const {
     has_current_user_reposted,
     has_current_user_saved,
     repost_count,
     save_count
   } = item
+  const dispatch = useDispatch()
   const { artist_pick_track_id, name, user_id } = user
   const currentUserId = useSelector(getUserId)
   const isOwner = user_id === currentUserId
@@ -70,30 +70,22 @@ export const LineupTile = ({
   const premiumConditions = isTrack ? item.premium_conditions : null
   const isArtistPick = artist_pick_track_id === id
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
-  const dispatch = useDispatch()
 
-  const showPremiumDogEar =
-    isGatedContentEnabled &&
-    premiumConditions &&
-    (isOwner || !doesUserHaveAccess) &&
-    !(showArtistPick && isArtistPick)
-
-  const dogEarType = showPremiumDogEar
-    ? isOwner
-      ? premiumConditions.nft_collection
-        ? DogEarType.COLLECTIBLE_GATED
-        : DogEarType.SPECIAL_ACCESS
-      : DogEarType.LOCKED
-    : null
+  const dogEarType = getDogEarType({
+    premiumConditions,
+    isOwner,
+    doesUserHaveAccess,
+    isArtistPick: showArtistPick && isArtistPick
+  })
 
   const handlePress = useCallback(() => {
-    if (isGatedContentEnabled && trackId && !doesUserHaveAccess) {
+    if (trackId && !doesUserHaveAccess) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [isGatedContentEnabled, trackId, doesUserHaveAccess, dispatch, onPress])
+  }, [trackId, doesUserHaveAccess, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
@@ -109,20 +101,14 @@ export const LineupTile = ({
       scaleTo={scale}
       {...TileProps}
     >
-      {showPremiumDogEar && dogEarType ? (
+      {dogEarType ? (
         <DogEar type={dogEarType} style={{ shadowRadius: 1 }} />
       ) : null}
-      {showArtistPick && isArtistPick ? (
-        <DogEar type={DogEarType.STAR} />
-      ) : null}
-      {isUnlisted ? <DogEar type={DogEarType.HIDDEN} /> : null}
       <View>
         <LineupTileTopRight
           duration={duration}
           trackId={id}
           isUnlisted={isUnlisted}
-          isOwner={isOwner}
-          doesUserHaveAccess={doesUserHaveAccess}
           premiumConditions={premiumConditions}
           isArtistPick={isArtistPick}
           isLongFormContent={isLongFormContent}
@@ -152,6 +138,9 @@ export const LineupTile = ({
           repostCount={repost_count}
           saveCount={save_count}
           showRankIcon={showRankIcon}
+          doesUserHaveAccess={doesUserHaveAccess}
+          premiumConditions={premiumConditions}
+          isOwner={isOwner}
         />
       </View>
       {children}
@@ -163,6 +152,7 @@ export const LineupTile = ({
           isShareHidden={hideShare}
           isUnlisted={isUnlisted}
           trackId={trackId}
+          premiumConditions={premiumConditions}
           doesUserHaveAccess={doesUserHaveAccess}
           onPressOverflow={onPressOverflow}
           onPressRepost={onPressRepost}

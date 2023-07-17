@@ -7,13 +7,14 @@
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
+  padding: var(--unit-2);
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--unit-2);
   max-width: 400px;
   cursor: pointer;
   transition: all 0.2 ease-in-out;
   user-select: none;
-  margin: 0px auto 12px;
+  margin: 0px auto var(--unit-3);
 }
 
 .container.readonly {
@@ -50,37 +51,40 @@
   position: relative;
 }
 
-.rightContent {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 53px;
-}
-
-.rightContent > *:last-child {
-  border-bottom: 0px;
-}
-
 .metadata {
   position: relative;
   display: flex;
-  flex: 1 1;
 }
 
 .topRight {
   position: absolute;
-  right: 10px;
-  left: 0;
-  top: 10px;
-  text-align: right;
-  display: inline-flex;
+  right: 0;
+  top: 0;
+  display: flex;
+  gap: var(--unit-2);
   justify-content: flex-end;
   align-items: center;
+  color: var(--text-subdued);
+}
+
+.topRightIcon {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.topRightIcon svg {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.topRightIcon svg path {
+  fill: var(--neutral-light-4);
 }
 
 .statItem {
   display: flex;
   align-items: center;
-  padding: 0px 10px;
   transform: scale(1);
   transition: transform 0.07s ease-in-out;
 }
@@ -103,40 +107,6 @@
   transform: scale(1);
 }
 
-.listenCount {
-  margin-left: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.bottomButtons {
-  margin: 0px 10px;
-  border-top: 1px solid var(--neutral-light-8);
-  height: 38px;
-  display: flex;
-  align-items: center;
-}
-
-.bottomButtons div {
-  margin-right: 36px;
-}
-
-.bottomButtons div:last-child {
-  margin-left: auto;
-  margin-right: 0px;
-}
-
-.bottomButton svg {
-  height: 24px !important;
-  width: 24px !important;
-}
-
-.overflowButton {
-  position: relative;
-  top: -2px;
-}
-
 .titles {
   position: relative;
   display: flex;
@@ -144,18 +114,13 @@
   justify-content: center;
   align-items: flex-start;
   color: var(--neutral);
-  font-size: 16px;
+  font-size: var(--unit-4);
   text-align: left;
 
   /* Text truncation*/
   flex: 0 1 65%;
   overflow: hidden;
-  margin-right: 12px;
-  margin-top: 10px;
-}
-
-.titles.titleFeatured {
-  padding-top: 4px;
+  margin-right: var(--unit-3);
 }
 
 .title path {
@@ -183,14 +148,7 @@
 
 .title {
   margin-top: auto;
-  font-weight: var(--font-bold);
-  line-height: normal;
   padding-right: 5px;
-  margin-bottom: 2px;
-  display: flex;
-  min-height: 20px;
-  align-items: center;
-  position: relative;
   width: 100%;
   color: inherit;
   text-decoration: none;
@@ -206,7 +164,7 @@
 }
 
 .title svg {
-  margin-left: 8px;
+  margin-left: var(--unit-2);
 }
 
 .artist {
@@ -215,7 +173,7 @@
   line-height: normal;
   padding-right: 5px;
   max-width: 100%;
-  min-height: 20px;
+  min-height: var(--unit-5);
   flex-wrap: nowrap;
   align-items: center;
   position: relative;
@@ -249,61 +207,48 @@
 .coSignLabel {
   position: absolute;
   bottom: -3px;
-  left: 96px;
+  left: calc(var(--unit) * 20.5);
   color: var(--primary);
-  font-size: var(--font-xs);
-  font-weight: var(--font-heavy);
-  letter-spacing: 1px;
-  line-height: 15px;
   text-transform: uppercase;
 }
 
 .coSignText {
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  letter-spacing: 0.2px;
-  line-height: 14px;
-  display: inline-flex;
   align-items: center;
+  color: var(--neutral-light-4);
+  display: flex;
   justify-content: flex-start;
-  margin-left: 10px;
-  margin-top: 8px;
+  gap: var(--unit-1);
+  line-height: calc(var(--unit) * 3.5);
+  margin-top: var(--unit-2);
 }
 
 .coSignText .name {
-  margin-right: 4px;
   display: flex;
+  gap: var(--unit-1);
   align-items: center;
 }
 
-.coSignText .iconVerified {
-  margin-left: 4px;
+.statsRow {
+  align-items: center;
+  color: var(--neutral-light-4);
+  display: flex;
+  gap: var(--unit-4);
+  height: var(--unit-4);
+  justify-content: space-between;
+  margin: var(--unit-2) 0;
 }
 
 .stats {
+  align-items: center;
   display: flex;
-  flex: 0 0 26px;
-  align-items: stretch;
-  padding: 2px 0px;
-  margin: 0px 10px 0px 0px;
-  height: 30px;
-}
-
-.statText {
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.2px;
-  line-height: 11px;
-  color: var(--neutral-light-4);
+  flex: 1 0 content;
+  gap: var(--unit-4);
+  justify-content: flex-start;
 }
 
 .stats svg {
-  width: 14px;
-  height: 14px;
-  position: relative;
-  bottom: 1px;
-  margin-left: 3px;
+  width: var(--unit-4);
+  height: var(--unit-4);
 }
 
 .stats path {
@@ -311,48 +256,17 @@
 }
 
 .albumArt {
-  border-radius: 4px;
+  border-radius: var(--unit-1);
   flex: 0 0 74px;
   background-size: 100%;
 }
 
 .albumArtContainer {
-  margin: 10px 12px 0px 10px;
-}
-
-.activeButton path {
-  fill: var(--primary);
-}
-
-.heartIcon {
-  height: 22px;
-  width: 22px;
+  margin-right: var(--unit-2);
 }
 
 .iconVerified {
-  margin-left: 4px;
-}
-
-.topRightIcon {
-  margin-right: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  color: var(--neutral-light-4);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  letter-spacing: 0.2px;
-}
-
-.topRightIcon svg {
-  height: 16px;
-  width: 16px;
-  margin-right: 4px;
-}
-
-.topRightIcon svg path {
-  fill: var(--neutral-light-4);
+  margin-left: var(--unit-1);
 }
 
 .readonly .favoriteButtonWrapper:hover {
@@ -360,9 +274,9 @@
 }
 
 .favoriteButton {
-  height: 14px;
-  width: 14px;
-  margin-left: 4px;
+  height: calc(var(--unit) * 3.5);
+  width: calc(var(--unit) * 3.5);
+  margin-left: var(--unit-1);
 }
 
 .readonly .repostButtonWrapper:hover {
@@ -370,9 +284,9 @@
 }
 
 .repostButton {
-  height: 16px;
-  width: 16px;
-  margin-left: 4px;
+  height: var(--unit-4);
+  width: var(--unit-4);
+  margin-left: var(--unit-1);
 }
 
 .hide {
@@ -388,20 +302,14 @@
   color: var(--secondary);
   display: flex;
   align-items: center;
-  margin-left: 6px;
-}
-
-.rankContainer svg {
-  margin-right: 3px;
-  top: 0.2px;
+  gap: var(--unit-1);
+  /* Rank icon should be slightly closer to edge, so this
+  moves it into the left padding */
+  margin-left: calc(-1 * var(--unit-half));
 }
 
 .rankContainer path {
   fill: var(--secondary);
-}
-
-.rankIconContainer {
-  margin-right: 4px !important;
 }
 
 .isHidden {
@@ -409,6 +317,6 @@
 }
 
 .container .premiumDogEarContainer {
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.25),
-    inset 4px 4px 8px rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
+    inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
 }
