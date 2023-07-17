@@ -177,10 +177,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]
 
-    # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-    # made unlisted again
-    if track_record.is_unlisted:
-        track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
 
     # Only update `duration` if it's provided,
     # otherwise fall back to the original value. This will allow for replacing
