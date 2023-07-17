@@ -13,6 +13,7 @@ from src.utils import db_session
 
 class GetTrackStreamSignature(TypedDict):
     track: Track
+    stream_preview: Optional[bool]
     user_data: Optional[str]
     user_signature: Optional[str]
     premium_content_signature: Optional[str]
@@ -20,6 +21,7 @@ class GetTrackStreamSignature(TypedDict):
 
 def get_track_stream_signature(args: Dict):
     track = args["track"]
+    stream_preview = args.get("stream_preview", False)
 
     authed_user_id = None
 
@@ -34,7 +36,7 @@ def get_track_stream_signature(args: Dict):
         return get_premium_content_signature(
             {
                 "track_id": track["track_id"],
-                "track_cid": track["track_cid"],
+                "cid": track["preview_cid"] if stream_preview else track["track_cid"],
                 "type": "track",
                 "user_id": authed_user_id,
                 "is_premium": False,
@@ -51,10 +53,14 @@ def get_track_stream_signature(args: Dict):
             urllib.parse.unquote(premium_content_signature)
         )
         signature_data = json.loads(premium_content_signature_obj["data"])
+        signature_cid_ok = signature_data.get("cid", False) == track["track_cid"]
+        if stream_preview:
+            signature_cid_ok = signature_data.get("cid", False) == track["preview_cid"]
+
         if (
             signature_data.get("user_wallet", False)
             != authed_user["user_wallet"].lower()
-            or signature_data.get("cid", False) != track["track_cid"]
+            or not signature_cid_ok
             or signature_data.get("shouldCache", False)
         ):
             return None
@@ -81,7 +87,7 @@ def get_track_stream_signature(args: Dict):
     return get_premium_content_signature(
         {
             "track_id": track["track_id"],
-            "track_cid": track["track_cid"],
+            "cid": track["preview_cid"] if stream_preview else track["track_cid"],
             "type": "track",
             "is_premium": True,
             "user_id": authed_user["user_id"],

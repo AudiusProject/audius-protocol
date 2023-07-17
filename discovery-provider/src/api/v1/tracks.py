@@ -374,7 +374,7 @@ stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 stream_parser.add_argument(
     "preview",
     description="""Optional - true if streaming track preview""",
-    type=bool,
+    type=inputs.boolean,
     required=False,
     default=False
 )
@@ -473,6 +473,7 @@ class TrackStream(Resource):
         signature = get_track_stream_signature(
             {
                 "track": track,
+                "stream_preview": stream_preview,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "premium_content_signature": request_args.get(
