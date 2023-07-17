@@ -17,6 +17,6 @@ export const readConfig = (): Config => {
       process.env.entityManagerContractAddress || "",
     entityManagerContractRegistryKey:
       process.env.entityManagerContractRegistryKey || "EntityManager",
-    requiredConfirmations: parseInt(process.env.requiredConfirmations || "3"),
+    requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
   };
 };
