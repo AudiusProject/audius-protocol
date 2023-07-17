@@ -5,10 +5,10 @@ import {
   useCanSendMessage,
   CHAT_BLOG_POST_URL
 } from '@audius/common'
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { useLink } from 'app/components/core'
+import { Text, useLink } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
@@ -31,9 +31,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   unavailableText: {
     textAlign: 'center',
-    fontSize: typography.fontSize.medium,
-    lineHeight: typography.fontSize.medium * 1.3,
-    color: palette.neutral
+    lineHeight: typography.fontSize.medium * 1.3
   },
   link: {
     color: palette.secondary

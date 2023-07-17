@@ -1,6 +1,7 @@
-import { Text, TouchableOpacity } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 
 import IconCopy from 'app/assets/images/iconCopy2.svg'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -54,7 +55,9 @@ export const CopyMessagesButton = ({
       ]}
     >
       <IconCopy fill={staticWhite} height={12} width={12} />
-      <Text style={styles.copyText}>{messages.copy}</Text>
+      <Text style={styles.copyText} fontSize='xs' weight='bold'>
+        {messages.copy}
+      </Text>
     </TouchableOpacity>
   )
 }

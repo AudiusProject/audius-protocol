@@ -1,5 +1,6 @@
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -17,9 +18,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   unreadTag: {
     color: palette.white,
-    fontSize: typography.fontSize.xxs,
-    fontFamily: typography.fontByWeight.bold,
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
     backgroundColor: palette.neutralLight5,
     paddingHorizontal: spacing(2),
@@ -34,7 +32,14 @@ export const ChatMessageSeparator = ({ content }: { content: string }) => {
   return (
     <View style={styles.unreadTagContainer}>
       <View style={styles.unreadSeparator} />
-      <Text style={styles.unreadTag}>{content}</Text>
+      <Text
+        style={styles.unreadTag}
+        fontSize='xxs'
+        weight='bold'
+        textTransform='uppercase'
+      >
+        {content}
+      </Text>
       <View style={styles.unreadSeparator} />
     </View>
   )
