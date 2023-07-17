@@ -1,5 +1,6 @@
 import { decodeAbi } from "../abi"
 import { parseRelayerWallets } from "../walletManager"
+import { sdk } from '@audius/sdk'
 
 /**
  * File that you can run via `npm run sandbox` to do some manual testing.
@@ -11,3 +12,8 @@ console.log(params)
 const relayerWallets = '[{"publicKey": "testPub", "privateKey": "testPriv"}]'
 const wallets = parseRelayerWallets(relayerWallets)
 console.log(wallets)
+
+const audiusSdk = sdk({ appName: "experimentalDiscoveryRelay", services: {
+    entityManager: {}
+}})
+audiusSdk

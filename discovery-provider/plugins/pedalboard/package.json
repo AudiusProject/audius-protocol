@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@audius/libs": "^1.2.118",
-    "@audius/sdk": "^2.0.3-beta.20",
     "@slack/bolt": "^3.13.1",
     "@slack/web-api": "^6.8.1",
     "@types/node-fetch": "^2.6.4",
@@ -31,6 +30,7 @@
     "web3": "^1.10.0"
   },
   "devDependencies": {
+    "@audius/sdk": "^2.0.3-beta.20",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.2.5",
     "eslint-config-custom": "*",
