@@ -372,6 +372,13 @@ class FullBulkTracks(Resource):
 
 stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 stream_parser.add_argument(
+    "preview",
+    description="""Optional - true if streaming track preview""",
+    type=bool,
+    required=False,
+    default=False
+)
+stream_parser.add_argument(
     "user_signature",
     description="""Optional - signature from the requesting user's wallet.
         This is needed to authenticate the user and verify access in case the track is premium.""",
@@ -431,17 +438,22 @@ class TrackStream(Resource):
         This endpoint accepts the Range header for streaming.
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
+        args = stream_parser.parse_args()
+        stream_preview = args.get("preview")
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_stream_info(decoded_id)
 
         track = info.get("track")
-        if not track or not track.get("track_cid"):
+        cid = track.get("track_cid")
+        if stream_preview:
+            cid = track.get("preview_cid")
+        if not track or not cid:
             logger.error(
-                f"tracks.py | stream | Track with id {track_id} may not exist or has no track_cid. Please investigate."
+                f"tracks.py | stream | Track with id {track_id} may not exist or has no {'preview' if stream_preview else 'track'}_cid. Please investigate."
             )
             abort_not_found(track_id, ns)
 
-        track_cid = track["track_cid"].strip()
+        cid = cid.strip()
         redis = redis_connection.get_redis()
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
         if not healthy_nodes:
@@ -453,7 +465,7 @@ class TrackStream(Resource):
         rendezvous = RendezvousHash(
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
-        content_node = rendezvous.get(track_cid)
+        content_node = rendezvous.get(cid)
 
         request_args = stream_parser.parse_args()
 
@@ -479,7 +491,7 @@ class TrackStream(Resource):
         if filename:
             params["filename"] = filename
 
-        base_path = f"tracks/cidstream/{track_cid}"
+        base_path = f"tracks/cidstream/{cid}"
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
 
