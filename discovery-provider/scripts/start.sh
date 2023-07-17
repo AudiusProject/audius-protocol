@@ -27,7 +27,7 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 # used to remove data that may have been persisted via a k8s emptyDir
 export audius_prometheus_container=server
 
-# run alembic migrations
+# run migrations
 if [ "$audius_db_run_migrations" != false ]; then
     echo "Running pg_migrate.sh migrations"
     (cd ddl ; DB_URL="$audius_db_url" bash pg_migrate.sh)

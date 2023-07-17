@@ -92,9 +92,6 @@ export interface AggregateUserTipRow {
   receiver_user_id: number
   sender_user_id: number
 }
-export interface AlembicVersionRow {
-  version_num: string
-}
 export interface AppNameMetricRow {
   application_name: string
   count: number
