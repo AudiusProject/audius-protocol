@@ -388,7 +388,6 @@ const TrackTile = (props: CombinedProps) => {
                       : undefined
                   }
                 >
-                  {formatCount(props.repostCount)}
                   <RepostButton
                     iconMode
                     isMatrixMode={isMatrix}
@@ -396,6 +395,7 @@ const TrackTile = (props: CombinedProps) => {
                     className={styles.repostButton}
                     wrapperClassName={styles.repostButtonWrapper}
                   />
+                  {formatCount(props.repostCount)}
                 </div>
                 <div
                   className={cn(styles.statItem, fadeIn, {
@@ -408,7 +408,6 @@ const TrackTile = (props: CombinedProps) => {
                       : undefined
                   }
                 >
-                  {formatCount(props.saveCount)}
                   <FavoriteButton
                     iconMode
                     isDarkMode={darkMode}
@@ -416,6 +415,7 @@ const TrackTile = (props: CombinedProps) => {
                     className={styles.favoriteButton}
                     wrapperClassName={styles.favoriteButtonWrapper}
                   />
+                  {formatCount(props.saveCount)}
                 </div>
               </>
             )}
