@@ -31,7 +31,7 @@ export const readConfig = (): Config => {
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
     requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
-    serverHost: process.env.serverHost || "127.0.0.1",
+    serverHost: process.env.serverHost || "0.0.0.0",
     serverPort: parseInt(process.env.serverPort || "6001")
   };
 };
