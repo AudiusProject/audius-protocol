@@ -64,10 +64,8 @@ const pinFromFs = async (cid) => {
   const sourcePath = '/home/circleci/protocol-dashboard/build'
   try {
     const result = await pinata.pinFromFS(sourcePath, options)
-    //handle results here
     console.log(result);
   } catch (e) {
-    //handle error here
     console.log(err);
   }
 }
