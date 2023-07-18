@@ -18,3 +18,12 @@ services:
       args:
         app_name: trending-challenge-rewards
     restart: always
+
+  relay:
+    container_name: relay
+    build:
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: relay
+    restart: always
