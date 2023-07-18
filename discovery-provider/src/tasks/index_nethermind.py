@@ -487,15 +487,12 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         block_future = executor.submit(get_block, web3, parent_number, FINAL_POA_BLOCK)
 
-        block = block_future.result()
-        if not block:
+        parent_block = block_future.result()
+        if not parent_block:
             return
-        parent_datetime = datetime.utcfromtimestamp(block.timestamp).replace(
-            tzinfo=timezone.utc
-        )
         celery.send_task(
             "revert_delist_status_cursors",
-            kwargs={"reverted_cursor": parent_datetime},
+            kwargs={"reverted_cursor_timestamp": parent_block.timestamp},
         )
 
 

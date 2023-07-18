@@ -373,7 +373,7 @@ def get_trusted_notifier_endpoint(trusted_notifier_manager: Dict):
 @celery.task(name="revert_delist_status_cursors", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
-def revert_delist_status_cursors(self, reverted_cursor: datetime):
+def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
     """Sets the cursors in delist_status_cursor back upon a block reversion"""
     db = revert_delist_status_cursors.db
     redis = revert_delist_status_cursors.redis
@@ -395,6 +395,9 @@ def revert_delist_status_cursors(self, reverted_cursor: datetime):
     if have_lock:
         try:
             with db.scoped_session() as session:
+                reverted_cursor = datetime.utcfromtimestamp(reverted_cursor_timestamp).replace(
+                    tzinfo=timezone.utc
+                )
                 update_sql = text(
                     """
                     UPDATE delist_status_cursor
@@ -409,9 +412,6 @@ def revert_delist_status_cursors(self, reverted_cursor: datetime):
                         DelistStatusCursor.host == endpoint,
                     )
                     .first()
-                )
-                logger.info(
-                    f"update_delist_statuses.py | revert_delist_status_cursors | cursor type: {type(users_cursor[0])}, cursor {users_cursor[0]}, revert_cursor type: {type(reverted_cursor)}, revert_cursor: {reverted_cursor}"
                 )
                 if (
                     users_cursor
