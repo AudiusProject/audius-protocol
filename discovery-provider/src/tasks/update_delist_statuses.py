@@ -155,8 +155,7 @@ def update_track_is_available_statuses(
 
         def wait_for_track_to_be_indexed(track_id):
             return (
-                track_delist_map[track_id]["delist_timestamp"]
-                > current_block_timestamp
+                track_delist_map[track_id]["delist_timestamp"] > current_block_timestamp
             )
 
         missing_track_ids_to_wait_for = set(
@@ -368,6 +367,7 @@ def process_delist_statuses(
 
 # ####### CELERY TASKS ####### #
 
+
 @celery.task(name="revert_delist_cursor", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
@@ -394,16 +394,21 @@ def revert_delist_cursor(self, reverted_cursor: datetime):
                     """
                 )
                 session.execute(
-                    update_sql, {"cursor": reverted_cursor, "entity": DelistEntity.USERS}
+                    update_sql,
+                    {"cursor": reverted_cursor, "entity": DelistEntity.USERS},
                 )
                 session.execute(
-                    update_sql, {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS}
+                    update_sql,
+                    {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS},
                 )
-                logger.info(f"update_delist_statuses.py | revert_delist_cursor | Reverted delist cursors to {reverted_cursor}")
+                logger.info(
+                    f"update_delist_statuses.py | revert_delist_cursor | Reverted delist cursors to {reverted_cursor}"
+                )
 
         except Exception as e:
             logger.error(
-                "update_delist_statuses.py | revert_delist_cursor | Fatal error in main loop", exc_info=True
+                "update_delist_statuses.py | revert_delist_cursor | Fatal error in main loop",
+                exc_info=True,
             )
             raise e
         finally:

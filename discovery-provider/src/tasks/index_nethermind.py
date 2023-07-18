@@ -6,10 +6,8 @@ from operator import itemgetter, or_
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql import text
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
-from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
