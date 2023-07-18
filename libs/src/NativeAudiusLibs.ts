@@ -235,8 +235,8 @@ export class AudiusLibs {
   static configSolanaWeb3({
     solanaClusterEndpoint,
     mintAddress,
+    usdcMintAddress,
     solanaTokenAddress,
-    claimableTokenPDA,
     feePayerAddress,
     claimableTokenProgramAddress,
     rewardsManagerProgramId,
@@ -249,8 +249,8 @@ export class AudiusLibs {
     return {
       solanaClusterEndpoint,
       mintAddress,
+      usdcMintAddress,
       solanaTokenAddress,
-      claimableTokenPDA,
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,

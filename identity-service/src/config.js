@@ -868,6 +868,12 @@ const config = convict({
     format: String,
     env: 'ipApiKey',
     default: ''
+  },
+  solanaUSDCMintAddress: {
+    doc: 'Mint address of the USDC token on Solana',
+    format: String,
+    env: 'solanaUSDCMintAddress',
+    default: ''
   }
 })
 
@@ -892,30 +898,6 @@ if (fs.existsSync('eth-contract-config.json')) {
     ethRegistryAddress: ethContractConfig.registryAddress,
     ethOwnerWallet: ethContractConfig.ownerWallet,
     ethWallets: ethContractConfig.allWallets
-  })
-}
-
-if (fs.existsSync('solana-program-config.json')) {
-  // eslint-disable-next-line node/no-missing-require
-  const solanaContractConfig = require('../solana-program-config.json')
-  config.load({
-    solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
-    solanaAudiusEthRegistryAddress:
-      solanaContractConfig.audiusEthRegistryAddress,
-    solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
-    solanaEndpoint: solanaContractConfig.endpoint,
-    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
-
-    solanaMintAddress: solanaContractConfig.splToken,
-    solanaClaimableTokenProgramAddress:
-      solanaContractConfig.claimableTokenAddress,
-    solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
-    solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA:
-      solanaContractConfig.rewardsManagerTokenAccount,
-
-    solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
   })
 }
 
