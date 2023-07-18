@@ -328,20 +328,15 @@ def process_track_delist_statuses(
 
 
 def process_delist_statuses(
-    session: Session, trusted_notifier_manager: Dict, current_block_timestamp: int
+    session: Session, trusted_notifier_endpoint: str, current_block_timestamp: int
 ):
-    endpoint = trusted_notifier_manager["endpoint"]
-    if endpoint[-1] != "/":
-        endpoint += "/"
-
     for entity in (DelistEntity.USERS, DelistEntity.TRACKS):
-        poll_more_endpoint = (
-            f"{endpoint}statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
-        )
+        poll_more_endpoint = f"{trusted_notifier_endpoint}statuses/{entity.lower()}?batchSize={DELIST_BATCH_SIZE}"
         cursor_before = (
             session.query(DelistStatusCursor.created_at)
             .filter(
-                DelistStatusCursor.host == endpoint, DelistStatusCursor.entity == entity
+                DelistStatusCursor.host == trusted_notifier_endpoint,
+                DelistStatusCursor.entity == entity,
             )
             .first()
         )
@@ -357,12 +352,19 @@ def process_delist_statuses(
 
         if entity == DelistEntity.USERS:
             process_user_delist_statuses(
-                session, resp.json(), endpoint, current_block_timestamp
+                session, resp.json(), trusted_notifier_endpoint, current_block_timestamp
             )
         elif entity == DelistEntity.TRACKS:
             process_track_delist_statuses(
-                session, resp.json(), endpoint, current_block_timestamp
+                session, resp.json(), trusted_notifier_endpoint, current_block_timestamp
             )
+
+
+def get_trusted_notifier_endpoint(trusted_notifier_manager: Dict):
+    endpoint = trusted_notifier_manager["endpoint"]
+    if endpoint and endpoint[-1] != "/":
+        endpoint += "/"
+    return endpoint
 
 
 # ####### CELERY TASKS ####### #
@@ -375,6 +377,14 @@ def revert_delist_status_cursors(self, reverted_cursor: datetime):
     """Sets the cursors in delist_status_cursor back upon a block reversion"""
     db = revert_delist_status_cursors.db
     redis = revert_delist_status_cursors.redis
+    trusted_notifier_manager = update_delist_statuses.trusted_notifier_manager
+    if not trusted_notifier_manager:
+        logger.error(
+            "update_delist_statuses.py | failed to get trusted notifier from chain. not reverting delist status cursors"
+        )
+        return
+    endpoint = get_trusted_notifier_endpoint(trusted_notifier_manager)
+
     have_lock = False
     # Same lock as the update delist task to ensure the reverted cursor doesn't get overwritten
     update_lock = redis.lock(
@@ -389,20 +399,49 @@ def revert_delist_status_cursors(self, reverted_cursor: datetime):
                     """
                     UPDATE delist_status_cursor
                     SET created_at = :cursor
-                    WHERE entity = :entity;
+                    WHERE entity = :entity AND host = :host;
                     """
                 )
-                session.execute(
-                    update_sql,
-                    {"cursor": reverted_cursor, "entity": DelistEntity.USERS},
+                users_cursor = (
+                    session.query(DelistStatusCursor.created_at)
+                    .filter(
+                        DelistStatusCursor.entity == DelistEntity.USERS,
+                        DelistStatusCursor.host == endpoint,
+                    )
+                    .first()
                 )
-                session.execute(
-                    update_sql,
-                    {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS},
+                if users_cursor and users_cursor[0] > reverted_cursor:
+                    session.execute(
+                        update_sql,
+                        {
+                            "cursor": reverted_cursor,
+                            "entity": DelistEntity.USERS,
+                            "host": endpoint,
+                        },
+                    )
+                    logger.info(
+                        f"update_delist_statuses.py | revert_delist_status_cursors | Reverted {DelistEntity.USERS} delist cursors to {reverted_cursor}"
+                    )
+                tracks_cursor = (
+                    session.query(DelistStatusCursor.created_at)
+                    .filter(
+                        DelistStatusCursor.entity == DelistEntity.TRACKS,
+                        DelistStatusCursor.host == endpoint,
+                    )
+                    .first()
                 )
-                logger.info(
-                    f"update_delist_statuses.py | revert_delist_status_cursors | Reverted delist cursors to {reverted_cursor}"
-                )
+                if tracks_cursor and tracks_cursor[0] > reverted_cursor:
+                    session.execute(
+                        update_sql,
+                        {
+                            "cursor": reverted_cursor,
+                            "entity": DelistEntity.TRACKS,
+                            "host": endpoint,
+                        },
+                    )
+                    logger.info(
+                        f"update_delist_statuses.py | revert_delist_status_cursors | Reverted {DelistEntity.TRACKS} delist cursors to {reverted_cursor}"
+                    )
 
         except Exception as e:
             logger.error(
@@ -448,8 +487,11 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
     if have_lock:
         try:
             with db.scoped_session() as session:
+                trusted_notifier_endpoint = get_trusted_notifier_endpoint(
+                    trusted_notifier_manager
+                )
                 process_delist_statuses(
-                    session, trusted_notifier_manager, current_block_timestamp
+                    session, trusted_notifier_endpoint, current_block_timestamp
                 )
 
         except Exception as e:
