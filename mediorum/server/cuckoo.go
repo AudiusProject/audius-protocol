@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	cuckoo "github.com/panmari/cuckoofilter"
+	cuckoo "github.com/seiflotfy/cuckoofilter"
 )
 
 var (
 	myCuckooKeyName = "my_cuckoo"
-	cuckooMap       = map[string]*cuckoo.Filter{}
+	cuckooMap       = map[string]*cuckoo.ScalableCuckooFilter{}
 	cuckooEtagMap   = map[string]string{}
 	cuckooMu        = sync.RWMutex{}
 )
@@ -31,9 +31,8 @@ func (ss *MediorumServer) serveCuckooSize(c echo.Context) error {
 	cuckooMu.RLock()
 	for host, filter := range cuckooMap {
 		sizes[host] = map[string]any{
-			"size":        filter.Count(),
-			"load_factor": filter.LoadFactor(),
-			"etag":        cuckooEtagMap[host],
+			"size": filter.Count(),
+			"etag": cuckooEtagMap[host],
 		}
 	}
 	cuckooMu.RUnlock()
@@ -128,7 +127,7 @@ func (ss *MediorumServer) fetchPeerCuckoo(host string) error {
 		return err
 	}
 
-	filter, err := cuckoo.Decode(filterBytes)
+	filter, err := cuckoo.DecodeScalableFilter(filterBytes)
 	if err != nil {
 		return err
 	}
@@ -161,13 +160,7 @@ func (ss *MediorumServer) buildCuckoo() error {
 	}
 	defer conn.Release()
 
-	count := 0
-	err = conn.QueryRow(ctx, `select count(*) from "Files" where type != 'track'`).Scan(&count)
-	if err != nil {
-		return err
-	}
-
-	cf := cuckoo.NewFilter(uint(count))
+	cf := cuckoo.NewScalableCuckooFilter()
 
 	rows, err := conn.Query(ctx, `
 	select distinct multihash from "Files" where type != 'track'
