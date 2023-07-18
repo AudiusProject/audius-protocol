@@ -274,7 +274,7 @@ def validate_track_tx(params: ManageEntityParameters):
         if ai_attribution_user_id:
             ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
 
 
 def get_handle(params: ManageEntityParameters):
