@@ -75,7 +75,8 @@ export const LineupTile = ({
     premiumConditions,
     isOwner,
     doesUserHaveAccess,
-    isArtistPick: showArtistPick && isArtistPick
+    isArtistPick: showArtistPick && isArtistPick,
+    isUnlisted
   })
 
   const handlePress = useCallback(() => {

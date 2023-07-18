@@ -164,6 +164,7 @@ export const DetailsTile = ({
   isPlayable = true,
   isPlaylist = false,
   isPublished = true,
+  isUnlisted = false,
   onPressEdit,
   onPressFavorites,
   onPressOverflow,
@@ -231,7 +232,8 @@ export const DetailsTile = ({
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
       isOwner,
-      premiumConditions
+      premiumConditions,
+      isUnlisted
     })
     return dogEarType ? <DogEar type={dogEarType} /> : null
   }

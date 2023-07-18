@@ -69,8 +69,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     ...flexRowCentered(),
     justifyContent: 'space-between',
     marginHorizontal: spacing(2),
-    marginVertical: spacing(1),
-    backgroundColor: palette.accentGreen
+    marginVertical: spacing(1)
   },
   title: {
     fontFamily: typography.fontByWeight.heavy,
