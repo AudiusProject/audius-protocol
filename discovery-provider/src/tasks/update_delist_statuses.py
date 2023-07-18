@@ -395,9 +395,9 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
     if have_lock:
         try:
             with db.scoped_session() as session:
-                reverted_cursor = datetime.utcfromtimestamp(reverted_cursor_timestamp).replace(
-                    tzinfo=timezone.utc
-                )
+                reverted_cursor = datetime.utcfromtimestamp(
+                    reverted_cursor_timestamp
+                ).replace(tzinfo=timezone.utc)
                 update_sql = text(
                     """
                     UPDATE delist_status_cursor
@@ -413,13 +413,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
                     )
                     .first()
                 )
-                if (
-                    users_cursor
-                    and datetime.combine(
-                        users_cursor[0].date(), users_cursor[0].time(), timezone.utc
-                    )
-                    > reverted_cursor
-                ):
+                if users_cursor and users_cursor[0] > reverted_cursor:
                     session.execute(
                         update_sql,
                         {
@@ -439,13 +433,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
                     )
                     .first()
                 )
-                if (
-                    tracks_cursor
-                    and datetime.combine(
-                        tracks_cursor[0].date(), tracks_cursor[0].time(), timezone.utc
-                    )
-                    > reverted_cursor
-                ):
+                if tracks_cursor and tracks_cursor[0] > reverted_cursor:
                     session.execute(
                         update_sql,
                         {
