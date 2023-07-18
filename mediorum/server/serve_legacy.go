@@ -205,25 +205,29 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 		Timeout: 10 * time.Second,
 	}
 
+	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
+
 	hostUrl, err := url.Parse(hostString)
 	if err != nil {
 		return "", false
 	}
 
 	dest.Host = hostUrl.Host
+	dest.Scheme = hostUrl.Scheme
 	query := dest.Query()
 	query.Add("localOnly", "true")
 	dest.RawQuery = query.Encode()
 
 	req, err := http.NewRequest("HEAD", dest.String(), nil) // NOTE: cloudflare seems to turn most of these HEADs into GETs
 	if err != nil {
-		// logger.Error("error creating HEAD request", "err", err)
+		logger.Error("invalid url", "err", err)
 		return "", false
 	}
 	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
 
 	resp, err := noRedirectClient.Do(req)
 	if err != nil {
+		logger.Error("request failed", "err", err)
 		return "", false
 	}
 	resp.Body.Close()
