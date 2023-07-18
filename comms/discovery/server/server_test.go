@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"testing"
 	"time"
@@ -212,7 +213,7 @@ func TestGetChats(t *testing.T) {
 	// Test paginated GET /comms/chats
 	{
 		// Query /comms/chats
-		reqUrl := fmt.Sprintf("/comms/chats?timestamp=%d", time.Now().UnixMilli())
+		reqUrl := fmt.Sprintf("/comms/chats?current_user_id=%s&timestamp=%d", url.QueryEscape(encodedUser1), time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 

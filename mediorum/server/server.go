@@ -298,6 +298,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
+	internalApi.GET("/cuckoo", ss.serveCuckoo)
+	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
+	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
+
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
@@ -341,6 +345,9 @@ func (ss *MediorumServer) MustStart() {
 	}()
 
 	go ss.startTranscoder()
+
+	go ss.startCuckooBuilder()
+	go ss.startCuckooFetcher()
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet

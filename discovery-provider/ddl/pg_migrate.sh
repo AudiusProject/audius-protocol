@@ -6,8 +6,6 @@
 set -e
 [[ -f .env ]] && source .env
 
-echo " ... starting pg_migrate "
-
 MIGRATIONS_TABLE="schema_version"
 
 POSTGRES_USER=${POSTGRES_USER:-postgres}
@@ -44,12 +42,12 @@ migrate_dir() {
         md5=$(cat $file | tr -d "[:space:]" | md5sum | awk '{print $1}')
 
         if [[ $md5s =~ $md5 ]]; then
-          echo "... skipping $file $md5"
+          # echo "... skipping $file $md5"
           continue
         fi
 
         if [[ $file =~ "failable" ]]; then
-            echo "Applying failable $file"
+            # echo "Applying failable $file"
             set +e
             psql < "$file"
             retval=$?
@@ -58,10 +56,19 @@ migrate_dir() {
             fi
             set -e
         else
-            echo "Applying $file"
+            # echo "Applying $file"
             psql < "$file"
         fi
         psql -c "INSERT INTO $MIGRATIONS_TABLE (file_name, md5) VALUES ('$file', '$md5') on conflict(file_name) do update set md5='$md5', applied_at=now();"
+    done
+}
+
+test_dir() {
+  migration_files=$(ls $1/*.sql | sort -V)
+
+    for file in $migration_files; do
+        echo "TEST $file"
+        psql < "$file"
     done
 }
 
@@ -79,15 +86,21 @@ migrate() {
     fi
 }
 
-test_idempotency() {
+run_tests() {
+    # test idempotency
+    echo "-- test idempotency --"
     migrate
     psql -c "TRUNCATE TABLE $MIGRATIONS_TABLE CASCADE;"
     migrate
+
+    # run tests dir
+    echo "-- sql tests --"
+    test_dir "tests"
 }
 
 main() {
     case "$1" in
-        "test") test_idempotency;;
+        "test") run_tests;;
         *) migrate
     esac
 }
