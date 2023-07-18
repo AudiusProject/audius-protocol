@@ -1,13 +1,15 @@
 # pylint: disable=C0302
 import concurrent.futures
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from operator import itemgetter, or_
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import text
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
+from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
@@ -36,6 +38,7 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
+from src.tasks.update_delist_statuses import DATETIME_FORMAT_STRING
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched
@@ -449,7 +452,7 @@ def index_next_block(
             if next_block.number % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
-                    kwargs={"current_block_timestamp": next_block.timestamp}
+                    kwargs={"current_block_timestamp": next_block.timestamp},
                 )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
@@ -461,6 +464,47 @@ def index_next_block(
             clear_indexing_error(redis)
 
     add_indexed_block_to_redis(next_block, redis)
+
+
+def get_block(web3: Web3, blocknumber: int):
+    try:
+        block = web3.eth.get_block(blocknumber)
+        block = AttributeDict(block)
+        return block
+    except BlockNotFound:
+        logger.info(f"Block not found {blocknumber}")
+        return False
+
+
+def revert_delist_cursor(session: Session, revert_block_parent_hash: str):
+    parent_number_results = (
+        session.query(Block.number)
+        .filter(Block.blockhash == revert_block_parent_hash)
+        .first()
+    )
+    if not parent_number_results:
+        return
+    parent_number = parent_number_results[0]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        block_future = executor.submit(get_block, web3, parent_number)
+
+        block = block_future.result()
+        parent_timestamp = datetime.utcfromtimestamp(block.timestamp).replace(
+            tzinfo=timezone.utc
+        )
+        update_sql = text(
+            """
+            UPDATE delist_status_cursor
+            SET created_at = :cursor
+            WHERE entity = :entity;
+            """
+        )
+        session.execute(
+            update_sql, {"cursor": parent_timestamp, "entity": DelistEntity.USERS}
+        )
+        session.execute(
+            update_sql, {"cursor": parent_timestamp, "entity": DelistEntity.TRACKS}
+        )
 
 
 @log_duration(logger)
@@ -488,6 +532,9 @@ def revert_block(session: Session, revert_block: Block):
     session.query(Block).filter(Block.blockhash == parent_hash).update(
         {"is_current": True}
     )
+
+    # set delist cursor back to parent block's timestamp
+    revert_delist_cursor(session, parent_hash)
 
     # aggregate all transactions in current block
     revert_save_entries = (
