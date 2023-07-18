@@ -484,7 +484,7 @@ export class SolanaWeb3Manager {
     const senderEthAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(
       senderEthAddress,
-      this.claimableTokenPDAs.usdc.pubkey,
+      this.claimableTokenPDAs.usdc,
       this.solanaTokenKey
     )
     const instructions = []
@@ -498,11 +498,11 @@ export class SolanaWeb3Manager {
             this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
           senderSolanaAddress,
           recipientSolanaAddress: address,
-          claimableTokenPDA: this.claimableTokenPDAs.usdc.pubkey,
+          claimableTokenPDA: this.claimableTokenPDAs.usdc,
           solanaTokenProgramKey: this.solanaTokenKey,
           claimableTokenProgramKey: this.claimableTokenProgramKey,
           connection: this.connection,
-          mintKey: this.mints.usdc.pubkey
+          mintKey: this.mints.usdc
         })
       instructions.push(secpTransactionInstruction)
       instructions.push(transferInstruction)
