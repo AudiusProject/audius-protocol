@@ -47,7 +47,6 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import AnnouncementPage from 'pages/announcement-page/AnnoucementPage'
 import ArtistDashboardPage from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
@@ -86,7 +85,6 @@ import {
   FEED_PAGE,
   TRENDING_PAGE,
   NOTIFICATION_PAGE,
-  ANNOUNCEMENT_PAGE,
   NOTIFICATION_USERS_PAGE,
   EXPLORE_PAGE,
   EXPLORE_HEAVY_ROTATION_PAGE,
@@ -563,12 +561,6 @@ class App extends Component {
                   path={NOTIFICATION_USERS_PAGE}
                   isMobile={isMobileClient}
                   component={NotificationUsersPage}
-                />
-                <Route
-                  exact
-                  path={ANNOUNCEMENT_PAGE}
-                  isMobile={isMobileClient}
-                  component={AnnouncementPage}
                 />
                 <Route
                   exact
