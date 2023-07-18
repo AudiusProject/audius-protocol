@@ -36,6 +36,7 @@ import {
   StorageNodeSelectorService
 } from './services/StorageNodeSelector'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
+import { z } from 'zod'
 
 type ServicesContainer = {
   /**
@@ -64,31 +65,53 @@ type ServicesContainer = {
   auth: AuthService
 }
 
-type SdkConfig = {
+const DevAppSchema = z.object({
   /**
    * Your app name
    */
-  appName: string
+  appName: z.optional(z.string()),
   /**
    * Services injection
    */
-  services?: Partial<ServicesContainer>
-
+  services: z.optional(z.custom<Partial<ServicesContainer>>()),
   /**
    * API key, required for writes
    */
-  apiKey?: string
-
+  apiKey: z.string().min(1),
   /**
    * API secret, required for writes
    */
-  apiSecret?: string
-}
+  apiSecret: z.string().min(1)
+})
+
+const CustomAppSchema = z.object({
+  /**
+   * Your app name
+   */
+  appName: z.string().min(1),
+  /**
+   * Services injection
+   */
+  services: z.optional(z.custom<Partial<ServicesContainer>>()),
+  /**
+   * API key, required for writes
+   */
+  apiKey: z.optional(z.string()),
+  /**
+   * API secret, required for writes
+   */
+  apiSecret: z.optional(z.string())
+})
+
+const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])
+
+type SdkConfig = z.infer<typeof SdkConfigSchema>
 
 /**
  * The Audius SDK
  */
 export const sdk = (config: SdkConfig) => {
+  SdkConfigSchema.parse(config)
   const { appName, apiKey } = config
 
   // Initialize services
@@ -157,11 +180,11 @@ const initializeApis = ({
   appName,
   services
 }: {
-  appName: string
+  appName?: string
   services: ServicesContainer
 }) => {
   const middleware = [
-    addAppNameMiddleware({ appName }),
+    addAppNameMiddleware({ appName, services }),
     services.discoveryNodeSelector.createMiddleware()
   ]
   const generatedApiClientConfig = new Configuration({
