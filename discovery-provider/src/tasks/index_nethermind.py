@@ -487,6 +487,8 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
         block_future = executor.submit(get_block, web3, parent_number)
 
         block = block_future.result()
+        if not block:
+            return
         parent_datetime = datetime.utcfromtimestamp(block.timestamp).replace(
             tzinfo=timezone.utc
         )
