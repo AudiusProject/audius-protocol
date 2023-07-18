@@ -5,6 +5,7 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
+import requests
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
@@ -376,7 +377,7 @@ stream_parser.add_argument(
     description="""Optional - true if streaming track preview""",
     type=inputs.boolean,
     required=False,
-    default=False
+    default=False,
 )
 stream_parser.add_argument(
     "user_signature",
@@ -495,6 +496,23 @@ class TrackStream(Resource):
         base_path = f"tracks/cidstream/{cid}"
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
+
+        # Try streaming from replica set first for legacy (Qm) CIDs.
+        # TODO: Remove this block when it's safe to stream any legacy content from any node.
+        is_legacy_cid = len(cid) != 46 or not cid.startswith("Qm")
+        if is_legacy_cid:
+            replica_set_creator_nodes = info.get("creator_nodes")
+            if replica_set_creator_nodes:
+                replica_set_creator_nodes = replica_set_creator_nodes.split(",")
+                for replica_set_creator_node in replica_set_creator_nodes:
+                    stream_url = urljoin(replica_set_creator_node, path)
+                    headers = {"Range": "bytes=0-1"}
+                    try:
+                        response = requests.get(stream_url, headers=headers)
+                        if response.status == 206:
+                            return stream_url
+                    except:
+                        pass
 
         stream_url = urljoin(content_node, path)
         return stream_url
