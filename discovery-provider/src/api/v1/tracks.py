@@ -499,7 +499,7 @@ class TrackStream(Resource):
 
         # Try streaming from replica set first for legacy (Qm) CIDs.
         # TODO: Remove this block when it's safe to stream any legacy content from any node.
-        is_legacy_cid = len(cid) != 46 or not cid.startswith("Qm")
+        is_legacy_cid = len(cid) == 46 and cid.startswith("Qm")
         if is_legacy_cid:
             replica_set_creator_nodes = info.get("creator_nodes")
             if replica_set_creator_nodes:
