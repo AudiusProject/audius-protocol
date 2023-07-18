@@ -474,7 +474,7 @@ def get_block(web3: Web3, blocknumber: int):
         return False
 
 
-def revert_delist_cursor(session: Session, revert_block_parent_hash: str):
+def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
     parent_number_results = (
         session.query(Block.number)
         .filter(Block.blockhash == revert_block_parent_hash)
@@ -491,7 +491,7 @@ def revert_delist_cursor(session: Session, revert_block_parent_hash: str):
             tzinfo=timezone.utc
         )
         celery.send_task(
-            "revert_delist_cursor",
+            "revert_delist_status_cursors",
             kwargs={"reverted_cursor": parent_datetime},
         )
 
@@ -523,7 +523,7 @@ def revert_block(session: Session, revert_block: Block):
     )
 
     # set delist cursor back to parent block's timestamp
-    revert_delist_cursor(session, parent_hash)
+    revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
     revert_save_entries = (

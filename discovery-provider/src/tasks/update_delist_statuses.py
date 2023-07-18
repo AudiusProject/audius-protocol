@@ -368,16 +368,15 @@ def process_delist_statuses(
 # ####### CELERY TASKS ####### #
 
 
-@celery.task(name="revert_delist_cursor", bind=True)
+@celery.task(name="revert_delist_status_cursors", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
-def revert_delist_cursor(self, reverted_cursor: datetime):
+def revert_delist_status_cursors(self, reverted_cursor: datetime):
     """Sets the cursors in delist_status_cursor back upon a block reversion"""
-    db = revert_delist_cursor.db
-    redis = revert_delist_cursor.redis
+    db = revert_delist_status_cursors.db
+    redis = revert_delist_status_cursors.redis
     have_lock = False
-    # Same lock as the update delist task to ensure the reverted cursor
-    # doesn't get overwritten
+    # Same lock as the update delist task to ensure the reverted cursor doesn't get overwritten
     update_lock = redis.lock(
         UPDATE_DELIST_STATUSES_LOCK,
         timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
@@ -402,12 +401,12 @@ def revert_delist_cursor(self, reverted_cursor: datetime):
                     {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS},
                 )
                 logger.info(
-                    f"update_delist_statuses.py | revert_delist_cursor | Reverted delist cursors to {reverted_cursor}"
+                    f"update_delist_statuses.py | revert_delist_status_cursors | Reverted delist cursors to {reverted_cursor}"
                 )
 
         except Exception as e:
             logger.error(
-                "update_delist_statuses.py | revert_delist_cursor | Fatal error in main loop",
+                "update_delist_statuses.py | revert_delist_status_cursors | Fatal error in main loop",
                 exc_info=True,
             )
             raise e
@@ -416,7 +415,7 @@ def revert_delist_cursor(self, reverted_cursor: datetime):
                 update_lock.release()
     else:
         logger.warning(
-            "update_delist_statuses.py | revert_delist_cursor | Lock not acquired",
+            "update_delist_statuses.py | revert_delist_status_cursors | Lock not acquired",
             exc_info=True,
         )
 
