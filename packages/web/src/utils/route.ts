@@ -76,7 +76,6 @@ export const CHAT_PAGE = '/messages/:id?'
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
-export const ANNOUNCEMENT_PAGE = '/notification/:notificationId'
 export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:query?'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
@@ -175,7 +174,6 @@ export const orderedRoutes = [
   SIGN_UP_PAGE,
   FEED_PAGE,
   NOTIFICATION_USERS_PAGE,
-  ANNOUNCEMENT_PAGE,
   NOTIFICATION_PAGE,
   TRENDING_GENRES,
   TRENDING_PAGE,
