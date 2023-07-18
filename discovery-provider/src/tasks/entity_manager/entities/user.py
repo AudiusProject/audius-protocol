@@ -54,10 +54,12 @@ def validate_user_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
-        try: 
+        try:
             # TODO(michelle) validate metadata for notification, developer app
             # pass in UPDATE until this is fixed
-            user_metadata, _ = parse_metadata(params.metadata, Action.UPDATE, EntityType.USER)
+            user_metadata, _ = parse_metadata(
+                params.metadata, Action.UPDATE, EntityType.USER
+            )
             if user_metadata:
                 user_bio = user_metadata.get("bio")
         except Exception:
@@ -65,11 +67,15 @@ def validate_user_tx(params: ManageEntityParameters):
             # dont want to raise here, only check bio IF it exists
             pass
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
-            raise IndexingValidationError(f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}")
+            raise IndexingValidationError(
+                f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
+            )
 
     if params.action == Action.CREATE:
         if user_id in params.existing_records[EntityType.USER]:
-            raise IndexingValidationError(f"Invalid User Transaction, user {user_id} already exists")
+            raise IndexingValidationError(
+                f"Invalid User Transaction, user {user_id} already exists"
+            )
         if user_id < USER_ID_OFFSET:
             raise IndexingValidationError(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
@@ -101,7 +107,9 @@ def validate_user_metadata(session, user_record: User, user_metadata: Dict):
         ).scalar()
         if user_handle_exists:
             # Invalid user handle - should not continue to save...
-            raise IndexingValidationError(f"User handle {user_metadata['handle']} already exists")
+            raise IndexingValidationError(
+                f"User handle {user_metadata['handle']} already exists"
+            )
         user_record.handle = user_metadata["handle"]
         user_record.handle_lc = handle_lower
 
@@ -143,7 +151,11 @@ def validate_user_handle(handle: Union[str, None]):
     return handle
 
 
-def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_metadata: Dict[str, Dict]):
+def create_user(
+    params: ManageEntityParameters,
+    cid_type: Dict[str, str],
+    cid_metadata: Dict[str, Dict],
+):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -164,7 +176,9 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
         # for single tx signup
         # TODO move metadata parsing and saving after v2 upgrade
         # Override with Update User to parse metadata
-        user_metadata, metadata_cid = parse_metadata(params.metadata, Action.UPDATE, EntityType.USER)
+        user_metadata, metadata_cid = parse_metadata(
+            params.metadata, Action.UPDATE, EntityType.USER
+        )
         validate_user_metadata(
             params.session,
             user_record,
@@ -179,9 +193,7 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
             params.web3,
             params.challenge_bus,
         )
-        metadata_type, _ = get_metadata_type_and_format(
-            params.entity_type
-        )
+        metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = params.metadata
         user_record.metadata_multihash = metadata_cid
@@ -205,6 +217,7 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
         user_record.creator_node_endpoint = creator_node_endpoint_str
 
     user_record = validate_user_record(user_record)
+    params.updated_metadata = user_record
     params.add_user_record(user_id, user_record)
     return user_record
 
@@ -245,6 +258,8 @@ def update_user(params: ManageEntityParameters):
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
+
+    params.updated_metadata = user_record
     params.add_user_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
@@ -271,9 +286,7 @@ def update_user_metadata(
         if key in metadata:
             setattr(user_record, key, metadata[key])
 
-    if (
-        "collectibles" in metadata
-    ):
+    if "collectibles" in metadata:
         if (
             metadata["collectibles"]
             and isinstance(metadata["collectibles"], dict)

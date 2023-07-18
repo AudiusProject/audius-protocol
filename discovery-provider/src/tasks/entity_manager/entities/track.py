@@ -155,12 +155,10 @@ def is_valid_json_field(metadata, field):
 
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
-
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
-
         # For certain fields, update track_record under certain conditions
         if key == "is_unlisted":
             # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
@@ -168,19 +166,25 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
             if "is_unlisted" in track_metadata and track_record.is_unlisted:
                 track_record.is_unlisted = track_metadata["is_unlisted"]
 
-        elif key == "premium_conditions": 
-            if "premium_conditions" in track_metadata and is_valid_json_field(track_metadata, "premium_conditions"):
+        elif key == "premium_conditions":
+            if "premium_conditions" in track_metadata and is_valid_json_field(
+                track_metadata, "premium_conditions"
+            ):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
 
-        elif key == "stem_of": 
-            if "stem_of" in track_metadata and is_valid_json_field(track_metadata, "stem_of"):
+        elif key == "stem_of":
+            if "stem_of" in track_metadata and is_valid_json_field(
+                track_metadata, "stem_of"
+            ):
                 track_record.stem_of = track_metadata["stem_of"]
 
-        elif key == "remix_of": 
-            if "remix_of" in track_metadata and is_valid_json_field(track_metadata, "remix_of"):
+        elif key == "remix_of":
+            if "remix_of" in track_metadata and is_valid_json_field(
+                track_metadata, "remix_of"
+            ):
                 track_record.remix_of = track_metadata["remix_of"]
 
-        elif key == "download": 
+        elif key == "download":
             if "download" in track_metadata:
                 track_record.download = {
                     "is_downloadable": track_metadata["download"].get("is_downloadable")
@@ -270,12 +274,16 @@ def get_handle(params: ManageEntityParameters):
         .first()
     )
     if not handle or not handle[0]:
-        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+        raise IndexingValidationError(
+            f"Cannot find handle for user ID {params.user_id}"
+        )
 
     return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
+def update_track_record(
+    params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
+):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
@@ -314,6 +322,7 @@ def create_track(params: ManageEntityParameters):
         params.challenge_bus, params.block_number, track_record
     )
 
+    params.updated_metadata = track_record
     params.add_track_record(track_id, track_record)
 
 
@@ -342,6 +351,7 @@ def update_track(params: ManageEntityParameters):
     update_track_record(params, updated_track, params.metadata, handle)
     update_remixes_table(params.session, updated_track, params.metadata)
 
+    params.updated_metadata = updated_track
     params.add_track_record(track_id, updated_track)
 
 

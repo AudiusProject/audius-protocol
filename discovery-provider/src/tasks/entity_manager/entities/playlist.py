@@ -110,7 +110,9 @@ def validate_playlist_tx(params: ManageEntityParameters):
     validate_signer(params)
 
     if params.entity_type != EntityType.PLAYLIST:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a playlist")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a playlist"
+        )
 
     premium_tracks = list(
         filter(
@@ -123,12 +125,18 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise IndexingValidationError(f"Cannot create playlist {playlist_id} that already exists")
+            raise IndexingValidationError(
+                f"Cannot create playlist {playlist_id} that already exists"
+            )
         if playlist_id < PLAYLIST_ID_OFFSET:
-            raise IndexingValidationError(f"Cannot create playlist {playlist_id} below the offset")
+            raise IndexingValidationError(
+                f"Cannot create playlist {playlist_id} below the offset"
+            )
     else:
         if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
-            raise IndexingValidationError(f"Cannot update playlist {playlist_id} that does not exist")
+            raise IndexingValidationError(
+                f"Cannot update playlist {playlist_id} that does not exist"
+            )
         existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
             playlist_id
         ]
@@ -196,10 +204,9 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_playlist_routes_table(
-        params, create_playlist_record
-    )
+    update_playlist_routes_table(params, create_playlist_record)
 
+    params.updated_metadata = create_playlist_record
     params.add_playlist_record(playlist_id, create_playlist_record)
 
     if tracks:
@@ -235,15 +242,11 @@ def update_playlist(params: ManageEntityParameters):
         params.txhash,
         params.block_datetime,
     )
-    process_playlist_data_event(
-        params,
-        updated_playlist
-    )
+    process_playlist_data_event(params, updated_playlist)
 
-    update_playlist_routes_table(
-        params, updated_playlist
-    )
+    update_playlist_routes_table(params, updated_playlist)
 
+    params.updated_metadata = updated_playlist
     params.add_playlist_record(playlist_id, updated_playlist)
 
     if updated_playlist.playlist_contents["track_ids"]:

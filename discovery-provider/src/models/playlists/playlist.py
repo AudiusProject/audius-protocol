@@ -1,3 +1,5 @@
+import json
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
@@ -87,3 +89,8 @@ class Playlist(Base, RepresentableMixin):
 
     def get_attributes_dict(self):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
+
+    def to_json(self):
+        return json.dumps(
+            self.get_attributes_dict(), indent=4, sort_keys=True, default=str
+        )

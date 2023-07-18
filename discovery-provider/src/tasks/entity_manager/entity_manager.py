@@ -59,6 +59,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     RecordDict,
     expect_cid_metadata_json,
+    generate_metadata_cid_v1,
     get_metadata_type_and_format,
     get_record_key,
     parse_metadata,
@@ -154,17 +155,6 @@ def entity_manager_update(
 
                     # update logger context with this tx event
                     logger.update_context(event["args"])
-
-                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
-                    # later
-                    if expect_cid_metadata_json(
-                        params.metadata, params.action, params.entity_type
-                    ):
-                        metadata_type, _ = get_metadata_type_and_format(
-                            params.entity_type
-                        )
-                        cid_type[params.metadata_cid] = metadata_type
-                        cid_metadata[params.metadata_cid] = params.metadata
 
                     if (
                         params.action == Action.CREATE
@@ -266,6 +256,20 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
+
+                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
+                    # later
+                    if expect_cid_metadata_json(
+                        params.metadata, params.action, params.entity_type
+                    ):
+                        cid = str(
+                            generate_metadata_cid_v1(params.updated_metadata.to_json())
+                        )
+                        metadata_type, _ = get_metadata_type_and_format(
+                            params.entity_type
+                        )
+                        cid_type[cid] = metadata_type
+                        cid_metadata[cid] = params.updated_metadata.to_json()
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:

@@ -382,7 +382,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const updatedMetadata = {
-      playlistId,
+      ...metadata,
       ...(metadata.playlistContents
         ? {
             playlistContents: {
@@ -396,13 +396,9 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             }
           }
         : {}),
-      playlistName: metadata.playlistName,
       ...(coverArtResponse
         ? { playlistImageSizesMultihash: coverArtResponse.id }
-        : {}),
-      description: metadata.description,
-      isAlbum: metadata.isAlbum,
-      isPrivate: metadata.isPrivate
+        : {})
       // TODO: Support updating advanced fields
     }
 
