@@ -2,7 +2,8 @@ import {
   accountSelectors,
   Chain,
   tokenDashboardPageActions,
-  tokenDashboardPageSelectors
+  tokenDashboardPageSelectors,
+  PhantomProvider
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -10,6 +11,10 @@ import { WalletConnection } from './types'
 const { getUserId } = accountSelectors
 const { getConfirmingWallet } = tokenDashboardPageSelectors
 const { updateWalletError } = tokenDashboardPageActions
+
+const solSign = async (provider: PhantomProvider, msg: Uint8Array) => {
+  return provider.signMessage(msg, 'utf8')
+}
 
 export function* signMessage(connection: WalletConnection) {
   const accountUserId = yield* select(getUserId)
@@ -24,9 +29,9 @@ export function* signMessage(connection: WalletConnection) {
     case Chain.Sol: {
       const encodedMessage = new TextEncoder().encode(message)
       const signedResponse = yield* call(
-        connection.provider.signMessage,
-        encodedMessage,
-        'utf8'
+        solSign,
+        connection.provider,
+        encodedMessage
       )
       const publicKey = signedResponse.publicKey.toString()
       const signature = signedResponse.signature.toString('hex')
