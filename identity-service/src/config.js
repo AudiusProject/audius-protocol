@@ -901,31 +901,6 @@ if (fs.existsSync('eth-contract-config.json')) {
   })
 }
 
-if (fs.existsSync('solana-program-config.json')) {
-  // eslint-disable-next-line node/no-missing-require
-  const solanaContractConfig = require('../solana-program-config.json')
-  config.load({
-    solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
-    solanaAudiusEthRegistryAddress:
-      solanaContractConfig.audiusEthRegistryAddress,
-    solanaValidSigner: solanaContractConfig.validSigner,
-    solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
-    solanaEndpoint: solanaContractConfig.endpoint,
-    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
-
-    solanaMintAddress: solanaContractConfig.splToken,
-    solanaUSDCMintAddress: solanaContractConfig.fakeUSDCMint,
-    solanaClaimableTokenProgramAddress:
-      solanaContractConfig.claimableTokenAddress,
-    solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
-    solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA:
-      solanaContractConfig.rewardsManagerTokenAccount,
-
-    solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
-  })
-}
-
 if (fs.existsSync('aao-config.json')) {
   const aaoConfig = require('../aao-config.json')
   console.log('rewards: ' + JSON.stringify(aaoConfig))
