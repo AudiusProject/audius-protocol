@@ -410,6 +410,9 @@ def revert_delist_status_cursors(self, reverted_cursor: datetime):
                     )
                     .first()
                 )
+                logger.info(
+                    f"update_delist_statuses.py | revert_delist_status_cursors | cursor type: {type(users_cursor[0])}, cursor {users_cursor[0]}, revert_cursor type: {type(reverted_cursor)}, revert_cursor: {reverted_cursor}"
+                )
                 if (
                     users_cursor
                     and datetime.combine(
