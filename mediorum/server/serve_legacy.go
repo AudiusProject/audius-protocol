@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -150,97 +149,89 @@ func (ss *MediorumServer) headLegacyDirCid(c echo.Context) error {
 }
 
 func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, numRandNodesToCheck int) error {
-	ctx := c.Request().Context()
-
-	hosts, err := ss.findHostsWithCid(ctx, cid)
-	if err != nil {
-		return c.String(500, "error redirecting:"+err.Error())
-	}
-
-	logger := ss.logger.With("cid", cid)
-	logger.Info("potential hosts for cid", "hosts", hosts)
-	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-
-	// redirect to the first healthy host that we know has the cid (thanks to our cid_lookup table)
-	for _, host := range hosts {
-		if !slices.Contains(healthyHosts, host) {
-			logger.Info("host not healthy; skipping", "host", host)
-			continue
-		}
-		dest := ss.replaceHost(c, host)
-		logger.Info("redirecting to: " + dest.String())
-		return c.Redirect(302, dest.String())
-	}
-
 	// don't check additional nodes beyond what's in cid_lookup if "localOnly" is true
 	if c.QueryParam("localOnly") == "true" {
 		return c.String(404, "not redirecting because localOnly=true")
 	}
 
-	// check random healthy hosts via HEAD request to see if they have the cid but aren't in our cid_lookup
-	if numRandNodesToCheck > len(healthyHosts) {
-		numRandNodesToCheck = len(healthyHosts)
+	ctx := c.Request().Context()
+
+	cidLookupHosts, err := ss.findHostsWithCid(ctx, cid)
+	if err != nil {
+		return c.String(500, "error redirecting:"+err.Error())
 	}
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
-	r.Shuffle(len(healthyHosts), func(i, j int) { healthyHosts[i], healthyHosts[j] = healthyHosts[j], healthyHosts[i] })
 
-	randHosts := healthyHosts[:numRandNodesToCheck]
-	for _, host := range randHosts {
-		if host == ss.Config.Self.Host {
+	logger := ss.logger.With("cid", cid)
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+
+	// redirect to the first healthy host that we know has the cid (thanks to our cid_lookup table)
+	for _, host := range cidLookupHosts {
+		if !slices.Contains(healthyHosts, host) || host == ss.Config.Self.Host {
 			continue
 		}
-		dest := ss.replaceHost(c, host)
-		dest.Query().Add("localOnly", "true")
+		if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+			logger.Info("redirecting to: " + dest)
+			return c.Redirect(302, dest)
+		}
+	}
 
-		req, err := http.NewRequest("HEAD", dest.String(), nil) // NOTE: cloudflare seems to turn most of these HEADs into GETs
-		if err != nil {
-			logger.Error("error creating HEAD request", "err", err)
+	// check healthy hosts via HEAD request to see if they have the cid but aren't in our cid_lookup
+	for _, host := range healthyHosts {
+		if host == ss.Config.Self.Host || slices.Contains(cidLookupHosts, host) {
 			continue
 		}
-		req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-
-		client := &http.Client{
-			// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-			Timeout: 10 * time.Second,
-		}
-		resp, err := client.Do(req)
-		if err != nil {
-			logger.Error("error sending HEAD request", "err", err)
-			continue
-		}
-
-		// if we found a healthy host with the cid, add it to our cid_lookup table and redirect
-		if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
+		if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+			logger.Info("redirecting to: " + dest)
 			ss.pgPool.Exec(ctx, `insert into cid_lookup ("multihash", "host") values ($1, $2) on conflict do nothing`, cid, host)
-			return c.Redirect(302, dest.String())
-		}
-
-		// if we found a host that knows where the cid is, follow their redirect and add it to our cid_lookup table
-		if resp.StatusCode == 302 || resp.StatusCode == 304 {
-			redirectLocation := resp.Header.Get("Location")
-			if redirectLocation == "" {
-				continue
-			}
-			redirectUrl, err := url.Parse(redirectLocation)
-			if err != nil || redirectUrl.Host == "" {
-				logger.Error("error parsing redirectLocation, or empty host", "err", err, "redirectLocation", redirectLocation)
-				continue
-			}
-
-			redirectHost := ss.getScheme() + "://" + redirectUrl.Host
-			ss.pgPool.Exec(ctx, `insert into cid_lookup ("multihash", "host") values ($1, $2) on conflict do nothing`, cid, redirectHost)
-			dest = ss.replaceHost(c, redirectHost)
-			dest.Query().Add("localOnly", "true")
-			return c.Redirect(302, dest.String())
+			return c.Redirect(302, dest)
 		}
 	}
 
 	logger.Info("no healthy host found with cid")
 	return c.String(404, "no healthy host found with cid: "+cid)
+}
+
+// instead of adding a new disk-check URL... we can fake it from the client side
+// by not following any redirects...
+// 302 => NO
+// 404 => NO
+// 200 => YES
+func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string, bool) {
+	noRedirectClient := &http.Client{
+		// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	hostUrl, err := url.Parse(hostString)
+	if err != nil {
+		return "", false
+	}
+
+	dest.Host = hostUrl.Host
+	query := dest.Query()
+	query.Add("localOnly", "true")
+	dest.RawQuery = query.Encode()
+
+	req, err := http.NewRequest("HEAD", dest.String(), nil) // NOTE: cloudflare seems to turn most of these HEADs into GETs
+	if err != nil {
+		// logger.Error("error creating HEAD request", "err", err)
+		return "", false
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+
+	resp, err := noRedirectClient.Do(req)
+	if err != nil {
+		return "", false
+	}
+	resp.Body.Close()
+	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
+		return dest.String(), true
+	}
+
+	return "", false
 }
 
 func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
