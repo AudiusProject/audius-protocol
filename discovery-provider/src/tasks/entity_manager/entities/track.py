@@ -270,8 +270,7 @@ def validate_track_tx(params: ManageEntityParameters):
             )
 
     if params.action != Action.DELETE:
-        track_metadata = params.metadata[params.metadata_cid]
-        ai_attribution_user_id = track_metadata.get('ai_attribution_user_id') 
+        ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
             ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
