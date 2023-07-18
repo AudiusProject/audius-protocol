@@ -257,7 +257,6 @@ export class AudiusLibs {
     mintAddress,
     usdcMintAddress,
     solanaTokenAddress,
-    claimableTokenPDA,
     feePayerAddress,
     claimableTokenProgramAddress,
     rewardsManagerProgramId,
@@ -272,7 +271,6 @@ export class AudiusLibs {
       mintAddress,
       usdcMintAddress,
       solanaTokenAddress,
-      claimableTokenPDA,
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
@@ -360,7 +358,7 @@ export class AudiusLibs {
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
-    localStorage = getPlatformLocalStorage(),
+    localStorage = getPlatformLocalStorage()
   }: AudiusLibsConfig) {
     // set version
 
