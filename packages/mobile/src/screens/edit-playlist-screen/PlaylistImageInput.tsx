@@ -1,8 +1,8 @@
 import { View } from 'react-native'
 
-import { PickArtworkField } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
+import { PlaylistArtworkField } from './PlaylistArtworkField'
 import { RandomImageInput } from './RandomImageButton'
 
 const name = 'artwork'
@@ -18,7 +18,7 @@ export const PlaylistImageInput = () => {
 
   return (
     <View style={styles.root}>
-      <PickArtworkField name={name} />
+      <PlaylistArtworkField name={name} />
       <RandomImageInput name={name} />
     </View>
   )
