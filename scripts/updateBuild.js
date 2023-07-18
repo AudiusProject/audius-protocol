@@ -56,12 +56,12 @@ const pinGABuild = async () => {
 }
 
 const pinFromFs = async (cid) => {
-	const options = {
-			pinataMetadata: {
-				name: `Dashboard build ${env} ${cid} - ${new Date().toISOString()}`
-			}
-	}
-	const sourcePath = '/home/circleci/protocol-dashboard/build'
+  const options = {
+    pinataMetadata: {
+      name: `Dashboard build ${env} ${cid} - ${new Date().toISOString()}`
+    }
+  }
+  const sourcePath = '/home/circleci/protocol-dashboard/build'
   try {
     const result = await pinata.pinFromFS(sourcePath, options)
     //handle results here
