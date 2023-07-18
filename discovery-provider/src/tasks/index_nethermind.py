@@ -489,21 +489,12 @@ def revert_delist_cursor(session: Session, revert_block_parent_hash: str):
         block_future = executor.submit(get_block, web3, parent_number)
 
         block = block_future.result()
-        parent_timestamp = datetime.utcfromtimestamp(block.timestamp).replace(
+        parent_datetime = datetime.utcfromtimestamp(block.timestamp).replace(
             tzinfo=timezone.utc
         )
-        update_sql = text(
-            """
-            UPDATE delist_status_cursor
-            SET created_at = :cursor
-            WHERE entity = :entity;
-            """
-        )
-        session.execute(
-            update_sql, {"cursor": parent_timestamp, "entity": DelistEntity.USERS}
-        )
-        session.execute(
-            update_sql, {"cursor": parent_timestamp, "entity": DelistEntity.TRACKS}
+        celery.send_task(
+            "revert_delist_cursor",
+            kwargs={"reverted_cursor": parent_datetime},
         )
 
 

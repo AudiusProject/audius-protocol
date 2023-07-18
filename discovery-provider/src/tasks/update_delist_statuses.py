@@ -367,6 +367,55 @@ def process_delist_statuses(
 
 
 # ####### CELERY TASKS ####### #
+
+@celery.task(name="revert_delist_cursor", bind=True)
+@save_duration_metric(metric_group="celery_task")
+@log_duration(logger)
+def revert_delist_cursor(self, reverted_cursor: datetime):
+    """Sets the cursors in delist_status_cursor back upon a block reversion"""
+    db = revert_delist_cursor.db
+    redis = revert_delist_cursor.redis
+    have_lock = False
+    # Same lock as the update delist task to ensure the reverted cursor
+    # doesn't get overwritten
+    update_lock = redis.lock(
+        UPDATE_DELIST_STATUSES_LOCK,
+        timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
+    )
+    have_lock = update_lock.acquire(blocking_timeout=25)
+    if have_lock:
+        try:
+            with db.scoped_session() as session:
+                update_sql = text(
+                    """
+                    UPDATE delist_status_cursor
+                    SET created_at = :cursor
+                    WHERE entity = :entity;
+                    """
+                )
+                session.execute(
+                    update_sql, {"cursor": reverted_cursor, "entity": DelistEntity.USERS}
+                )
+                session.execute(
+                    update_sql, {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS}
+                )
+                logger.info(f"update_delist_statuses.py | revert_delist_cursor | Reverted delist cursors to {reverted_cursor}")
+
+        except Exception as e:
+            logger.error(
+                "update_delist_statuses.py | revert_delist_cursor | Fatal error in main loop", exc_info=True
+            )
+            raise e
+        finally:
+            if have_lock:
+                update_lock.release()
+    else:
+        logger.warning(
+            "update_delist_statuses.py | revert_delist_cursor | Lock not acquired",
+            exc_info=True,
+        )
+
+
 @celery.task(name="update_delist_statuses", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
@@ -398,7 +447,6 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
                 process_delist_statuses(
                     session, trusted_notifier_manager, current_block_timestamp
                 )
-                session.commit()
 
         except Exception as e:
             logger.error(
@@ -408,7 +456,6 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
         finally:
             if have_lock:
                 update_lock.release()
-            session.close()
     else:
         logger.warning(
             "update_delist_statuses.py | Lock not acquired",
