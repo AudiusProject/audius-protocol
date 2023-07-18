@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRequireSignatureWithUnregisteredNode(t *testing.T) {
+func TestRequireRegisteredSignatureWithUnregisteredNode(t *testing.T) {
 	ss := testNetwork[0]
 
 	// Empty list of signers means no node's signature will be valid
@@ -32,7 +32,7 @@ func TestRequireSignatureWithUnregisteredNode(t *testing.T) {
 	c.SetParamValues(cid)
 
 	// Handle the request
-	h := ss.requireSignature(func(c echo.Context) error {
+	h := ss.requireRegisteredSignature(func(c echo.Context) error {
 		return c.String(http.StatusOK, "test")
 	})
 	h(c)
@@ -42,7 +42,7 @@ func TestRequireSignatureWithUnregisteredNode(t *testing.T) {
 	assert.Contains(t, body, "signer not in list of registered nodes")
 }
 
-func TestRequireSignatureWithOldTimestamp(t *testing.T) {
+func TestRequireRegisteredSignatureWithOldTimestamp(t *testing.T) {
 	ss := testNetwork[0]
 
 	// Make sure the wallet is registered as a signer
@@ -63,7 +63,7 @@ func TestRequireSignatureWithOldTimestamp(t *testing.T) {
 	c.SetParamValues(cid)
 
 	// Handle the request
-	h := ss.requireSignature(func(c echo.Context) error {
+	h := ss.requireRegisteredSignature(func(c echo.Context) error {
 		return c.String(http.StatusOK, "test")
 	})
 	h(c)

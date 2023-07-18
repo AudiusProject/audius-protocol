@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -41,7 +42,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -88,10 +89,21 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     const remixUserName = users[this.remixUserId]?.name
     const remixTitle = tracks[this.trackId]?.title
 
-    const title =  'New Remix Of Your Track ♻️'
+    const title = 'New Remix Of Your Track ♻️'
     const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
-    if (userNotificationSettings.isNotificationTypeEnabled(this.parentTrackUserId, 'remixes')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.parentTrackUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.parentTrackUserId,
+        'remixes'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.parentTrackUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed
@@ -105,7 +117,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
         this.parentTrackUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -129,6 +141,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.parentTrackUserId)
     }
 

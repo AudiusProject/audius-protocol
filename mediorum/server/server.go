@@ -76,6 +76,8 @@ type MediorumServer struct {
 	storagePathUsed uint64
 	storagePathSize uint64
 	databaseSize    uint64
+	isSeeding       bool
+	isSeedingLegacy bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -88,6 +90,8 @@ type MediorumServer struct {
 var (
 	apiBasePath = ""
 )
+
+const PercentSeededThreshold = 50
 
 func New(config MediorumConfig) (*MediorumServer, error) {
 	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
@@ -148,7 +152,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	pgConfig, _ := pgxpool.ParseConfig(config.PostgresDSN)
 	pgPool, err := pgxpool.NewWithConfig(context.Background(), pgConfig)
 	if err != nil {
-		log.Println("dial postgres failed", err)
+		logger.Error("dial postgres failed", "err", err)
 	}
 
 	// crud
@@ -167,12 +171,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	if config.TrustedNotifierID > 0 {
 		trustedNotifier, err = ethcontracts.GetNotifierForID(strconv.Itoa(config.TrustedNotifierID), config.Self.Wallet)
 		if err == nil {
-			slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
+			logger.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 		} else {
-			slog.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
+			logger.Error("failed to get trusted notifier from chain, not polling delist statuses", "err", err)
 		}
 	} else {
-		slog.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
+		logger.Warn("trusted notifier id not set, not polling delist statuses or serving /contact route")
 	}
 
 	// echoServer server
@@ -195,6 +199,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
+		isSeeding:       config.Env == "stage" || config.Env == "prod",
+		isSeedingLegacy: config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 
@@ -221,45 +227,42 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// public: uploads
-	routes.GET("/uploads", ss.getUploads)
-	routes.GET("/uploads/:id", ss.getUpload)
-	routes.POST("/uploads", ss.postUpload)
+	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
+	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
+	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
+	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
 	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	routes.GET("/ipfs/:cid", ss.getBlob)
-	routes.GET("/content/:cid", ss.getBlob)
-	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
-	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireSignature)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature)
+	routes.HEAD("/ipfs/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/content/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/ipfs/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/content/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
-
-	// todo: use `/internal/ok` instead... this is just needed for transition
-	routes.GET("/status", func(c echo.Context) error {
-		status := 200
-		if !ss.Config.WalletIsRegistered {
-			status = 506
-		}
-		return c.JSON(status, map[string]any{
-			"host":                 ss.Config.Self.Host,
-			"wallet":               ss.Config.Self.Wallet,
-			"wallet_is_registered": ss.Config.WalletIsRegistered,
-		})
-	})
 
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
+	// TODO: remove after all nodes upgrade to v0.3.98
+	routes.GET("/status", func(c echo.Context) error {
+		return c.String(200, "OK")
+	}, ss.requireHealthy)
+
 	// responds to polling requests in peer_health
 	// should do no real work
 	internalApi.GET("/ok", func(c echo.Context) error {
 		return c.String(200, "OK")
-	})
+	}, ss.requireHealthy)
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
 
@@ -323,6 +326,8 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.startPollingDelistStatuses()
 
+		go ss.pollForSeedingCompletion()
+
 	}
 
 	go ss.monitorDiskAndDbStatus()
@@ -357,4 +362,14 @@ func (ss *MediorumServer) Stop() {
 
 	ss.logger.Debug("bye")
 
+}
+
+func (ss *MediorumServer) pollForSeedingCompletion() {
+	ticker := time.NewTicker(10 * time.Second)
+	for range ticker.C {
+		if ss.crud.GetPercentNodesSeeded() > PercentSeededThreshold {
+			ss.isSeeding = false
+			return
+		}
+	}
 }

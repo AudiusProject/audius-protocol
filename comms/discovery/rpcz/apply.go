@@ -77,8 +77,9 @@ func (proc *RPCProcessor) SweeperErrors() []string {
 
 func (proc *RPCProcessor) StartPeerClients() {
 	for _, p := range proc.peerClients {
-		p.Start()
+		go p.startSender()
 	}
+	go proc.startSweeper()
 }
 
 func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
@@ -107,7 +108,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	// publish event
 	j, err := json.Marshal(rpcLog)
 	if err != nil {
-		slog.Error("err: invalid json", err)
+		slog.Error("err: invalid json", "err", err)
 	} else {
 		proc.broadcast(j)
 	}
@@ -177,7 +178,16 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		return err // or nil?
 	}
 
-	logger = logger.With("wallet", wallet, "userId", userId, "relayed_by", rpcLog.RelayedBy, "relayed_at", rpcLog.RelayedAt, "sig", rpcLog.Sig)
+	// for debugging
+	chatId := gjson.GetBytes(rpcLog.Rpc, "params.chat_id").String()
+
+	logger = logger.With(
+		"wallet", wallet,
+		"userId", userId,
+		"relayed_by", rpcLog.RelayedBy,
+		"relayed_at", rpcLog.RelayedAt,
+		"chat_id", chatId,
+		"sig", rpcLog.Sig)
 	logger.Debug("got user", "took", takeSplit())
 
 	attemptApply := func() error {
@@ -372,16 +382,16 @@ func (proc *RPCProcessor) applyInternalMessage(rpcLog *schema.RpcLog, rawRpc *sc
 	switch rawRpc.Method {
 	case "internal.chat.ban":
 		for _, userId := range params.UserIDs {
-			_, err := tx.Exec(`insert into chat_ban values ($1) on conflict do nothing`, userId)
+			err := upsertUserBan(tx, userId, true, rpcLog.RelayedAt)
 			if err != nil {
-				logger.Error("failed", err)
+				logger.Error("failed", "err", err)
 			}
 		}
 	case "internal.chat.unban":
 		for _, userId := range params.UserIDs {
-			_, err := tx.Exec(`delete from chat_ban where user_id = $1`, userId)
+			err := upsertUserBan(tx, userId, false, rpcLog.RelayedAt)
 			if err != nil {
-				logger.Error("failed", err)
+				logger.Error("failed", "err", err)
 			}
 		}
 

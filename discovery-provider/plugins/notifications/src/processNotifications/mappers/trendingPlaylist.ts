@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -44,7 +45,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -93,7 +94,13 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     const body = `${playlists[this.playlistId]?.playlist_name} is the #${
       this.rank
     } trending playlist on Audius right now!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -105,7 +112,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
         notificationReceiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -124,6 +131,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

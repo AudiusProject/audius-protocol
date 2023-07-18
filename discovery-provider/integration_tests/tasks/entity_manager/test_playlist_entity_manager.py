@@ -5,6 +5,7 @@ from typing import List
 import pytest
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -163,6 +164,20 @@ def tx_receipts():
                         "_action": "Create",
                         "_metadata": f'{{"cid": "QmCreatePlaylist4", "data": {create_playlist4_json}}}',
                         "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylist5Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 5,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist5", "data": {create_playlist4_json}}}',
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
                     }
                 )
             },
@@ -348,7 +363,8 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -500,7 +516,8 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -527,6 +544,30 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
                 "playlist_name": "playlist 3",
             }
         ],
+        "developer_apps": [
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "is_delete": False,
+            },
+            {
+                "user_id": 2,
+                "name": "My App 2",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
+        "grants": [
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "is_revoked": True,
+            },
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -543,7 +584,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 8
+        assert len(all_playlists) == 9
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -605,6 +646,16 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
         assert playlist_4.playlist_name == "playlist 4"
         assert playlist_4.is_delete == False
         assert playlist_4.is_current == True
+
+        playlists_5: List[Playlist] = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 5,
+            )
+            .all()
+        )
+        assert len(playlists_5) == 1
 
         albums: List[Playlist] = (
             session.query(Playlist)
@@ -668,6 +719,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_action": "Create",
                         "_metadata": "",
                         "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylistRevokedAuthorizedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 2,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
                     }
                 )
             },

@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"io"
 	"mediorum/server/signature"
+	"mime"
 	"net/http"
-	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
 
@@ -71,8 +73,19 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	key := c.Param("cid")
 	attr, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
+		if gcerrors.Code(err) == gcerrors.NotFound {
+			return c.String(404, "blob not found")
+		}
+		ss.logger.Warn("error getting blob attributes", "error", err)
 		return err
 	}
+
+	// since this is called before redirecting, make sure this node can actually serve the blob (it needs to check db for delisted status)
+	dbHealthy := ss.databaseSize > 0
+	if !dbHealthy {
+		return c.String(500, "database connection issue")
+	}
+
 	return c.JSON(200, attr)
 }
 
@@ -108,21 +121,40 @@ func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
 	return c.JSON(200, existingBlob)
 }
 
+func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ctx := c.Request().Context()
+		key := c.Param("cid")
+
+		if ss.isCidBlacklisted(ctx, key) {
+			ss.logger.Info("cid is blacklisted", "cid", key)
+			return c.String(403, "cid is blacklisted by this node")
+		}
+
+		c.Set("checkedDelistStatus", true)
+		return next(c)
+	}
+}
+
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 	logger := ss.logger.With("cid", key)
 
-	if ss.isCidBlacklisted(ctx, key) {
+	shouldCheckDelistStatus := true
+	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
+		shouldCheckDelistStatus = false
+	}
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
 
-	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
-		contentDisposition := url.QueryEscape(filenameForDownload)
-		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+		contentDisposition := mime.QEncoding.Encode("utf-8", filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
 	if isLegacyCID(key) {
@@ -131,11 +163,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
-		// detect mime type:
-		// if this is not the cidstream route, we should block mp3 streaming
-		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
-		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
-			c.Response().Header().Set("x-would-block", "true")
+		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
+		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 		}
 
 		blob, err := ss.bucket.NewReader(ctx, key, nil)
@@ -145,7 +176,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		defer blob.Close()
 
 		// v2 file listen
-		go ss.logTrackListen(c)
+		if isAudioFile {
+			go ss.logTrackListen(c)
+		}
 
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
@@ -163,7 +196,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	for _, blob := range blobs {
 		// do a check server is up and has blob
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
+			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
 	}
@@ -176,7 +209,11 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 	key := c.Param("cid")
 	logger := ss.logger.With("cid", key)
 
-	if ss.isCidBlacklisted(ctx, key) {
+	shouldCheckDelistStatus := true
+	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
+		shouldCheckDelistStatus = false
+	}
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
@@ -187,6 +224,11 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 
 	// Return 200 if we have it
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
+		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
+		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
+			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
+		}
 		return c.NoContent(200)
 	}
 
@@ -201,7 +243,7 @@ func (ss *MediorumServer) headBlob(c echo.Context) error {
 	}
 	for _, blob := range blobs {
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
+			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
 	}
@@ -231,6 +273,12 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		return
 	}
 
+	// as per CN `userId: req.userId ?? delegateOwnerWallet`
+	userId := ss.Config.Self.Wallet
+	if sig.Data.UserID != 0 {
+		userId = strconv.Itoa(sig.Data.UserID)
+	}
+
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", os.Getenv("identityService"), sig.Data.TrackId)
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
@@ -239,7 +287,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 	}
 
 	body := map[string]interface{}{
-		"userId":       ss.Config.Self.Wallet, // as per CN `userId: req.userId ?? delegateOwnerWallet`
+		"userId":       userId,
 		"solanaListen": false,
 		"timestamp":    signatureData.Timestamp,
 		"signature":    signatureData.Signature,
@@ -277,7 +325,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 // checks signature from discovery node for cidstream endpoint + premium content.
 // based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
-func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFunc {
+func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cid := c.Param("cid")
 		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))

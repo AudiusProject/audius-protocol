@@ -1,13 +1,13 @@
 import json
-import logging
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple, cast
+from typing import Any, Dict, List, Set, Tuple
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
@@ -66,8 +66,9 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
@@ -148,7 +149,12 @@ def entity_manager_update(
                         block_number,
                         event_blockhash,
                         txhash,
+                        logger,
                     )
+
+                    # update logger context with this tx event
+                    logger.update_context(event["args"])
+
                     # add processed metadata to cid_metadata dicts to batch save to cid_data table
                     # later
                     if expect_cid_metadata_json(
@@ -260,11 +266,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
-                except Exception as e:
+
+                    logger.info("process transaction")  # log event context
+                except IndexingValidationError as e:
                     # swallow exception to keep indexing
-                    logger.info(
-                        f"entity_manager.py | failed to process tx error {e} | with event {event}"
-                    )
+                    logger.info(f"failed to process transaction error {e}")
         # compile records_to_save
         records_to_save = []
         for record_type, record_dict in new_records.items():
@@ -407,9 +413,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.DEVELOPER_APP].add(
                         raw_grantee_address.lower()
                     )
-                    entities_to_fetch[EntityType.USER_WALLET].add(
-                        raw_grantee_address.lower()
-                    )
                 else:
                     logger.error(
                         "tasks | entity_manager.py | Missing grantee address in metadata required for add grant tx"
@@ -485,20 +488,6 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.USER] = {user.user_id: user for user in users}
-
-    # USERS BY WALLET
-    if entities_to_fetch[EntityType.USER_WALLET]:
-        users_by_wallet: List[User] = (
-            session.query(User)
-            .filter(
-                func.lower(User.wallet).in_(entities_to_fetch[EntityType.USER_WALLET]),
-                User.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.USER_WALLET] = {
-            (cast(str, user.wallet)).lower(): user.user_id for user in users_by_wallet
-        }
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:

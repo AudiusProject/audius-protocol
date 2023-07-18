@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CosignRemixNotification
@@ -40,7 +41,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -84,7 +85,13 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
 
     const title = 'New Track Co-Sign! 🔥'
     const body = `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.remixUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.remixUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -96,7 +103,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.remixUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -119,6 +126,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.remixUserId)
     }
 

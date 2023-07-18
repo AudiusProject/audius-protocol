@@ -1,0 +1,73 @@
+import { z } from 'zod'
+import type { CrossPlatformFile as File } from '../../types/File'
+import { HashId } from '../../types/HashId'
+import { isFileValid } from '../../utils/file'
+
+export const UpdateProfileSchema = z
+  .object({
+    userId: HashId,
+    profilePictureFile: z.optional(
+      z.custom<File>((data: unknown) => isFileValid(data as File))
+    ),
+    coverArtFile: z.optional(
+      z.custom<File>((data: unknown) => isFileValid(data as File))
+    ),
+    onProgress: z.optional(z.function().args(z.number())),
+    metadata: z
+      .object({
+        name: z.optional(z.string()),
+        bio: z.optional(z.string()),
+        location: z.optional(z.string()),
+        isDeactivated: z.optional(z.boolean()),
+        artistPickTrackId: z.optional(z.number())
+      })
+      .strict()
+  })
+  .strict()
+
+export type UpdateProfileRequest = Omit<
+  z.input<typeof UpdateProfileSchema>,
+  'onProgress'
+> & {
+  // Typing function manually because z.function() does not
+  // support argument names
+  onProgress?: (progress: number) => void
+}
+
+export const FollowUserSchema = z
+  .object({
+    userId: HashId,
+    followeeUserId: HashId
+  })
+  .strict()
+
+export type FollowUserRequest = z.input<typeof FollowUserSchema>
+
+export const UnfollowUserSchema = z
+  .object({
+    userId: HashId,
+    followeeUserId: HashId
+  })
+  .strict()
+
+export type UnfollowUserRequest = z.input<typeof UnfollowUserSchema>
+
+export const SubscribeToUserSchema = z
+  .object({
+    userId: HashId,
+    subscribeeUserId: HashId
+  })
+  .strict()
+
+export type SubscribeToUserRequest = z.input<typeof SubscribeToUserSchema>
+
+export const UnsubscribeFromUserSchema = z
+  .object({
+    userId: HashId,
+    subscribeeUserId: HashId
+  })
+  .strict()
+
+export type UnsubscribeFromUserRequest = z.input<
+  typeof UnsubscribeFromUserSchema
+>

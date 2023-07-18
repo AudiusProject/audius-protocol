@@ -102,7 +102,9 @@ def get_playlist(
     args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
-        return extend_playlist(playlists[0])
+        extendedPlaylist = extend_playlist(playlists[0])
+        extendedPlaylist["playlist_contents"] = extendedPlaylist["added_timestamps"]
+        return extendedPlaylist
     return None
 
 
@@ -134,11 +136,14 @@ class Playlist(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(playlists_response)
+    @ns.expect(current_user_parser)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
+        args = current_user_parser.parse_args()
+        current_user_id = get_current_user_id(args)
         playlist = get_playlist(
-            current_user_id=None,
+            current_user_id=current_user_id,
             playlist_id=playlist_id,
         )
         response = success_response([playlist] if playlist else [])

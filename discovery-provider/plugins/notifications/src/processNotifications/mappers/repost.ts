@@ -15,6 +15,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { logger } from '../../logger'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -42,7 +43,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -111,8 +112,19 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'reposts')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'reposts'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed
@@ -131,7 +143,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       )
       // If the user's settings for the follow notification is set to true, proceed
 
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -154,6 +166,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (

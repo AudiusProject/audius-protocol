@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TipReceiveNotification
@@ -40,7 +41,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -77,7 +78,13 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     const body = `${capitalize(
       sendingUserName
     )} sent you a tip of ${tipAmount} $AUDIO`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -89,7 +96,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -112,6 +119,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

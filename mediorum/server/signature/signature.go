@@ -20,10 +20,12 @@ type SignatureEnvelope struct {
 }
 
 type SignatureData struct {
+	UploadID    string `json:"upload_id"`
 	Cid         string `json:"cid"`
 	ShouldCache int    `json:"shouldCache"`
 	Timestamp   int64  `json:"timestamp"`
 	TrackId     int64  `json:"trackId"`
+	UserID      int    `json:"userId"`
 }
 
 type RecoveredSignature struct {

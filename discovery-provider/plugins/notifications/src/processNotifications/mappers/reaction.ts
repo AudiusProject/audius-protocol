@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type ReactionNotificationRow = Omit<NotificationRow, 'data'> & {
   data: ReactionNotification
@@ -48,7 +49,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -85,7 +86,13 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     const body = `${capitalize(
       reactingUserName
     )} reacted to your tip of ${tipAmount} $AUDIO`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.senderUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.senderUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -99,7 +106,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.senderUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -122,6 +129,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.senderUserId)
     }
 

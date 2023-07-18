@@ -1,19 +1,132 @@
 import json
-import logging
-from sqlalchemy.sql import text
 from datetime import datetime, timedelta, timezone
+
 from redis import Redis
-from src.utils import (
-    db_session,
-    helpers,
-    redis_connection,
-)
+from sqlalchemy import desc
+from sqlalchemy.sql import text
+from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
+from src.models.delisting.track_delist_status import TrackDelistStatus
+from src.models.delisting.user_delist_status import UserDelistStatus
+from src.utils import db_session, redis_connection
 from src.utils.redis_constants import (
     TRACK_DELIST_DISCREPANCIES_KEY,
     TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+    TRACK_DELIST_STATUS_CURSOR_CHECK_KEY,
+    TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
     USER_DELIST_DISCREPANCIES_KEY,
     USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
+    USER_DELIST_STATUS_CURSOR_CHECK_KEY,
+    USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
 )
+from src.utils.structured_logger import StructuredLogger
+
+logger = StructuredLogger(__name__)
+
+
+def check_user_delist_status_cursor(redis: Redis):
+    try:
+        if redis is None:
+            raise Exception("Invalid arguments for get_cursors")
+        user_cursor_check_timestamp = redis.get(
+            USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY
+        )
+        if user_cursor_check_timestamp:
+            latest_check = datetime.utcfromtimestamp(
+                float(user_cursor_check_timestamp.decode())
+            ).replace(tzinfo=timezone.utc)
+            # Only run query every 12h
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
+                user_delist_cursor_check = redis.get(
+                    USER_DELIST_STATUS_CURSOR_CHECK_KEY
+                ).decode()
+                if user_delist_cursor_check != "ok":
+                    # If not ok, re-run query every 5 min to quickly suppress errors
+                    # once resolved
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                        return user_delist_cursor_check
+                else:
+                    return user_delist_cursor_check
+
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            latest_user_delist_cursor = (
+                session.query(DelistStatusCursor.created_at)
+                .filter(DelistStatusCursor.entity == DelistEntity.USERS)
+                .first()
+            )
+            latest_user_delist_status_timestamp = (
+                session.query(UserDelistStatus.created_at)
+                .order_by(desc(UserDelistStatus.created_at))
+                .first()
+            )
+            ok = "ok"
+            if latest_user_delist_cursor != latest_user_delist_status_timestamp:
+                ok = "not ok"
+            redis.set(
+                USER_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
+                datetime.now(timezone.utc).timestamp(),
+            )
+            redis.set(USER_DELIST_STATUS_CURSOR_CHECK_KEY, ok)
+            return ok
+    except Exception as e:
+        logger.error(
+            "get_trusted_notifier_discrepancies.py | issue with user delist cursor check %s",
+            exc_info=e,
+        )
+        pass
+
+
+def check_track_delist_status_cursor(redis: Redis):
+    try:
+        if redis is None:
+            raise Exception("Invalid arguments for get_cursors")
+        track_cursor_check_timestamp = redis.get(
+            TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY
+        )
+        if track_cursor_check_timestamp:
+            latest_check = datetime.utcfromtimestamp(
+                float(track_cursor_check_timestamp.decode())
+            ).replace(tzinfo=timezone.utc)
+            # Only run query every 12h
+            if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
+                track_delist_cursor_check = redis.get(
+                    TRACK_DELIST_STATUS_CURSOR_CHECK_KEY
+                ).decode()
+                if track_delist_cursor_check != "ok":
+                    # If not ok, re-run query every 5 min to quickly suppress errors
+                    # once resolved
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                        return track_delist_cursor_check
+                else:
+                    return track_delist_cursor_check
+
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            latest_track_delist_cursor = (
+                session.query(DelistStatusCursor.created_at)
+                .filter(DelistStatusCursor.entity == DelistEntity.TRACKS)
+                .first()
+            )
+            latest_track_delist_status_timestamp = (
+                session.query(TrackDelistStatus.created_at)
+                .order_by(desc(TrackDelistStatus.created_at))
+                .first()
+            )
+            ok = "ok"
+            if latest_track_delist_cursor != latest_track_delist_status_timestamp:
+                ok = "not ok"
+            redis.set(
+                TRACK_DELIST_STATUS_CURSOR_CHECK_TIMESTAMP_KEY,
+                datetime.now(timezone.utc).timestamp(),
+            )
+            redis.set(TRACK_DELIST_STATUS_CURSOR_CHECK_KEY, ok)
+            return ok
+    except Exception as e:
+        logger.error(
+            "get_trusted_notifier_discrepancies.py | issue with track delist cursor check %s",
+            exc_info=e,
+        )
+        pass
 
 
 def get_user_delist_discrepancies(redis: Redis):
@@ -29,7 +142,9 @@ def get_user_delist_discrepancies(redis: Redis):
             ).replace(tzinfo=timezone.utc)
             # Only run query every 12h
             if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
-                user_delist_discrepancies = redis.get(USER_DELIST_DISCREPANCIES_KEY).decode()
+                user_delist_discrepancies = redis.get(
+                    USER_DELIST_DISCREPANCIES_KEY
+                ).decode()
                 if user_delist_discrepancies != "[]":
                     # If discrepancies, re-run query every 5 min to quickly suppress errors
                     # once resolved
@@ -64,6 +179,10 @@ def get_user_delist_discrepancies(redis: Redis):
             user_delist_discrepancies = json.dumps(
                 [dict(row) for row in result], default=str
             )
+            if user_delist_discrepancies != "[]":
+                logger.info(
+                    f"get_trusted_notifier_discrepancies.py | found user delist discrepancies: {user_delist_discrepancies}"
+                )
             redis.set(
                 USER_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
                 datetime.now(timezone.utc).timestamp(),
@@ -71,7 +190,10 @@ def get_user_delist_discrepancies(redis: Redis):
             redis.set(USER_DELIST_DISCREPANCIES_KEY, user_delist_discrepancies)
             return user_delist_discrepancies
     except Exception as e:
-        logging.error("issue with user delist discrepancies %s", exc_info=e)
+        logger.error(
+            "get_trusted_notifier_discrepancies.py | issue with user delist discrepancies %s",
+            exc_info=e,
+        )
         pass
 
 
@@ -88,7 +210,9 @@ def get_track_delist_discrepancies(redis: Redis):
             ).replace(tzinfo=timezone.utc)
             # Only run query every 12h
             if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
-                track_delist_discrepancies = redis.get(TRACK_DELIST_DISCREPANCIES_KEY).decode()
+                track_delist_discrepancies = redis.get(
+                    TRACK_DELIST_DISCREPANCIES_KEY
+                ).decode()
                 if track_delist_discrepancies != "[]":
                     # If discrepancies, re-run query every 5 min to quickly suppress errors
                     # once resolved
@@ -123,6 +247,10 @@ def get_track_delist_discrepancies(redis: Redis):
             track_delist_discrepancies = json.dumps(
                 [dict(row) for row in result], default=str
             )
+            if track_delist_discrepancies != "[]":
+                logger.info(
+                    f"get_trusted_notifier_discrepancies.py | found track delist discrepancies: {track_delist_discrepancies}"
+                )
             redis.set(
                 TRACK_DELIST_DISCREPANCIES_TIMESTAMP_KEY,
                 datetime.now(timezone.utc).timestamp(),
@@ -130,7 +258,10 @@ def get_track_delist_discrepancies(redis: Redis):
             redis.set(TRACK_DELIST_DISCREPANCIES_KEY, track_delist_discrepancies)
             return track_delist_discrepancies
     except Exception as e:
-        logging.error("issue with track delist discrepancies %s", exc_info=e)
+        logger.error(
+            "get_trusted_notifier_discrepancies.py | issue with track delist discrepancies %s",
+            exc_info=e,
+        )
         pass
 
 
@@ -141,11 +272,25 @@ def get_trusted_notifier_discrepancies():
     Returns a tuple of health results and a boolean indicating an error
     """
     redis = redis_connection.get_redis()
+    user_delist_status_cursor_ok = check_user_delist_status_cursor(redis)
+    track_delist_status_cursor_ok = check_track_delist_status_cursor(redis)
     user_delist_discrepancies = get_user_delist_discrepancies(redis)
     track_delist_discrepancies = get_track_delist_discrepancies(redis)
     health_results = {
+        "user_delist_status_cursor_caught_up": user_delist_status_cursor_ok,
+        "track_delist_status_cursor_caught_up": track_delist_status_cursor_ok,
         "user_delist_discrepancies": user_delist_discrepancies,
         "track_delist_discrepancies": track_delist_discrepancies,
     }
-    is_unhealthy = user_delist_discrepancies != "[]" or track_delist_discrepancies != "[]"
+    is_unhealthy = (
+        user_delist_status_cursor_ok != "ok"
+        or track_delist_status_cursor_ok != "ok"
+        or user_delist_discrepancies != "[]"
+        or track_delist_discrepancies != "[]"
+    )
     return health_results, is_unhealthy
+
+
+def get_delist_statuses_ok():
+    _, is_unhealthy = get_trusted_notifier_discrepancies()
+    return not is_unhealthy

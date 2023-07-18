@@ -1,6 +1,7 @@
 import json
 from typing import Optional, TypedDict, Union, cast
 
+from src.exceptions import IndexingValidationError
 from src.models.grants.grant import Grant
 from src.tasks.entity_manager.utils import (
     Action,
@@ -50,74 +51,72 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
     user_id = params.user_id
 
     if params.entity_type != EntityType.GRANT:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid Create Grant transaction, wrong entity type {params.entity_type}"
         )
     if not metadata["grantee_address"]:
-        raise Exception(
+        raise IndexingValidationError(
             "Invalid Create Grant transaction, grantee address is required and was not provided"
         )
     if not user_id:
-        raise Exception(
+        raise IndexingValidationError(
             "Invalid Create Grant transaction, user id is required and was not provided"
         )
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid Create Grant transaction, user id {user_id} does not exist"
         )
     if not params.existing_records[EntityType.USER][user_id].wallet:
-        raise Exception(
+        raise IndexingValidationError(
             "Programming error while indexing Create Grant transaction, user wallet missing"
         )
-    grant_key = (metadata["grantee_address"].lower(), user_id)
+    grant_key = (metadata["grantee_address"], user_id)
 
     if params.action == Action.CREATE:
         if not metadata["grantee_address"]:
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Grant transaction, developer app address is required and was not provided"
             )
         if (
-            metadata["grantee_address"].lower()
-            not in params.existing_records[EntityType.USER_WALLET]
-            and metadata["grantee_address"].lower()
+            metadata["grantee_address"]
             not in params.existing_records[EntityType.DEVELOPER_APP]
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Create Grant transaction, developer app address {metadata['grantee_address']} does not exist"
             )
         if (
-            metadata["grantee_address"].lower()
+            metadata["grantee_address"]
             in params.existing_records[EntityType.DEVELOPER_APP]
             and params.existing_records[EntityType.DEVELOPER_APP][
-                metadata["grantee_address"].lower()
+                metadata["grantee_address"]
             ].is_delete
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Grant transaction, developer app address {metadata['grantee_address']} is invalid"
             )
         if (
             grant_key in params.existing_records[EntityType.GRANT]
             and not params.existing_records[EntityType.GRANT][grant_key].is_revoked
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Create Grant transaction, active grant from {user_id} to {metadata['grantee_address']} already exists"
             )
         if (
             params.existing_records[EntityType.USER][user_id].wallet.lower()
             != params.signer.lower()
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Create Grant transaction, user does not match signer"
             )
     elif params.action == Action.DELETE:
         if grant_key not in params.existing_records[EntityType.GRANT]:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Invalid Delete Grant transaction, grant from {user_id} to {metadata['grantee_address']} does not exist"
             )
         existing_grant = params.existing_records[EntityType.GRANT][grant_key]
         if existing_grant.is_revoked:
-            raise Exception(
-                f"Invalid Delete Grant Transaction, grant from {user_id} to {metadata['grantee_address']}  is already revoked."
+            raise IndexingValidationError(
+                f"Invalid Delete Grant Transaction, grant from {user_id} to {metadata['grantee_address']} is already revoked."
             )
 
         # Signer can be either the user in the grant or the developer app.
@@ -126,11 +125,11 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             != params.signer.lower()
             and params.signer.lower() != existing_grant.grantee_address.lower()
         ):
-            raise Exception(
+            raise IndexingValidationError(
                 "Invalid Delete Grant transaction, user does not match signer"
             )
     else:
-        raise Exception(
+        raise IndexingValidationError(
             f"Invalid Grant transaction, action {params.action} is not valid"
         )
     return grant_key
@@ -150,20 +149,18 @@ def validate_grant_record(grant_record):
 def create_grant(params: ManageEntityParameters):
     metadata = get_grant_metadata_from_raw(params.metadata)
     if not metadata:
-        raise Exception("Invalid Grant Transaction, unable to parse metadata")
+        raise IndexingValidationError(
+            "Invalid Grant Transaction, unable to parse metadata"
+        )
     grant_key = validate_grant_tx(params, metadata)
     user_id = params.user_id
-    if metadata["grantee_address"] in params.existing_records[EntityType.USER_WALLET]:
-        grantee_type = "user"
-    else:
-        grantee_type = "app"
     grant_record = Grant(
         user_id=user_id,
         grantee_address=cast(
             str, metadata["grantee_address"]
         ),  # cast to assert non null (since we validated above)
         is_current=True,
-        is_approved=False if grantee_type == "user" else True,
+        is_approved=True,
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -179,7 +176,9 @@ def create_grant(params: ManageEntityParameters):
 def revoke_grant(params: ManageEntityParameters):
     metadata = get_grant_metadata_from_raw(params.metadata)
     if not metadata:
-        raise Exception("Invalid Revoke Grant Transaction, unable to parse metadata")
+        raise IndexingValidationError(
+            "Invalid Revoke Grant Transaction, unable to parse metadata"
+        )
     grant_key = validate_grant_tx(params, metadata)
     existing_grant = params.existing_records[EntityType.GRANT][grant_key]
     if grant_key in params.new_records[EntityType.GRANT]:

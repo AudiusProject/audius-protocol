@@ -33,11 +33,3 @@ ___
  `Optional` **\_480x480**: `string`
 
 **`memberof`** ProfilePicture
-
-___
-
-### misc
-
- `Optional` **misc**: `string`
-
-**`memberof`** ProfilePicture

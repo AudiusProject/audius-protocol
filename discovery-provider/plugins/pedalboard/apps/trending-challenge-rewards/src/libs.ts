@@ -18,17 +18,22 @@ export const initAudiusLibs = async (): Promise<AudiusLibs> => {
     ethWeb3Config: {
       tokenAddress: process.env.tokenAddress,
       registryAddress: process.env.registryAddress,
-      providers: process.env.providers?.split(","),
+      providers: [process.env.providers],
       ownerWallet: process.env.ownerWallet,
       claimDistributionContractAddress:
         process.env.claimDistributionContractAddress,
       wormholeContractAddress: process.env.wormholeContractAddress,
     },
+    identityServiceConfig: {
+      url: process.env.identityUrl,
+      useHedgehogLocalStorage: false,
+    }
   };
 
   const libsConfig = {
     solanaWeb3Config: config.solanaWeb3Config,
     ethWeb3Config: config.ethWeb3Config,
+    identityServiceConfig: config.identityServiceConfig,
     discoveryProviderConfig: {},
     logger: console,
     isDebug: false,

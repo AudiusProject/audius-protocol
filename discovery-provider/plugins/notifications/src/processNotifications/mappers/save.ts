@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -37,7 +38,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -108,8 +109,19 @@ export class Save extends BaseNotification<SaveNotificationRow> {
 
     const title = 'New Favorite'
     const body = `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'favorites')) {
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'favorites'
+      )
+    ) {
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed
@@ -130,7 +142,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       const timestamp = Math.floor(
         Date.parse(this.notification.timestamp as any as string) / 1000
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -151,6 +163,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (

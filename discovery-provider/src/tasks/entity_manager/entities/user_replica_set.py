@@ -3,6 +3,7 @@ from typing import Any, List, Tuple
 
 from redis import Redis
 from src.app import get_eth_abi_values
+from src.exceptions import IndexingValidationError
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -125,7 +126,7 @@ def get_sp_factory_inst():
 def parse_update_sp_id(params) -> Tuple[List[int], List[int]]:
     sp_ids = params.metadata.split(":")
     if len(sp_ids) != 2:
-        raise Exception('Invalid format entity_id should be ":" separated')
+        raise IndexingValidationError('Invalid format entity_id should be ":" separated')
     return parse_sp_ids(sp_ids[0]), parse_sp_ids(sp_ids[1])
 
 
@@ -133,9 +134,9 @@ def parse_sp_ids(sp_ids_str: str) -> List[int]:
     sp_ids = sp_ids_str.split(",")
     for sp_id in sp_ids:
         if not sp_id.isdigit():
-            raise Exception(f"sp id of {sp_id} is not a digit")
+            raise IndexingValidationError(f"sp id of {sp_id} is not a digit")
     if len(sp_ids) < 3:
-        raise Exception("Too few updated sp ids")
+        raise IndexingValidationError("Too few updated sp ids")
 
     return [int(id) for id in sp_ids]
 
@@ -144,7 +145,7 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
     user_id = params.user_id
     if user_id not in params.existing_records[EntityType.USER]:
         # user does not exist
-        raise Exception(f"User {user_id} does not exist")
+        raise IndexingValidationError(f"User {user_id} does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
     user = params.existing_records[EntityType.USER][user_id]
     user_sp_ids = [user.primary_id]
@@ -164,33 +165,33 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
             if delegator_wallet.lower() == params.signer.lower():
                 valid_cn_signer = True
         if not valid_cn_signer:
-            raise Exception("Invalid tx signer")
+            raise IndexingValidationError("Invalid tx signer")
 
     current_sp_ids, updated_sp_ids = parse_update_sp_id(params)
     if current_sp_ids[0] != user_sp_ids[0] or set(current_sp_ids[1:]) != set(
         user_sp_ids[1:]
     ):
-        raise Exception(
+        raise IndexingValidationError(
             f"Current sp ids does not match parameters, current: {current_sp_ids} and requested {user_sp_ids}"
         )
 
     if len(set(updated_sp_ids)) != len(updated_sp_ids):
-        raise Exception("Duplicate sp ids not allowed")
+        raise IndexingValidationError("Duplicate sp ids not allowed")
 
     for sp_id in updated_sp_ids:
         sp_info_cached = params.eth_manager.fetch_node_info(
             sp_id, ServiceProviderType.CONTENT, params.redis
         )
         if not sp_info_cached or sp_info_cached["endpoint"] == "":
-            raise Exception(
+            raise IndexingValidationError(
                 "Cannot set sp ids to invalid set with unregistered service"
             )
 
     if params.entity_type != EntityType.USER_REPLICA_SET:
-        raise Exception("Invalid entity type")
+        raise IndexingValidationError("Invalid entity type")
 
     if params.action != Action.UPDATE:
-        raise Exception("Invalid tx action")
+        raise IndexingValidationError("Invalid tx action")
 
 
 def update_user_replica_set(params: ManageEntityParameters):

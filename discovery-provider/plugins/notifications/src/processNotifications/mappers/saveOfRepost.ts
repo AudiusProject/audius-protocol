@@ -15,6 +15,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveOfRepostNotification
@@ -42,7 +43,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -112,7 +113,13 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
 
     const title = 'New Favorite'
     const body = `${saveOfRepostUserName} favorited your repost of ${entityName}`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -129,7 +136,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
         this.receiverUserId
       )
       // If the user's settings for the reposts notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -154,6 +161,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

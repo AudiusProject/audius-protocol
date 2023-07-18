@@ -14,6 +14,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type TrendingUndergroundNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingUndergroundNotification
@@ -43,7 +44,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -88,7 +89,13 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     const body = `${tracks[this.trackId]?.title} is #${
       this.rank
     } on Underground Trending right now!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -100,7 +107,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
         notificationReceiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -119,6 +126,7 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

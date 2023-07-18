@@ -20,6 +20,7 @@ import {
 import { Server } from './server'
 import { configureWebPush } from './web'
 import { configureAnnouncement } from './processNotifications/mappers/announcement'
+import { logMemStats } from './utils/memStats'
 
 export class Processor {
   discoveryDB: Knex
@@ -49,7 +50,7 @@ export class Processor {
   } = {}) => {
     await this.remoteConfig.init()
 
-    logger.info('starting!')
+    logger.info('starting up!')
 
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
@@ -59,6 +60,9 @@ export class Processor {
 
     // setup announcements
     configureAnnouncement()
+
+    // log memory stats on startup
+    logMemStats()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
@@ -112,7 +116,11 @@ export class Processor {
     this.isRunning = true
     while (this.isRunning) {
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
-      await sendDMNotifications(this.discoveryDB, this.identityDB, this.getIsBrowserPushEnabled())
+      await sendDMNotifications(
+        this.discoveryDB,
+        this.identityDB,
+        this.getIsBrowserPushEnabled()
+      )
 
       if (
         this.getIsScheduledEmailEnabled() &&

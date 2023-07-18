@@ -18,6 +18,4 @@ Note - Any cross-component or non-router-based logic lives in a Service, which l
   * `/components/healthCheck` - Health check is one Component, comprised of **ComponentServices** and a **ComponentController**
     * `/components/healthCheck/healthCheckComponentService.js` - Contains all business logic related to health check **Component**
     * `/components/healthCheck/healthCheckComponentService.test.js` - Contains unit tests for health check **ComponentService**
-    * `/components/healthCheck/syncHealthCheckComponentService.js` - Contains all business logic related to sync health check **Component**
-    * `/components/healthCheck/syncHealthCheckComponentService.test.js` - Contains unit tests for sync health check **ComponentService**
     * `/components/healthCheck/healthCheckController.js` - Connects all health check **ComponentServices** to **ComponentControllers** and connects all **ComponentControllers** to **Routes**

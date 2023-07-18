@@ -42,14 +42,18 @@ export const onDisburse = async (
   if (completedBlockRes.err) return completedBlockRes;
   const [completedBlock, specifier] = completedBlockRes.unwrap();
 
+  const trimmedSpecifier = specifier.split(":")[0]
+
   const nodeGroups = await assembleNodeGroups(libs);
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun);
 
   const friendly = await getChallengesDisbursementsUserbanksFriendly(
     db,
-    specifier
+    trimmedSpecifier
   );
+
+  const normal = await getChallengesDisbursementsUserbanks(db, trimmedSpecifier)
   console.log("friendly = ", JSON.stringify(friendly));
   const formattedResults = formatDisbursementTable(friendly);
   console.log(formattedResults);
@@ -271,23 +275,28 @@ const getAllChallenges = async (
     const rewards = libs.Rewards;
     if (rewards === null) throw new Error("rewards object null");
 
+    const args = {
+      challengeId: challenge.challenge_id,
+      encodedUserId,
+      handle: challenge.handle,
+      recipientEthAddress: challenge.wallet,
+      specifier: challenge.specifier,
+      oracleEthAddress,
+      amount: parseInt(challenge.amount),
+      quorumSize: 3,
+      AAOEndpoint,
+      instructionsPerTransaction: 2,
+      maxAggregationAttempts: 1,
+      endpoints: possibleNodeSet,
+      feePayerOverride,
+      logger: console
+    }
+
+    console.log({ args })
+
     if (!dryRun) {
-      const { error } = await rewards.submitAndEvaluate({
-        challengeId: challenge.challenge_id,
-        encodedUserId,
-        handle: challenge.handle,
-        recipientEthAddress: challenge.wallet,
-        specifier: challenge.specifier,
-        oracleEthAddress,
-        amount: parseInt(challenge.amount),
-        quorumSize: 3,
-        AAOEndpoint,
-        instructionsPerTransaction: 2,
-        maxAggregationAttempts: 1,
-        endpoints: possibleNodeSet,
-        feePayerOverride,
-        logger: console,
-      });
+      console.log("submitting")
+      const { error } = await rewards.submitAndEvaluate(args);
 
       if (error) {
         console.log(
@@ -305,6 +314,6 @@ const getAllChallenges = async (
       impossibleChallenges.length
     }: ${JSON.stringify(
       impossibleChallenges
-    )}, possible challenges: ${JSON.stringify(possibleChallenges)}`
+    )}, possible challenges: ${possibleChallenges.length} ${JSON.stringify(possibleChallenges)}`
   );
 };

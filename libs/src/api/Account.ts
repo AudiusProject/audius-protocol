@@ -1,6 +1,5 @@
 import { Base, BaseConstructorArgs, Services } from './base'
-import { CreatorNode } from '../services/creatorNode'
-import { Nullable, User, UserMetadata, Utils } from '../utils'
+import { Nullable, UserMetadata, Utils } from '../utils'
 import { AuthHeaders } from '../constants'
 import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
@@ -25,7 +24,6 @@ export class Account extends Base {
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
     this.logout = this.logout.bind(this)
-    this.signUp = this.signUp.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
     this.confirmCredentials = this.confirmCredentials.bind(this)
     this.changePassword = this.changePassword.bind(this)
@@ -36,7 +34,6 @@ export class Account extends Base {
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.associateTikTokUser = this.associateTikTokUser.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
-    this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
@@ -82,20 +79,11 @@ export class Account extends Base {
     )
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
-      if (userAccount.is_storage_v2) {
-        const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
-          1,
-          userAccount.wallet
-        )
-        await this.creatorNode.setEndpoint(randomNodes[0]!)
-      } else {
-        const creatorNodeEndpoint = userAccount.creator_node_endpoint
-        if (creatorNodeEndpoint) {
-          await this.creatorNode.setEndpoint(
-            CreatorNode.getPrimary(creatorNodeEndpoint)!
-          )
-        }
-      }
+      const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+        1,
+        userAccount.wallet
+      )
+      await this.creatorNode.setEndpoint(randomNodes[0]!)
       return { user: userAccount, error: false, phase }
     }
     return { error: 'No user found', phase }
@@ -112,77 +100,6 @@ export class Account extends Base {
       this.REQUIRES(Services.HEDGEHOG)
       await this.hedgehog.logout()
       this.userStateManager.clearUser()
-    }
-  }
-
-  /**
-   * Signs a user up for Audius
-   * @param email
-   * @param password
-   * @param metadata
-   * @param profilePictureFile an optional file to upload as the profile picture
-   * @param coverPhotoFile an optional file to upload as the cover phtoo
-   * @param hasWallet
-   * @param host The host url used for the recovery email
-   * @param generateRecoveryLink an optional flag to skip generating recovery link for testing purposes
-   */
-  async signUp(
-    email: string,
-    password: string,
-    metadata: UserMetadata,
-    profilePictureFile: Nullable<File> = null,
-    coverPhotoFile: Nullable<File> = null,
-    hasWallet = false,
-    host = (typeof window !== 'undefined' && window.location.origin) || null,
-    generateRecoveryLink = true
-  ) {
-    const phases = {
-      ADD_REPLICA_SET: 'ADD_REPLICA_SET',
-      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
-      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
-      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
-      ADD_USER: 'ADD_USER'
-    }
-    let phase = ''
-    try {
-      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
-
-      if (this.web3Manager.web3IsExternal()) {
-        phase = phases.CREATE_USER_RECORD
-        await this.identityService.createUserRecord(
-          email,
-          this.web3Manager.getWalletAddress()
-        )
-      } else {
-        this.REQUIRES(Services.HEDGEHOG)
-        // If an owner wallet already exists, don't try to recreate it
-        if (!hasWallet) {
-          phase = phases.HEDGEHOG_SIGNUP
-          const ownerWallet = await this.hedgehog.signUp(email, password)
-          this.web3Manager.setOwnerWallet(ownerWallet)
-          if (generateRecoveryLink) {
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
-          }
-        }
-      }
-
-      // Add user to chain
-      phase = phases.ADD_USER
-      const { newMetadata, blockHash, blockNumber } =
-        await this.User.createEntityManagerUser({ metadata })
-      phase = phases.UPLOAD_PROFILE_IMAGES
-      await this.User.uploadProfileImages(
-        profilePictureFile!,
-        coverPhotoFile!,
-        newMetadata
-      )
-      return { blockHash, blockNumber, userId: newMetadata.user_id }
-    } catch (e: any) {
-      return {
-        error: e.message,
-        phase,
-        errorStatus: e.response ? e.response.status : null
-      }
     }
   }
 
@@ -249,16 +166,11 @@ export class Account extends Base {
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
         await this.User.createEntityManagerUserV2({
-          metadata
+          metadata,
+          profilePictureFile,
+          coverPhotoFile
         })
 
-      // Upload user's profile images, if any
-      phase = phases.UPLOAD_PROFILE_IMAGES
-      await this.User.uploadProfileImagesV2(
-        profilePictureFile!,
-        coverPhotoFile!,
-        newMetadata
-      )
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
@@ -370,19 +282,6 @@ export class Account extends Base {
   async lookupTwitterHandle(handle: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.lookupTwitterHandle(handle)
-  }
-
-  /**
-   * Updates a user's creator node endpoint. Sets the connected creator node in the libs instance
-   * and updates the user's metadata blob.
-   */
-  async updateCreatorNodeEndpoint(url: string) {
-    this.REQUIRES(Services.CREATOR_NODE)
-
-    const user = this.userStateManager.getCurrentUser() as User
-    await this.creatorNode.setEndpoint(url)
-    user.creator_node_endpoint = url
-    await this.User.updateCreator(user.user_id, user)
   }
 
   /**

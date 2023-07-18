@@ -12,9 +12,17 @@ custom_edit_url: null
 
 ## Properties
 
-### album\_count
+### albumCount
 
- **album\_count**: `number`
+ **albumCount**: `number`
+
+**`memberof`** User
+
+___
+
+### artistPickTrackId
+
+ `Optional` **artistPickTrackId**: `string`
 
 **`memberof`** User
 
@@ -28,41 +36,41 @@ ___
 
 ___
 
-### cover\_photo
+### coverPhoto
 
- `Optional` **cover\_photo**: [`CoverPhoto`](CoverPhoto.md)
-
-**`memberof`** User
-
-___
-
-### does\_follow\_current\_user
-
- `Optional` **does\_follow\_current\_user**: `boolean`
+ `Optional` **coverPhoto**: [`CoverPhoto`](CoverPhoto.md)
 
 **`memberof`** User
 
 ___
 
-### erc\_wallet
+### doesFollowCurrentUser
 
- `Optional` **erc\_wallet**: `string`
-
-**`memberof`** User
-
-___
-
-### followee\_count
-
- **followee\_count**: `number`
+ `Optional` **doesFollowCurrentUser**: `boolean`
 
 **`memberof`** User
 
 ___
 
-### follower\_count
+### ercWallet
 
- **follower\_count**: `number`
+ **ercWallet**: `string`
+
+**`memberof`** User
+
+___
+
+### followeeCount
+
+ **followeeCount**: `number`
+
+**`memberof`** User
+
+___
+
+### followerCount
+
+ **followerCount**: `number`
 
 **`memberof`** User
 
@@ -84,17 +92,25 @@ ___
 
 ___
 
-### is\_deactivated
+### isAvailable
 
- **is\_deactivated**: `boolean`
+ **isAvailable**: `boolean`
 
 **`memberof`** User
 
 ___
 
-### is\_verified
+### isDeactivated
 
- **is\_verified**: `boolean`
+ **isDeactivated**: `boolean`
+
+**`memberof`** User
+
+___
+
+### isVerified
+
+ **isVerified**: `boolean`
 
 **`memberof`** User
 
@@ -116,56 +132,64 @@ ___
 
 ___
 
-### playlist\_count
+### playlistCount
 
- **playlist\_count**: `number`
-
-**`memberof`** User
-
-___
-
-### profile\_picture
-
- `Optional` **profile\_picture**: [`ProfilePicture`](ProfilePicture.md)
+ **playlistCount**: `number`
 
 **`memberof`** User
 
 ___
 
-### repost\_count
+### profilePicture
 
- **repost\_count**: `number`
-
-**`memberof`** User
-
-___
-
-### spl\_wallet
-
- **spl\_wallet**: `string`
+ `Optional` **profilePicture**: [`ProfilePicture`](ProfilePicture.md)
 
 **`memberof`** User
 
 ___
 
-### supporter\_count
+### repostCount
 
- **supporter\_count**: `number`
-
-**`memberof`** User
-
-___
-
-### supporting\_count
-
- **supporting\_count**: `number`
+ **repostCount**: `number`
 
 **`memberof`** User
 
 ___
 
-### track\_count
+### splWallet
 
- **track\_count**: `number`
+ **splWallet**: `string`
+
+**`memberof`** User
+
+___
+
+### supporterCount
+
+ **supporterCount**: `number`
+
+**`memberof`** User
+
+___
+
+### supportingCount
+
+ **supportingCount**: `number`
+
+**`memberof`** User
+
+___
+
+### totalAudioBalance
+
+ **totalAudioBalance**: `number`
+
+**`memberof`** User
+
+___
+
+### trackCount
+
+ **trackCount**: `number`
 
 **`memberof`** User

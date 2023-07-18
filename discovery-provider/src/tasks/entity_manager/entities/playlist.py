@@ -1,10 +1,10 @@
-import logging
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Set
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
@@ -15,15 +15,17 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    validate_signer,
 )
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
-logger = logging.getLogger(__name__)
 
+def update_playlist_routes_table(params: ManageEntityParameters, playlist_record):
+    pending_playlist_routes = params.pending_playlist_routes
+    session = params.session
 
-def update_playlist_routes_table(session, playlist_record, pending_playlist_routes):
-    logger.info(
+    params.logger.info(
         f"index.py | playlists.py | Updating playlist routes for {playlist_record.playlist_id}"
     )
     # Get the title slug, and set the new slug to that
@@ -58,7 +60,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
-            logger.info(f"not changing for {playlist_record.playlist_id}")
+            params.logger.info(f"not changing for {playlist_record.playlist_id}")
             return
         # The new route will be current
         prev_playlist_route_record.is_current = False
@@ -90,7 +92,7 @@ def update_playlist_routes_table(session, playlist_record, pending_playlist_rout
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
 
-    logger.info(
+    params.logger.info(
         f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
     )
 
@@ -104,15 +106,11 @@ def get_playlist_events_tx(update_task, event_type, tx_receipt):
 def validate_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     playlist_id = params.entity_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exist")
 
-    wallet = params.existing_records[EntityType.USER][user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {user_id} does not match signer")
+    validate_signer(params)
 
     if params.entity_type != EntityType.PLAYLIST:
-        raise Exception(f"Entity type {params.entity_type} is not a playlist")
+        raise IndexingValidationError(f"Entity type {params.entity_type} is not a playlist")
 
     premium_tracks = list(
         filter(
@@ -121,21 +119,21 @@ def validate_playlist_tx(params: ManageEntityParameters):
         )
     )
     if premium_tracks:
-        raise Exception("Cannot add premium tracks to playlist")
+        raise IndexingValidationError("Cannot add premium tracks to playlist")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot create playlist {playlist_id} that already exists")
+            raise IndexingValidationError(f"Cannot create playlist {playlist_id} that already exists")
         if playlist_id < PLAYLIST_ID_OFFSET:
-            raise Exception(f"Cannot create playlist {playlist_id} below the offset")
+            raise IndexingValidationError(f"Cannot create playlist {playlist_id} below the offset")
     else:
         if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
-            raise Exception(f"Cannot update playlist {playlist_id} that does not exist")
+            raise IndexingValidationError(f"Cannot update playlist {playlist_id} that does not exist")
         existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
             playlist_id
         ]
         if existing_playlist.playlist_owner_id != user_id:
-            raise Exception(
+            raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
@@ -146,14 +144,14 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 playlist_description
                 and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
             ):
-                raise Exception(
+                raise IndexingValidationError(
                     f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
                 )
             playlist_track_count = len(
                 playlist_metadata["playlist_contents"]["track_ids"]
             )
             if playlist_track_count > PLAYLIST_TRACK_LIMIT:
-                raise Exception(
+                raise IndexingValidationError(
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
@@ -199,7 +197,7 @@ def create_playlist(params: ManageEntityParameters):
     )
 
     update_playlist_routes_table(
-        params.session, create_playlist_record, params.pending_playlist_routes
+        params, create_playlist_record
     )
 
     params.add_playlist_record(playlist_id, create_playlist_record)
@@ -238,15 +236,12 @@ def update_playlist(params: ManageEntityParameters):
         params.block_datetime,
     )
     process_playlist_data_event(
-        updated_playlist,
-        params.metadata,
-        params.block_integer_time,
-        params.block_datetime,
-        params.metadata_cid,
+        params,
+        updated_playlist
     )
 
     update_playlist_routes_table(
-        params.session, updated_playlist, params.pending_playlist_routes
+        params, updated_playlist
     )
 
     params.add_playlist_record(playlist_id, updated_playlist)
@@ -342,12 +337,14 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
 
 
 def process_playlist_data_event(
+    params: ManageEntityParameters,
     playlist_record,
-    playlist_metadata,
-    block_integer_time,
-    block_datetime,
-    metadata_cid,
 ):
+    playlist_metadata = params.metadata
+    block_integer_time = params.block_integer_time
+    block_datetime = params.block_datetime
+    metadata_cid = params.metadata_cid
+
     playlist_record.is_album = (
         playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
     )
@@ -384,6 +381,6 @@ def process_playlist_data_event(
     playlist_record.updated_at = block_datetime
     playlist_record.metadata_multihash = metadata_cid
 
-    logger.info(
+    params.logger.info(
         f"playlist.py | EntityManager | Updated playlist record {playlist_record}"
     )

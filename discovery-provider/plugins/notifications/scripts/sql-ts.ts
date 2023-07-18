@@ -2,7 +2,6 @@ import Knex from 'knex'
 import sqlts from '@rmp135/sql-ts'
 import { writeFileSync } from 'fs'
 
-
 async function updateDbTypes(connection: string, name: string) {
   const kpg = Knex({
     client: 'pg',
@@ -12,7 +11,7 @@ async function updateDbTypes(connection: string, name: string) {
   const config = {
     singularTableNames: true,
     tableNameCasing: 'pascal',
-    interfaceNameFormat: '${table}Row',
+    interfaceNameFormat: '${table}Row'
   }
   const tsString = await sqlts.toTypeScript(config, kpg as any)
   console.log(tsString)

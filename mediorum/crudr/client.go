@@ -11,12 +11,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm/clause"
 )
 
 type PeerClient struct {
 	Host     string
+	Seeded   bool
 	outbox   chan []byte
 	crudr    *Crudr
 	logger   *slog.Logger
@@ -124,11 +126,13 @@ func (p *PeerClient) doSweep() error {
 
 	resp, err := client.Do(req)
 	if err != nil {
+		p.Seeded = true // we can't reach this peer, so we're not able to seed any further
 		return fmt.Errorf("request failed: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
+		p.Seeded = true // we can't reach this peer, so we're not able to seed any further
 		return fmt.Errorf("bad status: %d", resp.StatusCode)
 	}
 
@@ -142,10 +146,16 @@ func (p *PeerClient) doSweep() error {
 	for _, op := range ops {
 		err := p.crudr.ApplyOp(op)
 		if err != nil {
-			fmt.Println(err)
+			p.logger.Error("failed to apply op", "op", op, "err", err)
 		} else {
 			lastUlid = op.ULID
 		}
+	}
+
+	// seeding is complete once there are no more ulids to sweep (or very few left)
+	if !p.Seeded && len(ops) < 10 {
+		p.logger.Info("seeding complete (no more ulids to sweep)")
+		p.Seeded = true
 	}
 
 	// set cursor
@@ -153,11 +163,28 @@ func (p *PeerClient) doSweep() error {
 		upsertClause := clause.OnConflict{UpdateAll: true}
 		err := p.crudr.DB.Clauses(upsertClause).Create(&Cursor{Host: host, LastULID: lastUlid}).Error
 		if err != nil {
-			p.logger.Info("failed to set cursor", "err", err)
+			p.logger.Error("failed to set cursor", "err", err)
 		}
 	}
 
 	p.logger.Debug("backfill done", "host", host, "count", len(ops), "last_ulid", lastUlid)
+
+	// seeding is complete if the last ulid is within the last hour
+	if !p.Seeded {
+		parsedULID, err := ulid.Parse(lastUlid)
+		if err == nil {
+			t := ulid.Time(parsedULID.Time())
+			since := time.Since(t)
+			if since < time.Hour {
+				p.logger.Info("seeding complete (timestamp <1hr)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
+				p.Seeded = true
+			} else {
+				p.logger.Info("seeding not complete (last ulid is too old)", "last_ulid", lastUlid, "since_minutes", since.Minutes())
+			}
+		} else {
+			p.logger.Warn(fmt.Sprintf("failed to parse last ulid: '%s'", lastUlid), "err", err)
+		}
+	}
 
 	return nil
 }

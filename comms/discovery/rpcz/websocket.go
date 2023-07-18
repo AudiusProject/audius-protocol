@@ -29,20 +29,25 @@ type userWebsocket struct {
 }
 
 func RegisterWebsocket(userId int32, conn net.Conn) {
-	mu.Lock()
-	defer mu.Unlock()
-	websockets = append(websockets, userWebsocket{
-		userId,
-		conn,
-	})
 
+	var pushErr error
 	for _, r := range recentMessages {
 		if time.Since(r.sentAt) < time.Second*10 && r.userId == userId {
-			err := wsutil.WriteServerMessage(conn, ws.OpText, r.payload)
-			if err != nil {
-				logger.Info("websocket push failed: " + err.Error())
+			pushErr = wsutil.WriteServerMessage(conn, ws.OpText, r.payload)
+			if pushErr != nil {
+				logger.Info("websocket push failed: " + pushErr.Error())
+				break
 			}
 		}
+	}
+
+	if pushErr == nil {
+		mu.Lock()
+		websockets = append(websockets, userWebsocket{
+			userId,
+			conn,
+		})
+		mu.Unlock()
 	}
 }
 

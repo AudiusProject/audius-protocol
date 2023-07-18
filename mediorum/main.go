@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
@@ -40,9 +41,9 @@ func main() {
 
 func startStagingOrProd(isProd bool) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
-	g := registrar.NewGraphStaging()
+	g := registrar.NewAudiusApiGatewayStaging()
 	if isProd {
-		g = registrar.NewGraphProd()
+		g = registrar.NewAudiusApiGatewayProd()
 	}
 
 	var peers, signers []server.Peer
@@ -114,6 +115,8 @@ func startStagingOrProd(isProd bool) {
 		log.Fatal(err)
 	}
 
+	go refreshPeersAndSigners(ss, g)
+
 	ss.MustStart()
 }
 
@@ -132,7 +135,7 @@ func startDevInstance() {
 		postgresDSN = v
 	}
 
-	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%s")
 	network := devNetwork(hostNameTemplate, 7)
 
 	config := server.MediorumConfig{
@@ -292,4 +295,45 @@ func getenvWithDefault(key string, fallback string) string {
 		return fallback
 	}
 	return val
+}
+
+// fetch registered nodes from chain / The Graph every 30 minutes and restart if they've changed
+func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider) {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
+	ticker := time.NewTicker(30 * time.Minute)
+	for range ticker.C {
+		var peers, signers []server.Peer
+		var err error
+
+		eg := new(errgroup.Group)
+		eg.Go(func() error {
+			peers, err = g.Peers()
+			return err
+		})
+		eg.Go(func() error {
+			signers, err = g.Signers()
+			return err
+		})
+		if err := eg.Wait(); err != nil {
+			logger.Error("failed to fetch registered nodes", "err", err)
+			continue
+		}
+
+		var combined, configCombined []string
+
+		for _, peer := range append(peers, signers...) {
+			combined = append(combined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(peer.Host)), strings.ToLower(peer.Wallet)))
+		}
+
+		for _, configPeer := range append(ss.Config.Peers, ss.Config.Signers...) {
+			configCombined = append(configCombined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(configPeer.Host)), strings.ToLower(configPeer.Wallet)))
+		}
+
+		slices.Sort(combined)
+		slices.Sort(configCombined)
+		if !slices.Equal(combined, configCombined) {
+			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers), "combined", combined, "configCombined", configCombined)
+			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
+		}
+	}
 }

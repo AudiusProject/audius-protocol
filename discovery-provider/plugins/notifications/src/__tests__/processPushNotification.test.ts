@@ -16,7 +16,7 @@ describe('Push Notifications', () => {
   let processor: Processor
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
-    .mockImplementation(() => Promise.resolve())
+    .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
 
   beforeEach(async () => {
     const setup = await setupTest({ mockTime: false })

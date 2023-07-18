@@ -1,9 +1,9 @@
-import logging
 from typing import Dict
 
 from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
@@ -16,12 +16,11 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    validate_signer,
 )
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
-
-logger = logging.getLogger(__name__)
 
 
 def update_stems_table(session, track_record, track_metadata):
@@ -157,12 +156,10 @@ def is_valid_json_field(metadata, field):
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
+    track_record.preview_cid = track_metadata["preview_cid"]
+    track_record.audio_upload_id = track_metadata["audio_upload_id"]
     track_record.title = track_metadata["title"]
-    track_record.duration = track_metadata.get("duration", 0) or 0
-    track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]
-    if track_metadata["cover_art_sizes"]:
-        track_record.cover_art = track_metadata["cover_art_sizes"]
     track_record.tags = track_metadata["tags"]
     track_record.genre = track_metadata["genre"]
     track_record.mood = track_metadata["mood"]
@@ -175,11 +172,22 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.isrc = track_metadata["isrc"]
     track_record.iswc = track_metadata["iswc"]
     track_record.track_segments = track_metadata["track_segments"]
-    track_record.is_unlisted = track_metadata["is_unlisted"]
     track_record.field_visibility = track_metadata["field_visibility"]
-
     track_record.is_premium = track_metadata["is_premium"]
     track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+    track_record.preview_start_seconds = track_metadata["preview_start_seconds"]
+
+    if track_metadata["cover_art_sizes"]:
+        track_record.cover_art = track_metadata["cover_art_sizes"]
+
+    track_record.is_unlisted = track_metadata["is_unlisted"]
+
+    # Only update `duration` if it's provided,
+    # otherwise fall back to the original value. This will allow for replacing
+    # audio files in the future
+    track_record.duration = track_metadata["duration"] or track_record.duration or 0
+    track_record.length = track_metadata["length"] or track_record.length or 0
+
     if is_valid_json_field(track_metadata, "premium_conditions"):
         track_record.premium_conditions = track_metadata["premium_conditions"]
     else:
@@ -218,66 +226,59 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
 
 
 def validate_track_tx(params: ManageEntityParameters):
-    user_id = params.user_id
     track_id = params.entity_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exist")
 
-    # Ensure the signer is either the user or authorized to perform action for the user
-    # TODO (nkang) - Extract to helper
-    wallet = params.existing_records[EntityType.USER][user_id].wallet
-    signer = params.signer.lower()
-    signer_matches_user = wallet and wallet.lower() == signer
-
-    if not signer_matches_user:
-        grant_key = (signer, user_id)
-        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
-        if is_signer_authorized:
-            grant = params.existing_records[EntityType.GRANT][grant_key]
-            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
-            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
-                raise Exception(
-                    f"Signer is not authorized to perform action for user {user_id}"
-                )
-        else:
-            raise Exception(
-                f"Signer does not match user {user_id} or an authorized wallet"
-            )
+    validate_signer(params)
 
     if params.entity_type != EntityType.TRACK:
-        raise Exception(f"Entity type {params.entity_type} is not a track")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a track"
+        )
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
-            raise Exception(f"Track {track_id} already exists")
+            raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
-            raise Exception(f"Cannot create track {track_id} below the offset")
+            raise IndexingValidationError(
+                f"Cannot create track {track_id} below the offset"
+            )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         track_metadata = params.metadata.get(params.metadata_cid)
         if track_metadata is not None:
             track_bio = track_metadata.get("description")
             track_genre = track_metadata.get("genre")
             if track_genre is not None and track_genre not in genre_allowlist:
-                raise Exception(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
-            if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
-                raise Exception(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
+                raise IndexingValidationError(
+                    f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
+                )
+            if (
+                track_bio is not None
+                and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+                )
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
-            raise Exception(f"Track {track_id} does not exist")
+            raise IndexingValidationError(f"Track {track_id} does not exist")
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
-            raise Exception(f"Existing track {track_id} does not match user")
+            raise IndexingValidationError(
+                f"Existing track {track_id} does not match user"
+            )
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][
-                ai_attribution_user_id
-            ]
+            ai_attribution_user = (params.session.query(User)
+                .filter(User.user_id == ai_attribution_user_id, User.is_current == True)
+                .first())
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(
+                    f"Cannot AI attribute user {ai_attribution_user}"
+                )
     return True
 
 
@@ -287,26 +288,24 @@ def get_handle(params: ManageEntityParameters):
         params.session.query(User.handle)
         .filter(User.user_id == params.user_id, User.is_current == True)
         .first()
-    )[0]
-    if not handle:
-        logger.error("missing track user in entity manager handle track")
-    return handle
+    )
+    if not handle or not handle[0]:
+        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+
+    return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict):
-    handle = get_handle(params)
+def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
-        logger.info(
-            f"index.py | tracks.py | Processing track cover art {track.cover_art}"
-        )
         track.cover_art_sizes = track.cover_art
         track.cover_art = None
 
 
 def create_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -327,7 +326,7 @@ def create_track(params: ManageEntityParameters):
         params.session, track_record, params.metadata, params.pending_track_routes
     )
 
-    update_track_record(params, track_record, params.metadata)
+    update_track_record(params, track_record, params.metadata, handle)
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
@@ -339,6 +338,7 @@ def create_track(params: ManageEntityParameters):
 
 
 def update_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -359,7 +359,7 @@ def update_track(params: ManageEntityParameters):
     update_track_routes_table(
         params.session, updated_track, params.metadata, params.pending_track_routes
     )
-    update_track_record(params, updated_track, params.metadata)
+    update_track_record(params, updated_track, params.metadata, handle)
     update_remixes_table(params.session, updated_track, params.metadata)
 
     params.add_track_record(track_id, updated_track)

@@ -8,6 +8,7 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
+	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
@@ -47,10 +48,9 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// only start sweepers if registered...
-		if discoveryConfig.IsRegisteredWallet {
-			proc.StartPeerClients()
-		}
+		// start peer clients
+		// todo: would be nice to only start sweepers if registered...
+		proc.StartPeerClients()
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {
@@ -82,7 +82,7 @@ func backgroundRefreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) {
 	for {
 		time.Sleep(time.Minute * 5)
 		if err := refreshRegisteredPeers(discoveryConfig); err != nil {
-			slog.Error("refreshRegisteredPeers failed", err)
+			slog.Error("refreshRegisteredPeers failed", "err", err)
 		}
 	}
 }
@@ -93,15 +93,26 @@ func refreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) error {
 		return err
 	}
 
-	// special case read only nodes
 	if config.IsHonoraryNode(discoveryConfig.MyWallet) {
+		// special case read only nodes
 		discoveryConfig.IsRegisteredWallet = true
-	}
-
-	// validate host + wallet pair
-	if !discoveryConfig.IsRegisteredWallet {
+	} else {
+		// validate host + wallet pair
+		matchingNodes := []the_graph.Peer{}
 		for _, peer := range peers {
-			if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) && strings.EqualFold(peer.Host, discoveryConfig.MyHost) {
+			if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+				matchingNodes = append(matchingNodes, peer)
+			}
+		}
+
+		// we can safely infer hostname if hostname is blank and the wallet address is not reused
+		if discoveryConfig.MyHost == "" && len(matchingNodes) == 1 {
+			discoveryConfig.MyHost = misc.TrimTrailingSlash(matchingNodes[0].Host)
+		}
+
+		// wallet + hostname match => IsRegisteredWallet
+		for _, peer := range matchingNodes {
+			if strings.EqualFold(peer.Host, discoveryConfig.MyHost) {
 				discoveryConfig.IsRegisteredWallet = true
 				break
 			}

@@ -18,6 +18,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
@@ -70,7 +71,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -147,7 +148,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     const title = 'Congratulations! 🎉'
     const body = this.getPushBodyText(entityName, isAlbum)
-    await sendBrowserNotification(isBrowserPushEnabled, 
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
       userNotificationSettings,
       this.receiverUserId,
       title,
@@ -163,7 +165,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       const devices: Device[] = userNotificationSettings.getDevices(
         this.receiverUserId
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -185,6 +187,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.receiverUserId)
     }
 

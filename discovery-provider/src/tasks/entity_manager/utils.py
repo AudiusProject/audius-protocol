@@ -5,6 +5,7 @@ from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.cid_data import CIDData
@@ -33,7 +34,7 @@ from src.utils.structured_logger import StructuredLogger
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-logger = StructuredLogger(__name__)
+utils_logger = StructuredLogger(__name__)
 
 PLAYLIST_ID_OFFSET = 400_000
 TRACK_ID_OFFSET = 2_000_000
@@ -71,7 +72,6 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     USER_REPLICA_SET = "UserReplicaSet"
-    USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -102,7 +102,6 @@ class RecordDict(TypedDict):
 class ExistingRecordDict(TypedDict):
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
-    UserByWallet: Dict[str, User]
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
@@ -122,7 +121,6 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
     DeveloperApp: Set[str]
-    UserByWallet: Set[str]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -145,6 +143,7 @@ class ManageEntityParameters:
         block_number: int,
         event_blockhash: str,
         txhash: str,
+        logger: StructuredLogger,
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -171,6 +170,7 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
+        self.logger = logger  # passed in with EM context
 
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
@@ -274,7 +274,7 @@ def get_metadata_type_and_format(entity_type):
         metadata_type = "user"
         metadata_format = user_metadata_format
     else:
-        raise Exception(f"Unknown metadata type ${entity_type}")
+        raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format
 
 
@@ -300,12 +300,11 @@ def sanitize_json(json_resp):
 def parse_metadata(metadata, action, entity_type):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
-
     try:
         data = sanitize_json(json.loads(metadata))
 
         if "cid" not in data.keys() or "data" not in data.keys():
-            raise Exception("required keys missing in metadata")
+            raise IndexingValidationError("required keys missing in metadata")
 
         cid = data["cid"]
         metadata_json = data["data"]
@@ -314,14 +313,14 @@ def parse_metadata(metadata, action, entity_type):
 
         # Only index valid changes
         if formatted_json == metadata_format:
-            raise Exception("no valid metadata changes detected")
+            raise IndexingValidationError("no valid metadata changes detected")
 
         return formatted_json, cid
     except Exception as e:
-        logger.info(
+        utils_logger.info(
             f"entity_manager.py | utils.py | error deserializing metadata {metadata}: {e}"
         )
-        raise e
+        raise IndexingValidationError(e)
 
 
 def save_cid_metadata(
@@ -362,3 +361,30 @@ def copy_record(
         else:
             setattr(record_copy, key, value)
     return record_copy
+
+
+def validate_signer(params: ManageEntityParameters):
+    # Ensure the signer is either the user or authorized to perform action for the user
+    if params.user_id not in params.existing_records[EntityType.USER]:
+        raise IndexingValidationError(f"User {params.user_id} does not exist")
+    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
+    signer = params.signer.lower()
+    signer_matches_user = wallet and wallet.lower() == signer
+    if signer_matches_user:
+        params.logger.set_context("isApp", "false")
+    else:
+        params.logger.set_context("isApp", "unknown")
+        grant_key = (signer, params.user_id)
+        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        if is_signer_authorized:
+            grant = params.existing_records[EntityType.GRANT][grant_key]
+            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+                raise IndexingValidationError(
+                    f"Signer is not authorized to perform action for user {params.user_id}"
+                )
+            params.logger.set_context("isApp", "true")
+        else:
+            raise IndexingValidationError(
+                f"Signer does not match user {params.user_id} or an authorized wallet"
+            )

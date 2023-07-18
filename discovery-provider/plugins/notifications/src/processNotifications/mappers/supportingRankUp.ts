@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupportingRankUpNotification
@@ -38,7 +39,7 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
@@ -72,7 +73,13 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
 
     const title = `#${this.rank} Top Supporter`
     const body = `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.senderUserId, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      this.senderUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -86,7 +93,7 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
         this.senderUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -109,6 +116,7 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(this.senderUserId)
     }
 

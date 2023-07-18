@@ -27,7 +27,7 @@ audius_discprov_loglevel=${audius_discprov_loglevel:-info}
 # used to remove data that may have been persisted via a k8s emptyDir
 export audius_prometheus_container=server
 
-# run alembic migrations
+# run migrations
 if [ "$audius_db_run_migrations" != false ]; then
     echo "Running pg_migrate.sh migrations"
     (cd ddl ; DB_URL="$audius_db_url" bash pg_migrate.sh)
@@ -51,7 +51,7 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         # Clear the celerybeat artifacts
         [ -e /var/celerybeat-schedule ] && rm /var/celerybeat-schedule
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel WARNING --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
 else
@@ -63,7 +63,7 @@ else
         # Clear the celerybeat artifacts
         [ -e /var/celerybeat-schedule ] && rm /var/celerybeat-schedule
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
-        audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
+        audius_service=beat celery -A src.worker.celery beat --loglevel WARNING --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
 fi

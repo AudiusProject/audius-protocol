@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/labstack/echo/v4"
 )
 
 func apiPath(parts ...string) string {
@@ -20,14 +22,24 @@ func apiPath(parts ...string) string {
 	return u.String()
 }
 
-// replaces the host portion of a URL, maintaining path and query params
-func replaceHost(u url.URL, newHost string) url.URL {
+// replaces the host portion of a URL, maintaining path and query params, and setting the scheme to https for prod/stage
+func (ss *MediorumServer) replaceHost(c echo.Context, newHost string) url.URL {
+	u := *c.Request().URL
 	u.Host = cleanHost(newHost)
+	u.Scheme = ss.getScheme()
 	return u
 }
 
+func (ss *MediorumServer) getScheme() string {
+	if ss.Config.Env == "stage" || ss.Config.Env == "prod" {
+		return "https"
+	} else {
+		return "http"
+	}
+}
+
 // gets the host from a URL string
-// without protocol
+// without protocol/scheme
 func cleanHost(host string) string {
 	u, _ := url.Parse(host)
 	return u.Host

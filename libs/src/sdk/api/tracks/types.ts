@@ -1,8 +1,5 @@
 import { z } from 'zod'
-import type {
-  CrossPlatformFile,
-  CrossPlatformFile as File
-} from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
@@ -51,12 +48,6 @@ export const createUploadTrackMetadataSchema = () =>
           requiresFollow: z.boolean()
         })
       ),
-      isPremium: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      isUnlisted: z.optional(z.boolean()),
-      iswc: z.optional(z.string()),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       fieldVisibility: z.optional(
         z.object({
           mood: z.optional(z.boolean()),
@@ -68,6 +59,12 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      isPremium: z.optional(z.boolean()),
+      isrc: z.optional(z.string()),
+      isUnlisted: z.optional(z.boolean()),
+      iswc: z.optional(z.string()),
+      license: z.optional(z.string()),
+      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       premiumConditions: z.optional(
         z.union([
           PremiumConditionsNFTCollection,
@@ -90,11 +87,14 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       tags: z.optional(z.string()),
-      title: z.string()
+      title: z.string(),
+      previewStartSeconds: z.optional(z.number()),
+      audioUploadId: z.optional(z.string()),
+      previewCid: z.optional(z.string())
     })
     .strict()
 
-export type TrackMetadataType = z.input<
+export type TrackMetadata = z.input<
   ReturnType<typeof createUploadTrackMetadataSchema>
 >
 
@@ -103,21 +103,42 @@ export const createUploadTrackSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
+        isFileValid(data as File)
       ),
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as CrossPlatformFile)
-      )
+      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
     })
     .strict()
 
-export type UploadTrackRequest = z.input<
-  ReturnType<typeof createUploadTrackSchema>
+export type UploadTrackRequest = Omit<
+  z.input<ReturnType<typeof createUploadTrackSchema>>,
+  'onProgress'
 > & {
   // Typing function manually because z.function() does not
   // support argument names
+  onProgress?: (progress: number) => void
+}
+
+export const createUpdateTrackSchema = () =>
+  createUploadTrackSchema()
+    .pick({
+      userId: true,
+      coverArtFile: true,
+      metadata: true,
+      onProgress: true
+    })
+    .merge(
+      z.object({
+        trackId: HashId
+      })
+    )
+    .strict()
+
+export type UpdateTrackRequest = Omit<
+  z.input<ReturnType<typeof createUpdateTrackSchema>>,
+  'onProgress'
+> & {
   onProgress?: (progress: number) => void
 }
 
@@ -129,3 +150,57 @@ export const DeleteTrackSchema = z
   .strict()
 
 export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>
+
+export const FavoriteTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        /**
+         * Is this a save of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
+        isSaveOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type FavoriteTrackRequest = z.input<typeof FavoriteTrackSchema>
+
+export const UnfavoriteTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnfavoriteTrackRequest = z.input<typeof UnfavoriteTrackSchema>
+
+export const RepostTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId,
+    metadata: z.optional(
+      z.object({
+        /**
+         * Is this a repost of a repost? Used to dispatch notifications
+         * when a user favorites another user's repost
+         */
+        isRepostOfRepost: z.boolean()
+      })
+    )
+  })
+  .strict()
+
+export type RepostTrackRequest = z.input<typeof RepostTrackSchema>
+
+export const UnrepostTrackSchema = z
+  .object({
+    userId: HashId,
+    trackId: HashId
+  })
+  .strict()
+
+export type UnrepostTrackRequest = z.input<typeof UnrepostTrackSchema>

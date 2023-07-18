@@ -61,7 +61,9 @@ export const main = async () => {
 
   // @ts-ignore
   const audiusInstance = new AudiusLibs({
-    identityServiceConfig: AudiusLibs.configIdentityService(message.identityService),
+    identityServiceConfig: AudiusLibs.configIdentityService(
+      message.identityService
+    ),
     web3Config: {
       registryAddress: values.registryAddress,
       useExternalWeb3: false,
@@ -77,20 +79,21 @@ export const main = async () => {
   await audiusInstance.init()
   const notification = {
     title: values.title,
-    description: values.description
+    short_description: values.body
   }
 
   try {
-    const res = await audiusInstance.contracts.EntityManagerClient!.manageEntity(
-      0, // userId
-      // @ts-ignore
-      'Notification', // EntityManagerClient.EntityType.NOTIFICATION,
-      0, // userId
-      // @ts-ignore
-      'Create', // EntityManagerClient.Action.CREATE,
-      JSON.stringify(notification),
-      values.privateKey
-    )
+    const res =
+      await audiusInstance.contracts.EntityManagerClient!.manageEntity(
+        0, // userId
+        // @ts-ignore
+        'Notification', // EntityManagerClient.EntityType.NOTIFICATION,
+        0, // userId
+        // @ts-ignore
+        'Create', // EntityManagerClient.Action.CREATE,
+        JSON.stringify(notification),
+        values.pk
+      )
     console.log({ res })
   } catch (e) {
     console.log(e)

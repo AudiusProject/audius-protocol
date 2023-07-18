@@ -24,7 +24,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
             path: "docs",
             routeBasePath: "/",
             sidebarPath: require.resolve("./sidebars.js"),
-            editUrl: 'https://github.com/AudiusProject/docs.audius.org/',
+            editUrl: "https://github.com/AudiusProject/docs.audius.org/",
           },
           theme: {
             customCss: require.resolve("./src/css/custom.css"),
@@ -41,12 +41,12 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
           plugin: ["typedoc-plugin-audius-theme"],
           out: "./developers/sdk",
           entryPoints: ["./node_modules/@audius/sdk/src/sdk/index.ts"],
-          tsconfig: "./node_modules/@audius/sdk/tsconfig.json",
+          tsconfig: "./node_modules/@audius/sdk/tsconfig.docs.json",
           excludeInternal: true,
           cleanOutputDir: true,
           disableSources: true,
           hideMembersSymbol: true,
-          watch: process.env.TYPEDOC_WATCH
+          watch: process.env.TYPEDOC_WATCH,
         },
       ],
     ],
@@ -121,7 +121,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
           ],
         },
         algolia: {
-          appId: '5HE2PIGNOV',
+          appId: "5HE2PIGNOV",
           // This API key is "search-only" and safe to be published
           apiKey: "347af1fe50a2533f274a4a64a695c64c",
           indexName: "audius",

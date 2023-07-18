@@ -44,9 +44,9 @@ ___
 
 ___
 
-### favorite\_count
+### favoriteCount
 
- **favorite\_count**: `number`
+ **favoriteCount**: `number`
 
 **`memberof`** Track
 
@@ -68,6 +68,14 @@ ___
 
 ___
 
+### isStreamable
+
+ `Optional` **isStreamable**: `boolean`
+
+**`memberof`** Track
+
+___
+
 ### mood
 
  `Optional` **mood**: `string`
@@ -84,33 +92,33 @@ ___
 
 ___
 
-### play\_count
+### playCount
 
- **play\_count**: `number`
-
-**`memberof`** Track
-
-___
-
-### release\_date
-
- `Optional` **release\_date**: `string`
+ **playCount**: `number`
 
 **`memberof`** Track
 
 ___
 
-### remix\_of
+### releaseDate
 
- `Optional` **remix\_of**: [`RemixParent`](RemixParent.md)
+ `Optional` **releaseDate**: `string`
 
 **`memberof`** Track
 
 ___
 
-### repost\_count
+### remixOf
 
- **repost\_count**: `number`
+ `Optional` **remixOf**: [`RemixParent`](RemixParent.md)
+
+**`memberof`** Track
+
+___
+
+### repostCount
+
+ **repostCount**: `number`
 
 **`memberof`** Track
 
@@ -127,6 +135,14 @@ ___
 ### title
 
  **title**: `string`
+
+**`memberof`** Track
+
+___
+
+### trackCid
+
+ `Optional` **trackCid**: `string`
 
 **`memberof`** Track
 

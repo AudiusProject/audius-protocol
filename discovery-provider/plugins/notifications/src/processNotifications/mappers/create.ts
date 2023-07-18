@@ -16,6 +16,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -65,7 +66,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     let ownerId: number | undefined
@@ -139,7 +140,13 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       const title = 'New Artist Update'
       const body = description
-      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        userId,
+        title,
+        body
+      )
 
       // If the user has devices to the notification to, proceed
       if (
@@ -151,7 +158,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         const devices: Device[] = userNotificationSettings.getDevices(userId)
         // If the user's settings for the follow notification is set to true, proceed
 
-        await Promise.all(
+        const pushes = await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
               {
@@ -175,6 +182,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
             )
           })
         )
+        await disableDeviceArns(this.identityDB, pushes)
         await this.incrementBadgeCount(userId)
       }
 

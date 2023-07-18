@@ -8,6 +8,8 @@ from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
+from src.models.grants.developer_app import DeveloperApp
+from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
@@ -304,6 +306,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
         if (
             next_block
             and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            and latest_database_block.number != 0
         ):
             block_on_chain = False
 
@@ -441,6 +444,18 @@ def index_next_block(
                 f"Error in calling update trending challenge {e}",
                 exc_info=True,
             )
+        try:
+            # Every 100 blocks, poll and apply delist statuses from trusted notifier
+            if next_block.number % 100 == 0:
+                celery.send_task(
+                    "update_delist_statuses"
+                )
+        except Exception as e:
+            # Do not throw error, as this should not stop indexing
+            logger.error(
+                f"Error in calling update_delist_statuses {e}",
+                exc_info=True,
+            )
         if skip_tx_hash:
             clear_indexing_error(redis)
 
@@ -535,6 +550,16 @@ def revert_block(session: Session, revert_block: Block):
         session.query(PlaylistSeen)
         .filter(PlaylistSeen.blocknumber == revert_block_number)
         .all()
+    )
+
+    revert_developer_apps = (
+        session.query(DeveloperApp)
+        .filter(DeveloperApp.blocknumber == revert_block_number)
+        .all()
+    )
+
+    revert_grants = (
+        session.query(Grant).filter(Grant.blocknumber == revert_block_number).all()
     )
 
     # Revert all of above transactions
@@ -748,6 +773,37 @@ def revert_block(session: Session, revert_block: Block):
         logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
         session.delete(playlist_seen_to_revert)
 
+    for developer_app_to_revert in revert_developer_apps:
+        previous_developer_app_entry = (
+            session.query(DeveloperApp)
+            .filter(
+                DeveloperApp.address == developer_app_to_revert.address,
+                DeveloperApp.blocknumber < revert_block_number,
+            )
+            .order_by(DeveloperApp.blocknumber.desc())
+            .first()
+        )
+        if previous_developer_app_entry:
+            previous_developer_app_entry.is_current = True
+        logger.info(f"Reverting developer app {developer_app_to_revert}")
+        session.delete(developer_app_to_revert)
+
+    for grant_to_revert in revert_grants:
+        previous_grant_entry = (
+            session.query(Grant)
+            .filter(
+                Grant.grantee_address == grant_to_revert.grantee_address,
+                Grant.user_id == grant_to_revert.user_id,
+                Grant.blocknumber < revert_block_number,
+            )
+            .order_by(Grant.blocknumber.desc())
+            .first()
+        )
+        if previous_grant_entry:
+            previous_grant_entry.is_current = True
+        logger.info(f"Reverting grant {grant_to_revert}")
+        session.delete(grant_to_revert)
+
     # Remove outdated block entry
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
@@ -787,7 +843,8 @@ def index_nethermind(self):
                 # Nothing to index
                 logger.disable()
                 update_lock.release()
-                celery.send_task("index_nethermind")
+                # Send the task with a small amount of sleep to free up cycles
+                celery.send_task("index_nethermind", countdown=0.5)
                 return
 
             if in_valid_state:

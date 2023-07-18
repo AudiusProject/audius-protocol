@@ -74,7 +74,7 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 func (vtor *Validator) isBanned(tx *sqlx.Tx, userId int32) bool {
 	q := vtor.getQ(tx)
 	isBanned := false
-	q.Get(&isBanned, `select count(user_id) = 1 from chat_ban where user_id = $1`, userId)
+	q.Get(&isBanned, `select count(user_id) = 1 from chat_ban where user_id = $1 and is_banned = true`, userId)
 	return isBanned
 }
 
@@ -345,7 +345,7 @@ func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32,
 		var s1, s10, s60 sql.NullInt64
 		err = q.QueryRow(query, userId).Scan(&s1, &s10, &s60)
 		if err != nil {
-			slog.Error("burst rate limit query failed", err)
+			slog.Error("burst rate limit query failed", "err", err)
 		}
 
 		// 10 per second in last second

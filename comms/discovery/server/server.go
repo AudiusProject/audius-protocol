@@ -35,6 +35,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	// Middleware
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Logger())
 
 	s := &ChatServer{
 		Echo:   e,
@@ -79,6 +80,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 	g.GET("/debug/cursors", s.debugCursors)
+	g.GET("/debug/failed", s.debugFailed)
 
 	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
@@ -221,17 +223,20 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 		since = t
 	}
 	var cursors []struct {
-		Host      string    `db:"relayed_by" json:"relayed_by"`
-		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
-		Count     int       `db:"count" json:"count"`
+		Host      string     `db:"relayed_by" json:"relayed_by"`
+		RelayedAt time.Time  `db:"relayed_at" json:"relayed_at"`
+		RpcCursor *time.Time `db:"rpc_cursor" json:"rpc_cursor"`
+		Count     int        `db:"count" json:"count"`
 	}
 	q := `
 	select
-		relayed_by,
-		max(relayed_at) as relayed_at,
+		l.relayed_by,
+		max(l.relayed_at) as relayed_at,
+		max(c.relayed_at) as rpc_cursor,
 		count(*) as count
-	from rpc_log
-	where relayed_at > $1
+	from rpc_log l
+	left join rpc_cursor c on l.relayed_by = c.relayed_by
+	where l.relayed_at > $1
 	group by 1;
 	`
 	err := db.Conn.Select(&cursors, q, since)
@@ -239,6 +244,26 @@ func (s *ChatServer) debugCursors(c echo.Context) error {
 		return err
 	}
 	return c.JSON(200, cursors)
+}
+
+func (s *ChatServer) debugFailed(c echo.Context) error {
+	var failed []struct {
+		RpcLogJson json.RawMessage `db:"rpc_log_json" json:"rpc_log_json"`
+		ErrorCount int             `db:"error_count" json:"error_count"`
+		ErrorText  string          `db:"error_text" json:"error_text"`
+	}
+	q := `
+	select
+		rpc_log_json, error_count, error_text
+	from rpc_error
+	order by last_attempt desc
+	limit 5000;
+	`
+	err := db.Conn.Select(&failed, q)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, failed)
 }
 
 func (s *ChatServer) debugSse(c echo.Context) error {
@@ -661,8 +686,8 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
 	}
 
-	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc limit 10000`
-	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after.Truncate(time.Microsecond))
+	query := `select * from rpc_log where applied_at > $1 order by applied_at asc limit 10000`
+	err := db.Conn.Select(&rpcs, query, after.Truncate(time.Microsecond))
 	if err != nil {
 		return err
 	}

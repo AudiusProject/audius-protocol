@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -38,7 +39,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     isLiveEmailEnabled,
     isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean,
+    isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
   }) {
     const trackRes: Array<{
@@ -95,7 +96,13 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
     const title = 'Your track got on a playlist! 💿'
     const body = `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`
-    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, track.owner_id, title, body)
+    await sendBrowserNotification(
+      isBrowserPushEnabled,
+      userNotificationSettings,
+      track.owner_id,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -106,7 +113,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       const devices: Device[] = userNotificationSettings.getDevices(
         track.owner_id
       )
-      await Promise.all(
+      const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
@@ -129,6 +136,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
           )
         })
       )
+      await disableDeviceArns(this.identityDB, pushes)
       await this.incrementBadgeCount(track.owner_id)
     }
     if (

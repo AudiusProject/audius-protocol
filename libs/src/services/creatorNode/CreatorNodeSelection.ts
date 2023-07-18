@@ -1,6 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import _ from 'lodash'
-import type { EthContracts } from '../ethContracts'
+import { EthContracts, isVersionAtLeastSameMajorMinor } from '../ethContracts'
 
 import {
   ServiceSelection,
@@ -33,10 +33,6 @@ export function setSpIDForEndpoint(endpoint: string, spID?: number) {
 }
 
 type CreatorNode = {
-  getSyncStatus: (
-    service: ServiceName,
-    timeout: Timeout
-  ) => Promise<{ isBehind: boolean; isConfigured: boolean }>
   passList: Set<string> | null
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
@@ -140,9 +136,9 @@ export class CreatorNodeSelection extends ServiceSelection {
    * 3. Filter out unhealthy, outdated, and still syncing nodes via health and sync check
    * 4. Sort by healthiest (highest version -> lowest version); secondary check if equal version based off of responseTime
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
-   * @param performSyncCheck whether or not to check whether the nodes need syncs before selection
+   * @param @deprecated performSyncCheck (deprecated / unused) whether or not to check whether the nodes need syncs before selection
    */
-  override async select(performSyncCheck = true, log = true) {
+  override async select(_performSyncCheck = true, log = true) {
     // Reset decision tree and backups
     this.decisionTree = []
     this.clearBackups()
@@ -171,15 +167,6 @@ export class CreatorNodeSelection extends ServiceSelection {
       val: services
     })
 
-    // TODO: add a sample size selection round to not send requests to all available nodes
-
-    if (performSyncCheck) {
-      services = await this._performSyncChecks(services, this.timeout)
-      this.decisionTree.push({
-        stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS,
-        val: services
-      })
-    }
     const {
       healthyServicesList,
       healthyServicesMap: servicesMap,
@@ -228,20 +215,6 @@ export class CreatorNodeSelection extends ServiceSelection {
       )
     }
     return { primary, secondaries, services: servicesMap }
-  }
-
-  /**
-   * Checks the sync progress of a Content Node
-   * @param service Content Node endopint
-   * @param timeout ms
-   */
-  async getSyncStatus(service: ServiceName, timeout: Timeout = null) {
-    try {
-      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout)
-      return { service, syncStatus, error: null }
-    } catch (e) {
-      return { service, syncStatus: null, error: e }
-    }
   }
 
   /**
@@ -311,49 +284,6 @@ export class CreatorNodeSelection extends ServiceSelection {
   }
 
   /**
-   * Performs a sync check for every endpoint in services. Returns an array of successful sync checked endpoints and
-   * adds the err'd sync checked endpoints to this.unhealthy
-   * @param services content node endpoints
-   * @param timeout ms applied to each request
-   */
-  async _performSyncChecks(services: ServiceName[], timeout: Timeout = null) {
-    const successfulSyncCheckServices: ServiceName[] = []
-    const syncResponses = await Promise.all(
-      services.map(
-        async (service) => await this.getSyncStatus(service, timeout)
-      )
-    )
-    // Perform sync checks on all services
-    for (const response of syncResponses) {
-      // Could not perform a sync check. Add to unhealthy
-      if (response.error) {
-        this.logger.warn(
-          `CreatorNodeSelection - Failed sync status check for ${response.service}: ${response.error}`
-        )
-        this.addUnhealthy(response.service)
-        continue
-      }
-
-      const { syncStatus } = response
-      if (!syncStatus) continue
-      const { isBehind, isConfigured } = syncStatus
-      // a first time creator will have a sync status as isBehind = true and isConfigured = false. this is ok
-      const firstTimeCreator = isBehind && !isConfigured
-      // an existing creator will have a sync status (assuming healthy) as isBehind = false and isConfigured = true. this is also ok
-      const existingCreator = !isBehind && isConfigured
-      // if either of these two are true, the cnode is suited to be selected
-      if (firstTimeCreator || existingCreator) {
-        successfulSyncCheckServices.push(response.service)
-      } else {
-        // else, add to unhealthy
-        this.addUnhealthy(response.service)
-      }
-    }
-
-    return successfulSyncCheckServices
-  }
-
-  /**
    * Performs a health check for every endpoint in services. Returns an array of successful health checked endpoints and
    * adds the err'd health checked endpoints to this.unhealthy, and a mapping of successful endpoint to its health check response.
    * @param services content node endpoints
@@ -387,7 +317,7 @@ export class CreatorNodeSelection extends ServiceSelection {
       //      use existing value from `this.maxStorageUsedPercent`
       if (resp.response) {
         const isUp = resp.response.status === 200
-        const versionIsUpToDate = this.ethContracts.hasSameMajorAndMinorVersion(
+        const versionIsUpToDate = isVersionAtLeastSameMajorMinor(
           this.currentVersion as string,
           resp.response.data.data.version
         )

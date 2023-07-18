@@ -2,15 +2,12 @@ import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
+import { UsersApi } from './api/users/UsersApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
-import {
-  Configuration,
-  PlaylistsApi,
-  UsersApi,
-  TipsApi
-} from './api/generated/default'
+import { Configuration, TipsApi } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
   PlaylistsApi as PlaylistsApiFull,
@@ -129,26 +126,27 @@ const initializeServices = (config: SdkConfig) => {
 
   const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector()
 
-  const defaultStorageNodeSelector = new StorageNodeSelector({
-    auth: config.services?.auth ?? defaultAuthService,
-    discoveryNodeSelector:
-      config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
-  })
+  const storageNodeSelector =
+    config.services?.storageNodeSelector ??
+    new StorageNodeSelector({
+      auth: config.services?.auth ?? defaultAuthService,
+      discoveryNodeSelector:
+        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+    })
 
   const defaultEntityManager = new EntityManager({
     ...defaultEntityManagerConfig,
     discoveryNodeSelector:
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
+  const entityManager = config.services?.entityManager ?? defaultEntityManager
 
-  const defaultStorage = new Storage({
-    storageNodeSelector: defaultStorageNodeSelector
-  })
+  const defaultStorage = new Storage({ storageNodeSelector })
 
   const defaultServices: ServicesContainer = {
-    storageNodeSelector: defaultStorageNodeSelector,
+    storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    entityManager: defaultEntityManager,
+    entityManager,
     storage: defaultStorage,
     auth: defaultAuthService
   }
@@ -178,8 +176,18 @@ const initializeApis = ({
     services.entityManager,
     services.auth
   )
-  const users = new UsersApi(generatedApiClientConfig)
-  const playlists = new PlaylistsApi(generatedApiClientConfig)
+  const users = new UsersApi(
+    generatedApiClientConfig,
+    services.storage,
+    services.entityManager,
+    services.auth
+  )
+  const playlists = new PlaylistsApi(
+    generatedApiClientConfig,
+    services.storage,
+    services.entityManager,
+    services.auth
+  )
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
   const chats = new ChatsApi(

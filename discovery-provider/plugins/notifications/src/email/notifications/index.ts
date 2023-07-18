@@ -13,7 +13,12 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
-import { MappingFeatureName, RemoteConfig } from '../../remoteConfig'
+import {
+  MappingFeatureName,
+  NotificationsScheduledEmails,
+  RemoteConfig,
+  ScheduledEmailPluginMappings
+} from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
 
 // blockchainUserId => email
@@ -37,97 +42,66 @@ const Results = Object.freeze({
   SENT: 'SENT'
 })
 
-export const getUsersCanNotify = async (
+export const getUsersCanNotifyQuery = async (
   identityDb: Knex,
-  frequency: EmailFrequency,
   startOffset: moment.Moment,
+  frequency: EmailFrequency,
   pageCount: number,
-  onPage: (emailUsers: EmailUsers) => Promise<void>,
-) => {
-  let lastUser: number = 0;
-
-  const time = Date.now()
-  const timeoutMillis = 14400000
-  const timeout = time + timeoutMillis
-
-  let offset = 0
-  while (true) {
-    const now = Date.now()
-    if (now > timeout) break
-    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
-    offset = offset + pageCount
-    if (userRows.length === 0) break // once we've reached the end of users for this query
-    lastUser = userRows[userRows.length - 1].blockchainUserId
-    if (lastUser === undefined) {
-      logger.info("no last user found")
-      break
-    }
-    if (userRows.length === 0) break
-    const emailUsers = userRows.reduce((acc, user) => {
-      acc[user.blockchainUserId] = user.email
-      return acc
-    }, {} as EmailUsers)
-    await onPage(emailUsers)
-  }
-}
-
-export const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
+  lastUser: number
+) =>
   await identityDb
-      .with(
-        'lastEmailSentAt',
-        identityDb.raw(`
+    .with(
+      'lastEmailSentAt',
+      identityDb.raw(`
         SELECT DISTINCT ON ("userId")
           "userId",
           "timestamp"
         FROM "NotificationEmails"
         ORDER BY "userId", "timestamp" DESC
       `)
+    )
+    .select('Users.blockchainUserId', 'Users.email')
+    .from('Users')
+    .join(
+      'UserNotificationSettings',
+      'UserNotificationSettings.userId',
+      'Users.blockchainUserId'
+    )
+    .leftJoin(
+      'lastEmailSentAt',
+      'lastEmailSentAt.userId',
+      'Users.blockchainUserId'
+    )
+    .where('Users.isEmailDeliverable', true)
+    .where(function () {
+      this.where('lastEmailSentAt.timestamp', null).orWhere(
+        'lastEmailSentAt.timestamp',
+        '<',
+        startOffset
       )
-      .select('Users.blockchainUserId', 'Users.email')
-      .from('Users')
-      .join(
-        'UserNotificationSettings',
-        'UserNotificationSettings.userId',
-        'Users.blockchainUserId'
-      )
-      .leftJoin(
-        'lastEmailSentAt',
-        'lastEmailSentAt.userId',
-        'Users.blockchainUserId'
-      )
-      .where('Users.isEmailDeliverable', true)
-      .where(function () {
-        this.where('lastEmailSentAt.timestamp', null).orWhere(
-          'lastEmailSentAt.timestamp',
-          '<',
-          startOffset
-        )
-      })
-      .modify(function (queryBuilder: Knex.QueryBuilder) {
-        // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
-        // live email notifications for every new message action.
-        // New messages/reactions do not trigger live email notifications but are included in existing live emails scheduled to go out.
-        // If a user with frequency='live' receives messages but no other notifications to trigger a live email since validLastEmailOffset,
-        // they'll receive a daily email with the message notifications.
-        // No other notification types for the live users since validLastEmailOffset should be included in the daily
-        // email because they would have triggered an email notification immediately.
-        if (frequency == 'daily') {
-          queryBuilder.where(function () {
-            this.where(
-              'UserNotificationSettings.emailFrequency',
-              frequency
-            ).orWhere('UserNotificationSettings.emailFrequency', 'live')
-          })
-        } else {
-          queryBuilder.where(
+    })
+    .modify(function (queryBuilder: Knex.QueryBuilder) {
+      // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
+      // live email notifications for every new message action.
+      // New messages/reactions do not trigger live email notifications but are included in existing live emails scheduled to go out.
+      // If a user with frequency='live' receives messages but no other notifications to trigger a live email since validLastEmailOffset,
+      // they'll receive a daily email with the message notifications.
+      // No other notification types for the live users since validLastEmailOffset should be included in the daily
+      // email because they would have triggered an email notification immediately.
+      if (frequency == 'daily') {
+        queryBuilder.where(function () {
+          this.where(
             'UserNotificationSettings.emailFrequency',
             frequency
-          )
-        }
-      })
-      .where('Users.blockchainUserId', '>', lastUser)
-      .limit(pageCount)
-      .orderBy('Users.blockchainUserId')
+          ).orWhere('UserNotificationSettings.emailFrequency', 'live')
+        })
+      } else {
+        queryBuilder.where('UserNotificationSettings.emailFrequency', frequency)
+      }
+    })
+    .where('Users.blockchainUserId', '>', lastUser)
+    .limit(pageCount)
+    .orderBy('Users.blockchainUserId')
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
@@ -343,22 +317,68 @@ export async function processEmailNotifications(
       days = 7
     }
     const startOffset = now.clone().subtract(days, 'days')
-    const pageCount = 1000
-    await getUsersCanNotify(identityDb, frequency, startOffset, pageCount, async (users) => {
-        if (Object.keys(users).length == 0) {
-          logger.info(`processEmailNotifications | No users to process. Exiting...`)
-          return
-        }
 
-        logger.info(
-          `processEmailNotifications | Beginning processing ${
-            Object.keys(users).length
-          } users at ${frequency} frequency`
+    // loop settings
+    const pageCount = remoteConfig.getFeatureVariableValue(
+      NotificationsScheduledEmails,
+      ScheduledEmailPluginMappings.PageCount,
+      1000
+    )
+    let pageOffset = 0
+    let lastUser: number = 0
+
+    // timeout settings since we run an infinite loop
+    const time = Date.now()
+    const timeoutMillis = 14400000
+    const timeout = time + timeoutMillis
+
+    while (true) {
+      const now = Date.now()
+      if (now > timeout) return
+      logger.info(
+        `processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${pageCount}`
+      )
+      const userRows: { blockchainUserId: number; email: string }[] =
+        await getUsersCanNotifyQuery(
+          identityDb,
+          startOffset,
+          frequency,
+          pageCount,
+          lastUser
         )
+      pageOffset = pageOffset + pageCount
+      if (userRows.length === 0) return // once we've reached the end of users for this query
+      lastUser = userRows[userRows.length - 1].blockchainUserId
+      if (lastUser === undefined) {
+        logger.info('no last user found')
+        return
+      }
+      const emailUsers = userRows.reduce((acc, user) => {
+        acc[user.blockchainUserId] = user.email
+        return acc
+      }, {} as EmailUsers)
+      if (Object.keys(emailUsers).length == 0) {
+        logger.info(
+          `processEmailNotifications | No users to process. Exiting...`
+        )
+        return
+      }
 
-        await processGroupOfEmails(dnDb, identityDb, users, frequency, startOffset, remoteConfig)
-    })
-    
+      logger.info(
+        `processEmailNotifications | Beginning processing ${
+          Object.keys(emailUsers).length
+        } users at ${frequency} frequency`
+      )
+
+      await processGroupOfEmails(
+        dnDb,
+        identityDb,
+        emailUsers,
+        frequency,
+        startOffset,
+        remoteConfig
+      )
+    }
   } catch (e) {
     logger.error(
       'processEmailNotifications | Error processing email notifications'
@@ -367,7 +387,14 @@ export async function processEmailNotifications(
   }
 }
 
-const processGroupOfEmails = async (dnDb: Knex, identityDb : Knex, users: EmailUsers, frequency: EmailFrequency, startOffset: Moment, remoteConfig: RemoteConfig) => {
+const processGroupOfEmails = async (
+  dnDb: Knex,
+  identityDb: Knex,
+  users: EmailUsers,
+  frequency: EmailFrequency,
+  startOffset: Moment,
+  remoteConfig: RemoteConfig
+) => {
   const userNotificationSettings = await buildUserNotificationSettings(
     identityDb,
     Object.keys(users).map(Number)

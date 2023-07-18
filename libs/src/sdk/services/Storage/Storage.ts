@@ -19,14 +19,14 @@ import {
 } from './constants'
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
-import type { StorageNodeSelector } from '../StorageNodeSelector'
+import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
 export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
   private readonly config: StorageServiceConfig
-  private readonly storageNodeSelector: StorageNodeSelector
+  private readonly storageNodeSelector: StorageNodeSelectorService
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
@@ -38,19 +38,25 @@ export class Storage implements StorageService {
    * @param file
    * @param onProgress
    * @param template
+   * @param options
    * @returns
    */
   async uploadFile({
     file,
     onProgress,
-    template
+    template,
+    options = {}
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
+    options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
+    Object.keys(options).forEach((key) => {
+      formData.append(key, `${options[key]}`)
+    })
     // TODO: Test this in a browser env
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
 
@@ -65,6 +71,7 @@ export class Storage implements StorageService {
     const response = await axios({
       method: 'post',
       url: `${contentNodeEndpoint}/uploads`,
+      maxContentLength: Infinity,
       data: formData,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
@@ -95,12 +102,23 @@ export class Storage implements StorageService {
         if (resp?.status === 'done') {
           return resp
         }
-        if (resp?.status === 'error') {
+        if (
+          resp?.status === 'error' ||
+          resp?.status === 'error_retranscode_preview'
+        ) {
           throw new Error(
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
           )
         }
-      } catch (e) {
+      } catch (e: any) {
+        // Rethrow if error is "Upload failed" or if status code is 422 (Unprocessable Entity)
+        if (
+          e.message?.startsWith('Upload failed') ||
+          (e.response && e.response?.status === 422)
+        ) {
+          throw e
+        }
+
         // Swallow errors caused by failure to establish connection to node so we can retry polling
         console.error(`Failed to poll for processing status, ${e}`)
       }

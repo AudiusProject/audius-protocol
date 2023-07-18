@@ -8,9 +8,19 @@ import {
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import {
+  createUpdateTrackSchema,
   createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
+  RepostTrackRequest,
+  RepostTrackSchema,
+  FavoriteTrackRequest,
+  FavoriteTrackSchema,
+  UnrepostTrackRequest,
+  UnrepostTrackSchema,
+  UnfavoriteTrackRequest,
+  UnfavoriteTrackSchema,
+  UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
 import type { StorageService } from '../../services/Storage'
@@ -21,9 +31,9 @@ import {
   EntityType,
   WriteOptions
 } from '../../services/EntityManager/types'
-import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { TrackUploadHelper } from './TrackUploadHelper'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -38,6 +48,8 @@ const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
 
 // Extend that new class
 export class TracksApi extends TracksApiWithoutStream {
+  private readonly trackUploadHelper: TrackUploadHelper
+
   constructor(
     configuration: Configuration,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
@@ -46,6 +58,7 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly auth: AuthService
   ) {
     super(configuration)
+    this.trackUploadHelper = new TrackUploadHelper(configuration)
   }
 
   /**
@@ -90,44 +103,18 @@ export class TracksApi extends TracksApiWithoutStream {
     )(requestParameters)
 
     // Transform metadata
-    const metadata = {
-      ...parsedMetadata,
-      ownerId: userId
-    }
-
-    const isPremium = metadata.isPremium
-    const isUnlisted = metadata.isUnlisted
-
-    // If track is premium, set remixes to false
-    if (isPremium && metadata.fieldVisibility) {
-      metadata.fieldVisibility.remixes = false
-    }
-
-    // If track is public, set required visibility fields to true
-    if (!isUnlisted) {
-      metadata.fieldVisibility = {
-        ...metadata.fieldVisibility,
-        genre: true,
-        mood: true,
-        tags: true,
-        share: true,
-        playCount: true
-      }
+    const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
+      parsedMetadata,
+      userId
+    )
+    const uploadOptions: { [key: string]: string } = {}
+    if (metadata.previewStartSeconds) {
+      uploadOptions['previewStartSeconds'] =
+        metadata.previewStartSeconds.toString()
     }
 
     // Upload track audio and cover art to storage node
-    const [audioResp, coverArtResp] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: trackFile,
-            onProgress,
-            template: 'audio'
-          }),
-        (e) => {
-          console.log('Retrying uploadTrackAudio', e)
-        }
-      ),
+    const [coverArtResponse, audioResponse] = await Promise.all([
       retry3(
         async () =>
           await this.storage.uploadFile({
@@ -138,28 +125,32 @@ export class TracksApi extends TracksApiWithoutStream {
         (e) => {
           console.log('Retrying uploadTrackCoverArt', e)
         }
+      ),
+      retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: trackFile,
+            onProgress,
+            template: 'audio',
+            options: uploadOptions
+          }),
+        (e) => {
+          console.log('Retrying uploadTrackAudio', e)
+        }
       )
     ])
 
     // Update metadata to include uploaded CIDs
-    const updatedMetadata = {
-      ...metadata,
-      trackSegments: [],
-      trackCid: audioResp.results['320'],
-      download: metadata.download?.isDownloadable
-        ? {
-            ...metadata.download,
-            cid: audioResp.results['320']
-          }
-        : metadata.download,
-      coverArtSizes: coverArtResp.id,
-      duration: parseInt(audioResp.probe.format.duration, 10)
-    }
+    const updatedMetadata =
+      this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+        metadata,
+        audioResponse,
+        coverArtResponse
+      )
 
     // Write metadata to chain
-
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const trackId = await this.generateTrackId()
+    const trackId = await this.trackUploadHelper.generateId('track')
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
@@ -181,6 +172,75 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
+  /**
+   * Update a track
+   */
+  async updateTrack(
+    requestParameters: UpdateTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const {
+      userId,
+      trackId,
+      coverArtFile,
+      metadata: parsedMetadata,
+      onProgress
+    } = parseRequestParameters(
+      'updateTrack',
+      createUpdateTrackSchema()
+    )(requestParameters)
+
+    // Transform metadata
+    const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
+      parsedMetadata,
+      userId
+    )
+
+    // Upload track cover art to storage node
+    const coverArtResp = await retry3(
+      async () =>
+        await this.storage.uploadFile({
+          file: coverArtFile,
+          onProgress,
+          template: 'img_square'
+        }),
+      (e) => {
+        console.log('Retrying uploadTrackCoverArt', e)
+      }
+    )
+
+    // Update metadata to include uploaded CIDs
+    const updatedMetadata = {
+      ...metadata,
+      coverArtSizes: coverArtResp.id
+    }
+
+    // Write metadata to chain
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber
+    }
+  }
+
+  /**
+   * Delete a track
+   */
   async deleteTrack(
     requestParameters: DeleteTrackRequest,
     writeOptions?: WriteOptions
@@ -204,19 +264,109 @@ export class TracksApi extends TracksApiWithoutStream {
     return txReceipt
   }
 
-  private async generateTrackId() {
-    const response = await this.request({
-      path: `/tracks/unclaimed_id`,
-      method: 'GET',
-      headers: {},
-      query: { noCache: Math.floor(Math.random() * 1000).toString() }
-    })
+  /**
+   * Favorite a track
+   */
+  async favoriteTrack(
+    requestParameters: FavoriteTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId, metadata } = parseRequestParameters(
+      'favoriteTrack',
+      FavoriteTrackSchema
+    )(requestParameters)
 
-    const { data } = await response.json()
-    const id = decodeHashId(data)
-    if (id === null) {
-      throw new Error('Could not generate track id')
-    }
-    return id
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.SAVE,
+      metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Unfavorite a track
+   */
+  async unfavoriteTrack(
+    requestParameters: UnfavoriteTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = parseRequestParameters(
+      'unfavoriteTrack',
+      UnfavoriteTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UNSAVE,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Repost a track
+   */
+  async repostTrack(
+    requestParameters: RepostTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId, metadata } = parseRequestParameters(
+      'respostTrack',
+      RepostTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.REPOST,
+      metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
+  }
+
+  /**
+   * Unrepost a track
+   */
+  async unrepostTrack(
+    requestParameters: UnrepostTrackRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, trackId } = parseRequestParameters(
+      'unrepostTrack',
+      UnrepostTrackSchema
+    )(requestParameters)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.UNREPOST,
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
   }
 }

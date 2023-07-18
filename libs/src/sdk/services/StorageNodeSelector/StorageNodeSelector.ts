@@ -11,6 +11,8 @@ import type {
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { defaultStorageNodeSelectorConfig } from './constants'
 
+const DISCOVERY_RESPONSE_TIMEOUT = 15000
+
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
   private readonly auth: AuthService
@@ -19,6 +21,8 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private selectedNode?: string | null
   private selectedDiscoveryNode?: string | null
   private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
+  private readonly initialDiscoveryFetchPromise: Promise<void>
+  private resolveInitialDiscoveryFetchPromise: () => void = () => {}
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
@@ -35,6 +39,9 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     )
 
     this.checkIfDiscoveryNodeAlreadyAvailable()
+    this.initialDiscoveryFetchPromise = new Promise((resolve) => {
+      this.resolveInitialDiscoveryFetchPromise = resolve
+    })
   }
 
   private async checkIfDiscoveryNodeAlreadyAvailable() {
@@ -67,18 +74,40 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     this.nodes = contentNodes
+    this.resolveInitialDiscoveryFetchPromise()
   }
 
   public async getSelectedNode() {
     if (this.selectedNode) {
       return this.selectedNode
     }
+
+    // If we don't have any nodes, wait for a
+    // discovery response to come back first
+    if (!this.nodes.length) {
+      await Promise.race([
+        this.initialDiscoveryFetchPromise,
+        new Promise<void>((resolve) =>
+          setTimeout(() => {
+            console.warn('List of storage nodes could not be fetched')
+            resolve()
+          }, DISCOVERY_RESPONSE_TIMEOUT)
+        )
+      ])
+    }
+
     return await this.select()
+  }
+
+  public getNodes(cid: string) {
+    return this.orderNodes(cid)
   }
 
   private async select() {
     if (!this.orderedNodes) {
-      this.orderedNodes = await this.orderNodes()
+      this.orderedNodes = await this.orderNodes(
+        (await this.auth.getAddress()).toLowerCase()
+      )
     }
 
     if (this.orderedNodes.length === 0) {
@@ -107,11 +136,10 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     return this.selectedNode ?? null
   }
 
-  private async orderNodes() {
-    const userAddress = await this.auth.getAddress()
+  private orderNodes(key: string) {
     const endpoints = this.nodes.map((node) => node.endpoint.toLowerCase())
     const hash = new RendezvousHash(...endpoints)
-    return hash.getN(this.nodes.length, userAddress.toLowerCase())
+    return hash.getN(this.nodes.length, key)
   }
 
   /** console.info proxy utility to add a prefix */
