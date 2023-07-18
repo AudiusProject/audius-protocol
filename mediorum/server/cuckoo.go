@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,6 +16,7 @@ import (
 var (
 	myCuckooKeyName = "my_cuckoo"
 	cuckooMap       = map[string]*cuckoo.Filter{}
+	cuckooEtagMap   = map[string]string{}
 	cuckooMu        = sync.RWMutex{}
 )
 
@@ -31,6 +33,7 @@ func (ss *MediorumServer) serveCuckooSize(c echo.Context) error {
 		sizes[host] = map[string]any{
 			"size":        filter.Count(),
 			"load_factor": filter.LoadFactor(),
+			"etag":        cuckooEtagMap[host],
 		}
 	}
 	cuckooMu.RUnlock()
@@ -39,13 +42,30 @@ func (ss *MediorumServer) serveCuckooSize(c echo.Context) error {
 
 func (ss *MediorumServer) serveCuckoo(c echo.Context) error {
 	ctx := c.Request().Context()
+
+	attr, err := ss.bucket.Attributes(ctx, myCuckooKeyName)
+	if err != nil {
+		return err
+	}
+
+	// use md5 for etag?
+	etagValue := hex.EncodeToString(attr.MD5)
+	if etagValue == c.Request().Header.Get("If-None-Match") {
+		return c.NoContent(304)
+	}
+
 	r, err := ss.bucket.NewReader(ctx, myCuckooKeyName, nil)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
-	// would be nice to do some Last-Modified stuff here
+	c.Response().Header().Set("ETag", etagValue)
+	c.Response().Header().Set("Last-Modified", attr.ModTime.Format(time.RFC1123))
+
+	debugFilename := fmt.Sprintf("cuckoo_%s_%s_%s.cuckoo", c.Request().Host, etagValue, attr.ModTime.Format(time.RFC3339))
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, debugFilename))
+
 	return c.Stream(200, "", r)
 }
 
@@ -74,7 +94,7 @@ func (ss *MediorumServer) startCuckooFetcher() error {
 				ss.logger.Warn("failed to fetch peer cuckoo", "peer", peer.Host, "err", err)
 			}
 		}
-		time.Sleep(time.Minute * 10)
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -83,35 +103,47 @@ func (ss *MediorumServer) fetchPeerCuckoo(host string) error {
 		Timeout: time.Minute,
 	}
 
+	cuckooMu.RLock()
+	priorEtag := cuckooEtagMap[host]
+	cuckooMu.RUnlock()
+
 	endpoint := host + "/internal/cuckoo"
-	r, err := client.Get(endpoint)
+	req, _ := http.NewRequest("GET", endpoint, nil)
+	req.Header.Set("If-None-Match", priorEtag)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+	defer resp.Body.Close()
 
-	if r.StatusCode != 200 {
-		return fmt.Errorf("bad status: %s: %s", endpoint, r.Status)
+	if resp.StatusCode == 304 {
+		return nil
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("bad status: %s: %s", endpoint, resp.Status)
 	}
 
-	f, err := io.ReadAll(r.Body)
+	filterBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	filter, err := cuckoo.Decode(f)
+	filter, err := cuckoo.Decode(filterBytes)
 	if err != nil {
 		return err
 	}
 
 	cuckooMu.Lock()
 	cuckooMap[host] = filter
+	cuckooEtagMap[host] = resp.Header.Get("ETag")
 	cuckooMu.Unlock()
+
 	return nil
 }
 
 func (ss *MediorumServer) startCuckooBuilder() error {
 	for {
+		time.Sleep(time.Minute)
 		startTime := time.Now()
 		err := ss.buildCuckoo()
 		took := time.Since(startTime)
@@ -138,9 +170,11 @@ func (ss *MediorumServer) buildCuckoo() error {
 	cf := cuckoo.NewFilter(uint(count))
 
 	rows, err := conn.Query(ctx, `
-	select multihash from "Files" where type != 'track'
+	select distinct multihash from "Files" where type != 'track'
 	union all
-	select "dirMultihash" from "Files" where "dirMultihash" is not null`)
+	select distinct "dirMultihash" from "Files" where "dirMultihash" is not null
+	order by 1
+	`)
 	if err != nil {
 		return err
 	}
