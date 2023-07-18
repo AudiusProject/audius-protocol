@@ -13,6 +13,7 @@ import (
 	"comms.audius.co/shared/signing"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slog"
 )
 
 func userIdForSignedGet(c echo.Context) (int32, error) {
@@ -20,17 +21,36 @@ func userIdForSignedGet(c echo.Context) (int32, error) {
 		return 0, errors.New("readSignedGet: bad method: " + c.Request().Method)
 	}
 
-	// Check that timestamp is not too old
-	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-	if err != nil || time.Now().UnixMilli()-timestamp > signing.SignatureTimeToLiveMs {
-		return 0, errors.New("invalid timestamp")
-	}
-
-	sigHex := c.Request().Header.Get(signing.SigHeader)
+	sigBase64 := c.Request().Header.Get(signing.SigHeader)
 
 	// for websocket request, read from query param instead of header
-	if querySig := c.QueryParam("signature"); sigHex == "" && querySig != "" {
-		sigHex = querySig
+	if querySig := c.QueryParam("signature"); sigBase64 == "" && querySig != "" {
+		sigBase64 = querySig
+	}
+
+	// helper function to log error if present
+	logError := func(err error) (int32, error) {
+		if err != nil {
+			slog.Warn("ReadSignedRequest error",
+				"err", err,
+				"url", c.Request().URL.String(),
+				"sig", sigBase64)
+		}
+		return 0, err
+	}
+
+	// Check that timestamp is not too old
+	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
+	if err != nil {
+		return logError(err)
+	}
+
+	tsAge := time.Now().UnixMilli() - timestamp
+	if tsAge < 0 {
+		tsAge *= -1
+	}
+	if tsAge > signing.SignatureTimeToLiveMs {
+		return logError(errors.New("timestamp not current"))
 	}
 
 	// Strip out the app_name query parameter to get the true signature payload
@@ -41,17 +61,17 @@ func userIdForSignedGet(c echo.Context) (int32, error) {
 	u.RawQuery = q.Encode()
 	payload := []byte(u.String())
 
-	wallet, err := recoverSigningWallet(sigHex, payload)
+	wallet, err := recoverSigningWallet(sigBase64, payload)
 	if err != nil {
-		return 0, errors.New("failed to recoverSigningWallet")
+		return logError(errors.New("failed to recoverSigningWallet"))
 	}
 
 	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet, c.QueryParam("current_user_id"))
 	if err != nil {
-		return 0, fmt.Errorf("failed to get user_id for wallet: %s", wallet)
+		return logError(fmt.Errorf("failed to get user_id for wallet: %s", wallet))
 	}
 
-	return userId, err
+	return userId, nil
 }
 
 func readSignedPost(c echo.Context) ([]byte, string, error) {
