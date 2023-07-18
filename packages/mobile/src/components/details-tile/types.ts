@@ -73,6 +73,9 @@ export type DetailsTileProps = {
   /** Is the item loaded published */
   isPublished?: boolean
 
+  /** Is the item unlisted (hidden) */
+  isUnlisted?: boolean
+
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler
 
