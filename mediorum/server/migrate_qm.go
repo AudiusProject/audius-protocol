@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -144,30 +143,4 @@ func (ss *MediorumServer) migrateQmCids() error {
 		// sleep to avoid overloading the database
 		time.Sleep(time.Minute * 10)
 	}
-}
-
-const storagePath string = "/file_storage"
-
-func computeLegacyFilePath(cid string) string {
-	return filepath.Join(storagePath, cid)
-}
-
-func computeFilePathInDir(dirName string, cid string) string {
-	parentDirPath := computeFilePath(dirName)
-	return filepath.Join(parentDirPath, cid)
-}
-
-func computeFilePath(cid string) string {
-	storageLocationForCid := getStorageLocationForCID(cid)
-	return filepath.Join(storageLocationForCid, cid)
-}
-
-func getStorageLocationForCID(cid string) string {
-	directoryID := cid[len(cid)-4 : len(cid)-1]
-	storageLocationForCid := filepath.Join(
-		storagePath,
-		"files",
-		directoryID,
-	)
-	return storageLocationForCid
 }
