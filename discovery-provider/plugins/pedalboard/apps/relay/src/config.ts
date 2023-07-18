@@ -6,6 +6,8 @@ export type Config = {
   entityManagerContractAddress: string;
   entityManagerContractRegistryKey: string;
   requiredConfirmations: number;
+  serverHost: string;
+  serverPort: number;
 };
 
 export const readConfig = (): Config => {
@@ -18,5 +20,7 @@ export const readConfig = (): Config => {
     entityManagerContractRegistryKey:
       process.env.entityManagerContractRegistryKey || "EntityManager",
     requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
+    serverHost: process.env.serverHost || "0.0.0.0",
+    serverPort: parseInt(process.env.serverPort || "5643")
   };
 };
