@@ -284,7 +284,10 @@ function* fetchLineupMetadatasAsync(
           return true
         })
 
-      const deletedCount = action.limit - lineupEntries.length - nullCount
+      const deletedCount =
+        lineupMetadatasResponse.length -
+        responseFilteredDeletes.length -
+        nullCount
       yield put(
         lineupActions.fetchLineupMetadatasSucceeded(
           lineupEntries,
