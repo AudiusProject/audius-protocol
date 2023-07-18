@@ -5,8 +5,10 @@ create table if not exists em_logs (
     entity_id integer not null,
     blocknumber integer not null references blocks(number),
     txhash text not null,
-    prev_record jsonb not null,
-    PRIMARY KEY(txhash)
+    prev_record jsonb,
+    primary key(txhash)
 );
+
+create index idx_em_logs_blocknumber on em_logs(blocknumber);
 
 commit;
