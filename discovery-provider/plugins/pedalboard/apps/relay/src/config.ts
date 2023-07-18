@@ -24,7 +24,7 @@ export const readConfig = (): Config => {
         return developmentConfig.entityManagerContractAddress
     }
   }
-  logger.info(`running on ${process.env.ENVIRONMENT} env`)
+  logger.info(`running on ${process.env.ENVIRONMENT} network`)
   return {
     environment: process.env.environment || "dev",
     rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
