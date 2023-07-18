@@ -11,5 +11,3 @@ custom_edit_url: null
 ### token
 
  **token**: `string`
-
-JWT to verify

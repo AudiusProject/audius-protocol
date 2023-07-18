@@ -84,6 +84,7 @@ track = ns.model(
         "genre": fields.String,
         "id": fields.String(required=True),
         "track_cid": fields.String(allow_null=True),
+        "preview_cid": fields.String(allow_null=True),
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
@@ -138,6 +139,8 @@ track_full = ns.clone(
             premium_content_signature, allow_null=True
         ),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
+        "audio_upload_id": fields.String,
+        "preview_start_seconds": fields.Float,
     },
 )
 

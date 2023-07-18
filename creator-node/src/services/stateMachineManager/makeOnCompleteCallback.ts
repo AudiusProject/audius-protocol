@@ -6,14 +6,12 @@ import type {
   AnyDecoratedJobReturnValue,
   ParamsForJobsToEnqueue
 } from './types'
-import type { UpdateReplicaSetJobParams } from './stateReconciliation/types'
 import { TQUEUE_NAMES, SYNC_MODES } from './stateMachineConstants'
 
 import { instrumentTracing, tracing } from '../../tracer'
 import { recordMetrics } from '../prometheusMonitoring/prometheusUsageUtils'
 
 const { logger: baseLogger, createChildLogger } = require('../../logging')
-const { QUEUE_NAMES } = require('./stateMachineConstants')
 
 /**
  * Higher order function that creates a function that's used as a Bull Queue onComplete callback to take
@@ -33,8 +31,6 @@ const { QUEUE_NAMES } = require('./stateMachineConstants')
  *     ]
  *   }
  * }
- * @dev MUST be bound to a class containing an `enabledReconfigModes` property.
- *      See usage in index.js (in same directory) for example of how it's bound to StateMachineManager.
  *
  * @param {string} nameOfQueueWithCompletedJob the name of the queue that this onComplete callback is for
  * @param {Object} queueNameToQueueMap mapping of queue name (string) to queue object (BullQueue) and max jobs that are allowed to be waiting in the queue
@@ -63,18 +59,6 @@ function makeOnCompleteCallback(
       queue: nameOfQueueWithCompletedJob,
       jobId
     })
-
-    // update-replica-set jobs need enabledReconfigModes as an array.
-    // `this` comes from the function being bound via .bind() to ./index.js
-    if (!this?.hasOwnProperty('enabledReconfigModesSet')) {
-      logger.error(
-        'Function was supposed to be bound to StateMachineManager to access enabledReconfigModesSet! Update replica set jobs will not be able to process!'
-      )
-      return
-    }
-    const enabledReconfigModes: string[] = Array.from(
-      this.enabledReconfigModesSet
-    )
 
     // Bull serializes the job result into redis, so we have to deserialize it into JSON
     let jobResult: AnyDecoratedJobReturnValue
@@ -105,27 +89,11 @@ function makeOnCompleteCallback(
         continue
       }
 
-      // Inject data into jobs that require extra params
-      let jobs: AnyJobParams[]
-      switch (queueName) {
-        case QUEUE_NAMES.UPDATE_REPLICA_SET: {
-          jobs = injectEnabledReconfigModes(
-            queueJobs as UpdateReplicaSetJobParams[],
-            enabledReconfigModes
-          )
-          break
-        }
-        default: {
-          jobs = queueJobs as AnyJobParams[]
-          break
-        }
-      }
-
       // Don't await this because it might cause "missing lock for job" errors.
       // See https://github.com/OptimalBits/bull/issues/789#issuecomment-620324812
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       enqueueJobs(
-        jobs,
+        queueJobs as AnyJobParams[],
         queue,
         queueName,
         nameOfQueueWithCompletedJob,
@@ -191,18 +159,6 @@ const enqueueJobs = async (
       `Failed to bulk-add jobs to ${queueNameToAddTo} after successful completion: ${e}`
     )
   }
-}
-
-// Injects enabledReconfigModes into update-replica-set jobs
-const injectEnabledReconfigModes = (
-  jobs: UpdateReplicaSetJobParams[],
-  enabledReconfigModes: string[]
-): (UpdateReplicaSetJobParams & {
-  enabledReconfigModes: string[]
-})[] => {
-  return jobs.map((job) => {
-    return { ...job, enabledReconfigModes }
-  })
 }
 
 module.exports = instrumentTracing({

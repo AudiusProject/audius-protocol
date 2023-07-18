@@ -9,23 +9,32 @@ import {
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import {
   Configuration,
+  Playlist,
   PlaylistsApi as GeneratedPlaylistsApi
 } from '../generated/default'
 import {
+  AddTrackToPlaylistRequest,
+  AddTrackToPlaylistSchema,
   CreatePlaylistRequest,
   CreatePlaylistSchema,
+  createUpdatePlaylistSchema,
   createUploadPlaylistSchema,
   DeletePlaylistRequest,
   DeletePlaylistSchema,
   PlaylistMetadata,
   PlaylistTrackMetadata,
+  PublishPlaylistRequest,
+  PublishPlaylistSchema,
+  RemoveTrackFromPlaylistRequest,
+  RemoveTrackFromPlaylistSchema,
   RepostPlaylistRequest,
   RepostPlaylistSchema,
-  SavePlaylistRequest,
-  SavePlaylistSchema,
+  FavoritePlaylistRequest,
+  FavoritePlaylistSchema,
   UnrepostPlaylistSchema,
-  UnsavePlaylistRequest,
-  UnsavePlaylistSchema,
+  UnfavoritePlaylistRequest,
+  UnfavoritePlaylistSchema,
+  UpdatePlaylistRequest,
   UploadPlaylistRequest
 } from './types'
 import { retry3 } from '../../utils/retry'
@@ -75,6 +84,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ))
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids
     const updatedMetadata = {
@@ -82,7 +92,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: (trackIds ?? []).map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse?.id
@@ -146,18 +156,19 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           console.log('Retrying uploadPlaylistCoverArt', e)
         }
       ),
-      ...trackFiles.map((trackFile) =>
-        retry3(
-          async () =>
-            await this.storage.uploadFile({
-              file: trackFile,
-              onProgress,
-              template: 'audio'
-            }),
-          (e) => {
-            console.log('Retrying uploadTrackAudio', e)
-          }
-        )
+      ...trackFiles.map(
+        async (trackFile) =>
+          await retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: trackFile,
+                onProgress,
+                template: 'audio'
+              }),
+            (e) => {
+              console.log('Retrying uploadTrackAudio', e)
+            }
+          )
       )
     ])
 
@@ -207,6 +218,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
 
     const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids and cover art cid
     const updatedMetadata = {
@@ -215,7 +227,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       playlistContents: {
         trackIds: trackIds.map((trackId) => ({
           track: trackId,
-          time: Date.now()
+          time: currentBlock.timestamp
         }))
       },
       playlistImageSizesMultihash: coverArtResponse.id
@@ -243,6 +255,168 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       blockNumber: txReceipt.blockNumber,
       playlistId
     }
+  }
+
+  /**
+   * Publish a playlist
+   * Changes a playlist from private to public
+   */
+  async publishPlaylist(
+    requestParameters: PublishPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    parseRequestParameters(
+      'publishPlaylist',
+      PublishPlaylistSchema
+    )(requestParameters)
+
+    return await this.fetchAndUpdatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        updateMetadata: (playlist) => ({
+          ...playlist,
+          isPrivate: false
+        })
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Add a single track to the end of a playlist
+   * For more control use updatePlaylist
+   */
+  async addTrackToPlaylist(
+    requestParameters: AddTrackToPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    parseRequestParameters(
+      'addTrackToPlaylist',
+      AddTrackToPlaylistSchema
+    )(requestParameters)
+
+    const currentBlock = await this.entityManager.getCurrentBlock()
+
+    return await this.fetchAndUpdatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        updateMetadata: (playlist) => ({
+          ...playlist,
+          playlistContents: [
+            ...playlist.playlistContents,
+            {
+              trackId: requestParameters.trackId,
+              timestamp: currentBlock.timestamp
+            }
+          ]
+        })
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Removes a single track at the given index of playlist
+   * For more control use updatePlaylist
+   */
+  async removeTrackFromPlaylist(
+    requestParameters: RemoveTrackFromPlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { trackIndex } = parseRequestParameters(
+      'removeTrackFromPlaylist',
+      RemoveTrackFromPlaylistSchema
+    )(requestParameters)
+
+    return await this.fetchAndUpdatePlaylist(
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.playlistId,
+        updateMetadata: (playlist) => {
+          if (playlist.playlistContents.length <= trackIndex) {
+            throw new Error(`No track exists at index ${trackIndex}`)
+          }
+          playlist.playlistContents.splice(trackIndex, 1)
+          return {
+            ...playlist,
+            playlistContents: playlist.playlistContents
+          }
+        }
+      },
+      writeOptions
+    )
+  }
+
+  /**
+   * Update a playlist
+   */
+  async updatePlaylist(
+    requestParameters: UpdatePlaylistRequest,
+    writeOptions?: WriteOptions
+  ) {
+    // Parse inputs
+    const { userId, playlistId, coverArtFile, onProgress, metadata } =
+      parseRequestParameters(
+        'updatePlaylist',
+        createUpdatePlaylistSchema()
+      )(requestParameters)
+
+    // Upload cover art to storage node
+    const coverArtResponse =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadPlaylistCoverArt', e)
+        }
+      ))
+
+    const updatedMetadata = {
+      playlistId,
+      playlistContents: {
+        trackIds: metadata.playlistContents.map(
+          ({ trackId, metadataTimestamp, timestamp }) => ({
+            track: trackId,
+            // default to timestamp for legacy playlists
+            time: metadataTimestamp ?? timestamp
+          })
+        )
+      },
+      playlistName: metadata.playlistName,
+      playlistImageSizesMultihash:
+        coverArtResponse?.id ?? metadata.coverArtSizes,
+      description: metadata.description,
+      isAlbum: metadata.isAlbum,
+      isPrivate: metadata.isPrivate
+      // TODO: Support updating advanced fields
+    }
+
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    const txReceipt = response.txReceipt
+
+    return txReceipt
   }
 
   /**
@@ -274,14 +448,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   /**
    * Favorite a playlist or album
    */
-  async savePlaylist(
-    requestParameters: SavePlaylistRequest,
+  async favoritePlaylist(
+    requestParameters: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, playlistId, metadata } = parseRequestParameters(
-      'savePlaylist',
-      SavePlaylistSchema
+      'favoritePlaylist',
+      FavoritePlaylistSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
@@ -301,14 +475,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   /**
    * Unfavorite a playlist or album
    */
-  async unsavePlaylist(
-    requestParameters: UnsavePlaylistRequest,
+  async unfavoritePlaylist(
+    requestParameters: UnfavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, playlistId } = parseRequestParameters(
-      'unsavePlaylist',
-      UnsavePlaylistSchema
+      'unfavoritePlaylist',
+      UnfavoritePlaylistSchema
     )(requestParameters)
 
     const response = await this.entityManager.manageEntity({
@@ -355,7 +529,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unrepost a track
    */
   async unrepostPlaylist(
-    requestParameters: SavePlaylistRequest,
+    requestParameters: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
@@ -405,5 +579,43 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       }
     }
     return trackMetadata
+  }
+
+  /**
+   * Update helper method that first fetches a playlist and then updates it
+   */
+  private async fetchAndUpdatePlaylist(
+    {
+      userId,
+      playlistId,
+      updateMetadata
+    }: {
+      userId: string
+      playlistId: string
+      updateMetadata: (
+        fetchedMetadata: Playlist
+      ) => UpdatePlaylistRequest['metadata']
+    },
+    writeOptions?: WriteOptions
+  ) {
+    // Fetch playlist
+    const playlistResponse = await this.getPlaylist({
+      playlistId,
+      userId
+    })
+    const playlist = playlistResponse.data?.[0]
+
+    if (!playlist) {
+      throw new Error(`Could not fetch playlist: ${playlistId}`)
+    }
+
+    return await this.updatePlaylist(
+      {
+        userId,
+        playlistId,
+        metadata: updateMetadata(playlist)
+      },
+      writeOptions
+    )
   }
 }

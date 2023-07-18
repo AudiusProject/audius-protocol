@@ -12,16 +12,16 @@ custom_edit_url: null
 
 ## Properties
 
-### erc\_wallets
+### ercWallets
 
- **erc\_wallets**: `string`[]
+ **ercWallets**: `string`[]
 
 **`memberof`** ConnectedWallets
 
 ___
 
-### spl\_wallets
+### splWallets
 
- **spl\_wallets**: `string`[]
+ **splWallets**: `string`[]
 
 **`memberof`** ConnectedWallets

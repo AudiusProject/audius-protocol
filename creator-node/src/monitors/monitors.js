@@ -33,13 +33,7 @@ const {
   getDailySyncSuccessCount,
   getDailySyncFailCount,
   getLatestSyncSuccessTimestamp,
-  getLatestSyncFailTimestamp,
-  getLatestMonitorStateJobStart,
-  getLatestMonitorStateJobSuccess,
-  getLatestFindSyncRequestsJobStart,
-  getLatestFindSyncRequestsJobSuccess,
-  getLatestFindReplicaSetUpdatesJobStart,
-  getLatestFindReplicaSetUpdatesJobSuccess
+  getLatestSyncFailTimestamp
 } = require('./stateMachine')
 const redis = require('../redis')
 
@@ -224,42 +218,6 @@ const LATEST_SYNC_FAIL_TIMESTAMP = {
   type: 'string'
 }
 
-const LATEST_MONITOR_STATE_JOB_START = {
-  name: 'latestMonitorStateJobStart',
-  func: getLatestMonitorStateJobStart,
-  type: 'string'
-}
-
-const LATEST_MONITOR_STATE_JOB_SUCCESS = {
-  name: 'latestMonitorStateJobSuccess',
-  func: getLatestMonitorStateJobSuccess,
-  type: 'string'
-}
-
-const LATEST_FIND_SYNC_REQUESTS_JOB_START = {
-  name: 'latestFindSyncRequestsJobStart',
-  func: getLatestFindSyncRequestsJobStart,
-  type: 'string'
-}
-
-const LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS = {
-  name: 'latestFindSyncRequestsJobSuccess',
-  func: getLatestFindSyncRequestsJobSuccess,
-  type: 'string'
-}
-
-const LATEST_FIND_REPLICA_SET_UPDATES_JOB_START = {
-  name: 'latestFindReplicaSetUpdatesJobStart',
-  func: getLatestFindReplicaSetUpdatesJobStart,
-  type: 'string'
-}
-
-const LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS = {
-  name: 'latestFindReplicaSetUpdatesJobSuccess',
-  func: getLatestFindReplicaSetUpdatesJobSuccess,
-  type: 'string'
-}
-
 const MONITORS = {
   DATABASE_LIVENESS,
   DATABASE_SIZE,
@@ -285,13 +243,7 @@ const MONITORS = {
   DAILY_SYNC_SUCCESS_COUNT,
   DAILY_SYNC_FAIL_COUNT,
   LATEST_SYNC_SUCCESS_TIMESTAMP,
-  LATEST_SYNC_FAIL_TIMESTAMP,
-  LATEST_MONITOR_STATE_JOB_START,
-  LATEST_MONITOR_STATE_JOB_SUCCESS,
-  LATEST_FIND_SYNC_REQUESTS_JOB_START,
-  LATEST_FIND_SYNC_REQUESTS_JOB_SUCCESS,
-  LATEST_FIND_REPLICA_SET_UPDATES_JOB_START,
-  LATEST_FIND_REPLICA_SET_UPDATES_JOB_SUCCESS
+  LATEST_SYNC_FAIL_TIMESTAMP
 }
 
 // add all integer monitors as prometheus metrics

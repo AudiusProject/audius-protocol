@@ -87,7 +87,10 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       tags: z.optional(z.string()),
-      title: z.string()
+      title: z.string(),
+      previewStartSeconds: z.optional(z.number()),
+      audioUploadId: z.optional(z.string()),
+      previewCid: z.optional(z.string())
     })
     .strict()
 
@@ -148,7 +151,7 @@ export const DeleteTrackSchema = z
 
 export type DeleteTrackRequest = z.input<typeof DeleteTrackSchema>
 
-export const SaveTrackSchema = z
+export const FavoriteTrackSchema = z
   .object({
     userId: HashId,
     trackId: HashId,
@@ -164,16 +167,16 @@ export const SaveTrackSchema = z
   })
   .strict()
 
-export type SaveTrackRequest = z.input<typeof SaveTrackSchema>
+export type FavoriteTrackRequest = z.input<typeof FavoriteTrackSchema>
 
-export const UnsaveTrackSchema = z
+export const UnfavoriteTrackSchema = z
   .object({
     userId: HashId,
     trackId: HashId
   })
   .strict()
 
-export type UnsaveTrackRequest = z.input<typeof UnsaveTrackSchema>
+export type UnfavoriteTrackRequest = z.input<typeof UnfavoriteTrackSchema>
 
 export const RepostTrackSchema = z
   .object({

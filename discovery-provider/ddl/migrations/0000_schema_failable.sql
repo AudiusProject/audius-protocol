@@ -1711,15 +1711,6 @@ CREATE TABLE public.aggregate_user_tips (
 
 
 --
--- Name: alembic_version; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.alembic_version (
-    version_num character varying(32) NOT NULL
-);
-
-
---
 -- Name: app_delegates; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -3328,14 +3319,6 @@ ALTER TABLE ONLY public.aggregate_user
 
 ALTER TABLE ONLY public.aggregate_user_tips
     ADD CONSTRAINT aggregate_user_tips_pkey PRIMARY KEY (sender_user_id, receiver_user_id);
-
-
---
--- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.alembic_version
-    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
 
 
 --

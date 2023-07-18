@@ -7,127 +7,89 @@ custom_edit_url: null
 
 ## Methods
 
-### getBulkTracks
+### deleteTrack
 
-**getBulkTracks**(`requestParameters?`): `Promise`<[`Track`](../interfaces/Track.md)[]\>
+**deleteTrack**(`requestParameters`, `writeOptions?`): `Promise`<`TransactionReceipt`\>
 
-Gets a list of tracks using their IDs or permalinks
-
-Example:
-
-```typescript
-
-const tracks = await audiusSdk.tracks.getBulkTracks();
-
-```
+Delete a track
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `requestParameters` | [`GetBulkTracksRequest`](../interfaces/GetBulkTracksRequest.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `requestParameters` | `Object` | `undefined` |
+| `requestParameters.trackId` | `string` | `HashId` |
+| `requestParameters.userId` | `string` | `HashId` |
+| `writeOptions?` | `WriteOptions` | `undefined` |
 
 #### Returns
 
-`Promise`<[`Track`](../interfaces/Track.md)[]\>
-
-#### Inherited from
-
-GeneratedTracksApi.getBulkTracks
+`Promise`<`TransactionReceipt`\>
 
 ___
 
-### getTrack
+### repostTrack
 
-**getTrack**(`requestParameters`): `Promise`<[`Track`](../interfaces/Track.md)\>
+**repostTrack**(`requestParameters`, `writeOptions?`): `Promise`<`TransactionReceipt`\>
 
-Gets a track by ID
-
-Example:
-
-```typescript
-
-const track = await audiusSdk.tracks.getTrack({
-    trackId: "D7KyD",
-});
-
-```
+Repost a track
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `requestParameters` | [`GetTrackRequest`](../interfaces/GetTrackRequest.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `requestParameters` | `Object` | `undefined` |
+| `requestParameters.metadata` | `undefined` \| { `isRepostOfRepost`: `boolean`  } | `undefined` |
+| `requestParameters.trackId` | `string` | `HashId` |
+| `requestParameters.userId` | `string` | `HashId` |
+| `writeOptions?` | `WriteOptions` | `undefined` |
 
 #### Returns
 
-`Promise`<[`Track`](../interfaces/Track.md)\>
-
-#### Inherited from
-
-GeneratedTracksApi.getTrack
+`Promise`<`TransactionReceipt`\>
 
 ___
 
-### getTrendingTracks
+### request
 
-**getTrendingTracks**(`requestParameters?`): `Promise`<[`Track`](../interfaces/Track.md)[]\>
-
-Gets the top 100 trending (most popular) tracks on Audius
-
-Example:
-
-```typescript
-
-const tracks = await audiusSdk.tracks.getTrendingTracks();
-
-```
+`Protected` **request**(`context`, `initOverrides?`): `Promise`<`Response`\>
 
 #### Parameters
 
 | Name | Type |
 | :------ | :------ |
-| `requestParameters` | [`GetTrendingTracksRequest`](../interfaces/GetTrendingTracksRequest.md) |
+| `context` | [`RequestOpts`](../interfaces/RequestOpts.md) |
+| `initOverrides?` | `RequestInit` \| [`InitOverrideFunction`](../modules.md#initoverridefunction) |
 
 #### Returns
 
-`Promise`<[`Track`](../interfaces/Track.md)[]\>
+`Promise`<`Response`\>
 
 #### Inherited from
 
-GeneratedTracksApi.getTrendingTracks
+TracksApiWithoutStream.request
 
 ___
 
-### searchTracks
+### saveTrack
 
-**searchTracks**(`requestParameters`): `Promise`<[`Track`](../interfaces/Track.md)[]\>
+**saveTrack**(`requestParameters`, `writeOptions?`): `Promise`<`TransactionReceipt`\>
 
-Search for a track or tracks
-
-Example:
-
-```typescript
-
-const searchResult = await audiusSdk.tracks.searchTracks({
-    query: "skrillex",
-});
-
-```
+Favorite a track
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `requestParameters` | [`SearchTracksRequest`](../interfaces/SearchTracksRequest.md) |
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `requestParameters` | `Object` | `undefined` |
+| `requestParameters.metadata` | `undefined` \| { `isSaveOfRepost`: `boolean`  } | `undefined` |
+| `requestParameters.trackId` | `string` | `HashId` |
+| `requestParameters.userId` | `string` | `HashId` |
+| `writeOptions?` | `WriteOptions` | `undefined` |
 
 #### Returns
 
-`Promise`<[`Track`](../interfaces/Track.md)[]\>
-
-#### Inherited from
-
-GeneratedTracksApi.searchTracks
+`Promise`<`TransactionReceipt`\>
 
 ___
 
@@ -158,3 +120,164 @@ audio.play();
 #### Returns
 
 `Promise`<`string`\>
+
+___
+
+### unrepostTrack
+
+**unrepostTrack**(`requestParameters`, `writeOptions?`): `Promise`<`TransactionReceipt`\>
+
+Unrepost a track
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `requestParameters` | `Object` | `undefined` |
+| `requestParameters.trackId` | `string` | `HashId` |
+| `requestParameters.userId` | `string` | `HashId` |
+| `writeOptions?` | `WriteOptions` | `undefined` |
+
+#### Returns
+
+`Promise`<`TransactionReceipt`\>
+
+___
+
+### unsaveTrack
+
+**unsaveTrack**(`requestParameters`, `writeOptions?`): `Promise`<`TransactionReceipt`\>
+
+Unfavorite a track
+
+#### Parameters
+
+| Name | Type | Default value |
+| :------ | :------ | :------ |
+| `requestParameters` | `Object` | `undefined` |
+| `requestParameters.trackId` | `string` | `HashId` |
+| `requestParameters.userId` | `string` | `HashId` |
+| `writeOptions?` | `WriteOptions` | `undefined` |
+
+#### Returns
+
+`Promise`<`TransactionReceipt`\>
+
+___
+
+### updateTrack
+
+**updateTrack**(`requestParameters`, `writeOptions?`): `Promise`<{ `blockHash`: `string` = txReceipt.blockHash; `blockNumber`: `number` = txReceipt.blockNumber }\>
+
+Update a track
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `requestParameters` | [`UpdateTrackRequest`](../modules.md#updatetrackrequest) |
+| `writeOptions?` | `WriteOptions` |
+
+#### Returns
+
+`Promise`<{ `blockHash`: `string` = txReceipt.blockHash; `blockNumber`: `number` = txReceipt.blockNumber }\>
+
+___
+
+### uploadTrack
+
+**uploadTrack**(`requestParameters`, `writeOptions?`): `Promise`<{ `blockHash`: `string` = txReceipt.blockHash; `blockNumber`: `number` = txReceipt.blockNumber; `trackId`: `number`  }\>
+
+Upload a track
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `requestParameters` | [`UploadTrackRequest`](../modules.md#uploadtrackrequest) |
+| `writeOptions?` | `WriteOptions` |
+
+#### Returns
+
+`Promise`<{ `blockHash`: `string` = txReceipt.blockHash; `blockNumber`: `number` = txReceipt.blockNumber; `trackId`: `number`  }\>
+
+___
+
+### withMiddleware
+
+**withMiddleware**<`T`\>(`this`, ...`middlewares`): `T`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`BaseAPI`](BaseAPI.md)<`T`\> |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `this` | `T` |
+| `...middlewares` | [`Middleware`](../interfaces/Middleware.md)[] |
+
+#### Returns
+
+`T`
+
+#### Inherited from
+
+TracksApiWithoutStream.withMiddleware
+
+___
+
+### withPostMiddleware
+
+**withPostMiddleware**<`T`\>(`this`, ...`postMiddlewares`): `T`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`BaseAPI`](BaseAPI.md)<`T`\> |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `this` | `T` |
+| `...postMiddlewares` | (`undefined` \| (`context`: [`ResponseContext`](../interfaces/ResponseContext.md)) => `Promise`<`void` \| `Response`\>)[] |
+
+#### Returns
+
+`T`
+
+#### Inherited from
+
+TracksApiWithoutStream.withPostMiddleware
+
+___
+
+### withPreMiddleware
+
+**withPreMiddleware**<`T`\>(`this`, ...`preMiddlewares`): `T`
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `T` | extends [`BaseAPI`](BaseAPI.md)<`T`\> |
+
+#### Parameters
+
+| Name | Type |
+| :------ | :------ |
+| `this` | `T` |
+| `...preMiddlewares` | (`undefined` \| (`context`: [`RequestContext`](../interfaces/RequestContext.md)) => `Promise`<`void` \| [`FetchParams`](../interfaces/FetchParams.md)\>)[] |
+
+#### Returns
+
+`T`
+
+#### Inherited from
+
+TracksApiWithoutStream.withPreMiddleware

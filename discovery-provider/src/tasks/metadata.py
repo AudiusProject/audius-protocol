@@ -38,11 +38,14 @@ class TrackSegment(TypedDict):
 
 class TrackMetadata(TypedDict):
     track_cid: Optional[str]
+    preview_cid: Optional[str]
     owner_id: Optional[int]
+    audio_upload_id: Optional[str]
     title: Optional[str]
     route_id: Optional[str]
     duration: int
     length: int
+    preview_start_seconds: Optional[float]
     cover_art: Optional[str]
     cover_art_sizes: Optional[str]
     tags: Optional[str]
@@ -70,11 +73,14 @@ class TrackMetadata(TypedDict):
 
 track_metadata_format: TrackMetadata = {
     "track_cid": None,
+    "preview_cid": None,
     "owner_id": None,
+    "audio_upload_id": None,
     "title": None,
     "route_id": None,
     "duration": 0,
     "length": 0,
+    "preview_start_seconds": None,
     "cover_art": None,
     "cover_art_sizes": None,
     "tags": None,

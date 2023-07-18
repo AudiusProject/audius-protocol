@@ -30,6 +30,8 @@ type healthCheckResponseData struct {
 	Healthy                   bool                       `json:"healthy"`
 	Version                   string                     `json:"version"`
 	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding                 bool                       `json:"isSeeding"`
+	IsSeedingLegacy           bool                       `json:"isSeedingLegacy"`
 	BuiltAt                   string                     `json:"builtAt"`
 	StartedAt                 time.Time                  `json:"startedAt"`
 	SPID                      int                        `json:"spID"`
@@ -64,7 +66,7 @@ type legacyHealth struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
-	healthy := ss.databaseSize > 0
+	healthy := ss.databaseSize > 0 && !ss.isSeeding && !ss.isSeedingLegacy
 	var err error
 	var version string
 	var service string
@@ -94,6 +96,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Healthy:                   healthy,
 		Version:                   version,
 		Service:                   service,
+		IsSeeding:                 ss.isSeeding,
+		IsSeedingLegacy:           ss.isSeedingLegacy,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
 		SelectedDiscoveryProvider: selectedDiscoveryProvider,
@@ -138,7 +142,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	if !ss.Config.WalletIsRegistered {
 		status = 506
 	} else if !healthy {
-		status = 500
+		status = 503
 	}
 
 	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
@@ -179,4 +183,24 @@ func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
 
 	err = json.Unmarshal(body, &legacyHealth)
 	return legacyHealth, err
+}
+
+func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
+		dbHealthy := ss.databaseSize > 0
+		if !dbHealthy {
+			return c.JSON(503, "database not healthy")
+		}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
+		}
+
+		return next(c)
+	}
 }

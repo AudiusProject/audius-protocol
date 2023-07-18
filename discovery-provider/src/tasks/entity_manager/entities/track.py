@@ -156,6 +156,8 @@ def is_valid_json_field(metadata, field):
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
+    track_record.preview_cid = track_metadata["preview_cid"]
+    track_record.audio_upload_id = track_metadata["audio_upload_id"]
     track_record.title = track_metadata["title"]
     track_record.cover_art = track_metadata["cover_art"]
     track_record.tags = track_metadata["tags"]
@@ -173,14 +175,12 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
     track_record.is_premium = track_metadata["is_premium"]
     track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+    track_record.preview_start_seconds = track_metadata["preview_start_seconds"]
 
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]
 
-    # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-    # made unlisted again
-    if track_record.is_unlisted:
-        track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
 
     # Only update `duration` if it's provided,
     # otherwise fall back to the original value. This will allow for replacing
@@ -226,38 +226,48 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
 
 
 def validate_track_tx(params: ManageEntityParameters):
-    user_id = params.user_id
     track_id = params.entity_id
-    if user_id not in params.existing_records[EntityType.USER]:
-        raise IndexingValidationError(f"User {user_id} does not exist")
 
     validate_signer(params)
 
     if params.entity_type != EntityType.TRACK:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a track")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a track"
+        )
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:
             raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
-            raise IndexingValidationError(f"Cannot create track {track_id} below the offset")
+            raise IndexingValidationError(
+                f"Cannot create track {track_id} below the offset"
+            )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         track_metadata = params.metadata.get(params.metadata_cid)
         if track_metadata is not None:
             track_bio = track_metadata.get("description")
             track_genre = track_metadata.get("genre")
             if track_genre is not None and track_genre not in genre_allowlist:
-                raise IndexingValidationError(f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list")
-            if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
-                raise IndexingValidationError(f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}")
+                raise IndexingValidationError(
+                    f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
+                )
+            if (
+                track_bio is not None
+                and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
+            ):
+                raise IndexingValidationError(
+                    f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+                )
     else:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
-            raise IndexingValidationError(f"Existing track {track_id} does not match user")
+            raise IndexingValidationError(
+                f"Existing track {track_id} does not match user"
+            )
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
@@ -266,7 +276,9 @@ def validate_track_tx(params: ManageEntityParameters):
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(
+                    f"Cannot AI attribute user {ai_attribution_user}"
+                )
     return True
 
 
@@ -276,14 +288,14 @@ def get_handle(params: ManageEntityParameters):
         params.session.query(User.handle)
         .filter(User.user_id == params.user_id, User.is_current == True)
         .first()
-    )[0]
-    if not handle:
-        params.logger.error("missing track user in entity manager handle track")
-    return handle
+    )
+    if not handle or not handle[0]:
+        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+
+    return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict):
-    handle = get_handle(params)
+def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
@@ -293,6 +305,7 @@ def update_track_record(params: ManageEntityParameters, track: Track, metadata: 
 
 
 def create_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -313,7 +326,7 @@ def create_track(params: ManageEntityParameters):
         params.session, track_record, params.metadata, params.pending_track_routes
     )
 
-    update_track_record(params, track_record, params.metadata)
+    update_track_record(params, track_record, params.metadata, handle)
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
@@ -325,6 +338,7 @@ def create_track(params: ManageEntityParameters):
 
 
 def update_track(params: ManageEntityParameters):
+    handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
@@ -345,7 +359,7 @@ def update_track(params: ManageEntityParameters):
     update_track_routes_table(
         params.session, updated_track, params.metadata, params.pending_track_routes
     )
-    update_track_record(params, updated_track, params.metadata)
+    update_track_record(params, updated_track, params.metadata, handle)
     update_remixes_table(params.session, updated_track, params.metadata)
 
     params.add_track_record(track_id, updated_track)

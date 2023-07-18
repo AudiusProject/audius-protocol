@@ -25,6 +25,7 @@ models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
 models/Playlist.ts
+models/PlaylistAddedTimestamp.ts
 models/PlaylistArtwork.ts
 models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts

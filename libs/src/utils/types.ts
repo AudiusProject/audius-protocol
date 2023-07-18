@@ -126,6 +126,7 @@ export type TrackMetadata = {
   is_delete: boolean
   track_id: number
   track_cid: string
+  preview_cid: Nullable<string>
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
@@ -154,6 +155,8 @@ export type TrackMetadata = {
   premium_content_signature: Nullable<PremiumContentSignature>
   listenCount?: number
   permalink: string
+  audio_upload_id: Nullable<string>
+  preview_start_seconds: Nullable<number>
 
   // Optional Fields
   is_invalid?: boolean

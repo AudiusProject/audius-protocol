@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@audius/sdk": "^2.0.3-beta.1",
+    "@audius/sdk": "3.0.3-beta.77",
     "eth-sig-util": "3.0.1",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",

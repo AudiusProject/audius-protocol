@@ -15,6 +15,7 @@ import {
 import { UserNotificationSettings } from './userNotificationSettings'
 import { logger } from '../../logger'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { sendBrowserNotification } from '../../web'
 
 const getEnv = (envVar: string | undefined, defaultVal?: boolean): boolean => {
   if (envVar === undefined && defaultVal === undefined) return true
@@ -99,7 +100,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       if (!isDryRun) {
         await this.broadcastAnnouncement(
           validReceiverUserIds,
-          isLiveEmailEnabled
+          isLiveEmailEnabled,
+          isBrowserPushEnabled
         )
       }
 
@@ -124,7 +126,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     }
   }
 
-  async broadcastAnnouncement(userIds: number[], isLiveEmailEnabled: boolean) {
+  async broadcastAnnouncement(
+    userIds: number[],
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
+  ) {
     const userNotificationSettings = await buildUserNotificationSettings(
       this.identityDB,
       userIds
@@ -132,7 +138,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     for (const userId of userIds) {
       await this.broadcastPushNotificationAnnouncements(
         userId,
-        userNotificationSettings
+        userNotificationSettings,
+        isBrowserPushEnabled
       )
       await this.broadcastEmailAnnouncements(
         isLiveEmailEnabled,
@@ -144,16 +151,28 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
   async broadcastPushNotificationAnnouncements(
     userId: number,
-    userNotificationSettings: UserNotificationSettings
+    userNotificationSettings: UserNotificationSettings,
+    isBrowserPushEnabled: boolean
   ) {
     if (
       userNotificationSettings.shouldSendPushNotification({
         receiverUserId: userId
       })
     ) {
+      const title = this.notification.data.title
+      const body = this.notification.data.short_description
+      // purposefully leaving this without await,
+      // so we don't have to wait for each user's to be sent
+      // before the next's.
+      sendBrowserNotification(
+        isBrowserPushEnabled,
+        userNotificationSettings,
+        userId,
+        title,
+        body
+      )
       const devices: Device[] = userNotificationSettings.getDevices(userId)
       // If the user's settings for the follow notification is set to true, proceed
-  
       const pushes = await Promise.all(
         devices.map((device) => {
           // this may get rate limited by AWS
@@ -165,7 +184,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
             },
             {
               title: this.notification.data.title,
-              body: this.notification.data.short_description,
+              body: this.notification.data.push_body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

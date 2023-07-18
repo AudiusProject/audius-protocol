@@ -9,7 +9,7 @@ module.exports = {
       type: "category",
       label: "Protocol",
       link: {
-        type: 'generated-index'
+        type: "generated-index",
       },
       items: [
         {
@@ -22,7 +22,7 @@ module.exports = {
       type: "category",
       label: "Token",
       link: {
-        type: 'generated-index'
+        type: "generated-index",
       },
       items: [
         {
@@ -35,7 +35,7 @@ module.exports = {
       type: "category",
       label: "Developers",
       link: {
-        type: 'generated-index'
+        type: "generated-index",
       },
       collapsed: false,
       items: [
@@ -53,15 +53,11 @@ module.exports = {
           items: [
             {
               type: "doc",
-              id: "developers/subgraph/subgraphdata"
+              id: "developers/subgraph/subgraphdata",
             },
-            { type: "doc",
-              id: "developers/sugbraph/entities"
-            },
-            { type: "doc",
-              id: "developers/subgraph/queries",
-            },
-          ]
+            { type: "doc", id: "developers/subgraph/entities" },
+            { type: "doc", id: "developers/subgraph/queries" },
+          ],
         },
         {
           type: "category",

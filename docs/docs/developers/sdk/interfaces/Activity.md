@@ -20,9 +20,9 @@ custom_edit_url: null
 
 ___
 
-### item\_type
+### itemType
 
- `Optional` **item\_type**: `object`
+ `Optional` **itemType**: `object`
 
 **`memberof`** Activity
 

@@ -12,12 +12,8 @@ custom_edit_url: null
 
  `Optional` **id**: `string`[]
 
-The ID of the track(s)
-
 ___
 
 ### permalink
 
  `Optional` **permalink**: `string`[]
-
-The permalink of the track(s)

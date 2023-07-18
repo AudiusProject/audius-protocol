@@ -21,8 +21,7 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	}
 	m.ProblemBlobs = count
 	var ucount int64
-	uploads := []*Upload{}
-	ss.crud.DB.Order("created_at desc").Find(&uploads).Count(&ucount)
+	ss.crud.DB.Model(&Upload{}).Count(&ucount)
 	m.Uploads = ucount
 
 	m.OutboxSizes = ss.crud.GetOutboxSizes()

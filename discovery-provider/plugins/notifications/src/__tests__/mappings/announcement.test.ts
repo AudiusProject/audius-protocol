@@ -1,6 +1,7 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
+import * as web from '../../web'
 
 import {
   createUsers,
@@ -22,6 +23,10 @@ describe('Announcement Notification', () => {
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve({ endpointDisabled: false }))
+
+  const sendBrowserNotificationSpy = jest
+    .spyOn(web, 'sendBrowserNotification')
+    .mockImplementation(() => Promise.resolve(3))
 
   beforeEach(async () => {
     process.env.ANNOUNCEMENTS_DRY_RUN = 'false'
@@ -56,6 +61,7 @@ describe('Announcement Notification', () => {
         timestamp: new Date(Date.now()),
         data: {
           title: 'This is an announcement',
+          push_body: 'This is some information about the announcement we need to display',
           short_description:
             'This is some information about the announcement we need to display'
         },
@@ -82,6 +88,13 @@ describe('Announcement Notification', () => {
           type: 'Announcement'
         }
       }
+    )
+    expect(sendBrowserNotificationSpy).toHaveBeenCalledWith(
+      true,
+      expect.any(Object),
+      1,
+      'This is an announcement',
+      'This is some information about the announcement we need to display'
     )
   })
 

@@ -84,7 +84,7 @@ export class EntityManager implements EntityManagerService {
       signature
     )
 
-    const response = await fetch(`${this.config.identityServiceUrl}/relay`, {
+    const response = await fetch(`${await this.getRelayEndpoint()}/relay`, {
       method: 'POST',
       headers: new Headers({
         'Content-Type': 'application/json'
@@ -174,5 +174,24 @@ export class EntityManager implements EntityManagerService {
     }
 
     return true
+  }
+
+  public async getCurrentBlock() {
+    const currentBlockNumber = await this.web3.eth.getBlockNumber()
+    return (await this.web3.eth.getBlock(currentBlockNumber)) as {
+      timestamp: number
+    }
+  }
+
+  public async getRelayEndpoint(): Promise<string> {
+    const useDiscoveryRelay = this.config.useDiscoveryRelay
+    if (useDiscoveryRelay === undefined || !useDiscoveryRelay) {
+      return this.config.identityServiceUrl
+    }
+    const discoveryEndpoint = await this.config.discoveryNodeSelector.getSelectedEndpoint()
+    if (discoveryEndpoint === null) {
+      return this.config.identityServiceUrl
+    }
+    return discoveryEndpoint
   }
 }

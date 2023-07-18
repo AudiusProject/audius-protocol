@@ -8,7 +8,6 @@ const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
 const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
 const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
-const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
 const DecisionTree = require('../../utils/decisionTree')
 const { computeFilePath, computeFilePathInDir } = require('../../utils/fsUtils')
@@ -300,7 +299,6 @@ async function _primarySyncFromSecondary({
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
     tracing.recordException(e)
-    await SyncHistoryAggregator.recordSyncFail(wallet)
 
     if (errorResult) {
       return errorResult
