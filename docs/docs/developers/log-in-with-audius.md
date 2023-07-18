@@ -150,7 +150,8 @@ Use [this playground](https://9ncjui.csb.app/) to explore the different button o
 
 If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthloginparams-scope).
 
-### 4. Optional: Show loader until the button is ready
+<details>
+<summary>**Optional: Show loader until the button is ready**</summary>
 
 The button may take up to a couple of seconds to load. You may want to show a loading indicator until the button has loaded for an optimal user experience.
 
@@ -183,7 +184,9 @@ observer.observe(document.querySelector("#parent"), {
 
 The log in button will be rendered with an id of `audius-login-button`. As shown above, you can detect when the element has been added using a MutationObserver.
 
-### 5. Optional: Write to the user's Audius account
+</details>
+
+### 5. Optional: Write on behalf of the Audius user
 
 Once a user has authorized your app with the `write` scope, you can easily perform actions on their behalf using the SDK.
 
@@ -195,7 +198,7 @@ const audiusSdk = sdk({
   apiSecret: "Your API Secret goes here",
 });
 
-const track = await audiusSdk.tracks.saveTrack({
+const track = await audiusSdk.tracks.favoriteTrack({
   trackId: "D7KyD",
   userId: "Audius user ID of user who gave your app write access",
 });
@@ -203,7 +206,7 @@ const track = await audiusSdk.tracks.saveTrack({
 
 :::warning
 
-Do NOT do this if you are running the SDK on the client side, as this will expose your API Secret.
+Be careful to not expose API secrets on your frontend!
 
 :::
 
@@ -432,7 +435,7 @@ const audiusSdk = sdk({
   apiSecret: "Your API Secret goes here",
 });
 
-const track = await audiusSdk.tracks.saveTrack({
+const track = await audiusSdk.tracks.favoriteTrack({
   trackId: "D7KyD",
   userId: "Audius user ID of user who gave your app write access",
 });

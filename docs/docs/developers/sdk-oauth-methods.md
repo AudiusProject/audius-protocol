@@ -1,6 +1,6 @@
 # OAuth
 
-Enable users to either authorize your app to perform actions on their behalf (i.e. grant write permissions), or simply give you their Audius profile info (no write permissions granted).
+Enable users to either authorize your app to perform actions on their behalf (i.e. grant write permissions), or simply verify who they are and give you access to their Audius profile info (no write permissions granted).
 
 ## Methods
 
@@ -13,7 +13,6 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
 - successCallback `(profile: UserProfile) => void` - function to be called when the user successfully authorizes or authenticates with Audius. This function will be called with the user's profile information, which is an object with the following shape:
 
   ```typescript
-  // type UserProfile =
   {
     userId: number; // unique Audius user identifier
     email: string;

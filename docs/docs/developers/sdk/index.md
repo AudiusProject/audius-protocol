@@ -12,9 +12,10 @@ custom_edit_url: null
 
 The Audius JavaScript (TypeScript) SDK allows you to easily interact with the Audius protocol. Use the SDK to:
 
-- 🎵 Stream and upload tracks
 - 🔍 Search and display users, tracks, and playlists
-- ✍️ Allow your users to [log in with their Audius account](/developers/log-in-with-audius)
+- 🎵 Stream and upload tracks
+- ❤️ Favorite, repost, and curate playlists
+- ✍️ Allow your users to [log in with their Audius account](/developers/log-in-with-audius) and act on their behalf
 
 ...and much more!
 
@@ -107,7 +108,7 @@ const userId = (
     handle: "Your Audius handle goes here",
   })
 ).data?.id;
-const track = await audiusSdk.tracks.saveTrack({
+const track = await audiusSdk.tracks.favoriteTrack({
   trackId: "D7KyD",
   userId,
 });
@@ -137,7 +138,7 @@ const userId = (
 ).data?.id;
 
 // Only possible if `apiSecret` is passed into `sdk` above:
-const track = await audiusSdk.tracks.saveTrack({
+const track = await audiusSdk.tracks.favoriteTrack({
   trackId: "D7KyD",
   userId,
 });
