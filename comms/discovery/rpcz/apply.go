@@ -454,21 +454,5 @@ func websocketNotify(rpcJson json.RawMessage, userId int32, timestamp time.Time)
 }
 
 func GetRPCCurrentUserID(rpcLog *schema.RpcLog, rawRpc *schema.RawRPC) (int32, error) {
-	// attempt to read the (newly added) current_user_id field
-	if rawRpc.CurrentUserID != "" {
-		if u, err := misc.DecodeHashId(rawRpc.CurrentUserID); err == nil && u > 0 {
-			// valid current_user_id + wallet combo?
-			// for now just check that the pair exists in the user table
-			// in the future this can check a "grants" table that a given operation is permitted
-			isValid := false
-			db.Conn.QueryRow(`select count(*) > 0 from users where is_current = true and user_id = $1 and wallet = lower($2)`, u, rpcLog.FromWallet).Scan(&isValid)
-			if isValid {
-				return int32(u), nil
-			}
-		}
-	}
-
-	// fallback to finding user ID from wallet
-	// we can remove this when all clients send current_user_id
-	return queries.GetUserIDFromWallet(db.Conn, context.Background(), rpcLog.FromWallet)
+	return queries.GetUserIDFromWallet(db.Conn, context.Background(), rpcLog.FromWallet, rawRpc.CurrentUserID)
 }
