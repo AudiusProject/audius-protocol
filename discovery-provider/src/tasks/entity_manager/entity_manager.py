@@ -281,9 +281,8 @@ def entity_manager_update(
                     # swallow exception to keep indexing
                     logger.info(f"failed to process transaction error {e}")
                 except Exception as e:
-                    print(e)
                     indexing_error = IndexingError(
-                        "tx-failutre",
+                        "tx-failure",
                         block_number,
                         hex_blockhash,
                         txhash,
