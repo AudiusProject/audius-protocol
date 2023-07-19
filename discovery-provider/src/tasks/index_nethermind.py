@@ -24,13 +24,9 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
-from src.queries.confirm_indexing_transaction_error import (
-    confirm_indexing_transaction_error,
-)
 from src.queries.get_skipped_transactions import (
     clear_indexing_error,
     get_indexing_error,
-    set_indexing_error,
 )
 from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
@@ -218,18 +214,6 @@ def process_state_changes(
         )
 
 
-def create_and_raise_indexing_error(err, redis):
-    logger.error(
-        f"Error in the indexing task at"
-        f" block={err.blocknumber} and hash={err.txhash}"
-    )
-    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
-    confirm_indexing_transaction_error(
-        redis, err.blocknumber, err.blockhash, err.txhash, err.message
-    )
-    raise err
-
-
 @log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
@@ -402,32 +386,6 @@ def index_next_block(
 
             except NotAllTransactionsFetched as e:
                 raise e
-
-            except Exception as e:
-                indexing_error = IndexingError(
-                    "prefetch-cids",
-                    next_block.number,
-                    next_block.hash,
-                    None,
-                    str(e),
-                )
-                create_and_raise_indexing_error(indexing_error, redis)
-
-        try:
-            session.commit()
-
-        except Exception as e:
-            # Use 'commit' as the tx hash here.
-            # We're at a point where the whole block can't be added to the database, so
-            # we should skip it in favor of making progress
-            indexing_error = IndexingError(
-                "session.commit",
-                next_block.number,
-                web3.toHex(next_block.hash),
-                "commit",
-                str(e),
-            )
-            create_and_raise_indexing_error(indexing_error, redis)
         try:
             if next_block.number % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
@@ -444,6 +402,7 @@ def index_next_block(
                 f"Error in calling update trending challenge {e}",
                 exc_info=True,
             )
+
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
             if next_block.number % 100 == 0:
@@ -834,6 +793,7 @@ def index_nethermind(self):
 
     try:
         with db.scoped_session() as session:
+            session.commit()
             latest_database_block = get_latest_database_block(session)
 
             in_valid_state, next_block = get_relevant_blocks(

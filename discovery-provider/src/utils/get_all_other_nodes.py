@@ -124,6 +124,7 @@ def get_all_other_discovery_nodes_cached(redis) -> List[str]:
     """
     Attempts to get the enumerated discovery nodes from redis.
     """
+    print("actually getting nodes")
 
     return get_json_cached_key(redis, ALL_DISCOVERY_NODES_CACHE_KEY)
 

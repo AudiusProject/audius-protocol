@@ -3,6 +3,10 @@ import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
+from src.queries.get_skipped_transactions import save_and_get_skip_tx_hash
+
+from src.utils.indexing_errors import IndexingError
+
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -67,6 +71,16 @@ from src.tasks.entity_manager.utils import (
 from src.utils import helpers
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
+
+
+from src.queries.confirm_indexing_transaction_error import (
+    confirm_indexing_transaction_error,
+)
+from src.queries.get_skipped_transactions import (
+    clear_indexing_error,
+    get_indexing_error,
+    set_indexing_error,
+)
 
 logger = StructuredLogger(__name__)
 
@@ -209,6 +223,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
+                        print("creating user")
                         create_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.UPDATE
@@ -271,6 +286,17 @@ def entity_manager_update(
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(f"failed to process transaction error {e}")
+                except Exception as e:
+                    print(e)
+                    indexing_error = IndexingError(
+                        "tx-failutre",
+                        block_number,
+                        block_hash,
+                        txhash,
+                        str(e),
+                    )
+                    create_and_raise_indexing_error(indexing_error, update_task.redis, session)
+
         # compile records_to_save
         records_to_save = []
         for record_type, record_dict in new_records.items():
@@ -350,6 +376,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
+        print(entity_manager_txs)
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -654,3 +681,22 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
+
+
+def create_and_raise_indexing_error(err, redis, session):
+    logger.error(
+        f"Error in the indexing task at"
+        f" block={err.blocknumber} and hash={err.txhash}"
+    )
+    # set indexing error
+    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
+
+    # seek consensus
+    has_consensus = confirm_indexing_transaction_error(
+        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+    )
+    if not has_consensus:
+        # escalate error and halt indexing until there's consensus
+        raise err
+
+    save_and_get_skip_tx_hash(session, redis)

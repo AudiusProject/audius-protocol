@@ -144,6 +144,7 @@ def validate_user_handle(handle: Union[str, None]):
 
 
 def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_metadata: Dict[str, Dict]):
+    print("create user")
     validate_user_tx(params)
 
     user_id = params.user_id
