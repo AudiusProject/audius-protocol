@@ -25,6 +25,7 @@ import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import styles from './PlaylistLibrary.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
+import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
 
 const { getPlaylistLibrary, getHasAccount } = accountSelectors
 const { saveCollection } = collectionsSocialActions
@@ -51,6 +52,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const record = useRecord()
 
   useAddAudioNftPlaylistToLibrary()
+  useSanitizePlaylistLibrary()
 
   const handleDrop = useCallback(
     (collectionId: number) => {
