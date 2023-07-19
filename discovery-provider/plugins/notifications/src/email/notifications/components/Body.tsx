@@ -107,7 +107,7 @@ const snippetMap = {
   },
   ['usdc_purchase_seller'](notification) {
     const { entity, users, amount } = notification
-    return `Congrats, ${users[0].name} just bought your track ${entity.name} for ${amount} USDC!`
+    return `Congrats, ${users[0].name} just bought your track ${entity.name} for $${amount}!`
   },
   ['usdc_purchase_buyer'](notification) {
     const { entity, users } = notification

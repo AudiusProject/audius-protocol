@@ -16,6 +16,7 @@ import { disableDeviceArns } from '../../utils/disableArnEndpoint'
 import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
+import { formatUSDCWeiToUSDString } from '../../utils/format'
 
 type USDCPurchaseBuyerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseBuyerNotification
@@ -23,7 +24,7 @@ type USDCPurchaseBuyerRow = Omit<NotificationRow, 'data'> & {
 export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   notificationReceiverUserId: number
   sellerUserId: number
-  amount: number
+  amount: string
   content_id: number
 
   constructor(
@@ -33,7 +34,9 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    this.amount = this.notification.data.amount
+    this.amount = formatUSDCWeiToUSDString(
+      this.notification.data.amount.toString()
+    )
     this.sellerUserId = this.notification.data.seller_user_id
     this.notificationReceiverUserId = this.notification.data.buyer_user_id
     this.content_id = this.notification.data.content_id
@@ -50,7 +53,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       this.notificationReceiverUserId,
       this.sellerUserId
     ])
-    if (users?.[this.notificationReceiverUserId]?.isDeactivated) {
+    if (users?.[this.notificationReceiverUserId]?.is_deactivated) {
       return
     }
     // Get the user's notification setting from identity service
@@ -161,7 +164,6 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     return {
       type: this.notification.type,
       users: [user],
-      // TODO : convert this amount w/ right precision
       amount: this.amount,
       entity
     }

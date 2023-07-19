@@ -52,7 +52,7 @@ describe('Repost Notification', () => {
         buyer_user_id: 2,
         content_type: RepostType.track,
         content_id: 10,
-        amount: 1000
+        amount: 1000000
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -64,7 +64,7 @@ describe('Repost Notification', () => {
     // Assert single pending
     const title = 'Track Sold'
     const body =
-      'Congrats, User_2 just bought your track track_title_10 for 1000 USDC!'
+      'Congrats, User_2 just bought your track track_title_10 for $1.00!'
     await processor.appNotificationsProcessor.process(pending.appNotifications)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
@@ -116,7 +116,7 @@ describe('Repost Notification', () => {
         buyer_user_id: 2,
         content_type: RepostType.track,
         content_id: 10,
-        amount: 1000
+        amount: 1000000
       }
     ])
 
@@ -130,7 +130,7 @@ describe('Repost Notification', () => {
         data: {
           buyer_user_id: 2,
           seller_user_id: 1,
-          amount: 1000,
+          amount: 1000000,
           content_id: 10
         },
         user_ids: [1],

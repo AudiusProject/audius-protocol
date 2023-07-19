@@ -288,7 +288,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <BodyText
-          text={`Congrats, ${buyerUser.name} just bought your track ${entityName} for ${amount} USDC!`}
+          text={`Congrats, ${buyerUser.name} just bought your track ${entityName} for $${amount}!`}
         />
       </span>
     )

@@ -3,6 +3,23 @@ import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
+type UserBasicInfo = {
+  user_id: number
+  name: string
+  is_deactivated: boolean
+}
+
+type PlaylistInfo = {
+  playlist_id: number
+  playlist_name: string
+  is_album: boolean
+}
+
+type TrackInfo = {
+  track_id: number
+  title: string
+}
+
 export abstract class BaseNotification<Type> {
   notification: Type
   dnDB: Knex
@@ -25,11 +42,13 @@ export abstract class BaseNotification<Type> {
             'track_id',
             entityIds.map((id) => id.toString())
           )
-        const tracks = res.reduce((acc, track) => {
-          acc[track.track_id] = { title: track.title }
-          return acc
-        }, {} as Record<number, { title: string }>)
-        return tracks
+        return res.reduce<Record<number, TrackInfo>>(
+          (acc, track) => ({
+            ...acc,
+            [track.track_id]: { ...track }
+          }),
+          {}
+        )
       }
       case EntityType.Album:
       case EntityType.Playlist: {
@@ -45,14 +64,13 @@ export abstract class BaseNotification<Type> {
             'playlist_id',
             entityIds.map((id) => id.toString())
           )
-        const playlists = res.reduce((acc, playlist) => {
-          acc[playlist.playlist_id] = {
-            playlist_name: playlist.playlist_name,
-            is_album: playlist.is_album
-          }
-          return acc
-        }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
-        return playlists
+        return res.reduce<Record<number, PlaylistInfo>>(
+          (acc, playlist) => ({
+            ...acc,
+            [playlist.playlist_id]: { ...playlist }
+          }),
+          {}
+        )
       }
       default:
         console.error(`Fetching entity type ${entityType} not supported`)
@@ -72,14 +90,13 @@ export abstract class BaseNotification<Type> {
         'user_id',
         userIds.map((id) => id.toString())
       )
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
-    return users
+    return res.reduce<Record<number, UserBasicInfo>>(
+      (acc, user) => ({
+        ...acc,
+        [user.user_id]: { ...user }
+      }),
+      {}
+    )
   }
 
   async incrementBadgeCount(userId: number) {
