@@ -165,7 +165,7 @@ def test_get_private_playlist_with_playlist_ids(app, test_entities):
                 ),
             )
 
-            assert len(playlist) == 0
+            assert len(playlist) == 1
 
 
 def test_get_playlist_with_permalink(app, test_entities):

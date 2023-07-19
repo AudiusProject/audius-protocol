@@ -464,13 +464,14 @@ def index_next_block(
     add_indexed_block_to_redis(next_block, redis)
 
 
-def get_block(web3: Web3, blocknumber: int):
+def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
     try:
-        block = web3.eth.get_block(blocknumber)
+        adjusted_blocknumber = blocknumber - (final_poa_block or 0)
+        block = web3.eth.get_block(adjusted_blocknumber)
         block = AttributeDict(block)
         return block
     except BlockNotFound:
-        logger.info(f"Block not found {blocknumber}")
+        logger.info(f"Block not found {adjusted_blocknumber}")
         return False
 
 
@@ -484,15 +485,14 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
         return
     parent_number = parent_number_results[0]
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        block_future = executor.submit(get_block, web3, parent_number)
+        block_future = executor.submit(get_block, web3, parent_number, FINAL_POA_BLOCK)
 
-        block = block_future.result()
-        parent_datetime = datetime.utcfromtimestamp(block.timestamp).replace(
-            tzinfo=timezone.utc
-        )
+        parent_block = block_future.result()
+        if not parent_block:
+            return
         celery.send_task(
             "revert_delist_status_cursors",
-            kwargs={"reverted_cursor": parent_datetime},
+            kwargs={"reverted_cursor_timestamp": parent_block.timestamp},
         )
 
 

@@ -61,6 +61,10 @@ jobs:
             mv /tmp/.version.json creator-node/.version.json
             git add creator-node/.version.json
 
+            jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
+            mv /tmp/.version.json mediorum/.version.json
+            git add mediorum/.version.json
+
             jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
             mv /tmp/.version.json discovery-provider/.version.json
             git add discovery-provider/.version.json

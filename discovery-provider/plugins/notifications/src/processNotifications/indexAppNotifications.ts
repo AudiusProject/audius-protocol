@@ -66,6 +66,8 @@ export const notificationTypeMapping = {
   trending_underground: MappingVariable.PushTrendingUnderground,
   trending_playlist: MappingVariable.PushTrendingPlaylist,
   tastemaker: MappingVariable.PushTastemaker,
+  usdc_purchase_seller: MappingVariable.PushUSDCPurchaseSeller,
+  usdc_purchase_buyer: MappingVariable.PushUSDCPurchaseBuyer,
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction
 }
