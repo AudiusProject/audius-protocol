@@ -61,6 +61,7 @@ describe('Announcement Notification', () => {
         timestamp: new Date(Date.now()),
         data: {
           title: 'This is an announcement',
+          push_body: 'This is some information about the announcement we need to display',
           short_description:
             'This is some information about the announcement we need to display'
         },

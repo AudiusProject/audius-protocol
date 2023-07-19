@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-const CidLookupBatchSize = 1000
+const CidLookupBatchSize = 4000
 
 func (ss *MediorumServer) startCidBeamClient() {
 	for {

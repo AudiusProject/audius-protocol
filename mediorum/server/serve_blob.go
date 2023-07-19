@@ -180,6 +180,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			go ss.logTrackListen(c)
 		}
 
+		if c.Request().Method == "HEAD" {
+			return c.NoContent(200)
+		}
+
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
 	}
@@ -196,54 +200,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	for _, blob := range blobs {
 		// do a check server is up and has blob
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
-			return c.Redirect(302, dest.String())
-		}
-	}
-
-	return c.String(404, "blob not found")
-}
-
-func (ss *MediorumServer) headBlob(c echo.Context) error {
-	ctx := c.Request().Context()
-	key := c.Param("cid")
-	logger := ss.logger.With("cid", key)
-
-	shouldCheckDelistStatus := true
-	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
-		shouldCheckDelistStatus = false
-	}
-	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
-		logger.Info("cid is blacklisted")
-		return c.String(403, "cid is blacklisted by this node")
-	}
-
-	if isLegacyCID(key) {
-		return ss.headLegacyCid(c)
-	}
-
-	// Return 200 if we have it
-	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
-		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
-		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-		if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-			return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
-		}
-		return c.NoContent(200)
-	}
-
-	// Return 302 if we know where it is
-	var blobs []Blob
-	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
-		Find(&blobs).Error
-	if err != nil {
-		return err
-	}
-	for _, blob := range blobs {
-		if ss.hostHasBlob(blob.Host, key) {
-			dest := replaceHost(*c.Request().URL, blob.Host)
+			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
 	}
@@ -257,7 +214,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
-		!rangeIsFirstByte(c.Request().Header.Get("Range")) {
+		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
+		c.Request().Method != "GET" {
 		// todo: skip count for trusted notifier requests should be inferred
 		// by the requesting entity and not some query param
 		return

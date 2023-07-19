@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from unittest import mock
 
@@ -11,7 +12,11 @@ from src.models.delisting.track_delist_status import (
 from src.models.delisting.user_delist_status import DelistUserReason, UserDelistStatus
 from src.models.tracks.track import Track
 from src.models.users.user import User
-from src.tasks.update_delist_statuses import DELIST_BATCH_SIZE, process_delist_statuses
+from src.tasks.update_delist_statuses import (
+    DATETIME_FORMAT_STRING,
+    DELIST_BATCH_SIZE,
+    process_delist_statuses,
+)
 from src.utils.db_session import get_db
 
 
@@ -84,11 +89,14 @@ def test_update_user_delist_statuses_missing_user(mock_requests, app):
     mock_requests.get.return_value = _mock_response(mock_return)
 
     with db.scoped_session() as session:
-        trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co/",
-            "wallet": "0x0",
-        }
-        process_delist_statuses(session, trusted_notifier_manager)
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        # Have not indexed the block with the CREATE USER 300 tx
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 19:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
         # check user_delist_statuses persisted
         all_delist_statuses: List[UserDelistStatus] = (
             session.query(UserDelistStatus)
@@ -107,16 +115,77 @@ def test_update_user_delist_statuses_missing_user(mock_requests, app):
 
         # check users not updated
         users: List[User] = (
-            session.query(User)
-            .filter(
-                User.is_current,
-                User.user_id == 100
-            )
-            .all()
+            session.query(User).filter(User.is_current, User.user_id == 100).all()
         )
         assert len(users) == 1
         assert not users[0].is_deactivated
         assert users[0].is_available
+
+
+@mock.patch("src.utils.auth_helpers.requests")
+def test_update_user_delist_statuses_skip_missing_user(mock_requests, app):
+    with app.app_context():
+        db = get_db()
+    _seed_db(db)
+
+    mock_return = {
+        "result": {
+            # Note: real response will only have "users" or "tracks" according
+            # to the query param, not both. Include both here anyway for mocking simplicity
+            "tracks": [],
+            "users": [
+                {
+                    "createdAt": "2023-05-17 18:00:00.999999+00",
+                    "userId": 100,
+                    "delisted": True,
+                    "reason": "STRIKE_THRESHOLD",
+                },
+                {
+                    "createdAt": "2023-05-17 20:00:00.999999+00",
+                    "userId": 300,
+                    "delisted": True,
+                    "reason": "MANUAL",
+                },
+            ],
+        }
+    }
+    mock_requests.get.return_value = _mock_response(mock_return)
+
+    with db.scoped_session() as session:
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        # Will never index CREATE USER 300 into db at this point in indexing.
+        # Should skip delist for user 300 and advance cursor.
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 21:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
+        # check user_delist_statuses persisted
+        all_delist_statuses: List[UserDelistStatus] = (
+            session.query(UserDelistStatus)
+            .order_by(asc(UserDelistStatus.created_at))
+            .all()
+        )
+        assert len(all_delist_statuses) == 2
+
+        # check cursor updated
+        user_delist_cursors: List[DelistStatusCursor] = (
+            session.query(DelistStatusCursor)
+            .filter(DelistStatusCursor.entity == DelistEntity.USERS)
+            .all()
+        )
+        assert len(user_delist_cursors) == 1
+        assert user_delist_cursors[0].host == trusted_notifier_endpoint
+        assert user_delist_cursors[0].created_at == all_delist_statuses[1].created_at
+
+        # check user 100 updated
+        users: List[User] = (
+            session.query(User).filter(User.is_current, User.user_id == 100).all()
+        )
+        assert len(users) == 1
+        assert users[0].is_deactivated
+        assert not users[0].is_available
 
 
 @mock.patch("src.utils.auth_helpers.requests")
@@ -155,11 +224,13 @@ def test_update_user_delist_statuses(mock_requests, app):
     mock_requests.get.return_value = _mock_response(mock_return)
 
     with db.scoped_session() as session:
-        trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co/",
-            "wallet": "0x0",
-        }
-        process_delist_statuses(session, trusted_notifier_manager)
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 20:00:01.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
         # check user_delist_statuses
         all_delist_statuses: List[UserDelistStatus] = (
             session.query(UserDelistStatus)
@@ -184,7 +255,7 @@ def test_update_user_delist_statuses(mock_requests, app):
             .all()
         )
         assert len(user_delist_cursors) == 1
-        assert user_delist_cursors[0].host == trusted_notifier_manager["endpoint"]
+        assert user_delist_cursors[0].host == trusted_notifier_endpoint
         assert user_delist_cursors[0].created_at == all_delist_statuses[2].created_at
 
         # check users updated
@@ -235,11 +306,14 @@ def test_update_track_delist_statuses_missing_track(mock_requests, app):
     mock_requests.get.return_value = _mock_response(mock_return)
 
     with db.scoped_session() as session:
-        trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co/",
-            "wallet": "0x0",
-        }
-        process_delist_statuses(session, trusted_notifier_manager)
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        # Have not indexed the block with the CREATE TRACK 500 tx
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 21:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
         # check track_delist_statuses persisted
         all_delist_statuses: List[TrackDelistStatus] = (
             session.query(TrackDelistStatus)
@@ -258,16 +332,81 @@ def test_update_track_delist_statuses_missing_track(mock_requests, app):
 
         # check tracks not updated
         tracks: List[Track] = (
-            session.query(Track)
-            .filter(
-                Track.is_current,
-                Track.track_id == 300
-            )
-            .all()
+            session.query(Track).filter(Track.is_current, Track.track_id == 300).all()
         )
         assert len(tracks) == 1
         assert not tracks[0].is_delete
         assert tracks[0].is_available
+
+
+@mock.patch("src.utils.auth_helpers.requests")
+def test_update_track_delist_statuses_skip_missing_track(mock_requests, app):
+    with app.app_context():
+        db = get_db()
+    _seed_db(db)
+
+    mock_return = {
+        "result": {
+            # Note: real response will only have "users" or "tracks" according
+            # to the query param, not both. Include both here anyway for mocking simplicity
+            "users": [],
+            "tracks": [
+                {
+                    "createdAt": "2023-05-17 20:47:29.362983+00",
+                    "trackId": 300,
+                    "ownerId": 100,
+                    "trackCid": "1234",
+                    "delisted": True,
+                    "reason": "DMCA",
+                },
+                {
+                    "createdAt": "2023-05-17 21:47:29.362983+00",
+                    "trackId": 500,
+                    "ownerId": 200,
+                    "trackCid": "5678",
+                    "delisted": True,
+                    "reason": "ACR",
+                },
+            ],
+        }
+    }
+    mock_requests.get.return_value = _mock_response(mock_return)
+
+    with db.scoped_session() as session:
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        # Will never index CREATE TRACK 500 into db at this point in indexing.
+        # Should skip delist for track 500 and advance cursor.
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 22:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
+        # check track_delist_statuses persisted
+        all_delist_statuses: List[TrackDelistStatus] = (
+            session.query(TrackDelistStatus)
+            .order_by(asc(TrackDelistStatus.created_at))
+            .all()
+        )
+        assert len(all_delist_statuses) == 2
+
+        # check cursor updated
+        track_delist_cursors: List[DelistStatusCursor] = (
+            session.query(DelistStatusCursor)
+            .filter(DelistStatusCursor.entity == DelistEntity.TRACKS)
+            .all()
+        )
+        assert len(track_delist_cursors) == 1
+        assert track_delist_cursors[0].host == trusted_notifier_endpoint
+        assert track_delist_cursors[0].created_at == all_delist_statuses[1].created_at
+
+        # check track 300 updated
+        tracks: List[Track] = (
+            session.query(Track).filter(Track.is_current, Track.track_id == 300).all()
+        )
+        assert len(tracks) == 1
+        assert tracks[0].is_delete
+        assert not tracks[0].is_available
 
 
 @mock.patch("src.utils.auth_helpers.requests")
@@ -312,11 +451,13 @@ def test_update_track_delist_statuses(mock_requests, app):
     mock_requests.get.return_value = _mock_response(mock_return)
 
     with db.scoped_session() as session:
-        trusted_notifier_manager = {
-            "endpoint": "http://mock-trusted-notifier.audius.co/",
-            "wallet": "0x0",
-        }
-        process_delist_statuses(session, trusted_notifier_manager)
+        trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 23:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
         # check track_delist_statuses
         all_delist_statuses: List[TrackDelistStatus] = (
             session.query(TrackDelistStatus)
@@ -347,7 +488,7 @@ def test_update_track_delist_statuses(mock_requests, app):
             .all()
         )
         assert len(track_delist_cursors) == 1
-        assert track_delist_cursors[0].host == trusted_notifier_manager["endpoint"]
+        assert track_delist_cursors[0].host == trusted_notifier_endpoint
         assert track_delist_cursors[0].created_at == all_delist_statuses[2].created_at
 
         # check tracks updated
@@ -396,10 +537,6 @@ def test_format_poll_more_endpoint(app, mocker):
 
     with db.scoped_session() as session:
         trusted_notifier_endpoint = "http://mock-trusted-notifier.audius.co/"
-        trusted_notifier_manager = {
-            "endpoint": trusted_notifier_endpoint,
-            "wallet": "0x0",
-        }
         session.execute("TRUNCATE delist_status_cursor")
         session.execute(
             """
@@ -422,7 +559,12 @@ def test_format_poll_more_endpoint(app, mocker):
             side_effect=assert_signed_get,
             autospec=True,
         )
-        process_delist_statuses(session, trusted_notifier_manager)
+        current_block_timestamp = datetime.strptime(
+            "2023-05-17 19:00:00.999999+00", DATETIME_FORMAT_STRING
+        ).timestamp()
+        process_delist_statuses(
+            session, trusted_notifier_endpoint, current_block_timestamp
+        )
 
         # check cursor unchanged
         delist_cursors: List[DelistStatusCursor] = (
@@ -431,9 +573,9 @@ def test_format_poll_more_endpoint(app, mocker):
             .all()
         )
         assert len(delist_cursors) == 2
-        assert delist_cursors[0].host == trusted_notifier_manager["endpoint"]
+        assert delist_cursors[0].host == trusted_notifier_endpoint
         assert delist_cursors[0].entity == DelistEntity.USERS
         assert str(delist_cursors[0].created_at) == "2023-05-17 18:00:00.999999+00:00"
-        assert delist_cursors[1].host == trusted_notifier_manager["endpoint"]
+        assert delist_cursors[1].host == trusted_notifier_endpoint
         assert delist_cursors[1].entity == DelistEntity.TRACKS
         assert str(delist_cursors[1].created_at) == "2023-06-06 12:00:00+00:00"

@@ -92,9 +92,6 @@ export interface AggregateUserTipRow {
   receiver_user_id: number
   sender_user_id: number
 }
-export interface AlembicVersionRow {
-  version_num: string
-}
 export interface AppNameMetricRow {
   application_name: string
   count: number
@@ -608,6 +605,17 @@ export interface TrendingResultRow {
   user_id: number
   version: string
   week: Date
+}
+export interface USDCPurchaseRow {
+  slot?: number | null
+  signature: string
+  seller_user_id: number
+  buyer_user_id: number
+  amount: number
+  content_type: string
+  content_id: number
+  created_at: Date
+  updated_at: Date
 }
 export interface UrsmContentNodeRow {
   blockhash?: string | null

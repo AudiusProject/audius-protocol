@@ -19,6 +19,7 @@ import {
   TipSendNotification,
   TipReceiveNotification,
   TastemakerNotification,
+  USDCPurchaseSellerNotification,
   SupporterDethronedNotification,
   SupportingRankUpNotification,
   ChallengeRewardNotification,
@@ -28,7 +29,8 @@ import {
   AnnouncementNotification,
   TrendingTrackNotification,
   TrendingUndergroundNotification,
-  TrendingPlaylistNotification
+  TrendingPlaylistNotification,
+  USDCPurchaseBuyerNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -53,6 +55,8 @@ import { Tastemaker } from './tastemaker'
 import { SaveOfRepost } from './saveOfRepost'
 import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
+import { USDCPurchaseSeller } from './usdcPurchaseSeller'
+import { USDCPurchaseBuyer } from './usdcPurchaseBuyer'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -146,6 +150,24 @@ const mapNotification = (
       data: ChallengeRewardNotification
     }
     return new ChallengeReward(dnDb, identityDb, challengeRewardNotification)
+  } else if (notification.type == 'usdc_purchase_seller') {
+    const usdcPurchaseSellerNotification = notification as NotificationRow & {
+      data: USDCPurchaseSellerNotification
+    }
+    return new USDCPurchaseSeller(
+      dnDb,
+      identityDb,
+      usdcPurchaseSellerNotification
+    )
+  } else if (notification.type == 'usdc_purchase_buyer') {
+    const usdcPurchaseBuyerNotification = notification as NotificationRow & {
+      data: USDCPurchaseBuyerNotification
+    }
+    return new USDCPurchaseBuyer(
+      dnDb,
+      identityDb,
+      usdcPurchaseBuyerNotification
+    )
   } else if (notification.type == 'track_added_to_playlist') {
     const addTrackToPlaylistNotification = notification as NotificationRow & {
       data: AddTrackToPlaylistNotification

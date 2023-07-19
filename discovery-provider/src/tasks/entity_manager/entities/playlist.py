@@ -21,7 +21,9 @@ from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
 
-def update_playlist_routes_table(params: ManageEntityParameters, playlist_record):
+def update_playlist_routes_table(
+    params: ManageEntityParameters, playlist_record: Playlist, is_create: bool
+):
     pending_playlist_routes = params.pending_playlist_routes
     session = params.session
 
@@ -88,6 +90,27 @@ def update_playlist_routes_table(params: ManageEntityParameters, playlist_record
     new_playlist_route.blocknumber = playlist_record.blocknumber
     new_playlist_route.txhash = playlist_record.txhash
     session.add(new_playlist_route)
+
+    if is_create:
+        # playlist-name-<id>
+        migration_playlist_slug_title = helpers.sanitize_slug(
+            playlist_record.playlist_name,
+            playlist_record.playlist_id,
+            playlist_record.playlist_id,
+        )
+        migration_playlist_slug = migration_playlist_slug_title
+
+        migration_playlist_route = PlaylistRoute()
+        migration_playlist_route.slug = migration_playlist_slug
+        migration_playlist_route.title_slug = migration_playlist_slug_title
+        migration_playlist_route.collision_id = new_collision_id
+        migration_playlist_route.owner_id = playlist_record.playlist_owner_id
+        migration_playlist_route.playlist_id = playlist_record.playlist_id
+        migration_playlist_route.is_current = True
+        migration_playlist_route.blockhash = playlist_record.blockhash
+        migration_playlist_route.blocknumber = playlist_record.blocknumber
+        migration_playlist_route.txhash = playlist_record.txhash
+        session.add(migration_playlist_route)
 
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
@@ -204,7 +227,7 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_playlist_routes_table(params, create_playlist_record)
+    update_playlist_routes_table(params, create_playlist_record, True)
 
     params.updated_metadata = create_playlist_record
     params.add_playlist_record(playlist_id, create_playlist_record)
@@ -244,7 +267,7 @@ def update_playlist(params: ManageEntityParameters):
     )
     process_playlist_data_event(params, updated_playlist)
 
-    update_playlist_routes_table(params, updated_playlist)
+    update_playlist_routes_table(params, updated_playlist, False)
 
     params.updated_metadata = updated_playlist
     params.add_playlist_record(playlist_id, updated_playlist)

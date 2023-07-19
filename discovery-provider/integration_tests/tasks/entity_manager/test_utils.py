@@ -177,6 +177,9 @@ def test_valid_parse_metadata(app):
                 "premium_conditions": None,
                 "is_playlist_upload": True,
                 "ai_attribution_user_id": None,
+                "preview_cid": None,
+                "preview_start_seconds": None,
+                "audio_upload_id": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

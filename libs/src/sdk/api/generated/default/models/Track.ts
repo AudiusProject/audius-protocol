@@ -74,6 +74,12 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
+    previewCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
     mood?: string;
     /**
      * 
@@ -180,6 +186,7 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
         'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
+        'previewCid': !exists(json, 'preview_cid') ? undefined : json['preview_cid'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
         'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
         'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
@@ -210,6 +217,7 @@ export function TrackToJSON(value?: Track | null): any {
         'genre': value.genre,
         'id': value.id,
         'track_cid': value.trackCid,
+        'preview_cid': value.previewCid,
         'mood': value.mood,
         'release_date': value.releaseDate,
         'remix_of': RemixParentToJSON(value.remixOf),

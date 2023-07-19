@@ -19,7 +19,7 @@ def test_signature():
     result = get_premium_content_signature(
         {
             "track_id": track_id,
-            "track_cid": track_cid,
+            "cid": track_cid,
             "type": premium_content_type,
             "is_premium": False,
         }
@@ -46,7 +46,7 @@ def test_signature():
     result = get_premium_content_signature(
         {
             "track_id": track_id,
-            "track_cid": track_cid,
+            "cid": track_cid,
             "type": premium_content_type,
             "is_premium": True,
         }

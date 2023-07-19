@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"mediorum/httputil"
 	"net/http"
 	"strings"
@@ -22,7 +23,7 @@ func (ss *MediorumServer) startHealthPoller() {
 			peer := peer
 			go func() {
 				defer wg.Done()
-				req, err := http.NewRequest("GET", peer.ApiPath("/status"), nil) // todo: switch to /internal/ok later
+				req, err := http.NewRequest("GET", peer.ApiPath("/health_check"), nil)
 				if err != nil {
 					return
 				}
@@ -31,7 +32,14 @@ func (ss *MediorumServer) startHealthPoller() {
 				if err != nil {
 					return
 				}
-				resp.Body.Close()
+				defer resp.Body.Close()
+
+				// read body to enforce read deadline
+				_, err = io.Copy(io.Discard, resp.Body)
+				if err != nil {
+					return
+				}
+
 				if resp.StatusCode == 200 {
 					// mark healthy
 					ss.peerHealthMutex.Lock()

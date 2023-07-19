@@ -59,26 +59,6 @@ def search_tags():
     return api_helpers.success_response(hits)
 
 
-# SEARCH QUERIES
-# We chose to use the raw SQL instead of SQLAlchemy because we're pushing SQLAlchemy to it's
-# limit to do this query by creating new wrappers for pg functions that do not exist like
-# TSQuery and pg_trgm specific functions like similarity.
-#
-# However, we query for object_id and fetch the actual objects using SQLAlchemy to preserve
-# the full objects and helper methods that the ORM provides. This is done in post-processing
-# after the initial text query executes.
-#
-# search query against custom materialized view created in alembic migration
-# - returns all object ids which have a trigram match with query string
-# - order by descending similarity and paginate
-# - de-duplicates object_ids with multiple hits, returning highest match
-#
-# queries can be called for public data, or personalized data
-# - personalized data will return only saved tracks, saved playlists, or followed users given current_user_id
-#
-# @devnote - track_ids argument should match tracks argument
-
-
 def search(args):
     """Perform a search. `args` should contain `is_auto_complete`,
     `query`, `kind`, `current_user_id`, and `only_downloadable`

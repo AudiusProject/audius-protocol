@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"mediorum/ethcontracts"
@@ -13,9 +14,25 @@ import (
 	"sync"
 	"time"
 
+	_ "embed"
+
+	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed .version.json
+var versionJSON []byte
+
+func GetVersionJson() server.VersionJson {
+	var versionJson server.VersionJson
+
+	if err := json.Unmarshal(versionJSON, &versionJson); err != nil {
+		log.Fatalf("unable to parse .version.json file: %v", err)
+	}
+
+	return versionJson
+}
 
 func init() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
@@ -40,9 +57,9 @@ func main() {
 
 func startStagingOrProd(isProd bool) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
-	g := registrar.NewGraphStaging()
+	g := registrar.NewAudiusApiGatewayStaging()
 	if isProd {
-		g = registrar.NewGraphProd()
+		g = registrar.NewAudiusApiGatewayProd()
 	}
 
 	var peers, signers []server.Peer
@@ -83,7 +100,11 @@ func startStagingOrProd(isProd bool) {
 	}
 	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
 	if err != nil || spID == 0 {
-		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
+		go func() {
+			for range time.Tick(10 * time.Second) {
+				logger.Warn("failed to recover spID - please register at https://dashboard.audius.org and restart the server", "err", err)
+			}
+		}()
 	}
 
 	config := server.MediorumConfig{
@@ -106,6 +127,8 @@ func startStagingOrProd(isProd bool) {
 		GitSHA:              os.Getenv("GIT_SHA"),
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+		VersionJson:         GetVersionJson(),
 	}
 
 	ss, err := server.New(config)
@@ -113,6 +136,8 @@ func startStagingOrProd(isProd bool) {
 		logger.Error("failed to create server", "err", err)
 		log.Fatal(err)
 	}
+
+	go refreshPeersAndSigners(ss, g)
 
 	ss.MustStart()
 }
@@ -151,6 +176,8 @@ func startDevInstance() {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		LegacyFSRoot:        "/file_storage",
+		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+		VersionJson:         GetVersionJson(),
 	}
 
 	ss, err := server.New(config)
@@ -292,4 +319,45 @@ func getenvWithDefault(key string, fallback string) string {
 		return fallback
 	}
 	return val
+}
+
+// fetch registered nodes from chain / The Graph every 30 minutes and restart if they've changed
+func refreshPeersAndSigners(ss *server.MediorumServer, g registrar.PeerProvider) {
+	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
+	ticker := time.NewTicker(30 * time.Minute)
+	for range ticker.C {
+		var peers, signers []server.Peer
+		var err error
+
+		eg := new(errgroup.Group)
+		eg.Go(func() error {
+			peers, err = g.Peers()
+			return err
+		})
+		eg.Go(func() error {
+			signers, err = g.Signers()
+			return err
+		})
+		if err := eg.Wait(); err != nil {
+			logger.Error("failed to fetch registered nodes", "err", err)
+			continue
+		}
+
+		var combined, configCombined []string
+
+		for _, peer := range append(peers, signers...) {
+			combined = append(combined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(peer.Host)), strings.ToLower(peer.Wallet)))
+		}
+
+		for _, configPeer := range append(ss.Config.Peers, ss.Config.Signers...) {
+			configCombined = append(configCombined, fmt.Sprintf("%s,%s", httputil.RemoveTrailingSlash(strings.ToLower(configPeer.Host)), strings.ToLower(configPeer.Wallet)))
+		}
+
+		slices.Sort(combined)
+		slices.Sort(configCombined)
+		if !slices.Equal(combined, configCombined) {
+			logger.Info("peers or signers changed on chain. restarting...", "peers", len(peers), "signers", len(signers), "combined", combined, "configCombined", configCombined)
+			os.Exit(0) // restarting from inside the app is too error-prone so we'll let docker compose autoheal handle it
+		}
+	}
 }
