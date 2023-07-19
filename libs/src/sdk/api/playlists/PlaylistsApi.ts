@@ -123,8 +123,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Upload a playlist or album
-   * Uploads the specified tracks and combines them into a playlist or album
+   * Upload a playlist
+   * Uploads the specified tracks and combines them into a playlist
    */
   async uploadPlaylist(
     requestParameters: UploadPlaylistRequest,
@@ -383,15 +383,19 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
 
     const updatedMetadata = {
       playlistId,
-      playlistContents: {
-        trackIds: metadata.playlistContents.map(
-          ({ trackId, metadataTimestamp, timestamp }) => ({
-            track: trackId,
-            // default to timestamp for legacy playlists
-            time: metadataTimestamp ?? timestamp
-          })
-        )
-      },
+      ...(metadata.playlistContents
+        ? {
+            playlistContents: {
+              trackIds: metadata.playlistContents.map(
+                ({ trackId, metadataTimestamp, timestamp }) => ({
+                  track: trackId,
+                  // default to timestamp for legacy playlists
+                  time: metadataTimestamp ?? timestamp
+                })
+              )
+            }
+          }
+        : {}),
       playlistName: metadata.playlistName,
       playlistImageSizesMultihash:
         coverArtResponse?.id ?? metadata.coverArtSizes,
@@ -420,7 +424,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Delete a playlist or album
+   * Delete a playlist
    */
   async deletePlaylist(
     requestParameters: DeletePlaylistRequest,
@@ -446,7 +450,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Favorite a playlist or album
+   * Favorite a playlist
    */
   async favoritePlaylist(
     requestParameters: FavoritePlaylistRequest,
@@ -473,7 +477,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Unfavorite a playlist or album
+   * Unfavorite a playlist
    */
   async unfavoritePlaylist(
     requestParameters: UnfavoritePlaylistRequest,
@@ -499,7 +503,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Repost a playlist or album
+   * Repost a playlist
    */
   async repostPlaylist(
     requestParameters: RepostPlaylistRequest,
@@ -526,7 +530,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   }
 
   /**
-   * Unrepost a track
+   * Unrepost a playlist
    */
   async unrepostPlaylist(
     requestParameters: FavoritePlaylistRequest,
@@ -561,7 +565,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   ) {
     const metadata = trackMetadata
 
-    if (!metadata.genre) metadata.genre = playlistMetadata.genre
     if (!metadata.mood) metadata.mood = playlistMetadata.mood
 
     if (playlistMetadata.tags) {

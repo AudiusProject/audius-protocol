@@ -24,6 +24,14 @@ import {
   UpdatePlaylistRequest,
   AddTrackToPlaylistRequest,
   RemoveTrackFromPlaylistRequest,
+  UploadAlbumRequest,
+  UpdateAlbumRequest,
+  DeletePlaylistRequest,
+  DeleteAlbumRequest,
+  FavoriteAlbumRequest,
+  UnfavoriteAlbumRequest,
+  RepostAlbumRequest,
+  UnrepostAlbumRequest,
   UpdateProfileRequest,
 } from "@audius/sdk";
 import express from "express";
@@ -44,7 +52,7 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
 });
 
 const audiusSdk = sdk({
-  appName: "sdk-consumer",
+  appName: "",
   services: {
     discoveryNodeSelector,
     entityManager: new EntityManager({
@@ -386,11 +394,11 @@ app.post<RemoveTrackFromPlaylistRequest>(
   }
 );
 
-app.post<RepostPlaylistRequest>("/deletePlaylist", async (req, res) => {
+app.post<DeletePlaylistRequest>("/deletePlaylist", async (req, res) => {
   try {
-    const deletePlaylistRequest: RepostPlaylistRequest = {
+    const deletePlaylistRequest: DeletePlaylistRequest = {
       userId: req.body.userId,
-      playlistId: req.body.trackId,
+      playlistId: req.body.playlistId,
     };
     const result = await audiusSdk.playlists.deletePlaylist(
       deletePlaylistRequest
@@ -458,6 +466,168 @@ app.post<UnrepostPlaylistRequest>("/unrepostPlaylist", async (req, res) => {
     };
     const result = await audiusSdk.playlists.unrepostPlaylist(
       unrepostPlaylistRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+const albumUpload = upload.fields([
+  { name: "coverArtFile", maxCount: 1 },
+  { name: "trackFiles" },
+]);
+
+app.post<UploadAlbumRequest>(
+  "/uploadAlbum",
+  albumUpload as any,
+  async (req, res) => {
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+      const trackFiles = (req.files as MulterFiles)?.["trackFiles"];
+
+      if (coverArtFile && trackFiles?.length) {
+        const inputMetadata = JSON.parse(req.body.metadata);
+        inputMetadata.releaseDate = inputMetadata.releaseDate
+          ? new Date(inputMetadata.releaseDate)
+          : inputMetadata.releaseDate;
+
+        const inputTrackMetadatas = JSON.parse(req.body.trackMetadatas);
+
+        const uploadAlbumRequest: UploadAlbumRequest = {
+          userId: req.body.userId,
+          coverArtFile: {
+            buffer: coverArtFile?.buffer,
+            name: coverArtFile.originalname,
+          },
+          metadata: inputMetadata,
+          onProgress: (progress) => console.log("Progress:", progress),
+          trackMetadatas: inputTrackMetadatas,
+          trackFiles: trackFiles.map((trackFile) => ({
+            buffer: trackFile?.buffer,
+            name: trackFile.originalname,
+          })),
+        };
+        const result = await audiusSdk.albums.uploadAlbum(
+          uploadAlbumRequest
+        );
+        res.send(result);
+      }
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
+
+const albumUpdate = upload.fields([{ name: "coverArtFile", maxCount: 1 }]);
+
+app.post<UpdateAlbumRequest>(
+  "/updateAlbum",
+  albumUpdate as any,
+  async (req, res) => {
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+
+      const inputMetadata = JSON.parse(req.body.metadata);
+      inputMetadata.releaseDate = inputMetadata.releaseDate
+        ? new Date(inputMetadata.releaseDate)
+        : inputMetadata.releaseDate;
+
+      const updateAlbumRequest: UpdateAlbumRequest = {
+        userId: req.body.userId,
+        albumId: req.body.albumId,
+        coverArtFile: coverArtFile && {
+          buffer: coverArtFile?.buffer,
+          name: coverArtFile.originalname,
+        },
+        metadata: inputMetadata,
+        onProgress: (progress) => console.log("Progress:", progress),
+      };
+      const result = await audiusSdk.albums.updateAlbum(
+        updateAlbumRequest
+      );
+      res.send(result);
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
+  }
+);
+
+app.post<DeleteAlbumRequest>("/deleteAlbum", async (req, res) => {
+  try {
+    const deleteAlbumRequest: DeleteAlbumRequest = {
+      userId: req.body.userId,
+      albumId: req.body.albumId,
+    };
+    const result = await audiusSdk.albums.deleteAlbum(
+      deleteAlbumRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<FavoriteAlbumRequest>("/favoriteAlbum", async (req, res) => {
+  try {
+    const favoriteAlbumRequest: FavoriteAlbumRequest = {
+      userId: req.body.userId,
+      albumId: req.body.albumId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.albums.favoriteAlbum(favoriteAlbumRequest);
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnfavoriteAlbumRequest>("/unfavoriteAlbum", async (req, res) => {
+  try {
+    const unfavoriteAlbumRequest: UnfavoriteAlbumRequest = {
+      userId: req.body.userId,
+      albumId: req.body.albumId,
+    };
+    const result = await audiusSdk.albums.unfavoriteAlbum(
+      unfavoriteAlbumRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<RepostAlbumRequest>("/repostAlbum", async (req, res) => {
+  try {
+    const repostAlbumRequest: RepostAlbumRequest = {
+      userId: req.body.userId,
+      albumId: req.body.albumId,
+      metadata: req.body.metadata,
+    };
+    const result = await audiusSdk.albums.repostAlbum(
+      repostAlbumRequest
+    );
+    res.send(result);
+  } catch (e) {
+    console.error(e);
+    res.send((e as any).message);
+  }
+});
+
+app.post<UnrepostAlbumRequest>("/unrepostAlbum", async (req, res) => {
+  try {
+    const unrepostAlbumRequest: UnrepostAlbumRequest = {
+      userId: req.body.userId,
+      albumId: req.body.albumId,
+    };
+    const result = await audiusSdk.albums.unrepostAlbum(
+      unrepostAlbumRequest
     );
     res.send(result);
   } catch (e) {
