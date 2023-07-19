@@ -225,37 +225,30 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		}
 		cid, ok := upload.TranscodeResults[variant]
 		if !ok {
+
+			// since cultur3stake nodes can't talk to each other
+			// they might not get Upload crudr updates from each other
+			// so if one cultur3stake does transocde... sibiling might not get the updates
+			// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
+			// TODO: crudr should gossip
+			if c.QueryParam("localOnly") != "true" {
+				healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+				for _, host := range healthyHosts {
+					if host == ss.Config.Self.Host {
+						continue
+					}
+					if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+						return c.Redirect(302, dest)
+					}
+				}
+			}
+
 			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
 			return c.String(400, msg)
 		}
 		c.SetParamNames("cid")
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
-	}
-}
-
-func (ss *MediorumServer) headBlobByJobIDAndVariant(c echo.Context) error {
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-
-	if isLegacyCID(jobID) {
-		c.SetParamNames("dirCid", "fileName")
-		c.SetParamValues(jobID, variant)
-		return ss.headLegacyDirCid(c)
-	} else {
-		var upload *Upload
-		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
-		if err != nil {
-			return err
-		}
-		cid, ok := upload.TranscodeResults[variant]
-		if !ok {
-			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-			return c.String(400, msg)
-		}
-		c.SetParamNames("cid")
-		c.SetParamValues(cid)
-		return ss.headBlob(c)
 	}
 }
 

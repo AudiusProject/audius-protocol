@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from operator import itemgetter, or_
 
 from hexbytes import HexBytes
@@ -27,6 +27,7 @@ from src.models.users.user_events import UserEvent
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
+from src.tasks.update_delist_statuses import DATETIME_FORMAT_STRING
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import NotAllTransactionsFetched
@@ -352,7 +353,10 @@ def index_next_block(
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
             if next_block.number % 100 == 0:
-                celery.send_task("update_delist_statuses")
+                celery.send_task(
+                    "update_delist_statuses",
+                    kwargs={"current_block_timestamp": next_block.timestamp},
+                )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
             logger.error(
@@ -361,6 +365,38 @@ def index_next_block(
             )
 
     add_indexed_block_to_redis(next_block, redis)
+
+
+def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
+    try:
+        adjusted_blocknumber = blocknumber - (final_poa_block or 0)
+        block = web3.eth.get_block(adjusted_blocknumber)
+        block = AttributeDict(block)
+        return block
+    except BlockNotFound:
+        logger.info(f"Block not found {adjusted_blocknumber}")
+        return False
+
+
+def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
+    parent_number_results = (
+        session.query(Block.number)
+        .filter(Block.blockhash == revert_block_parent_hash)
+        .first()
+    )
+    if not parent_number_results:
+        return
+    parent_number = parent_number_results[0]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        block_future = executor.submit(get_block, web3, parent_number, FINAL_POA_BLOCK)
+
+        parent_block = block_future.result()
+        if not parent_block:
+            return
+        celery.send_task(
+            "revert_delist_status_cursors",
+            kwargs={"reverted_cursor_timestamp": parent_block.timestamp},
+        )
 
 
 @log_duration(logger)
@@ -388,6 +424,9 @@ def revert_block(session: Session, revert_block: Block):
     session.query(Block).filter(Block.blockhash == parent_hash).update(
         {"is_current": True}
     )
+
+    # set delist cursor back to parent block's timestamp
+    revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
     revert_save_entries = (
