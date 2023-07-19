@@ -316,3 +316,11 @@ mobile-deploy-codepush-production-android-if-ota-release:
         build-directory: 'build-mobile-production'
         upload-type: 'prod'
         track: 'alpha'
+
+mobile-deploy-saga-dapp-store:
+  working_directory: ~/audius-client
+  resource_class: xlarge
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-release-saga-dapp-store

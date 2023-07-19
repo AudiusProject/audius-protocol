@@ -136,3 +136,19 @@ jobs:
       filters:
         branches:
           only: /(^release.*)$/
+
+  - mobile-hold-deploy-saga-dapp-store:
+      type: approval
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - mobile-deploy-saga-dapp-store:
+      context: Audius Mobile Client
+      requires:
+        - mobile-hold-deploy-saga-dapp-store
+      filters:
+        branches:
+          only: /(^release.*)$/

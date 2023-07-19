@@ -31,7 +31,7 @@ brew install solana
 ```
 
 ### Recovering solana keypair
-You will need our app's private key to mint new releases and submit updates. To recover, look up Solana Mobile on Lastpass. Open it and copy the seed phase. Then run
+You will need our app's private key to mint new releases and submit updates. Run:
 ```
 solana-keygen recover -o app-keypair.json
 ```
