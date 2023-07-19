@@ -11,6 +11,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.indexing.cid_data import CIDData
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -197,7 +198,7 @@ def create_user(
         )
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
-        cid_metadata[metadata_cid] = params.metadata
+        cid_metadata[metadata_cid] = user_metadata
         user_record.metadata_multihash = metadata_cid
     except Exception:
         # fallback to multi tx signup
@@ -219,7 +220,6 @@ def create_user(
         user_record.creator_node_endpoint = creator_node_endpoint_str
 
     user_record = validate_user_record(user_record)
-    params.updated_metadata = user_record
     params.add_user_record(user_id, user_record)
     return user_record
 
@@ -258,14 +258,14 @@ def update_user(params: ManageEntityParameters):
         params.challenge_bus,
     )
 
-    params.updated_metadata_cid = str(
-        generate_metadata_cid_v1(json.dumps(user_record.to_serializable_dict()))
+    updated_metadata_cid = merge_user_metadata(
+        params.session, user_record, params.metadata
     )
-    user_record.metadata_multihash = params.updated_metadata_cid
+
+    user_record.metadata_multihash = updated_metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
 
-    params.updated_metadata = user_record
     params.add_user_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
@@ -331,6 +331,40 @@ def update_user_metadata(
         )
 
     return user_record
+
+
+# get previous CIDData and merge new metadata into it
+# this is to support collectibles, associated_wallets which aren't being indexed yet
+# once those are indexed and backfilled this can be removed
+def merge_user_metadata(session: Session, user_record: User, metadata: Dict):
+    prev_cid_response = (
+        session.query(CIDData)
+        .filter_by(
+            cid=user_record.metadata_multihash,
+        )
+        .first()
+    )
+
+    if prev_cid_response:
+        # merge previous and current metadata
+        updated_metadata = prev_cid_response.data | metadata
+
+        # generate a cid
+        updated_metadata_cid = str(
+            generate_metadata_cid_v1(json.dumps(updated_metadata))
+        )
+
+        # save the metadata blob
+        cid_data = CIDData(
+            cid=updated_metadata_cid,
+            type="user",
+            data=updated_metadata,
+        )
+        session.merge(cid_data)
+    else:
+        logger.info(
+            f"index.py | user.py | Could not find previous metadata blob for user {user_record}"
+        )
 
 
 class UserEventMetadata(TypedDict, total=False):
