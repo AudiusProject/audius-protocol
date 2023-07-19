@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { difference, shuffle } from 'lodash'
+import { difference, isEqual, shuffle } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { usePaginatedQuery } from 'audius-query'
 import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import { TimeRange } from 'models/TimeRange'
+import { Track } from 'models/Track'
 import { getUserId } from 'store/account/selectors'
 import { addTrackToPlaylist } from 'store/cache/collections/actions'
 import { getCollection } from 'store/cache/collections/selectors'
@@ -19,12 +20,27 @@ import { useGetTrending } from './trending'
 
 const suggestedTrackCount = 5
 
-const selectSuggestedTracks = (state: CommonState, ids: ID[]) => {
-  return ids.map((id) => {
+type SuggestedTrack =
+  | { isLoading: true; key: ID }
+  | { isLoading: true; id: ID; key: ID }
+  | { isLoading: false; id: ID; track: Track; key: ID }
+
+const skeletons = [...Array(5)].map((_, index) => ({
+  key: index,
+  isLoading: true as const
+}))
+
+const selectSuggestedTracks = (
+  state: CommonState,
+  ids: ID[]
+): SuggestedTrack[] => {
+  const suggestedTracks = ids.map((id) => {
     const track = getTrack(state, { id })
-    if (!track) return { id, isLoading: true as const }
-    return { id, track, isLoading: false as const }
+    if (!track) return { id, isLoading: true as const, key: id }
+    return { id, track, isLoading: false as const, key: id }
   })
+
+  return [...suggestedTracks, ...skeletons].slice(0, 5)
 }
 
 const selectCollectionTrackIds = (state: CommonState, collectionId: ID) => {
@@ -37,6 +53,7 @@ export const useGetSuggestedTracks = (collectionId: ID) => {
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const [suggestedTrackIds, setSuggestedTrackIds] = useState<ID[]>([])
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const collectionTrackIds = useSelector((state: CommonState) =>
     selectCollectionTrackIds(state, collectionId)
@@ -76,7 +93,9 @@ export const useGetSuggestedTracks = (collectionId: ID) => {
   useEffect(() => {
     if (trendingStatus === Status.SUCCESS) {
       const trendingTrackIds = difference(
-        trendingTracks.map((track) => track.track_id),
+        trendingTracks
+          .filter((track) => !track.is_premium)
+          .map((track) => track.track_id),
         collectionTrackIds
       )
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])
@@ -91,18 +110,25 @@ export const useGetSuggestedTracks = (collectionId: ID) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestedTrackIds.length])
 
-  const suggestedTracks = useSelector((state: CommonState) =>
-    selectSuggestedTracks(
-      state,
-      suggestedTrackIds.slice(0, suggestedTrackCount)
-    )
+  const suggestedTracks = useSelector(
+    (state: CommonState) =>
+      selectSuggestedTracks(
+        state,
+        suggestedTrackIds.slice(0, suggestedTrackCount)
+      ),
+    isEqual
   )
 
   useGetTracksByIds(
     {
       currentUserId,
       ids: suggestedTracks
-        .filter((suggestedTrack) => suggestedTrack.isLoading)
+        .filter(
+          (
+            suggestedTrack
+          ): suggestedTrack is { isLoading: true; id: ID; key: ID } =>
+            'id' in suggestedTrack && suggestedTrack.isLoading
+        )
         .map((suggestedTrack) => suggestedTrack.id)
     },
     {
@@ -122,10 +148,18 @@ export const useGetSuggestedTracks = (collectionId: ID) => {
 
   const handleRefresh = useCallback(() => {
     setSuggestedTrackIds(suggestedTrackIds.slice(suggestedTrackCount))
+    setIsRefreshing(true)
   }, [suggestedTrackIds])
+
+  useEffect(() => {
+    if (suggestedTracks.every((suggestedTrack) => !suggestedTrack.isLoading)) {
+      setIsRefreshing(false)
+    }
+  }, [suggestedTracks])
 
   return {
     suggestedTracks,
+    isRefreshing,
     onRefresh: handleRefresh,
     onAddTrack: handleAddTrack
   }

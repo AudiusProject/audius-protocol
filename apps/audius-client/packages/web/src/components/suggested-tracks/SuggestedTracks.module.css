@@ -85,6 +85,12 @@
   line-height: normal;
 }
 
+.artistName {
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}
+
 .refreshButton {
   all: unset;
   cursor: pointer;

@@ -82,20 +82,6 @@ export const EditPlaylistForm = (
     dispatch(openDeletePlaylist({ playlistId }))
   }, [dispatch, playlistId])
 
-  const footer = (
-    <TextButton
-      variant='neutralLight4'
-      title={messages.deletePlaylist}
-      icon={IconTrash}
-      iconPosition='left'
-      onPress={openDeleteDrawer}
-      styles={{
-        root: styles.deleteButtonRoot,
-        text: styles.deleteButtonText
-      }}
-    />
-  )
-
   return (
     <FormScreen
       onSubmit={handleSubmit}
@@ -117,7 +103,17 @@ export const EditPlaylistForm = (
           </View>
           <Divider />
           <TrackListFieldArray />
-          {footer}
+          <TextButton
+            variant='neutralLight4'
+            title={messages.deletePlaylist}
+            icon={IconTrash}
+            iconPosition='left'
+            onPress={openDeleteDrawer}
+            styles={{
+              root: styles.deleteButtonRoot,
+              text: styles.deleteButtonText
+            }}
+          />
         </Tile>
       </VirtualizedKeyboardAwareScrollView>
     </FormScreen>

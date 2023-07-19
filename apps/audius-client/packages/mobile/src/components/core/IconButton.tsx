@@ -1,4 +1,9 @@
-import type { Insets, StyleProp, ViewStyle } from 'react-native'
+import type {
+  Insets,
+  StyleProp,
+  TouchableOpacityProps,
+  ViewStyle
+} from 'react-native'
 import { Animated, TouchableOpacity, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
@@ -21,7 +26,8 @@ export type IconButtonProps = {
   onPress?: GestureResponderHandler
   fullWidth?: boolean
   hitSlop?: Insets
-} & StylesProps<{ root?: StyleProp<ViewStyle>; icon?: StyleProp<ViewStyle> }>
+} & StylesProps<{ root?: StyleProp<ViewStyle>; icon?: StyleProp<ViewStyle> }> &
+  Omit<TouchableOpacityProps, 'hitSlop'>
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -50,7 +56,8 @@ export const IconButton = ({
   onPress,
   style,
   styles: stylesProp,
-  hitSlop
+  hitSlop,
+  ...other
 }: IconButtonProps) => {
   const styles = useStyles()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
@@ -76,6 +83,7 @@ export const IconButton = ({
         disabled={isDisabled && !disabledPressToastContent}
         activeOpacity={0.95}
         hitSlop={{ ...defaultHitSlop, ...hitSlop }}
+        {...other}
       >
         <View
           style={[
