@@ -1,11 +1,16 @@
 import type { ReactElement } from 'react'
-import { useCallback, useMemo } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 
 import type { ID, UID } from '@audius/common'
 import type { FlatListProps } from 'react-native'
 import { FlatList, View } from 'react-native'
-import type { DraggableFlatListProps } from 'react-native-draggable-flatlist'
-import DraggableFlatList from 'react-native-draggable-flatlist'
+import type {
+  DragEndParams,
+  DraggableFlatListProps
+} from 'react-native-draggable-flatlist'
+import DraggableFlatList, {
+  OpacityDecorator
+} from 'react-native-draggable-flatlist'
 
 import * as haptics from 'app/haptics'
 
@@ -57,6 +62,7 @@ export const TrackList = ({
   ...otherProps
 }: TrackListProps) => {
   const data = useMemo(() => uids ?? ids ?? [], [uids, ids])
+  const [scrollEnable, setScrollEnable] = useState(true)
 
   const renderSkeletonTrack = useCallback(
     ({ index }) => (
@@ -73,25 +79,28 @@ export const TrackList = ({
   const renderDraggableTrack: DraggableFlatListProps<UID | ID>['renderItem'] =
     useCallback(
       ({ item, index = -1, drag }) => {
+        const RootView = isReorderable ? OpacityDecorator : Fragment
         return (
-          <TrackListItem
-            id={ids && (item as ID)}
-            contextPlaylistId={contextPlaylistId}
-            index={index}
-            drag={drag}
-            hideArt={hideArt}
-            isReorderable={isReorderable}
-            uid={uids && (item as UID)}
-            prevUid={uids && uids[index - 1]}
-            key={item}
-            onSave={onSave}
-            togglePlay={togglePlay}
-            trackItemAction={trackItemAction}
-            onRemove={onRemove}
-            showDivider={showDivider}
-            showTopDivider={showTopDivider}
-            noDividerMargin={noDividerMargin}
-          />
+          <RootView>
+            <TrackListItem
+              id={ids && (item as ID)}
+              contextPlaylistId={contextPlaylistId}
+              index={index}
+              onDrag={drag}
+              hideArt={hideArt}
+              isReorderable={isReorderable}
+              uid={uids && (item as UID)}
+              prevUid={uids && uids[index - 1]}
+              key={item}
+              onSave={onSave}
+              togglePlay={togglePlay}
+              trackItemAction={trackItemAction}
+              onRemove={onRemove}
+              showDivider={showDivider}
+              showTopDivider={showTopDivider}
+              noDividerMargin={noDividerMargin}
+            />
+          </RootView>
         )
       },
       [
@@ -121,6 +130,19 @@ export const TrackList = ({
     [renderDraggableTrack]
   )
 
+  const handleDragBegin = useCallback(() => {
+    haptics.medium()
+    setScrollEnable(false)
+  }, [])
+
+  const handleDragEnd = useCallback(
+    (params: DragEndParams<string | number>) => {
+      onReorder?.(params)
+      setScrollEnable(true)
+    },
+    [onReorder]
+  )
+
   if (showSkeleton)
     return (
       <FlatList {...otherProps} data={data} renderItem={renderSkeletonTrack} />
@@ -130,11 +152,12 @@ export const TrackList = ({
     <DraggableFlatList
       {...otherProps}
       autoscrollThreshold={200}
+      activationDistance={scrollEnable ? 100 : 1}
       data={data}
       keyExtractor={keyExtractor}
-      onDragBegin={haptics.medium}
+      onDragBegin={handleDragBegin}
       onPlaceholderIndexChange={haptics.light}
-      onDragEnd={onReorder}
+      onDragEnd={handleDragEnd}
       renderItem={renderDraggableTrack}
       renderPlaceholder={() => <View />}
     />

@@ -149,7 +149,7 @@ type SuggestedTracksProps = {
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId } = props
   const styles = useStyles()
-  const { suggestedTracks, onRefresh, onAddTrack } =
+  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
     useGetSuggestedTracks(collectionId)
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)
@@ -195,8 +195,8 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
           <View>
             <Divider />
             {suggestedTracks?.map((suggestedTrack) => (
-              <Fragment key={suggestedTrack.id}>
-                {suggestedTrack.track ? (
+              <Fragment key={suggestedTrack.key}>
+                {!isRefreshing && 'track' in suggestedTrack ? (
                   <SuggestedTrack
                     track={suggestedTrack.track}
                     collectionId={collectionId}
