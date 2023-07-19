@@ -88,7 +88,8 @@ class User(Base, RepresentableMixin):
     def get_attributes_dict(self):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
-    def to_json(self):
-        return json.dumps(
-            self.get_attributes_dict(), indent=4, sort_keys=True, default=str
-        )
+    def to_serializable_dict(self):
+        dict = self.get_attributes_dict()
+        dict["created_at"] = str(dict["created_at"])
+        dict["updated_at"] = str(dict["updated_at"])
+        return dict

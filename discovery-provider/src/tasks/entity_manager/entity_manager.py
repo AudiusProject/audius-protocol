@@ -262,14 +262,19 @@ def entity_manager_update(
                     if expect_cid_metadata_json(
                         params.metadata, params.action, params.entity_type
                     ):
-                        cid = str(
-                            generate_metadata_cid_v1(params.updated_metadata.to_json())
+                        serializable_updated_metadata = (
+                            params.updated_metadata.to_serializable_dict()
+                        )
+                        cid = params.updated_metadata_cid or str(
+                            generate_metadata_cid_v1(
+                                json.dumps(serializable_updated_metadata)
+                            )
                         )
                         metadata_type, _ = get_metadata_type_and_format(
                             params.entity_type
                         )
                         cid_type[cid] = metadata_type
-                        cid_metadata[cid] = params.updated_metadata.to_json()
+                        cid_metadata[cid] = serializable_updated_metadata
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:

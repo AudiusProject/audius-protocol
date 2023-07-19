@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from typing import Dict, TypedDict, Union
@@ -26,6 +27,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    generate_metadata_cid_v1,
     get_metadata_type_and_format,
     parse_metadata,
     validate_signer,
@@ -255,7 +257,11 @@ def update_user(params: ManageEntityParameters):
         params.web3,
         params.challenge_bus,
     )
-    user_record.metadata_multihash = params.metadata_cid
+
+    params.updated_metadata_cid = str(
+        generate_metadata_cid_v1(json.dumps(user_record.to_serializable_dict()))
+    )
+    user_record.metadata_multihash = params.updated_metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
 
