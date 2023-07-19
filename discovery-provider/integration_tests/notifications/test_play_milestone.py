@@ -25,7 +25,6 @@ def test_play_milsetone_notification(app):
     }
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
-
         notifications: List[Notification] = (
             session.query(Notification).order_by(desc(Notification.slot)).all()
         )

@@ -272,9 +272,13 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+            ai_attribution_user = params.existing_records[EntityType.USER][
+                ai_attribution_user_id
+            ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(
+                    f"Cannot AI attribute user {ai_attribution_user}"
+                )
 
 
 def get_handle(params: ManageEntityParameters):
@@ -285,12 +289,16 @@ def get_handle(params: ManageEntityParameters):
         .first()
     )
     if not handle or not handle[0]:
-        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+        raise IndexingValidationError(
+            f"Cannot find handle for user ID {params.user_id}"
+        )
 
     return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
+def update_track_record(
+    params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
+):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead

@@ -20,7 +20,9 @@ def get_verifier_address():
 
 def validate_notification_tx(params: ManageEntityParameters):
     if params.entity_type != EntityType.NOTIFICATION:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a notification")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a notification"
+        )
 
     if params.action == Action.VIEW:
         user_id = params.user_id
@@ -45,7 +47,9 @@ def validate_notification_tx(params: ManageEntityParameters):
         try:
             json.loads(params.metadata)
         except:
-            raise IndexingValidationError("Invalid Notificaiton Metadata Json, unable to parse")
+            raise IndexingValidationError(
+                "Invalid Notificaiton Metadata Json, unable to parse"
+            )
     else:
         action = params.action
         raise IndexingValidationError(f"Entity action {action} is not valid")
@@ -96,7 +100,9 @@ def validate_view_playlist_tx(params: ManageEntityParameters):
     playlist_id = params.entity_id
     if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
         # Playlist does not exist, throw error
-        raise IndexingValidationError("Playlist does not exist, cannot record playlist view")
+        raise IndexingValidationError(
+            "Playlist does not exist, cannot record playlist view"
+        )
 
 
 def view_playlist(params: ManageEntityParameters):

@@ -37,7 +37,7 @@ def build_minhash(session: Session):
         user_mh = {}
         follower_counts = {}
 
-        for (user_id, follower_ids) in cursor:
+        for user_id, follower_ids in cursor:
             ids = [str(id).encode("utf8") for id in follower_ids]
             mh = MinHash(num_perm=num_perm)
             mh.update_batch(ids)
@@ -54,7 +54,6 @@ def build_minhash(session: Session):
 
 
 def update_related_artist_minhash(session: Session):
-
     (user_mh, forest) = build_minhash(session)
 
     engine = session.get_bind()

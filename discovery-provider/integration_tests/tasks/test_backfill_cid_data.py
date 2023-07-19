@@ -33,7 +33,6 @@ def test_backfill_cid_data(request_get, app, mocker):
 
     backfill_cid_data(db)
     with db.scoped_session() as session:
-
         users = (
             session.query(CIDData)
             .filter(CIDData.type == "user")

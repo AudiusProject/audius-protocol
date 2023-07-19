@@ -211,7 +211,7 @@ def get_challenges(
             regular_user_challenges.append(user_challenge_dict)
 
     rolled_up: List[ChallengeResponse] = []
-    for (challenge_id, challenges) in aggregate_user_challenges_map.items():
+    for challenge_id, challenges in aggregate_user_challenges_map.items():
         parent_challenge = all_challenges_map[challenge_id]
         rolled_up.append(rollup_aggregates(challenges, parent_challenge))
 

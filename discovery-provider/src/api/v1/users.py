@@ -1,5 +1,6 @@
 import base64
 import json
+
 from eth_account.messages import encode_defunct
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse

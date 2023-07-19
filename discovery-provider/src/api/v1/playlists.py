@@ -135,8 +135,8 @@ class Playlist(Resource):
         params={"playlist_id": "A Playlist ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(playlists_response)
     @ns.expect(current_user_parser)
+    @ns.marshal_with(playlists_response)
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)

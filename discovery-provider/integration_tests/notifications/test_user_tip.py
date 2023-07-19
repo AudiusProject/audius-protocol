@@ -27,7 +27,6 @@ def test_supporter_rank_up_notification(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         send_notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "tip_send")

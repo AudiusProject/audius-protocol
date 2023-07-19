@@ -1,10 +1,9 @@
-import concurrent.futures
 import logging
 from enum import Enum
 from typing import Any, TypedDict
 
 from redis import Redis
-from src.utils.helpers import is_fqdn, load_eth_abi_values
+from src.utils.helpers import load_eth_abi_values
 from src.utils.redis_cache import (
     get_cn_sp_id_key,
     get_dn_sp_id_key,

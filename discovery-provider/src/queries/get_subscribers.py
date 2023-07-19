@@ -32,7 +32,6 @@ def get_subscribers_for_user(args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         rows = session.execute(
             sql,
             {"user_id": user_id, "limit": limit, "offset": offset},
@@ -56,7 +55,6 @@ def get_subscribers_for_users(args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         for user_id in user_ids:
             rows = session.execute(
                 sql,
