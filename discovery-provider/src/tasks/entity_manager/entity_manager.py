@@ -265,10 +265,14 @@ def entity_manager_update(
                         serializable_updated_metadata = (
                             params.updated_metadata.to_serializable_dict()
                         )
-                        cid = params.updated_metadata_cid or str(
-                            generate_metadata_cid_v1(
-                                json.dumps(serializable_updated_metadata)
-                            )
+                        cid = getattr(
+                            params,
+                            "updated_metadata_cid",
+                            str(
+                                generate_metadata_cid_v1(
+                                    json.dumps(serializable_updated_metadata)
+                                )
+                            ),
                         )
                         metadata_type, _ = get_metadata_type_and_format(
                             params.entity_type

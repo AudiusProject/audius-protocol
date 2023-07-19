@@ -58,10 +58,10 @@ class Track(Base, RepresentableMixin):
     cover_art_sizes = Column(String)
     download = Column(JSONB())
     is_unlisted = Column(Boolean, nullable=False, server_default=text("false"))
-    field_visibility = Column(JSONB())
+    field_visibility = Column(JSONB(True))
     route_id = Column(String)
-    stem_of = Column(JSONB())
-    remix_of = Column(JSONB())
+    stem_of = Column(JSONB(True))
+    remix_of = Column(JSONB(True))
     txhash = Column(
         String,
         primary_key=True,
@@ -71,7 +71,7 @@ class Track(Base, RepresentableMixin):
     slot = Column(Integer)
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
     is_premium = Column(Boolean, nullable=False, server_default=text("false"))
-    premium_conditions = Column(JSONB())
+    premium_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 
