@@ -30,17 +30,15 @@ function _M.starts_with(str, start)
     return str:sub(1, #start) == start
 end
 
--- encode and sort table t in json
+-- encode and recursively sort table t in json
 function _M.encode_sorted(t)
     local keys = {}
-
     for k, v in pairs(t) do
         if type(v) == "table" then
-            t[k] = _M.encode_sorted(v) -- recursive call
+            t[k] = _M.encode_sorted(v)
         end
         table.insert(keys, k)
     end
-
     table.sort(keys)
 
     return dkjson.encode(t, { keyorder = keys })
