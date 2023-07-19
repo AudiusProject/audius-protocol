@@ -277,22 +277,20 @@ export class CreatorNode {
     }
     const myPrivateKey = this.web3Manager?.getOwnerWalletPrivateKey()
     if (!myPrivateKey) {
-      console.log('MICHELLE missing private key')
       throw new Error('Missing user private key')
     }
 
     // Generate signature
     const signatureData = {
       upload_id: uploadId,
-      timestamp: Date.now().toString()
+      timestamp: Date.now()
     }
-    console.log(`MICHELLE private key: ${myPrivateKey.toString('hex')}`)
     const signature = await hashAndSign(
       JSON.stringify(sortObjectKeys(signatureData)),
       '0x' + myPrivateKey.toString('hex')
     )
     const signatureEnvelope = {
-      data: signatureData,
+      data: JSON.stringify(signatureData),
       signature
     }
 

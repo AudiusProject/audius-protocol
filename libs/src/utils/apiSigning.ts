@@ -41,8 +41,8 @@ export function recoverWallet(web3: Web3, response: WalletResponse) {
   return recoveredDelegateWallet
 }
 
-type ValueOrArray<T> = undefined | string | T | Array<ValueOrArray<T>>
-type SortObject = ValueOrArray<Record<string, string>>
+type ValueOrArray<T> = undefined | string | number | T | Array<ValueOrArray<T>>
+type SortObject = ValueOrArray<Record<string, string | number>>
 
 /**
  * Recursively sorts object keys alphabetically
