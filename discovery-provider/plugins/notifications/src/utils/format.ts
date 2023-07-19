@@ -12,6 +12,32 @@ export const trimRightZeros = (number) => {
   return number.replace(/(\d)0+$/gm, '$1')
 }
 
+/** USDC Utils */
+export const BN_USDC_WEI = new BN('1000000')
+export const BN_USDC_CENT_WEI = new BN('10000')
+const BN_USDC_WEI_ROUNDING_FRACTION = new BN('9999')
+
+/** Round a USDC value as a BN up to the nearest cent and return as a BN */
+export const ceilingBNUSDCToNearestCent = (value: BN): BN => {
+  return value
+    .add(BN_USDC_WEI_ROUNDING_FRACTION)
+    .div(BN_USDC_CENT_WEI)
+    .mul(BN_USDC_CENT_WEI) as BN
+}
+
+/** Formats a USDC wei string (full precision) to a fixed string suitable for
+display as a dollar amount. Note: will lose precision by rounding _up_ to nearest cent */
+export const formatUSDCWeiToUSDString = (amount: string, precision = 2) => {
+  // Since we only need two digits of precision, we will multiply up by 1000
+  // with BN, divide by $1 Wei, ceiling up to the nearest cent,
+  //  and then convert to JS number and divide back down before formatting to
+  // two decimal places.
+  const cents =
+    ceilingBNUSDCToNearestCent(new BN(amount) as BN)
+      .div(BN_USDC_CENT_WEI)
+      .toNumber() / 100
+  return formatNumberCommas(cents.toFixed(precision))
+}
 const ETH_WEI = new BN('1000000000000000000')
 const SOL_WEI = new BN('100000000')
 
