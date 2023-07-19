@@ -264,8 +264,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return c.String(200, "OK")
 	}, ss.requireHealthy)
 
-	internalApi.GET("/beam/files", ss.servePgBeam)
-
 	internalApi.GET("/cuckoo", ss.serveCuckoo)
 	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
 	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
@@ -317,7 +315,6 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startTranscoder()
 
 	go ss.startCuckooBuilder()
-	go ss.startCuckooFetcher()
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
@@ -329,7 +326,7 @@ func (ss *MediorumServer) MustStart() {
 
 		ss.crud.StartClients()
 
-		go ss.startCidBeamClient()
+		go ss.startCuckooFetcher()
 
 		go ss.startPollingDelistStatuses()
 
@@ -338,8 +335,6 @@ func (ss *MediorumServer) MustStart() {
 	}
 
 	go ss.monitorDiskAndDbStatus()
-
-	go ss.monitorCidCursors()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

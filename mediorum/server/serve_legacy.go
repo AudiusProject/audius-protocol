@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slices"
@@ -147,23 +146,18 @@ func (ss *MediorumServer) headLegacyDirCid(c echo.Context) error {
 }
 
 func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
-	// don't check additional nodes beyond what's in cid_lookup if "localOnly" is true
+	// stop if "localOnly" is true
 	if c.QueryParam("localOnly") == "true" {
 		return c.String(404, "not redirecting because localOnly=true")
 	}
 
-	ctx := c.Request().Context()
-
-	cidLookupHosts, err := ss.findHostsWithCid(ctx, cid)
-	if err != nil {
-		return c.String(500, "error redirecting:"+err.Error())
-	}
+	cuckooHosts := ss.cuckooLookup(cid)
 
 	logger := ss.logger.With("cid", cid)
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 
-	// redirect to the first healthy host that we know has the cid (thanks to our cid_lookup table)
-	for _, host := range cidLookupHosts {
+	// double check host is up and can 200 file
+	for _, host := range cuckooHosts {
 		if !slices.Contains(healthyHosts, host) || host == ss.Config.Self.Host {
 			continue
 		}
@@ -173,14 +167,13 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 		}
 	}
 
-	// check healthy hosts via HEAD request to see if they have the cid but aren't in our cid_lookup
+	// fallback: check healthy hosts to see if they can 200
 	for _, host := range healthyHosts {
-		if host == ss.Config.Self.Host || slices.Contains(cidLookupHosts, host) {
+		if host == ss.Config.Self.Host || slices.Contains(cuckooHosts, host) {
 			continue
 		}
 		if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
 			logger.Info("redirecting to: " + dest)
-			ss.pgPool.Exec(ctx, `insert into cid_lookup ("multihash", "host") values ($1, $2) on conflict do nothing`, cid, host)
 			return c.Redirect(302, dest)
 		}
 	}
@@ -234,13 +227,6 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 	}
 
 	return "", false
-}
-
-func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
-	var hosts []string
-	sql := `select "host" from cid_lookup where "multihash" = $1 and "host" is not null order by random()`
-	err := pgxscan.Select(ctx, ss.pgPool, &hosts, sql, cid)
-	return hosts, err
 }
 
 func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
