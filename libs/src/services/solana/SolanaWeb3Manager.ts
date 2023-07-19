@@ -485,6 +485,11 @@ export class SolanaWeb3Manager {
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
+    if (splits.length !== 1) {
+      throw new Error(
+        'Purchasing content only supports a single split. Specifying more splits coming soon!'
+      )
+    }
     const senderEthAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(
       senderEthAddress,
