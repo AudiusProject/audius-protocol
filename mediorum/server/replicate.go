@@ -159,7 +159,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 // used for checking host has blob before redirecting to it
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: time.Second,
 	}
 	u := apiPath(host, "internal/blobs/info", key)
 	req, err := http.NewRequest("GET", u, nil)
