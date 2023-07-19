@@ -1,6 +1,5 @@
 import base64
 import json
-
 from eth_account.messages import encode_defunct
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
@@ -1077,10 +1076,8 @@ USER_FOLLOWERS_ROUTE = "/<string:id>/followers"
 
 @full_ns.route(USER_FOLLOWERS_ROUTE)
 class FullFollowerUsers(Resource):
-    @record_metrics
-    @cache(ttl_sec=5)
     @log_duration(logger)
-    def _get_user_followers(self, id):
+    def _get(self, id):
         decoded_id = decode_with_abort(id, full_ns)
         args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
@@ -1104,6 +1101,7 @@ class FullFollowerUsers(Resource):
     )
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_followers_response)
+    @cache(ttl_sec=5)
     def get(self, id):
         return self._get_user_followers(id)
 
@@ -1570,10 +1568,10 @@ class FullGetSupporters(Resource):
     @full_ns.marshal_with(full_get_supporters_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
-        return self.get_supporters(id)
+        return self._get_supporters(id)
 
     @log_duration(logger)
-    def get_supporters(self, id: str):
+    def _get_supporters(self, id: str):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)
@@ -1685,10 +1683,10 @@ class FullGetSupportings(Resource):
     @full_ns.marshal_with(full_get_supporting_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
-        return self.get_supportings(id)
+        return self._get_supportings(id)
 
     @log_duration(logger)
-    def get_supportings(self, id: str):
+    def _get_supportings(self, id: str):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)
