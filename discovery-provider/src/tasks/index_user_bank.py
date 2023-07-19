@@ -103,6 +103,9 @@ CREATE_MINT_ACCOUNT_INDEX = 1
 # Used to find the memo instruction
 TRANSFER_MEMO_INSTRUCTION_INDEX = 2
 
+# The amount of USDC that represents one USD cent
+USDC_PER_USD_CENT = 10000
+
 
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
@@ -222,7 +225,9 @@ def process_create_userbank_instruction(
                     f"index_user_bank.py | Unknown mint address {mint_address}. Expected AUDIO={WAUDIO_MINT} or USDC={USDC_MINT}"
                 )
         else:
-            logger.error(f"index_user_bank.py | Failed to find user bank account index {bank_acct}")
+            logger.error(
+                f"index_user_bank.py | Failed to find user bank account index {bank_acct}"
+            )
 
     except ValueError as e:
         logger.error(e)
@@ -270,7 +275,7 @@ def get_purchase_metadata_from_memo(
                         "id": content_metadata["id"],
                         "owner_id": owner_id,
                         "price": int(premium_conditions["usdc_purchase"]["price"])
-                        * 10000,
+                        * USDC_PER_USD_CENT,
                     }
                 else:
                     logger.error(
