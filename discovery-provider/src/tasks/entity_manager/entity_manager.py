@@ -106,7 +106,7 @@ def entity_manager_update(
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
-        event_blockhash = update_task.web3.toHex(block_hash)
+        hex_blockhash = update_task.web3.toHex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
         if not entity_manager_txs:
@@ -148,6 +148,7 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
+                    raise Exception("test")
                     params = ManageEntityParameters(
                         session,
                         update_task.redis,
@@ -161,7 +162,7 @@ def entity_manager_update(
                         update_task.web3,
                         block_timestamp,
                         block_number,
-                        event_blockhash,
+                        hex_blockhash,
                         txhash,
                         logger,
                     )
@@ -291,11 +292,12 @@ def entity_manager_update(
                     indexing_error = IndexingError(
                         "tx-failutre",
                         block_number,
-                        block_hash,
+                        hex_blockhash,
                         txhash,
                         str(e),
                     )
-                    create_and_raise_indexing_error(indexing_error, update_task.redis, session)
+                    skipped_tx_hash = create_and_raise_indexing_error(indexing_error, update_task.redis, session)
+                    logger.info(f"skipping transaction hash {skipped_tx_hash}")
 
         # compile records_to_save
         records_to_save = []
@@ -697,6 +699,15 @@ def create_and_raise_indexing_error(err, redis, session):
     )
     if not has_consensus:
         # escalate error and halt indexing until there's consensus
-        raise err
+        error_message = "Indexing halted due to lack of consensus"
+        raise Exception(error_message) from err
 
-    save_and_get_skip_tx_hash(session, redis)
+    # try to insert into skip tx table
+    skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
+
+    if not skip_tx_hash:
+        error_message = "Reached max transaction skips"
+        raise Exception(error_message) from err
+    
+    clear_indexing_error(redis)
+    return skip_tx_hash

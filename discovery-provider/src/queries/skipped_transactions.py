@@ -44,6 +44,7 @@ def check_transaction_status():
     blocknumber = request.args.get("blocknumber", type=int)
     blockhash = request.args.get("blockhash")
     transactionhash = request.args.get("transactionhash")
+    logger.info(f"asdf params {blocknumber} {blockhash} {transactionhash} {request.args}")
     if blocknumber is None or blockhash is None or transactionhash is None:
         return error_response(
             "Please pass in required query parameters 'blocknumber', 'blockhash', and 'transactionhash'",
