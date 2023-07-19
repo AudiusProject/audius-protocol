@@ -8,7 +8,6 @@ import {
   cacheUsersActions as userActions,
   waitForValue,
   waitForAccount,
-  playlistLibraryHelpers,
   reformatUser
 } from '@audius/common'
 import { mergeWith } from 'lodash'
@@ -19,7 +18,6 @@ import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { pruneBlobValues } from './utils'
-const { removePlaylistLibraryTempPlaylists } = playlistLibraryHelpers
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getAccountUser, getUserId } = accountSelectors
@@ -157,14 +155,7 @@ function* watchSyncLocalStorageUser() {
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
       // Remove blob urls if any - blob urls only last for the session so we don't want to store those
       const cleaned = pruneBlobValues(merged)
-      // Remove temp playlists from the playlist library since they are only meant to last
-      // in the current session until the playlist is finished creating
-      // If we don't do this, temp playlists can get stuck in local storage (resulting in a corrupted state)
-      // if the user reloads before a temp playlist is resolved.
-      cleaned.playlist_library =
-        cleaned.playlist_library == null
-          ? cleaned.playlist_library
-          : removePlaylistLibraryTempPlaylists(cleaned.playlist_library)
+
       // Set user back to local storage
       yield call([localStorage, 'setAudiusAccountUser'], cleaned)
     }

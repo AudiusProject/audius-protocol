@@ -315,39 +315,6 @@ export const addFolderToLibrary = (
 }
 
 /**
- * Removes temp playlists from playlist library (without mutating)
- * @param library
- * @returns a copy of the library with all temp playlists removed
- */
-export const removePlaylistLibraryTempPlaylists = (
-  library: PlaylistLibrary | PlaylistLibraryFolder
-) => {
-  if (!library.contents) return library
-  const newContents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[] = []
-  for (const item of library.contents) {
-    switch (item.type) {
-      case 'folder': {
-        const folder = removePlaylistLibraryTempPlaylists(
-          item
-        ) as PlaylistLibraryFolder
-        newContents.push(folder)
-        break
-      }
-      case 'temp_playlist':
-        break
-      case 'explore_playlist':
-      case 'playlist':
-        newContents.push(item)
-        break
-    }
-  }
-  return {
-    ...library,
-    contents: newContents
-  }
-}
-
-/**
  * Removes duplicates in a playlist library
  * @param library
  * @param ids ids to keep track of as we recurse

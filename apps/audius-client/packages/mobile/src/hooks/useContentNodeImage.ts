@@ -57,7 +57,11 @@ export const createAllImageSources = ({
     return []
   }
 
-  if (cid.startsWith('data:image') || cid.startsWith('file://')) {
+  if (
+    cid.startsWith('data:image') ||
+    cid.startsWith('file://') ||
+    cid.startsWith('/')
+  ) {
     return [...(localSource ? [localSource] : []), { uri: cid }]
   }
 

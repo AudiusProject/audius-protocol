@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-import { imageBlank as placeholderArt } from '@audius/common'
+import { imageBlank, imageBlank as placeholderArt } from '@audius/common'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
@@ -35,6 +35,8 @@ const UploadArtwork = (props) => {
     setProcessing(false)
   }
 
+  const hasImage = !!props.artworkUrl && props.artworkUrl !== imageBlank
+
   return (
     <div
       className={cn(styles.uploadArtwork, {
@@ -65,7 +67,7 @@ const UploadArtwork = (props) => {
             anchorRef={imageSelectionAnchorRef}
             defaultPopupOpen={props.defaultPopupOpen}
             imageName={messages.imageName}
-            hasImage={!!props.artworkUrl}
+            hasImage={hasImage}
             error={props.imageProcessingError}
             onOpenPopup={props.onOpenPopup}
             onClosePopup={props.onClosePopup}

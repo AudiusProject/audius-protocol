@@ -1,7 +1,8 @@
 import { getAllEntries, getEntry } from 'store/cache/selectors'
-import { getTracks } from 'store/cache/tracks/selectors'
+import { getTrack, getTracks } from 'store/cache/tracks/selectors'
 import { getUser as getUserById, getUsers } from 'store/cache/users/selectors'
 import type { CommonState } from 'store/commonStore'
+import { removeNullable } from 'utils/typeUtils'
 import { Uid } from 'utils/uid'
 
 import type { ID, UID, Collection, User } from '../../../models'
@@ -69,7 +70,24 @@ export const getCollectionsByUid = (state: CommonState) => {
   }, {} as { [uid: string]: Collection | null })
 }
 
-const getCollectionTracks = (state: CommonState, { id }: { id?: ID }) => {
+export const getCollectionTracks = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const collection = getCollection(state, { id })
+  if (!collection) return null
+
+  const trackIds = collection.playlist_contents.track_ids.map(
+    ({ track }) => track
+  )
+  const tracks = trackIds
+    .map((trackId) => getTrack(state, { id: trackId }))
+    .filter(removeNullable)
+
+  return tracks
+}
+
+const getCollectionTracksMap = (state: CommonState, { id }: { id?: ID }) => {
   const collection = getCollection(state, { id })
   const collectionTrackIds = collection?.playlist_contents.track_ids.map(
     (track_id) => track_id.track // track === actual track id, oof
@@ -81,7 +99,7 @@ export const getIsCollectionEmpty = (
   state: CommonState,
   { id }: { id?: ID }
 ) => {
-  const collectionTracks = getCollectionTracks(state, { id })
+  const collectionTracks = getCollectionTracksMap(state, { id })
 
   return Object.values(collectionTracks).length === 0
 }
@@ -90,7 +108,7 @@ export const getCollecitonHasHiddenTracks = (
   state: CommonState,
   { id }: { id?: ID }
 ) => {
-  const collectionTracks = getCollectionTracks(state, { id })
+  const collectionTracks = getCollectionTracksMap(state, { id })
 
   return Object.values(collectionTracks)?.some((track) => track.is_unlisted)
 }

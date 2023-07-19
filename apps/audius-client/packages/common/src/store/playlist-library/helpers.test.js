@@ -11,7 +11,6 @@ import {
   addPlaylistToFolder,
   extractTempPlaylistsFromLibrary,
   replaceTempWithResolvedPlaylists,
-  removePlaylistLibraryTempPlaylists,
   getPlaylistsNotInLibrary
 } from './helpers'
 
@@ -475,82 +474,6 @@ describe('removePlaylistLibraryDuplicates', () => {
       ]
     }
     expect(result).toEqual(expectedResult)
-  })
-})
-
-describe('removePlaylistLibraryTempPlaylists', () => {
-  it('can remove temporary playlists', () => {
-    const library = {
-      contents: [
-        { type: 'temp_playlist', playlist_id: '33' },
-        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
-        {
-          type: 'folder',
-          name: 'My folder',
-          id: 'uuid',
-          contents: [
-            { type: 'temp_playlist', playlist_id: '44' },
-            { type: 'playlist', playlist_id: 5 },
-            { type: 'playlist', playlist_id: 6 }
-          ]
-        },
-        { type: 'playlist', playlist_id: 3 },
-        { type: 'playlist', playlist_id: 1 }
-      ]
-    }
-    const ret = removePlaylistLibraryTempPlaylists(library)
-    expect(ret).toEqual({
-      contents: [
-        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
-        {
-          type: 'folder',
-          name: 'My folder',
-          id: 'uuid',
-          contents: [
-            { type: 'playlist', playlist_id: 5 },
-            { type: 'playlist', playlist_id: 6 }
-          ]
-        },
-        { type: 'playlist', playlist_id: 3 },
-        { type: 'playlist', playlist_id: 1 }
-      ]
-    })
-  })
-
-  it('does not remove non temp playlists', () => {
-    const library = {
-      contents: [
-        { type: 'playlist', playlist_id: 1 },
-        { type: 'playlist', playlist_id: 2 },
-        { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
-        {
-          type: 'folder',
-          name: 'My folder',
-          id: 'uuid',
-          contents: [
-            { type: 'playlist', playlist_id: 10 },
-            { type: 'playlist', playlist_id: 11 }
-          ]
-        },
-        { type: 'playlist', playlist_id: 4 },
-        { type: 'playlist', playlist_id: 5 },
-        { type: 'playlist', playlist_id: 6 }
-      ]
-    }
-    const ret = removePlaylistLibraryTempPlaylists(library)
-    expect(ret).toEqual(library)
-  })
-
-  it('can deal with empty library', () => {
-    const library = {
-      contents: []
-    }
-    let ret = removePlaylistLibraryTempPlaylists(library)
-    expect(ret).toEqual(library)
-
-    library.contents = null
-    ret = removePlaylistLibraryTempPlaylists(library)
-    expect(ret).toEqual(library)
   })
 })
 

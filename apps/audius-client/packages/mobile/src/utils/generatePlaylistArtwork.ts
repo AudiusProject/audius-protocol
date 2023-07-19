@@ -1,3 +1,4 @@
+import { uuid } from '@audius/common'
 import Jimp from 'jimp'
 import RNFetchBlob from 'rn-fetch-blob'
 
@@ -16,24 +17,31 @@ export async function generatePlaylistArtwork(imageUrls: string[]) {
   const images = await Promise.all(
     imageUrls.map((imageUrl) => Jimp.read(imageUrl))
   )
-  const newImage = new Jimp(canvasWidth, canvasHeight)
 
-  for (let i = 0; i < 4; i++) {
-    const image = images[i]
-    if (image) {
-      image.resize(imageWidth, imageHeight)
+  let newImage: Jimp
 
-      // Calculate the x and y position based on the quadrant
-      const x = i % 2 === 0 ? 0 : imageWidth
-      const y = i < 2 ? 0 : imageHeight
+  if (images.length === 1) {
+    newImage = images[0]
+  } else {
+    newImage = new Jimp(canvasWidth, canvasHeight)
 
-      // Composite the image onto the canvas
-      newImage.composite(image, x, y)
+    for (let i = 0; i < 4; i++) {
+      const image = images[i]
+      if (image) {
+        image.resize(imageWidth, imageHeight)
+
+        // Calculate the x and y position based on the quadrant
+        const x = i % 2 === 0 ? 0 : imageWidth
+        const y = i < 2 ? 0 : imageHeight
+
+        // Composite the image onto the canvas
+        newImage.composite(image, x, y)
+      }
     }
   }
 
-  const fileName = 'playlist-artwork'
-  const url = `${dirs.DocumentDir}/${fileName}.jpg`
+  const fileName = uuid()
+  const url = `${dirs.CacheDir}/${fileName}.jpg`
   const imageContents = await newImage.getBase64Async(mimeType)
   const [, base64Contents] = imageContents.split(',')
   await writeFile(url, base64Contents, 'base64')
