@@ -307,8 +307,8 @@ export class CreatorNode {
 
     // Poll for re-transcoding to complete
     return await this.pollProcessingStatusV2(
-      response.data[0].id,
-      response.data[0].template === 'audio'
+      uploadId,
+      response.data.template === 'audio'
         ? MAX_TRACK_TRANSCODE_TIMEOUT
         : MAX_IMAGE_RESIZE_TIMEOUT_MS
     )
