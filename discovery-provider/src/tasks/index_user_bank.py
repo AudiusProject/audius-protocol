@@ -221,6 +221,8 @@ def process_create_userbank_instruction(
                 logger.error(
                     f"index_user_bank.py | Unknown mint address {mint_address}. Expected AUDIO={WAUDIO_MINT} or USDC={USDC_MINT}"
                 )
+        else:
+            logger.error(f"index_user_bank.py | Failed to find user bank account index {bank_acct}")
 
     except ValueError as e:
         logger.error(e)
