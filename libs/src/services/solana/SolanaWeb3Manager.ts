@@ -58,6 +58,8 @@ type CreateSenderParams = Omit<
   | 'identityService'
 > & { feePayerOverride: Nullable<string> }
 
+type MintName = 'usdc' | 'audio'
+
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
 // despite a remaining balance.
@@ -72,10 +74,10 @@ export type SolanaWeb3Config = {
   solanaClusterEndpoint: string
   // wAudio mint address
   mintAddress: string
+  // USDC mint address
+  usdcMintAddress: string
   // native solana token program
   solanaTokenAddress: string
-  // the generated program derived address we use so our bank program can take ownership of accounts
-  claimableTokenPDA: string
   // address for the fee payer for transactions
   feePayerAddress: PublicKey
   // address of the audius user bank program
@@ -113,15 +115,13 @@ export class SolanaWeb3Manager {
   solanaClusterEndpoint!: string
   transactionHandler!: TransactionHandler
   connection!: Connection
-  mintAddress!: string
-  mintKey!: PublicKey
+  mints!: Record<MintName, PublicKey>
+  claimableTokenPDAs!: Record<MintName, PublicKey>
   solanaTokenAddress!: string
   solanaTokenKey!: PublicKey
   feePayerAddress!: PublicKey
   feePayerKey!: PublicKey
   claimableTokenProgramKey!: PublicKey
-  claimableTokenPDA!: string
-  claimableTokenPDAKey!: PublicKey
   rewardManagerProgramId!: PublicKey
   rewardManagerProgramPDA!: PublicKey
   rewardManagerTokenPDA!: PublicKey
@@ -143,8 +143,8 @@ export class SolanaWeb3Manager {
     const {
       solanaClusterEndpoint,
       mintAddress,
+      usdcMintAddress,
       solanaTokenAddress,
-      claimableTokenPDA,
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
@@ -168,8 +168,10 @@ export class SolanaWeb3Manager {
       feePayerKeypairs
     })
 
-    this.mintAddress = mintAddress
-    this.mintKey = SolanaUtils.newPublicKeyNullable(mintAddress)
+    this.mints = {
+      audio: SolanaUtils.newPublicKeyNullable(mintAddress),
+      usdc: SolanaUtils.newPublicKeyNullable(usdcMintAddress)
+    }
 
     this.solanaTokenAddress = solanaTokenAddress
     this.solanaTokenKey = SolanaUtils.newPublicKeyNullable(solanaTokenAddress)
@@ -187,19 +189,31 @@ export class SolanaWeb3Manager {
     this.claimableTokenProgramKey = SolanaUtils.newPublicKeyNullable(
       claimableTokenProgramAddress
     )
-    this.claimableTokenPDA =
-      claimableTokenPDA ||
-      ((this.claimableTokenProgramKey
+    const audioPDA = (
+      this.claimableTokenProgramKey
         ? (
             await SolanaUtils.findProgramAddressFromPubkey(
               this.claimableTokenProgramKey,
-              this.mintKey
+              this.mints.audio
             )
           )[0].toString()
-        : null) as string)
-    this.claimableTokenPDAKey = SolanaUtils.newPublicKeyNullable(
-      this.claimableTokenPDA
-    )
+        : null
+    ) as string
+
+    const usdcPDA = this.claimableTokenProgramKey
+      ? (
+          await SolanaUtils.findProgramAddressFromPubkey(
+            this.claimableTokenProgramKey,
+            this.mints.usdc
+          )
+        )[0].toString()
+      : ''
+
+    this.claimableTokenPDAs = {
+      audio: SolanaUtils.newPublicKeyNullable(audioPDA),
+      usdc: SolanaUtils.newPublicKeyNullable(usdcPDA)
+    }
+
     this.rewardManagerProgramId = SolanaUtils.newPublicKeyNullable(
       rewardsManagerProgramId
     )
@@ -220,7 +234,11 @@ export class SolanaWeb3Manager {
   /**
    * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
    */
-  async createUserBank(feePayerOverride: string, recipientEthAddress?: string) {
+  async createUserBank(
+    feePayerOverride: string,
+    recipientEthAddress?: string,
+    mint: MintName = 'audio'
+  ) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -230,10 +248,10 @@ export class SolanaWeb3Manager {
     const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
       ethAddress: recipientEthAddress ?? ethAddress,
-      claimableTokenPDAKey: this.claimableTokenPDAKey,
+      claimableTokenPDAKey: this.claimableTokenPDAs[mint],
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
-      mintKey: this.mintKey,
+      mintKey: this.mints[mint],
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       transactionHandler: this.transactionHandler
@@ -276,11 +294,14 @@ export class SolanaWeb3Manager {
    * Creates a token account for the provided solana address (a wallet)
    * See https://spl.solana.com/associated-token-account
    */
-  async createAssociatedTokenAccount(solanaAddress: string) {
+  async createAssociatedTokenAccount(
+    solanaAddress: string,
+    mint: MintName = 'audio'
+  ) {
     await createAssociatedTokenAccount({
       feePayerKey: this.feePayerKey,
       solanaWalletKey: new PublicKey(solanaAddress),
-      mintKey: this.mintKey,
+      mintKey: this.mints[mint],
       solanaTokenProgramKey: this.solanaTokenKey,
       connection: this.connection,
       identityService: this.identityService
@@ -288,13 +309,16 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Finds the wAudio token account for a provided solana address (a wallet)
+   * Finds the user bank token account for a provided solana address (a wallet) for the given mint
    * See https://spl.solana.com/associated-token-account
    */
-  async findAssociatedTokenAddress(solanaAddress: string) {
+  async findAssociatedTokenAddress(
+    solanaAddress: string,
+    mint: MintName = 'audio'
+  ) {
     return await findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
-      mintKey: this.mintKey,
+      mintKey: this.mints[mint],
       solanaTokenProgramKey: this.solanaTokenKey
     })
   }
@@ -302,7 +326,7 @@ export class SolanaWeb3Manager {
   /**
    * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
    */
-  async deriveUserBank(sourceEthAddress?: string) {
+  async deriveUserBank(sourceEthAddress?: string, mint: MintName = 'audio') {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -314,7 +338,7 @@ export class SolanaWeb3Manager {
 
     const bank = await getBankAccountAddress(
       derivationSourceAddress,
-      this.claimableTokenPDAKey,
+      this.claimableTokenPDAs[mint],
       this.solanaTokenKey
     )
     return bank
@@ -324,11 +348,11 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(solanaAddress: string) {
+  async getTokenAccountInfo(solanaAddress: string, mint: MintName = 'audio') {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
-        mintKey: this.mintKey,
+        mintKey: this.mints[mint],
         solanaTokenProgramKey: this.solanaTokenKey,
         connection: this.connection
       })
@@ -422,7 +446,7 @@ export class SolanaWeb3Manager {
     const ethAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(
       ethAddress,
-      this.claimableTokenPDAKey,
+      this.claimableTokenPDAs.audio,
       this.solanaTokenKey
     )
     return await transferWAudioBalance({
@@ -433,11 +457,11 @@ export class SolanaWeb3Manager {
         this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
       senderSolanaAddress,
       recipientSolanaAddress,
-      claimableTokenPDA: this.claimableTokenPDAKey,
+      claimableTokenPDA: this.claimableTokenPDAs.audio,
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      mintKey: this.mintKey,
+      mintKey: this.mints.audio,
       transactionHandler: this.transactionHandler
     })
   }
@@ -494,7 +518,7 @@ export class SolanaWeb3Manager {
       challengeId,
       specifier,
       recipientEthAddress,
-      userBankProgramAccount: this.claimableTokenPDAKey,
+      userBankProgramAccount: this.claimableTokenPDAs.audio,
       oracleEthAddress,
       feePayer:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) ?? this.feePayerKey,

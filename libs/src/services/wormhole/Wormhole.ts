@@ -329,7 +329,7 @@ export class Wormhole {
         this.solTokenBridgeAddress, // token bridge address
         this.solanaWeb3Manager.feePayerAddress as unknown as string, // payerAddress
         tokenAccountInfo!.address.toString(), // fromAddress
-        this.solanaWeb3Manager.mintAddress, // mintAddress
+        this.solanaWeb3Manager.mints.audio.toString(), // mintAddress
         wAudioAmount, // BigInt
         zeroPad(toBuffer(ethTargetAddress), 32), // Uint8Array of length 32 targetAddress
         this.wormholeSDK.CHAIN_ID_ETH, // ChainId targetChain

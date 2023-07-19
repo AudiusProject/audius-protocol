@@ -12,6 +12,7 @@ const solanaClaimableTokenProgramAddress = config.get(
   'solanaClaimableTokenProgramAddress'
 )
 const solanaMintAddress = config.get('solanaMintAddress')
+const usdcMintAddress = config.get('solanaUSDCMintAddress')
 const solanaAudiusAnchorDataProgramId = config.get(
   'solanaAudiusAnchorDataProgramId'
 )
@@ -95,25 +96,26 @@ async function doesUserHaveSocialProof(userInstance) {
   return !!twitterUser || !!instagramUser
 }
 
-const deriveClaimableTokenAuthority = async () => {
+const deriveClaimableTokenAuthority = async (mint) => {
   return (
     await SolanaUtils.findProgramAddressFromPubkey(
       SolanaUtils.newPublicKeyNullable(solanaClaimableTokenProgramAddress),
-      SolanaUtils.newPublicKeyNullable(solanaMintAddress)
+      SolanaUtils.newPublicKeyNullable(mint)
     )
   )[0].toString()
 }
 
-let claimableTokenAuthority = null
+let claimableTokenAuthority = {}
 /**
  * Gets the authority account for the ClaimableToken program, using a cached value if possible
+ * @param {string} mint the mint account
  * @returns {Promise<string>} the claimable token authority account as a string
  */
-const getClaimableTokenAuthority = async () => {
-  if (!claimableTokenAuthority) {
-    claimableTokenAuthority = await deriveClaimableTokenAuthority()
+const getClaimableTokenAuthority = async (mint) => {
+  if (!(mint in claimableTokenAuthority)) {
+    claimableTokenAuthority[mint] = await deriveClaimableTokenAuthority(mint)
   }
-  return claimableTokenAuthority
+  return claimableTokenAuthority[mint]
 }
 
 /**
@@ -195,13 +197,21 @@ const isRelayAllowedInstruction = async (instruction) => {
       solanaRewardsManager
     )
   } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
-    const claimableTokenAuthority = await getClaimableTokenAuthority()
+    const audioAuthority = await getClaimableTokenAuthority(solanaMintAddress)
+    const usdcAuthority = await getClaimableTokenAuthority(usdcMintAddress)
     // Claimable token does not include the base account for the Transfer instruction
     // but does include the authority.
-    return checkAccountKey(
-      instruction,
-      getAccountIndex(instruction, claimableTokenAuthorityIndices),
-      claimableTokenAuthority
+    return (
+      checkAccountKey(
+        instruction,
+        getAccountIndex(instruction, claimableTokenAuthorityIndices),
+        audioAuthority
+      ) ||
+      checkAccountKey(
+        instruction,
+        getAccountIndex(instruction, claimableTokenAuthorityIndices),
+        usdcAuthority
+      )
     )
   } else if (isRelayAllowedProgram([instruction])) {
     // Authority check not necessary

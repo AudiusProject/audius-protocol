@@ -19,6 +19,7 @@ export const initializeAudiusLibs = async (handle) => {
       solanaClusterEndpoint: process.env.SOLANA_ENDPOINT,
       solanaTokenAddress: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
       mintAddress: process.env.SOLANA_TOKEN_MINT_PUBLIC_KEY,
+      usdcMintAddress: process.env.SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY,
       claimableTokenProgramAddress: process.env.SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY,
       rewardsManagerProgramId: process.env.SOLANA_REWARD_MANAGER_PUBLIC_KEY,
       rewardsManagerProgramPDA: process.env.SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY,

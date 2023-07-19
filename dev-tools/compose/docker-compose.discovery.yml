@@ -89,6 +89,7 @@ services:
       audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
       audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
       audius_solana_waudio_mint: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      audius_solana_usdc_mint: "${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}"
       audius_solana_rewards_manager_program_address: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
       audius_solana_rewards_manager_account: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
       audius_solana_anchor_data_program_id: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"

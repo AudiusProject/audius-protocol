@@ -121,7 +121,7 @@ export class AudiusLibs {
     // whether or not to exclude any nodes (default null)
     blockList: Nullable<Set<string>> = null,
     // callbacks to be invoked with metrics from requests sent to a service
-    monitoringCallbacks: Nullable<MonitoringCallbacks> = {},
+    monitoringCallbacks: Nullable<MonitoringCallbacks> = {}
   ) {
     return {
       fallbackUrl,
@@ -251,8 +251,8 @@ export class AudiusLibs {
   static configSolanaWeb3({
     solanaClusterEndpoint,
     mintAddress,
+    usdcMintAddress,
     solanaTokenAddress,
-    claimableTokenPDA,
     feePayerAddress,
     claimableTokenProgramAddress,
     rewardsManagerProgramId,
@@ -265,8 +265,8 @@ export class AudiusLibs {
     return {
       solanaClusterEndpoint,
       mintAddress,
+      usdcMintAddress,
       solanaTokenAddress,
-      claimableTokenPDA,
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
