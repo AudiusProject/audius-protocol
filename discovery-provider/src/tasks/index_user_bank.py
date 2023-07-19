@@ -566,9 +566,8 @@ def process_transfer_instruction(
         elif user_id_account[1] == receiver_account:
             receiver_user_id = user_id_account[0]
     if sender_user_id is None:
-        # This can happen if the transaction happens before the userbank was indexed - clients should take care to confirm the userbank is indexed first!
         logger.error(
-            f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
+            "index_user_bank.py | sender_user_id is None. This can happen if the transaction happens before the userbank was indexed - clients should take care to confirm the userbank is indexed first!"
         )
         return
 
