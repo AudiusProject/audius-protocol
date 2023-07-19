@@ -146,7 +146,7 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
-		Timeout: 10 * time.Second,
+		Timeout: time.Second,
 	}
 
 	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
