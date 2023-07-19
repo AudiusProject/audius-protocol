@@ -398,6 +398,7 @@ def validate_signer(params: ManageEntityParameters):
             )
 
 
+# Generate a cid from a json object
 def generate_metadata_cid_v1(metadata: object):
     encoded_metadata = json.dumps(metadata).encode("utf-8")
     bytes = bytearray(encoded_metadata)

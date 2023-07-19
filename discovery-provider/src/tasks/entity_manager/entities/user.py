@@ -258,9 +258,7 @@ def update_user(params: ManageEntityParameters):
         params.challenge_bus,
     )
 
-    updated_metadata_cid = merge_user_metadata(
-        params.session, user_record, params.metadata
-    )
+    updated_metadata_cid = merge_user_metadata(params, user_record)
 
     user_record.metadata_multihash = updated_metadata_cid
     user_record = update_legacy_user_images(user_record)
@@ -336,9 +334,9 @@ def update_user_metadata(
 # get previous CIDData and merge new metadata into it
 # this is to support collectibles, associated_wallets which aren't being indexed yet
 # once those are indexed and backfilled this can be removed
-def merge_user_metadata(session: Session, user_record: User, metadata: Dict):
+def merge_user_metadata(params: ManageEntityParameters, user_record: User):
     prev_cid_response = (
-        session.query(CIDData)
+        params.session.query(CIDData)
         .filter_by(
             cid=user_record.metadata_multihash,
         )
@@ -347,7 +345,7 @@ def merge_user_metadata(session: Session, user_record: User, metadata: Dict):
 
     if prev_cid_response:
         # merge previous and current metadata
-        updated_metadata = prev_cid_response.data | metadata
+        updated_metadata = prev_cid_response.data | params.metadata
 
         # generate a cid
         updated_metadata_cid = str(
@@ -360,7 +358,7 @@ def merge_user_metadata(session: Session, user_record: User, metadata: Dict):
             type="user",
             data=updated_metadata,
         )
-        session.merge(cid_data)
+        params.session.merge(cid_data)
     else:
         logger.info(
             f"index.py | user.py | Could not find previous metadata blob for user {user_record}"
