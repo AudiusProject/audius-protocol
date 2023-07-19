@@ -359,6 +359,8 @@ def merge_user_metadata(params: ManageEntityParameters, user_record: User):
             data=updated_metadata,
         )
         params.session.merge(cid_data)
+
+        return updated_metadata_cid
     else:
         logger.info(
             f"index.py | user.py | Could not find previous metadata blob for user {user_record}"
