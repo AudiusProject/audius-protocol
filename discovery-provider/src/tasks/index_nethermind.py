@@ -24,17 +24,12 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
-from src.queries.get_skipped_transactions import (
-    clear_indexing_error,
-    get_indexing_error,
-)
-from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
-from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched
+from src.utils.indexing_errors import NotAllTransactionsFetched
 from src.utils.redis_constants import (
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,

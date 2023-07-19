@@ -3,10 +3,6 @@ import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
-from src.queries.get_skipped_transactions import save_and_get_skip_tx_hash
-
-from src.utils.indexing_errors import IndexingError
-
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -24,6 +20,14 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.queries.confirm_indexing_transaction_error import (
+    confirm_indexing_transaction_error,
+)
+from src.queries.get_skipped_transactions import (
+    clear_indexing_error,
+    save_and_get_skip_tx_hash,
+    set_indexing_error,
+)
 from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
@@ -69,18 +73,9 @@ from src.tasks.entity_manager.utils import (
     save_cid_metadata,
 )
 from src.utils import helpers
+from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
-
-
-from src.queries.confirm_indexing_transaction_error import (
-    confirm_indexing_transaction_error,
-)
-from src.queries.get_skipped_transactions import (
-    clear_indexing_error,
-    get_indexing_error,
-    set_indexing_error,
-)
 
 logger = StructuredLogger(__name__)
 
@@ -148,7 +143,6 @@ def entity_manager_update(
             )
             for event in entity_manager_event_tx:
                 try:
-                    raise Exception("test")
                     params = ManageEntityParameters(
                         session,
                         update_task.redis,
@@ -224,7 +218,6 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        print("creating user")
                         create_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.UPDATE
@@ -296,7 +289,9 @@ def entity_manager_update(
                         txhash,
                         str(e),
                     )
-                    skipped_tx_hash = create_and_raise_indexing_error(indexing_error, update_task.redis, session)
+                    skipped_tx_hash = create_and_raise_indexing_error(
+                        indexing_error, update_task.redis, session
+                    )
                     logger.info(f"skipping transaction hash {skipped_tx_hash}")
 
         # compile records_to_save
@@ -378,7 +373,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
-        print(entity_manager_txs)
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -708,6 +702,6 @@ def create_and_raise_indexing_error(err, redis, session):
     if not skip_tx_hash:
         error_message = "Reached max transaction skips"
         raise Exception(error_message) from err
-    
+
     clear_indexing_error(redis)
     return skip_tx_hash

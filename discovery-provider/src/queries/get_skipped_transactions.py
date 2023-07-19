@@ -1,15 +1,15 @@
 import logging
 
 import redis
+from sqlalchemy import func
 from src.models.indexing.block import Block
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.utils import db_session, helpers
 from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
-from sqlalchemy import func
 
 # The maximum number of skipped transactions allowed
-MAX_SKIPPED_TX = 5
+MAX_SKIPPED_TX = 10
 
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -107,7 +107,6 @@ def get_indexing_error(redis_instance):
 def set_indexing_error(
     redis_instance, blocknumber, blockhash, txhash, message, has_consensus=False
 ):
-    print("set_indexing_error")
     indexing_error = get_json_cached_key(redis_instance, INDEXING_ERROR_KEY)
 
     if indexing_error is None or (
@@ -115,7 +114,6 @@ def set_indexing_error(
         or indexing_error["blockhash"] != blockhash
         or indexing_error["txhash"] != txhash
     ):
-        print("indexing:error does not exist")
         indexing_error = {
             "count": 1,
             "blocknumber": blocknumber,
@@ -126,7 +124,6 @@ def set_indexing_error(
         }
         set_json_cached_key(redis_instance, INDEXING_ERROR_KEY, indexing_error)
     else:
-        print("indexing:error exists")
         indexing_error["count"] += 1
         indexing_error["has_consensus"] = has_consensus
         set_json_cached_key(redis_instance, INDEXING_ERROR_KEY, indexing_error)

@@ -18,7 +18,6 @@ def confirm_indexing_transaction_error(
     Gets all other discovery nodes and makes an api call to check the status of a transaction
     given a blocknumber, blockhash, and transactionhash
     """
-    print("confirming")
     all_other_nodes = get_all_other_discovery_nodes_cached(redis)
     num_other_nodes = len(all_other_nodes)
     num_transaction_failures = 0
@@ -31,11 +30,8 @@ def confirm_indexing_transaction_error(
                     f"Query to indexing transaction status endpoint {endpoint} \
                     failed with status code {response.status_code}"
                 )
-            logger.info(f"asdf response {response.json()}")
-
-            # if response.json()["data"] == "FAILED":
-            #     print("failure")
-            num_transaction_failures += 1
+            if response.json()["data"] == "FAILED":
+                num_transaction_failures += 1
         except Exception as e:
             logger.error(e)
 
