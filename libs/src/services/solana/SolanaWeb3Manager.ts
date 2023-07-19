@@ -61,6 +61,10 @@ type CreateSenderParams = Omit<
 
 type MintName = 'usdc' | 'audio'
 
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+)
+
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
 // despite a remaining balance.
@@ -507,9 +511,6 @@ export class SolanaWeb3Manager {
       instructions.push(secpTransactionInstruction)
       instructions.push(transferInstruction)
     }
-    const MEMO_PROGRAM_ID = new PublicKey(
-      'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
-    )
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
