@@ -24,17 +24,10 @@ export type AudioNftPlaylistIdentifier = {
   playlist_id: SmartCollectionVariant.AUDIO_NFT_PLAYLIST
 }
 
-// Never written to backends
-export type TempPlaylistIdentifier = {
-  type: 'temp_playlist'
-  playlist_id: string
-}
-
 export type PlaylistLibraryIdentifier =
   | PlaylistIdentifier
   | ExplorePlaylistIdentifier
   | AudioNftPlaylistIdentifier
-  | TempPlaylistIdentifier
 
 export type PlaylistLibraryFolder = {
   id: string
