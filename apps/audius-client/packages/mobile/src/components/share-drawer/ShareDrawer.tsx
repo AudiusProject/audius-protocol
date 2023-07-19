@@ -282,7 +282,7 @@ export const ShareDrawer = () => {
             </View>
             {content?.type === 'playlist' && content.playlist.is_private ? (
               <Text style={styles.titleHelperText} fontSize={'large'}>
-                {messages.privatePlaylistShareHelperText}
+                {messages.hiddenPlaylistShareHelperText}
               </Text>
             ) : null}
           </View>

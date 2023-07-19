@@ -127,7 +127,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           <span className={cn(styles.typeLabel, fadeIn)}>
             {!isPublished ? <IconHidden className={styles.labelIcon} /> : null}
             <p className={styles.label}>
-              {type === 'playlist' && !isPublished ? 'private playlist' : type}
+              {type === 'playlist' && !isPublished ? 'hidden playlist' : type}
             </p>
           </span>
           <TitleComponent
