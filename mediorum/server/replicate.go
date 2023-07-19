@@ -159,7 +159,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 // used for checking host has blob before redirecting to it
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: time.Second,
 	}
 	u := apiPath(host, "internal/blobs/info", key)
 	req, err := http.NewRequest("GET", u, nil)
@@ -172,6 +172,15 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 		return false
 	}
 	defer has.Body.Close()
+
+	// to detect if we hit 1s timeout after the header is written... we read the whole body
+	// if this takes longer than 1s we get error:
+	//   context deadline exceeded (Client.Timeout or context cancellation while reading body)
+	_, err = io.Copy(io.Discard, has.Body)
+	if err != nil {
+		return false
+	}
+
 	return has.StatusCode == 200
 }
 

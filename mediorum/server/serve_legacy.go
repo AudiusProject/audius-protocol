@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -200,7 +201,7 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
-		Timeout: 10 * time.Second,
+		Timeout: 1 * time.Second,
 	}
 
 	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
@@ -228,7 +229,17 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 		logger.Error("request failed", "err", err)
 		return "", false
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	// to detect if we hit 1s timeout after the header is written... we read the whole body
+	// if this takes longer than 1s we get error:
+	//   context deadline exceeded (Client.Timeout or context cancellation while reading body)
+	_, err = io.Copy(io.Discard, resp.Body)
+	if err != nil {
+		logger.Error("reading response body failed", "err", err)
+		return "", false
+	}
+
 	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
 		return dest.String(), true
 	}
