@@ -33,7 +33,7 @@ const { getUserId } = accountSelectors
 const messages = {
   album: 'Album',
   playlist: 'Playlist',
-  hiddenPlaylist: 'Private Playlist',
+  hiddenPlaylist: 'Hidden Playlist',
   publishing: 'Publishing...',
   queued: 'Download Queued',
   downloading: 'Downloading'

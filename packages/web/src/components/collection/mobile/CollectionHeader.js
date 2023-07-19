@@ -28,7 +28,7 @@ import { isDarkMode } from 'utils/theme/theme'
 import styles from './CollectionHeader.module.css'
 
 const messages = {
-  privatePlaylist: 'Private Playlist',
+  hiddenPlaylist: 'Hidden Playlist',
   publishing: 'Publishing...',
   play: 'PLAY',
   pause: 'PAUSE'
@@ -187,7 +187,7 @@ const CollectionHeader = ({
         {type === 'playlist' && !isPublished
           ? isPublishing
             ? messages.publishing
-            : messages.privatePlaylist
+            : messages.hiddenPlaylist
           : type}
       </div>
       {loading ? (

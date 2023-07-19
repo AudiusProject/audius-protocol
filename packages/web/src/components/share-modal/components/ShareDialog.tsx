@@ -73,7 +73,7 @@ export const ShareDialog = ({
         <div className={styles.modalContent}>
           <p className={styles.description}>
             {shareType === 'playlist' && isPrivate
-              ? messages.privatePlaylistShareDescription
+              ? messages.hiddenPlaylistShareDescription
               : messages.shareDescription}
           </p>
           <ul className={styles.actionList}>
