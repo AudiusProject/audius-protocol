@@ -515,6 +515,48 @@ export class Track extends Base {
     }
   }
 
+
+  /**
+   * Update or create a track preview for the given track and write preview metadata to chain.
+   * @param metadata json of the track metadata with all fields, missing fields will error
+   */
+  async updateTrackPreview(metadata: TrackMetadata) {
+    this.IS_OBJECT(metadata)
+
+    const ownerId = this.userStateManager.getCurrentUserId()
+
+    if (!ownerId) {
+      throw new Error('No users loaded for this wallet')
+    }
+    metadata.owner_id = ownerId
+    this._validateTrackMetadata(metadata)
+    if (!metadata.preview_start_seconds) {
+      throw new Error('No track preview start time specified')
+    }
+    if (!metadata.audio_upload_id) {
+      throw new Error('Missing required audio_upload_id')
+    }
+
+    // Transcode the new preview and receive back updated metadata
+    const updatedMetadata = await this.creatorNode.transcodeTrackPreview(
+      metadata
+    )
+
+    const trackId = metadata.track_id
+    const { metadataCid, txReceipt } = await this.writeTrackToChain(
+      updatedMetadata,
+      Action.UPDATE,
+      trackId
+    )
+
+    return {
+      trackId,
+      metadataCid,
+      updatedMetadata,
+      txReceipt
+    }
+  }
+
   /**
    * Logs a track listen for a given user id.
    * @param unauthUuid account for those not logged in
