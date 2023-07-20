@@ -179,7 +179,7 @@ export class CreatorNode {
       previewStartSeconds: metadata.preview_start_seconds.toString()
     }
     const resp = await this._retry3(
-      async () => await this.editFileV2(metadata.audio_upload_id, data),
+      async () => await this.editFileV2(metadata.audio_upload_id!, data),
       (e) => {
         console.log('Retrying editFileV2', e)
       }
@@ -266,12 +266,9 @@ export class CreatorNode {
   }
 
   async editFileV2(
-    uploadId: Nullable<string>,
+    uploadId: string,
     data: { [key: string]: string }
   ) {
-    if (!uploadId) {
-      throw new Error('Missing required upload id')
-    }
     const myPrivateKey = this.web3Manager?.getOwnerWalletPrivateKey()
     if (!myPrivateKey) {
       throw new Error('Missing user private key')

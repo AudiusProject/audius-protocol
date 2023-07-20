@@ -35,14 +35,12 @@ program.command("edit-track")
         preview_start_seconds: previewStartSeconds
       }
 
-      let response
+      let transcodePreview = false
       if (previewStartSeconds && track.preview_start_seconds != previewStartSeconds) {
         // Transcode preview and write metadata to chain
-        response = await audiusLibs.Track.updateTrackPreview(updatedMetadata)
-      } else {
-        // Just write metadata to chain
-        response = await audiusLibs.Track.updateTrackV2(updatedMetadata);
+        transcodePreview = true
       }
+      const response = await audiusLibs.Track.updateTrackV2(updatedMetadata, transcodePreview)
 
       if (response.error) {
         program.error(chalk.red(response.error));
