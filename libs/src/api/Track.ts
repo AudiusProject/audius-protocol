@@ -489,8 +489,9 @@ export class Track extends Base {
   /**
    * Updates an existing track given metadata using only chain and not creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
+   * @param transcodePreview bool: retranscode track preview and set preview_cid if true
    */
-  async updateTrackV2(metadata: TrackMetadata) {
+  async updateTrackV2(metadata: TrackMetadata, transcodePreview = false) {
     this.IS_OBJECT(metadata)
 
     const ownerId = this.userStateManager.getCurrentUserId()
@@ -502,8 +503,22 @@ export class Track extends Base {
     this._validateTrackMetadata(metadata)
 
     const trackId = metadata.track_id
+    let updatedMetadata = { ...metadata }
+
+    if (transcodePreview) {
+      if (!metadata.preview_start_seconds) {
+        throw new Error('No track preview start time specified')
+      }
+      if (!metadata.audio_upload_id) {
+        throw new Error('Missing required audio_upload_id')
+      }
+
+      // Transcode the new preview and receive back updated metadata
+      updatedMetadata = await this.creatorNode.transcodeTrackPreview(metadata)
+    }
+
     const { txReceipt } = await this.writeTrackToChain(
-      metadata,
+      updatedMetadata,
       Action.UPDATE,
       trackId
     )
@@ -511,49 +526,8 @@ export class Track extends Base {
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
-      trackId
-    }
-  }
-
-
-  /**
-   * Update or create a track preview for the given track and write preview metadata to chain.
-   * @param metadata json of the track metadata with all fields, missing fields will error
-   */
-  async updateTrackPreview(metadata: TrackMetadata) {
-    this.IS_OBJECT(metadata)
-
-    const ownerId = this.userStateManager.getCurrentUserId()
-
-    if (!ownerId) {
-      throw new Error('No users loaded for this wallet')
-    }
-    metadata.owner_id = ownerId
-    this._validateTrackMetadata(metadata)
-    if (!metadata.preview_start_seconds) {
-      throw new Error('No track preview start time specified')
-    }
-    if (!metadata.audio_upload_id) {
-      throw new Error('Missing required audio_upload_id')
-    }
-
-    // Transcode the new preview and receive back updated metadata
-    const updatedMetadata = await this.creatorNode.transcodeTrackPreview(
-      metadata
-    )
-
-    const trackId = metadata.track_id
-    const { metadataCid, txReceipt } = await this.writeTrackToChain(
-      updatedMetadata,
-      Action.UPDATE,
-      trackId
-    )
-
-    return {
       trackId,
-      metadataCid,
-      updatedMetadata,
-      txReceipt
+      updatedMetadata
     }
   }
 

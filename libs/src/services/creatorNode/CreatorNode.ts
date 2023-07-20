@@ -178,15 +178,12 @@ export class CreatorNode {
     const data = {
       previewStartSeconds: metadata.preview_start_seconds.toString()
     }
-    const promises = [
-      this._retry3(
-        async () => await this.editFileV2(metadata.audio_upload_id, data),
-        (e) => {
-          console.log('Retrying editFileV2', e)
-        }
-      )
-    ]
-    const [resp] = await Promise.all(promises)
+    const resp = await this._retry3(
+      async () => await this.editFileV2(metadata.audio_upload_id, data),
+      (e) => {
+        console.log('Retrying editFileV2', e)
+      }
+    )
 
     // Update metadata with new track preview cid
     const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`

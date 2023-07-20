@@ -10,6 +10,10 @@ export class Auth implements AuthService {
     throw new Error('Auth not initialized')
   }
 
+  hashAndSign: (data: string) => Promise<string> = () => {
+    throw new Error('Auth not initialized')
+  }
+
   signTransaction: (data: TransactionData) => Promise<string> = () => {
     throw new Error('Auth not initialized')
   }
