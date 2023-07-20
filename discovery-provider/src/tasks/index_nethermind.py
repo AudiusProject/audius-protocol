@@ -24,21 +24,12 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
-from src.queries.confirm_indexing_transaction_error import (
-    confirm_indexing_transaction_error,
-)
-from src.queries.get_skipped_transactions import (
-    clear_indexing_error,
-    get_indexing_error,
-    set_indexing_error,
-)
-from src.queries.skipped_transactions import add_network_level_skipped_transaction
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
-from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched
+from src.utils.indexing_errors import NotAllTransactionsFetched
 from src.utils.redis_constants import (
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
@@ -119,34 +110,6 @@ def get_entity_manager_events_tx(index_nethermind, event_type, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
-def get_tx_hash_to_skip(session, redis):
-    """Fetch if there is a tx_hash to be skipped because of continuous errors"""
-    indexing_error = get_indexing_error(redis)
-    if (
-        isinstance(indexing_error, dict)
-        and "has_consensus" in indexing_error
-        and indexing_error["has_consensus"]
-    ):
-        return indexing_error["txhash"]
-    else:
-        return None
-
-
-def save_skipped_tx(session, redis):
-    indexing_error = get_indexing_error(redis)
-    try:
-        add_network_level_skipped_transaction(
-            session,
-            indexing_error["blocknumber"],
-            indexing_error["blockhash"],
-            indexing_error["txhash"],
-        )
-    except Exception:
-        logger.warning(
-            f"index_nethermind.py | save_skipped_tx: Failed to add_network_level_skipped_transaction for {indexing_error}"
-        )
-
-
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     entity_manager_address = os.getenv(
         "audius_contracts_nethermind_entity_manager_address"
@@ -216,18 +179,6 @@ def process_state_changes(
             f"{bulk_processor.__name__} completed"
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
-
-
-def create_and_raise_indexing_error(err, redis):
-    logger.error(
-        f"Error in the indexing task at"
-        f" block={err.blocknumber} and hash={err.txhash}"
-    )
-    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
-    confirm_indexing_transaction_error(
-        redis, err.blocknumber, err.blockhash, err.txhash, err.message
-    )
-    raise err
 
 
 @log_duration(logger)
@@ -333,101 +284,54 @@ def index_next_block(
 
     challenge_bus: ChallengeEventBus = index_nethermind.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
-        skip_tx_hash = get_tx_hash_to_skip(session, redis)
-        skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
-        if skip_whole_block:
-            logger.warn(
-                f"Skipping all txs in block {next_block.hash} {next_block_number}"
-            )
-            save_skipped_tx(session, redis)
-            add_indexed_block_to_db(session, next_block, latest_database_block)
-        else:
-            txs_grouped_by_type = {
-                ENTITY_MANAGER: [],
-            }
-            try:
-                """
-                Fetch transaction receipts
-                """
-                tx_receipt_dict = fetch_tx_receipts(next_block)
-
-                """
-                Parse transaction receipts
-                """
-                sorted_txs = sort_block_transactions(
-                    next_block,
-                    tx_receipt_dict.values(),
-                    indexing_transaction_index_sort_order_start_block,
-                )
-                logger.set_context("tx_count", len(sorted_txs))
-
-                # Parse tx events in each block
-                for tx in sorted_txs:
-                    tx_hash = tx.transactionHash.hex()
-                    tx_target_contract_address = tx.to if tx.to else zero_address
-                    tx_receipt = tx_receipt_dict[tx_hash]
-                    should_skip_tx = (tx_target_contract_address == zero_address) or (
-                        skip_tx_hash is not None and skip_tx_hash == tx_hash
-                    )
-
-                    if should_skip_tx:
-                        logger.debug(
-                            f"Skipping tx {tx_hash} targeting {tx_target_contract_address}"
-                        )
-                        save_skipped_tx(session, redis)
-                        continue
-                    else:
-                        contract_type = get_contract_type_for_tx(
-                            txs_grouped_by_type, tx, tx_receipt
-                        )
-                        if contract_type:
-                            txs_grouped_by_type[contract_type].append(tx_receipt)
-
-                """
-                Add block to db
-                """
-                add_indexed_block_to_db(session, next_block, latest_database_block)
-
-                """
-                Add state changes in block to db (users, tracks, etc.)
-                """
-                # bulk process operations once all tx's for block have been parsed
-                # and get changed entity IDs for cache clearing
-                # after session commit
-                process_state_changes(
-                    session,
-                    txs_grouped_by_type,
-                    next_block,
-                )
-
-            except NotAllTransactionsFetched as e:
-                raise e
-
-            except Exception as e:
-                indexing_error = IndexingError(
-                    "prefetch-cids",
-                    next_block.number,
-                    next_block.hash,
-                    None,
-                    str(e),
-                )
-                create_and_raise_indexing_error(indexing_error, redis)
-
+        txs_grouped_by_type = {
+            ENTITY_MANAGER: [],
+        }
         try:
-            session.commit()
+            """
+            Fetch transaction receipts
+            """
+            tx_receipt_dict = fetch_tx_receipts(next_block)
 
-        except Exception as e:
-            # Use 'commit' as the tx hash here.
-            # We're at a point where the whole block can't be added to the database, so
-            # we should skip it in favor of making progress
-            indexing_error = IndexingError(
-                "session.commit",
-                next_block.number,
-                web3.toHex(next_block.hash),
-                "commit",
-                str(e),
+            """
+            Parse transaction receipts
+            """
+            sorted_txs = sort_block_transactions(
+                next_block,
+                tx_receipt_dict.values(),
+                indexing_transaction_index_sort_order_start_block,
             )
-            create_and_raise_indexing_error(indexing_error, redis)
+            logger.set_context("tx_count", len(sorted_txs))
+
+            # Parse tx events in each block
+            for tx in sorted_txs:
+                tx_hash = tx.transactionHash.hex()
+                tx_receipt = tx_receipt_dict[tx_hash]
+                contract_type = get_contract_type_for_tx(
+                    txs_grouped_by_type, tx, tx_receipt
+                )
+                if contract_type:
+                    txs_grouped_by_type[contract_type].append(tx_receipt)
+
+            """
+            Add block to db
+            """
+            add_indexed_block_to_db(session, next_block, latest_database_block)
+
+            """
+            Add state changes in block to db (users, tracks, etc.)
+            """
+            # bulk process operations once all tx's for block have been parsed
+            # and get changed entity IDs for cache clearing
+            # after session commit
+            process_state_changes(
+                session,
+                txs_grouped_by_type,
+                next_block,
+            )
+
+        except NotAllTransactionsFetched as e:
+            raise e
         try:
             if next_block.number % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
@@ -457,8 +361,6 @@ def index_next_block(
                 f"Error in calling update_delist_statuses {e}",
                 exc_info=True,
             )
-        if skip_tx_hash:
-            clear_indexing_error(redis)
 
     add_indexed_block_to_redis(next_block, redis)
 
