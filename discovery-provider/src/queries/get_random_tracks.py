@@ -11,7 +11,6 @@ from src.utils.db_session import get_db_read_replica
 
 
 def get_random_tracks(args):
-
     limit = args.get("limit", 25)
 
     current_user_id = args.get("user_id")

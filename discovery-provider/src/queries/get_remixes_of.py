@@ -37,7 +37,6 @@ def get_remixes_of(args):
     with db.scoped_session() as session:
 
         def get_unpopulated_remixes():
-
             # Fetch the parent track to get the track's owner id
             parent_track_res = get_unpopulated_tracks(
                 session=session,

@@ -1,5 +1,14 @@
 import assert from 'assert'
-import type Web3 from 'web3'
+import Web3 from 'web3'
+
+const web3 = new Web3()
+
+// From https://github.com/AudiusProject/sig/blob/main/node/index.js
+export async function hashAndSign(input: string, privateKey: string) {
+  const toSignHash = web3.utils.keccak256(input)
+  const signedMessage = await web3.eth.accounts.sign(toSignHash, privateKey)
+  return signedMessage.signature
+}
 
 interface WalletResponse {
   signature: string
@@ -32,8 +41,8 @@ export function recoverWallet(web3: Web3, response: WalletResponse) {
   return recoveredDelegateWallet
 }
 
-type ValueOrArray<T> = undefined | string | T | Array<ValueOrArray<T>>
-type SortObject = ValueOrArray<Record<string, string>>
+type ValueOrArray<T> = undefined | string | number | T | Array<ValueOrArray<T>>
+type SortObject = ValueOrArray<Record<string, string | number>>
 
 /**
  * Recursively sorts object keys alphabetically

@@ -1,7 +1,7 @@
 # pylint: disable=C0302
 import concurrent.futures
 import os
-from datetime import datetime, timezone
+from datetime import datetime
 from operator import itemgetter, or_
 
 from hexbytes import HexBytes
@@ -36,7 +36,6 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
-from src.tasks.update_delist_statuses import DATETIME_FORMAT_STRING
 from src.utils import helpers, web3_provider
 from src.utils.constants import CONTRACT_TYPES
 from src.utils.indexing_errors import IndexingError, NotAllTransactionsFetched

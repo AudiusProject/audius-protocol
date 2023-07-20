@@ -6,7 +6,6 @@ from src.tasks.celery_app import celery
 
 
 class GetTasksItem(TypedDict):
-
     # Id of the Celery Task
     task_id: str
 

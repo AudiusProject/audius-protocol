@@ -1,5 +1,4 @@
 import logging
-import os
 
 import requests
 from src.tasks.celery_app import celery

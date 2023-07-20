@@ -4,13 +4,13 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     PrimaryKeyConstraint,
     String,
     Text,
     text,
-    Float,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates

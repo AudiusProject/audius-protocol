@@ -130,7 +130,6 @@ def test_handle_event(app):
     populate_mock_db_blocks(db, 99, 110)
 
     with db.scoped_session() as session:
-
         my_challenge = ChallengeManager("test_challenge_1", TestUpdater())
         # First try an event with a insufficient block_number
         # to ensure that nothing happens
@@ -252,7 +251,6 @@ REDIS_URL = shared_config["redis"]["url"]
 
 
 def test_aggregates(app):
-
     setup_challenges(app)
 
     with app.app_context():
@@ -426,7 +424,6 @@ def test_catches_exceptions_in_single_processor(app):
 
     bus = ChallengeEventBus(redis_conn)
     with db.scoped_session() as session:
-
         session.add_all(
             [
                 Challenge(
