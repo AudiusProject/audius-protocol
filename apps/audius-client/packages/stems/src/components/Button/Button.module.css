@@ -187,13 +187,13 @@
 /* Secondary Button */
 
 .secondary {
-  border: 1px solid var(--neutral-light-5);
+  border: 1px solid var(--primary-dark-1);
   border-radius: 4px;
   background: var(--white);
 }
 
 .secondary .textLabel {
-  color: var(--text-default);
+  color: var(--primary);
   font-size: var(--font-l);
   font-weight: var(--font-bold);
 }
@@ -210,35 +210,28 @@
 
 .secondary .icon path,
 .secondary .icon use {
-  fill: var(--text-default);
+  fill: var(--primary);
 }
 
 .secondary.includeHoverAnimations:hover:enabled {
   transform: var(--grow);
-  border-color: var(--primary);
+  border: 1px solid var(--primary-dark-2);
+  background: var(--primary);
 }
 
 .secondary.includeHoverAnimations:hover:enabled .textLabel {
-  color: var(--primary);
+  color: var(--primary-secondary-text);
 }
 
 .secondary.includeHoverAnimations:hover:enabled .icon path,
 .secondary.includeHoverAnimations:hover:enabled .icon use {
-  fill: var(--primary);
+  fill: var(--primary-secondary-text);
 }
 
 .secondary.includeHoverAnimations:active:enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
-  border-color: var(--primary-dark-2);
-}
-
-.secondary.includeHoverAnimations:active:enabled .textLabel {
-  color: var(--primary-dark-2)
-}
-
-.secondary.includeHoverAnimations:active:enabled .icon path,
-.secondary.includeHoverAnimations:active:enabled .icon use {
-  fill: var(--primary-dark-2);
+  border: 1px solid var(--primary-dark-2);
+  background: var(--primary-dark-2);
 }
 
 /* Tertiary Button */
