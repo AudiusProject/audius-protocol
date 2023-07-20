@@ -363,7 +363,7 @@ export const audiusBackend = ({
     }
   }
 
-  async function preloadImage(url: string) {
+  async function preloadImage(url: string): Promise<boolean> {
     if (!preloadImageTimer) {
       const batchSize =
         getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_PERFORMANCE_BATCH_SIZE) ??
@@ -387,35 +387,50 @@ export const audiusBackend = ({
         }
       )
     }
+    const start = preloadImageTimer.start()
+    const timeoutMs =
+      getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
+    let timeoutId: Nullable<NodeJS.Timeout> = null
 
-    return new Promise<string | false>((resolve) => {
-      const start = preloadImageTimer.start()
+    try {
+      const response = await Promise.race([
+        fetch(url),
+        new Promise<Response>((_resolve, reject) => {
+          timeoutId = setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+        })
+      ])
 
-      const timeoutMs =
-        getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-      const timeout = setTimeout(() => {
-        preloadImageTimer.end(start)
-        resolve(false)
-      }, timeoutMs)
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
 
-      // Avoid garbage collection by keeping a few images in an in-mem array
+      if (!response.ok) {
+        return false
+      }
+
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
       const image = new Image()
       avoidGC.push(image)
       if (avoidGC.length > IMAGE_CACHE_MAX_SIZE) avoidGC.shift()
 
-      image.onload = () => {
-        preloadImageTimer.end(start)
-        clearTimeout(timeout)
-        resolve(url)
-      }
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => {
+          preloadImageTimer.end(start)
+          resolve()
+        }
+        image.onerror = () => {
+          preloadImageTimer.end(start)
+          reject(new Error('Image loading error'))
+        }
+        image.src = objectUrl
+      })
 
-      image.onerror = () => {
-        preloadImageTimer.end(start)
-        clearTimeout(timeout)
-        resolve(false)
-      }
-      image.src = url
-    })
+      return true
+    } catch (error) {
+      preloadImageTimer.end(start)
+      return false
+    }
   }
 
   async function fetchCID(cid: CID, cache = true, asUrl = true) {
@@ -452,26 +467,25 @@ export const audiusBackend = ({
     }
 
     const storageNodeSelector = await getStorageNodeSelector()
-    const storageNode = storageNodeSelector.getNodes(cid)[0]
-    const imageUrl = `${storageNode}/content/${cidFileName}`
+    const storageNodes = storageNodeSelector.getNodes(cid)
+    for (const storageNode of storageNodes) {
+      const imageUrl = `${storageNode}/content/${cidFileName}`
 
-    if (imagePreloader) {
-      try {
-        const preloaded = await imagePreloader(imageUrl)
-        if (preloaded) {
+      if (imagePreloader) {
+        try {
+          const preloaded = await imagePreloader(imageUrl)
+          if (preloaded) {
+            return imageUrl
+          }
+        } catch (e) {
+          // swallow error and continue
+        }
+      } else {
+        const isSuccessful = await preloadImage(imageUrl)
+        if (isSuccessful) {
+          CIDCache.add(cidFileName, imageUrl)
           return imageUrl
         }
-      } catch (e) {
-        // swallow error and continue
-      }
-    } else {
-      // Attempt to fetch/load the image using the first creator node gateway
-      const preloadedImageUrl = await preloadImage(imageUrl)
-
-      // If the image is loaded, add to cache and return
-      if (preloadedImageUrl) {
-        CIDCache.add(cidFileName, preloadedImageUrl)
-        return preloadedImageUrl
       }
     }
     return ''
