@@ -27,7 +27,6 @@ def get_top_followee_windowed(type, window, args):
     current_user_id = args.get("user_id")
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         followee_user_ids = session.query(Follow.followee_user_id).filter(
             Follow.follower_user_id == current_user_id,
             Follow.is_current == True,

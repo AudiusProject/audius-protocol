@@ -656,7 +656,7 @@ def populate_mock_db(db, entities, block_offset=None):
         for i, usdc_purchase in enumerate(usdc_purchases):
             ns = USDCPurchase(
                 slot=usdc_purchase.get("slot", i),
-                signature=usdc_purchase.get("signature", 'fake_signature'),
+                signature=usdc_purchase.get("signature", "fake_signature"),
                 buyer_user_id=usdc_purchase.get("buyer_user_id", 1),
                 seller_user_id=usdc_purchase.get("seller_user_id", 2),
                 amount=usdc_purchase.get("amount", 100),

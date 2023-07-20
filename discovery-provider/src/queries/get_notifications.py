@@ -440,7 +440,7 @@ NotificationData = Union[
     TierChangeNotification,
     TrendingNotification,
     UsdcPurchaseBuyerNotification,
-    UsdcPurchaseSellerNotification
+    UsdcPurchaseSellerNotification,
 ]
 
 

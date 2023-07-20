@@ -376,7 +376,7 @@ stream_parser.add_argument(
     description="""Optional - true if streaming track preview""",
     type=inputs.boolean,
     required=False,
-    default=False
+    default=False,
 )
 stream_parser.add_argument(
     "user_signature",

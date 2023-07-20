@@ -14,7 +14,6 @@ REDIS_URL = shared_config["redis"]["url"]
 
 
 def test_track_upload_challenge(app):
-
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     # create user

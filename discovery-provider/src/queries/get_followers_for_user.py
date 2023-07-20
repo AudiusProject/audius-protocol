@@ -32,7 +32,6 @@ def get_followers_for_user(args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         rows = session.execute(
             sql,
             {"followee_user_id": followee_user_id, "limit": limit, "offset": offset},

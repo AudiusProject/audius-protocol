@@ -1,12 +1,4 @@
-import concurrent.futures
 import logging
-
-from src.utils.helpers import is_fqdn
-from src.utils.redis_cache import (
-    get_cn_sp_id_key,
-    get_json_cached_key,
-    set_json_cached_key,
-)
 
 logger = logging.getLogger(__name__)
 

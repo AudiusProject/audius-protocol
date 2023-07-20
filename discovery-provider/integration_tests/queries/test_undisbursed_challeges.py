@@ -143,7 +143,6 @@ def test_undisbursed_challenges(app):
         db = get_db()
 
     with db.scoped_session() as session:
-
         # Test that all undisbursed challenges are returned in order
         undisbursed = get_undisbursed_challenges(
             session,

@@ -93,11 +93,11 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
     result.update(no_balance_dict)  # type: ignore
 
     # Get old balances that need refresh
-    needs_refresh = [
-        user_balance.user_id
-        for user_balance in query
-        if does_user_balance_need_refresh(user_balance)
-    ]
+    # needs_refresh = [
+    #     user_balance.user_id
+    #     for user_balance in query
+    #     if does_user_balance_need_refresh(user_balance)
+    # ]
 
     # Enqueue new balances to Redis refresh queue
     # 1. All users who need a new balance

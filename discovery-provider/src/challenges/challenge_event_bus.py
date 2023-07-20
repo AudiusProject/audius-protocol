@@ -168,7 +168,7 @@ class ChallengeEventBus:
             return (-1, True)
 
         did_error = False
-        for (event_type, event_dicts) in event_user_dict.items():
+        for event_type, event_dicts in event_user_dict.items():
             listeners = self._listeners[event_type]
             for listener in listeners:
                 try:

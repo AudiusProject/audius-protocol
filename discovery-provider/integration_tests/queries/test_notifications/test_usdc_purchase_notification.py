@@ -27,14 +27,14 @@ def test_get_repost_notifications(app):
 
         test_actions = {
             "usdc_purchases": [
-              {
-                "slot": 4,
-                "buyer_user_id": 2,
-                "seller_user_id": 1,
-                "amount": 1000000,
-                "content_type": PurchaseType.track,
-                "content_id": 1
-              }
+                {
+                    "slot": 4,
+                    "buyer_user_id": 2,
+                    "seller_user_id": 1,
+                    "amount": 1000000,
+                    "content_type": PurchaseType.track,
+                    "content_id": 1,
+                }
             ]
         }
         populate_mock_db(db_mock, test_actions)
@@ -47,7 +47,10 @@ def test_get_repost_notifications(app):
             }
             u1_seller_notifications = get_notifications(session, args)
             assert len(u1_seller_notifications) == 1
-            assert u1_seller_notifications[0]["group_id"] == "usdc_purchase_seller:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            assert (
+                u1_seller_notifications[0]["group_id"]
+                == "usdc_purchase_seller:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            )
             assert u1_seller_notifications[0]["is_seen"] == False
             assert len(u1_seller_notifications[0]["actions"]) == 1
             assert u1_seller_notifications[0]["actions"][0]["data"] == {
@@ -55,7 +58,7 @@ def test_get_repost_notifications(app):
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
                 "amount": 1000000,
-                "content_id": 1
+                "content_id": 1,
             }
 
             args = {
@@ -65,7 +68,10 @@ def test_get_repost_notifications(app):
             }
             u2_buyer_notifications = get_notifications(session, args)
             assert len(u2_buyer_notifications) == 1
-            assert u2_buyer_notifications[0]["group_id"] == "usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            assert (
+                u2_buyer_notifications[0]["group_id"]
+                == "usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            )
             assert u2_buyer_notifications[0]["is_seen"] == False
             assert len(u2_buyer_notifications[0]["actions"]) == 1
             assert u2_buyer_notifications[0]["actions"][0]["data"] == {
@@ -73,7 +79,7 @@ def test_get_repost_notifications(app):
                 "buyer_user_id": 2,
                 "seller_user_id": 1,
                 "amount": 1000000,
-                "content_id": 1
+                "content_id": 1,
             }
 
 
@@ -89,14 +95,14 @@ def test_extended_usdc_purchase_notification(app):
 
         test_actions = {
             "usdc_purchases": [
-              {
-                "slot": 4,
-                "buyer_user_id": 2,
-                "seller_user_id": 1,
-                "amount": 1000000,
-                "content_type": PurchaseType.track,
-                "content_id": 1
-              }
+                {
+                    "slot": 4,
+                    "buyer_user_id": 2,
+                    "seller_user_id": 1,
+                    "amount": 1000000,
+                    "content_type": PurchaseType.track,
+                    "content_id": 1,
+                }
             ]
         }
         populate_mock_db(db_mock, test_actions)
@@ -110,7 +116,10 @@ def test_extended_usdc_purchase_notification(app):
             u1_seller_notifications = get_notifications(session, args)
             extended_buyer_notif = extend_notification(u1_seller_notifications[0])
             assert extended_buyer_notif["type"] == "usdc_purchase_seller"
-            assert extended_buyer_notif["group_id"] == "usdc_purchase_seller:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            assert (
+                extended_buyer_notif["group_id"]
+                == "usdc_purchase_seller:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            )
             assert extended_buyer_notif["actions"][0]["specifier"] == "ML51L"
             assert extended_buyer_notif["actions"][0]["type"] == "usdc_purchase_seller"
             assert extended_buyer_notif["actions"][0]["data"] == {
@@ -118,7 +127,7 @@ def test_extended_usdc_purchase_notification(app):
                 "buyer_user_id": "ML51L",
                 "seller_user_id": "7eP5n",
                 "amount": "1000000",
-                "content_id": "7eP5n"
+                "content_id": "7eP5n",
             }
 
             args = {
@@ -129,7 +138,10 @@ def test_extended_usdc_purchase_notification(app):
             u2_buyer_notifications = get_notifications(session, args)
             extended_buyer_notif = extend_notification(u2_buyer_notifications[0])
             assert extended_buyer_notif["type"] == "usdc_purchase_buyer"
-            assert extended_buyer_notif["group_id"] == "usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            assert (
+                extended_buyer_notif["group_id"]
+                == "usdc_purchase_buyer:seller_user_id:1:buyer_user_id:2:content_id:1:content_type:track"
+            )
             assert extended_buyer_notif["actions"][0]["specifier"] == "ML51L"
             assert extended_buyer_notif["actions"][0]["type"] == "usdc_purchase_buyer"
             assert extended_buyer_notif["actions"][0]["data"] == {
@@ -137,5 +149,5 @@ def test_extended_usdc_purchase_notification(app):
                 "buyer_user_id": "ML51L",
                 "seller_user_id": "7eP5n",
                 "amount": "1000000",
-                "content_id": "7eP5n"
+                "content_id": "7eP5n",
             }

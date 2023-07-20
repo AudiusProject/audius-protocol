@@ -32,7 +32,6 @@ def test_trending_challenge_should_update(app):
         db = get_db()
 
     with db.scoped_session() as session:
-
         # ========== Test timestamp w/out trending result in DB ==========
 
         # If the timestamp is outside of threshold and nothing in db

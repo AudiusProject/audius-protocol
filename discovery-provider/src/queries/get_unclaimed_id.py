@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_unclaimed_id(type):
-
     if type not in ["track", "playlist", "user"]:
         raise exceptions.ArgumentError(
             "Invalid type provided, must be one of 'track', 'playlist', 'user'"
