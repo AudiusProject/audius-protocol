@@ -40,9 +40,9 @@ def error_response(error, error_code=500):
 
 # Create a response dict with metadata, data, signature, and timestamp
 def success_response(
-    response_entity=None, status=200, to_json=True, sign_response=True
+    response_entity=None, status=200, to_json=True, sign_response=True, extras={}
 ):
-    starting_response_dictionary = {"data": response_entity}
+    starting_response_dictionary = {"data": response_entity, **extras}
     response_dictionary = response_dict_with_metadata(
         starting_response_dictionary, sign_response
     )

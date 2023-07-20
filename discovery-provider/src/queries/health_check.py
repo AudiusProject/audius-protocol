@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import requests
 from flask import Blueprint, request
 from src.api_helpers import success_response
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
@@ -56,9 +57,16 @@ def health_check():
             "reactions_max_last_reaction_drift", type=int
         ),
     }
+    try:
+        comms_health = {"comms": requests.get("http://comms:8925").json()}
+    except Exception as e:
+        logger.error(f"Error fetching comms health {e}")
+        comms_health = {}
 
     (health_results, error) = get_health(args)
-    return success_response(health_results, 500 if error else 200, sign_response=False)
+    return success_response(
+        health_results, 500 if error else 200, sign_response=False, extras=comms_health
+    )
 
 
 @bp.route("/trusted_notifier_discrepancies_check", methods=["GET"])
