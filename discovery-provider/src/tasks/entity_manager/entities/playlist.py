@@ -106,7 +106,7 @@ def update_playlist_routes_table(
         migration_playlist_route.collision_id = new_collision_id
         migration_playlist_route.owner_id = playlist_record.playlist_owner_id
         migration_playlist_route.playlist_id = playlist_record.playlist_id
-        migration_playlist_route.is_current = True
+        migration_playlist_route.is_current = False
         migration_playlist_route.blockhash = playlist_record.blockhash
         migration_playlist_route.blocknumber = playlist_record.blocknumber
         migration_playlist_route.txhash = playlist_record.txhash
