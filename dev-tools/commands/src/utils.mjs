@@ -27,7 +27,10 @@ export const initializeAudiusLibs = async (handle) => {
       feePayerSecretKeys: [Uint8Array.from(JSON.parse(process.env.SOLANA_FEEPAYER_SECRET_KEY))],
       useRelay: true,
     }),
-    discoveryProviderConfig: {},
+    discoveryProviderConfig: {
+      discoveryNodeSelector: new DiscoveryNodeSelector({
+        initialSelectedNode: 'http://audius-protocol-discovery-provider-1'})
+    },
     creatorNodeConfig: AudiusLibs.configCreatorNode(
       "http://audius-protocol-creator-node-1",
       // process.env.FALLBACK_CREATOR_NODE_URL,
