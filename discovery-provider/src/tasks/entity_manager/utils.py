@@ -185,10 +185,20 @@ class ManageEntityParameters:
         self.logger = logger  # passed in with EM context
     
     def add_record(self, key, record):
+        # add to new records to insert
+        # TODO replace with updates instead of new rows
         self.new_records[self.entity_type][key].append(record)  # type: ignore
-        prev_record = self.existing_records[type].get(key)
-        self.existing_records[type][key] = record  # type: ignore
-        em_log = EMLog(txhash=self.txhash, entity_type=self.entity_type, entity_id=self.entity_id, blocknumber=self.block_number, prev_record=prev_record)
+
+        # overwrite the current version of this record
+        prev_record = self.existing_records[self.entity_type].get(key)
+        self.existing_records[self.entity_type][key] = record  # type: ignore
+
+        # index into em_logs
+        prev_record_dict = {}
+        if prev_record:
+            for column in prev_record.__table__.columns:
+                prev_record_dict[column.name] = str(getattr(prev_record, column.name))
+        em_log = EMLog(txhash=self.txhash, entity_type=self.entity_type, entity_id=self.entity_id, blocknumber=self.block_number, prev_record=prev_record_dict)
         self.em_logs.append(em_log)
 
     def add_notification_seen_record(

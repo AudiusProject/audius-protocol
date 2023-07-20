@@ -329,14 +329,16 @@ def create_track(params: ManageEntityParameters):
         params.challenge_bus, params.block_number, track_record
     )
 
-    params.add_record(EntityType.TRACK, track_id, track_record)
-
+    params.add_record(track_id, track_record)
+    print(f"asdf create_track params.existing_records[EntityType.TRACK] {params.existing_records[EntityType.TRACK]}")
 
 def update_track(params: ManageEntityParameters):
     handle = get_handle(params)
     validate_track_tx(params)
 
     track_id = params.entity_id
+    print(f"asdf params {params}")
+    print(f"asdf params.existing_records[EntityType.TRACK] {params.existing_records[EntityType.TRACK]}")
     existing_track = params.existing_records[EntityType.TRACK][track_id]
     if (
         track_id in params.new_records[EntityType.TRACK]
@@ -357,7 +359,7 @@ def update_track(params: ManageEntityParameters):
     update_track_record(params, updated_track, params.metadata, handle)
     update_remixes_table(params.session, updated_track, params.metadata)
 
-    params.add_record(EntityType.TRACK, track_id, updated_track)
+    params.add_record(track_id, updated_track)
 
 
 def delete_track(params: ManageEntityParameters):
@@ -381,4 +383,4 @@ def delete_track(params: ManageEntityParameters):
     deleted_track.remix_of = null()
     deleted_track.premium_conditions = null()
 
-    params.add_record(EntityType.TRACK, track_id, deleted_track)
+    params.add_record(track_id, deleted_track)

@@ -12,4 +12,4 @@ class EMLog(Base, RepresentableMixin):
     entity_id = Column(Integer, nullable=False)
     blocknumber = Column(Integer, nullable=False)
 
-    data = Column(postgresql.JSONB(), nullable=False)
+    prev_record = Column(postgresql.JSONB(), nullable=False)
