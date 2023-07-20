@@ -260,7 +260,7 @@ def create_developer_app(params: ManageEntityParameters):
     )
 
     validate_developer_app_record(developer_app_record)
-    params.add_developer_app_record(address, developer_app_record)
+    params.add_record(address, developer_app_record)
     return developer_app_record
 
 

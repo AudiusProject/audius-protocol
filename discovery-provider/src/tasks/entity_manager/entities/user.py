@@ -205,7 +205,7 @@ def create_user(params: ManageEntityParameters, cid_type: Dict[str, str], cid_me
         user_record.creator_node_endpoint = creator_node_endpoint_str
 
     user_record = validate_user_record(user_record)
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     return user_record
 
 
@@ -245,7 +245,7 @@ def update_user(params: ManageEntityParameters):
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
         params.block_number,
@@ -599,7 +599,7 @@ def verify_user(params: ManageEntityParameters):
 
     user_record = validate_user_record(user_record)
     user_record.is_verified = True
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.connect_verified,
         params.block_number,

@@ -546,6 +546,12 @@ def revert_block(session: Session, revert_block: Block):
         .all()
     )
 
+    revert_notification = (
+        session.query(Notification)
+        .filter(Notification.blocknumber == revert_block_number)
+        .all()
+    )
+
     revert_playlist_seen = (
         session.query(PlaylistSeen)
         .filter(PlaylistSeen.blocknumber == revert_block_number)
@@ -756,6 +762,10 @@ def revert_block(session: Session, revert_block: Block):
     for notification_seen_to_revert in revert_notification_seen:
         session.delete(notification_seen_to_revert)
         # NOTE: There is no need mark previous as is_current for notification seen
+
+    for notification in revert_notification:
+        session.delete(notification)
+        # should just be foreign key with cascading delete
 
     for playlist_seen_to_revert in revert_playlist_seen:
         previous_playlist_seen_entry = (

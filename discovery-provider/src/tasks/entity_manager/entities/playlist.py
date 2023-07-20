@@ -200,7 +200,7 @@ def create_playlist(params: ManageEntityParameters):
         params, create_playlist_record
     )
 
-    params.add_playlist_record(playlist_id, create_playlist_record)
+    params.add_record(EntityType.PLAYLIST, playlist_id, create_playlist)
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -244,7 +244,7 @@ def update_playlist(params: ManageEntityParameters):
         params, updated_playlist
     )
 
-    params.add_playlist_record(playlist_id, updated_playlist)
+    params.add_record(EntityType.PLAYLIST, playlist_id, updated_playlist)
 
     if updated_playlist.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(

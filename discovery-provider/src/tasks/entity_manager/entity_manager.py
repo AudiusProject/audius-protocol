@@ -87,6 +87,16 @@ def entity_manager_update(
     block_timestamp,
     block_hash: str,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
+    """
+    Process a block of EM transactions.
+
+    1. Fetch relevant entities for all transactions.
+    2. Process transactions based on type and action.
+    3. Validate transaction.
+    4. Create new database record based on a transaction.
+    5. Bulk insert new records.
+    """
+
     try:
         update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
@@ -126,6 +136,8 @@ def entity_manager_update(
         # cid -> metadata
         cid_metadata: Dict[str, Dict] = {}
 
+        em_logs = []
+
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -141,6 +153,7 @@ def entity_manager_update(
                         event,
                         new_records,  # actions below populate these records
                         existing_records,
+                        em_logs,
                         pending_track_routes,
                         pending_playlist_routes,
                         update_task.eth_manager,
@@ -272,30 +285,7 @@ def entity_manager_update(
                     # swallow exception to keep indexing
                     logger.info(f"failed to process transaction error {e}")
         # compile records_to_save
-        records_to_save = []
-        for record_type, record_dict in new_records.items():
-            for entity_id, records in record_dict.items():
-                if not records:
-                    continue
-                # invalidate all new records except the last
-                for record in records:
-                    if "is_current" in get_record_columns(record):
-                        record.is_current = False
-
-                    if "updated_at" in get_record_columns(record):
-                        record.updated_at = params.block_datetime
-                if "is_current" in get_record_columns(records[-1]):
-                    records[-1].is_current = True
-                records_to_save.extend(records)
-
-                # invalidate original record if it already existed in the DB
-                if (
-                    record_type in original_records
-                    and entity_id in original_records[record_type]
-                    and "is_current"
-                    in get_record_columns(original_records[record_type][entity_id])
-                ):
-                    original_records[record_type][entity_id].is_current = False
+        records_to_save = get_records_to_save(params, new_records, original_records)
 
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
@@ -332,6 +322,37 @@ def entity_manager_update(
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
+
+
+def get_records_to_save(params, new_records, original_records):
+    records_to_save = []
+    for record_type, record_dict in new_records.items():
+        for entity_id, records in record_dict.items():
+            if not records:
+                continue
+            # invalidate all new records except the last
+            for record in records:
+                if "is_current" in get_record_columns(record):
+                    record.is_current = False
+
+                if "updated_at" in get_record_columns(record):
+                    record.updated_at = params.block_datetime
+            if "is_current" in get_record_columns(records[-1]):
+                records[-1].is_current = True
+            records_to_save.extend(records)
+
+            # invalidate original record if it already existed in the DB
+            if (
+                record_type in original_records
+                and entity_id in original_records[record_type]
+                and "is_current"
+                in get_record_columns(original_records[record_type][entity_id])
+            ):
+                original_records[record_type][entity_id].is_current = False
+    
+    # add EM logs to save
+    records_to_save.extend(params.em_logs)
+    return records_to_save
 
 
 def copy_original_records(existing_records):
