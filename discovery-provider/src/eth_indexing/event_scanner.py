@@ -14,7 +14,8 @@ from web3._utils.events import get_event_data
 # Currently this method is not exposed over official web3 API,
 # but we need it to construct eth_get_logs parameters
 from web3._utils.filters import construct_event_filter_params
-from web3.contract import Contract, ContractEvent
+from web3.contract import Contract
+from web3.contract.base_contract import BaseContractEvent
 from web3.exceptions import BlockNotFound
 from web3.types import BlockIdentifier
 
@@ -67,7 +68,7 @@ class EventScanner:
         redis,
         web3: Web3,
         contract: Type[Contract],
-        event_type: Type[ContractEvent],
+        event_type: Type[BaseContractEvent],
         filters: dict,
     ):
         """

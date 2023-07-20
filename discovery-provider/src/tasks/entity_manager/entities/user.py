@@ -80,7 +80,7 @@ def validate_user_tx(params: ManageEntityParameters):
             )
 
     if params.action == Action.CREATE:
-        if user_id in params.existing_records[EntityType.USER]:
+        if user_id in params.existing_records["User"]:
             raise IndexingValidationError(
                 f"Invalid User Transaction, user {user_id} already exists"
             )
@@ -237,12 +237,11 @@ def update_user(
     validate_user_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
     if (
-        user_id in params.new_records[EntityType.USER]
-        and params.new_records[EntityType.USER][user_id]
+        user_id in params.new_records["User"] and params.new_records["User"][user_id]
     ):  # override with last updated user is in this block
-        existing_user = params.new_records[EntityType.USER][user_id][-1]
+        existing_user = params.new_records["User"][user_id][-1]
 
     user_record = copy_record(
         existing_user,
@@ -630,7 +629,7 @@ def verify_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
     user_record = copy_record(
         existing_user,
         params.block_number,

@@ -67,7 +67,7 @@ class ResultMeta(TypedDict):
 
 
 class TransactionInfoResult(TypedDict):
-    blockTime: int
+    block_time: int
     meta: ResultMeta
     slot: int
     transaction: ResultTransction

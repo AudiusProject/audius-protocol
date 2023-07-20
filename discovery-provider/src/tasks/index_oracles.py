@@ -16,7 +16,7 @@ REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 
 
 eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))  # type: ignore
-eth_registry_address = eth_web3.toChecksumAddress(
+eth_registry_address = eth_web3.to_checksum_address(
     shared_config["eth_contracts"]["registry"]
 )
 eth_registry_instance = eth_web3.eth.contract(

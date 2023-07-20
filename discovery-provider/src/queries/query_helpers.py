@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 import enum
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
@@ -937,7 +937,7 @@ def get_karma(
     session: Session,
     ids: Tuple[int],
     strategy: TrendingVersion,
-    time: str = None,
+    time: Optional[str] = None,
     is_playlist: bool = False,
     xf: bool = False,
 ):

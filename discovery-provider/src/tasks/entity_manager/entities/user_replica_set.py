@@ -145,11 +145,11 @@ def parse_sp_ids(sp_ids_str: str) -> List[int]:
 
 def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
     user_id = params.user_id
-    if user_id not in params.existing_records[EntityType.USER]:
+    if user_id not in params.existing_records["User"]:
         # user does not exist
         raise IndexingValidationError(f"User {user_id} does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
-    user = params.existing_records[EntityType.USER][user_id]
+    user = params.existing_records["User"][user_id]
     user_sp_ids = [user.primary_id]
     if user.secondary_ids:
         user_sp_ids = user_sp_ids + user.secondary_ids
@@ -200,12 +200,12 @@ def update_user_replica_set(params: ManageEntityParameters):
     is_valid_user_replica_set_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
 
     if (
-        user_id in params.new_records[EntityType.USER]
+        user_id in params.new_records["User"]
     ):  # override with last updated user is in this block
-        existing_user = params.new_records[EntityType.USER][user_id][-1]
+        existing_user = params.new_records["User"][user_id][-1]
     updated_user = copy_record(
         existing_user,
         params.block_number,

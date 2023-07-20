@@ -366,7 +366,7 @@ mock_purchase_meta_different_ordering = {
         "err": None,
         "fee": 5000,
         "innerInstructions": [],
-        "loadedAddresses": {"readonly": [], "writable": []},
+        "loadedAddresses": {"readonly": None, "writable": None},
         "logMessages": [
             "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo invoke [1]",
             "Program Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo consumed 588 of 400000 compute units",

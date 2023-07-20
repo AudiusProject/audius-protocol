@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Optional, TypedDict
+from typing import NotRequired, Optional, TypedDict
 
 from src.api_helpers import generate_signature
 from src.premium_content.premium_content_types import PremiumContentType
@@ -15,7 +15,7 @@ class PremiumContentSignatureArgs(TypedDict):
 
 
 class PremiumContentSignatureForUserArgs(TypedDict):
-    user_id: Optional[int]
+    user_id: NotRequired[int]
     user_wallet: str
     track_id: int
     track_cid: str

@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Set, TypedDict
 
 import base58
 from redis import Redis
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from src.exceptions import SolanaTransactionFetchError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
@@ -27,10 +27,7 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
-from src.solana.solana_transaction_types import (
-    ConfirmedSignatureForAddressResult,
-    ConfirmedTransaction,
-)
+from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
@@ -54,9 +51,9 @@ from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
 SPL_TOKEN_PROGRAM = shared_config["solana"]["waudio_mint"]
-SPL_TOKEN_PUBKEY = PublicKey(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
+SPL_TOKEN_PUBKEY = Pubkey.from_string(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
-USER_BANK_PUBKEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+USER_BANK_PUBKEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
 TRANSFER_CHECKED_INSTRUCTION = "Program log: Instruction: TransferChecked"
 
@@ -305,7 +302,7 @@ def parse_sol_tx_batch(
     # Important to note that the batch records are in time DESC order
     updated_root_accounts: Set[str] = set()
     updated_token_accounts: Set[str] = set()
-    spl_token_txs: List[ConfirmedTransaction] = []
+    spl_token_txs: List[SplTokenTransactionInfo] = []
     # Process each batch in parallel
     with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
@@ -529,7 +526,7 @@ def process_spl_token_tx(
 
             # Append batch of processed signatures
             if transaction_signature_batch:
-                transaction_signatures.append(transaction_signature_batch)
+                transaction_signatures.extend(transaction_signature_batch)
 
             # Ensure processing does not grow unbounded
             if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:

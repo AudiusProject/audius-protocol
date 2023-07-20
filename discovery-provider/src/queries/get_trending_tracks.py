@@ -222,7 +222,7 @@ def make_generate_unpopulated_trending(
     session: Session,
     genre: Optional[str],
     time_range: str,
-    strategy: str,
+    strategy: BaseTrendingStrategy,
     exclude_premium: bool,
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which

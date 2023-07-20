@@ -395,7 +395,7 @@ def extend_tier_change(action: NotificationAction):
 
 
 def extend_track_added_to_playlist(action: NotificationAction):
-    data: TrackAddedToPlaylistNotification = action["data"]
+    data: TrackAddedToPlaylistNotification = action["data"]  # type: ignore
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],

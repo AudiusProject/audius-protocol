@@ -10,16 +10,10 @@ fi
 
 set -ex
 
-cd $PROTOCOL_DIR
-flake8 discovery-provider/src/
-flake8 discovery-provider/integration_tests/
-isort ${ISORT_FLAG} discovery-provider/src/
-isort ${ISORT_FLAG} discovery-provider/integration_tests/
-black ${BLACK_FLAG} discovery-provider/src/
-black ${BLACK_FLAG} discovery-provider/integration_tests/
-mypy \
-  --ignore-missing-imports \
-  --follow-imports=silent \
-  --show-column-numbers \
-  --check-untyped-defs \
-  discovery-provider
+flake8 $PROTOCOL_DIR/discovery-provider/src/
+flake8 $PROTOCOL_DIR/discovery-provider/integration_tests/
+isort ${ISORT_FLAG} $PROTOCOL_DIR/discovery-provider/src/
+isort ${ISORT_FLAG} $PROTOCOL_DIR/discovery-provider/integration_tests/
+black ${BLACK_FLAG} $PROTOCOL_DIR/discovery-provider/src/
+black ${BLACK_FLAG} $PROTOCOL_DIR/discovery-provider/integration_tests/
+mypy $PROTOCOL_DIR/discovery-provider

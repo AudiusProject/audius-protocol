@@ -1,8 +1,10 @@
 # pylint: disable=C0302
 import concurrent.futures
+import copy
 import os
 from datetime import datetime
 from operator import itemgetter, or_
+from typing import cast
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
@@ -36,8 +38,8 @@ from src.utils.redis_constants import (
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
 from web3 import Web3
-from web3.datastructures import AttributeDict
 from web3.exceptions import BlockNotFound
+from web3.types import BlockData, HexStr
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -132,12 +134,12 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(
-    session: Session, next_block: AttributeDict, current_block: Block
+    session: Session, next_block: BlockData, current_block: Block
 ):
     block_model = Block(
-        blockhash=web3.toHex(next_block.hash),
-        parenthash=web3.toHex(next_block.parentHash),
-        number=next_block.number,
+        blockhash=web3.to_hex(next_block.get("hash")),
+        parenthash=web3.to_hex(next_block.get("parentHash")),
+        number=next_block.get("number"),
         is_current=True,
     )
 
@@ -220,7 +222,7 @@ def is_block_on_chain(web3: Web3, block: Block):
     Determines if the provided block is valid on chain by fetching its hash.
     """
     try:
-        block_from_chain = web3.eth.get_block(block.blockhash)
+        block_from_chain = web3.eth.get_block(cast(HexStr, block.blockhash))
         return block_from_chain
     except BlockNotFound:
         return False
@@ -232,9 +234,8 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
-        next_block = AttributeDict(
-            next_block, number=next_block.number + final_poa_block
-        )
+        next_block = copy.deepcopy(next_block)
+        next_block.update({"number": next_block.get("number") + final_poa_block})
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -256,7 +257,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
         if (
             next_block
-            and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            and web3.to_hex(next_block.parentHash) != latest_database_block.blockhash
             and latest_database_block.number != 0
         ):
             block_on_chain = False
@@ -266,15 +267,14 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
 @log_duration(logger)
 def index_next_block(
-    session: Session, latest_database_block: Block, next_block: AttributeDict
+    session: Session, latest_database_block: Block, next_block: BlockData
 ):
     """
     Given the latest block in the database, index forward one block.
     """
     redis = index_nethermind.redis
     shared_config = index_nethermind.shared_config
-
-    next_block_number = next_block.number
+    next_block_number = next_block.get("number")
     logger.set_context("block", next_block_number)
 
     indexing_transaction_index_sort_order_start_block = (
@@ -333,10 +333,10 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
-            if next_block.number % 100 == 0:
+            if cast(int, next_block.get("number")) % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
-                    session, next_block.timestamp
+                    session, cast(int, next_block.get("timestamp"))
                 )
                 if should_update:
                     celery.send_task(
@@ -350,10 +350,10 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
-            if next_block.number % 100 == 0:
+            if cast(int, next_block.get("number")) % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
-                    kwargs={"current_block_timestamp": next_block.timestamp},
+                    kwargs={"current_block_timestamp": next_block.get("timestamp")},
                 )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
@@ -369,7 +369,7 @@ def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
     try:
         adjusted_blocknumber = blocknumber - (final_poa_block or 0)
         block = web3.eth.get_block(adjusted_blocknumber)
-        block = AttributeDict(block)
+        block = copy.deepcopy(block)
         return block
     except BlockNotFound:
         logger.info(f"Block not found {adjusted_blocknumber}")
@@ -409,6 +409,10 @@ def revert_block(session: Session, revert_block: Block):
     revert_hash = revert_block.blockhash
     revert_block_number = revert_block.number
     parent_hash = revert_block.parenthash
+
+    if not parent_hash:
+        return
+
     logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0

@@ -98,6 +98,8 @@ class RecordDict(TypedDict):
     NotificationSeen: Dict[Tuple, List[NotificationSeen]]
     Notification: Dict[Tuple, List[Notification]]
     PlaylistSeen: Dict[Tuple, List[PlaylistSeen]]
+    DeveloperApp: Dict[str, List[DeveloperApp]]
+    Grant: Dict[Tuple, List[Grant]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -106,6 +108,7 @@ class ExistingRecordDict(TypedDict):
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
+    Repost: Dict[Tuple, Repost]
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
     DeveloperApp: Dict[str, DeveloperApp]
@@ -118,6 +121,7 @@ class EntitiesToFetchDict(TypedDict):
     User: Set[int]
     Follow: Set[Tuple]
     Save: Set[Tuple]
+    Repost: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
@@ -349,7 +353,7 @@ def get_record_key(user_id: int, entity_type: str, entity_id: int):
 
 
 def copy_record(
-    old_record: Union[User, Track, Playlist],
+    old_record: Union[User, Track, Playlist, DeveloperApp],
     block_number: int,
     event_blockhash: str,
     txhash: str,
@@ -375,9 +379,9 @@ def copy_record(
 
 def validate_signer(params: ManageEntityParameters):
     # Ensure the signer is either the user or authorized to perform action for the user
-    if params.user_id not in params.existing_records[EntityType.USER]:
+    if params.user_id not in params.existing_records["User"]:
         raise IndexingValidationError(f"User {params.user_id} does not exist")
-    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
+    wallet = params.existing_records["User"][params.user_id].wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer
     if signer_matches_user:
@@ -385,10 +389,10 @@ def validate_signer(params: ManageEntityParameters):
     else:
         params.logger.set_context("isApp", "unknown")
         grant_key = (signer, params.user_id)
-        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        is_signer_authorized = grant_key in params.existing_records["Grant"]
         if is_signer_authorized:
-            grant = params.existing_records[EntityType.GRANT][grant_key]
-            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            grant = params.existing_records["Grant"][grant_key]
+            developer_app = params.existing_records["DeveloperApp"][signer]
             if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
                 raise IndexingValidationError(
                     f"Signer is not authorized to perform action for user {params.user_id}"

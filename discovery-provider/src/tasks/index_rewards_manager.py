@@ -221,12 +221,12 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     """
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        result: TransactionInfoResult = tx_info["result"]
+        result: TransactionInfoResult = tx_info.value
         # Create transaction metadata
         tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
             "slot": result["slot"],
-            "timestamp": result["blockTime"],
+            "timestamp": result["block_time"],
             "transfer_instruction": None,
         }
         meta = result["meta"]

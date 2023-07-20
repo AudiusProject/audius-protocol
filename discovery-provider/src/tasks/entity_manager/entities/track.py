@@ -220,7 +220,7 @@ def validate_track_tx(params: ManageEntityParameters):
         )
 
     if params.action == Action.CREATE:
-        if track_id in params.existing_records[EntityType.TRACK]:
+        if track_id in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
@@ -245,9 +245,9 @@ def validate_track_tx(params: ManageEntityParameters):
                 )
     else:
         # update / delete specific validations
-        if track_id not in params.existing_records[EntityType.TRACK]:
+        if track_id not in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
-        existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
+        existing_track: Track = params.existing_records["Track"][track_id]
         if existing_track.owner_id != params.user_id:
             raise IndexingValidationError(
                 f"Existing track {track_id} does not match user"
@@ -256,7 +256,7 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][
+            ai_attribution_user = params.existing_records["User"][
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
@@ -288,7 +288,7 @@ def update_track_record(
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
-        track.cover_art = None
+        track.cover_art = None  # type: ignore
 
 
 def create_track(params: ManageEntityParameters):
@@ -329,11 +329,11 @@ def update_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
+    existing_track = params.existing_records["Track"][track_id]
     if (
-        track_id in params.new_records[EntityType.TRACK]
+        track_id in params.new_records["Track"]
     ):  # override with last updated track is in this block
-        existing_track = params.new_records[EntityType.TRACK][track_id][-1]
+        existing_track = params.new_records["Track"][track_id][-1]
 
     track_record = copy_record(
         existing_track,
@@ -356,10 +356,10 @@ def delete_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
-    if params.entity_id in params.new_records[EntityType.TRACK]:
+    existing_track = params.existing_records["Track"][track_id]
+    if params.entity_id in params.new_records["Track"]:
         # override with last updated playlist is in this block
-        existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
+        existing_track = params.new_records["Track"][params.entity_id][-1]
 
     deleted_track = copy_record(
         existing_track,

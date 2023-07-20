@@ -41,9 +41,14 @@ class TipResult(TypedDict):
     tx_signature: str
 
 
-class PopulatedTipResult(TipResult):
+class PopulatedTipResult(TypedDict):
+    amount: int
     sender: User
     receiver: User
+    slot: int
+    created_at: datetime
+    followee_supporters: List[str]
+    tx_signature: str
 
 
 # Example of query with inputs:
