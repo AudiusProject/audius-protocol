@@ -17,6 +17,8 @@ import (
 	"syscall"
 	"time"
 
+	_ "embed"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -28,6 +30,11 @@ import (
 type Peer struct {
 	Host   string `json:"host"`
 	Wallet string `json:"wallet"`
+}
+
+type VersionJson struct {
+	Version string `json:"version"`
+	Service string `json:"service"`
 }
 
 func (p Peer) ApiPath(parts ...string) string {
@@ -56,6 +63,8 @@ type MediorumConfig struct {
 	AudiusDockerCompose string
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
+	IsV2Only            bool
+	VersionJson         VersionJson
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -96,6 +105,10 @@ const PercentSeededThreshold = 50
 func New(config MediorumConfig) (*MediorumServer, error) {
 	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
 		config.Env = env
+	}
+
+	if config.IsV2Only && config.VersionJson == (VersionJson{}) {
+		log.Fatal(".version.json is required for v2-only nodes")
 	}
 
 	// validate host config
@@ -236,18 +249,23 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	routes.HEAD("/ipfs/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
 	routes.GET("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.HEAD("/content/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
 	routes.GET("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.HEAD("/ipfs/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
 	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.HEAD("/content/:jobID/:variant", ss.headBlobByJobIDAndVariant, ss.requireHealthy)
+	routes.HEAD("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
 	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.HEAD("/tracks/cidstream/:cid", ss.headBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.HEAD("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
+	routes.GET("/ip_check", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{
+			"data": c.RealIP(), // client/requestor IP
+		})
+	})
 
 	// -------------------
 	// internal
@@ -265,6 +283,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}, ss.requireHealthy)
 
 	internalApi.GET("/beam/files", ss.servePgBeam)
+
+	internalApi.GET("/cuckoo", ss.serveCuckoo)
+	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
+	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
@@ -291,10 +313,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
 
-	// reverse proxy stuff
-	upstream, _ := url.Parse(config.UpstreamCN)
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
-	echoServer.Any("*", echo.WrapHandler(proxy))
+	// reverse proxy fallback to legacy CN (NodeJS server container)
+	if !config.IsV2Only {
+		upstream, _ := url.Parse(config.UpstreamCN)
+		proxy := httputil.NewSingleHostReverseProxy(upstream)
+		echoServer.Any("*", echo.WrapHandler(proxy))
+	}
 
 	return ss, nil
 
@@ -312,6 +336,9 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
+	go ss.startCuckooBuilder()
+	go ss.startCuckooFetcher()
+
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
 	if ss.Config.WalletIsRegistered {
@@ -328,6 +355,12 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.pollForSeedingCompletion()
 
+	} else {
+		go func() {
+			for range time.Tick(10 * time.Second) {
+				ss.logger.Warn("node not fully running yet - please register at https://dashboard.audius.org and restart the server")
+			}
+		}()
 	}
 
 	go ss.monitorDiskAndDbStatus()

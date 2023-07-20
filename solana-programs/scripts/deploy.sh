@@ -69,6 +69,16 @@ fi
 solana address -k "$token_keypair"
 echo
 
+echo "Generating fake USDC token keypair"
+fake_usdc_token_keypair=$HOME/.config/solana/fake-usdc-token.json
+if [[ "$fake_usdc_token_private_key" != "" ]]; then
+    echo "$fake_usdc_token_private_key" >$fake_usdc_token_keypair
+else
+    solana-keygen new -s -f --no-bip39-passphrase -o "$fake_usdc_token_keypair"
+fi
+solana address -k "$fake_usdc_token_keypair"
+echo
+
 echo "Generating admin authority keypair"
 admin_authority_keypair=$HOME/.config/solana/admin-authority.json
 if [[ "$admin_authority_private_key" != "" ]]; then
@@ -165,6 +175,10 @@ echo
 
 echo "Deploying wAUDIO token..."
 spl-token create-token --decimals 8 -- "$token_keypair"
+echo
+
+echo "Deploying fake UDSC token..."
+spl-token create-token --decimals 6 -- "$fake_usdc_token_keypair"
 echo
 
 echo "------------- Initialize programs ---------------"
@@ -268,6 +282,7 @@ cat >solana-program-config.json <<EOF
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$valid_signer_eth_private_key",
     "splToken": "$(solana address -k "$token_keypair")",
+    "fakeUSDCTokenMint": "$(solana address -k "$fake_usdc_token_keypair"),
     "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
     "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
     "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",

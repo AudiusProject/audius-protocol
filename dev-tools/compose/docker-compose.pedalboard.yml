@@ -9,6 +9,8 @@ services:
       args:
         app_name: app-template
     restart: always
+    profiles:
+      - pedalboard
 
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
@@ -18,3 +20,5 @@ services:
       args:
         app_name: trending-challenge-rewards
     restart: always
+    profiles:
+      - pedalboard

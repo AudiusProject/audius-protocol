@@ -606,6 +606,17 @@ export interface TrendingResultRow {
   version: string
   week: Date
 }
+export interface USDCPurchaseRow {
+  slot?: number | null
+  signature: string
+  seller_user_id: number
+  buyer_user_id: number
+  amount: number
+  content_type: string
+  content_id: number
+  created_at: Date
+  updated_at: Date
+}
 export interface UrsmContentNodeRow {
   blockhash?: string | null
   blocknumber?: number | null

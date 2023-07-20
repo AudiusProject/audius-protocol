@@ -105,6 +105,14 @@ const snippetMap = {
     const entityName = notification.entity.name
     return `${entityName} is now trending thanks to you! Great work 🙌🏽`
   },
+  ['usdc_purchase_seller'](notification) {
+    const { entity, users, amount } = notification
+    return `Congrats, ${users[0].name} just bought your track ${entity.name} for $${amount}!`
+  },
+  ['usdc_purchase_buyer'](notification) {
+    const { entity, users } = notification
+    return `You just purchased ${entity.name} from ${users[0].name}!`
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (

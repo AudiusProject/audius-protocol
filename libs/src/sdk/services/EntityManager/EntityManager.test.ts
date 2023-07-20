@@ -42,12 +42,16 @@ jest
 
 class MockAuth implements AuthService {
   getSharedSecret = async () => new Uint8Array()
+
   signTransaction: (data: EIP712TypedData) => Promise<string> = async () =>
     '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c'
+
   sign: (data: string) => Promise<[Uint8Array, number]> = async () => [
     new Uint8Array(),
     0
   ]
+
+  hashAndSign: (data: string) => Promise<string> = async () => ''
 
   getAddress = async () => {
     return userWallet

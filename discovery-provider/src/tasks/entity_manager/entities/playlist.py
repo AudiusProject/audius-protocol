@@ -21,7 +21,9 @@ from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
 
-def update_playlist_routes_table(params: ManageEntityParameters, playlist_record):
+def update_playlist_routes_table(
+    params: ManageEntityParameters, playlist_record: Playlist, is_create: bool
+):
     pending_playlist_routes = params.pending_playlist_routes
     session = params.session
 
@@ -89,6 +91,27 @@ def update_playlist_routes_table(params: ManageEntityParameters, playlist_record
     new_playlist_route.txhash = playlist_record.txhash
     session.add(new_playlist_route)
 
+    if is_create:
+        # playlist-name-<id>
+        migration_playlist_slug_title = helpers.sanitize_slug(
+            playlist_record.playlist_name,
+            playlist_record.playlist_id,
+            playlist_record.playlist_id,
+        )
+        migration_playlist_slug = migration_playlist_slug_title
+
+        migration_playlist_route = PlaylistRoute()
+        migration_playlist_route.slug = migration_playlist_slug
+        migration_playlist_route.title_slug = migration_playlist_slug_title
+        migration_playlist_route.collision_id = new_collision_id
+        migration_playlist_route.owner_id = playlist_record.playlist_owner_id
+        migration_playlist_route.playlist_id = playlist_record.playlist_id
+        migration_playlist_route.is_current = True
+        migration_playlist_route.blockhash = playlist_record.blockhash
+        migration_playlist_route.blocknumber = playlist_record.blocknumber
+        migration_playlist_route.txhash = playlist_record.txhash
+        session.add(migration_playlist_route)
+
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
 
@@ -110,7 +133,9 @@ def validate_playlist_tx(params: ManageEntityParameters):
     validate_signer(params)
 
     if params.entity_type != EntityType.PLAYLIST:
-        raise IndexingValidationError(f"Entity type {params.entity_type} is not a playlist")
+        raise IndexingValidationError(
+            f"Entity type {params.entity_type} is not a playlist"
+        )
 
     premium_tracks = list(
         filter(
@@ -123,12 +148,18 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records[EntityType.PLAYLIST]:
-            raise IndexingValidationError(f"Cannot create playlist {playlist_id} that already exists")
+            raise IndexingValidationError(
+                f"Cannot create playlist {playlist_id} that already exists"
+            )
         if playlist_id < PLAYLIST_ID_OFFSET:
-            raise IndexingValidationError(f"Cannot create playlist {playlist_id} below the offset")
+            raise IndexingValidationError(
+                f"Cannot create playlist {playlist_id} below the offset"
+            )
     else:
         if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
-            raise IndexingValidationError(f"Cannot update playlist {playlist_id} that does not exist")
+            raise IndexingValidationError(
+                f"Cannot update playlist {playlist_id} that does not exist"
+            )
         existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
             playlist_id
         ]
@@ -196,9 +227,7 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_playlist_routes_table(
-        params, create_playlist_record
-    )
+    update_playlist_routes_table(params, create_playlist_record, True)
 
     params.add_record(EntityType.PLAYLIST, playlist_id, create_playlist)
 
@@ -235,14 +264,9 @@ def update_playlist(params: ManageEntityParameters):
         params.txhash,
         params.block_datetime,
     )
-    process_playlist_data_event(
-        params,
-        updated_playlist
-    )
+    process_playlist_data_event(params, updated_playlist)
 
-    update_playlist_routes_table(
-        params, updated_playlist
-    )
+    update_playlist_routes_table(params, updated_playlist, False)
 
     params.add_record(EntityType.PLAYLIST, playlist_id, updated_playlist)
 
