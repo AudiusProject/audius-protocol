@@ -1,0 +1,25 @@
+# Publish npm packages
+lint:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.11
+  steps:
+    - checkout
+    - restore_cache:
+        key: python-requirements-{{ checksum "requirements.txt" }}
+    - run:
+        name: Install Python dependencies
+        command: |
+          cd discovery-provider
+          pip install -r requirements.txt
+    - save_cache:
+        key: python-requirements-{{ checksum "requirements.txt" }}
+        paths:
+          - "~/.cache/pip"
+          - "/usr/local/lib/python3.11/site-packages"
+          - "/usr/local/lib/site-python"
+    - run:
+        name: Lint and typecheck
+        command: |
+          cd discovery-provider
+          ./scripts/lint.sh
