@@ -32,14 +32,10 @@ program.command("edit-track")
         license: license || track.license,
         is_premium: premiumConditions ? true : track.is_premium,
         premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : null,
-        preview_start_seconds: previewStartSeconds
+        preview_start_seconds: previewStartSeconds || track.preview_start_seconds
       }
 
-      let transcodePreview = false
-      if (previewStartSeconds && track.preview_start_seconds != previewStartSeconds) {
-        // Transcode preview and write metadata to chain
-        transcodePreview = true
-      }
+      const transcodePreview = (previewStartSeconds != null && track.preview_start_seconds != previewStartSeconds)
       const response = await audiusLibs.Track.updateTrackV2(updatedMetadata, transcodePreview)
 
       if (response.error) {

@@ -221,18 +221,18 @@ export class TracksApi extends TracksApiWithoutStream {
       if (!updatedMetadata.previewStartSeconds) {
         throw new Error('No track preview start time specified')
       }
-      if (!metadata.audioUploadId) {
+      if (!updatedMetadata.audioUploadId) {
         throw new Error('Missing required audio_upload_id')
       }
 
       // Transocde track preview
       const editFileData = {
-        previewStartSeconds: metadata.previewStartSeconds!.toString()
+        previewStartSeconds: updatedMetadata.previewStartSeconds!.toString()
       }
       const updatePreviewResp = await retry3(
         async () =>
           await this.storage.editFile({
-            uploadId: metadata.audioUploadId!,
+            uploadId: updatedMetadata.audioUploadId!,
             data: editFileData,
             auth: this.auth
           }),
