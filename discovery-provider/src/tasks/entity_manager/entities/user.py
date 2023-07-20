@@ -262,7 +262,9 @@ def update_user(
         params.challenge_bus,
     )
 
-    updated_metadata, updated_metadata_cid = merge_metadata(params, user_record)
+    updated_metadata, updated_metadata_cid = merge_metadata(
+        params, user_record, cid_metadata
+    )
     metadata_type, _ = get_metadata_type_and_format(params.entity_type)
     cid_type[updated_metadata_cid] = metadata_type
     cid_metadata[updated_metadata_cid] = updated_metadata
@@ -341,18 +343,27 @@ def update_user_metadata(
 # get previous CIDData and merge new metadata into it
 # this is to support fields (collectibles, associated_wallets) which aren't being indexed yet
 # once those are indexed and backfilled this can be removed
-def merge_metadata(params: ManageEntityParameters, record: User):
-    prev_cid_response = (
-        params.session.query(CIDData)
-        .filter_by(
-            cid=record.metadata_multihash,
-        )
-        .first()
-    )
+def merge_metadata(
+    params: ManageEntityParameters, record: User, cid_metadata: Dict[str, Dict]
+):
+    cid = record.metadata_multihash
 
-    if prev_cid_response:
+    # Check for previous metadata in cid_metadata in case multiple tx are in the same block
+    if cid in cid_metadata:
+        prev_cid_metadata = cid_metadata[cid]
+    else:
+        prev_cid_data_record = (
+            params.session.query(CIDData)
+            .filter_by(
+                cid=record.metadata_multihash,
+            )
+            .first()
+        )
+        prev_cid_metadata = prev_cid_data_record if prev_cid_data_record.data else {}
+
+    if prev_cid_metadata:
         # merge previous and current metadata
-        updated_metadata = prev_cid_response.data | params.metadata
+        updated_metadata = prev_cid_metadata | params.metadata
 
         # generate a cid
         updated_metadata_cid = str(

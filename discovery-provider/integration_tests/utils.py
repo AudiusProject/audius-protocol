@@ -3,6 +3,7 @@ from datetime import datetime
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
+from src.models.indexing.cid_data import CIDData
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import (
@@ -146,6 +147,7 @@ def populate_mock_db(db, entities, block_offset=None):
         playlist_seens = entities.get("playlist_seens", [])
         user_balance_changes = entities.get("user_balance_changes", [])
         usdc_purchases = entities.get("usdc_purchases", [])
+        cid_datas = entities.get("cid_datas", [])
 
         num_blocks = max(
             len(tracks),
@@ -274,6 +276,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_available=user_meta.get("is_available", True),
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
+                metadata_multihash=user_meta.get("metadata_multihash", "fake_cid"),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -664,6 +667,13 @@ def populate_mock_db(db, entities, block_offset=None):
                 content_id=usdc_purchase.get("content_id", 3),
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
+            )
+            session.add(ns)
+        for i, cid_data in enumerate(cid_datas):
+            ns = CIDData(
+                cid=cid_data.get("cid", "fake_cid"),
+                type=cid_data.get("type", "user"),
+                data=cid_data.get("data", {}),
             )
             session.add(ns)
 
