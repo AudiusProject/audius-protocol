@@ -34,11 +34,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     justifyContent: 'space-between',
     marginHorizontal: spacing(3),
     borderTopWidth: 1,
-    borderTopColor: palette.neutralLight8
+    borderTopColor: palette.neutralLight8,
+    minHeight: spacing(8)
   },
   button: {
-    height: 22,
-    width: 22
+    height: spacing(5.5),
+    width: spacing(5.5)
   },
   buttonMargin: {
     marginRight: spacing(8)
