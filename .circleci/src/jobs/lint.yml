@@ -1,5 +1,4 @@
-# Publish npm packages
-lint:
+lint-discovery-provider:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.11
