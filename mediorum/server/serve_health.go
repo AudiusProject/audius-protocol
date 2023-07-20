@@ -50,6 +50,7 @@ type healthCheckResponseData struct {
 	Signers                   []Peer                     `json:"signers"`
 	ReplicationFactor         int                        `json:"replicationFactor"`
 	Dir                       string                     `json:"dir"`
+	BlobStoreDSN              string                     `json:"blobStoreDSN"`
 	ListenPort                string                     `json:"listenPort"`
 	UpstreamCN                string                     `json:"upstreamCN"`
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
@@ -116,6 +117,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
 		TrustedNotifier:           ss.trustedNotifier,
 		Dir:                       ss.Config.Dir,
+		BlobStoreDSN:              ss.Config.BlobStoreDSN,
 		ListenPort:                ss.Config.ListenPort,
 		UpstreamCN:                ss.Config.UpstreamCN,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
