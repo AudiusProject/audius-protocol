@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"persistence"
 	"strconv"
 	"strings"
 	"sync"
@@ -149,7 +150,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// bucket
-	bucket, err := blob.OpenBucket(context.Background(), config.BlobStoreDSN)
+	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
 		return nil, err
 	}
