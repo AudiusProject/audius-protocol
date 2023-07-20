@@ -1,6 +1,4 @@
-# requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 AS contracts
-
 FROM alpine:3.14
 
 ENV INSTALL_PATH /audius-discovery-provider
@@ -37,6 +35,9 @@ RUN apk update && \
         musl-dev \
         openblas-dev \
         gfortran
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
