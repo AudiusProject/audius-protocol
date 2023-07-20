@@ -420,7 +420,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
                 collision_id=0,
                 owner_id=1,
                 playlist_id=400000,
-                is_current=True,
+                is_current=False,
             ),
             PlaylistRoute(
                 slug="my-playlist-1-w-new-name",
@@ -444,7 +444,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
                 collision_id=0,
                 owner_id=1,
                 playlist_id=400001,
-                is_current=True,
+                is_current=False,
             ),
             PlaylistRoute(
                 slug="my-playlist-1",
@@ -460,7 +460,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
                 collision_id=1,
                 owner_id=1,
                 playlist_id=400004,
-                is_current=True,
+                is_current=False,
             ),
             PlaylistRoute(
                 slug="my-playlist-3",
@@ -476,7 +476,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
                 collision_id=3,
                 owner_id=1,
                 playlist_id=400005,
-                is_current=True,
+                is_current=False,
             ),
             PlaylistRoute(
                 slug="my-playlist",
@@ -492,7 +492,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
                 collision_id=0,
                 owner_id=2,
                 playlist_id=400006,
-                is_current=True,
+                is_current=False,
             ),
         ]
 
