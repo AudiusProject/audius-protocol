@@ -15,7 +15,7 @@ lint-discovery-provider:
           pip install -r requirements.txt
 
     - save_cache:
-        key: python-requirements-{{ checksum "discoery-provider/requirements.txt" }}
+        key: python-requirements-{{ checksum "discovery-provider/requirements.txt" }}
         paths:
           - "~/.cache/pip"
           - "/usr/local/lib/python3.11/site-packages"
