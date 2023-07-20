@@ -1117,7 +1117,7 @@ class FollowerUsers(FullFollowerUsers):
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(followers_response)
     def get(self, id):
-        return super()._get(id)
+        return super()._get_user_followers(id)
 
 
 following_response = make_response(
