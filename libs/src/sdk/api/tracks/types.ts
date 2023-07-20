@@ -133,6 +133,11 @@ export const createUpdateTrackSchema = () =>
         trackId: HashId
       })
     )
+    .merge(
+      z.object({
+        transcodePreview: z.optional(z.boolean())
+      })
+    )
     .strict()
 
 export type UpdateTrackRequest = Omit<

@@ -12,6 +12,10 @@ export type AuthService = {
    */
   sign: (data: string) => Promise<[Uint8Array, number]>
   /**
+   * Hash and sign some data
+   */
+  hashAndSign: (data: string) => Promise<string>
+  /**
    * Sign an ethereum transaction, used for EntityManager writes
    * NOTE: audius-client can stub out until we use sdk for writes in the client
    */

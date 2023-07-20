@@ -20,6 +20,8 @@ import {
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
+import { sortObjectKeys } from '../Auth/utils'
+import type { AuthService } from '../Auth'
 
 export class Storage implements StorageService {
   /**
@@ -31,6 +33,58 @@ export class Storage implements StorageService {
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
     this.storageNodeSelector = this.config.storageNodeSelector
+  }
+
+  /**
+   * Upload a file on content nodes
+   * @param uploadId
+   * @param data
+   * @param auth
+   * @returns
+   */
+  async editFile({
+    uploadId,
+    data,
+    auth
+  }: {
+    uploadId: string
+    data: { [key: string]: string }
+    auth: AuthService
+  }) {
+    // Generate signature
+    const signatureData = {
+      upload_id: uploadId,
+      timestamp: Date.now()
+    }
+    const signature = await auth.hashAndSign(
+      JSON.stringify(sortObjectKeys(signatureData))
+    )
+    const signatureEnvelope = {
+      data: JSON.stringify(signatureData),
+      signature
+    }
+
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+
+    if (!contentNodeEndpoint) {
+      throw new Error('No content node available for upload')
+    }
+
+    const response = await axios({
+      method: 'post',
+      url: `${contentNodeEndpoint}/uploads/${uploadId}`,
+      maxContentLength: Infinity,
+      data: data,
+      params: { signature: JSON.stringify(signatureEnvelope) }
+    })
+
+    // Poll for re-transcoding to complete
+    return await this.pollProcessingStatus(
+      uploadId,
+      response.data.template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+    )
   }
 
   /**
