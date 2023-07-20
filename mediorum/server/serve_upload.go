@@ -87,8 +87,12 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
 		upload.SelectedPreview = selectedPreview
 		upload.UpdatedAt = time.Now().UTC()
-		upload.Status = JobStatusRetranscode
-
+		_, alreadyTranscoded := upload.TranscodeResults[selectedPreview.String]
+		if !alreadyTranscoded {
+			// Have not transcoded a preview at this start time yet
+			// Set status to trigger retranscode job
+			upload.Status = JobStatusRetranscode
+		}
 		err = ss.crud.Update(upload)
 		if err != nil {
 			ss.logger.Warn("update upload failed", "err", err)
