@@ -203,7 +203,7 @@ def create_playlist(params: ManageEntityParameters):
             }
         )
         last_added_to = params.block_datetime
-    create_playlist_record = Playlist(
+    playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
         playlist_owner_id=params.user_id,
@@ -227,14 +227,13 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_playlist_routes_table(params, create_playlist_record, True)
+    update_playlist_routes_table(params, playlist_record, True)
 
-    params.updated_metadata = create_playlist_record
-    params.add_playlist_record(playlist_id, create_playlist_record)
+    params.add_playlist_record(playlist_id, playlist_record)
 
     if tracks:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, create_playlist_record
+            params.challenge_bus, params.block_number, playlist_record
         )
 
 
@@ -258,23 +257,22 @@ def update_playlist(params: ManageEntityParameters):
     ):  # override with last updated playlist is in this block
         existing_playlist = params.new_records[EntityType.PLAYLIST][playlist_id][-1]
 
-    updated_playlist = copy_record(
+    playlist_record = copy_record(
         existing_playlist,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    process_playlist_data_event(params, updated_playlist)
+    process_playlist_data_event(params, playlist_record)
 
-    update_playlist_routes_table(params, updated_playlist, False)
+    update_playlist_routes_table(params, playlist_record, False)
 
-    params.updated_metadata = updated_playlist
-    params.add_playlist_record(playlist_id, updated_playlist)
+    params.add_playlist_record(playlist_id, playlist_record)
 
-    if updated_playlist.playlist_contents["track_ids"]:
+    if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, updated_playlist
+            params.challenge_bus, params.block_number, playlist_record
         )
 
 

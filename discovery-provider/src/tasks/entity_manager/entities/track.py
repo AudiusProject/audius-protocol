@@ -284,7 +284,7 @@ def update_track_record(
     params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
 ):
     populate_track_record_metadata(track, metadata, handle)
-    track.metadata_multihash = params.metadata_cid
+
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
@@ -321,7 +321,6 @@ def create_track(params: ManageEntityParameters):
         params.challenge_bus, params.block_number, track_record
     )
 
-    params.updated_metadata = track_record
     params.add_track_record(track_id, track_record)
 
 
@@ -336,7 +335,7 @@ def update_track(params: ManageEntityParameters):
     ):  # override with last updated track is in this block
         existing_track = params.new_records[EntityType.TRACK][track_id][-1]
 
-    updated_track = copy_record(
+    track_record = copy_record(
         existing_track,
         params.block_number,
         params.event_blockhash,
@@ -345,13 +344,12 @@ def update_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, updated_track, params.metadata, params.pending_track_routes
+        params.session, track_record, params.metadata, params.pending_track_routes
     )
-    update_track_record(params, updated_track, params.metadata, handle)
-    update_remixes_table(params.session, updated_track, params.metadata)
+    update_track_record(params, track_record, params.metadata, handle)
+    update_remixes_table(params.session, track_record, params.metadata)
 
-    params.updated_metadata = updated_track
-    params.add_track_record(track_id, updated_track)
+    params.add_track_record(track_id, track_record)
 
 
 def delete_track(params: ManageEntityParameters):

@@ -224,7 +224,11 @@ def create_user(
     return user_record
 
 
-def update_user(params: ManageEntityParameters):
+def update_user(
+    params: ManageEntityParameters,
+    cid_type: Dict[str, str],
+    cid_metadata: Dict[str, Dict],
+):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -258,9 +262,12 @@ def update_user(params: ManageEntityParameters):
         params.challenge_bus,
     )
 
-    updated_metadata_cid = merge_user_metadata(params, user_record)
-
+    updated_metadata, updated_metadata_cid = merge_metadata(params, user_record)
+    metadata_type, _ = get_metadata_type_and_format(params.entity_type)
+    cid_type[updated_metadata_cid] = metadata_type
+    cid_metadata[updated_metadata_cid] = updated_metadata
     user_record.metadata_multihash = updated_metadata_cid
+
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
 
@@ -332,13 +339,13 @@ def update_user_metadata(
 
 
 # get previous CIDData and merge new metadata into it
-# this is to support collectibles, associated_wallets which aren't being indexed yet
+# this is to support fields (collectibles, associated_wallets) which aren't being indexed yet
 # once those are indexed and backfilled this can be removed
-def merge_user_metadata(params: ManageEntityParameters, user_record: User):
+def merge_metadata(params: ManageEntityParameters, record: User):
     prev_cid_response = (
         params.session.query(CIDData)
         .filter_by(
-            cid=user_record.metadata_multihash,
+            cid=record.metadata_multihash,
         )
         .first()
     )
@@ -352,18 +359,10 @@ def merge_user_metadata(params: ManageEntityParameters, user_record: User):
             generate_metadata_cid_v1(json.dumps(updated_metadata))
         )
 
-        # save the metadata blob
-        cid_data = CIDData(
-            cid=updated_metadata_cid,
-            type="user",
-            data=updated_metadata,
-        )
-        params.session.merge(cid_data)
-
-        return updated_metadata_cid
+        return updated_metadata, updated_metadata_cid
     else:
-        logger.info(
-            f"index.py | user.py | Could not find previous metadata blob for user {user_record}"
+        params.logger.error(
+            f"Could not find previous metadata blob for {record}", exc_info=True
         )
 
 

@@ -205,7 +205,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        update_user(params)
+                        update_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.VERIFY
                         and params.entity_type == EntityType.USER
@@ -256,33 +256,6 @@ def entity_manager_update(
                         and params.entity_type == EntityType.GRANT
                     ):
                         revoke_grant(params)
-
-                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
-                    # later
-                    if expect_cid_metadata_json(
-                        params.metadata, params.action, params.entity_type
-                    ):
-                        if getattr(params, "updated_metadata", None):
-                            serializable_updated_metadata = (
-                                params.updated_metadata.to_serializable_dict()
-                            )
-
-                            # Use the updated cid coming from the handler or generate
-                            # a cid for the updated metadata
-                            cid = getattr(
-                                params,
-                                "updated_metadata_cid",
-                                str(
-                                    generate_metadata_cid_v1(
-                                        json.dumps(serializable_updated_metadata)
-                                    )
-                                ),
-                            )
-                            metadata_type, _ = get_metadata_type_and_format(
-                                params.entity_type
-                            )
-                            cid_type[cid] = metadata_type
-                            cid_metadata[cid] = serializable_updated_metadata
 
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:

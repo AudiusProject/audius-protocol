@@ -87,9 +87,3 @@ class User(Base, RepresentableMixin):
 
     def get_attributes_dict(self):
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
-
-    def to_serializable_dict(self):
-        dict = self.get_attributes_dict()
-        dict["created_at"] = str(dict["created_at"])
-        dict["updated_at"] = str(dict["updated_at"])
-        return dict
