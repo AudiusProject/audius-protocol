@@ -54,6 +54,8 @@ export const getCollectiblesJson = async (cid) => {
   return (await (await fetch(url)).json())?.data?.data
 }
 
+window.audiusSdk = audiusSdk
+
 export const uuid = () => {
   // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript/873856#873856
   const s = []
