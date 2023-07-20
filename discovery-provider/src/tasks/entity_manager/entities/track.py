@@ -1,5 +1,8 @@
-from typing import Dict
+from datetime import datetime
+from typing import Dict, Union
 
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -7,6 +10,7 @@ from src.exceptions import IndexingValidationError
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
@@ -21,6 +25,9 @@ from src.tasks.entity_manager.utils import (
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
+from src.utils.structured_logger import StructuredLogger
+
+logger = StructuredLogger(__name__)
 
 
 def update_stems_table(session, track_record, track_metadata):
@@ -66,6 +73,54 @@ def update_remixes_table(session, track_record, track_metadata):
                         parent_track_id=parent_track_id, child_track_id=child_track_id
                     )
                     session.add(remix)
+
+
+def update_track_price_history(
+    session: Session,
+    track_record: Track,
+    track_metadata,
+    blocknumber: int,
+    block_datetime: datetime,
+):
+    """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
+    new_record = None
+    if (
+        "premium_conditions" in track_metadata
+        and track_metadata["premium_conditions"] is not None
+    ):
+        premium_conditions = track_metadata["premium_conditions"]
+        if "usdc_purchase" in premium_conditions:
+            usdc_purchase = premium_conditions["usdc_purchase"]
+            new_record = TrackPriceHistory()
+            new_record.track_id = track_record.track_id
+            new_record.block_timestamp = (block_datetime,)
+            new_record.blocknumber = blocknumber
+            new_record.splits = {}
+            if "price" in usdc_purchase:
+                price = usdc_purchase["price"]
+                if isinstance(price, int):
+                    new_record.total_price_cents = price
+            if "splits" in usdc_purchase:
+                splits = usdc_purchase["splits"]
+                # TODO: better validation of splits
+                if isinstance(splits, dict):
+                    new_record.splits = splits
+    if new_record:
+        old_record: Union[TrackPriceHistory, None] = (
+            session.query(TrackPriceHistory)
+            .filter(TrackPriceHistory.track_id == track_record.track_id)
+            .order_by(desc(TrackPriceHistory.block_timestamp))
+            .first()
+        )
+        if (
+            not old_record
+            or old_record.total_price_cents != new_record.total_price_cents
+            or old_record.splits != new_record.splits
+        ):
+            logger.debug(
+                f"track.py | Updating price history for {track_record.track_id}. Old record={old_record} New record={new_record}"
+            )
+            session.add(new_record)
 
 
 @helpers.time_method
@@ -272,9 +327,13 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+            ai_attribution_user = params.existing_records[EntityType.USER][
+                ai_attribution_user_id
+            ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
+                raise IndexingValidationError(
+                    f"Cannot AI attribute user {ai_attribution_user}"
+                )
 
 
 def get_handle(params: ManageEntityParameters):
@@ -285,12 +344,16 @@ def get_handle(params: ManageEntityParameters):
         .first()
     )
     if not handle or not handle[0]:
-        raise IndexingValidationError(f"Cannot find handle for user ID {params.user_id}")
+        raise IndexingValidationError(
+            f"Cannot find handle for user ID {params.user_id}"
+        )
 
     return handle[0]
 
 
-def update_track_record(params: ManageEntityParameters, track: Track, metadata: Dict, handle: str):
+def update_track_record(
+    params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
+):
     populate_track_record_metadata(track, metadata, handle)
     track.metadata_multihash = params.metadata_cid
     # if cover_art CID is of a dir, store under _sizes field instead
@@ -325,6 +388,7 @@ def create_track(params: ManageEntityParameters):
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
+    update_track_price_history(params.session, track_record, params.metadata)
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
@@ -355,6 +419,13 @@ def update_track(params: ManageEntityParameters):
         params.session, updated_track, params.metadata, params.pending_track_routes
     )
     update_track_record(params, updated_track, params.metadata, handle)
+    update_track_price_history(
+        params.session,
+        updated_track,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
     update_remixes_table(params.session, updated_track, params.metadata)
 
     params.add_track_record(track_id, updated_track)
