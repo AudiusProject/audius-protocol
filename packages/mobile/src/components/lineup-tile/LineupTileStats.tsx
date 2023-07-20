@@ -60,7 +60,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   leftStats: {
     ...flexRowCentered(),
-    gap: spacing(4)
+    gap: spacing(4),
+    minHeight: spacing(4)
   },
   statItem: {
     gap: spacing(1)
@@ -154,51 +155,53 @@ export const LineupTileStats = ({
             isOwner={isOwner}
           />
         ) : null}
-        {hasEngagement && !isUnlisted && (
-          <View style={styles.leftStats}>
-            <TouchableOpacity
-              style={[
-                trackTileStyles.statItem,
-                styles.statItem,
-                !repostCount ? styles.disabledStatItem : null
-              ]}
-              disabled={!repostCount || isReadonly}
-              onPress={handlePressReposts}
-            >
-              <IconRepost
-                height={spacing(4)}
-                width={spacing(4)}
-                fill={neutralLight4}
-                style={styles.repostStat}
-              />
-              <Text style={trackTileStyles.statText}>
-                {formatCount(repostCount)}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                trackTileStyles.statItem,
-                styles.statItem,
-                !saveCount ? styles.disabledStatItem : null
-              ]}
-              disabled={!saveCount || isReadonly}
-              onPress={handlePressFavorites}
-            >
-              <IconHeart
-                style={styles.favoriteStat}
-                height={spacing(3.5)}
-                width={spacing(3.5)}
-                fill={neutralLight4}
-              />
-              <Text style={trackTileStyles.statText}>
-                {formatCount(saveCount)}
-              </Text>
-            </TouchableOpacity>
-            <View style={[trackTileStyles.statItem]}>
-              {downloadStatusIndicator}
-            </View>
-          </View>
-        )}
+        <View style={styles.leftStats}>
+          {hasEngagement && !isUnlisted ? (
+            <>
+              <TouchableOpacity
+                style={[
+                  trackTileStyles.statItem,
+                  styles.statItem,
+                  !repostCount ? styles.disabledStatItem : null
+                ]}
+                disabled={!repostCount || isReadonly}
+                onPress={handlePressReposts}
+              >
+                <IconRepost
+                  height={spacing(4)}
+                  width={spacing(4)}
+                  fill={neutralLight4}
+                  style={styles.repostStat}
+                />
+                <Text style={trackTileStyles.statText}>
+                  {formatCount(repostCount)}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  trackTileStyles.statItem,
+                  styles.statItem,
+                  !saveCount ? styles.disabledStatItem : null
+                ]}
+                disabled={!saveCount || isReadonly}
+                onPress={handlePressFavorites}
+              >
+                <IconHeart
+                  style={styles.favoriteStat}
+                  height={spacing(3.5)}
+                  width={spacing(3.5)}
+                  fill={neutralLight4}
+                />
+                <Text style={trackTileStyles.statText}>
+                  {formatCount(saveCount)}
+                </Text>
+              </TouchableOpacity>
+              <View style={trackTileStyles.statItem}>
+                {downloadStatusIndicator}
+              </View>
+            </>
+          ) : null}
+        </View>
       </View>
       {premiumConditions && !isOwner ? (
         <LockedStatusBadge
