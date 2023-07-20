@@ -288,10 +288,10 @@ def entity_manager_update(
                         txhash,
                         str(e),
                     )
-                    skipped_tx_hash = create_and_raise_indexing_error(
+                    create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
                     )
-                    logger.info(f"skipping transaction hash {skipped_tx_hash}")
+                    logger.info("skipping transaction hash")
 
         # compile records_to_save
         records_to_save = []
@@ -703,4 +703,3 @@ def create_and_raise_indexing_error(err, redis, session):
         raise Exception(error_message) from err
 
     clear_indexing_error(redis)
-    return skip_tx_hash

@@ -349,7 +349,6 @@ def index_next_block(
                 f"Error in calling update trending challenge {e}",
                 exc_info=True,
             )
-
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
             if next_block.number % 100 == 0:
@@ -774,7 +773,6 @@ def index_nethermind(self):
 
     try:
         with db.scoped_session() as session:
-            session.commit()
             latest_database_block = get_latest_database_block(session)
 
             in_valid_state, next_block = get_relevant_blocks(
