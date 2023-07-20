@@ -12,7 +12,6 @@ jest.mock('@audius/common', () => {
 
     AudiusBackend: {
       recordTrackListen: jest.fn(),
-      getSelectableCreatorNodes: jest.fn(),
       submitAndEvaluateAttestations: jest.fn()
     }
   }
