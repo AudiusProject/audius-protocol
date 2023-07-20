@@ -17,7 +17,6 @@ BLOCK_NUMBER = 10
 
 
 def test_profile_completion_challenge_with_tracks(app):
-
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     # create user
@@ -224,7 +223,6 @@ def test_profile_completion_challenge_with_tracks(app):
 
 
 def test_profile_completion_challenge_with_playlists(app):
-
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     # create user

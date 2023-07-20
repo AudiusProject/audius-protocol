@@ -126,7 +126,9 @@ def get_sp_factory_inst():
 def parse_update_sp_id(params) -> Tuple[List[int], List[int]]:
     sp_ids = params.metadata.split(":")
     if len(sp_ids) != 2:
-        raise IndexingValidationError('Invalid format entity_id should be ":" separated')
+        raise IndexingValidationError(
+            'Invalid format entity_id should be ":" separated'
+        )
     return parse_sp_ids(sp_ids[0]), parse_sp_ids(sp_ids[1])
 
 

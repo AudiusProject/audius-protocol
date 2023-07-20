@@ -1,8 +1,6 @@
 # Discovery Node
 
-
 A Discovery Node is the metadata and indexing layer for the Audius Protocol.
-
 
 ## Development
 
@@ -13,7 +11,6 @@ audius-compose up
 
 curl http://audius-protocol-discovery-provider-1/health_check
 ```
-
 
 ## Testing
 
@@ -38,4 +35,14 @@ docker exec -it audius-protocol-test-test-discovery-provider-1 pytest
 # To use the vscode tester,
 # Open the command palette and select Dev Containers: Attach to Running Container
 # Navigate to the test you want to run and run it!
+```
+
+## Linting
+
+Run lint
+
+```bash
+./scripts/lint.sh
+
+FIX_LINT=1 ./scripts/lint.sh
 ```

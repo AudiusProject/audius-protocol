@@ -49,7 +49,6 @@ def test_index_aggregate_plays_populate(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         results: List[AggregatePlay] = (
             session.query(AggregatePlay).order_by(AggregatePlay.play_item_id).all()
         )
@@ -107,7 +106,6 @@ def test_index_aggregate_plays_update(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         results: List[AggregatePlay] = (
             session.query(AggregatePlay).order_by(AggregatePlay.play_item_id).all()
         )

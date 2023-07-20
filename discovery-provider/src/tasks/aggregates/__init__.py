@@ -26,7 +26,6 @@ def init_task_and_acquire_lock(
     blocking_timeout=None,
     lock_name=None,
 ):
-
     current_frame = currentframe()
     # get name of the caller function
     task_name = (
