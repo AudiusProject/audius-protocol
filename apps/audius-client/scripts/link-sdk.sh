@@ -17,7 +17,6 @@ npm link
 cd -
 
 concurrently \
-  "cd $PROTOCOL_DIR/libs && npm run start" \
-  "cd packages/common && npm link @audius/sdk && npm run start" \
+  "cd packages/common && npm link @audius/sdk" \
   "cd packages/web && npm link @audius/sdk" \
   "cd packages/mobile && npm link @audius/sdk" \

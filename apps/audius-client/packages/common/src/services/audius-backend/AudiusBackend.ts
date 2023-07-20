@@ -197,6 +197,7 @@ type AudiusBackendSolanaConfig = Partial<{
   solanaFeePayerAddress: string
   solanaTokenAddress: string
   waudioMintAddress: string
+  usdcMintAddress: string
   wormholeAddress: string
 }>
 
@@ -317,6 +318,7 @@ export const audiusBackend = ({
     solanaFeePayerAddress,
     solanaTokenAddress,
     waudioMintAddress,
+    usdcMintAddress,
     wormholeAddress
   },
   userNodeUrl,
@@ -757,6 +759,7 @@ export const audiusBackend = ({
       solanaWeb3Config: AudiusLibs.configSolanaWeb3({
         solanaClusterEndpoint,
         mintAddress: waudioMintAddress,
+        usdcMintAddress,
         solanaTokenAddress,
         claimableTokenPDA: claimableTokenPda,
         feePayerAddress: solanaFeePayerAddress,

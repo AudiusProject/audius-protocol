@@ -117,6 +117,7 @@ export const audiusBackendInstance = audiusBackend({
     solanaFeePayerAddress: process.env.REACT_APP_SOLANA_FEE_PAYER_ADDRESS,
     solanaTokenAddress: process.env.REACT_APP_SOLANA_TOKEN_PROGRAM_ADDRESS,
     waudioMintAddress: process.env.REACT_APP_WAUDIO_MINT_ADDRESS,
+    usdcMintAddress: process.env.REACT_APP_USDC_MINT_ADDRESS,
     wormholeAddress: process.env.REACT_APP_WORMHOLE_ADDRESS
   },
   userNodeUrl: process.env.REACT_APP_USER_NODE,
