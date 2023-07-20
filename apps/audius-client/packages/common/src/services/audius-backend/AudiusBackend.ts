@@ -571,31 +571,6 @@ export const audiusBackend = ({
     )
   }
 
-  function creatorNodeSelectionCallback(
-    primary: string,
-    secondaries: string[],
-    reason: string
-  ) {
-    recordAnalytics({
-      eventName: Name.CREATOR_NODE_SELECTION,
-      properties: {
-        endpoint: primary,
-        selectedAs: 'primary',
-        reason
-      }
-    })
-    secondaries.forEach((secondary) => {
-      recordAnalytics({
-        eventName: Name.CREATOR_NODE_SELECTION,
-        properties: {
-          endpoint: secondary,
-          selectedAs: 'secondary',
-          reason
-        }
-      })
-    })
-  }
-
   async function sanityChecks(audiusLibs: any) {
     try {
       const sanityChecks = new SanityChecks(audiusLibs)
@@ -811,20 +786,6 @@ export const audiusBackend = ({
 
   async function listCreatorNodes() {
     return audiusLibs.ServiceProvider.listCreatorNodes()
-  }
-
-  async function autoSelectCreatorNodes() {
-    return audiusLibs.ServiceProvider.autoSelectCreatorNodes({})
-  }
-
-  async function getSelectableCreatorNodes() {
-    const contentNodeBlockList = getBlockList(
-      StringKeys.CONTENT_NODE_BLOCK_LIST
-    )
-    return audiusLibs.ServiceProvider.getSelectableCreatorNodes(
-      /* whitelist */ null,
-      /* blacklist */ contentNodeBlockList
-    )
   }
 
   async function getAccount() {
@@ -3204,12 +3165,10 @@ export const audiusBackend = ({
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
-    autoSelectCreatorNodes,
     changePassword,
     clearNotificationBadges,
     confirmCredentials,
     createPlaylist,
-    creatorNodeSelectionCallback,
     currentDiscoveryProvider,
     dangerouslySetPlaylistOrder,
     deleteAlbum,
@@ -3252,7 +3211,6 @@ export const audiusBackend = ({
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSavedTracks,
-    getSelectableCreatorNodes,
     getSignature,
     getTrackImages,
     getUserEmail,

@@ -1110,13 +1110,6 @@ type DiscoveryProviderSelection = {
   reason: string
 }
 
-type CreatorNodeSelection = {
-  eventName: Name.CREATOR_NODE_SELECTION
-  selectedAs: 'primary' | 'secondary'
-  endpoint: string
-  reason: string
-}
-
 type StemCompleteUpload = {
   eventName: Name.STEM_COMPLETE_UPLOAD
   id: number
@@ -1777,7 +1770,6 @@ export type AllTrackingEvents =
   | BrowserNotificationSetting
   | TweetFirstUpload
   | DiscoveryProviderSelection
-  | CreatorNodeSelection
   | WebVitals
   | Performance
   | StemCompleteUpload
