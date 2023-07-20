@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"mediorum/ethcontracts"
@@ -13,10 +14,25 @@ import (
 	"sync"
 	"time"
 
+	_ "embed"
+
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
+
+//go:embed .version.json
+var versionJSON []byte
+
+func GetVersionJson() server.VersionJson {
+	var versionJson server.VersionJson
+
+	if err := json.Unmarshal(versionJSON, &versionJson); err != nil {
+		log.Fatalf("unable to parse .version.json file: %v", err)
+	}
+
+	return versionJson
+}
 
 func init() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{AddSource: true}))
@@ -84,7 +100,11 @@ func startStagingOrProd(isProd bool) {
 	}
 	spID, err := ethcontracts.GetServiceProviderIdFromEndpoint(creatorNodeEndpoint, walletAddress)
 	if err != nil || spID == 0 {
-		log.Fatalf("failed to recover spID for %s: %v", creatorNodeEndpoint, err)
+		go func() {
+			for range time.Tick(10 * time.Second) {
+				logger.Warn("failed to recover spID - please register at https://dashboard.audius.org and restart the server", "err", err)
+			}
+		}()
 	}
 
 	config := server.MediorumConfig{
@@ -107,6 +127,8 @@ func startStagingOrProd(isProd bool) {
 		GitSHA:              os.Getenv("GIT_SHA"),
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
+		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+		VersionJson:         GetVersionJson(),
 	}
 
 	ss, err := server.New(config)
@@ -154,6 +176,8 @@ func startDevInstance() {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		LegacyFSRoot:        "/file_storage",
+		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+		VersionJson:         GetVersionJson(),
 	}
 
 	ss, err := server.New(config)

@@ -19,7 +19,7 @@ from src.models.users.audio_transactions_history import (
     TransactionType,
 )
 from src.models.users.user import User
-from src.models.users.user_bank import UserBankAccount, UserBankTx
+from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
@@ -64,8 +64,10 @@ logger = logging.getLogger(__name__)
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
+USDC_MINT = shared_config["solana"]["usdc_mint"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
+USDC_MINT_PUBKEY = PublicKey(USDC_MINT) if USDC_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
@@ -74,6 +76,9 @@ INITIAL_FETCH_SIZE = 10
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
 TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
+
+# Used to find the mint for a CreateTokenAccount instruction
+CREATE_MINT_ACCOUNT_INDEX = 1
 
 
 # Recover ethereum public key from bytes array
@@ -140,6 +145,62 @@ def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
 create_token_account_instr: List[InstructionFormat] = [
     {"name": "eth_address", "type": SolanaInstructionType.EthereumAddress},
 ]
+
+
+def process_create_userbank_instruction(
+    session: Session,
+    instruction: TransactionMessageInstruction,
+    account_keys: List[str],
+    tx_sig: str,
+    timestamp: datetime.datetime,
+):
+    tx_data = instruction["data"]
+    parsed_token_data = parse_create_token_data(tx_data)
+    eth_addr = parsed_token_data["eth_address"]
+    decoded = base58.b58decode(tx_data)[1:]
+    public_key_bytes = decoded[:20]
+    mint_address = account_keys[
+        get_account_index(instruction, CREATE_MINT_ACCOUNT_INDEX)
+    ]
+    _, derived_address = get_address_pair(
+        PublicKey(mint_address), public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+    )
+    bank_acct = str(derived_address[0])
+    try:
+        # Confirm expected address is present in transaction
+        bank_acct_index = account_keys.index(bank_acct)
+        if bank_acct_index:
+            if mint_address == WAUDIO_MINT:
+                logger.info(
+                    f"index_user_bank.py | {tx_sig} Found known $AUDIO account: {eth_addr}, {bank_acct}"
+                )
+                session.add(
+                    UserBankAccount(
+                        signature=tx_sig,
+                        ethereum_address=eth_addr,
+                        bank_account=bank_acct,
+                        created_at=timestamp,
+                    )
+                )
+            elif mint_address == USDC_MINT:
+                logger.info(
+                    f"index_user_bank.py | {tx_sig} Found known $USDC account: {eth_addr}, {bank_acct}"
+                )
+                session.add(
+                    USDCUserBankAccount(
+                        signature=tx_sig,
+                        ethereum_address=eth_addr,
+                        bank_account=bank_acct,
+                        created_at=timestamp,
+                    )
+                )
+            else:
+                logger.error(
+                    f"index_user_bank.py | Unknown mint address {mint_address}. Expected AUDIO={WAUDIO_MINT} or USDC={USDC_MINT}"
+                )
+
+    except ValueError as e:
+        logger.error(e)
 
 
 def process_transfer_instruction(
@@ -328,32 +389,13 @@ def process_user_bank_tx_details(
         return
 
     if has_create_token_instruction:
-        tx_data = instruction["data"]
-        parsed_token_data = parse_create_token_data(tx_data)
-        eth_addr = parsed_token_data["eth_address"]
-        decoded = base58.b58decode(tx_data)[1:]
-        public_key_bytes = decoded[:20]
-        _, derived_address = get_address_pair(
-            WAUDIO_MINT_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+        process_create_userbank_instruction(
+            session=session,
+            instruction=instruction,
+            account_keys=account_keys,
+            tx_sig=tx_sig,
+            timestamp=timestamp,
         )
-        bank_acct = str(derived_address[0])
-        try:
-            # Confirm expected address is present in transaction
-            bank_acct_index = account_keys.index(bank_acct)
-            if bank_acct_index:
-                logger.info(
-                    f"index_user_bank.py | {tx_sig} Found known account: {eth_addr}, {bank_acct}"
-                )
-                session.add(
-                    UserBankAccount(
-                        signature=tx_sig,
-                        ethereum_address=eth_addr,
-                        bank_account=bank_acct,
-                        created_at=timestamp,
-                    )
-                )
-        except ValueError as e:
-            logger.error(e)
 
     elif has_transfer_instruction:
         process_transfer_instruction(
@@ -513,7 +555,7 @@ def process_user_bank_txs() -> None:
             # we process them.
             tx_infos.sort(key=lambda info: info[0]["result"]["slot"])
 
-            for (tx_info, tx_sig) in tx_infos:
+            for tx_info, tx_sig in tx_infos:
                 if tx_info and last_tx_sig and last_tx_sig == tx_sig:
                     last_tx = tx_info["result"]
                 num_txs_processed += 1

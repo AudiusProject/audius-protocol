@@ -489,8 +489,9 @@ export class Track extends Base {
   /**
    * Updates an existing track given metadata using only chain and not creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
+   * @param transcodePreview bool: retranscode track preview and set preview_cid if true
    */
-  async updateTrackV2(metadata: TrackMetadata) {
+  async updateTrackV2(metadata: TrackMetadata, transcodePreview = false) {
     this.IS_OBJECT(metadata)
 
     const ownerId = this.userStateManager.getCurrentUserId()
@@ -502,8 +503,22 @@ export class Track extends Base {
     this._validateTrackMetadata(metadata)
 
     const trackId = metadata.track_id
+    let updatedMetadata = { ...metadata }
+
+    if (transcodePreview) {
+      if (!metadata.preview_start_seconds) {
+        throw new Error('No track preview start time specified')
+      }
+      if (!metadata.audio_upload_id) {
+        throw new Error('Missing required audio_upload_id')
+      }
+
+      // Transcode the new preview and receive back updated metadata
+      updatedMetadata = await this.creatorNode.transcodeTrackPreview(metadata)
+    }
+
     const { txReceipt } = await this.writeTrackToChain(
-      metadata,
+      updatedMetadata,
       Action.UPDATE,
       trackId
     )
@@ -511,7 +526,8 @@ export class Track extends Base {
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
-      trackId
+      trackId,
+      updatedMetadata
     }
   }
 

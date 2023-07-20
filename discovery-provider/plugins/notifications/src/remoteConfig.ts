@@ -27,6 +27,8 @@ export enum MappingVariable {
   PushTrending = 'push_trending',
   PushTrendingUnderground = 'push_trending_underground',
   PushTrendingPlaylist = 'push_trending_playlist',
+  PushUSDCPurchaseBuyer = 'push_usdc_purchase_buyer',
+  PushUSDCPurchaseSeller = 'push_usdc_purchase_seller',
   PushAnnouncement = 'push_announcement',
   PushReaction = 'push_reaction'
 }
@@ -48,6 +50,8 @@ const defaultMappingVariable = {
   [MappingVariable.PushSaveOfRepost]: false,
   [MappingVariable.PushRepostOfRepost]: false,
   [MappingVariable.PushTastemaker]: false,
+  [MappingVariable.PushUSDCPurchaseBuyer]: false,
+  [MappingVariable.PushUSDCPurchaseSeller]: false,
   [MappingVariable.PushRemix]: false,
   [MappingVariable.PushCosign]: false,
   [MappingVariable.PushAddTrackToPlaylist]: false,

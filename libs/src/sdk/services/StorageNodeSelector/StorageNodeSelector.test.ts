@@ -23,11 +23,15 @@ const discoveryNode = 'https://discovery-provider.audius.co'
 
 class MockAuth implements AuthService {
   getSharedSecret = async () => new Uint8Array()
+
   signTransaction: (data: EIP712TypedData) => Promise<string> = async () => ''
+
   sign: (data: string) => Promise<[Uint8Array, number]> = async () => [
     new Uint8Array(),
     0
   ]
+
+  hashAndSign: (data: string) => Promise<string> = async () => ''
 
   getAddress = async () => {
     return userWallet

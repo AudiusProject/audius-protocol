@@ -2,5 +2,5 @@ package signing
 
 var (
 	SigHeader             = "x-sig"
-	SignatureTimeToLiveMs = int64(5 * 60_000) // 5 minutes
+	SignatureTimeToLiveMs = int64(1000 * 60 * 60 * 12) // 12 hours
 )
