@@ -83,6 +83,7 @@ export const audiusBackendInstance = audiusBackend({
     solanaFeePayerAddress: Config.SOLANA_FEE_PAYER_ADDRESS,
     solanaTokenAddress: Config.SOLANA_TOKEN_PROGRAM_ADDRESS,
     waudioMintAddress: Config.WAUDIO_MINT_ADDRESS,
+    usdcMintAddress: Config.USDC_MINT_ADDRESS,
     wormholeAddress: Config.WORMHOLE_ADDRESS
   },
   userNodeUrl: Config.USER_NODE,
