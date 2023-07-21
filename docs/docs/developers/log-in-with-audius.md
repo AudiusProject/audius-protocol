@@ -151,7 +151,7 @@ Use [this playground](https://9ncjui.csb.app/) to explore the different button o
 If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthloginparams-scope).
 
 <details>
-<summary>**Optional: Show loader until the button is ready**</summary>
+<summary>Optional: Show loader until the button is ready</summary>
 
 The button may take up to a couple of seconds to load. You may want to show a loading indicator until the button has loaded for an optimal user experience.
 
