@@ -3,7 +3,7 @@ import { beforeAll, expect, jest } from '@jest/globals'
 import { Configuration } from '../generated/default'
 import { PlaylistsApi as GeneratedPlaylistsApi } from '../generated/default/apis/PlaylistsApi'
 import { EntityManager } from '../../services/EntityManager'
-import { PlaylistsApi } from './PlaylistsApi'
+import { AlbumsApi } from './AlbumsApi'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
@@ -85,8 +85,8 @@ jest
     }
   })
 
-describe('PlaylistsApi', () => {
-  let playlists: PlaylistsApi
+describe('AlbumsApi', () => {
+  let albums: AlbumsApi
 
   const auth = new Auth()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
@@ -96,7 +96,7 @@ describe('PlaylistsApi', () => {
   })
 
   beforeAll(() => {
-    playlists = new PlaylistsApi(
+    albums = new AlbumsApi(
       new Configuration(),
       new Storage({ storageNodeSelector }),
       new EntityManager(),
@@ -108,52 +108,16 @@ describe('PlaylistsApi', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
-  describe('createPlaylist', () => {
-    it('creates a playlist if valid metadata is provided', async () => {
-      const result = await playlists.createPlaylist({
+  describe('uploadAlbum', () => {
+    it('uploads an album if valid metadata is provided', async () => {
+      const result = await albums.uploadAlbum({
         userId: '7eP5n',
         coverArtFile: {
           buffer: Buffer.from([]),
           name: 'coverArt'
         },
         metadata: {
-          playlistName: 'My Playlist'
-        },
-        trackIds: ['yyNwXq7']
-      })
-
-      expect(result).toStrictEqual({
-        blockHash: 'a',
-        blockNumber: 1,
-        playlistId: 1
-      })
-    })
-
-    it('throws an error if invalid metadata is provided', async () => {
-      await expect(async () => {
-        await playlists.createPlaylist({
-          userId: '7eP5n',
-          coverArtFile: {
-            buffer: Buffer.from([]),
-            name: 'coverArt'
-          },
-          metadata: {} as any,
-          trackIds: ['yyNwXq7']
-        })
-      }).rejects.toThrow()
-    })
-  })
-
-  describe('uploadPlaylist', () => {
-    it('uploads a playlist if valid metadata is provided', async () => {
-      const result = await playlists.uploadPlaylist({
-        userId: '7eP5n',
-        coverArtFile: {
-          buffer: Buffer.from([]),
-          name: 'coverArt'
-        },
-        metadata: {
-          playlistName: 'My Playlist',
+          albumName: 'My Album',
           mood: Mood.TENDER
         },
         trackMetadatas: [
@@ -172,13 +136,13 @@ describe('PlaylistsApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        playlistId: 1
+        albumId: 1
       })
     })
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.uploadPlaylist({
+        await albums.uploadAlbum({
           userId: '7eP5n',
           coverArtFile: {
             buffer: Buffer.from([]),
@@ -201,88 +165,18 @@ describe('PlaylistsApi', () => {
     })
   })
 
-  describe('addTrackToPlaylist', () => {
-    it('adds a track to a playlist if valid metadata is provided', async () => {
-      const result = await playlists.addTrackToPlaylist({
+  describe('updateAlbum', () => {
+    it('updates an album if valid metadata is provided', async () => {
+      const result = await albums.updateAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj',
-        trackId: 'yyNwXq7'
-      })
-
-      expect(result).toStrictEqual({
-        blockHash: 'a',
-        blockNumber: 1
-      })
-    })
-
-    it('throws an error if invalid metadata is provided', async () => {
-      await expect(async () => {
-        await playlists.addTrackToPlaylist({
-          userId: '7eP5n',
-          trackId: 'yyNwXq7'
-        } as any)
-      }).rejects.toThrow()
-    })
-  })
-
-  describe('removeTrackFromPlaylist', () => {
-    it('removes a track from a playlist if valid metadata is provided', async () => {
-      const result = await playlists.removeTrackFromPlaylist({
-        userId: '7eP5n',
-        playlistId: 'x5pJ3Aj',
-        trackIndex: 0
-      })
-
-      expect(result).toStrictEqual({
-        blockHash: 'a',
-        blockNumber: 1
-      })
-    })
-
-    it('throws an error if invalid metadata is provided', async () => {
-      await expect(async () => {
-        await playlists.removeTrackFromPlaylist({
-          userId: '7eP5n'
-        } as any)
-      }).rejects.toThrow()
-    })
-  })
-
-  describe('publishPlaylist', () => {
-    it('publishes a playlist if valid metadata is provided', async () => {
-      const result = await playlists.publishPlaylist({
-        userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
-      })
-
-      expect(result).toStrictEqual({
-        blockHash: 'a',
-        blockNumber: 1
-      })
-    })
-
-    it('throws an error if invalid metadata is provided', async () => {
-      await expect(async () => {
-        await playlists.publishPlaylist({
-          userId: '7eP5n'
-        } as any)
-      }).rejects.toThrow()
-    })
-  })
-
-  describe('updatePlaylist', () => {
-    it('updates a playlist if valid metadata is provided', async () => {
-      const result = await playlists.updatePlaylist({
-        userId: '7eP5n',
-        playlistId: 'x5pJ3Aj',
+        albumId: 'x5pJ3Aj',
         coverArtFile: {
           buffer: Buffer.from([]),
           name: 'coverArt'
         },
         metadata: {
-          playlistName: 'My Playlist edited',
-          mood: Mood.TENDER,
-          playlistContents: []
+          albumName: 'My Album edited',
+          mood: Mood.TENDER
         }
       })
 
@@ -294,16 +188,14 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.updatePlaylist({
+        await albums.updateAlbum({
           userId: '7eP5n',
-          playlistId: 'x5pJ3Aj',
+          albumId: 'x5pJ3Aj',
           coverArtFile: {
             buffer: Buffer.from([]),
             name: 'coverArt'
           },
           metadata: {
-            playlistName: 'My Playlist edited',
-            playlistMood: Mood.TENDER,
             mood: Mood.TENDER
           } as any
         })
@@ -311,11 +203,11 @@ describe('PlaylistsApi', () => {
     })
   })
 
-  describe('deletePlaylist', () => {
-    it('deletes a playlist if valid metadata is provided', async () => {
-      const result = await playlists.deletePlaylist({
+  describe('deleteAlbum', () => {
+    it('deletes an album if valid metadata is provided', async () => {
+      const result = await albums.deleteAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
+        albumId: 'x5pJ3Aj'
       })
 
       expect(result).toStrictEqual({
@@ -326,19 +218,19 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.deletePlaylist({
+        await albums.deleteAlbum({
           userId: '7eP5n',
-          playlistId: 1 as any
+          albumId: 1 as any
         })
       }).rejects.toThrow()
     })
   })
 
-  describe('favoritePlaylist', () => {
-    it('favorites a playlist if valid metadata is provided', async () => {
-      const result = await playlists.favoritePlaylist({
+  describe('favoriteAlbum', () => {
+    it('favorites an album if valid metadata is provided', async () => {
+      const result = await albums.favoriteAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
+        albumId: 'x5pJ3Aj'
       })
 
       expect(result).toStrictEqual({
@@ -349,19 +241,19 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.favoritePlaylist({
+        await albums.favoriteAlbum({
           userId: '7eP5n',
-          playlistId: 1 as any
+          albumId: 1 as any
         })
       }).rejects.toThrow()
     })
   })
 
-  describe('unfavoritePlaylist', () => {
-    it('unfavorites a playlist if valid metadata is provided', async () => {
-      const result = await playlists.unfavoritePlaylist({
+  describe('unfavoriteAlbum', () => {
+    it('unfavorites an album if valid metadata is provided', async () => {
+      const result = await albums.unfavoriteAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
+        albumId: 'x5pJ3Aj'
       })
 
       expect(result).toStrictEqual({
@@ -372,19 +264,19 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.unfavoritePlaylist({
+        await albums.unfavoriteAlbum({
           userId: '7eP5n',
-          playlistId: 1 as any
+          albumId: 1 as any
         })
       }).rejects.toThrow()
     })
   })
 
-  describe('repostPlaylist', () => {
-    it('reposts a playlist if valid metadata is provided', async () => {
-      const result = await playlists.repostPlaylist({
+  describe('repostAlbum', () => {
+    it('reposts an album if valid metadata is provided', async () => {
+      const result = await albums.repostAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
+        albumId: 'x5pJ3Aj'
       })
 
       expect(result).toStrictEqual({
@@ -395,19 +287,19 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.repostPlaylist({
+        await albums.repostAlbum({
           userId: '7eP5n',
-          playlistId: 1 as any
+          albumId: 1 as any
         })
       }).rejects.toThrow()
     })
   })
 
-  describe('unrepostPlaylist', () => {
-    it('unreposts a playlist if valid metadata is provided', async () => {
-      const result = await playlists.unrepostPlaylist({
+  describe('unrepostAlbum', () => {
+    it('unreposts an album if valid metadata is provided', async () => {
+      const result = await albums.unrepostAlbum({
         userId: '7eP5n',
-        playlistId: 'x5pJ3Aj'
+        albumId: 'x5pJ3Aj'
       })
 
       expect(result).toStrictEqual({
@@ -418,9 +310,9 @@ describe('PlaylistsApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await playlists.unrepostPlaylist({
+        await albums.unrepostAlbum({
           userId: '7eP5n',
-          playlistId: 1 as any
+          albumId: 1 as any
         })
       }).rejects.toThrow()
     })

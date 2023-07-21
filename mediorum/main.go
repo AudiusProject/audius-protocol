@@ -119,6 +119,7 @@ func startStagingOrProd(isProd bool) {
 		PrivateKey:          privateKeyHex,
 		Dir:                 "/tmp/mediorum",
 		PostgresDSN:         os.Getenv("dbUrl"),
+		BlobStoreDSN:        os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
 		UpstreamCN:          getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
 		TrustedNotifierID:   trustedNotifierID,

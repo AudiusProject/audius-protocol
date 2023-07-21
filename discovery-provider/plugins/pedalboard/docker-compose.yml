@@ -27,3 +27,12 @@ services:
       args:
         app_name: sla-auditor
     restart: always
+
+  relay:
+    container_name: relay
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: relay
+    restart: always

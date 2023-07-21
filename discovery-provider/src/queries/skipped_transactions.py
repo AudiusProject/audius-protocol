@@ -67,22 +67,3 @@ def add_node_level_skipped_transaction(session, blocknumber, blockhash, txhash):
     )
     session.add(skipped_tx)
 
-
-def add_network_level_skipped_transaction(session, blocknumber, blockhash, txhash):
-    num_skipped_tx = (
-        session.query(func.count(SkippedTransaction))
-        .filter(SkippedTransaction.level == SkippedTransactionLevel.network)
-        .scalar()
-    )
-    if num_skipped_tx >= MAX_NETWORK_LEVEL_SKIPPED_TX:
-        logger.warning(
-            f"skipped_transactions.py | Not skipping tx {txhash} as {num_skipped_tx} >= {MAX_NETWORK_LEVEL_SKIPPED_TX}"
-        )
-        raise
-    skipped_tx = SkippedTransaction(
-        blocknumber=blocknumber,
-        blockhash=blockhash,
-        txhash=txhash,
-        level=SkippedTransactionLevel.network,
-    )
-    session.add(skipped_tx)

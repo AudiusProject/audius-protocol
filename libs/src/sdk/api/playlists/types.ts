@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import type { CrossPlatformFile as File } from '../../types/File'
-import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
@@ -36,27 +35,21 @@ export const createUpdatePlaylistSchema = () =>
       coverArtFile: z.optional(
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
-      metadata: createUploadPlaylistMetadataSchema()
-        .omit({ genre: true })
-        .merge(
-          z
-            .object({
-              genre: z.optional(
-                z.enum(Object.values(Genre) as [Genre, ...Genre[]])
-              ),
-              isPrivate: z.optional(z.boolean()),
-              playlistContents: z.optional(
-                z.array(
-                  z.object({
-                    timestamp: z.number(),
-                    metadataTimestamp: z.optional(z.number()),
-                    trackId: HashId
-                  })
-                )
-              )
-            })
-            .strict()
-        ),
+      metadata: createUploadPlaylistMetadataSchema().merge(
+        z.object({
+          coverArtSizes: z.optional(z.string()),
+          isPrivate: z.optional(z.boolean()),
+          playlistContents: z.optional(
+            z.array(
+              z.object({
+                timestamp: z.number(),
+                metadataTimestamp: z.optional(z.number()),
+                trackId: HashId
+              })
+            )
+          )
+        })
+      ),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()
@@ -69,14 +62,10 @@ const createUploadPlaylistMetadataSchema = () =>
   z
     .object({
       description: z.optional(z.string().max(1000)),
-      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
       /**
        * Is this playlist an album?
        */
       isAlbum: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      iswc: z.optional(z.string()),
-      license: z.optional(z.string()),
       mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       playlistName: z.string(),
       releaseDate: z.optional(
