@@ -291,7 +291,7 @@ def entity_manager_update(
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
                     )
-                    logger.info("skipping transaction hash")
+                    logger.info(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
         records_to_save = []
