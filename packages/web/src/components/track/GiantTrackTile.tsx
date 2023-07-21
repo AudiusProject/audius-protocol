@@ -215,7 +215,8 @@ export const GiantTrackTile = ({
   }
 
   const renderShareButton = () => {
-    const shouldShow = (!isUnlisted && !isPublishing) || fieldVisibility.share
+    const shouldShow =
+      (!isUnlisted && !isPublishing) || fieldVisibility.share || isOwner
     return (
       shouldShow && (
         <EntityActionButton
