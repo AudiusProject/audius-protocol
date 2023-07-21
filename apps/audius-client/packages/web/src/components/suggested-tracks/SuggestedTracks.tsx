@@ -62,7 +62,7 @@ const SuggestedTrack = (props: SuggestedTrackProps) => {
 
   const handleAddTrack = useCallback(() => {
     onAddTrack(track_id, collectionId)
-    dispatch(toast({ content: messages.trackAdded }))
+    dispatch(toast({ content: messages.trackAdded, timeout: 1500 }))
   }, [onAddTrack, track_id, collectionId, dispatch])
 
   return (
@@ -117,7 +117,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const divider = <Divider className={styles.trackDivider} />
 
   const contentStyles = useSpring({
-    maxHeight: isExpanded ? contentHeight : 0
+    height: isExpanded ? contentHeight : 0
   })
 
   return (
