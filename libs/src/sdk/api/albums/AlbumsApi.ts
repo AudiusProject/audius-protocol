@@ -3,16 +3,24 @@ import type {
   EntityManagerService,
   WriteOptions
 } from '../../services/EntityManager/types'
+import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
-import type {
+import {
+  createUpdateAlbumSchema,
+  createUploadAlbumSchema,
   DeleteAlbumRequest,
+  DeleteAlbumSchema,
   FavoriteAlbumRequest,
+  FavoriteAlbumSchema,
   getAlbumRequest,
   getAlbumTracksRequest,
   RepostAlbumRequest,
+  RepostAlbumSchema,
   UnfavoriteAlbumRequest,
+  UnfavoriteAlbumSchema,
   UnrepostAlbumRequest,
+  UnrepostAlbumSchema,
   UpdateAlbumRequest,
   UploadAlbumRequest
 } from './types'
@@ -53,19 +61,16 @@ export class AlbumsApi {
     requestParameters: UploadAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const {
-      metadata,
-      trackMetadatas,
-      trackFiles,
-      onProgress,
-      coverArtFile,
-      userId
-    } = requestParameters
+    const { metadata, trackMetadatas, trackFiles, onProgress, coverArtFile } =
+      parseRequestParameters(
+        'uploadAlbum',
+        createUploadAlbumSchema()
+      )(requestParameters)
 
     const { albumName, ...playlistMetadata } = metadata
     const playlistRes = await this.playlistsApi.uploadPlaylist(
       {
-        userId,
+        userId: requestParameters.userId,
         coverArtFile,
         onProgress,
         trackFiles,
@@ -92,13 +97,15 @@ export class AlbumsApi {
     requestParameters: UpdateAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId, metadata, onProgress, coverArtFile } =
-      requestParameters
+    const { metadata, onProgress, coverArtFile } = parseRequestParameters(
+      'updateAlbum',
+      createUpdateAlbumSchema()
+    )(requestParameters)
 
     return await this.playlistsApi.updatePlaylist(
       {
-        userId,
-        playlistId: albumId,
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId,
         coverArtFile,
         onProgress,
         metadata: {
@@ -122,9 +129,13 @@ export class AlbumsApi {
     requestParameters: DeleteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId } = requestParameters
+    parseRequestParameters('deleteAlbum', DeleteAlbumSchema)(requestParameters)
+
     return await this.playlistsApi.deletePlaylist(
-      { userId, playlistId: albumId },
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId
+      },
       writeOptions
     )
   }
@@ -136,9 +147,16 @@ export class AlbumsApi {
     requestParameters: FavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId, metadata } = requestParameters
+    const { metadata } = parseRequestParameters(
+      'favoriteAlbum',
+      FavoriteAlbumSchema
+    )(requestParameters)
     return await this.playlistsApi.favoritePlaylist(
-      { userId, playlistId: albumId, metadata },
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId,
+        metadata
+      },
       writeOptions
     )
   }
@@ -150,9 +168,15 @@ export class AlbumsApi {
     requestParameters: UnfavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId } = requestParameters
+    parseRequestParameters(
+      'unfavoriteAlbum',
+      UnfavoriteAlbumSchema
+    )(requestParameters)
     return await this.playlistsApi.unfavoritePlaylist(
-      { userId, playlistId: albumId },
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId
+      },
       writeOptions
     )
   }
@@ -164,9 +188,17 @@ export class AlbumsApi {
     requestParameters: RepostAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId, metadata } = requestParameters
+    const { metadata } = parseRequestParameters(
+      'repostAlbum',
+      RepostAlbumSchema
+    )(requestParameters)
+
     return await this.playlistsApi.repostPlaylist(
-      { userId, playlistId: albumId, metadata },
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId,
+        metadata
+      },
       writeOptions
     )
   }
@@ -178,9 +210,15 @@ export class AlbumsApi {
     requestParameters: UnrepostAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { userId, albumId } = requestParameters
+    parseRequestParameters(
+      'unrepostAlbum',
+      UnrepostAlbumSchema
+    )(requestParameters)
     return await this.playlistsApi.unrepostPlaylist(
-      { userId, playlistId: albumId },
+      {
+        userId: requestParameters.userId,
+        playlistId: requestParameters.albumId
+      },
       writeOptions
     )
   }
