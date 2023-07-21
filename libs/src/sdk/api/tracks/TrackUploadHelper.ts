@@ -20,12 +20,15 @@ export class TrackUploadHelper extends BaseAPI {
     return id
   }
 
-  public transformTrackUploadMetadata(
-    // PlaylistTrackMetadata is less strict than TrackMetadata because
-    // `genre`, `mood`, and `tags` are optional
-    inputMetadata: PlaylistTrackMetadata,
-    userId: number
-  ) {
+  public transformTrackUploadMetadata<
+    // TrackMetadata is a less strict type
+    // only requiring the fields used in this function.
+    // This supports both track/playlist uploads and edits
+    TrackMetadata extends Pick<
+      PlaylistTrackMetadata,
+      'isPremium' | 'isUnlisted' | 'fieldVisibility'
+    >
+  >(inputMetadata: TrackMetadata, userId: number) {
     const metadata = {
       ...inputMetadata,
       ownerId: userId

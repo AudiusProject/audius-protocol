@@ -247,7 +247,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Create",
-                        "_metadata": "1,2,3",
+                        "_metadata": f'{{"cid": "QmCreateUser1", "data": {update_user1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -289,7 +289,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
-                        "_metadata": "2,3,4",
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {update_user1_json}}}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -341,8 +341,18 @@ def test_index_valid_user(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+                "metadata_multihash": "QmCreateUser1",
+            },
+            {
+                "user_id": 2,
+                "handle": "user-1",
+                "wallet": "User2Wallet",
+                "metadata_multihash": "QmCreateUser2",
+            },
         ],
         "tracks": [
             {
@@ -365,6 +375,18 @@ def test_index_valid_user(app, mocker):
             {
                 "user_id": USER_ID_OFFSET,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+        ],
+        "cid_datas": [
+            {
+                "cid": "QmCreateUser1",
+                "type": "user",
+                "data": {},
+            },
+            {
+                "cid": "QmCreateUser2",
+                "type": "user",
+                "data": {},
             },
         ],
     }
@@ -419,7 +441,7 @@ def test_index_valid_user(app, mocker):
         assert user_3.handle == "isaac"
 
         all_cid: List[CIDData] = session.query(CIDData).all()
-        assert len(all_cid) == 4
+        assert len(all_cid) == 6
 
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
@@ -1056,7 +1078,7 @@ def test_index_empty_bio(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
-                        "_metadata": "2,3,4",
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {update_user2a_json}}}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -1122,9 +1144,22 @@ def test_index_empty_bio(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+            {
+                "user_id": 2,
+                "handle": "user-1",
+                "wallet": "User2Wallet",
+                "metadata_multihash": "QmCreateUser2",
+            },
+        ],
+        "cid_datas": [
+            {
+                "cid": "QmCreateUser2",
+                "type": "user",
+                "data": {},
+            },
         ],
     }
+
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:

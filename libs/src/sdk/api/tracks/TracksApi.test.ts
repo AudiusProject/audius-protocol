@@ -161,7 +161,7 @@ describe('TracksApi', () => {
             name: 'coverArt'
           },
           metadata: {
-            title: 'BachGavotte'
+            titl: 'BachGavotte'
           } as any
         })
       }).rejects.toThrow()

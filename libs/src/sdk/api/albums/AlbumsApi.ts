@@ -95,6 +95,7 @@ export class AlbumsApi {
     const { userId, albumId, metadata, onProgress, coverArtFile } =
       requestParameters
 
+    const { albumName, ...playlistMetadata } = metadata
     return await this.playlistsApi.updatePlaylist(
       {
         userId,
@@ -102,13 +103,8 @@ export class AlbumsApi {
         coverArtFile,
         onProgress,
         metadata: {
-          description: metadata.description,
-          mood: metadata.mood,
-          playlistName: metadata.albumName,
-          releaseDate: metadata.releaseDate,
-          tags: metadata.tags,
-          upc: metadata.upc,
-          coverArtSizes: metadata.coverArtSizes
+          ...playlistMetadata,
+          playlistName: albumName
         }
       },
       writeOptions

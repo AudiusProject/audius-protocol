@@ -95,7 +95,11 @@ track_metadata_format: TrackMetadata = {
     "isrc": None,
     "iswc": None,
     "track_segments": [],
-    "download": {},
+    "download": {
+        "is_downloadable": False,
+        "requires_follow": False,
+        "cid": None,
+    },
     "remix_of": None,
     "is_unlisted": False,
     "field_visibility": None,

@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from typing import Dict, TypedDict, Union
@@ -10,6 +11,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.models.indexing.cid_data import CIDData
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -26,6 +28,7 @@ from src.tasks.entity_manager.utils import (
     EntityType,
     ManageEntityParameters,
     copy_record,
+    generate_metadata_cid_v1,
     get_metadata_type_and_format,
     parse_metadata,
     validate_signer,
@@ -195,7 +198,7 @@ def create_user(
         )
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
-        cid_metadata[metadata_cid] = params.metadata
+        cid_metadata[metadata_cid] = user_metadata
         user_record.metadata_multihash = metadata_cid
     except Exception:
         # fallback to multi tx signup
@@ -221,7 +224,11 @@ def create_user(
     return user_record
 
 
-def update_user(params: ManageEntityParameters):
+def update_user(
+    params: ManageEntityParameters,
+    cid_type: Dict[str, str],
+    cid_metadata: Dict[str, Dict],
+):
     validate_user_tx(params)
 
     user_id = params.user_id
@@ -254,9 +261,18 @@ def update_user(params: ManageEntityParameters):
         params.web3,
         params.challenge_bus,
     )
-    user_record.metadata_multihash = params.metadata_cid
+
+    updated_metadata, updated_metadata_cid = merge_metadata(
+        params, user_record, cid_metadata
+    )
+    metadata_type, _ = get_metadata_type_and_format(params.entity_type)
+    cid_type[updated_metadata_cid] = metadata_type
+    cid_metadata[updated_metadata_cid] = updated_metadata
+    user_record.metadata_multihash = updated_metadata_cid
+
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
+
     params.add_user_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
@@ -275,41 +291,23 @@ def update_user_metadata(
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
 ):
-    # Fields also stored on chain
-    if "profile_picture" in metadata and metadata["profile_picture"]:
-        user_record.profile_picture = metadata["profile_picture"]
+    # Iterate over the user_record keys
+    user_record_attributes = user_record.get_attributes_dict()
+    for key, _ in user_record_attributes.items():
+        # Update the user_record when the corresponding field exists
+        # in metadata
+        if key in metadata:
+            setattr(user_record, key, metadata[key])
 
-    if "cover_photo" in metadata and metadata["cover_photo"]:
-        user_record.cover_photo = metadata["cover_photo"]
-
-    if "bio" in metadata:
-        user_record.bio = metadata["bio"]
-
-    if "name" in metadata and metadata["name"]:
-        user_record.name = metadata["name"]
-
-    if "location" in metadata and metadata["location"]:
-        user_record.location = metadata["location"]
-
-    if "artist_pick_track_id" in metadata:
-        user_record.artist_pick_track_id = metadata["artist_pick_track_id"]
-
-    # Fields with no on-chain counterpart
-    if "profile_picture_sizes" in metadata and metadata["profile_picture_sizes"]:
-        user_record.profile_picture = metadata["profile_picture_sizes"]
-
-    if "cover_photo_sizes" in metadata and metadata["cover_photo_sizes"]:
-        user_record.cover_photo = metadata["cover_photo_sizes"]
-
-    if (
-        "collectibles" in metadata
-        and metadata["collectibles"]
-        and isinstance(metadata["collectibles"], dict)
-        and metadata["collectibles"].items()
-    ):
-        user_record.has_collectibles = True
-    else:
-        user_record.has_collectibles = False
+    if "collectibles" in metadata:
+        if (
+            metadata["collectibles"]
+            and isinstance(metadata["collectibles"], dict)
+            and metadata["collectibles"].items()
+        ):
+            user_record.has_collectibles = True
+        else:
+            user_record.has_collectibles = False
 
     if "associated_wallets" in metadata:
         update_user_associated_wallets(
@@ -331,12 +329,6 @@ def update_user_metadata(
             "sol",
         )
 
-    if "playlist_library" in metadata and metadata["playlist_library"]:
-        user_record.playlist_library = metadata["playlist_library"]
-
-    if "is_deactivated" in metadata:
-        user_record.is_deactivated = metadata["is_deactivated"]
-
     if "events" in metadata and metadata["events"]:
         update_user_events(
             session,
@@ -345,10 +337,44 @@ def update_user_metadata(
             challenge_event_bus,
         )
 
-    if metadata.get("allow_ai_attribution"):
-        user_record.allow_ai_attribution = metadata["allow_ai_attribution"]
-
     return user_record
+
+
+# get previous CIDData and merge new metadata into it
+# this is to support fields (collectibles, associated_wallets) which aren't being indexed yet
+# once those are indexed and backfilled this can be removed
+def merge_metadata(
+    params: ManageEntityParameters, record: User, cid_metadata: Dict[str, Dict]
+):
+    cid = record.metadata_multihash
+
+    # Check for previous metadata in cid_metadata in case multiple tx are in the same block
+    if cid in cid_metadata:
+        prev_cid_metadata = cid_metadata[cid]
+    else:
+        prev_cid_data_record = (
+            params.session.query(CIDData)
+            .filter_by(
+                cid=record.metadata_multihash,
+            )
+            .first()
+        )
+        prev_cid_metadata = prev_cid_data_record if prev_cid_data_record.data else {}
+
+    if prev_cid_metadata:
+        # merge previous and current metadata
+        updated_metadata = prev_cid_metadata | params.metadata
+
+        # generate a cid
+        updated_metadata_cid = str(
+            generate_metadata_cid_v1(json.dumps(updated_metadata))
+        )
+
+        return updated_metadata, updated_metadata_cid
+    else:
+        params.logger.error(
+            f"Could not find previous metadata blob for {record}", exc_info=True
+        )
 
 
 class UserEventMetadata(TypedDict, total=False):
