@@ -339,9 +339,8 @@ const TrackHeader = ({
   )
 
   const renderDogEar = () => {
+    // Omitting isOwner and doesUserHaveAccess to ensure we always show premium DogEars
     const DogEarType = getDogEarType({
-      doesUserHaveAccess,
-      isOwner,
       isUnlisted,
       premiumConditions
     })
