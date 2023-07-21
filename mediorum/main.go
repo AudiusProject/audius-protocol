@@ -129,6 +129,7 @@ func startStagingOrProd(isProd bool) {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+		StoreAll:            os.Getenv("STORE_ALL") == "true",
 		VersionJson:         GetVersionJson(),
 	}
 

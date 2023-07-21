@@ -57,6 +57,7 @@ type healthCheckResponseData struct {
 	CidCursors                []cidCursor                `json:"cidCursors"`
 	PeerHealths               map[string]time.Time       `json:"peerHealths"`
 	IsV2Only                  bool                       `json:"isV2Only"`
+	StoreAll                  bool                       `json:"storeAll"`
 }
 
 type legacyHealth struct {
@@ -129,6 +130,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		PeerHealths:               ss.peerHealth,
 		Signers:                   ss.Config.Signers,
 		IsV2Only:                  ss.Config.IsV2Only,
+		StoreAll:                  ss.Config.StoreAll,
 	}
 
 	dataBytes, err := json.Marshal(data)
