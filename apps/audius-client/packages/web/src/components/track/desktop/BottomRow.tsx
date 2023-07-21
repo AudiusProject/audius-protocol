@@ -77,7 +77,9 @@ export const BottomRow = ({
 
   const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
 
-  const hideShare: boolean = fieldVisibility
+  const hideShare: boolean = isOwner
+    ? false
+    : fieldVisibility
     ? fieldVisibility.share === false
     : false
 

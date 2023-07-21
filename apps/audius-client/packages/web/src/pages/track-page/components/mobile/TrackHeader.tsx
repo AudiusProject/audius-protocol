@@ -435,7 +435,7 @@ const TrackHeader = ({
       <ActionButtonRow
         showRepost={showSocials}
         showFavorite={showSocials}
-        showShare={!isUnlisted || fieldVisibility.share}
+        showShare={!isUnlisted || fieldVisibility.share || isOwner}
         showOverflow
         shareToastDisabled
         isOwner={isOwner}
