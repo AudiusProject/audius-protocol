@@ -34,6 +34,7 @@ import {
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import { TrackUploadHelper } from './TrackUploadHelper'
+import { encodeHashId } from '../../utils/hashId'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -163,12 +164,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
     return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      trackId
+      ...response,
+      trackId: encodeHashId(trackId)
     }
   }
 
@@ -246,12 +244,11 @@ export class TracksApi extends TracksApiWithoutStream {
       // Update metadata to include updated preview CID
       const previewKey = `320_preview|${updatedMetadata.previewStartSeconds}`
       updatedMetadata.previewCid = updatePreviewResp.results[previewKey]
-
     }
 
     // Write metadata to chain
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -263,12 +260,6 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber
-    }
   }
 
   /**
@@ -284,7 +275,7 @@ export class TracksApi extends TracksApiWithoutStream {
       DeleteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -292,9 +283,6 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -310,7 +298,7 @@ export class TracksApi extends TracksApiWithoutStream {
       FavoriteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -319,9 +307,6 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -337,7 +322,7 @@ export class TracksApi extends TracksApiWithoutStream {
       UnfavoriteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -345,9 +330,6 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -363,7 +345,7 @@ export class TracksApi extends TracksApiWithoutStream {
       RepostTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -372,9 +354,6 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -390,7 +369,7 @@ export class TracksApi extends TracksApiWithoutStream {
       UnrepostTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -398,8 +377,5 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 }
