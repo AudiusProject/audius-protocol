@@ -20,7 +20,6 @@ services:
       args:
         app_name: trending-challenge-rewards
     restart: always
-<<<<<<< HEAD
 
   relay:
     container_name: relay
@@ -30,7 +29,3 @@ services:
       args:
         app_name: relay
     restart: always
-=======
-    profiles:
-      - pedalboard
->>>>>>> main
