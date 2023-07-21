@@ -16,6 +16,11 @@ jobs:
       instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM
       service: trending-challenge-rewards
   - push-docker-image:
+      name: push-pedalboard-relay
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-pedalboard-relay-$CIRCLE_BUILD_NUM
+      service: relay
+  - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
