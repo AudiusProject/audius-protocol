@@ -2,6 +2,7 @@ import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { AlbumsApi } from './api/albums/AlbumsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
@@ -205,6 +206,12 @@ const initializeApis = ({
     services.entityManager,
     services.auth
   )
+  const albums = new AlbumsApi(
+    generatedApiClientConfig,
+    services.storage,
+    services.entityManager,
+    services.auth
+  )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
     services.storage,
@@ -252,6 +259,7 @@ const initializeApis = ({
   return {
     tracks,
     users,
+    albums,
     playlists,
     tips,
     resolve,
