@@ -39,17 +39,20 @@ export const createUpdatePlaylistSchema = () =>
         .omit({ isAlbum: true })
         .partial()
         .merge(
-          z.object({
-            playlistContents: z.optional(
-              z.array(
-                z.object({
-                  timestamp: z.number(),
-                  metadataTimestamp: z.optional(z.number()),
-                  trackId: HashId
-                })
+          z
+            .object({
+              isPrivate: z.optional(z.boolean()),
+              playlistContents: z.optional(
+                z.array(
+                  z.object({
+                    timestamp: z.number(),
+                    metadataTimestamp: z.optional(z.number()),
+                    trackId: HashId
+                  })
+                )
               )
-            )
-          })
+            })
+            .strict()
         ),
       onProgress: z.optional(z.function().args(z.number()))
     })
@@ -164,13 +167,15 @@ export const FavoritePlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a save of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isSaveOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a save of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isSaveOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
@@ -191,13 +196,15 @@ export const RepostPlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a repost of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isRepostOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a repost of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isRepostOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
