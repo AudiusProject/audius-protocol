@@ -63,13 +63,12 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     backgroundColor: palette.neutralLight10,
     borderWidth: 1,
     borderColor: palette.neutralLight7,
-    borderRadius: spacing(2)
+    borderRadius: spacing(2),
+    gap: spacing(2)
   },
   titleContainer: {
     ...flexRowCentered(),
-    justifyContent: 'space-between',
-    marginHorizontal: spacing(2),
-    marginVertical: spacing(1)
+    justifyContent: 'space-between'
   },
   title: {
     fontFamily: typography.fontByWeight.heavy,
@@ -78,8 +77,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   descriptionContainer: {
     ...flexRowCentered(),
-    flexWrap: 'wrap',
-    margin: spacing(2)
+    flexWrap: 'wrap'
   },
   description: {
     flexShrink: 0,
