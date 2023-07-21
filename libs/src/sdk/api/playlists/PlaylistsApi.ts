@@ -557,8 +557,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * taking the metadata from the playlist when the track is missing it.
    */
   private combineMetadata(
-    trackMetadata: PlaylistTrackMetadata & { coverArtSizes?: string },
-    playlistMetadata: PlaylistMetadata & { coverArtSizes?: string }
+    trackMetadata: PlaylistTrackMetadata,
+    playlistMetadata: PlaylistMetadata
   ) {
     const metadata = trackMetadata
 

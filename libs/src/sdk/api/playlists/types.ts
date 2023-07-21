@@ -36,6 +36,7 @@ export const createUpdatePlaylistSchema = () =>
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
       metadata: createUploadPlaylistMetadataSchema()
+        .omit({ isAlbum: true })
         .partial()
         .merge(
           z.object({
