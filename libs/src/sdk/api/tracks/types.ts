@@ -121,25 +121,17 @@ export type UploadTrackRequest = Omit<
 }
 
 export const createUpdateTrackSchema = () =>
-  createUploadTrackSchema()
-    .pick({
-      userId: true,
-      metadata: true,
-      onProgress: true
+  z
+    .object({
+      userId: HashId,
+      trackId: HashId,
+      metadata: createUploadTrackMetadataSchema().partial(),
+      transcodePreview: z.optional(z.boolean()),
+      coverArtFile: z.optional(
+        z.custom<File>((data: unknown) => isFileValid(data as File))
+      ),
+      onProgress: z.optional(z.function().args(z.number()))
     })
-    .merge(
-      z.object({
-        trackId: HashId,
-        coverArtFile: z.optional(
-          z.custom<File>((data: unknown) => isFileValid(data as File))
-        )
-      })
-    )
-    .merge(
-      z.object({
-        transcodePreview: z.optional(z.boolean())
-      })
-    )
     .strict()
 
 export type UpdateTrackRequest = Omit<

@@ -35,21 +35,21 @@ export const createUpdatePlaylistSchema = () =>
       coverArtFile: z.optional(
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
-      metadata: createUploadPlaylistMetadataSchema().merge(
-        z.object({
-          coverArtSizes: z.optional(z.string()),
-          isPrivate: z.optional(z.boolean()),
-          playlistContents: z.optional(
-            z.array(
-              z.object({
-                timestamp: z.number(),
-                metadataTimestamp: z.optional(z.number()),
-                trackId: HashId
-              })
+      metadata: createUploadPlaylistMetadataSchema()
+        .partial()
+        .merge(
+          z.object({
+            playlistContents: z.optional(
+              z.array(
+                z.object({
+                  timestamp: z.number(),
+                  metadataTimestamp: z.optional(z.number()),
+                  trackId: HashId
+                })
+              )
             )
-          )
-        })
-      ),
+          })
+        ),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()

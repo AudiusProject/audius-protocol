@@ -107,8 +107,7 @@ export class AlbumsApi {
           playlistName: metadata.albumName,
           releaseDate: metadata.releaseDate,
           tags: metadata.tags,
-          upc: metadata.upc,
-          coverArtSizes: metadata.coverArtSizes
+          upc: metadata.upc
         }
       },
       writeOptions
