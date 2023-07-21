@@ -7,6 +7,7 @@ export type EntityManagerConfig = {
   web3ProviderUrl: string
   identityServiceUrl: string
   discoveryNodeSelector: DiscoveryNodeSelectorService
+  useDiscoveryRelay?: boolean
 }
 
 export type EntityManagerService = {

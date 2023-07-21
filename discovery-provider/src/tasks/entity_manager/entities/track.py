@@ -156,6 +156,8 @@ def is_valid_json_field(metadata, field):
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
+    track_record.preview_cid = track_metadata["preview_cid"]
+    track_record.audio_upload_id = track_metadata["audio_upload_id"]
     track_record.title = track_metadata["title"]
     track_record.cover_art = track_metadata["cover_art"]
     track_record.tags = track_metadata["tags"]
@@ -173,14 +175,12 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
     track_record.is_premium = track_metadata["is_premium"]
     track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
+    track_record.preview_start_seconds = track_metadata["preview_start_seconds"]
 
     if track_metadata["cover_art_sizes"]:
         track_record.cover_art = track_metadata["cover_art_sizes"]
 
-    # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-    # made unlisted again
-    if track_record.is_unlisted:
-        track_record.is_unlisted = track_metadata["is_unlisted"]
+    track_record.is_unlisted = track_metadata["is_unlisted"]
 
     # Only update `duration` if it's provided,
     # otherwise fall back to the original value. This will allow for replacing
@@ -272,14 +272,9 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][
-                ai_attribution_user_id
-            ]
+            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
-                raise IndexingValidationError(
-                    f"Cannot AI attribute user {ai_attribution_user}"
-                )
-    return True
+                raise IndexingValidationError(f"Cannot AI attribute user {ai_attribution_user}")
 
 
 def get_handle(params: ManageEntityParameters):

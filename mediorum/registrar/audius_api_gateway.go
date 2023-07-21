@@ -36,11 +36,11 @@ type audiusApiGatewayProvider struct {
 }
 
 func (p *audiusApiGatewayProvider) Peers() ([]server.Peer, error) {
-	return p.getNodes("/content/verbose")
+	return p.getNodes("/content/verbose?all=true")
 }
 
 func (p *audiusApiGatewayProvider) Signers() ([]server.Peer, error) {
-	return p.getNodes("/discovery/verbose")
+	return p.getNodes("/discovery/verbose?all=true")
 }
 
 func (p *audiusApiGatewayProvider) getNodes(path string) ([]server.Peer, error) {

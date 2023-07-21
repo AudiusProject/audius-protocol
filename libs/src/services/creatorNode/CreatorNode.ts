@@ -173,11 +173,17 @@ export class CreatorNode {
     onProgress: ProgressCB = () => {}
   ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
+    const audioUploadOpts: { [key: string]: string } = {}
+    if (updatedMetadata.preview_start_seconds) {
+      audioUploadOpts['previewStartSeconds'] =
+        updatedMetadata.preview_start_seconds.toString()
+    }
 
     // Upload audio and cover art
     const promises = [
       this._retry3(
-        async () => await this.uploadTrackAudioV2(trackFile, onProgress),
+        async () =>
+          await this.uploadTrackAudioV2(trackFile, onProgress, audioUploadOpts),
         (e) => {
           console.log('Retrying uploadTrackAudioV2', e)
         }
@@ -200,6 +206,11 @@ export class CreatorNode {
     updatedMetadata.track_segments = []
     updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
+    if (updatedMetadata.preview_start_seconds) {
+      const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
+      updatedMetadata.preview_cid = audioResp.results[previewKey]
+    }
+    updatedMetadata.audio_upload_id = audioResp.id
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
@@ -208,8 +219,12 @@ export class CreatorNode {
     return updatedMetadata
   }
 
-  async uploadTrackAudioV2(file: File, onProgress: ProgressCB = () => {}) {
-    return await this.uploadFileV2(file, onProgress, 'audio')
+  async uploadTrackAudioV2(
+    file: File,
+    onProgress: ProgressCB = () => {},
+    options?: { [key: string]: string }
+  ) {
+    return await this.uploadFileV2(file, onProgress, 'audio', options)
   }
 
   async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => {}) {
@@ -227,10 +242,12 @@ export class CreatorNode {
   async uploadFileV2(
     file: File,
     onProgress: ProgressCB,
-    template: 'audio' | 'img_square' | 'img_backdrop'
+    template: 'audio' | 'img_square' | 'img_backdrop',
+    options?: { [key: string]: string }
   ) {
     const { headers, formData } = this.createFormDataAndUploadHeadersV2(file, {
-      template
+      template,
+      ...options
     })
     const response = await this._makeRequestV2({
       method: 'post',
@@ -260,7 +277,10 @@ export class CreatorNode {
       try {
         const resp = await this.getProcessingStatusV2(id)
         if (resp?.status === 'done') return resp
-        if (resp?.status === 'error') {
+        if (
+          resp?.status === 'error' ||
+          resp?.status === 'error_retranscode_preview'
+        ) {
           throw new Error(
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
           )

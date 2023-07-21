@@ -87,7 +87,10 @@ export const createUploadTrackMetadataSchema = () =>
         })
       ),
       tags: z.optional(z.string()),
-      title: z.string()
+      title: z.string(),
+      previewStartSeconds: z.optional(z.number()),
+      audioUploadId: z.optional(z.string()),
+      previewCid: z.optional(z.string())
     })
     .strict()
 

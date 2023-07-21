@@ -159,4 +159,37 @@ describe('EntityManager', () => {
       }).rejects.toThrow()
     })
   })
+
+  describe('manageEntityConfig', () => {
+    it('relays to the correct service', async () => {
+      const sharedDefaultConfig = {
+        discoveryNodeSelector,
+        web3ProviderUrl: '',
+        contractAddress: developmentConfig.entityManagerContractAddress,
+        identityServiceUrl: developmentConfig.identityServiceUrl
+      }
+
+      const discoveryEntityManager = new EntityManager({
+        ...sharedDefaultConfig,
+        useDiscoveryRelay: true
+      })
+
+      const relayEntityManagerUndefined = new EntityManager({
+        ...sharedDefaultConfig,
+      })
+
+      const relayEntityManagerFalse = new EntityManager({
+        ...sharedDefaultConfig,
+        useDiscoveryRelay: false
+      })
+
+      const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
+      const identityRelayUrlUndefined = await relayEntityManagerUndefined.getRelayEndpoint()
+      const identityRelayUrlFalse = await relayEntityManagerFalse.getRelayEndpoint()
+
+      expect(discoveryRelayUrl).toEqual(discoveryNode)
+      expect(identityRelayUrlUndefined).toEqual(developmentConfig.identityServiceUrl)
+      expect(identityRelayUrlUndefined).toEqual(identityRelayUrlFalse)
+    })
+  })
 })

@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +14,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slices"
 )
+
+const NumRandNodesToCheckOn404 = 5
 
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -27,7 +31,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, cid, true)
+		return ss.redirectToCid(c, cid, NumRandNodesToCheckOn404)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -38,7 +42,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
-		return ss.redirectToCid(c, cid, true)
+		return ss.redirectToCid(c, cid, NumRandNodesToCheckOn404)
 	}
 
 	// v1 file listen
@@ -63,7 +67,7 @@ func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
 
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, cid, false)
+		return ss.redirectToCid(c, cid, 0)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -73,7 +77,7 @@ func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
 	}
 
 	if _, err := os.Stat(diskPath); os.IsNotExist(err) {
-		return ss.redirectToCid(c, cid, false)
+		return ss.redirectToCid(c, cid, 0)
 	}
 
 	return c.NoContent(200)
@@ -95,7 +99,7 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, dirCid, true)
+		return ss.redirectToCid(c, dirCid, NumRandNodesToCheckOn404)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -106,7 +110,7 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
-		return ss.redirectToCid(c, dirCid, true)
+		return ss.redirectToCid(c, dirCid, NumRandNodesToCheckOn404)
 	}
 
 	return nil
@@ -128,7 +132,7 @@ func (ss *MediorumServer) headLegacyDirCid(c echo.Context) error {
 	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, dirCid, false)
+		return ss.redirectToCid(c, dirCid, 0)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -138,67 +142,100 @@ func (ss *MediorumServer) headLegacyDirCid(c echo.Context) error {
 	}
 
 	if _, err := os.Stat(diskPath); os.IsNotExist(err) {
-		return ss.redirectToCid(c, dirCid, false)
+		return ss.redirectToCid(c, dirCid, 0)
 	}
 
 	return c.NoContent(200)
 }
 
-func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, checkAllNodes bool) error {
-	ctx := c.Request().Context()
-
-	// don't redirect if the legacy "localOnly" query parameter is set
+func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, numRandNodesToCheck int) error {
+	// don't check additional nodes beyond what's in cid_lookup if "localOnly" is true
 	if c.QueryParam("localOnly") == "true" {
 		return c.String(404, "not redirecting because localOnly=true")
 	}
 
-	hosts, err := ss.findHostsWithCid(ctx, cid)
+	ctx := c.Request().Context()
+
+	cidLookupHosts, err := ss.findHostsWithCid(ctx, cid)
 	if err != nil {
 		return c.String(500, "error redirecting:"+err.Error())
 	}
 
 	logger := ss.logger.With("cid", cid)
-	logger.Info("potential hosts for cid", "hosts", hosts)
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 
 	// redirect to the first healthy host that we know has the cid (thanks to our cid_lookup table)
-	for _, host := range hosts {
-		if !slices.Contains(healthyHosts, host) {
-			logger.Info("host not healthy; skipping", "host", host)
+	for _, host := range cidLookupHosts {
+		if !slices.Contains(healthyHosts, host) || host == ss.Config.Self.Host {
 			continue
 		}
-		dest := replaceHost(*c.Request().URL, host)
-		logger.Info("redirecting to: " + dest.String())
-		return c.Redirect(302, dest.String())
+		if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+			logger.Info("redirecting to: " + dest)
+			return c.Redirect(302, dest)
+		}
 	}
 
-	// // check all healthy hosts via HEAD request to see if they have the cid but aren't in cid_lookup
-	// if checkAllNodes {
-	// 	for _, host := range healthyHosts {
-	// 		if host == ss.Config.Self.Host {
-	// 			continue
-	// 		}
-	// 		dest := replaceHost(*c.Request().URL, host)
-	// 		req, err := http.NewRequest("HEAD", "https:"+dest.String(), nil)
-	// 		if err != nil {
-	// 			logger.Error("error creating HEAD request", "err", err)
-	// 			continue
-	// 		}
-	// 		req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-	// 		resp, err := http.DefaultClient.Do(req)
-	// 		if err != nil {
-	// 			logger.Error("error sending HEAD request", "err", err)
-	// 			continue
-	// 		}
-	// 		if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 || resp.StatusCode == 302 || resp.StatusCode == 304 {
-	// 			dest.Query().Add("localOnly", "true")
-	// 			return c.Redirect(302, dest.String())
-	// 		}
-	// 	}
-	// }
+	// check healthy hosts via HEAD request to see if they have the cid but aren't in our cid_lookup
+	for _, host := range healthyHosts {
+		if host == ss.Config.Self.Host || slices.Contains(cidLookupHosts, host) {
+			continue
+		}
+		if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+			logger.Info("redirecting to: " + dest)
+			ss.pgPool.Exec(ctx, `insert into cid_lookup ("multihash", "host") values ($1, $2) on conflict do nothing`, cid, host)
+			return c.Redirect(302, dest)
+		}
+	}
 
 	logger.Info("no healthy host found with cid")
 	return c.String(404, "no healthy host found with cid: "+cid)
+}
+
+// instead of adding a new disk-check URL... we can fake it from the client side
+// by not following any redirects...
+// 302 => NO
+// 404 => NO
+// 200 => YES
+func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string, bool) {
+	noRedirectClient := &http.Client{
+		// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Timeout: 10 * time.Second,
+	}
+
+	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
+
+	hostUrl, err := url.Parse(hostString)
+	if err != nil {
+		return "", false
+	}
+
+	dest.Host = hostUrl.Host
+	dest.Scheme = hostUrl.Scheme
+	query := dest.Query()
+	query.Add("localOnly", "true")
+	dest.RawQuery = query.Encode()
+
+	req, err := http.NewRequest("HEAD", dest.String(), nil) // NOTE: cloudflare seems to turn most of these HEADs into GETs
+	if err != nil {
+		logger.Error("invalid url", "err", err)
+		return "", false
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+
+	resp, err := noRedirectClient.Do(req)
+	if err != nil {
+		logger.Error("request failed", "err", err)
+		return "", false
+	}
+	resp.Body.Close()
+	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
+		return dest.String(), true
+	}
+
+	return "", false
 }
 
 func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {

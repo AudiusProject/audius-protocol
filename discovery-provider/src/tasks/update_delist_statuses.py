@@ -1,4 +1,5 @@
-from typing import Dict, List
+from datetime import datetime
+from typing import Dict, List, Set
 from urllib.parse import quote
 
 from sqlalchemy.orm.session import Session
@@ -17,9 +18,10 @@ logger = StructuredLogger(__name__)
 UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 DELIST_BATCH_SIZE = 5000
+DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 
 
-def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[User]:
+def query_users_by_user_ids(session: Session, user_ids: Set[int]) -> List[User]:
     """Returns a list of User objects that has a user id in `user_ids`"""
     users = (
         session.query(User)
@@ -33,7 +35,7 @@ def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[User]
     return users
 
 
-def query_tracks_by_track_ids(session: Session, track_ids: List[int]) -> List[Track]:
+def query_tracks_by_track_ids(session: Session, track_ids: Set[int]) -> List[Track]:
     """Returns a list of Track objects that has a track id in `track_ids`"""
     tracks = (
         session.query(Track)
@@ -47,26 +49,59 @@ def query_tracks_by_track_ids(session: Session, track_ids: List[int]) -> List[Tr
     return tracks
 
 
-def update_user_is_available_statuses(session, users):
+def update_user_is_available_statuses(
+    session: Session, users: List[Dict], current_block_timestamp: int
+):
     """Update users table to reflect delist statuses"""
     # If there are duplicate user ids with different delist values in users,
     # only the most recent value is persisted because users is sorted by asc createdAt
-    user_id_to_delisted_map = {}
+    user_delist_map = {}
     for user in users:
         user_id = user["userId"]
         delisted = user["delisted"]
-        user_id_to_delisted_map[user_id] = delisted
+        delist_timestamp = datetime.strptime(
+            user["createdAt"], DATETIME_FORMAT_STRING
+        ).timestamp()
+        user_delist_map[user_id] = {
+            "delisted": delisted,
+            "delist_timestamp": delist_timestamp,
+        }
 
-    user_ids = set(user_id_to_delisted_map.keys())
+    user_ids = set(user_delist_map.keys())
     users_to_update = query_users_by_user_ids(session, user_ids)
     user_ids_to_update = set(map(lambda user: user.user_id, users_to_update))
-    if len(user_id_to_delisted_map) != len(user_ids_to_update):
-        # halt processing until indexing is caught up and all users are created in db
+
+    if len(user_delist_map) != len(user_ids_to_update):
+        # Halt processing until indexing is caught up and all users are created in db
         missing_user_ids = user_ids - user_ids_to_update
-        logger.info(f"update_delist_statuses.py | missing user ids: {missing_user_ids}")
-        return False, []
+        # However, do not wait for missing users for which the delist was created before
+        # the current_block_timestamp. Since user created at < delist created at, if
+        # delist created at < current block timestamp, we know we've indexed past the point
+        # the CREATE USER was written to chain and we won't index the CREATE USER again
+        # going forward. If the user is missing on this node at this point, it'll never
+        # be created. This is to keep delisting unblocked despite data inconsistencies.
+        def wait_for_user_to_be_indexed(user_id):
+            return (
+                user_delist_map[user_id]["delist_timestamp"] > current_block_timestamp
+            )
+
+        missing_user_ids_to_wait_for = set(
+            filter(
+                wait_for_user_to_be_indexed,
+                missing_user_ids,
+            )
+        )
+        if len(missing_user_ids_to_wait_for) > 0:
+            logger.info(
+                f"update_delist_statuses.py | waiting for missing user ids to be indexed: {missing_user_ids_to_wait_for}, current_block_timestamp: {current_block_timestamp}"
+            )
+            return False, []
+
+        logger.info(
+            f"update_delist_statuses.py | ignoring delists for missing user ids: {missing_user_ids}, current_block_timestamp: {current_block_timestamp}"
+        )
     for user in users_to_update:
-        delisted = user_id_to_delisted_map[user.user_id]
+        delisted = user_delist_map[user.user_id]["delisted"]
         if delisted:
             # Deactivate active users that have been delisted
             if user.is_available:
@@ -86,28 +121,61 @@ def update_user_is_available_statuses(session, users):
     return True, users_updated
 
 
-def update_track_is_available_statuses(session, tracks):
+def update_track_is_available_statuses(
+    session: Session, tracks: List[Dict], current_block_timestamp: int
+):
     """Update tracks table to reflect delist statuses"""
     # If there are duplicate track ids with different delist values in tracks,
     # only the most recent value is persisted because tracks is sorted by asc createdAt
-    track_id_to_delisted_map = {}
+    track_delist_map = {}
     for track in tracks:
         track_id = track["trackId"]
         delisted = track["delisted"]
-        track_id_to_delisted_map[track_id] = delisted
+        delist_timestamp = datetime.strptime(
+            track["createdAt"], DATETIME_FORMAT_STRING
+        ).timestamp()
+        track_delist_map[track_id] = {
+            "delisted": delisted,
+            "delist_timestamp": delist_timestamp,
+        }
 
-    track_ids = set(track_id_to_delisted_map.keys())
+    track_ids = set(track_delist_map.keys())
     tracks_to_update = query_tracks_by_track_ids(session, track_ids)
     track_ids_to_update = set(map(lambda track: track.track_id, tracks_to_update))
-    if len(track_id_to_delisted_map) != len(track_ids_to_update):
-        # halt processing until indexing is caught up and all tracks are created in db
+
+    if len(track_delist_map) != len(track_ids_to_update):
+        # Halt processing until indexing is caught up and all tracks are created in db
         missing_track_ids = track_ids - track_ids_to_update
-        logger.info(
-            f"update_delist_statuses.py | missing track ids: {missing_track_ids}"
+        # However, do not wait for missing tracks for which the delist was created before
+        # the current_block_timestamp. Since track created at < delist created at, if
+        # delist created at < current block timestamp, we know we've indexed past the point
+        # the CREATE TRACK was written to chain and we won't index the CREATE TRACK again
+        # going forward. If the track is missing on this node at this point, it'll never
+        # be created. This is to keep delisting unblocked despite data inconsistencies.
+
+        def wait_for_track_to_be_indexed(track_id):
+            return (
+                track_delist_map[track_id]["delist_timestamp"] > current_block_timestamp
+            )
+
+        missing_track_ids_to_wait_for = set(
+            filter(
+                wait_for_track_to_be_indexed,
+                missing_track_ids,
+            )
         )
-        return False, []
+        if len(missing_track_ids_to_wait_for) > 0:
+            logger.info(
+                f"update_delist_statuses.py | waiting for missing track ids to be indexed: {missing_track_ids_to_wait_for}, current block timestamp: {current_block_timestamp}"
+            )
+            return False, []
+
+        logger.info(
+            f"update_delist_statuses.py | ignoring delists for missing track ids: {missing_track_ids}, current_block_timestamp: {current_block_timestamp}"
+        )
+
     for track in tracks_to_update:
-        delisted = track_id_to_delisted_map[track.track_id]
+        delisted = track_delist_map[track.track_id]["delisted"]
         if delisted:
             # Deactivate active tracks that have been delisted
             if track.is_available:
@@ -130,7 +198,7 @@ def update_track_is_available_statuses(session, tracks):
     return True, tracks_updated
 
 
-def insert_user_delist_statuses(session, users):
+def insert_user_delist_statuses(session: Session, users: List[Dict]):
     sql = text(
         """
         INSERT INTO user_delist_statuses (created_at, user_id, delisted, reason)
@@ -156,7 +224,7 @@ def insert_user_delist_statuses(session, users):
     )
 
 
-def insert_track_delist_statuses(session, tracks):
+def insert_track_delist_statuses(session: Session, tracks: List[Dict]):
     sql = text(
         """
         INSERT INTO track_delist_statuses
@@ -187,7 +255,9 @@ def insert_track_delist_statuses(session, tracks):
     )
 
 
-def update_delist_status_cursor(session, cursor, endpoint, entity):
+def update_delist_status_cursor(
+    session: Session, cursor: str, endpoint: str, entity: str
+):
     sql = text(
         """
         INSERT INTO delist_status_cursor
@@ -207,20 +277,24 @@ def update_delist_status_cursor(session, cursor, endpoint, entity):
     )
 
 
-def process_user_delist_statuses(session, resp, endpoint):
+def process_user_delist_statuses(
+    session: Session, resp: Dict, endpoint: str, current_block_timestamp: int
+):
     # Expect users in resp to be sorted by createdAt asc
     users = resp["result"]["users"]
     if len(users) > 0:
         insert_user_delist_statuses(session, users)
         try:
-            success, users_updated = update_user_is_available_statuses(session, users)
+            success, users_updated = update_user_is_available_statuses(
+                session, users, current_block_timestamp
+            )
             if success:
                 cursor_after = users[-1]["createdAt"]
                 update_delist_status_cursor(
                     session, cursor_after, endpoint, DelistEntity.USERS
                 )
                 logger.info(
-                    f"update_delist_statuses.py | processed {len(users)} user delist statuses: {users_updated}"
+                    f"update_delist_statuses.py | processed {len(users_updated)} user delist statuses: {users_updated}"
                 )
         except Exception as e:
             logger.error(
@@ -228,14 +302,16 @@ def process_user_delist_statuses(session, resp, endpoint):
             )
 
 
-def process_track_delist_statuses(session, resp, endpoint):
+def process_track_delist_statuses(
+    session: Session, resp: Dict, endpoint: str, current_block_timestamp: int
+):
     # Expect tracks in resp to be sorted by createdAt asc
     tracks = resp["result"]["tracks"]
     if len(tracks) > 0:
         insert_track_delist_statuses(session, tracks)
         try:
             success, tracks_updated = update_track_is_available_statuses(
-                session, tracks
+                session, tracks, current_block_timestamp
             )
             if success:
                 cursor_after = tracks[-1]["createdAt"]
@@ -243,7 +319,7 @@ def process_track_delist_statuses(session, resp, endpoint):
                     session, cursor_after, endpoint, DelistEntity.TRACKS
                 )
                 logger.info(
-                    f"update_delist_statuses.py | processed {len(tracks)} track delist statuses: {tracks_updated}"
+                    f"update_delist_statuses.py | processed {len(tracks_updated)} track delist statuses: {tracks_updated}"
                 )
         except Exception as e:
             logger.error(
@@ -251,7 +327,9 @@ def process_track_delist_statuses(session, resp, endpoint):
             )
 
 
-def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
+def process_delist_statuses(
+    session: Session, trusted_notifier_manager: Dict, current_block_timestamp: int
+):
     endpoint = trusted_notifier_manager["endpoint"]
     if endpoint[-1] != "/":
         endpoint += "/"
@@ -278,16 +356,74 @@ def process_delist_statuses(session: Session, trusted_notifier_manager: Dict):
         resp.raise_for_status()
 
         if entity == DelistEntity.USERS:
-            process_user_delist_statuses(session, resp.json(), endpoint)
+            process_user_delist_statuses(
+                session, resp.json(), endpoint, current_block_timestamp
+            )
         elif entity == DelistEntity.TRACKS:
-            process_track_delist_statuses(session, resp.json(), endpoint)
+            process_track_delist_statuses(
+                session, resp.json(), endpoint, current_block_timestamp
+            )
 
 
 # ####### CELERY TASKS ####### #
+
+
+@celery.task(name="revert_delist_status_cursors", bind=True)
+@save_duration_metric(metric_group="celery_task")
+@log_duration(logger)
+def revert_delist_status_cursors(self, reverted_cursor: datetime):
+    """Sets the cursors in delist_status_cursor back upon a block reversion"""
+    db = revert_delist_status_cursors.db
+    redis = revert_delist_status_cursors.redis
+    have_lock = False
+    # Same lock as the update delist task to ensure the reverted cursor doesn't get overwritten
+    update_lock = redis.lock(
+        UPDATE_DELIST_STATUSES_LOCK,
+        timeout=DEFAULT_LOCK_TIMEOUT_SECONDS,
+    )
+    have_lock = update_lock.acquire(blocking_timeout=25)
+    if have_lock:
+        try:
+            with db.scoped_session() as session:
+                update_sql = text(
+                    """
+                    UPDATE delist_status_cursor
+                    SET created_at = :cursor
+                    WHERE entity = :entity;
+                    """
+                )
+                session.execute(
+                    update_sql,
+                    {"cursor": reverted_cursor, "entity": DelistEntity.USERS},
+                )
+                session.execute(
+                    update_sql,
+                    {"cursor": reverted_cursor, "entity": DelistEntity.TRACKS},
+                )
+                logger.info(
+                    f"update_delist_statuses.py | revert_delist_status_cursors | Reverted delist cursors to {reverted_cursor}"
+                )
+
+        except Exception as e:
+            logger.error(
+                "update_delist_statuses.py | revert_delist_status_cursors | Fatal error in main loop",
+                exc_info=True,
+            )
+            raise e
+        finally:
+            if have_lock:
+                update_lock.release()
+    else:
+        logger.warning(
+            "update_delist_statuses.py | revert_delist_status_cursors | Lock not acquired",
+            exc_info=True,
+        )
+
+
 @celery.task(name="update_delist_statuses", bind=True)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
-def update_delist_statuses(self) -> None:
+def update_delist_statuses(self, current_block_timestamp: int) -> None:
     """Recurring task that polls trusted notifier for delist statuses"""
 
     db = update_delist_statuses.db
@@ -312,8 +448,9 @@ def update_delist_statuses(self) -> None:
     if have_lock:
         try:
             with db.scoped_session() as session:
-                process_delist_statuses(session, trusted_notifier_manager)
-                session.commit()
+                process_delist_statuses(
+                    session, trusted_notifier_manager, current_block_timestamp
+                )
 
         except Exception as e:
             logger.error(
@@ -323,7 +460,6 @@ def update_delist_statuses(self) -> None:
         finally:
             if have_lock:
                 update_lock.release()
-            session.close()
     else:
         logger.warning(
             "update_delist_statuses.py | Lock not acquired",

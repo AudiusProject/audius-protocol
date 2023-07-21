@@ -9,7 +9,7 @@ from src.premium_content.premium_content_types import PremiumContentType
 class PremiumContentSignatureArgs(TypedDict):
     user_id: Optional[int]
     track_id: int
-    track_cid: str
+    cid: str
     type: PremiumContentType
     is_premium: bool
 
@@ -60,7 +60,7 @@ def get_premium_content_signature(
     if args["type"] == "track":
         return get_premium_track_signature(
             track_id=args["track_id"],
-            cid=args["track_cid"],
+            cid=args["cid"],
             is_premium=args["is_premium"],
             user_wallet=None,
             user_id=args.get("user_id"),
