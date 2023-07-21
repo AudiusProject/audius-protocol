@@ -275,6 +275,7 @@ func computeFileCID(f io.ReadSeeker) (string, error) {
 	return cid.String(), nil
 }
 
+// note: any Qm CID will be invalid because its hash won't match the contents
 func validateCID(expectedCID string, f io.ReadSeeker) error {
 	computed, err := computeFileCID(f)
 	if err != nil {

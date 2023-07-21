@@ -65,12 +65,11 @@ type MediorumConfig struct {
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
 	IsV2Only            bool
+	StoreAll            bool
 	VersionJson         VersionJson
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
-
-	// StoreAll          bool   // todo: set this to true for "full node"
 
 	privateKey *ecdsa.PrivateKey
 }
@@ -298,7 +297,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// TODO: remove
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 
 	// new info routes
 	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)

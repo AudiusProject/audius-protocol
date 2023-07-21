@@ -55,6 +55,12 @@ func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
 			results[problem.Key] = err.Error()
 			continue
 		}
+
+		// don't validate legacy CIDs because their hash won't match the file contents
+		if isLegacyCID(problem.Key) {
+			continue
+		}
+
 		defer r.Close()
 		cid, err := computeFileCID(r)
 		if err != nil {
@@ -87,38 +93,6 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	}
 
 	return c.JSON(200, attr)
-}
-
-// similar to blob info... but more complete
-func (ss *MediorumServer) getBlobDoubleCheck(c echo.Context) error {
-	ctx := c.Request().Context()
-	key := c.Param("cid")
-
-	r, err := ss.bucket.NewReader(ctx, key, nil)
-	if err != nil {
-		// Check if the error is a blob not found error
-		// If it is, return a 404
-		if strings.Contains(err.Error(), "not found") {
-			return c.String(404, "blob not found")
-		}
-		return err
-	}
-	defer r.Close()
-
-	// verify CID matches
-	err = validateCID(key, r)
-	if err != nil {
-		return err
-	}
-
-	// verify DB row exists
-	var existingBlob *Blob
-	err = ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, key).First(&existingBlob).Error
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(200, existingBlob)
 }
 
 func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerFunc {
