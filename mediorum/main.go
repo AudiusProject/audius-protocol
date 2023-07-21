@@ -238,6 +238,8 @@ func startDevCluster() {
 			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 			LegacyFSRoot:        "/file_storage",
+			IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
+			VersionJson:         GetVersionJson(),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
 		if privateKey, found := os.LookupEnv(privKeyEnvVar); found {

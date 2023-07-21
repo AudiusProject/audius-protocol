@@ -141,9 +141,13 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	if err != nil {
 		return c.JSON(500, map[string]string{"error": "Failed to sort health check data: " + err.Error()})
 	}
-	signature, err := signature.SignBytes(dataBytesSorted, ss.Config.privateKey)
-	if err != nil {
-		return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
+	signatureHex := "private key not set (should only happen on local dev)!"
+	if ss.Config.privateKey != nil {
+		signature, err := signature.SignBytes(dataBytesSorted, ss.Config.privateKey)
+		if err != nil {
+			return c.JSON(500, map[string]string{"error": "Failed to sign health check response: " + err.Error()})
+		}
+		signatureHex = fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 	}
 
 	status := 200
@@ -151,7 +155,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		status = 503
 	}
 
-	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 	return c.JSON(status, healthCheckResponse{
 		Data:      data,
 		Signer:    ss.Config.Self.Wallet,
