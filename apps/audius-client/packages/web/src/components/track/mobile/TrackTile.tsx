@@ -239,6 +239,27 @@ const TrackTile = (props: CombinedProps) => {
 
   const isReadonly = variant === 'readonly'
 
+  let specialContentLabel = null
+
+  if (!isLoading) {
+    if (isPremium) {
+      specialContentLabel = (
+        <PremiumContentLabel
+          premiumConditions={premiumConditions}
+          doesUserHaveAccess={!!doesUserHaveAccess}
+          isOwner={isOwner}
+        />
+      )
+    } else if (isArtistPick) {
+      specialContentLabel = (
+        <div className={styles.artistPickLabelContainer}>
+          <IconStar className={styles.artistPickIcon} />
+          {messages.artistPick}
+        </div>
+      )
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -260,12 +281,6 @@ const TrackTile = (props: CombinedProps) => {
             styles.statText
           )}
         >
-          {isArtistPick ? (
-            <div className={styles.topRightIcon}>
-              <IconStar />
-              {messages.artistPick}
-            </div>
-          ) : null}
           {props.isUnlisted ? (
             <div className={styles.topRightIcon}>
               <IconHidden />
@@ -372,13 +387,7 @@ const TrackTile = (props: CombinedProps) => {
               isVisible={isTrending && artworkLoaded && !showSkeleton}
               className={styles.rankIconContainer}
             />
-            {!isLoading && isPremium ? (
-              <PremiumContentLabel
-                premiumConditions={premiumConditions}
-                doesUserHaveAccess={!!doesUserHaveAccess}
-                isOwner={isOwner}
-              />
-            ) : null}
+            {specialContentLabel}
             {!(props.repostCount || props.saveCount) ? null : (
               <>
                 <div

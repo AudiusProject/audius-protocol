@@ -213,6 +213,26 @@ const TrackTile = ({
         premiumConditions
       })
 
+  let specialContentLabel = null
+  if (!isLoading) {
+    if (isPremium) {
+      specialContentLabel = (
+        <PremiumContentLabel
+          premiumConditions={premiumConditions}
+          doesUserHaveAccess={!!doesUserHaveAccess}
+          isOwner={isOwner}
+        />
+      )
+    } else if (isArtistPick) {
+      specialContentLabel = (
+        <div className={styles.artistPickLabelContainer}>
+          <IconStar className={styles.artistPickIcon} />
+          {messages.artistPick}
+        </div>
+      )
+    }
+  }
+
   return (
     <div
       className={cn(styles.container, {
@@ -306,24 +326,12 @@ const TrackTile = ({
               <Skeleton width='30%' className={styles.skeleton} />
             ) : (
               <>
-                {!isLoading && isPremium && (
-                  <PremiumContentLabel
-                    premiumConditions={premiumConditions}
-                    doesUserHaveAccess={!!doesUserHaveAccess}
-                    isOwner={isOwner}
-                  />
-                )}
+                {specialContentLabel}
                 {stats}
               </>
             )}
           </div>
           <div className={cn(typeStyles.bodyXSmall, styles.topRight)}>
-            {isArtistPick ? (
-              <div className={styles.topRightIconLabel}>
-                <IconStar className={styles.topRightIcon} />
-                {messages.artistPick}
-              </div>
-            ) : null}
             {isUnlisted ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
