@@ -11,6 +11,15 @@ type GetDogEarTypeArgs = {
   premiumConditions?: Nullable<PremiumConditions>
 }
 
+/** Determines appropriate DogEar type based on conditions provided. Note: all conditions
+ * are optional. Omitting a condition is effectively ignoring it. This can be used, for example
+ * to always show premium variants if present by omitting `doesUserHaveAccess`.
+ * Behavior:
+ * * isArtistPick: if true and doesUserHaveAccess is true, prefers artist pick variant
+ * * doesUserHaveAccess: if true, will never return premium variants
+ * * isOwner: if true, will always return premium variants if present
+ * * isUnlisted: if true, will always return hidden variant
+ */
 export const getDogEarType = ({
   doesUserHaveAccess,
   isArtistPick,

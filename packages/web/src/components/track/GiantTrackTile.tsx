@@ -457,13 +457,12 @@ export const GiantTrackTile = ({
   }
 
   const isLoading = loading || artworkLoading
+  // Omitting isOwner and doesUserHaveAccess so that we always show premium DogEars
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
         premiumConditions,
-        isUnlisted,
-        isOwner,
-        doesUserHaveAccess
+        isUnlisted
       })
 
   const overflowMenuExtraItems = []
