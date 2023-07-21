@@ -40,6 +40,7 @@ import {
 import { retry3 } from '../../utils/retry'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
+import { encodeHashId } from '../../utils/hashId'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
@@ -113,12 +114,10 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
 
     return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      playlistId
+      ...response,
+      playlistId: encodeHashId(playlistId)
     }
   }
 
@@ -248,12 +247,9 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
     return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      playlistId
+      ...response,
+      playlistId: encodeHashId(playlistId)
     }
   }
 
@@ -402,7 +398,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
 
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -414,9 +410,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -432,7 +425,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       DeletePlaylistSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -440,9 +433,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -458,7 +448,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       FavoritePlaylistSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -467,9 +457,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -485,7 +472,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       UnfavoritePlaylistSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -493,9 +480,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -511,7 +495,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       RepostPlaylistSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -520,9 +504,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -538,7 +519,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       UnrepostPlaylistSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
@@ -546,9 +527,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**

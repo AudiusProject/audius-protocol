@@ -13,7 +13,7 @@ export type EntityManagerConfig = {
 export type EntityManagerService = {
   manageEntity: (
     options: ManageEntityOptions
-  ) => Promise<{ txReceipt: TransactionReceipt }>
+  ) => Promise<Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>>
   confirmWrite: (options: {
     blockHash: string
     blockNumber: number

@@ -28,7 +28,7 @@ export class GrantsApi {
       CreateGrantSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
@@ -38,13 +38,6 @@ export class GrantsApi {
       }),
       auth: this.auth
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      error: false
-    }
   }
 
   /**
@@ -56,7 +49,7 @@ export class GrantsApi {
       RevokeGrantSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
@@ -66,12 +59,5 @@ export class GrantsApi {
       }),
       auth: this.auth
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      error: false
-    }
   }
 }
