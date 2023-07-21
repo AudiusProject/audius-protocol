@@ -6,6 +6,7 @@ import (
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
+	"mediorum/persistence"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -144,12 +145,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// ensure dir
 	os.MkdirAll(config.Dir, os.ModePerm)
-	if strings.HasPrefix(config.BlobStoreDSN, "file://") {
-		os.MkdirAll(strings.TrimPrefix(config.BlobStoreDSN, "file://"), os.ModePerm)
-	}
 
 	// bucket
-	bucket, err := blob.OpenBucket(context.Background(), config.BlobStoreDSN)
+	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
 		return nil, err
 	}
