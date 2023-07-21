@@ -54,10 +54,8 @@ jest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
-      txReceipt: {
-        blockHash: 'a',
-        blockNumber: 1
-      }
+      blockHash: 'a',
+      blockNumber: 1
     } as any
   })
 
@@ -125,7 +123,7 @@ describe('PlaylistsApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        playlistId: 1
+        playlistId: '7eP5n'
       })
     })
 
@@ -172,7 +170,7 @@ describe('PlaylistsApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        playlistId: 1
+        playlistId: '7eP5n'
       })
     })
 
