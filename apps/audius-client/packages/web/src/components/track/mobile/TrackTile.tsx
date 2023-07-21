@@ -247,7 +247,11 @@ const TrackTile = (props: CombinedProps) => {
         containerClassName
       )}
     >
-      {DogEarIconType ? <DogEar type={DogEarIconType} /> : null}
+      {DogEarIconType ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarIconType} />
+        </div>
+      ) : null}
       <div className={styles.mainContent} onClick={handleClick}>
         <div
           className={cn(

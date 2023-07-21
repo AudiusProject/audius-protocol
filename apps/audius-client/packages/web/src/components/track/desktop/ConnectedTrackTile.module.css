@@ -1,10 +1,10 @@
 .container {
+  --border-width: 1px;
   position: relative;
   background: var(--white);
-  border: 1px solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--neutral-light-8);
   border-radius: 8px 8px 0px 0px;
   display: inline-flex;
-  overflow: hidden;
   width: 100%;
   cursor: pointer;
 }

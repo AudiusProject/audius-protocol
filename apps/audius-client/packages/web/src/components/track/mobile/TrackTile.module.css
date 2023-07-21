@@ -1,14 +1,14 @@
 .container {
+  --border-width: 1px;
   position: relative;
   min-height: 152px;
   flex: 1 1 352px;
-  border: 1px solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--neutral-light-8);
   background-color: var(--white);
   box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   display: flex;
   padding: var(--unit-2);
-  overflow: hidden;
   border-radius: var(--unit-2);
   max-width: 400px;
   cursor: pointer;
@@ -17,7 +17,14 @@
   margin: 0px auto var(--unit-3);
 }
 
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
+}
+
 .container.readonly {
+  --border-width: 0px;
   min-width: 448px;
   min-height: unset;
   margin-bottom: 0;

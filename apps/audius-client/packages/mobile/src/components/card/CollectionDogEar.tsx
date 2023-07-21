@@ -7,11 +7,12 @@ import { DogEar } from '../core'
 const { getCollection } = cacheCollectionsSelectors
 
 type CollectionDogEarProps = {
+  borderOffset?: number
   collectionId: ID
 }
 
 export const CollectionDogEar = (props: CollectionDogEarProps) => {
-  const { collectionId } = props
+  const { borderOffset, collectionId } = props
 
   const isPrivate = useSelector(
     (state) => getCollection(state, { id: collectionId })?.is_private
@@ -20,7 +21,7 @@ export const CollectionDogEar = (props: CollectionDogEarProps) => {
   const dogEarType = isPrivate ? DogEarType.HIDDEN : null
 
   if (dogEarType) {
-    return <DogEar type={dogEarType} />
+    return <DogEar type={dogEarType} borderOffset={borderOffset} />
   }
 
   return null

@@ -346,7 +346,11 @@ const TrackHeader = ({
       premiumConditions
     })
     if (!isLoading && DogEarType) {
-      return <DogEar type={DogEarType} className={styles.DogEar} />
+      return (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarType} className={styles.DogEar} />
+        </div>
+      )
     }
     return null
   }

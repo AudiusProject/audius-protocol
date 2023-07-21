@@ -1,12 +1,18 @@
 .root {
+  --border-width: 1px;
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 1px solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--neutral-light-8);
   border-radius: var(--unit-2);
   background-color: var(--white);
   transition: all var(--expressive);
-  overflow: hidden;
+}
+
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
 }
 
 .near {

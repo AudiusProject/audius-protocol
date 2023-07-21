@@ -1,61 +1,49 @@
-.artistPick {
+.container {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 10;
-  width: 80px;
+  border-radius: var(--unit-2) 0px 0px 0px;
+  width: var(--unit-12);
+  height: var(--unit-12);
   pointer-events: none;
-}
-
-.container {
-  position: absolute;
-  transform: rotate(45deg) translateX(-64px);
-  box-shadow: 1px 1px 7px -2px rgba(0, 0, 0, 0.5);
-  width: 80px;
-  height: 80px;
   overflow: hidden;
 }
 
+.rectangle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Note: dogEarRectangle has multiple `path` elements, but we only want to fill one of them.
+That path uses `fill='currentColor'`, allowing us to set `color` here instead of `fill` */
 .gated {
-  background: var(--accent-blue);
+  color: var(--accent-blue);
 }
 
 .purchase {
-  background: var(--special-light-green);
+  color: var(--special-light-green);
 }
 
-.star {
-  background: linear-gradient(314.61deg, #7e1bcc 0%, #a22feb 100%);
+.artistPick {
+  color: var(--secondary);
 }
 
 .hidden {
-  background: linear-gradient(314.61deg, #858199 0%, #c2c0cc 100%);
+  color: var(--neutral);
 }
 
-.matrix .container {
-  background: var(--page-header-gradient);
-}
-
-.isMobile .container {
-  transform: rotate(45deg) translateX(-68px);
-}
-
-.artistPick svg {
+.icon {
   position: absolute;
-  left: 0;
-  top: 0;
-  margin-left: 5px;
-  margin-top: 2px;
+  top: var(--unit-1);
+  left: var(--unit-1);
   width: var(--unit-4);
-  height: var(--unit-6);
+  height: var(--unit-4);
 }
 
-.isMobile svg {
-  margin: 4px 0px 0px 4px;
-  width: 16px;
-  height: 16px;
-}
-
-.artistPick svg path {
+.icon path {
   fill: var(--static-white);
 }

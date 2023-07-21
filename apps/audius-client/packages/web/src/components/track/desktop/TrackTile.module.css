@@ -1,10 +1,10 @@
 .container {
+  --border-width: 1px;
   position: relative;
   background: var(--white);
-  border: 1px solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--neutral-light-8);
   border-radius: var(--unit-2) var(--unit-2) 0px 0px;
   display: inline-flex;
-  overflow: hidden;
   width: 100%;
   cursor: pointer;
   transition: all 0.18s ease-in-out;
@@ -41,6 +41,12 @@
 
 .container.small {
   height: 124px;
+}
+
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
 }
 
 .order {
