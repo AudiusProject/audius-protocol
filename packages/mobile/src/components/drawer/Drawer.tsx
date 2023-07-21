@@ -35,7 +35,7 @@ const OVERFLOW_FRICTION = 4
 
 export const useStyles = makeStyles(({ palette }) => ({
   drawer: {
-    backgroundColor: palette.neutralLight10,
+    backgroundColor: palette.white,
     position: 'absolute',
     top: 0,
     left: 0,
