@@ -62,7 +62,7 @@ export const Artwork = (props: ArtworkProps) => {
 
   useEffect(() => {
     // If there's a gradient, this is a smart collection. Just immediately call back
-    if (image || gradient || imageOverride) callback()
+    if (image || gradient || imageOverride || imageBlank) callback()
   }, [image, callback, gradient, imageOverride])
 
   const handleEditArtwork = useCallback(() => {
@@ -79,7 +79,7 @@ export const Artwork = (props: ArtworkProps) => {
     <DynamicImage
       wrapperClassName={styles.coverArtWrapper}
       className={styles.coverArt}
-      image={gradient || imageOverride || image}
+      image={gradient || imageOverride || image || imageBlank}
     >
       {Icon ? (
         <Icon className={styles.imageIcon} style={{ background: gradient }} />

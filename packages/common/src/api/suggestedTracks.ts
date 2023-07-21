@@ -7,18 +7,28 @@ import { usePaginatedQuery } from 'audius-query'
 import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import { TimeRange } from 'models/TimeRange'
-import { Track } from 'models/Track'
+import { Track, UserTrackMetadata } from 'models/Track'
 import { getUserId } from 'store/account/selectors'
 import { addTrackToPlaylist } from 'store/cache/collections/actions'
 import { getCollection } from 'store/cache/collections/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { CommonState } from 'store/index'
+import { removeNullable } from 'utils/typeUtils'
 
 import { useGetFavoritedTrackList } from './favorites'
 import { useGetTracksByIds } from './track'
 import { useGetTrending } from './trending'
 
 const suggestedTrackCount = 5
+
+const isValidTrack = (track: Track | UserTrackMetadata) => {
+  return (
+    !track.is_premium &&
+    !track.is_delete &&
+    !track.is_invalid &&
+    !track.is_unlisted
+  )
+}
 
 type SuggestedTrack =
   | { isLoading: true; key: ID }
@@ -34,11 +44,14 @@ const selectSuggestedTracks = (
   state: CommonState,
   ids: ID[]
 ): SuggestedTrack[] => {
-  const suggestedTracks = ids.map((id) => {
-    const track = getTrack(state, { id })
-    if (!track) return { id, isLoading: true as const, key: id }
-    return { id, track, isLoading: false as const, key: id }
-  })
+  const suggestedTracks = ids
+    .map((id) => {
+      const track = getTrack(state, { id })
+      if (!track) return { id, isLoading: true as const, key: id }
+      if (!isValidTrack) return null
+      return { id, track, isLoading: false as const, key: id }
+    })
+    .filter(removeNullable)
 
   return [...suggestedTracks, ...skeletons].slice(0, 5)
 }
@@ -93,9 +106,7 @@ export const useGetSuggestedTracks = (collectionId: ID) => {
   useEffect(() => {
     if (trendingStatus === Status.SUCCESS) {
       const trendingTrackIds = difference(
-        trendingTracks
-          .filter((track) => !track.is_premium)
-          .map((track) => track.track_id),
+        trendingTracks.filter(isValidTrack).map((track) => track.track_id),
         collectionTrackIds
       )
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])

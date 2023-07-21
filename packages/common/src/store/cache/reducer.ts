@@ -95,6 +95,10 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
   if (forceUpdateKeys.has(key)) {
     return srcValue
   }
+
+  if (key === 'artwork') {
+    return null
+  }
   if (key === 'is_verified') {
     return srcValue || objValue
   }
