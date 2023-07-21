@@ -244,7 +244,11 @@ const TrackTile = ({
       >
         {artwork}
       </div>
-      {dogEarType ? <DogEar type={dogEarType} /> : null}
+      {dogEarType ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={dogEarType} />
+        </div>
+      ) : null}
       <div
         className={cn(styles.body, {
           // if track and not playlist/album

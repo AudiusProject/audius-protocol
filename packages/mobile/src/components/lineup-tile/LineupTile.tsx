@@ -102,9 +102,7 @@ export const LineupTile = ({
       scaleTo={scale}
       {...TileProps}
     >
-      {dogEarType ? (
-        <DogEar type={dogEarType} style={{ shadowRadius: 1 }} />
-      ) : null}
+      {dogEarType ? <DogEar type={dogEarType} borderOffset={1} /> : null}
       <View>
         <LineupTileTopRight
           duration={duration}

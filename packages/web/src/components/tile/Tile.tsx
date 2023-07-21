@@ -44,7 +44,11 @@ export const Tile = <
       )}
       {...other}
     >
-      {dogEar ? <DogEar type={dogEar} /> : null}
+      {dogEar ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={dogEar} />
+        </div>
+      ) : null}
       {children}
     </RootComponent>
   )

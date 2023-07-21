@@ -11,6 +11,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   position: relative;
+  border-radius: var(--unit-3) var(--unit-3) 0px 0px;
   background-color: var(--neutral-light-10);
 
   padding: var(--unit-6);

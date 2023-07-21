@@ -105,7 +105,7 @@ export const Card = (props: CardProps) => {
       {...TileProps}
     >
       {props.type === 'collection' ? (
-        <CollectionDogEar collectionId={props.id} />
+        <CollectionDogEar collectionId={props.id} borderOffset={1} />
       ) : null}
       {renderImage({
         style: [styles.cardImage, props.type === 'user' && styles.userImage]
