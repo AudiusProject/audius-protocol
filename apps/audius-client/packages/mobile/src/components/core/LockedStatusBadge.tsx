@@ -10,10 +10,14 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
     backgroundColor: palette.accentBlue,
     paddingHorizontal: spacing(2),
-    borderRadius: spacing(10)
+    borderRadius: spacing(10),
+    justifyContent: 'center'
   },
   premium: {
     backgroundColor: palette.specialLightGreen1
+  },
+  locked: {
+    backgroundColor: palette.neutralLight4
   }
 }))
 
@@ -31,11 +35,16 @@ export const LockedStatusBadge = ({
   const staticWhite = useColor('staticWhite')
   const LockComponent = locked ? IconLock : IconLockUnlocked
   return (
-    <View style={[styles.root, variant === 'purchase' ? styles.premium : null]}>
+    <View
+      style={[
+        styles.root,
+        locked ? styles.locked : variant === 'purchase' ? styles.premium : null
+      ]}
+    >
       <LockComponent
         fill={staticWhite}
-        width={spacing(4)}
-        height={spacing(4)}
+        width={spacing(3.5)}
+        height={spacing(3.5)}
       />
     </View>
   )
