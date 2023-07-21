@@ -15,8 +15,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const NumRandNodesToCheckOn404 = 5
-
 func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
@@ -31,7 +29,7 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, cid, NumRandNodesToCheckOn404)
+		return ss.redirectToCid(c, cid)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -40,9 +38,13 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
+	if c.Request().Method == "HEAD" {
+		return c.NoContent(200)
+	}
+
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
-		return ss.redirectToCid(c, cid, NumRandNodesToCheckOn404)
+		return ss.redirectToCid(c, cid)
 	}
 
 	// v1 file listen
@@ -51,36 +53,6 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	}
 
 	return nil
-}
-
-func (ss *MediorumServer) headLegacyCid(c echo.Context) error {
-	ctx := c.Request().Context()
-	cid := c.Param("cid")
-	logger := ss.logger.With("cid", cid)
-	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
-
-	var storagePath string
-	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
-	if err != nil && err != pgx.ErrNoRows {
-		logger.Error("error querying cid storage path", "err", err)
-	}
-
-	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
-	if diskPath == "" {
-		return ss.redirectToCid(c, cid, 0)
-	}
-
-	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-	isAudioFile := isAudioFile(diskPath)
-	if !strings.Contains(c.Path(), "cidstream") && isAudioFile {
-		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
-	}
-
-	if _, err := os.Stat(diskPath); os.IsNotExist(err) {
-		return ss.redirectToCid(c, cid, 0)
-	}
-
-	return c.NoContent(200)
 }
 
 func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
@@ -99,7 +71,7 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
 	if diskPath == "" {
-		return ss.redirectToCid(c, dirCid, NumRandNodesToCheckOn404)
+		return ss.redirectToCid(c, dirCid)
 	}
 
 	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -108,47 +80,19 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
 	}
 
+	if c.Request().Method == "HEAD" {
+		return c.NoContent(200)
+	}
+
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
-		return ss.redirectToCid(c, dirCid, NumRandNodesToCheckOn404)
+		return ss.redirectToCid(c, dirCid)
 	}
 
 	return nil
 }
 
-func (ss *MediorumServer) headLegacyDirCid(c echo.Context) error {
-	ctx := c.Request().Context()
-	dirCid := c.Param("dirCid")
-	fileName := c.Param("fileName")
-	logger := ss.logger.With("dirCid", dirCid)
-
-	sql := `select "storagePath" from "Files" where "dirMultihash" = $1 and "fileName" = $2`
-	var storagePath string
-	err := ss.pgPool.QueryRow(ctx, sql, dirCid, fileName).Scan(&storagePath)
-	if err != nil && err != pgx.ErrNoRows {
-		logger.Error("error querying dirCid storage path", "err", err)
-	}
-
-	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
-	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
-	if diskPath == "" {
-		return ss.redirectToCid(c, dirCid, 0)
-	}
-
-	// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
-	isAudioFile := isAudioFile(diskPath)
-	if isAudioFile {
-		return c.String(401, "mp3 streaming is blocked. Please use Discovery /v1/tracks/:encodedId/stream")
-	}
-
-	if _, err := os.Stat(diskPath); os.IsNotExist(err) {
-		return ss.redirectToCid(c, dirCid, 0)
-	}
-
-	return c.NoContent(200)
-}
-
-func (ss *MediorumServer) redirectToCid(c echo.Context, cid string, numRandNodesToCheck int) error {
+func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	// don't check additional nodes beyond what's in cid_lookup if "localOnly" is true
 	if c.QueryParam("localOnly") == "true" {
 		return c.String(404, "not redirecting because localOnly=true")
@@ -202,7 +146,7 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
-		Timeout: 10 * time.Second,
+		Timeout: time.Second,
 	}
 
 	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
@@ -218,7 +162,7 @@ func (ss *MediorumServer) diskCheckUrl(dest url.URL, hostString string) (string,
 	query.Add("localOnly", "true")
 	dest.RawQuery = query.Encode()
 
-	req, err := http.NewRequest("HEAD", dest.String(), nil) // NOTE: cloudflare seems to turn most of these HEADs into GETs
+	req, err := http.NewRequest("GET", dest.String(), nil)
 	if err != nil {
 		logger.Error("invalid url", "err", err)
 		return "", false

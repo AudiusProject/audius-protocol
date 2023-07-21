@@ -15,7 +15,8 @@ import {
   ChallengeDisbursementRow,
   RewardManagerTxRow,
   SubscriptionRow,
-  SupporterRankUpRow
+  SupporterRankUpRow,
+  USDCPurchaseRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -331,6 +332,27 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
       }))
     )
     .into('follows')
+}
+
+type CreateUSDCPurchase = Pick<
+  USDCPurchaseRow,
+  'buyer_user_id' | 'seller_user_id'
+> &
+  Partial<USDCPurchaseRow>
+export const createUSDCPurchase = async (
+  db: Knex,
+  usdcPurchases: CreateUSDCPurchase[]
+) => {
+  await db
+    .insert(
+      usdcPurchases.map((usdcPurchase) => ({
+        created_at: new Date(Date.now()),
+        slot: '4',
+        signature: 'fake_signature',
+        ...usdcPurchase
+      }))
+    )
+    .into('usdc_purchases')
 }
 
 type CreateUserBank = Pick<

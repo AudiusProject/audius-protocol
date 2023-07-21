@@ -1190,7 +1190,7 @@ def solana_notifications():
         tips_map = {e.signature: e for e in reaction_tips}
 
         reactions = []
-        for (reaction, user_id) in reaction_results:
+        for reaction, user_id in reaction_results:
             tip = tips_map[reaction.reacted_to]
             if not tip:
                 continue

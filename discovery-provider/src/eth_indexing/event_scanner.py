@@ -313,7 +313,6 @@ class EventScanner:
         all_processed = []
 
         while current_block <= end_block:
-
             # Print some diagnostics to logs to try to fiddle with real world JSON-RPC API performance
             estimated_end_block = min(
                 current_block + chunk_size, self.get_suggested_scan_end_block()

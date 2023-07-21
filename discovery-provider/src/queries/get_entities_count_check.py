@@ -1,4 +1,3 @@
-
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
@@ -29,6 +28,6 @@ def get_entities_count_check():
             "playlist_counts": playlist_counts,
             "repost_counts": repost_counts,
             "save_counts": save_counts,
-            "follow_counts": follow_counts
+            "follow_counts": follow_counts,
         }
         return res

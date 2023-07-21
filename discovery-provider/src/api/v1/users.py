@@ -1,6 +1,5 @@
 import base64
 import json
-import logging
 
 from eth_account.messages import encode_defunct
 from flask import request
@@ -107,8 +106,9 @@ from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
+from src.utils.structured_logger import StructuredLogger, log_duration
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 ns = Namespace("users", description="User related operations")
 full_ns = Namespace("users", description="Full user operations")
@@ -1077,9 +1077,8 @@ USER_FOLLOWERS_ROUTE = "/<string:id>/followers"
 
 @full_ns.route(USER_FOLLOWERS_ROUTE)
 class FullFollowerUsers(Resource):
-    @record_metrics
-    @cache(ttl_sec=5)
-    def _get(self, id):
+    @log_duration(logger)
+    def _get_user_followers(self, id):
         decoded_id = decode_with_abort(id, full_ns)
         args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
@@ -1103,8 +1102,9 @@ class FullFollowerUsers(Resource):
     )
     @full_ns.expect(pagination_with_current_user_parser)
     @full_ns.marshal_with(full_followers_response)
+    @cache(ttl_sec=5)
     def get(self, id):
-        return self._get(id)
+        return self._get_user_followers(id)
 
 
 @ns.route(USER_FOLLOWERS_ROUTE)
@@ -1118,7 +1118,7 @@ class FollowerUsers(FullFollowerUsers):
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(followers_response)
     def get(self, id):
-        return super()._get(id)
+        return super()._get_user_followers(id)
 
 
 following_response = make_response(
@@ -1349,6 +1349,15 @@ associated_wallet_response = make_response(
     doc=False,
 )
 class AssociatedWalletByUserId(Resource):
+    @log_duration(logger)
+    def _get_associated_wallets(self):
+        args = associated_wallet_route_parser.parse_args()
+        user_id = decode_with_abort(args.get("id"), ns)
+        wallets = get_associated_user_wallet({"user_id": user_id})
+        return success_response(
+            {"wallets": wallets["eth"], "sol_wallets": wallets["sol"]}
+        )
+
     @ns.doc(
         id="""Get Associated Wallets""",
         description="""Get the User's associated wallets""",
@@ -1358,12 +1367,7 @@ class AssociatedWalletByUserId(Resource):
     @ns.marshal_with(associated_wallet_response)
     @cache(ttl_sec=10)
     def get(self):
-        args = associated_wallet_route_parser.parse_args()
-        user_id = decode_with_abort(args.get("id"), ns)
-        wallets = get_associated_user_wallet({"user_id": user_id})
-        return success_response(
-            {"wallets": wallets["eth"], "sol_wallets": wallets["sol"]}
-        )
+        return self._get_associated_wallets()
 
 
 user_associated_wallet_route_parser = reqparse.RequestParser(
@@ -1565,6 +1569,10 @@ class FullGetSupporters(Resource):
     @full_ns.marshal_with(full_get_supporters_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
+        return self._get_supporters(id)
+
+    @log_duration(logger)
+    def _get_supporters(self, id: str):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)
@@ -1676,6 +1684,10 @@ class FullGetSupportings(Resource):
     @full_ns.marshal_with(full_get_supporting_response)
     @cache(ttl_sec=5)
     def get(self, id: str):
+        return self._get_supportings(id)
+
+    @log_duration(logger)
+    def _get_supportings(self, id: str):
         args = pagination_with_current_user_parser.parse_args()
         decoded_id = decode_with_abort(id, full_ns)
         current_user_id = get_current_user_id(args)

@@ -21,7 +21,6 @@ def get_users(args):
     with db.scoped_session() as session:
 
         def get_users_and_ids():
-
             can_use_shared_cache = (
                 "id" in args
                 and "wallet" not in args

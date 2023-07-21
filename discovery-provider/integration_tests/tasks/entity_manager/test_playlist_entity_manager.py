@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 from typing import List
 
@@ -16,6 +17,8 @@ from src.tasks.entity_manager.utils import (
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture()
@@ -345,15 +348,13 @@ def tx_receipts_update_routes():
     }
 
 
-def assert_playlist_route(
-    route, slug, title_slug, collision_id, owner_id, playlist_id, is_current
-):
-    assert route.slug == slug
-    assert route.title_slug == title_slug
-    assert route.collision_id == collision_id
-    assert route.owner_id == owner_id
-    assert route.playlist_id == playlist_id
-    assert route.is_current == is_current
+def assert_playlist_route(route, route2):
+    assert route.slug == route2.slug
+    assert route.title_slug == route2.title_slug
+    assert route.collision_id == route2.collision_id
+    assert route.owner_id == route2.owner_id
+    assert route.playlist_id == route2.playlist_id
+    assert route.is_current == route2.is_current
 
 
 def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_routes):
@@ -402,111 +403,106 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
 
         # validate db records
         playlist_routes = session.query(PlaylistRoute).all()
-        assert len(playlist_routes) == 6
-        playlist_1_route_current = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET and route.is_current
+        assert len(playlist_routes) == 11
+
+        expected_routes = [
+            PlaylistRoute(
+                slug="my-playlist",
+                title_slug="my-playlist",
+                collision_id=0,
+                owner_id=1,
+                playlist_id=400000,
+                is_current=False,
             ),
-            None,
-        )
-        playlist_1_route_not_current = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET and not route.is_current
+            PlaylistRoute(
+                slug="my-playlist-400000",
+                title_slug="my-playlist-400000",
+                collision_id=0,
+                owner_id=1,
+                playlist_id=400000,
+                is_current=False,
             ),
-            None,
-        )
-        playlist_2_route = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET + 1
+            PlaylistRoute(
+                slug="my-playlist-1-w-new-name",
+                title_slug="my-playlist-1-w-new-name",
+                collision_id=0,
+                owner_id=1,
+                playlist_id=400000,
+                is_current=True,
             ),
-            None,
-        )
-        playlist_3_route = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET + 4
+            PlaylistRoute(
+                slug="my-playlist-2",
+                title_slug="my-playlist-2",
+                collision_id=0,
+                owner_id=1,
+                playlist_id=400001,
+                is_current=True,
             ),
-            None,
-        )
-        playlist_4_route = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET + 5
+            PlaylistRoute(
+                slug="my-playlist-2-400001",
+                title_slug="my-playlist-2-400001",
+                collision_id=0,
+                owner_id=1,
+                playlist_id=400001,
+                is_current=False,
             ),
-            None,
-        )
-        playlist_diff_owner_route = next(
-            (
-                route
-                for route in playlist_routes
-                if route.playlist_id == PLAYLIST_ID_OFFSET + 6
+            PlaylistRoute(
+                slug="my-playlist-1",
+                title_slug="my-playlist",
+                collision_id=1,
+                owner_id=1,
+                playlist_id=400004,
+                is_current=True,
             ),
-            None,
-        )
-        # Though we updated the playlist 3 times,
-        # we only updated the name to have a diff slug two times
-        assert_playlist_route(
-            route=playlist_1_route_current,
-            slug="my-playlist-1-w-new-name",
-            title_slug="my-playlist-1-w-new-name",
-            collision_id=0,
-            owner_id=1,
-            playlist_id=PLAYLIST_ID_OFFSET,
-            is_current=True,
-        )
-        assert_playlist_route(
-            route=playlist_1_route_not_current,
-            slug="my-playlist",
-            title_slug="my-playlist",
-            collision_id=0,
-            owner_id=1,
-            playlist_id=PLAYLIST_ID_OFFSET,
-            is_current=False,
-        )
-        assert_playlist_route(
-            route=playlist_2_route,
-            slug="my-playlist-2",
-            title_slug="my-playlist-2",
-            collision_id=0,
-            owner_id=1,
-            playlist_id=PLAYLIST_ID_OFFSET + 1,
-            is_current=True,
-        )
-        assert_playlist_route(
-            route=playlist_3_route,
-            slug="my-playlist-1",
-            title_slug="my-playlist",
-            collision_id=1,
-            owner_id=1,
-            is_current=True,
-            playlist_id=PLAYLIST_ID_OFFSET + 4,
-        )
-        assert_playlist_route(
-            route=playlist_4_route,
-            slug="my-playlist-3",
-            title_slug="my-playlist",
-            collision_id=3,
-            playlist_id=PLAYLIST_ID_OFFSET + 5,
-            owner_id=1,
-            is_current=True,
-        )
-        assert_playlist_route(
-            route=playlist_diff_owner_route,
-            slug="my-playlist",
-            title_slug="my-playlist",
-            collision_id=0,
-            playlist_id=PLAYLIST_ID_OFFSET + 6,
-            owner_id=2,
-            is_current=True,
-        )
+            PlaylistRoute(
+                slug="my-playlist-400004",
+                title_slug="my-playlist-400004",
+                collision_id=1,
+                owner_id=1,
+                playlist_id=400004,
+                is_current=False,
+            ),
+            PlaylistRoute(
+                slug="my-playlist-3",
+                title_slug="my-playlist",
+                collision_id=3,
+                owner_id=1,
+                playlist_id=400005,
+                is_current=True,
+            ),
+            PlaylistRoute(
+                slug="my-playlist-400005",
+                title_slug="my-playlist-400005",
+                collision_id=3,
+                owner_id=1,
+                playlist_id=400005,
+                is_current=False,
+            ),
+            PlaylistRoute(
+                slug="my-playlist",
+                title_slug="my-playlist",
+                collision_id=0,
+                owner_id=2,
+                playlist_id=400006,
+                is_current=True,
+            ),
+            PlaylistRoute(
+                slug="my-playlist-400006",
+                title_slug="my-playlist-400006",
+                collision_id=0,
+                owner_id=2,
+                playlist_id=400006,
+                is_current=False,
+            ),
+        ]
+
+        def sort_key(route):
+            return (route.playlist_id, route.slug)
+
+        sorted_routes = sorted(playlist_routes, key=sort_key)
+        sorted_expected_routes = sorted(expected_routes, key=sort_key)
+        for i in range(len(sorted_routes)):
+            assert_playlist_route(sorted_routes[i], sorted_expected_routes[i])
 
 
 def test_index_valid_playlists(app, mocker, tx_receipts):

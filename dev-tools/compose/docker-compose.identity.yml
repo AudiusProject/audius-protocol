@@ -62,6 +62,7 @@ services:
       solanaFeePayerWallets: '[{"privateKey":${SOLANA_FEEPAYER_SECRET_KEY}}]'
       solanaSignerPrivateKey: "${ETH_VALID_SIGNER_PRIVATE_KEY}"
       solanaMintAddress: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
+      solanaUSDCMintAddress: "${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}"
       solanaClaimableTokenProgramAddress: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
       solanaRewardsManagerProgramId: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
       solanaRewardsManagerProgramPDA: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"

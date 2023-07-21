@@ -1,11 +1,11 @@
-FROM --platform=linux/amd64 rust:1.60.0 AS bpf-builder
+FROM --platform=linux/amd64 rust:1.64.0 AS bpf-builder
 
 WORKDIR /usr/src/app
 
 ENV PATH="/root/solana-release/bin:${PATH}"
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn @project-serum/anchor-cli@0.24.1 && \
+    npm install -g yarn@1.22.19 @project-serum/anchor-cli@0.24.1 && \
     curl -SfL https://github.com/solana-labs/solana/releases/download/v1.10.11/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
 
 ENV CARGO_INCREMENTAL=1
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/usr/src/app/target \
 
 # ------
 
-FROM rust:1.60.0
+FROM rust:1.64.0
 
 WORKDIR /usr/src/app
 
@@ -56,6 +56,7 @@ ARG AUDIUS_DATA_PRIVATE_KEY
 ARG owner_private_key
 ARG feepayer_private_key
 ARG token_private_key
+ARG fake_usdc_token_private_key
 ARG admin_authority_private_key
 ARG admin_account_private_key
 ARG signer_group_private_key

@@ -231,6 +231,22 @@ export type AnnouncementNotification = {
   push_body?: string
 }
 
+export type USDCPurchaseBuyerNotification = {
+  content_type: string
+  buyer_user_id: number
+  seller_user_id: number
+  amount: number
+  content_id: number
+}
+
+export type USDCPurchaseSellerNotification = {
+  content_type: string
+  buyer_user_id: number
+  seller_user_id: number
+  amount: number
+  content_id: number
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification

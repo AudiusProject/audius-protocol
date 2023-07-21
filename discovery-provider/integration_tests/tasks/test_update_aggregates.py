@@ -114,7 +114,6 @@ def test_update_aggregate_playlist(app):
         aggregate_playlist.save_count = 0
 
     with db.scoped_session() as session:
-
         _update_aggregates(session)
 
         aggregate_playlist = (
@@ -180,7 +179,6 @@ def test_update_aggregate_user(app):
         aggregate_user.track_save_count = 0
 
     with db.scoped_session() as session:
-
         _update_aggregates(session)
 
         aggregate_user = session.query(AggregateUser).filter_by(user_id=1).first()

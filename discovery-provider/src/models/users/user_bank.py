@@ -18,3 +18,12 @@ class UserBankAccount(Base, RepresentableMixin):
     ethereum_address = Column(String, nullable=False, index=True)
     created_at = Column(DateTime, nullable=False)
     bank_account = Column(String, nullable=False)
+
+
+class USDCUserBankAccount(Base, RepresentableMixin):
+    __tablename__ = "usdc_user_bank_accounts"
+
+    signature = Column(String, primary_key=True)
+    ethereum_address = Column(String, nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False)
+    bank_account = Column(String, nullable=False)

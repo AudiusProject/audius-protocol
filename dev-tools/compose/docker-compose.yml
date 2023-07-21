@@ -55,13 +55,6 @@ services:
       interval: 10s
       timeout: 5s
 
-  autoheal:
-    # Restarts containers when they become unhealthy
-    extends:
-      file: docker-compose.dev.yml
-      service: autoheal
-    <<: *common
-
   build-audius-libs:
     extends:
       file: docker-compose.dev.yml
@@ -222,6 +215,12 @@ services:
     extends:
       file: docker-compose.blockchain.yml
       service: solana-test-validator
+    <<: *common
+  
+  solana-test-validator-build:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: solana-test-validator-build
     <<: *common
 
 volumes:
