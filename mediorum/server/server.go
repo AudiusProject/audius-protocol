@@ -145,9 +145,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// ensure dir
 	os.MkdirAll(config.Dir, os.ModePerm)
-	if strings.HasPrefix(config.BlobStoreDSN, "file://") {
-		os.MkdirAll(strings.TrimPrefix(config.BlobStoreDSN, "file://"), os.ModePerm)
-	}
 
 	// bucket
 	bucket, err := persistence.Open(config.BlobStoreDSN)
