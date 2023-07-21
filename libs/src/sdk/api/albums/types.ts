@@ -74,7 +74,11 @@ export const createUpdateAlbumSchema = () =>
       coverArtFile: z.optional(
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
-      metadata: createUploadAlbumMetadataSchema().partial(),
+      metadata: createUploadAlbumMetadataSchema().merge(
+        z.object({
+          coverArtSizes: z.optional(z.string())
+        })
+      ),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()
