@@ -34,7 +34,9 @@ RUN apk update && \
         rsyslog \
         sudo \
         gcc \
-        musl-dev
+        musl-dev \
+        openblas-dev \
+        gfortran
 
 RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \

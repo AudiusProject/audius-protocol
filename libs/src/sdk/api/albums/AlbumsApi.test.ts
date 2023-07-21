@@ -199,7 +199,7 @@ describe('AlbumsApi', () => {
             name: 'coverArt'
           },
           metadata: {
-            mood: Mood.TENDER
+            mod: Mood.TENDER
           } as any
         })
       }).rejects.toThrow()

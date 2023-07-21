@@ -125,27 +125,25 @@ app.post<UpdateTrackRequest>(
   trackUpdate as any,
   async (req, res) => {
     try {
-      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"]?.[0];
 
-      if (coverArtFile) {
-        const inputMetadata = JSON.parse(req.body.metadata);
-        inputMetadata.releaseDate = inputMetadata.releaseDate
-          ? new Date(inputMetadata.releaseDate)
-          : inputMetadata.releaseDate;
+      const inputMetadata = JSON.parse(req.body.metadata);
+      inputMetadata.releaseDate = inputMetadata.releaseDate
+        ? new Date(inputMetadata.releaseDate)
+        : inputMetadata.releaseDate;
 
-        const updateTrackRequest: any = {
-          userId: req.body.userId,
-          trackId: req.body.trackId,
-          coverArtFile: {
-            buffer: coverArtFile?.buffer,
-            name: coverArtFile.originalname,
-          },
-          metadata: inputMetadata,
-          onProgress: (progress: any) => console.log("Progress:", progress),
-        };
-        const result = await audiusSdk.tracks.updateTrack(updateTrackRequest);
-        res.send(result);
-      }
+      const updateTrackRequest: any = {
+        userId: req.body.userId,
+        trackId: req.body.trackId,
+        coverArtFile: coverArtFile && {
+          buffer: coverArtFile?.buffer,
+          name: coverArtFile.originalname,
+        },
+        metadata: inputMetadata,
+        onProgress: (progress: any) => console.log("Progress:", progress),
+      };
+      const result = await audiusSdk.tracks.updateTrack(updateTrackRequest);
+      res.send(result);
     } catch (e) {
       console.error(e);
       res.send((e as any).message);

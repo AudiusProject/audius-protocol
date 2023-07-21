@@ -35,21 +35,25 @@ export const createUpdatePlaylistSchema = () =>
       coverArtFile: z.optional(
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
-      metadata: createUploadPlaylistMetadataSchema().merge(
-        z.object({
-          coverArtSizes: z.optional(z.string()),
-          isPrivate: z.optional(z.boolean()),
-          playlistContents: z.optional(
-            z.array(
-              z.object({
-                timestamp: z.number(),
-                metadataTimestamp: z.optional(z.number()),
-                trackId: HashId
-              })
-            )
-          )
-        })
-      ),
+      metadata: createUploadPlaylistMetadataSchema()
+        .omit({ isAlbum: true })
+        .partial()
+        .merge(
+          z
+            .object({
+              isPrivate: z.optional(z.boolean()),
+              playlistContents: z.optional(
+                z.array(
+                  z.object({
+                    timestamp: z.number(),
+                    metadataTimestamp: z.optional(z.number()),
+                    trackId: HashId
+                  })
+                )
+              )
+            })
+            .strict()
+        ),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()
@@ -163,13 +167,15 @@ export const FavoritePlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a save of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isSaveOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a save of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isSaveOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
@@ -190,13 +196,15 @@ export const RepostPlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a repost of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isRepostOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a repost of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isRepostOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()

@@ -302,7 +302,9 @@ describe('PlaylistsApi', () => {
             name: 'coverArt'
           },
           metadata: {
-            mood: Mood.TENDER
+            playlistName: 'My Playlist edited',
+            playlistMood: Mood.TENDER,
+            mod: Mood.TENDER
           } as any
         })
       }).rejects.toThrow()
