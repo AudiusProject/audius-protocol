@@ -13,6 +13,7 @@ import (
 	_ "gocloud.dev/blob/fileblob"
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/s3blob"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -71,7 +72,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 
 	prefix, ok := parsePrefix(rawPrefix)
 	if !ok {
-		return errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(keys(prefixWhitelist), ","))
+		return errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(maps.Keys(prefixWhitelist), ","))
 	}
 
 	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
@@ -124,14 +125,4 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	}
 
 	return errors.New("Unknown presistent storage type")
-}
-
-func keys[K comparable, V any](m map[K]V) []K {
-	keys := make([]K, len(m))
-	i := 0
-	for k := range m {
-		keys[i] = k
-		i++
-	}
-	return keys
 }
