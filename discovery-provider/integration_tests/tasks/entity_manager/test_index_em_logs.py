@@ -137,7 +137,6 @@ def test_index_em_logs(app, mocker):
             block_hash=0,
         )
         em_logs: List[EMLog] = session.query(EMLog).all()
-        print(f"asdf em_logs {em_logs}")
         assert len(em_logs) == 2
 
         create_user_1_em_log: List[EMLog] = (

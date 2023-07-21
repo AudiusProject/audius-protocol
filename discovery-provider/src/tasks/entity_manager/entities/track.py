@@ -339,6 +339,7 @@ def create_track(params: ManageEntityParameters):
 
     params.add_record(track_id, track_record)
 
+
 def update_track(params: ManageEntityParameters):
     handle = get_handle(params)
     validate_track_tx(params)
