@@ -248,6 +248,7 @@
 .premiumTrackSectionWrapper {
   margin: 0;
   background: var(--neutral-light-10);
+  width: 100%;
 }
 
 .premiumTrackSection {

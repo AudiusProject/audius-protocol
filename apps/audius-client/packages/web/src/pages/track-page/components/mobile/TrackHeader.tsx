@@ -412,7 +412,7 @@ const TrackHeader = ({
       </div>
       {showPlay ? (
         <PlayButton
-          disabled={doesUserHaveAccess}
+          disabled={!doesUserHaveAccess}
           playing={isPlaying}
           onPlay={onPlay}
         />
