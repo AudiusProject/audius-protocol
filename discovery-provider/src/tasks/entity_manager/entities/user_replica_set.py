@@ -23,8 +23,12 @@ from src.utils.redis_cache import (
     get_json_cached_key,
     set_json_cached_key,
 )
+from web3 import Web3
 
 logger = logging.getLogger(__name__)
+
+
+eth_web3 = web3_provider.get_eth_web3()
 
 
 # Fetch content node endpoint info from cache or from mainnet eth.
@@ -106,8 +110,7 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
 
 # Return instance of ServiceProviderFactory initialized with configs
 def get_sp_factory_inst():
-    eth_web3 = web3_provider.get_eth_web3()
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
     eth_registry_instance = eth_web3.eth.contract(

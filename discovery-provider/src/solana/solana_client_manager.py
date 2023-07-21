@@ -38,10 +38,10 @@ class SolanaClientManager:
 
     def get_sol_tx_info(
         self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
-    ):
+    ) -> GetTransactionResp:
         """Fetches a solana transaction by signature with retries and a delay."""
 
-        def handle_get_sol_tx_info(client: Client, index: int):
+        def handle_get_sol_tx_info(client: Client, index: int) -> GetTransactionResp:
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:

@@ -37,6 +37,7 @@ def get_web3(web3endpoint=None):
             web3endpoint = os.getenv("audius_web3_host")
             logger.warn(e)
     web3 = Web3(HTTPProvider(web3endpoint))
+    web3.strict_bytes_type_checking = False
 
     # required middleware for POA
     # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
@@ -53,5 +54,6 @@ def get_eth_web3():
     global eth_web3
     if not eth_web3:
         eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+        eth_web3.strict_bytes_type_checking = False
         return eth_web3
     return eth_web3

@@ -368,7 +368,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
         update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts_update_routes
     ]
 
@@ -516,7 +516,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
         update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -822,7 +822,7 @@ def test_index_invalid_playlists(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -897,7 +897,7 @@ def test_invalid_playlist_description(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 

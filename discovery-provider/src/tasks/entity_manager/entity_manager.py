@@ -102,7 +102,7 @@ def entity_manager_update(
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
-        hex_blockhash = update_task.web3.toHex(block_hash)
+        hex_blockhash = update_task.web3.to_hex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
         if not entity_manager_txs:

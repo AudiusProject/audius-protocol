@@ -418,6 +418,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or reactions_health_info["is_unhealthy"]
         or not delist_statuses_ok
     )
+    logger.info(
+        f"\n\n\n\n\n\nraymont {unhealthy_blocks, unhealthy_challenges, play_health_info, reactions_health_info, delist_statuses_ok}"
+    )
+    print(
+        f"\n\n\n\n\n\nraymont {unhealthy_blocks, unhealthy_challenges, play_health_info, reactions_health_info, delist_statuses_ok}"
+    )
 
     return health_results, is_unhealthy
 

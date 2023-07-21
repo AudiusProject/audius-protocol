@@ -66,7 +66,7 @@ def test_index_playlist_view(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -145,7 +145,7 @@ def test_index_playlist_view(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 

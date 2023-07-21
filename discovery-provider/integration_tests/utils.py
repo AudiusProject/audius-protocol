@@ -67,7 +67,7 @@ def query_creator_by_name(app, creator_name=None):
             return return_list
 
 
-def toBytes(val, length=32):
+def to_bytes(val, length=32):
     val = val[:length]
     return bytes(val, "utf-8")
 

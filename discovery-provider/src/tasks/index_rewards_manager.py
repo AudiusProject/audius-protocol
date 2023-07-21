@@ -3,10 +3,14 @@ import datetime
 import logging
 import time
 from decimal import Decimal
-from typing import Callable, Dict, List, Optional, TypedDict
+from typing import Callable, Dict, List, Optional, TypedDict, cast
 
 import base58
 from redis import Redis
+from solders.instruction import CompiledInstruction, Instruction
+from solders.message import Message
+from solders.pubkey import Pubkey
+from solders.transaction import Transaction
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.rewards.challenge import Challenge, ChallengeType
@@ -104,7 +108,7 @@ class RewardTransferInstruction(TypedDict):
 class RewardManagerTransactionInfo(TypedDict):
     tx_sig: str
     slot: int
-    timestamp: int
+    timestamp: int | None
     transfer_instruction: Optional[RewardTransferInstruction]
 
 
@@ -172,15 +176,15 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta
-) -> Optional[TransactionMessageInstruction]:
+    tx_message: Message, meta: ResultMeta
+) -> Optional[CompiledInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
     checks accounts keys for rewards manager account
     checks for rewards manager program in instruction
     """
     try:
-        account_keys = tx_message["accountKeys"]
+        account_keys = tx_message.account_keys
         has_transfer_instruction = any(
             log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
         )
@@ -194,10 +198,12 @@ def get_valid_instruction(
             )
             return None
 
-        instructions = tx_message["instructions"]
-        rewards_manager_program_index = account_keys.index(REWARDS_MANAGER_PROGRAM)
+        instructions = tx_message.instructions
+        rewards_manager_program_index = account_keys.index(
+            Pubkey.from_string(REWARDS_MANAGER_PROGRAM)
+        )
         for instruction in instructions:
-            if instruction["programIdIndex"] == rewards_manager_program_index:
+            if instruction.program_id_index == rewards_manager_program_index:
                 return instruction
 
         return None
@@ -221,25 +227,29 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     """
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        result: TransactionInfoResult = tx_info.value
+        result = tx_info.value
+        if not result:
+            raise Exception("Missing txinfo")
         # Create transaction metadata
         tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
-            "slot": result["slot"],
-            "timestamp": result["block_time"],
+            "slot": result.slot,
+            "timestamp": result.block_time,
             "transfer_instruction": None,
         }
-        meta = result["meta"]
-        if meta["err"]:
+        meta = result.transaction.meta
+        if not meta:
+            return tx_metadata
+        if meta.err:
             logger.info(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
             return tx_metadata
-        tx_message = result["transaction"]["message"]
+        tx_message = cast(Transaction, result.transaction.transaction).message
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return tx_metadata
-        transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
+        transfer_instruction_data = parse_transfer_instruction_data(instruction.data)
         amount = transfer_instruction_data["amount"]
         eth_recipient = transfer_instruction_data["eth_recipient"]
         id = transfer_instruction_data["id"]
@@ -248,7 +258,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             return tx_metadata
 
         challenge_id, specifier = transfer_instruction
-        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
+        receiver_index = instruction.accounts[TRANSFER_RECEIVER_ACCOUNT_INDEX]
         pre_balance, post_balance = get_solana_tx_token_balances(meta, receiver_index)
         if pre_balance == -1 or post_balance == -1:
             raise Exception("Reward recipient balance missing!")

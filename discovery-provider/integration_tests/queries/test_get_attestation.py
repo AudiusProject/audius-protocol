@@ -6,7 +6,7 @@ from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
 from integration_tests.queries.test_get_challenges import setup_db
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from src.queries.get_attestation import (
     ADD_SENDER_MESSAGE_PREFIX,
     REWARDS_MANAGER_ACCOUNT,
@@ -77,7 +77,7 @@ def test_get_attestation(app):
             )
 
             assert (
-                Web3.toChecksumAddress(recovered_pubkey.to_address())
+                Web3.to_checksum_address(recovered_pubkey.to_address())
                 == config_owner_wallet
             )
 
@@ -145,7 +145,7 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
     # Ensure we can derive the owner wallet from the signed stringified attestation
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
-        bytes(PublicKey(REWARDS_MANAGER_ACCOUNT)),
+        bytes(Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)),
         to_bytes(hexstr=new_sender_address),
     ]
     attestation_bytes = to_bytes(text="").join(items)
@@ -159,7 +159,9 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
         message_hash=to_sign_hash, signature=msg_signature
     )
 
-    assert Web3.toChecksumAddress(recovered_pubkey.to_address()) == config_owner_wallet
+    assert (
+        Web3.to_checksum_address(recovered_pubkey.to_address()) == config_owner_wallet
+    )
 
 
 def test_get_create_sender_attestation_not_registered(app, patch_get_all_other_nodes):

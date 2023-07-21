@@ -203,7 +203,7 @@ def test_index_valid_social_features(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -499,7 +499,7 @@ def test_index_invalid_social_features(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -630,7 +630,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -720,7 +720,7 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -824,7 +824,7 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -937,7 +937,7 @@ def test_index_social_feature_playlist_type(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -1061,7 +1061,7 @@ def test_index_social_feature_hidden_item(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 

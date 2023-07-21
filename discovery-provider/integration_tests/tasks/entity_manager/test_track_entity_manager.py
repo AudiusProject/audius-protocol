@@ -325,7 +325,7 @@ def test_index_valid_track(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -795,7 +795,7 @@ def test_index_invalid_tracks(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -945,7 +945,7 @@ def test_invalid_track_description(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 

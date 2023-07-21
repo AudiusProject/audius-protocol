@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple, TypedDict
 
 import base58
 from redis import Redis
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
@@ -65,9 +65,9 @@ logger = logging.getLogger(__name__)
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
-USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
-USDC_MINT_PUBKEY = PublicKey(USDC_MINT) if USDC_MINT else None
+USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
+USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
@@ -163,7 +163,10 @@ def process_create_userbank_instruction(
         get_account_index(instruction, CREATE_MINT_ACCOUNT_INDEX)
     ]
     _, derived_address = get_address_pair(
-        PublicKey(mint_address), public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+        Pubkey.from_string(mint_address),
+        public_key_bytes,
+        USER_BANK_KEY,
+        SPL_TOKEN_ID_PK,
     )
     bank_acct = str(derived_address[0])
     try:

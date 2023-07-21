@@ -3,7 +3,7 @@ from typing import Tuple
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
 from src.models.rewards.challenge import Challenge
@@ -23,7 +23,7 @@ from web3 import Web3
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
-    REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
+    REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)
 
 
 class Attestation:
@@ -209,8 +209,7 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
 
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
-        # Solana PubicKey should be coerced to bytes using the pythonic bytes method
-        # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
+        # Solana PubicKey should be coerced to bytes using the pythonic bytes
         bytes(REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY),
         to_bytes(hexstr=new_sender_address),
     ]

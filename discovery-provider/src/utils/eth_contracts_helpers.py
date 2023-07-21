@@ -1,5 +1,7 @@
 import logging
 
+from web3 import Web3
+
 logger = logging.getLogger(__name__)
 
 sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
@@ -15,7 +17,7 @@ def fetch_trusted_notifier_info(eth_web3, shared_config, eth_abi_values) -> dict
         logger.warn("eth_contracts_helpers.py | trusted notifier id not set")
         return {}
 
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
     eth_registry_instance = eth_web3.eth.contract(
