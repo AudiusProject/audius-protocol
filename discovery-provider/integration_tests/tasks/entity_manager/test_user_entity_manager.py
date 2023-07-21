@@ -1133,7 +1133,7 @@ def test_index_empty_bio(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=1,
+            block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
         )

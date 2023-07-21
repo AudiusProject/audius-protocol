@@ -184,22 +184,27 @@ class ManageEntityParameters:
         self.em_logs = em_logs
         self.logger = logger  # passed in with EM context
     
-    def add_record(self, key, record):
+    def add_record(self, key, record, record_type=None):
+        if not record_type:
+            record_type = self.entity_type
         # add to new records to insert
         # TODO replace with updates instead of new rows
-        self.new_records[self.entity_type][key].append(record)  # type: ignore
+        self.new_records[record_type][key].append(record)  # type: ignore
 
         # overwrite the current version of this record
-        prev_record = self.existing_records[self.entity_type].get(key)
-        self.existing_records[self.entity_type][key] = record  # type: ignore
-
+        prev_record = self.existing_records[record_type].get(key)
+        self.existing_records[record_type][key] = record  # type: ignore
+        # print(f"asdf self.existing_records {self.existing_records}")
         # index into em_logs
-        prev_record_dict = {}
+        prev_record_dict = None
         if prev_record:
+            prev_record_dict = {}
             for column in prev_record.__table__.columns:
                 prev_record_dict[column.name] = str(getattr(prev_record, column.name))
-        em_log = EMLog(txhash=self.txhash, entity_type=self.entity_type, entity_id=self.entity_id, blocknumber=self.block_number, prev_record=prev_record_dict)
+        # print(f"asdf prev_record_dict {prev_record_dict}")
+        em_log = EMLog(txhash=self.txhash, entity_type=record_type, blocknumber=self.block_number, prev_record=prev_record_dict)
         self.em_logs.append(em_log)
+        print(f"asdf self.em_logs {self.em_logs}")
 
     def add_notification_seen_record(
         self,

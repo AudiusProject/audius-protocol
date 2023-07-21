@@ -2,6 +2,7 @@ import json
 import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
+from src.models.indexing.em_log import EMLog
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
@@ -145,11 +146,11 @@ def entity_manager_update(
         # cid -> metadata
         cid_metadata: Dict[str, Dict] = {}
 
-        em_logs = []
-
+        em_logs: List[EMLog] = []
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            print(f"asdf txhash {txhash}")
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
@@ -308,7 +309,7 @@ def entity_manager_update(
 
         # compile records_to_save
         records_to_save = get_records_to_save(params, new_records, original_records)
-
+        print(f"asdf records_to_save {records_to_save}")
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
         num_total_changes += len(records_to_save)

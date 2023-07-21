@@ -206,6 +206,7 @@ def test_index_valid_social_features(app, mocker):
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
+    print(f"entity_manager_txs {entity_manager_txs}")
 
     def get_events_side_effect(_, tx_receipt):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
@@ -265,6 +266,7 @@ def test_index_valid_social_features(app, mocker):
             .all()
         )
         assert len(user_3_follows) == 1
+        print(f"asdf user_3_follows {user_3_follows}")
         user_3_follow = user_3_follows[0]
         assert user_3_follow.is_delete == True
 

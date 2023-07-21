@@ -2,12 +2,7 @@ import logging  # pylint: disable=C0302
 from typing import List
 from integration_tests.challenges.index_helpers import UpdateTask
 from src.tasks.entity_manager.entity_manager import (
-    ENABLE_DEVELOPMENT_FEATURES,
     entity_manager_update,
-)
-from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_TRACK_DESCRIPTION,
-    TRACK_ID_OFFSET,
 )
 from src.utils.db_session import get_db
 from web3 import Web3

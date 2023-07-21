@@ -288,7 +288,7 @@ def delete_developer_app(params: ManageEntityParameters):
     revoked_developer_app.is_delete = True
 
     validate_developer_app_record(revoked_developer_app)
-    params.add_developer_app_record(address, revoked_developer_app)
+    params.add_record(address, revoked_developer_app)
     return revoked_developer_app
 
 

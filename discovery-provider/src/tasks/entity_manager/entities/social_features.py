@@ -95,7 +95,8 @@ def create_social_record(params: ManageEntityParameters):
         if create_record:
             params.add_record(
                 get_record_key(params.user_id, params.entity_type, params.entity_id),
-                create_record
+                create_record,
+                record_type=record_type,
             )
 
     # dispatch repost, favorite, follow challenges
@@ -225,9 +226,9 @@ def delete_social_record(params):
         if deleted_record:
             params.add_record(
                 get_record_key(params.user_id, params.entity_type, params.entity_id),
-                deleted_record
+                deleted_record,
+                record_type=record_type,
             )
-
 
     # dispatch repost, favorite, follow challenges
     if deleted_record and params.action in action_to_challenge_event:

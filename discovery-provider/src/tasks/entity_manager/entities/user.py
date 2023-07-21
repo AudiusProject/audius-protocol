@@ -156,6 +156,7 @@ def create_user(
     cid_type: Dict[str, str],
     cid_metadata: Dict[str, Dict],
 ):
+    print("create user")
     validate_user_tx(params)
 
     user_id = params.user_id

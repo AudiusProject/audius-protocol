@@ -633,3 +633,8 @@ def test_index_app(app, mocker):
                 "is_personal_access", False
             )
             assert res.blocknumber == 2
+
+        from src.models.indexing.em_log import EMLog
+
+        em_logs = session.query(EMLog).all()
+        print(em_logs)

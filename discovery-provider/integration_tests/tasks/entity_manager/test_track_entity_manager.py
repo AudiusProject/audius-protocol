@@ -541,516 +541,516 @@ def test_index_valid_track(app, mocker):
         ), "Has both of the 'new-style' routes"
 
 
-# def test_index_invalid_tracks(app, mocker):
-#     "Tests invalid batch of playlists create/update/delete actions"
+def test_index_invalid_tracks(app, mocker):
+    "Tests invalid batch of playlists create/update/delete actions"
 
-#     # setup db and mocked txs
-#     with app.app_context():
-#         db = get_db()
-#         web3 = Web3()
-#         update_task = UpdateTask(web3, None)
-#     test_metadata = {
-#         "QmAIDisabled": {"ai_attribution_user_id": 2},
-#         "QmInvalidUpdateTrack1": {
-#             "owner_id": 1,
-#             "track_cid": "some-track-cid",
-#             "title": "track 1 2",
-#             "length": None,
-#             "cover_art": None,
-#             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
-#             "tags": "realmagic,rickyreed,theroom",
-#             "genre": "R&B/Soul",
-#             "mood": "Empowering",
-#             "credits_splits": None,
-#             "created_at": "2020-07-11 08:22:15",
-#             "create_date": None,
-#             "updated_at": "2020-07-11 08:22:15",
-#             "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
-#             "file_type": None,
-#             "track_segments": [
-#                 {
-#                     "duration": 6.016,
-#                     "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
-#                 }
-#             ],
-#             "has_current_user_reposted": False,
-#             "is_current": True,
-#             "is_unlisted": False,
-#             "is_premium": False,
-#             "premium_conditions": None,
-#             "field_visibility": {
-#                 "mood": True,
-#                 "tags": True,
-#                 "genre": True,
-#                 "share": True,
-#                 "play_count": True,
-#                 "remixes": True,
-#             },
-#             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
-#             "repost_count": 12,
-#             "save_count": 21,
-#             "description": "updated description",
-#             "license": "All rights reserved",
-#             "isrc": None,
-#             "iswc": None,
-#             "download": {
-#                 "cid": None,
-#                 "is_downloadable": False,
-#                 "requires_follow": False,
-#             },
-#             "track_id": 77955,
-#             "stem_of": None,
-#             "is_playlist_upload": False,
-#             "ai_attribution_user_id": 2,
-#         },
-#     }
-#     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
-#     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, None)
+    test_metadata = {
+        "QmAIDisabled": {"ai_attribution_user_id": 2},
+        "QmInvalidUpdateTrack1": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "track 1 2",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "repost_count": 12,
+            "save_count": 21,
+            "description": "updated description",
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "track_id": 77955,
+            "stem_of": None,
+            "is_playlist_upload": False,
+            "ai_attribution_user_id": 2,
+        },
+    }
+    invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
+    invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
 
-#     tx_receipts = {
-#         # invalid create
-#         "CreateTrackBelowOffset": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackUserDoesNotExist": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackUserDoesNotMatchSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackAlreadyExists": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackAIDisabled": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": f'{{"cid": "QmAIDisabled", "data": {invalid_metadata_json}}}',
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackInvalidDeletedApp": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackInvalidRevokedGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackInvalidWrongUserGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
-#                     }
-#                 )
-#             },
-#         ],
-#         # invalid updates
-#         "UpdateTrackInvalidSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "UpdateTrackInvalidOwner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Update",
-#                         "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
-#                         "_signer": "User2Wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "UpdateTrackInvalidDeletedApp": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-#                     }
-#                 )
-#             },
-#         ],
-#         "UpdateTrackInvalidRevokedGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
-#                     }
-#                 )
-#             },
-#         ],
-#         "UpdateTrackInvalidWrongUserGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
-#                     }
-#                 )
-#             },
-#         ],
-#         # invalid deletes
-#         "DeleteTrackInvalidSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Delete",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackDoesNotExist": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackInvalidOwner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Update",
-#                         "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
-#                         "_signer": "User2Wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackInvalidDeletedApp": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Delete",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackInvalidRevokedGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Delete",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackInvalidWrongUserGrant": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Delete",
-#                         "_metadata": "",
-#                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
-#                     }
-#                 )
-#             },
-#         ],
-#     }
+    tx_receipts = {
+        # invalid create
+        "CreateTrackBelowOffset": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackUserDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackUserDoesNotMatchSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackAlreadyExists": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackAIDisabled": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmAIDisabled", "data": {invalid_metadata_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidDeletedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidRevokedGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidWrongUserGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+        # invalid updates
+        "UpdateTrackInvalidSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidOwner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
+                        "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidDeletedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidRevokedGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidWrongUserGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+        # invalid deletes
+        "DeleteTrackInvalidSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidOwner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUpdateTrack1", "data": {invalid_update_track1_json}}}',
+                        "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidDeletedApp": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidRevokedGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidWrongUserGrant": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+    }
 
-#     entity_manager_txs = [
-#         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-#         for tx_receipt in tx_receipts
-#     ]
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
 
-#     def get_events_side_effect(_, tx_receipt):
-#         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
-#     mocker.patch(
-#         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-#         side_effect=get_events_side_effect,
-#         autospec=True,
-#     )
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
 
-#     entities = {
-#         "users": [
-#             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-#             {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
-#         ],
-#         "tracks": [
-#             {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
-#         ],
-#         "developer_apps": [
-#             {
-#                 "user_id": 2,
-#                 "name": "My App",
-#                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-#                 "is_delete": True,
-#             },
-#             {
-#                 "user_id": 2,
-#                 "name": "My App",
-#                 "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
-#             },
-#         ],
-#         "grants": [
-#             {
-#                 "user_id": 1,
-#                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
-#             },
-#             {
-#                 "user_id": 1,
-#                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
-#                 "is_revoked": True,
-#             },
-#             {
-#                 "user_id": 2,
-#                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
-#             },
-#         ],
-#     }
-#     populate_mock_db(db, entities)
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+        ],
+        "tracks": [
+            {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
+        ],
+        "developer_apps": [
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "is_delete": True,
+            },
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
+        "grants": [
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+            {
+                "user_id": 1,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "is_revoked": True,
+            },
+            {
+                "user_id": 2,
+                "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
 
-#     with db.scoped_session() as session:
-#         # index transactions
-#         entity_manager_update(
-#             update_task,
-#             session,
-#             entity_manager_txs,
-#             block_number=0,
-#             block_timestamp=1585336422,
-#             block_hash=0,
-#         )
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=0,
+        )
 
-#         # validate db records
-#         all_tracks: List[Track] = session.query(Track).all()
-#         assert len(all_tracks) == 1  # no new tracks indexed
+        # validate db records
+        all_tracks: List[Track] = session.query(Track).all()
+        assert len(all_tracks) == 1  # no new tracks indexed
 
 
-# def test_invalid_track_description(app, mocker):
-#     "Tests that playlists cant have a description that's too long"
-#     with app.app_context():
-#         db = get_db()
-#         web3 = Web3()
-#         update_task = UpdateTask(web3, None)
+def test_invalid_track_description(app, mocker):
+    "Tests that playlists cant have a description that's too long"
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, None)
 
-#     metadata = {
-#         "CreateInvalidTrackDescriptionMetadata": {
-#             "owner_id": 1,
-#             "track_cid": "some-track-cid",
-#             "title": "track 1",
-#             "length": None,
-#             "cover_art": None,
-#             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
-#             "tags": "realmagic,rickyreed,theroom",
-#             "genre": "R&B/Soul",
-#             "mood": "Empowering",
-#             "credits_splits": None,
-#             "created_at": "2020-07-11 08:22:15",
-#             "create_date": None,
-#             "updated_at": "2020-07-11 08:22:15",
-#             "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
-#             "file_type": None,
-#             "is_playlist_upload": True,
-#             "track_segments": [
-#                 {
-#                     "duration": 6.016,
-#                     "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
-#                 }
-#             ],
-#             "has_current_user_reposted": False,
-#             "is_current": True,
-#             "is_unlisted": False,
-#             "is_premium": False,
-#             "premium_conditions": None,
-#             "field_visibility": {
-#                 "mood": True,
-#                 "tags": True,
-#                 "genre": True,
-#                 "share": True,
-#                 "play_count": True,
-#                 "remixes": True,
-#             },
-#             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
-#             "repost_count": 12,
-#             "save_count": 21,
-#             "description": "xtralargeplz" * CHARACTER_LIMIT_TRACK_DESCRIPTION,
-#             "license": "All rights reserved",
-#             "isrc": None,
-#             "iswc": None,
-#             "download": {
-#                 "cid": None,
-#                 "is_downloadable": False,
-#                 "requires_follow": False,
-#             },
-#             "track_id": 77955,
-#             "stem_of": None,
-#             "ai_attribution_user_id": 2,
-#         },
-#     }
+    metadata = {
+        "CreateInvalidTrackDescriptionMetadata": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid",
+            "title": "track 1",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+            "tags": "realmagic,rickyreed,theroom",
+            "genre": "R&B/Soul",
+            "mood": "Empowering",
+            "credits_splits": None,
+            "created_at": "2020-07-11 08:22:15",
+            "create_date": None,
+            "updated_at": "2020-07-11 08:22:15",
+            "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+            "file_type": None,
+            "is_playlist_upload": True,
+            "track_segments": [
+                {
+                    "duration": 6.016,
+                    "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                }
+            ],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "mood": True,
+                "tags": True,
+                "genre": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+            "repost_count": 12,
+            "save_count": 21,
+            "description": "xtralargeplz" * CHARACTER_LIMIT_TRACK_DESCRIPTION,
+            "license": "All rights reserved",
+            "isrc": None,
+            "iswc": None,
+            "download": {
+                "cid": None,
+                "is_downloadable": False,
+                "requires_follow": False,
+            },
+            "track_id": 77955,
+            "stem_of": None,
+            "ai_attribution_user_id": 2,
+        },
+    }
 
-#     track_metadata = json.dumps(metadata["CreateInvalidTrackDescriptionMetadata"])
+    track_metadata = json.dumps(metadata["CreateInvalidTrackDescriptionMetadata"])
 
-#     tx_receipts = {
-#         "CreateInvalidTrackDescription": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {track_metadata}}}',
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#     }
+    tx_receipts = {
+        "CreateInvalidTrackDescription": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreateUserInvalidBioMetadata", "data": {track_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
 
-#     entity_manager_txs = [
-#         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-#         for tx_receipt in tx_receipts
-#     ]
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
 
-#     def get_events_side_effect(_, tx_receipt):
-#         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
-#     mocker.patch(
-#         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-#         side_effect=get_events_side_effect,
-#         autospec=True,
-#     )
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
 
-#     with db.scoped_session() as session:
-#         total_changes, _ = entity_manager_update(
-#             update_task,
-#             session,
-#             entity_manager_txs,
-#             block_number=0,
-#             block_timestamp=1585336422,
-#             block_hash=0,
-#         )
+    with db.scoped_session() as session:
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=0,
+        )
 
-#         assert total_changes == 0
+        assert total_changes == 0

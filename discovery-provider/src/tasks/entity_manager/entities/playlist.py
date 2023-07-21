@@ -229,7 +229,7 @@ def create_playlist(params: ManageEntityParameters):
 
     update_playlist_routes_table(params, create_playlist_record, True)
 
-    params.add_record(EntityType.PLAYLIST, playlist_id, create_playlist)
+    params.add_record(playlist_id, create_playlist_record)
 
     if tracks:
         dispatch_challenge_playlist_upload(
@@ -268,7 +268,7 @@ def update_playlist(params: ManageEntityParameters):
 
     update_playlist_routes_table(params, updated_playlist, False)
 
-    params.add_record(EntityType.PLAYLIST, playlist_id, updated_playlist)
+    params.add_record(playlist_id, updated_playlist)
 
     if updated_playlist.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
@@ -295,7 +295,7 @@ def delete_playlist(params: ManageEntityParameters):
     )
     deleted_playlist.is_delete = True
 
-    params.new_records[EntityType.PLAYLIST][params.entity_id].append(deleted_playlist)
+    params.add_record(params.entity_id, deleted_playlist)
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
