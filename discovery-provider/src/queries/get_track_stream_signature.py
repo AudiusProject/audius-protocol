@@ -32,7 +32,8 @@ def get_track_stream_signature(args: Dict):
         authed_user = get_authed_user(user_data, user_signature)
         authed_user_id = authed_user.get("user_id") if authed_user else None
 
-    if not track["is_premium"]:
+    # non-premium tracks and all track previews should be publicly available
+    if not track["is_premium"] or stream_preview:
         return get_premium_content_signature(
             {
                 "track_id": track["track_id"],
@@ -53,14 +54,11 @@ def get_track_stream_signature(args: Dict):
             urllib.parse.unquote(premium_content_signature)
         )
         signature_data = json.loads(premium_content_signature_obj["data"])
-        signature_cid_ok = signature_data.get("cid", False) == track["track_cid"]
-        if stream_preview:
-            signature_cid_ok = signature_data.get("cid", False) == track["preview_cid"]
 
         if (
             signature_data.get("user_wallet", False)
             != authed_user["user_wallet"].lower()
-            or not signature_cid_ok
+            or signature_data.get("cid", False) != track["track_cid"]
             or signature_data.get("shouldCache", False)
         ):
             return None
@@ -87,7 +85,7 @@ def get_track_stream_signature(args: Dict):
     return get_premium_content_signature(
         {
             "track_id": track["track_id"],
-            "cid": track["preview_cid"] if stream_preview else track["track_cid"],
+            "cid": track["track_cid"],
             "type": "track",
             "is_premium": True,
             "user_id": authed_user["user_id"],
