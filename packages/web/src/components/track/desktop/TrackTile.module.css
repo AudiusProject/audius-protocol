@@ -260,6 +260,22 @@
   justify-content: flex-start;
 }
 
+.artistPickLabelContainer {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--unit-1);
+  color: var(--neutral-light-4);
+}
+
+.artistPickIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+.artistPickIcon path {
+  fill: var(--neutral-light-4);
+}
+
 /* Right side of the track tile */
 .topRight {
   position: absolute;
