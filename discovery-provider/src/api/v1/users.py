@@ -50,6 +50,7 @@ from src.api.v1.models.support import (
 )
 from src.api.v1.models.tracks import track, track_full
 from src.api.v1.models.users import (
+    access_token,
     associated_wallets,
     challenge_response,
     connected_wallets,
@@ -1756,6 +1757,30 @@ class GetSupporting(FullGetSupporting):
 verify_token_response = make_response(
     "verify_token", ns, fields.Nested(decoded_user_token)
 )
+
+access_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+access_token_response = make_response("access_token", ns, fields.Nested(access_token))
+
+
+@ns.route("/access_token")
+class GetAccessToken(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Access Token""",
+        description="""Verify code to retrieve Access Token""",
+        responses={
+            200: "Success",
+            400: "Bad input",
+            404: "ID token not valid",
+            500: "Server error",
+        },
+    )
+    @ns.expect(access_token_parser)
+    @ns.marshal_with(access_token_response)
+    def post(self):
+        args = request.json
+        code = args.get("code")
+        return success_response({"access_token": code})
 
 
 @ns.route("/verify_token")

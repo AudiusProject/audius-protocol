@@ -611,6 +611,8 @@ full_search_parser.add_argument(
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")
 
+access_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+
 full_trending_parser = pagination_parser.copy()
 full_trending_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"

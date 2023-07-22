@@ -146,6 +146,8 @@ decoded_user_token = ns.model(
     },
 )
 
+access_token = ns.model("access_token", {"access_token": fields.String(required=True)})
+
 user_subscribers = ns.model(
     "user_subscribers",
     {
