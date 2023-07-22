@@ -359,8 +359,7 @@ def merge_metadata(
             )
             .first()
         )
-        prev_cid_metadata = prev_cid_data_record if prev_cid_data_record.data else {}
-
+        prev_cid_metadata = prev_cid_data_record.data if prev_cid_data_record else {}
     if prev_cid_metadata:
         # merge previous and current metadata
         updated_metadata = prev_cid_metadata | params.metadata
