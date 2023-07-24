@@ -1,3 +1,4 @@
+import { AttributionModalForm } from '../forms/AttributionModalForm'
 import { ReleaseDateModalForm } from '../forms/ReleaseDateModalForm'
 import { RemixModalForm } from '../forms/RemixModalForm'
 import { SourceFilesModalForm } from '../forms/SourceFilesModalForm'
@@ -12,6 +13,7 @@ export const TrackModalArray = () => {
       <RemixModalForm />
       <SourceFilesModalForm />
       <TrackAvailabilityModalForm />
+      <AttributionModalForm />
     </div>
   )
 }

@@ -12,7 +12,7 @@
 .tab {
   z-index: 3;
   flex: 1 1 auto;
-  padding: var(--unit-2) var(--unit-3);
+  padding: var(--unit-2);
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
@@ -21,6 +21,7 @@
   font-size: 15px;
   font-weight: var(--font-demi-bold);
   position: relative;
+  text-align: center;
 }
 
 .tab.isMobile {
@@ -67,4 +68,8 @@
 .tabFullWidth {
   flex: 1;
   text-align: center;
+}
+
+.disabled {
+  opacity: 0.5;
 }

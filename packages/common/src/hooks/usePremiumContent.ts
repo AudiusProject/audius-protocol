@@ -2,15 +2,15 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
+import { Chain } from 'models/Chain'
+import { ID } from 'models/Identifiers'
 import {
-  Chain,
-  ID,
   PremiumConditions,
   Track,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated
-} from 'models'
+} from 'models/Track'
 import { getAccountUser } from 'store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
 import { premiumContentSelectors } from 'store/premium-content'
