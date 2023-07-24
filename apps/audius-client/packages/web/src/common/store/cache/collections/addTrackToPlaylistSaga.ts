@@ -14,14 +14,14 @@ import {
   ID,
   FeatureFlags,
   cacheTracksSelectors,
-  updatePlaylistArtwork
+  updatePlaylistArtwork,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 

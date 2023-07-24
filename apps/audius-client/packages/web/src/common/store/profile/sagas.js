@@ -21,7 +21,9 @@ import {
   collectiblesActions,
   processAndCacheUsers,
   chatActions,
-  FeatureFlags
+  FeatureFlags,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -40,8 +42,6 @@ import {
   fetchUserCollections,
   fetchUserSocials
 } from 'common/store/cache/users/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {

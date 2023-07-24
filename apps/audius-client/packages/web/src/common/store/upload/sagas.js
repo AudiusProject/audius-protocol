@@ -12,7 +12,9 @@ import {
   uploadActions,
   UploadType,
   ProgressStatus,
-  uploadSelectors
+  uploadSelectors,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -35,8 +37,6 @@ import {
   reformat
 } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'

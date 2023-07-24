@@ -1,7 +1,9 @@
-import { getContext, waitForValue } from '@audius/common'
 import { call, delay, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import * as confirmerActions from 'common/store/confirmer/actions'
+import { getContext } from 'store/effects'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import * as confirmerActions from './actions'
 import {
   getResult,
   getCommandChain,
@@ -11,7 +13,7 @@ import {
   getLatestResult,
   getShouldCancelCurrentCall,
   getAreRequisiteCallsComplete
-} from 'common/store/confirmer/selectors'
+} from './selectors'
 
 enum BlockConfirmation {
   CONFIRMED = 'CONFIRMED',

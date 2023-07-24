@@ -16,6 +16,8 @@ import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
 import collectibles from './collectibles/slice'
+import confirmer from './confirmer/reducer'
+import { ConfirmerState } from './confirmer/types'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -250,7 +252,8 @@ export const reducers = () => ({
   // Collectibles
   collectibles,
 
-  upload
+  upload,
+  confirmer
 })
 
 export type CommonState = {
@@ -368,4 +371,5 @@ export type CommonState = {
   collectibles: ReturnType<typeof collectibles>
 
   upload: UploadState
+  confirmer: ConfirmerState
 }

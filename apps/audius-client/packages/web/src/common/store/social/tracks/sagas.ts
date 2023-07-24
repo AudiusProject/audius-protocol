@@ -16,15 +16,15 @@ import {
   QueryParams,
   premiumContentSelectors,
   encodeHashId,
-  getQueryParams
+  getQueryParams,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'

@@ -15,7 +15,9 @@ import {
   toastActions,
   updatePlaylistArtwork,
   cacheTracksSelectors,
-  removeNullable
+  removeNullable,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import {
   all,
@@ -30,8 +32,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   addPlaylistsNotInLibrary,

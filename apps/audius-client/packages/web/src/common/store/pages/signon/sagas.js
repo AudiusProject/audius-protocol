@@ -15,7 +15,9 @@ import {
   settingsPageActions,
   usersSocialActions as socialActions,
   solanaSelectors,
-  toastActions
+  toastActions,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -37,8 +39,6 @@ import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
