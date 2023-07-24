@@ -1,20 +1,21 @@
 import concurrent.futures
-import datetime
 import json
 import logging
 import re
 import time
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, Union
 
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
-from sqlalchemy import BigInteger, and_, desc
+from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
     TransactionMethod,
@@ -72,8 +73,9 @@ from src.utils.redis_constants import (
     latest_sol_user_bank_program_tx_key,
     latest_sol_user_bank_slot_key,
 )
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
@@ -178,7 +180,7 @@ def process_create_userbank_instruction(
     instruction: TransactionMessageInstruction,
     account_keys: List[str],
     tx_sig: str,
-    timestamp: datetime.datetime,
+    timestamp: datetime,
 ):
     tx_data = instruction["data"]
     parsed_token_data = parse_create_token_data(tx_data)
@@ -234,48 +236,53 @@ def process_create_userbank_instruction(
 
 
 class PurchaseMetadataDict(TypedDict):
-    owner_id: int
     price: int
+    splits: dict[str, int]
     type: PurchaseType
     id: int
 
 
 def get_purchase_metadata_from_memo(
-    session: Session, memos: List[str], slot: int
+    session: Session, memos: List[str], timestamp: datetime
 ) -> Union[PurchaseMetadataDict, None]:
     """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
     for memo in memos:
         logger.debug(f"index_user_bank.py | MEMO {memo}")
         try:
             content_metadata = json.loads(memo)
-            if "type" in content_metadata and "id" in content_metadata:
-                premium_conditions = None
-                if PurchaseType[content_metadata["type"].lower()] == PurchaseType.track:
-                    results = (
-                        session.query(Track.premium_conditions, Track.owner_id)
+            logger.debug(f"index_user_bank.py | Found JSON in memo: {content_metadata}")
+            if (
+                "type" in content_metadata
+                and "id" in content_metadata
+                and "blocknumber" in content_metadata
+            ):
+                # TODO: Wait for blocknumber to be indexed by ACDC
+                (id, type, _) = content_metadata["id"], content_metadata["type"], content_metadata["blocknumber"]
+                price = None
+                splits = None
+                if PurchaseType[type.lower()] == PurchaseType.track:
+                    result: TrackPriceHistory = (
+                        session.query(TrackPriceHistory)
                         .filter(
-                            Track.track_id == content_metadata["id"],
-                            Track.is_current.in_(True, False),
-                            Track.premium_conditions["usdc_purchase"] != None,
-                            Track.premium_conditions["usdc_purchase"][
-                                "slot"
-                            ].astext.cast(BigInteger)
-                            <= slot,
+                            TrackPriceHistory.track_id == id,
+                            TrackPriceHistory.block_timestamp < timestamp
                         )
+                        .order_by(desc(TrackPriceHistory.block_timestamp))
                         .first()
                     )
+                    if result is not None:
+                        price = result.total_price_cents
+                        splits = result.splits
                 else:
                     logger.error(
                         f"index_user_bank.py | Unknown content type {content_metadata['type']}"
                     )
-                if results:
-                    premium_conditions, owner_id = results
+                if price is not None and splits is not None:
                     return {
                         "type": PurchaseType[content_metadata["type"].lower()],
                         "id": content_metadata["id"],
-                        "owner_id": owner_id,
-                        "price": int(premium_conditions["usdc_purchase"]["price"])
-                        * USDC_PER_USD_CENT,
+                        "price": price * USDC_PER_USD_CENT,
+                        "splits": splits
                     }
                 else:
                     logger.error(
@@ -284,39 +291,31 @@ def get_purchase_metadata_from_memo(
         except json.JSONDecodeError as e:
             logger.debug(f"index_user_bank.py | Couldn't parse memo as json {e}")
 
+    logger.error(f"index_user_bank.py | Failed to find content metadata")
     return None
 
 
 def validate_purchase(
     purchase_metadata: PurchaseMetadataDict,
     balance_changes: dict[str, BalanceChange],
-    sender_account: str,
-    receiver_account: str,
-    receiver_user_id: Union[int, None],
+    sender_account: str
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    # Validate the amounts sent and received are equal
-    # TODO: Change this when payment router is going to take a cut
-    if (
-        balance_changes[sender_account]["change"]
-        + balance_changes[receiver_account]["change"]
-        != 0
-    ):
-        logger.error(
-            f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {balance_changes[sender_account]['change']}, Received = {balance_changes[receiver_account]['change']}"
-        )
-        return False
+    is_valid = True
+    # Check the sender paid full price
     if purchase_metadata["price"] + balance_changes[sender_account]["change"] > 0:
         logger.error(
-            f"index_user_bank.py | Purchase price exceeds sent amount. Sent={balance_changes[sender_account]['change']} Price={purchase_metadata['price']} | purchase_metadata={purchase_metadata} buyer={sender_account} seller={receiver_account}"
+            f"index_user_bank.py | Purchase price exceeds sent amount. sent={balance_changes[sender_account]['change']} price={purchase_metadata['price']}"
         )
-        return False
-    if receiver_user_id != purchase_metadata["owner_id"]:
-        logger.error(
-            f"index_user_bank.py | Paid user doesn't own the content! Receiver={receiver_user_id} Owner={purchase_metadata['owner_id']}"
-        )
-        return False
-    return True
+        is_valid = False
+    # Check that the recipients all got the correct split
+    for account, split in purchase_metadata["splits"].items():
+        if balance_changes[account]["change"] < split:
+            logger.error(
+                f"index_user_bank.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
+            )
+            is_valid = False
+    return is_valid
 
 
 def index_purchase(
@@ -328,7 +327,7 @@ def index_purchase(
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: PurchaseMetadataDict,
     slot: int,
-    timestamp: datetime.datetime,
+    timestamp: datetime,
     tx_sig: str,
 ):
     usdc_purchase = USDCPurchase(
@@ -384,7 +383,7 @@ def validate_and_index_purchase(
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: Union[PurchaseMetadataDict, None],
     slot: int,
-    timestamp: datetime.datetime,
+    timestamp: datetime,
     tx_sig: str,
 ):
     """Checks if the transaction is a valid purchase and if so creates the purchase record. Otherwise, indexes a transfer."""
@@ -392,8 +391,6 @@ def validate_and_index_purchase(
         purchase_metadata=purchase_metadata,
         balance_changes=balance_changes,
         sender_account=sender_account,
-        receiver_account=receiver_account,
-        receiver_user_id=receiver_user_id,
     ):
         index_purchase(
             session=session,
@@ -445,7 +442,7 @@ def index_user_tip(
     sender_account: str,
     balance_changes: dict[str, BalanceChange],
     slot: int,
-    timestamp: datetime.datetime,
+    timestamp: datetime,
     tx_sig: str,
 ):
     user_tip = UserTip(
@@ -501,7 +498,7 @@ def process_transfer_instruction(
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
-    timestamp: datetime.datetime,
+    timestamp: datetime,
 ):
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
@@ -613,7 +610,7 @@ def process_transfer_instruction(
         elif is_usdc:
             # Index as a purchase of some content
             purchase_metadata = get_purchase_metadata_from_memo(
-                session=session, memos=memos, slot=slot
+                session=session, memos=memos, timestamp=timestamp
             )
             validate_and_index_purchase(
                 session=session,
@@ -855,7 +852,7 @@ def process_user_bank_txs() -> None:
 
                 tx_slot = tx_info["result"]["slot"]
                 timestamp = tx_info["result"]["blockTime"]
-                parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
+                parsed_timestamp = datetime.utcfromtimestamp(timestamp)
 
                 logger.debug(
                     f"index_user_bank.py | parse_user_bank_transaction |\
