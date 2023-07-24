@@ -9,6 +9,7 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
+import { Genre } from '../../types/Genre'
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -115,6 +116,7 @@ describe('AlbumsApi', () => {
           name: 'coverArt'
         },
         metadata: {
+          genre: Genre.ACOUSTIC,
           albumName: 'My Album',
           mood: Mood.TENDER
         },
@@ -173,6 +175,7 @@ describe('AlbumsApi', () => {
           name: 'coverArt'
         },
         metadata: {
+          genre: Genre.ACOUSTIC,
           albumName: 'My Album edited',
           mood: Mood.TENDER
         }
