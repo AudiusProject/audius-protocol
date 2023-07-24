@@ -71,7 +71,7 @@ def validate_user_tx(params: ManageEntityParameters):
                 # dont want to raise here, only check bio IF it exists
                 pass
         else:
-            user_bio = user_metadata.get("bio")
+            user_bio = params.metadata.get("bio")
 
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
             raise IndexingValidationError(
