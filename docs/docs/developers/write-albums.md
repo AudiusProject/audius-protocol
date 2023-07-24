@@ -61,14 +61,14 @@ const { albumId } = await audiusSdk.albums.uploadTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type                                                                                                                                                                                  | Default value | Required? | Notes                                                                                                                                     |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------ | :-------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| `coverArtFile`   | `File`                                                                                                                                                                                | N/A           | Yes       |                                                                                                                                           |
-| `metadata`       | <code>{ genre: Genre; albumName: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |                                                                                                                                           |
-| `onProgress`     | `(progress: number) => void`                                                                                                                                                          | `undefined`   | No        |                                                                                                                                           |
-| `trackFiles`     | `Array<File>`                                                                                                                                                                         | `[]`          | No        |                                                                                                                                           |
-| `trackMetadatas` | `TrackMetadata`                                                                                                                                                                       | `[]`          | No        | See [here](/developers/sdk/interfaces/TrackMetadata) for full interface. Mood, genre, and tags are inherited from the album if not given. |
-| `userId`         | `string`                                                                                                                                                                              | N/A           | Yes       |                                                                                                                                           |
+| Name             | Type                                                                                                                                                                                  | Default value | Required? | Notes                                                                                                                                                  |
+| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------ | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coverArtFile`   | `File`                                                                                                                                                                                | N/A           | Yes       |                                                                                                                                                        |
+| `metadata`       | <code>{ genre: Genre; albumName: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |                                                                                                                                                        |
+| `onProgress`     | `(progress: number) => void`                                                                                                                                                          | `undefined`   | No        |                                                                                                                                                        |
+| `trackFiles`     | `Array<File>`                                                                                                                                                                         | `[]`          | No        |                                                                                                                                                        |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                          | `[]`          | No        | See [here](/developers/UploadTrackMetadata) for full `UploadTrackMetadata` interface. Mood, genre, and tags are inherited from the album if not given. |
+| `userId`         | `string`                                                                                                                                                                              | N/A           | Yes       |                                                                                                                                                        |
 
 #### `writeOptions` parameters (advanced)
 
@@ -80,7 +80,7 @@ Returns a `Promise` containing an object with the new album's ID (`albumId`), as
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; `albumId`: `string` }\>
+`Promise<{ blockHash: string; blockNumber: number; albumId: string } >`
 
 ---
 
@@ -88,7 +88,7 @@ Return type:
 
 #### updateAlbum(`requestParameters`, `writeOptions?`)
 
-Update an album. If any cover art or any metadata fields are not provided, their values will be kept the same as before.
+Update an album. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
 Example:
 
@@ -135,7 +135,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -173,7 +173,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -212,7 +212,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -250,7 +250,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -289,7 +289,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -327,6 +327,6 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---

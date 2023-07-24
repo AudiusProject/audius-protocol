@@ -36,13 +36,13 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                         | Default value | Required? | Notes                                                     |
-| :------------- | :--------------------------- | :------------ | :-------- | :-------------------------------------------------------- |
-| `coverArtFile` | `File`                       | N/A           | Yes       |                                                           |
-| `metadata`     | [TrackMetadata](/)           | N/A           | Yes       | See [here](/developers/TrackMetadata) for full interface. |
-| `onProgress`   | `(progress: number) => void` | `undefined`   | No        |                                                           |
-| `trackFile`    | `File`                       | N/A           | Yes       |                                                           |
-| `userId`       | `string`                     | N/A           | Yes       |                                                           |
+| Name           | Type                                                     | Default value | Required? | Notes                                                           |
+| :------------- | :------------------------------------------------------- | :------------ | :-------- | :-------------------------------------------------------------- |
+| `coverArtFile` | `File`                                                   | N/A           | Yes       |                                                                 |
+| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | N/A           | Yes       | See [here](/developers/UploadTrackMetadata) for full interface. |
+| `onProgress`   | `(progress: number) => void`                             | `undefined`   | No        |                                                                 |
+| `trackFile`    | `File`                                                   | N/A           | Yes       |                                                                 |
+| `userId`       | `string`                                                 | N/A           | Yes       |                                                                 |
 
 #### `writeOptions` parameters (advanced)
 
@@ -54,7 +54,7 @@ Returns a `Promise` containing an object with the new track's ID (`trackId`), as
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; `trackId`: `string` }\>
+`Promise<{ blockHash: string; blockNumber: number; trackId: string }>`
 
 ---
 
@@ -62,7 +62,7 @@ Return type:
 
 #### updateTrack(`requestParameters`, `writeOptions?`)
 
-Update a track.
+Update a track. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
 Example:
 
@@ -93,13 +93,13 @@ const { trackId } = await audiusSdk.tracks.updateTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                  | Default value | Required? |
-| :------------- | :---------------------------------------------------- | :------------ | :-------- |
-| `trackId`      | `string`                                              | N/A           | Yes       |
-| `userId`       | `string`                                              | N/A           | Yes       |
-| `coverArtFile` | `string`                                              | `undefined`   | No        |
-| `metadata`     | `Partial<[TrackMetadata](/developers/TrackMetadata)>` | N/A           | Yes       |
-| `onProgress`   | `(progress: number) => void`                          | `undefined`   | No        |
+| Name           | Type                                                                  | Default value | Required? | Notes                    |
+| :------------- | :-------------------------------------------------------------------- | :------------ | :-------- | ------------------------ |
+| `trackId`      | `string`                                                              | N/A           | Yes       |                          |
+| `userId`       | `string`                                                              | N/A           | Yes       |                          |
+| `coverArtFile` | `string`                                                              | `undefined`   | No        |                          |
+| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | N/A           | Yes       | All fields are optional. |
+| `onProgress`   | `(progress: number) => void`                                          | `undefined`   | No        |                          |
 
 #### `writeOptions` parameters (advanced)
 
@@ -111,7 +111,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -149,7 +149,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -188,7 +188,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -226,7 +226,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -265,7 +265,7 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---
 
@@ -303,6 +303,6 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise`<{ `blockHash`: `string`; `blockNumber`: `number`; }\>
+`Promise<{ blockHash: string; blockNumber: number; }>`
 
 ---

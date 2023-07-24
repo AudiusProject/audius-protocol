@@ -86,6 +86,16 @@ module.exports = {
             },
             {
               type: "doc",
+              label: "Albums (Write)",
+              id: "developers/write-albums",
+            },
+            {
+              type: "doc",
+              label: "Tracks (Write)",
+              id: "developers/write-tracks",
+            },
+            {
+              type: "doc",
               id: "developers/sdk/classes/ResolveApi",
             },
             {
@@ -100,6 +110,11 @@ module.exports = {
                   type: "category",
                   label: "Interfaces",
                   items: [
+                    {
+                      type: "doc",
+                      label: "UploadTrackMetadata",
+                      id: "developers/uploadTrackMetadata",
+                    },
                     {
                       type: "doc",
                       label: "WriteOptions",
