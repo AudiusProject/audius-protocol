@@ -1,9 +1,8 @@
 import { z } from 'zod'
-import type { CrossPlatformFile as File } from '../../types/File'
+import { CrossPlatformFileSchema as File } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { isFileValid } from '../../utils/file'
 
 export const PremiumConditionsEthNFTCollection = z
   .object({
@@ -114,12 +113,10 @@ export const createUploadTrackSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as File)
-      ),
+      coverArtFile: File,
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
+      trackFile: File
     })
     .strict()
 
@@ -139,9 +136,7 @@ export const createUpdateTrackSchema = () =>
       trackId: HashId,
       metadata: createUploadTrackMetadataSchema().partial(),
       transcodePreview: z.optional(z.boolean()),
-      coverArtFile: z.optional(
-        z.custom<File>((data: unknown) => isFileValid(data as File))
-      ),
+      coverArtFile: z.optional(File),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()

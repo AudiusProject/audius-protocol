@@ -17,11 +17,11 @@ import {
   MAX_TRACK_TRANSCODE_TIMEOUT,
   POLL_STATUS_INTERVAL
 } from './constants'
-import type { CrossPlatformFile as File } from '../../types/File'
-import { isNodeFile } from '../../utils/file'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 import { sortObjectKeys } from '../Auth/utils'
 import type { AuthService } from '../Auth'
+import { isNodeFile } from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 
 export class Storage implements StorageService {
   /**
@@ -111,8 +111,11 @@ export class Storage implements StorageService {
     Object.keys(options).forEach((key) => {
       formData.append(key, `${options[key]}`)
     })
-    // TODO: Test this in a browser env
-    formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
+    formData.append(
+      'files',
+      isNodeFile(file) ? file.buffer : file,
+      file.name ?? 'blob'
+    )
 
     const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
 
