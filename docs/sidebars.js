@@ -96,7 +96,7 @@ module.exports = {
             },
             {
               type: "doc",
-              id: "developers/sdk/classes/ResolveApi",
+              id: "developers/resolve-api",
             },
             {
               type: "doc",
