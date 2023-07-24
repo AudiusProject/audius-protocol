@@ -42,9 +42,8 @@ func TestReaper(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	b.Walk()
-
 	// before
+	b.Walk()
 	expected := map[string]map[string]int{
 		"copy320": {
 			"bytes_used":  0,
@@ -81,13 +80,11 @@ func TestReaper(t *testing.T) {
 	if !reflect.DeepEqual(expected, b.counter) {
 		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, b.counter)
 	} else {
-		report(b)
+		b.report()
 	}
 
-	b.counter = initCounter()
-	b.Walk()
-
 	// after
+	b.Walk()
 	expected = map[string]map[string]int{
 		"copy320": {
 			"bytes_used":  0,
@@ -124,7 +121,7 @@ func TestReaper(t *testing.T) {
 	if !reflect.DeepEqual(expected, b.counter) {
 		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, b.counter)
 	} else {
-		report(b)
+		b.report()
 	}
 
 }
