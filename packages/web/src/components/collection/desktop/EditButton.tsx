@@ -20,7 +20,10 @@ export const EditButton = (props: EditButtonProps) => {
   const dispatch = useDispatch()
 
   const handleEdit = useCallback(
-    () => dispatch(openEditCollectionModal({ collectionId })),
+    () =>
+      dispatch(
+        openEditCollectionModal({ collectionId, isCollectionViewed: true })
+      ),
     [dispatch, collectionId]
   )
 

@@ -13,6 +13,7 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -22,10 +23,12 @@ import { DeleteCollectionConfirmationModal } from 'components/nav/desktop/Playli
 import {
   getCollectionId,
   getInitialFocusedField,
+  getIsCollectionViewed,
   getIsOpen
 } from 'store/application/ui/editPlaylistModal/selectors'
 import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
+import { TRENDING_PAGE } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './EditPlaylistModal.module.css'
@@ -54,9 +57,11 @@ type EditPlaylistModalProps = OwnProps &
 const EditPlaylistModal = (props: EditPlaylistModalProps) => {
   const {
     isOpen,
+    isCollectionViewed,
     initialFocusedField,
     collectionId,
     collection,
+    goToRoute,
     onClose,
     fetchSavedPlaylists,
     editPlaylist
@@ -95,7 +100,10 @@ const EditPlaylistModal = (props: EditPlaylistModalProps) => {
   const handleDelete = useCallback(() => {
     setShowDeleteConfirmation(false)
     onClose()
-  }, [onClose])
+    if (isCollectionViewed) {
+      goToRoute(TRENDING_PAGE)
+    }
+  }, [onClose, goToRoute, isCollectionViewed])
 
   return (
     <>
@@ -145,6 +153,7 @@ const mapStateToProps = (state: AppState) => {
   return {
     isOpen: getIsOpen(state),
     initialFocusedField: getInitialFocusedField(state),
+    isCollectionViewed: getIsCollectionViewed(state),
     collectionId: getCollectionId(state),
     collection: getCollectionWithUser(state, { id: collectionId || undefined })
   }
@@ -153,6 +162,7 @@ const mapStateToProps = (state: AppState) => {
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onClose: () => dispatch(close()),
   fetchSavedPlaylists: () => dispatch(fetchSavedPlaylists()),
+  goToRoute: (route: string) => dispatch(pushRoute(route)),
   editPlaylist: (playlistId: ID, formFields: any) =>
     dispatch(editPlaylist(playlistId, formFields))
 })
