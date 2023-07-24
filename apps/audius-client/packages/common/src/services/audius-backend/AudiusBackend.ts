@@ -2165,6 +2165,45 @@ export const audiusBackend = ({
         entityType,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'usdc_purchase_seller') {
+      let entityId = 0
+      let entityType = Entity.Track
+      let amount = 0
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = decodeHashId(data.content_id) as number
+          entityType = Entity.Track
+          amount = data.amount
+          return decodeHashId(data.buyer_user_id)
+        })
+        .filter(removeNullable)
+      return {
+        type: NotificationType.USDCPurchaseSeller,
+        userIds,
+        entityId,
+        entityType,
+        amount,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'usdc_purchase_buyer') {
+      let entityId = 0
+      let entityType = Entity.Track
+      const userIds = notification.actions
+        .map((action) => {
+          const data = action.data
+          entityId = decodeHashId(data.content_id) as number
+          entityType = Entity.Track
+          return decodeHashId(data.seller_user_id)
+        })
+        .filter(removeNullable)
+      return {
+        type: NotificationType.USDCPurchaseBuyer,
+        userIds,
+        entityId,
+        entityType,
+        ...formatBaseNotification(notification)
+      }
     } else {
       console.error('Notification does not match an expected type.')
     }
@@ -2216,7 +2255,6 @@ export const audiusBackend = ({
       }
 
     const { unread_count, notifications } = response
-
     return {
       totalUnviewed: unread_count,
       notifications: notifications.map(

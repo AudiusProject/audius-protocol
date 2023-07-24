@@ -46,25 +46,29 @@ export function* parseAndProcessNotifications(
    * Parse through the notifications & collect user /track / collection IDs
    * that the notification references to fetch
    */
-  const trackIdsToFetch: ID[] = []
-  const collectionIdsToFetch: ID[] = []
-  const userIdsToFetch: ID[] = []
-  const reactionSignatureToFetch: string[] = []
+  let trackIdsToFetch = new Set<ID>()
+  let collectionIdsToFetch = new Set<ID>()
+  let userIdsToFetch = new Set<ID>()
+  const reactionSignatureToFetch = new Set<string>()
 
   notifications.forEach((notification) => {
     const { type } = notification
     if (type === NotificationType.UserSubscription) {
       if (notification.entityType === Entity.Track) {
-        notification.entityIds = [...new Set(notification.entityIds)]
-        trackIdsToFetch.push(...notification.entityIds)
+        trackIdsToFetch = new Set([
+          ...trackIdsToFetch,
+          ...notification.entityIds
+        ])
       } else if (
         notification.entityType === Entity.Playlist ||
         notification.entityType === Entity.Album
       ) {
-        notification.entityIds = [...new Set(notification.entityIds)]
-        collectionIdsToFetch.push(...notification.entityIds)
+        collectionIdsToFetch = new Set([
+          ...collectionIdsToFetch,
+          ...notification.entityIds
+        ])
       }
-      userIdsToFetch.push(notification.userId)
+      userIdsToFetch = new Set([...userIdsToFetch, notification.userId])
     }
     if (
       type === NotificationType.Repost ||
@@ -74,14 +78,14 @@ export function* parseAndProcessNotifications(
       (type === NotificationType.Milestone && 'entityType' in notification)
     ) {
       if (notification.entityType === Entity.Track) {
-        trackIdsToFetch.push(notification.entityId)
+        trackIdsToFetch.add(notification.entityId)
       } else if (
         notification.entityType === Entity.Playlist ||
         notification.entityType === Entity.Album
       ) {
-        collectionIdsToFetch.push(notification.entityId)
+        collectionIdsToFetch.add(notification.entityId)
       } else if (notification.entityType === Entity.User) {
-        userIdsToFetch.push(notification.entityId)
+        userIdsToFetch.add(notification.entityId)
       }
     }
     if (
@@ -91,21 +95,20 @@ export function* parseAndProcessNotifications(
       type === NotificationType.Favorite ||
       type === NotificationType.FavoriteOfRepost
     ) {
-      notification.userIds = [...new Set(notification.userIds)]
-      userIdsToFetch.push(
+      userIdsToFetch = new Set([
+        ...userIdsToFetch,
         ...notification.userIds.slice(0, USER_INITIAL_LOAD_COUNT)
-      )
+      ])
     }
     if (type === NotificationType.RemixCreate) {
-      trackIdsToFetch.push(
-        notification.parentTrackId,
-        notification.childTrackId
-      )
+      trackIdsToFetch
+        .add(notification.parentTrackId)
+        .add(notification.childTrackId)
       notification.entityType = Entity.Track
     }
     if (type === NotificationType.RemixCosign) {
-      trackIdsToFetch.push(notification.childTrackId)
-      userIdsToFetch.push(notification.parentTrackUserId)
+      trackIdsToFetch.add(notification.childTrackId)
+      userIdsToFetch.add(notification.parentTrackUserId)
       notification.entityType = Entity.Track
       notification.entityIds = [notification.childTrackId]
       notification.userId = notification.parentTrackUserId
@@ -114,10 +117,10 @@ export function* parseAndProcessNotifications(
       type === NotificationType.TrendingTrack ||
       type === NotificationType.TrendingUnderground
     ) {
-      trackIdsToFetch.push(notification.entityId)
+      trackIdsToFetch.add(notification.entityId)
     }
     if (type === NotificationType.TrendingPlaylist) {
-      collectionIdsToFetch.push(notification.entityId)
+      collectionIdsToFetch.add(notification.entityId)
     }
     if (
       type === NotificationType.TipSend ||
@@ -126,37 +129,48 @@ export function* parseAndProcessNotifications(
       type === NotificationType.SupportingRankUp ||
       type === NotificationType.Reaction
     ) {
-      userIdsToFetch.push(notification.entityId)
+      userIdsToFetch.add(notification.entityId)
     }
     if (type === NotificationType.TipReceive) {
-      reactionSignatureToFetch.push(notification.tipTxSignature)
+      reactionSignatureToFetch.add(notification.tipTxSignature)
     }
     if (type === NotificationType.AddTrackToPlaylist) {
-      trackIdsToFetch.push(notification.trackId)
-      userIdsToFetch.push(notification.playlistOwnerId)
-      collectionIdsToFetch.push(notification.playlistId)
+      trackIdsToFetch.add(notification.trackId)
+      userIdsToFetch.add(notification.playlistOwnerId)
+      collectionIdsToFetch.add(notification.playlistId)
     }
     if (type === NotificationType.SupporterDethroned) {
-      userIdsToFetch.push(notification.supportedUserId)
-      userIdsToFetch.push(notification.entityId)
+      userIdsToFetch.add(notification.supportedUserId)
+      userIdsToFetch.add(notification.entityId)
     }
     if (type === NotificationType.Tastemaker) {
-      userIdsToFetch.push(notification.userId)
-      trackIdsToFetch.push(notification.entityId)
+      userIdsToFetch.add(notification.userId)
+      trackIdsToFetch.add(notification.entityId)
+    }
+    if (
+      type === NotificationType.USDCPurchaseBuyer ||
+      type === NotificationType.USDCPurchaseSeller
+    ) {
+      userIdsToFetch = new Set([...userIdsToFetch, ...notification.userIds])
+      trackIdsToFetch.add(notification.entityId)
     }
   })
 
   const [tracks] = yield* all([
-    call(retrieveTracks, { trackIds: trackIdsToFetch }),
-    call(retrieveCollections, collectionIdsToFetch),
+    call(retrieveTracks, { trackIds: Array.from(trackIdsToFetch) }),
+    call(retrieveCollections, Array.from(collectionIdsToFetch)),
     call(
       fetchUsers,
-      userIdsToFetch, // userIds
+      Array.from(userIdsToFetch), // userIds
       undefined, // requiredFields
       false // forceRetrieveFromSource
     ),
-    reactionSignatureToFetch.length
-      ? put(fetchReactionValues({ entityIds: reactionSignatureToFetch }))
+    reactionSignatureToFetch.size
+      ? put(
+          fetchReactionValues({
+            entityIds: Array.from(reactionSignatureToFetch)
+          })
+        )
       : () => {}
   ])
 
