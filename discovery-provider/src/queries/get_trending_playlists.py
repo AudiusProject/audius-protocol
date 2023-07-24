@@ -139,7 +139,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
     # map owner_id -> [playlist_id], accounting for multiple playlists with the same ID
     # used in follows
     playlist_owner_id_map = {}
-    for (playlist_id, _, owner_id, _) in playlists:
+    for playlist_id, _, owner_id, _ in playlists:
         if owner_id not in playlist_owner_id_map:
             playlist_owner_id_map[owner_id] = [playlist_id]
         else:
@@ -151,14 +151,14 @@ def get_scorable_playlist_data(session, time_range, strategy):
         .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
         .all()
     )
-    for (playlist_id, repost_count) in repost_counts:
+    for playlist_id, repost_count in repost_counts:
         playlist_map[playlist_id][response_name_constants.repost_count] = repost_count
 
     # Add windowed repost counts
     repost_counts_for_time = get_repost_counts(
         session, False, False, playlist_ids, [RepostType.playlist], None, time_range
     )
-    for (playlist_id, repost_count) in repost_counts_for_time:
+    for playlist_id, repost_count in repost_counts_for_time:
         playlist_map[playlist_id][
             response_name_constants.windowed_repost_count
         ] = repost_count
@@ -169,7 +169,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
         .filter(AggregatePlaylist.playlist_id.in_(playlist_ids))
         .all()
     )
-    for (playlist_id, save_count) in save_counts:
+    for playlist_id, save_count in save_counts:
         playlist_map[playlist_id][response_name_constants.save_count] = save_count
 
     # Add follower counts
@@ -181,7 +181,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
         .all()
     )
 
-    for (followee_user_id, follower_count) in follower_counts:
+    for followee_user_id, follower_count in follower_counts:
         if follower_count >= pt:
             owned_playlist_ids = playlist_owner_id_map[followee_user_id]
             for playlist_id in owned_playlist_ids:
@@ -191,7 +191,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
 
     # Add karma
     karma_scores = get_karma(session, tuple(playlist_ids), strategy, None, True, xf)
-    for (playlist_id, karma) in karma_scores:
+    for playlist_id, karma in karma_scores:
         playlist_map[playlist_id]["karma"] = karma
 
     return playlist_map.values()

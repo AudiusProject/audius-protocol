@@ -58,11 +58,9 @@ def test_cache_decorator(redis_mock):
 
     @patch("src.utils.redis_cache.extract_key")
     def get_mock_cache(extract_key):
-
         # cache requires a request object
         app = flask.Flask(__name__)
         with app.test_request_context("/"):
-
             mock_key_1 = "mock_key"
             extract_key.return_value = mock_key_1
 

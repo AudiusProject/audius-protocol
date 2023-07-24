@@ -70,7 +70,6 @@ def is_dst(zonename, dt):
 
 
 def get_is_valid_timestamp(dt: datetime):
-
     isFriday = dt.weekday() == 4
 
     # Check timestamp to be between 12pm and 1pm PT

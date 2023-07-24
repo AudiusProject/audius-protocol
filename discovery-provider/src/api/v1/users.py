@@ -1,5 +1,6 @@
 import base64
 import json
+
 from eth_account.messages import encode_defunct
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
@@ -1077,7 +1078,7 @@ USER_FOLLOWERS_ROUTE = "/<string:id>/followers"
 @full_ns.route(USER_FOLLOWERS_ROUTE)
 class FullFollowerUsers(Resource):
     @log_duration(logger)
-    def _get(self, id):
+    def _get_user_followers(self, id):
         decoded_id = decode_with_abort(id, full_ns)
         args = pagination_with_current_user_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
@@ -1117,7 +1118,7 @@ class FollowerUsers(FullFollowerUsers):
     @ns.expect(pagination_with_current_user_parser)
     @ns.marshal_with(followers_response)
     def get(self, id):
-        return super()._get(id)
+        return super()._get_user_followers(id)
 
 
 following_response = make_response(

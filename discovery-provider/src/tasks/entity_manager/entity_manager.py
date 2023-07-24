@@ -20,6 +20,14 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.queries.confirm_indexing_transaction_error import (
+    confirm_indexing_transaction_error,
+)
+from src.queries.get_skipped_transactions import (
+    clear_indexing_error,
+    save_and_get_skip_tx_hash,
+    set_indexing_error,
+)
 from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
@@ -59,12 +67,14 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     RecordDict,
     expect_cid_metadata_json,
+    generate_metadata_cid_v1,
     get_metadata_type_and_format,
     get_record_key,
     parse_metadata,
     save_cid_metadata,
 )
 from src.utils import helpers
+from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
 
@@ -92,7 +102,7 @@ def entity_manager_update(
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
-        event_blockhash = update_task.web3.toHex(block_hash)
+        hex_blockhash = update_task.web3.toHex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
         if not entity_manager_txs:
@@ -147,24 +157,13 @@ def entity_manager_update(
                         update_task.web3,
                         block_timestamp,
                         block_number,
-                        event_blockhash,
+                        hex_blockhash,
                         txhash,
                         logger,
                     )
 
                     # update logger context with this tx event
                     logger.update_context(event["args"])
-
-                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
-                    # later
-                    if expect_cid_metadata_json(
-                        params.metadata, params.action, params.entity_type
-                    ):
-                        metadata_type, _ = get_metadata_type_and_format(
-                            params.entity_type
-                        )
-                        cid_type[params.metadata_cid] = metadata_type
-                        cid_metadata[params.metadata_cid] = params.metadata
 
                     if (
                         params.action == Action.CREATE
@@ -215,7 +214,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        update_user(params)
+                        update_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.VERIFY
                         and params.entity_type == EntityType.USER
@@ -271,6 +270,19 @@ def entity_manager_update(
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
                     logger.info(f"failed to process transaction error {e}")
+                except Exception as e:
+                    indexing_error = IndexingError(
+                        "tx-failure",
+                        block_number,
+                        hex_blockhash,
+                        txhash,
+                        str(e),
+                    )
+                    create_and_raise_indexing_error(
+                        indexing_error, update_task.redis, session
+                    )
+                    logger.info(f"skipping transaction hash {indexing_error}")
+
         # compile records_to_save
         records_to_save = []
         for record_type, record_dict in new_records.items():
@@ -654,3 +666,30 @@ def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().processReceipt(tx_receipt)
+
+
+def create_and_raise_indexing_error(err, redis, session):
+    logger.error(
+        f"Error in the indexing task at"
+        f" block={err.blocknumber} and hash={err.txhash}"
+    )
+    # set indexing error
+    set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
+
+    # seek consensus
+    has_consensus = confirm_indexing_transaction_error(
+        redis, err.blocknumber, err.blockhash, err.txhash, err.message
+    )
+    if not has_consensus:
+        # escalate error and halt indexing until there's consensus
+        error_message = "Indexing halted due to lack of consensus"
+        raise Exception(error_message) from err
+
+    # try to insert into skip tx table
+    skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
+
+    if not skip_tx_hash:
+        error_message = "Reached max transaction skips"
+        raise Exception(error_message) from err
+
+    clear_indexing_error(redis)

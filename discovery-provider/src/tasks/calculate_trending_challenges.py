@@ -79,7 +79,6 @@ def enqueue_trending_challenges(
     )
     update_start = time.time()
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
-
         latest_blocknumber = get_latest_blocknumber_via_redis(session, redis)
         if latest_blocknumber is None:
             logger.error(

@@ -914,7 +914,7 @@ def test_index_social_feature_playlist_type(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Repost",
-                        "_metadata": '',
+                        "_metadata": "",
                         "_signer": "user1wallet",
                     }
                 )
@@ -955,7 +955,10 @@ def test_index_social_feature_playlist_type(app, mocker):
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
         ],
-        "playlists": [{"playlist_id": 1, "playlist_owner_id": 2}, {"playlist_id": 2, "playlist_owner_id": 2, "is_album": True}],
+        "playlists": [
+            {"playlist_id": 1, "playlist_owner_id": 2},
+            {"playlist_id": 2, "playlist_owner_id": 2, "is_album": True},
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -971,18 +974,26 @@ def test_index_social_feature_playlist_type(app, mocker):
         )
 
         # Verify saves
-        playlist_save: List[Save] = session.query(Save).filter(Save.save_item_id == 1).first()
-        assert playlist_save.save_type == 'playlist'
+        playlist_save: List[Save] = (
+            session.query(Save).filter(Save.save_item_id == 1).first()
+        )
+        assert playlist_save.save_type == "playlist"
 
-        album_save: List[Save] = session.query(Save).filter(Save.save_item_id == 2).first()
-        assert album_save.save_type == 'album'
+        album_save: List[Save] = (
+            session.query(Save).filter(Save.save_item_id == 2).first()
+        )
+        assert album_save.save_type == "album"
 
         # Verify repost
-        playlist_repost: List[Repost] = session.query(Repost).filter(Repost.repost_item_id == 1).first()
-        assert playlist_repost.repost_type == 'playlist'
+        playlist_repost: List[Repost] = (
+            session.query(Repost).filter(Repost.repost_item_id == 1).first()
+        )
+        assert playlist_repost.repost_type == "playlist"
 
-        album_repost: List[Repost] = session.query(Repost).filter(Repost.repost_item_id == 2).first()
-        assert album_repost.repost_type == 'album'
+        album_repost: List[Repost] = (
+            session.query(Repost).filter(Repost.repost_item_id == 2).first()
+        )
+        assert album_repost.repost_type == "album"
 
         aggregate_playlist: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)

@@ -8,8 +8,8 @@ import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
-import { Genre } from '../../types/Genre'
 import { Mood } from '../../types/Mood'
+import { Genre } from '../../types/Genre'
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -55,10 +55,8 @@ jest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
-      txReceipt: {
-        blockHash: 'a',
-        blockNumber: 1
-      }
+      blockHash: 'a',
+      blockNumber: 1
     } as any
   })
 
@@ -126,7 +124,7 @@ describe('PlaylistsApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        playlistId: 1
+        playlistId: '7eP5n'
       })
     })
 
@@ -155,7 +153,7 @@ describe('PlaylistsApi', () => {
         },
         metadata: {
           playlistName: 'My Playlist',
-          genre: Genre.ELECTRONIC,
+          genre: Genre.ACOUSTIC,
           mood: Mood.TENDER
         },
         trackMetadatas: [
@@ -174,7 +172,7 @@ describe('PlaylistsApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        playlistId: 1
+        playlistId: '7eP5n'
       })
     })
 
@@ -186,9 +184,7 @@ describe('PlaylistsApi', () => {
             buffer: Buffer.from([]),
             name: 'coverArt'
           },
-          metadata: {
-            playlistName: 'My Playlist'
-          } as any,
+          metadata: {} as any,
           trackMetadatas: [
             {
               title: 'BachGavotte'
@@ -307,7 +303,8 @@ describe('PlaylistsApi', () => {
           },
           metadata: {
             playlistName: 'My Playlist edited',
-            mood: Mood.TENDER
+            playlistMood: Mood.TENDER,
+            mod: Mood.TENDER
           } as any
         })
       }).rejects.toThrow()

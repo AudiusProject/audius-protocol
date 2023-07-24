@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import type { CrossPlatformFile as File } from '../../types/File'
-import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
+import { Genre } from '../../types/Genre'
 
 const CreatePlaylistMetadataSchema = z
   .object({
@@ -37,19 +37,22 @@ export const createUpdatePlaylistSchema = () =>
         z.custom<File>((data: unknown) => isFileValid(data as File))
       ),
       metadata: createUploadPlaylistMetadataSchema()
-        .omit({ genre: true })
+        .partial()
         .merge(
-          z.object({
-            coverArtSizes: z.optional(z.string()),
-            isPrivate: z.optional(z.boolean()),
-            playlistContents: z.array(
-              z.object({
-                timestamp: z.number(),
-                metadataTimestamp: z.optional(z.number()),
-                trackId: HashId
-              })
-            )
-          })
+          z
+            .object({
+              isPrivate: z.optional(z.boolean()),
+              playlistContents: z.optional(
+                z.array(
+                  z.object({
+                    timestamp: z.number(),
+                    metadataTimestamp: z.optional(z.number()),
+                    trackId: HashId
+                  })
+                )
+              )
+            })
+            .strict()
         ),
       onProgress: z.optional(z.function().args(z.number()))
     })
@@ -64,12 +67,6 @@ const createUploadPlaylistMetadataSchema = () =>
     .object({
       description: z.optional(z.string().max(1000)),
       genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
-      /**
-       * Is this playlist an album?
-       */
-      isAlbum: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      iswc: z.optional(z.string()),
       license: z.optional(z.string()),
       mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       playlistName: z.string(),
@@ -168,13 +165,15 @@ export const FavoritePlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a save of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isSaveOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a save of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isSaveOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
@@ -195,13 +194,15 @@ export const RepostPlaylistSchema = z
     userId: HashId,
     playlistId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a repost of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isRepostOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a repost of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isRepostOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()

@@ -22,6 +22,10 @@ export class AppAuth implements AuthService {
     throw new Error('AppAuth does not support sign')
   }
 
+  hashAndSign: (data: string) => Promise<string> = () => {
+    throw new Error('AppAuth does not support hashAndSign')
+  }
+
   signTransaction = async (data: MessageData<EIP712TypedData>['data']) => {
     return signTypedData(Buffer.from(this.apiSecret, 'hex'), {
       data

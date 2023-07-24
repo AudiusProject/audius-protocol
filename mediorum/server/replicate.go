@@ -49,13 +49,12 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 		if err != nil {
 			return err
 		}
+		defer w.Close()
 
 		_, err = io.Copy(w, file)
 		if err != nil {
 			return err
 		}
-
-		w.Close()
 	}
 
 	// record that we "have" this key

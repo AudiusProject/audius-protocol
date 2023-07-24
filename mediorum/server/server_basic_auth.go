@@ -87,7 +87,7 @@ func (ss *MediorumServer) requireUserSignature(next echo.HandlerFunc) echo.Handl
 
 			// OK
 			c.Response().Header().Set("x-signature-debug", sig.String())
-			c.Response().Header().Set("x-signer-wallet", sig.SignerWallet)
+			c.Set("signer-wallet", sig.SignerWallet)
 		}
 
 		return next(c)

@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -51,14 +52,14 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	}
 
 	// Validate signer wallet matches uploader's wallet
-	signerWallet := c.Request().Header.Get("x-signer-wallet")
-	if signerWallet == "" {
+	signerWallet, ok := c.Get("signer-wallet").(string)
+	if !ok || signerWallet == "" {
 		return c.String(http.StatusBadRequest, "error recovering wallet from signature")
 	}
 	if !upload.UserWallet.Valid {
 		return c.String(http.StatusBadRequest, "upload cannot be updated because it does not have an associated user wallet")
 	}
-	if signerWallet != upload.UserWallet.String {
+	if !strings.EqualFold(signerWallet, upload.UserWallet.String) {
 		return c.String(http.StatusUnauthorized, "request signer's wallet does not match uploader's wallet")
 	}
 
@@ -86,8 +87,11 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
 		upload.SelectedPreview = selectedPreview
 		upload.UpdatedAt = time.Now().UTC()
-		upload.Status = JobStatusRetranscode
-
+		if _, alreadyTranscoded := upload.TranscodeResults[selectedPreview.String]; !alreadyTranscoded {
+			// Have not transcoded a preview at this start time yet
+			// Set status to trigger retranscode job
+			upload.Status = JobStatusRetranscode
+		}
 		err = ss.crud.Update(upload)
 		if err != nil {
 			ss.logger.Warn("update upload failed", "err", err)
@@ -275,6 +279,7 @@ func computeFileCID(f io.ReadSeeker) (string, error) {
 	return cid.String(), nil
 }
 
+// note: any Qm CID will be invalid because its hash won't match the contents
 func validateCID(expectedCID string, f io.ReadSeeker) error {
 	computed, err := computeFileCID(f)
 	if err != nil {

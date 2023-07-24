@@ -52,10 +52,8 @@ jest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
-      txReceipt: {
-        blockHash: 'a',
-        blockNumber: 1
-      }
+      blockHash: 'a',
+      blockNumber: 1
     } as any
   })
 
@@ -105,7 +103,7 @@ describe('TracksApi', () => {
       expect(result).toStrictEqual({
         blockHash: 'a',
         blockNumber: 1,
-        trackId: 1
+        trackId: '7eP5n'
       })
     })
 
@@ -161,7 +159,7 @@ describe('TracksApi', () => {
             name: 'coverArt'
           },
           metadata: {
-            title: 'BachGavotte'
+            titl: 'BachGavotte'
           } as any
         })
       }).rejects.toThrow()

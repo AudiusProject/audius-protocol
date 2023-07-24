@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -122,13 +121,13 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			logger := logger.With("cid", cid)
 
-			// don't try to repair legacy blob formats
-			if !strings.HasPrefix(cid, "ba") {
-				continue
-			}
-
 			preferredHosts, isMine := ss.rendezvous(cid)
 			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
+
+			// TODO(theo): Don't repair Qm CIDs for now (isMine will still be true). Remove this once all nodes have enough space to store Qm CIDs
+			if isLegacyCID(cid) {
+				myRank = 999
+			}
 
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
@@ -136,29 +135,29 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				continue
 			}
 
-			isOnDisk, err := ss.bucket.Exists(ctx, cid)
+			alreadyHave, err := ss.bucket.Exists(ctx, cid)
 			if err != nil {
 				logger.Error("exist check failed", "err", err)
 				continue
 			}
 
 			// in cleanup mode do some extra checks:
-			// - validate CID, delete if invalid
-			if cleanupMode && isOnDisk {
+			// - validate CID, delete if invalid (doesn't apply to Qm CIDs because their hash is not the CID)
+			if cleanupMode && alreadyHave && !isLegacyCID(cid) {
 				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
 					err := validateCID(cid, r)
 					r.Close()
 					if err != nil {
 						logger.Error("deleting invalid CID", "err", err)
 						ss.bucket.Delete(ctx, cid)
-						isOnDisk = false
+						alreadyHave = false
 					}
 				}
 
 			}
 
 			// get blobs that I should have
-			if isMine && !isOnDisk {
+			if isMine && !alreadyHave {
 				success := false
 				for _, host := range preferredHosts {
 					if host == ss.Config.Self.Host {
@@ -181,7 +180,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			// delete over-replicated blobs:
 			// check all the nodes ahead of me in the preferred order to ensure they have it
 			// if R nodes in front of me have it, I can safely delete
-			if cleanupMode && !isMine && isOnDisk {
+			if cleanupMode && !isMine && alreadyHave {
 				depth := 0
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {
@@ -207,7 +206,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			// even tho this blob isn't "mine"
 			// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
 			// and pull file if under-replicated
-			if cleanupMode && !isMine && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
+			if cleanupMode && !isMine && !alreadyHave && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {

@@ -80,6 +80,7 @@ def update_user_is_available_statuses(
         # the CREATE USER was written to chain and we won't index the CREATE USER again
         # going forward. If the user is missing on this node at this point, it'll never
         # be created. This is to keep delisting unblocked despite data inconsistencies.
+
         def wait_for_user_to_be_indexed(user_id):
             return (
                 user_delist_map[user_id]["delist_timestamp"] > current_block_timestamp

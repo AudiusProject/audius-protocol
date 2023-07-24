@@ -7,7 +7,7 @@ from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 logger = logging.getLogger(__name__)
 
 # Percent of total discovery nodes needed to skip indexing a transaction
-INDEXING_FAILURE_CONSENSUS_PERCENT = 1
+INDEXING_FAILURE_CONSENSUS_PERCENT = .8
 
 
 def confirm_indexing_transaction_error(
@@ -44,3 +44,5 @@ def confirm_indexing_transaction_error(
         set_indexing_error(
             redis, blocknumber, blockhash, transactionhash, message, True
         )
+        return True
+    return False

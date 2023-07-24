@@ -1,5 +1,6 @@
 import type { CrossPlatformFile as File } from '../../types/File'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
+import type { AuthService } from '../Auth'
 
 export type StorageServiceConfig = {
   storageNodeSelector: StorageNodeSelectorService
@@ -20,6 +21,15 @@ export type StorageService = {
     onProgress?: ProgressCB
     template: FileTemplate
     options?: { [key: string]: string }
+  }) => Promise<UploadResponse>
+  editFile: ({
+    uploadId,
+    data,
+    auth
+  }: {
+    uploadId: string
+    data: { [key: string]: string }
+    auth: AuthService
   }) => Promise<UploadResponse>
 }
 

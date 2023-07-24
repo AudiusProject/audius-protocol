@@ -6,6 +6,7 @@ import (
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
+	"mediorum/persistence"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -64,12 +65,11 @@ type MediorumConfig struct {
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
 	IsV2Only            bool
+	StoreAll            bool
 	VersionJson         VersionJson
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
-
-	// StoreAll          bool   // todo: set this to true for "full node"
 
 	privateKey *ecdsa.PrivateKey
 }
@@ -144,12 +144,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// ensure dir
 	os.MkdirAll(config.Dir, os.ModePerm)
-	if strings.HasPrefix(config.BlobStoreDSN, "file://") {
-		os.MkdirAll(strings.TrimPrefix(config.BlobStoreDSN, "file://"), os.ModePerm)
-	}
 
 	// bucket
-	bucket, err := blob.OpenBucket(context.Background(), config.BlobStoreDSN)
+	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
 		return nil, err
 	}
@@ -300,7 +297,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// TODO: remove
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 
 	// new info routes
 	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)

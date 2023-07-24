@@ -289,7 +289,6 @@ def update_aggregates(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             with db.scoped_session() as session:
-
                 _update_aggregates(session)
 
         else:

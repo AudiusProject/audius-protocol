@@ -350,7 +350,6 @@ def test_get_track_by_route(app):
 
 
 def test_get_remixable_tracks(app):
-
     with app.app_context():
         db = get_db()
 

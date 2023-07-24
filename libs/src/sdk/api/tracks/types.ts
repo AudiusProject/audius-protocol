@@ -5,36 +5,44 @@ import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { isFileValid } from '../../utils/file'
 
-export const PremiumConditionsEthNFTCollection = z.object({
-  chain: z.literal('eth'),
-  address: z.string(),
-  standard: z.union([z.literal('ERC721'), z.literal('ERC1155')]),
-  name: z.string(),
-  slug: z.string(),
-  imageUrl: z.optional(z.string()),
-  externalLink: z.optional(z.string())
-})
+export const PremiumConditionsEthNFTCollection = z
+  .object({
+    chain: z.literal('eth'),
+    address: z.string(),
+    standard: z.union([z.literal('ERC721'), z.literal('ERC1155')]),
+    name: z.string(),
+    slug: z.string(),
+    imageUrl: z.optional(z.string()),
+    externalLink: z.optional(z.string())
+  })
+  .strict()
 
-export const PremiumConditionsSolNFTCollection = z.object({
-  chain: z.literal('sol'),
-  address: z.string(),
-  name: z.string(),
-  imageUrl: z.optional(z.string()),
-  externalLink: z.optional(z.string())
-})
+export const PremiumConditionsSolNFTCollection = z
+  .object({
+    chain: z.literal('sol'),
+    address: z.string(),
+    name: z.string(),
+    imageUrl: z.optional(z.string()),
+    externalLink: z.optional(z.string())
+  })
+  .strict()
 
 export const PremiumConditionsNFTCollection = z.union([
   PremiumConditionsEthNFTCollection,
   PremiumConditionsSolNFTCollection
 ])
 
-export const PremiumConditionsFollowUserId = z.object({
-  followUserId: z.number()
-})
+export const PremiumConditionsFollowUserId = z
+  .object({
+    followUserId: z.number()
+  })
+  .strict()
 
-export const PremiumConditionsTipUserId = z.object({
-  tipUserId: z.number()
-})
+export const PremiumConditionsTipUserId = z
+  .object({
+    tipUserId: z.number()
+  })
+  .strict()
 
 export const createUploadTrackMetadataSchema = () =>
   z
@@ -42,11 +50,13 @@ export const createUploadTrackMetadataSchema = () =>
       aiAttributionUserId: z.optional(z.number()),
       description: z.optional(z.string().max(1000)),
       download: z.optional(
-        z.object({
-          cid: z.string(),
-          isDownloadable: z.boolean(),
-          requiresFollow: z.boolean()
-        })
+        z
+          .object({
+            cid: z.string(),
+            isDownloadable: z.boolean(),
+            requiresFollow: z.boolean()
+          })
+          .strict()
       ),
       fieldVisibility: z.optional(
         z.object({
@@ -76,15 +86,17 @@ export const createUploadTrackMetadataSchema = () =>
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
       remixOf: z.optional(
-        z.object({
-          tracks: z
-            .array(
-              z.object({
-                parentTrackId: z.number()
-              })
-            )
-            .min(1)
-        })
+        z
+          .object({
+            tracks: z
+              .array(
+                z.object({
+                  parentTrackId: z.number()
+                })
+              )
+              .min(1)
+          })
+          .strict()
       ),
       tags: z.optional(z.string()),
       title: z.string(),
@@ -121,18 +133,17 @@ export type UploadTrackRequest = Omit<
 }
 
 export const createUpdateTrackSchema = () =>
-  createUploadTrackSchema()
-    .pick({
-      userId: true,
-      coverArtFile: true,
-      metadata: true,
-      onProgress: true
+  z
+    .object({
+      userId: HashId,
+      trackId: HashId,
+      metadata: createUploadTrackMetadataSchema().partial(),
+      transcodePreview: z.optional(z.boolean()),
+      coverArtFile: z.optional(
+        z.custom<File>((data: unknown) => isFileValid(data as File))
+      ),
+      onProgress: z.optional(z.function().args(z.number()))
     })
-    .merge(
-      z.object({
-        trackId: HashId
-      })
-    )
     .strict()
 
 export type UpdateTrackRequest = Omit<
@@ -156,13 +167,15 @@ export const FavoriteTrackSchema = z
     userId: HashId,
     trackId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a save of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isSaveOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a save of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isSaveOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
@@ -183,13 +196,15 @@ export const RepostTrackSchema = z
     userId: HashId,
     trackId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a repost of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isRepostOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a repost of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isRepostOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()

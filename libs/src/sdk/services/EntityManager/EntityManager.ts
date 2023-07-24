@@ -57,7 +57,9 @@ export class EntityManager implements EntityManagerService {
     auth,
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false
-  }: ManageEntityOptions): Promise<{ txReceipt: TransactionReceipt }> {
+  }: ManageEntityOptions): Promise<
+    Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
+  > {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
     const signatureData = signatureSchemas.generators.getManageEntityData(
@@ -109,7 +111,8 @@ export class EntityManager implements EntityManagerService {
       }
 
       return {
-        txReceipt: jsonResponse.receipt
+        blockHash: jsonResponse.receipt.blockHash,
+        blockNumber: jsonResponse.receipt.blockNumber
       }
     } else if (response.status === 429) {
       console.error(
@@ -188,7 +191,8 @@ export class EntityManager implements EntityManagerService {
     if (useDiscoveryRelay === undefined || !useDiscoveryRelay) {
       return this.config.identityServiceUrl
     }
-    const discoveryEndpoint = await this.config.discoveryNodeSelector.getSelectedEndpoint()
+    const discoveryEndpoint =
+      await this.config.discoveryNodeSelector.getSelectedEndpoint()
     if (discoveryEndpoint === null) {
       return this.config.identityServiceUrl
     }

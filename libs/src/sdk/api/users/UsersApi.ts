@@ -86,7 +86,7 @@ export class UsersApi extends GeneratedUsersApi {
     // Write metadata to chain
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: userId,
@@ -98,9 +98,6 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...writeOptions
     })
-
-    const { blockHash, blockNumber } = response.txReceipt
-    return { blockHash, blockNumber }
   }
 
   /**
@@ -116,7 +113,7 @@ export class UsersApi extends GeneratedUsersApi {
       FollowUserSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: followeeUserId,
@@ -124,9 +121,6 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -142,7 +136,7 @@ export class UsersApi extends GeneratedUsersApi {
       UnfollowUserSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: followeeUserId,
@@ -150,9 +144,6 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -168,7 +159,7 @@ export class UsersApi extends GeneratedUsersApi {
       SubscribeToUserSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
@@ -176,9 +167,6 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
   /**
@@ -194,7 +182,7 @@ export class UsersApi extends GeneratedUsersApi {
       UnsubscribeFromUserSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
@@ -202,8 +190,5 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 }

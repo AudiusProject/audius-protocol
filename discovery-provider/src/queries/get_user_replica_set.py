@@ -12,7 +12,6 @@ def get_user_replica_set(args):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         # Don't return the user if they have no wallet (user creation did not finish properly on chain)
         users: List[User] = (
             session.query(User)

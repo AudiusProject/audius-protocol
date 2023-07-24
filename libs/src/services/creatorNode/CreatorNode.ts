@@ -12,6 +12,7 @@ import type { Web3Manager } from '../web3Manager'
 import type { UserStateManager } from '../../userStateManager'
 import type { MonitoringCallbacks } from '../types'
 import type { StorageNodeSelectorService } from '../../sdk'
+import { hashAndSign, sortObjectKeys } from '../../utils/apiSigning'
 
 const { wait } = Utils
 
@@ -166,6 +167,31 @@ export class CreatorNode {
     this.creatorNodeEndpoint = creatorNodeEndpoint
   }
 
+  async transcodeTrackPreview(metadata: TrackMetadata): Promise<TrackMetadata> {
+    if (!metadata.preview_start_seconds) {
+      throw new Error('No track preview start time specified')
+    }
+    if (!metadata.audio_upload_id) {
+      throw new Error('Missing required audio_upload_id')
+    }
+    const updatedMetadata = { ...metadata }
+    const data = {
+      previewStartSeconds: metadata.preview_start_seconds.toString()
+    }
+    const resp = await this._retry3(
+      async () => await this.editFileV2(metadata.audio_upload_id!, data),
+      (e) => {
+        console.log('Retrying editFileV2', e)
+      }
+    )
+
+    // Update metadata with new track preview cid
+    const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
+    updatedMetadata.preview_cid = resp.results[previewKey]
+
+    return updatedMetadata
+  }
+
   async uploadTrackAudioAndCoverArtV2(
     trackFile: File,
     coverArtFile: File,
@@ -237,6 +263,49 @@ export class CreatorNode {
 
   async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'img_backdrop')
+  }
+
+  async editFileV2(
+    uploadId: string,
+    data: { [key: string]: string }
+  ) {
+    const myPrivateKey = this.web3Manager?.getOwnerWalletPrivateKey()
+    if (!myPrivateKey) {
+      throw new Error('Missing user private key')
+    }
+
+    // Generate signature
+    const signatureData = {
+      upload_id: uploadId,
+      timestamp: Date.now()
+    }
+    const signature = await hashAndSign(
+      JSON.stringify(sortObjectKeys(signatureData)),
+      '0x' + myPrivateKey.toString('hex')
+    )
+    const signatureEnvelope = {
+      data: JSON.stringify(signatureData),
+      signature
+    }
+
+    const headers = {
+      'X-Request-ID': uuid()
+    }
+    const response = await this._makeRequestV2({
+      method: 'post',
+      url: `/uploads/${uploadId}`,
+      data: data,
+      params: { signature: JSON.stringify(signatureEnvelope) },
+      headers
+    })
+
+    // Poll for re-transcoding to complete
+    return await this.pollProcessingStatusV2(
+      uploadId,
+      response.data.template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+    )
   }
 
   async uploadFileV2(

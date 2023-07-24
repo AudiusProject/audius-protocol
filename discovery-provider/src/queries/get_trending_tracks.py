@@ -126,7 +126,6 @@ def generate_unpopulated_trending_from_mat_views(
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     limit=TRENDING_LIMIT,
 ):
-
     # use all time instead of year for version EJ57D
     if strategy.version == TrendingVersion.EJ57D and time_range == "year":
         time_range = "allTime"
