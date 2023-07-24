@@ -7,7 +7,7 @@ import {
   TransactionInstruction,
   Connection
 } from '@solana/web3.js'
-import type BN from 'bn.js'
+import BN from 'bn.js'
 import type { TransactionHandler } from './transactionHandler'
 import { deserialize, serialize } from 'borsh'
 import { SolanaUtils } from './SolanaUtils'
@@ -49,9 +49,9 @@ export const deriveTransferNonceAccount = async ({
 
 class NonceAccount {
   version: string
-  nonce: unknown
+  nonce: BN
 
-  constructor({ version, nonce }: { version: string; nonce: unknown }) {
+  constructor({ version, nonce }: { version: string; nonce: BN }) {
     this.version = version
     this.nonce = nonce
   }
@@ -86,7 +86,7 @@ async function getAccountNonce({
   mintKey,
   claimableTokenProgramKey
 }: GetAccountNonceParams) {
-  let nonce = 0
+  let nonce = new BN(0)
   const transferNonceAccount = await deriveTransferNonceAccount({
     ethAddress,
     mintKey,
@@ -97,7 +97,7 @@ async function getAccountNonce({
     'confirmed'
   )
   if (accInfo.value) {
-    const nonceAccount = deserialize(
+    const nonceAccount: NonceAccount = deserialize(
       NonceAccountSchema,
       NonceAccount,
       accInfo.value.data
@@ -113,7 +113,7 @@ async function getAccountNonce({
 type TransferInstructionDataConfig = {
   targetPubKey: Buffer
   amount: BN
-  nonce: unknown
+  nonce: BN
 }
 
 /**
@@ -122,7 +122,7 @@ type TransferInstructionDataConfig = {
 class TransferInstructionData {
   target_pubkey: Buffer
   amount: BN
-  nonce: unknown
+  nonce: BN
 
   constructor({ targetPubKey, amount, nonce }: TransferInstructionDataConfig) {
     this.target_pubkey = targetPubKey
@@ -158,6 +158,8 @@ type TransferWAudioBalanceConfig = {
   claimableTokenProgramKey: PublicKey
   mintKey: PublicKey
   transactionHandler: TransactionHandler
+  instructionIndex?: number
+  nonceOffset?: number
 }
 
 /**
@@ -188,7 +190,9 @@ export const createTransferInstructions = async ({
   feePayerKey,
   claimableTokenProgramKey,
   connection,
-  mintKey
+  mintKey,
+  instructionIndex = 0,
+  nonceOffset = 0
 }: Omit<TransferWAudioBalanceConfig, 'transactionHandler'>) => {
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
@@ -264,7 +268,7 @@ export const createTransferInstructions = async ({
   const instructionData = new TransferInstructionData({
     targetPubKey: recipientPubkey.toBuffer(),
     amount,
-    nonce
+    nonce: nonce.addn(nonceOffset)
   })
 
   const serializedInstructionData = serialize(
@@ -282,7 +286,8 @@ export const createTransferInstructions = async ({
       publicKey: Buffer.from(ethPubkey),
       message: Buffer.from(serializedInstructionData),
       signature,
-      recoveryId
+      recoveryId,
+      instructionIndex
     })
 
   const ethAddressArr = SolanaUtils.ethAddressToArray(senderEthAddress)
