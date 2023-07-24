@@ -100,12 +100,12 @@ const detectAbuse = async (user, reqIP, abbreviated = false) => {
     await recordIP(reqIP, user.handle)
 
     // Perform abuse check conditional on environment
-    ;({
+    const {
       appliedRules,
       blockedFromRelay,
       blockedFromNotifications,
       blockedFromEmails
-    } = await getAbuseData(user.handle, reqIP, abbreviated))
+    } = await getAbuseData(user.handle, reqIP, abbreviated)
     logger.info(
       `detectAbuse: got info for user id ${user.blockchainUserId} handle ${
         user.handle

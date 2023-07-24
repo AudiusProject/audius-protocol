@@ -1,6 +1,7 @@
 import axios from "axios";
 import { AntiAbuseConfig } from "./config";
 import { logger } from "./logger";
+import { Users } from "storage/src";
 
 type AbuseRule = {
     rule: number;
@@ -17,9 +18,11 @@ type AbuseStatus = {
 }
   
 
-export const detectAbuse = async (aaoConfig: AntiAbuseConfig): Promise<void> => {
+/// @return true = abuse detected, false = allowed to relay
+export const detectAbuse = async (aaoConfig: AntiAbuseConfig, user: Users, reqIp: string, abbreviated: boolean = false): Promise<boolean> => {
     try {
-    const rules = await requestAbuseData(aaoConfig, "", "", false)
+    if (user.handle === null) throw new Error(`user ${user.user_id} has no handle`)
+    const rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
     const {
         appliedRules,
         blockedFromRelay,
@@ -27,7 +30,7 @@ export const detectAbuse = async (aaoConfig: AntiAbuseConfig): Promise<void> => 
         blockedFromEmails
       } = determineAbuseRules(aaoConfig, rules)
     logger.info(
-        `detectAbuse: got info for user id ${user.blockchainUserId} handle ${
+        `detectAbuse: got info for user id ${user.user_id} handle ${
           user.handle
         }: ${JSON.stringify({
           appliedRules,
@@ -36,27 +39,12 @@ export const detectAbuse = async (aaoConfig: AntiAbuseConfig): Promise<void> => 
           blockedFromEmails
         })}`
       )
+      return blockedFromRelay
     } catch (e: any) {
         logger.warn(`detectAbuse: aao request failed ${e.message}`)
-        // If it failed, don't update anything
-        return
+        // on issues with AAO block all writes
+        return true
     }
-
-    if (
-        !!user.isBlockedFromRelay !== blockedFromRelay ||
-        !!user.isBlockedFromNotifications !== blockedFromNotifications ||
-        !!user.isBlockedFromEmails !== blockedFromEmails
-      ) {
-        logger.info(
-          `abuse: state changed for user [${user.handle}], blocked from relay: ${blockedFromRelay}, blocked from notifs: [${blockedFromNotifications}, blocked from emails: ${blockedFromEmails}]`
-        )
-        await user.update({
-          isBlockedFromRelay: blockedFromRelay,
-          isBlockedFromNotifications: blockedFromNotifications,
-          isBlockedFromEmails: blockedFromEmails,
-          appliedRules
-        })
-      }
 }
 
 // makes HTTP request to AAO

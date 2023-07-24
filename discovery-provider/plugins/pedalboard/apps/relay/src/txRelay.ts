@@ -8,6 +8,7 @@ import {
 import { validateSupportedContract, validateTransactionData } from "./validate";
 import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
+import { detectAbuse } from "./antiAbuse";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -26,8 +27,13 @@ export const relayTransaction = async (
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
     requiredConfirmations,
+    aao,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
+
+  // TODO: recover wallet addr
+  // TODO: query db for user
+  const isBlockedFromRelay = await detectAbuse(aao, user, reqIp)
 
   log({ msg: "new relay request", req });
 
