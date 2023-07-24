@@ -65,7 +65,8 @@ export const SegmentedControl = <T extends string>(
     <div
       className={cn(styles.tabs, props.className, {
         [styles.containerFullWidth]: !!props.fullWidth,
-        [styles.isMobile]: props.isMobile
+        [styles.isMobile]: props.isMobile,
+        [styles.disabled]: props.disabled
       })}
     >
       <animated.div
@@ -94,6 +95,7 @@ export const SegmentedControl = <T extends string>(
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
+                disabled={props.disabled}
               />
               {option.text}
             </label>

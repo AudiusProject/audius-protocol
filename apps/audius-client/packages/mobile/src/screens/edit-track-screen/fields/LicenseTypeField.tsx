@@ -14,7 +14,7 @@ import { computeLicenseIcons } from '../utils/computeLicenseIcons'
 
 const messages = {
   licenseType: 'License Type',
-  noLicense: 'All rights reserved'
+  noLicense: 'All Rights Reserved'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({

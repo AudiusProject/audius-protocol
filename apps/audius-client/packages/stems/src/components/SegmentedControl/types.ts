@@ -15,6 +15,8 @@ export type SegmentedControlProps<T extends string> = {
 
   fullWidth?: boolean
 
+  disabled?: boolean
+
   isMobile?: boolean
 
   /**
