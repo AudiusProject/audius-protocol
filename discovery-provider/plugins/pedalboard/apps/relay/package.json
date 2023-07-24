@@ -18,6 +18,7 @@
     "@audius/sdk": "^3.0.3-beta.81",
     "@fastify/type-provider-typebox": "^3.2.0",
     "@sinclair/typebox": "^0.29.4",
+    "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "ethers": "^5.7.0",
