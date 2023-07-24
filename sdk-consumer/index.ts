@@ -52,7 +52,6 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
 });
 
 const audiusSdk = sdk({
-  appName: "",
   services: {
     discoveryNodeSelector,
     entityManager: new EntityManager({
@@ -77,8 +76,8 @@ const trackUpload = upload.fields([
 
 type MulterFiles =
   | {
-    [fieldname: string]: Express.Multer.File[];
-  }
+      [fieldname: string]: Express.Multer.File[];
+    }
   | undefined;
 
 app.post<UploadTrackRequest>(
@@ -186,7 +185,9 @@ app.post<UnfavoriteTrackRequest>("/unfavoriteTrack", async (req, res) => {
       userId: req.body.userId,
       trackId: req.body.trackId,
     };
-    const result = await audiusSdk.tracks.unfavoriteTrack(unfavoriteTrackRequest);
+    const result = await audiusSdk.tracks.unfavoriteTrack(
+      unfavoriteTrackRequest
+    );
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -415,7 +416,9 @@ app.post<FavoritePlaylistRequest>("/favoritePlaylist", async (req, res) => {
       playlistId: req.body.playlistId,
       metadata: req.body.metadata,
     };
-    const result = await audiusSdk.playlists.favoritePlaylist(favoritePlaylistRequest);
+    const result = await audiusSdk.playlists.favoritePlaylist(
+      favoritePlaylistRequest
+    );
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -507,9 +510,7 @@ app.post<UploadAlbumRequest>(
             name: trackFile.originalname,
           })),
         };
-        const result = await audiusSdk.albums.uploadAlbum(
-          uploadAlbumRequest
-        );
+        const result = await audiusSdk.albums.uploadAlbum(uploadAlbumRequest);
         res.send(result);
       }
     } catch (e) {
@@ -543,9 +544,7 @@ app.post<UpdateAlbumRequest>(
         metadata: inputMetadata,
         onProgress: (progress) => console.log("Progress:", progress),
       };
-      const result = await audiusSdk.albums.updateAlbum(
-        updateAlbumRequest
-      );
+      const result = await audiusSdk.albums.updateAlbum(updateAlbumRequest);
       res.send(result);
     } catch (e) {
       console.error(e);
@@ -560,9 +559,7 @@ app.post<DeleteAlbumRequest>("/deleteAlbum", async (req, res) => {
       userId: req.body.userId,
       albumId: req.body.albumId,
     };
-    const result = await audiusSdk.albums.deleteAlbum(
-      deleteAlbumRequest
-    );
+    const result = await audiusSdk.albums.deleteAlbum(deleteAlbumRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -608,9 +605,7 @@ app.post<RepostAlbumRequest>("/repostAlbum", async (req, res) => {
       albumId: req.body.albumId,
       metadata: req.body.metadata,
     };
-    const result = await audiusSdk.albums.repostAlbum(
-      repostAlbumRequest
-    );
+    const result = await audiusSdk.albums.repostAlbum(repostAlbumRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -624,9 +619,7 @@ app.post<UnrepostAlbumRequest>("/unrepostAlbum", async (req, res) => {
       userId: req.body.userId,
       albumId: req.body.albumId,
     };
-    const result = await audiusSdk.albums.unrepostAlbum(
-      unrepostAlbumRequest
-    );
+    const result = await audiusSdk.albums.unrepostAlbum(unrepostAlbumRequest);
     res.send(result);
   } catch (e) {
     console.error(e);
@@ -636,34 +629,40 @@ app.post<UnrepostAlbumRequest>("/unrepostAlbum", async (req, res) => {
 
 const profileUpdate = upload.fields([
   { name: "profilePictureFile", maxCount: 1 },
-  { name: "coverArtFile", maxCount: 1 }
+  { name: "coverArtFile", maxCount: 1 },
 ]);
 
-app.post<UpdateProfileRequest>("/updateProfile", profileUpdate as any, async (req, res) => {
-  try {
-    const profilePictureFile = (req.files as MulterFiles)?.["profilePictureFile"]?.[0];
-    const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"]?.[0];
+app.post<UpdateProfileRequest>(
+  "/updateProfile",
+  profileUpdate as any,
+  async (req, res) => {
+    try {
+      const profilePictureFile = (req.files as MulterFiles)?.[
+        "profilePictureFile"
+      ]?.[0];
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"]?.[0];
 
-    const updateProfileRequest: UpdateProfileRequest = {
-      userId: req.body.userId,
-      profilePictureFile: profilePictureFile && {
-        buffer: profilePictureFile.buffer,
-        name: profilePictureFile.originalname
-      },
-      coverArtFile: coverArtFile && {
-        buffer: coverArtFile.buffer,
-        name: coverArtFile.originalname
-      },
-      metadata: JSON.parse(req.body.metadata),
-      onProgress: (progress: any) => console.log("Progress:", progress),
-    };
-    const result = await audiusSdk.users.updateProfile(updateProfileRequest);
-    res.send(result);
-  } catch (e) {
-    console.error(e);
-    res.send((e as any).message);
+      const updateProfileRequest: UpdateProfileRequest = {
+        userId: req.body.userId,
+        profilePictureFile: profilePictureFile && {
+          buffer: profilePictureFile.buffer,
+          name: profilePictureFile.originalname,
+        },
+        coverArtFile: coverArtFile && {
+          buffer: coverArtFile.buffer,
+          name: coverArtFile.originalname,
+        },
+        metadata: JSON.parse(req.body.metadata),
+        onProgress: (progress: any) => console.log("Progress:", progress),
+      };
+      const result = await audiusSdk.users.updateProfile(updateProfileRequest);
+      res.send(result);
+    } catch (e) {
+      console.error(e);
+      res.send((e as any).message);
+    }
   }
-});
+);
 
 app.post<FollowUserRequest>("/followUser", async (req, res) => {
   try {
@@ -727,4 +726,3 @@ app.post<UnsubscribeFromUserRequest>(
     }
   }
 );
-

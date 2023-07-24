@@ -3,6 +3,7 @@ import { CrossPlatformFile as File } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
+import { Genre } from '../../types/Genre'
 
 const CreatePlaylistMetadataSchema = z
   .object({
@@ -31,7 +32,6 @@ export const createUpdatePlaylistSchema = () =>
       playlistId: HashId,
       coverArtFile: z.optional(File),
       metadata: createUploadPlaylistMetadataSchema()
-        .omit({ isAlbum: true })
         .partial()
         .merge(
           z
@@ -61,10 +61,8 @@ const createUploadPlaylistMetadataSchema = () =>
   z
     .object({
       description: z.optional(z.string().max(1000)),
-      /**
-       * Is this playlist an album?
-       */
-      isAlbum: z.optional(z.boolean()),
+      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      license: z.optional(z.string()),
       mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       playlistName: z.string(),
       releaseDate: z.optional(

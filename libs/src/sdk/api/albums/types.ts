@@ -21,9 +21,11 @@ export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
 export const createUploadAlbumMetadataSchema = () =>
   z
     .object({
-      description: z.optional(z.string().max(1000)),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       albumName: z.string(),
+      description: z.optional(z.string().max(1000)),
+      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      license: z.optional(z.string()),
+      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       releaseDate: z.optional(
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
