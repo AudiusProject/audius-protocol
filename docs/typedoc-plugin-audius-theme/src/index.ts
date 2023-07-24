@@ -6,7 +6,7 @@ import {
   DeclarationReflection,
   Reflection,
   Converter,
-  Context
+  Context,
 } from "typedoc";
 import * as examples from "./examples";
 
@@ -33,9 +33,36 @@ export function load(app: Application) {
           ReflectionKind.Property,
           ReflectionKind.Constructor,
         ];
+
         const result = !kindsToDelete.includes(g.kind);
         return result;
       });
+      const newChildren = r.children?.filter((c) => {
+        const writeMethodsToDelete = [
+          "createPlaylist",
+          "uploadPlaylist",
+          "addTrackToPlaylist",
+          "removeTrackFromPlaylist",
+          "updatePlaylist",
+          "deletePlaylist",
+          "favoritePlaylist",
+          "unfavoritePlaylist",
+          "repostPlaylist",
+          "unrepostPlaylist",
+          "publishPlaylist",
+          "fetchAndUpdatePlaylist",
+          "withMiddleware",
+          "withPostMiddleware",
+          "withPreMiddleware",
+        ];
+        console.log("BEEP", c.name);
+        const result = !writeMethodsToDelete.includes(c.name);
+        console.log("filtering out", c.name, result);
+        return result;
+      });
+      delete r.children;
+      r.children = newChildren;
+      console.log(`${r.name} new children`, newChildren);
 
       r.children?.forEach((c) => {
         delete r.parent;
@@ -65,8 +92,8 @@ export function load(app: Application) {
 
     reflections.forEach((r: Reflection) => {
       // Remove full namespace entirely
-      if (r.getFullName().startsWith('full.')) {
-        context.project.removeReflection(r)
+      if (r.getFullName().startsWith("full.")) {
+        context.project.removeReflection(r);
       }
     });
   };

@@ -17,7 +17,7 @@ const playlistTracks = playlistResponse.data;
 export const getTrendingPlaylists = `
 const playlistsResponse = await audiusSdk.playlists.getTrendingPlaylists();
 
-const trendingPlaylists = playlistsResponse?.data;
+const trendingPlaylists = playlistsResponse.data;
 `;
 
 export const searchPlaylists = `
@@ -25,5 +25,5 @@ const playlistsResponse = await audiusSdk.playlists.searchPlaylists({
     query: 'lo-fi',
 });
 
-const playlists = playlistsResponse?.data;
+const playlists = playlistsResponse.data;
 `;
