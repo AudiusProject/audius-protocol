@@ -38,7 +38,7 @@ export function load(app: Application) {
         return result;
       });
       const newChildren = r.children?.filter((c) => {
-        const writeMethodsToDelete = [
+        const methodsToDelete = [
           "createPlaylist",
           "uploadPlaylist",
           "addTrackToPlaylist",
@@ -51,12 +51,29 @@ export function load(app: Application) {
           "unrepostPlaylist",
           "publishPlaylist",
           "fetchAndUpdatePlaylist",
+          "uploadTrack",
+          "updateTrack",
+          "deleteTrack",
+          "favoriteTrack",
+          "unfavoriteTrack",
+          "repostTrack",
+          "unrepostTrack",
+          "uploadAlbum",
+          "updateAlbum",
+          "deleteAlbum",
+          "favoriteAlbum",
+          "unfavoriteAlbum",
+          "repostAlbum",
+          "unrepostAlbum",
           "withMiddleware",
           "withPostMiddleware",
           "withPreMiddleware",
+          "request",
         ];
         console.log("BEEP", c.name);
-        const result = !writeMethodsToDelete.includes(c.name);
+        const result =
+          !methodsToDelete.includes(c.name) &&
+          !c.name.toLowerCase().endsWith("raw");
         console.log("filtering out", c.name, result);
         return result;
       });
