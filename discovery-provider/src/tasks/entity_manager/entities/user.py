@@ -57,16 +57,22 @@ def validate_user_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
-        try:
-            user_metadata, _ = parse_metadata(
-                params.metadata, Action.UPDATE, EntityType.USER
-            )
-            if user_metadata:
-                user_bio = user_metadata.get("bio")
-        except Exception:
-            # enforce json metadata after single transaction sign up
-            # dont want to raise here, only check bio IF it exists
-            pass
+        # TODO remove this clause for non-dict param.metadata after single
+        # transaction sign up is fully rolled out
+        if not isinstance(params.metadata, dict):
+            try:
+                user_metadata, _ = parse_metadata(
+                    params.metadata, Action.UPDATE, EntityType.USER
+                )
+                if user_metadata:
+                    user_bio = user_metadata.get("bio")
+            except Exception:
+                # enforce json metadata after single transaction sign up
+                # dont want to raise here, only check bio IF it exists
+                pass
+        else:
+            user_bio = user_metadata.get("bio")
+
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
             raise IndexingValidationError(
                 f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
