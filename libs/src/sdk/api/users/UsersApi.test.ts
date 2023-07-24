@@ -28,10 +28,8 @@ jest
   .spyOn(EntityManager.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
-      txReceipt: {
-        blockHash: 'a',
-        blockNumber: 1
-      }
+      blockHash: 'a',
+      blockNumber: 1
     } as any
   })
 

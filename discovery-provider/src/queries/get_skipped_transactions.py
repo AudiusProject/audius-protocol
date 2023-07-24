@@ -9,7 +9,7 @@ from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 
 # The maximum number of skipped transactions allowed
-MAX_SKIPPED_TX = 10
+MAX_SKIPPED_TX = 20
 
 REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)

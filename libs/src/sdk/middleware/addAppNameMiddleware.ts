@@ -1,3 +1,5 @@
+import fetch from 'cross-fetch'
+
 import { DeveloperAppsApi } from '../api/developer-apps/DeveloperAppsApi'
 import {
   type Middleware,
