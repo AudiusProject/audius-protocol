@@ -58,8 +58,6 @@ def validate_user_tx(params: ManageEntityParameters):
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
         try:
-            # TODO(michelle) validate metadata for notification, developer app
-            # pass in UPDATE until this is fixed
             user_metadata, _ = parse_metadata(
                 params.metadata, Action.UPDATE, EntityType.USER
             )
