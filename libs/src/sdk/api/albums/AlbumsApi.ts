@@ -61,32 +61,30 @@ export class AlbumsApi {
     requestParameters: UploadAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata, trackMetadatas, trackFiles, onProgress, coverArtFile } =
-      parseRequestParameters(
-        'uploadAlbum',
-        createUploadAlbumSchema()
-      )(requestParameters)
+    const { metadata, ...parsedParameters } = parseRequestParameters(
+      'uploadAlbum',
+      createUploadAlbumSchema()
+    )(requestParameters)
 
     const { albumName, ...playlistMetadata } = metadata
-    const playlistRes = await this.playlistsApi.uploadPlaylist(
+
+    // Call uploadPlaylistInternal with parsed inputs
+    const response = await this.playlistsApi.uploadPlaylistInternal(
       {
-        userId: requestParameters.userId,
-        coverArtFile,
-        onProgress,
-        trackFiles,
-        trackMetadatas,
+        ...parsedParameters,
         metadata: {
           ...playlistMetadata,
-          playlistName: albumName
+          playlistName: albumName,
+          isAlbum: true
         }
       },
       writeOptions
     )
 
     return {
-      blockHash: playlistRes.blockHash,
-      blockNumber: playlistRes.blockNumber,
-      albumId: playlistRes.playlistId
+      blockHash: response.blockHash,
+      blockNumber: response.blockNumber,
+      albumId: response.playlistId
     }
   }
 
@@ -97,18 +95,17 @@ export class AlbumsApi {
     requestParameters: UpdateAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata, onProgress, coverArtFile } = parseRequestParameters(
+    const { albumId, metadata, ...parsedParameters } = parseRequestParameters(
       'updateAlbum',
       createUpdateAlbumSchema()
     )(requestParameters)
 
     const { albumName, ...playlistMetadata } = metadata
-    return await this.playlistsApi.updatePlaylist(
+
+    return await this.playlistsApi.updatePlaylistInternal(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId,
-        coverArtFile,
-        onProgress,
+        ...parsedParameters,
+        playlistId: albumId,
         metadata: {
           ...playlistMetadata,
           playlistName: albumName

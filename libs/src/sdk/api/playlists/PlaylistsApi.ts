@@ -1,5 +1,7 @@
-import type { AuthService, StorageService } from '../../services'
 import snakecaseKeys from 'snakecase-keys'
+import type { z } from 'zod'
+
+import type { AuthService, StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -130,127 +132,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const {
-      userId,
-      trackFiles,
-      coverArtFile,
-      metadata,
-      trackMetadatas: parsedTrackMetadatas,
-      onProgress
-    } = parseRequestParameters(
+    const parsedParameters = parseRequestParameters(
       'uploadPlaylist',
       createUploadPlaylistSchema()
     )(requestParameters)
 
-    // Upload track audio and cover art to storage node
-    const [coverArtResponse, ...audioResponses] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square'
-          }),
-        (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
-        }
-      ),
-      ...trackFiles.map(
-        async (trackFile) =>
-          await retry3(
-            async () =>
-              await this.storage.uploadFile({
-                file: trackFile,
-                onProgress,
-                template: 'audio'
-              }),
-            (e) => {
-              console.log('Retrying uploadTrackAudio', e)
-            }
-          )
-      )
-    ])
-
-    // Write tracks to chain
-    const trackIds = await Promise.all(
-      parsedTrackMetadatas.map(async (parsedTrackMetadata, i) => {
-        // Transform track metadata
-        const trackMetadata = this.combineMetadata(
-          this.trackUploadHelper.transformTrackUploadMetadata(
-            parsedTrackMetadata,
-            userId
-          ),
-          metadata
-        )
-
-        const audioResponse = audioResponses[i]
-
-        if (!audioResponse) {
-          throw new Error(`Failed to upload track: ${trackMetadata}`)
-        }
-
-        // Update metadata to include uploaded CIDs
-        const updatedMetadata =
-          this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
-            trackMetadata,
-            audioResponse,
-            coverArtResponse
-          )
-
-        const metadataCid = await generateMetadataCidV1(updatedMetadata)
-        const trackId = await this.trackUploadHelper.generateId('track')
-        await this.entityManager.manageEntity({
-          userId,
-          entityType: EntityType.TRACK,
-          entityId: trackId,
-          action: Action.CREATE,
-          metadata: JSON.stringify({
-            cid: metadataCid.toString(),
-            data: snakecaseKeys(updatedMetadata)
-          }),
-          auth: this.auth,
-          ...writeOptions
-        })
-
-        return trackId
-      })
-    )
-
-    const playlistId = await this.trackUploadHelper.generateId('playlist')
-    const currentBlock = await this.entityManager.getCurrentBlock()
-
-    // Update metadata to include track ids and cover art cid
-    const updatedMetadata = {
-      ...metadata,
-      isPrivate: false,
-      playlistContents: {
-        trackIds: trackIds.map((trackId) => ({
-          track: trackId,
-          time: currentBlock.timestamp
-        }))
-      },
-      playlistImageSizesMultihash: coverArtResponse.id
-    }
-
-    // Write playlist metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
-
-    const response = await this.entityManager.manageEntity({
-      userId,
-      entityType: EntityType.PLAYLIST,
-      entityId: playlistId,
-      action: Action.CREATE,
-      metadata: JSON.stringify({
-        cid: metadataCid.toString(),
-        data: snakecaseKeys(updatedMetadata)
-      }),
-      auth: this.auth,
-      ...writeOptions
-    })
-    return {
-      ...response,
-      playlistId: encodeHashId(playlistId)
-    }
+    // Call uploadPlaylistInternal with parsed inputs
+    return await this.uploadPlaylistInternal(parsedParameters, writeOptions)
   }
 
   /**
@@ -356,61 +244,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, coverArtFile, onProgress, metadata } =
-      parseRequestParameters(
-        'updatePlaylist',
-        createUpdatePlaylistSchema()
-      )(requestParameters)
+    const parsedParameters = parseRequestParameters(
+      'updatePlaylist',
+      createUpdatePlaylistSchema()
+    )(requestParameters)
 
-    // Upload cover art to storage node
-    const coverArtResponse =
-      coverArtFile &&
-      (await retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square'
-          }),
-        (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
-        }
-      ))
-
-    const updatedMetadata = {
-      ...metadata,
-      ...(metadata.playlistContents
-        ? {
-            playlistContents: {
-              trackIds: metadata.playlistContents.map(
-                ({ trackId, metadataTimestamp, timestamp }) => ({
-                  track: trackId,
-                  // default to timestamp for legacy playlists
-                  time: metadataTimestamp ?? timestamp
-                })
-              )
-            }
-          }
-        : {}),
-      ...(coverArtResponse
-        ? { playlistImageSizesMultihash: coverArtResponse.id }
-        : {})
-      // TODO: Support updating advanced fields
-    }
-
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    return await this.entityManager.manageEntity({
-      userId,
-      entityType: EntityType.PLAYLIST,
-      entityId: playlistId,
-      action: Action.UPDATE,
-      metadata: JSON.stringify({
-        cid: metadataCid.toString(),
-        data: snakecaseKeys(updatedMetadata)
-      }),
-      auth: this.auth,
-      ...writeOptions
-    })
+    // Call updatePlaylistInternal with parsed inputs
+    return await this.updatePlaylistInternal(parsedParameters, writeOptions)
   }
 
   /**
@@ -595,5 +435,195 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       },
       writeOptions
     )
+  }
+
+  /**
+   * Method to upload a playlist with already parsed inputs
+   * This is used for both playlists and albums
+   */
+  public async uploadPlaylistInternal(
+    {
+      userId,
+      coverArtFile,
+      trackFiles,
+      onProgress,
+      metadata,
+      trackMetadatas
+    }: z.infer<ReturnType<typeof createUploadPlaylistSchema>>,
+    writeOptions?: WriteOptions
+  ) {
+    // Upload track audio and cover art to storage node
+    const [coverArtResponse, ...audioResponses] = await Promise.all([
+      retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadPlaylistCoverArt', e)
+        }
+      ),
+      ...trackFiles.map(
+        async (trackFile) =>
+          await retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: trackFile,
+                onProgress,
+                template: 'audio'
+              }),
+            (e) => {
+              console.log('Retrying uploadTrackAudio', e)
+            }
+          )
+      )
+    ])
+
+    // Write tracks to chain
+    const trackIds = await Promise.all(
+      trackMetadatas.map(async (parsedTrackMetadata, i) => {
+        // Transform track metadata
+        const trackMetadata = this.combineMetadata(
+          this.trackUploadHelper.transformTrackUploadMetadata(
+            parsedTrackMetadata,
+            userId
+          ),
+          metadata
+        )
+
+        const audioResponse = audioResponses[i]
+
+        if (!audioResponse) {
+          throw new Error(`Failed to upload track: ${trackMetadata}`)
+        }
+
+        // Update metadata to include uploaded CIDs
+        const updatedMetadata =
+          this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+            trackMetadata,
+            audioResponse,
+            coverArtResponse
+          )
+
+        const metadataCid = await generateMetadataCidV1(updatedMetadata)
+        const trackId = await this.trackUploadHelper.generateId('track')
+        await this.entityManager.manageEntity({
+          userId,
+          entityType: EntityType.TRACK,
+          entityId: trackId,
+          action: Action.CREATE,
+          metadata: JSON.stringify({
+            cid: metadataCid.toString(),
+            data: snakecaseKeys(updatedMetadata)
+          }),
+          auth: this.auth,
+          ...writeOptions
+        })
+
+        return trackId
+      })
+    )
+
+    const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const currentBlock = await this.entityManager.getCurrentBlock()
+
+    // Update metadata to include track ids and cover art cid
+    const updatedMetadata = {
+      ...metadata,
+      isPrivate: false,
+      playlistContents: {
+        trackIds: trackIds.map((trackId) => ({
+          track: trackId,
+          time: currentBlock.timestamp
+        }))
+      },
+      playlistImageSizesMultihash: coverArtResponse.id
+    }
+
+    // Write playlist metadata to chain
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
+    return {
+      ...response,
+      playlistId: encodeHashId(playlistId)
+    }
+  }
+
+  /**
+   * Method to update a playlist with already parsed inputs
+   * This is used for both playlists and albums
+   */
+  public async updatePlaylistInternal(
+    {
+      userId,
+      playlistId,
+      coverArtFile,
+      onProgress,
+      metadata
+    }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>>,
+    writeOptions?: WriteOptions
+  ) {
+    // Upload cover art to storage node
+    const coverArtResponse =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          console.log('Retrying uploadPlaylistCoverArt', e)
+        }
+      ))
+
+    const updatedMetadata = {
+      ...metadata,
+      ...(metadata.playlistContents
+        ? {
+            playlistContents: {
+              trackIds: metadata.playlistContents.map(
+                ({ trackId, metadataTimestamp, timestamp }) => ({
+                  track: trackId,
+                  // default to timestamp for legacy playlists
+                  time: metadataTimestamp ?? timestamp
+                })
+              )
+            }
+          }
+        : {}),
+      ...(coverArtResponse
+        ? { playlistImageSizesMultihash: coverArtResponse.id }
+        : {})
+    }
+
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.UPDATE,
+      metadata: JSON.stringify({
+        cid: metadataCid.toString(),
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      auth: this.auth,
+      ...writeOptions
+    })
   }
 }
