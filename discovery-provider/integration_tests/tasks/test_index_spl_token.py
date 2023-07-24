@@ -1,6 +1,9 @@
+import json
 from unittest.mock import create_autospec
 
 from integration_tests.utils import populate_mock_db
+from solders.rpc.responses import GetTransactionResp
+from solders.signature import Signature
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
@@ -24,96 +27,106 @@ REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_addre
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 
 
-mock_create_account_meta = {
-    "meta": {
-        "err": None,
-        "fee": 5000,
-        "postBalances": [
-            2711258124,
-            2039280,
-            3129270260,
-            260042654,
-            1,
-            953185920,
-            1009200,
-            898174080,
-        ],
-        "postTokenBalances": [
-            {
-                "accountIndex": 1,
-                "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "owner": "Fipj4SLmTBmS7BSgDqeMPb7F86YWUUKajvDgQUWaHwWf",
-                "uiTokenAmount": {
-                    "amount": "0",
-                    "decimals": 8,
-                    "uiAmount": "None",
-                    "uiAmountString": "0",
+mock_create_account_tx_info = GetTransactionResp.from_json(
+    json.dumps(
+        {
+            "result": {
+                "blockTime": 1628015818,
+                "meta": {
+                    "err": None,
+                    "fee": 5000,
+                    "postBalances": [
+                        2711258124,
+                        2039280,
+                        3129270260,
+                        260042654,
+                        1,
+                        953185920,
+                        1009200,
+                        898174080,
+                    ],
+                    "postTokenBalances": [
+                        {
+                            "accountIndex": 1,
+                            "mint": "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "owner": "Fipj4SLmTBmS7BSgDqeMPb7F86YWUUKajvDgQUWaHwWf",
+                            "uiTokenAmount": {
+                                "amount": "0",
+                                "decimals": 8,
+                                "uiAmount": "None",
+                                "uiAmountString": "0",
+                            },
+                        }
+                    ],
+                    "preTokenBalances": [],
+                    "logMessages": [
+                        "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL invoke [1]",
+                        "Program log: Transfer 2039280 lamports to the associated token account",
+                        "Program 11111111111111111111111111111111 invoke [2]",
+                        "Program 11111111111111111111111111111111 success",
+                        "Program log: Allocate space for the associated token account",
+                        "Program 11111111111111111111111111111111 invoke [2]",
+                        "Program 11111111111111111111111111111111 success",
+                        "Program log: Assign the associated token account to the SPL Token program",
+                        "Program 11111111111111111111111111111111 invoke [2]",
+                        "Program 11111111111111111111111111111111 success",
+                        "Program log: Initialize the associated token account",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
+                        "Program log: Instruction: InitializeAccount",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 3272 of 176939 compute units",
+                        "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
+                        "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL consumed 27014 of 200000 compute units",
+                        "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL success",
+                    ],
+                },
+                "slot": 72131741,
+                "transaction": {
+                    "message": {
+                        "accountKeys": [
+                            "CgJhbUdHQNN5HBeNEN7J69Z89emh6BtyYX1CPEGwaeqi",
+                            "AjMbFboAibXRH9vARK3KvDhnxuyCKjon2nmtbaC4UtnQ",
+                            "Fipj4SLmTBmS7BSgDqeMPb7F86YWUUKajvDgQUWaHwWf",
+                            "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+                            "11111111111111111111111111111111",
+                            "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+                            "SysvarRent111111111111111111111111111111111",
+                            "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+                        ],
+                        "header": {
+                            "numReadonlySignedAccounts": 0,
+                            "numReadonlyUnsignedAccounts": 6,
+                            "numRequiredSignatures": 1,
+                        },
+                        "instructions": [
+                            {
+                                "accounts": [0, 1, 2, 3, 4, 5, 6],
+                                "data": "",
+                                "programIdIndex": 7,
+                            }
+                        ],
+                        "recentBlockhash": "4BNdtYfc8G1mSRFhwv7523CHCP3XPt92ASyV9kwvRMd3",
+                    },
+                    "signatures": [
+                        "2DUH6nXnS4EXCqPdgxGvAiLyemZ8WkB69VyjhiGgE3HZxsbXWdk8SuZbGCkyV7oN6b7DHHVggaB8QSCKp5YNk7QJ"
+                    ],
                 },
             }
-        ],
-        "preTokenBalances": [],
-        "logMessages": [
-            "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL invoke [1]",
-            "Program log: Transfer 2039280 lamports to the associated token account",
-            "Program 11111111111111111111111111111111 invoke [2]",
-            "Program 11111111111111111111111111111111 success",
-            "Program log: Allocate space for the associated token account",
-            "Program 11111111111111111111111111111111 invoke [2]",
-            "Program 11111111111111111111111111111111 success",
-            "Program log: Assign the associated token account to the SPL Token program",
-            "Program 11111111111111111111111111111111 invoke [2]",
-            "Program 11111111111111111111111111111111 success",
-            "Program log: Initialize the associated token account",
-            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA invoke [2]",
-            "Program log: Instruction: InitializeAccount",
-            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA consumed 3272 of 176939 compute units",
-            "Program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA success",
-            "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL consumed 27014 of 200000 compute units",
-            "Program ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL success",
-        ],
-    },
-    "transaction": {
-        "message": {
-            "accountKeys": [
-                "CgJhbUdHQNN5HBeNEN7J69Z89emh6BtyYX1CPEGwaeqi",
-                "AjMbFboAibXRH9vARK3KvDhnxuyCKjon2nmtbaC4UtnQ",
-                "Fipj4SLmTBmS7BSgDqeMPb7F86YWUUKajvDgQUWaHwWf",
-                "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
-                "11111111111111111111111111111111",
-                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-                "SysvarRent111111111111111111111111111111111",
-                "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
-            ],
-            "header": {
-                "numReadonlySignedAccounts": 0,
-                "numReadonlyUnsignedAccounts": 6,
-                "numRequiredSignatures": 1,
-            },
-            "instructions": [
-                {"accounts": [0, 1, 2, 3, 4, 5, 6], "data": "", "programIdIndex": 7}
-            ],
-            "recentBlockhash": "4BNdtYfc8G1mSRFhwv7523CHCP3XPt92ASyV9kwvRMd3",
-        },
-        "signatures": [
-            "2DUH6nXnS4EXCqPdgxGvAiLyemZ8WkB69VyjhiGgE3HZxsbXWdk8SuZbGCkyV7oN6b7DHHVggaB8QSCKp5YNk7QJ"
-        ],
-    },
-}
+        }
+    )
+)
 
-mock_create_account_tx_info = {
-    "jsonrpc": "2.0",
-    "result": mock_create_account_meta,
-    "id": 2,
-}
-
-mock_confirmed_signature_for_address = {
-    "err": None,
-    "memo": None,
-    "signature": "2DUH6nXnS4EXCqPdgxGvAiLyemZ8WkB69VyjhiGgE3HZxsbXWdk8SuZbGCkyV7oN6b7DHHVggaB8QSCKp5YNk7QJ",
-    "slot": 123209431,
-    "blockTime": 1646261596,
-    "confirmationStatus": "finalized",
-}
+mock_confirmed_signature_for_address = Signature.from_json(
+    json.dumps(
+        {
+            "err": None,
+            "memo": None,
+            "signature": "2DUH6nXnS4EXCqPdgxGvAiLyemZ8WkB69VyjhiGgE3HZxsbXWdk8SuZbGCkyV7oN6b7DHHVggaB8QSCKp5YNk7QJ",
+            "slot": 123209431,
+            "blockTime": 1646261596,
+            "confirmationStatus": "finalized",
+        }
+    )
+)
 
 
 def test_parse_spl_token_transaction_no_results():

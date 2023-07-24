@@ -23,62 +23,6 @@ class TransactionMessage(TypedDict):
     recentBlockhash: str
 
 
-class ResultTransction(TypedDict):
-    message: TransactionMessage
-    signatures: List[str]
-
-
-class MetaInnerInstructionData(TypedDict):
-    accounts: List[int]
-    data: str
-    programIdIndex: int
-
-
-class MetaInnerInstruction(TypedDict):
-    index: int
-    instruction: List[TransactionMessageInstruction]
-
-
-class UiTokenAmount(TypedDict):
-    amount: str
-    decimals: int
-    uiAmount: float
-    uiAmountString: str
-
-
-class TokenBalance(TypedDict):
-    accountIndex: int
-    mint: str
-    owner: str
-    uiTokenAmount: UiTokenAmount
-
-
-class ResultMeta(TypedDict):
-    err: Optional[Any]
-    fee: int
-    innerInstructions: List[MetaInnerInstruction]
-    logMessages: List[str]
-    preBalances: List[int]
-    postBalances: List[int]
-    preTokenBalances: List[TokenBalance]
-    postTokenBalances: List[TokenBalance]
-    rewards: List[Any]
-    status: Any
-
-
-class TransactionInfoResult(TypedDict):
-    block_time: int
-    meta: ResultMeta
-    slot: int
-    transaction: ResultTransction
-
-
-class ConfirmedTransaction(TypedDict):
-    jsonrpc: str
-    result: TransactionInfoResult
-    id: int
-
-
 class ConfirmedSignatureForAddressResult(TypedDict):
     err: Any
     memo: Any

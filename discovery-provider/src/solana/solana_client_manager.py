@@ -85,7 +85,16 @@ class SolanaClientManager:
         limit: Optional[int] = None,
         retries: int = DEFAULT_MAX_RETRIES,
     ):
-        """Fetches confirmed signatures for transactions given an address."""
+        """
+        Fetches confirmed signatures for transactions given an address.
+
+        Args:
+            account: Public key as string
+            before: (optional) signature string
+            until: (optional) signature string
+            limit: (optional)
+            retries: (default)
+        """
 
         def handle_get_signatures_for_address(client: Client, index: int):
             endpoint = self.endpoints[index]
@@ -234,10 +243,17 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 
-def _check_error(tx, tx_sig):
-    if "error" in tx:
+def _check_error(tx: GetTransactionResp, tx_sig):
+    if (
+        tx
+        and tx.value
+        and tx.value.transaction
+        and tx.value.transaction.meta
+        and tx.value.transaction.meta.err
+    ):
+        err = tx.value.transaction.meta.err
         logger.error(
-            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {tx['error']}"
+            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {err}"
         )
         raise SolanaTransactionFetchError()
 

@@ -4,11 +4,14 @@ import logging
 import re
 import time
 from decimal import Decimal
-from typing import List, Optional, Tuple, TypedDict
+from typing import List, Optional, Tuple, TypedDict, cast
 
 import base58
 from redis import Redis
 from solders.pubkey import Pubkey
+from solders.rpc.responses import GetTransactionResp
+from solders.transaction import Transaction
+from solders.transaction_status import UiTransaction, UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
@@ -34,12 +37,7 @@ from src.solana.solana_parser import (
     SolanaInstructionType,
     parse_instruction_data,
 )
-from src.solana.solana_transaction_types import (
-    ConfirmedTransaction,
-    ResultMeta,
-    TransactionInfoResult,
-    TransactionMessageInstruction,
-)
+from src.solana.solana_transaction_types import TransactionMessageInstruction
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     cache_latest_sol_db_tx,
@@ -211,7 +209,7 @@ def process_transfer_instruction(
     redis: Redis,
     instruction: TransactionMessageInstruction,
     account_keys: List[str],
-    meta: ResultMeta,
+    meta: UiTransactionStatusMeta,
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
@@ -361,21 +359,32 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
 def process_user_bank_tx_details(
     session: Session,
     redis: Redis,
-    tx_info: ConfirmedTransaction,
+    tx_info: GetTransactionResp,
     tx_sig,
     timestamp,
     challenge_event_bus: ChallengeEventBus,
 ):
-    result: TransactionInfoResult = tx_info["result"]
-    meta = result["meta"]
-    error = meta["err"]
+    result = tx_info.value
+    if not result:
+        logger.info("index_user_bank.py | No result")
+        return
+    meta = result.transaction.meta
+    if not meta:
+        logger.info("index_user_bank.py | No result meta")
+        return
+    error = meta.err
     if error:
         logger.info(
             f"index_user_bank.py | Skipping error transaction from chain {tx_info}"
         )
         return
-    account_keys = tx_info["result"]["transaction"]["message"]["accountKeys"]
-    tx_message = result["transaction"]["message"]
+    account_keys = list(
+        map(
+            lambda x: str(x),
+            cast(UiTransaction, result.transaction.transaction).message.account_keys,
+        )
+    )
+    tx_message = cast(UiTransaction, result.transaction.transaction).message
 
     # Check for valid instruction
     has_create_token_instruction = has_log(
@@ -408,7 +417,7 @@ def process_user_bank_tx_details(
             account_keys=account_keys,
             meta=meta,
             tx_sig=tx_sig,
-            slot=result["slot"],
+            slot=result.slot,
             challenge_event_bus=challenge_event_bus,
             timestamp=timestamp,
         )
@@ -535,7 +544,7 @@ def process_user_bank_txs() -> None:
             logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
             batch_start_time = time.time()
 
-            tx_infos: List[Tuple[ConfirmedTransaction, str]] = []
+            tx_infos: List[Tuple[GetTransactionResp, str]] = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
@@ -556,15 +565,15 @@ def process_user_bank_txs() -> None:
             # Note: while it's possible (even likely) to have multiple tx in the same slot,
             # these transactions can't be dependent on one another, so we don't care which order
             # we process them.
-            tx_infos.sort(key=lambda info: info[0]["result"]["slot"])
+            tx_infos.sort(key=lambda info: info[0].value.slot if info[0].value else 0)
 
             for tx_info, tx_sig in tx_infos:
                 if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                    last_tx = tx_info["result"]
+                    last_tx = tx_info.value
                 num_txs_processed += 1
 
-                tx_slot = tx_info["result"]["slot"]
-                timestamp = tx_info["result"]["blockTime"]
+                tx_slot = tx_info.value.slot
+                timestamp = tx_info.value.block_time
                 parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
 
                 logger.debug(

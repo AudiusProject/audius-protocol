@@ -7,10 +7,10 @@ from typing import Callable, Dict, List, Optional, TypedDict, cast
 
 import base58
 from redis import Redis
-from solders.instruction import CompiledInstruction, Instruction
+from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
-from solders.transaction import Transaction
+from solders.transaction_status import UiTransaction, UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from src.models.rewards.challenge import Challenge, ChallengeType
@@ -35,12 +35,6 @@ from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
     parse_instruction_data,
-)
-from src.solana.solana_transaction_types import (
-    ResultMeta,
-    TransactionInfoResult,
-    TransactionMessage,
-    TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
@@ -176,7 +170,7 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
 
 
 def get_valid_instruction(
-    tx_message: Message, meta: ResultMeta
+    tx_message: Message, meta: UiTransactionStatusMeta
 ) -> Optional[CompiledInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
@@ -186,13 +180,13 @@ def get_valid_instruction(
     try:
         account_keys = tx_message.account_keys
         has_transfer_instruction = any(
-            log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
+            log == "Program log: Instruction: Transfer" for log in meta.log_messages
         )
 
         if not has_transfer_instruction:
             return None
 
-        if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
+        if not any(REWARDS_MANAGER_ACCOUNT == str(key) for key in account_keys):
             logger.error(
                 "index_rewards_manager.py | Rewards manager account missing from account keys"
             )
@@ -245,7 +239,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
             return tx_metadata
-        tx_message = cast(Transaction, result.transaction.transaction).message
+        tx_message = cast(UiTransaction, result.transaction.transaction).message
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return tx_metadata

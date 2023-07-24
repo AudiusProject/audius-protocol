@@ -6,6 +6,7 @@
   "python.linting.flake8Enabled": true,
   "python.linting.lintOnSave": true,
   "python.linting.mypyEnabled": true,
+  "mypy.runUsingActiveInterpreter": true,
   "python.analysis.indexing": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,

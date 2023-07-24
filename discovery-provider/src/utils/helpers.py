@@ -15,10 +15,11 @@ import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
+from solders.pubkey import Pubkey
+from solders.transaction_status import UiMessage, UiTransactionStatusMeta
 from sqlalchemy import inspect
 from src import exceptions
 from src.solana.solana_transaction_types import (
-    ResultMeta,
     TransactionMessage,
     TransactionMessageInstruction,
 )
@@ -414,30 +415,30 @@ def split_list(list, n):
         yield list[i : i + n]
 
 
-def get_solana_tx_token_balances(meta, idx):
+def get_solana_tx_token_balances(meta: UiTransactionStatusMeta, idx: int):
     """Extracts the pre and post balances for a given index from a solana transaction
     metadata object
     """
     pre_balance_dict = next(
         (
             balance
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == idx
+            for balance in meta.pre_token_balances
+            if balance.account_index == idx
         ),
         None,
     )
     post_balance_dict = next(
         (
             balance
-            for balance in meta["postTokenBalances"]
-            if balance["accountIndex"] == idx
+            for balance in meta.post_token_balances
+            if balance.account_index == idx
         ),
         None,
     )
     if pre_balance_dict is None or post_balance_dict is None:
         return (-1, -1)
-    pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
-    post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
+    pre_balance = int(pre_balance_dict.ui_token_amount.amount)
+    post_balance = int(post_balance_dict.ui_token_amount.amount)
     return (pre_balance, post_balance)
 
 
@@ -453,24 +454,26 @@ def get_solana_tx_owner(meta, idx) -> str:
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta, program_address: str
+    tx_message: UiMessage, meta: UiTransactionStatusMeta, program_address: str
 ) -> Optional[TransactionMessageInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
     checks accounts keys for claimable token program
     """
-    account_keys = tx_message["accountKeys"]
-    instructions = tx_message["instructions"]
-    program_index = account_keys.index(program_address)
+    account_keys = tx_message.account_keys
+    instructions = tx_message.instructions
+    program_index = list(map(lambda x: str(x), account_keys)).index(program_address)
     for instruction in instructions:
-        if instruction["programIdIndex"] == program_index:
+        if instruction.program_id_index == program_index:
             return instruction
 
     return None
 
 
-def has_log(meta: ResultMeta, instruction: str):
-    return any(log == instruction for log in meta["logMessages"])
+def has_log(meta: UiTransactionStatusMeta, instruction: str):
+    if meta is None:
+        return False
+    return any(log == instruction for log in meta.log_messages)
 
 
 # The transaction might list sender/receiver in a different order in the pubKeys.
@@ -536,5 +539,5 @@ def get_final_poa_block() -> int:
     return final_poa_block
 
 
-def format_total_audio_balance(balance: str) -> int:
+def format_total_audio_balance(balance: str) -> str:
     return int(int(balance) / 1e18)

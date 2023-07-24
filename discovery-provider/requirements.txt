@@ -68,6 +68,7 @@ aiohttp==3.8.5
 solana==0.30.2
 urllib3==1.26.3
 websockets==10.1
+solders==0.18.1
 # Anchor support
 anchorpy==0.17.2
 
