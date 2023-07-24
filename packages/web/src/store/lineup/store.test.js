@@ -16,11 +16,16 @@ import { all } from 'redux-saga/effects'
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import cacheSagas from 'common/store/cache/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { initialState as initialConfirmerState } from 'common/store/confirmer/reducer'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { noopReducer, allSagas } from 'store/testHelper'
 const { asLineup, initialLineupState } = lineupReducer
 const { asCache, initialCacheState } = cacheReducer
+
+const initialConfirmerState = {
+  confirm: {},
+  complete: {},
+  operationSuccessCallIdx: {}
+}
 
 const PREFIX = 'tracks'
 const MOCK_TIMESTAMP = 1479427200000

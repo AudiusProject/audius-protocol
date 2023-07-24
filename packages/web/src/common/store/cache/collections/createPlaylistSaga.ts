@@ -16,14 +16,14 @@ import {
   cacheTracksSelectors,
   getContext,
   makeKindId,
-  newCollectionMetadata
+  newCollectionMetadata,
+  confirmerActions,
+  confirmTransaction,
+  RequestConfirmationError
 } from '@audius/common'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { requestConfirmation } from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
-import { RequestConfirmationError } from 'common/store/confirmer/types'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { playlistPage } from 'utils/route'
@@ -32,6 +32,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { reformat } from './utils'
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 
+const { requestConfirmation } = confirmerActions
 const { getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors

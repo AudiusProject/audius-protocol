@@ -33,7 +33,6 @@ import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import { ErrorState } from 'store/errors/reducers'
 
 import { BackendState } from '../common/store/backend/types'
-import { ConfirmerState } from '../common/store/confirmer/types'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
@@ -49,7 +48,6 @@ const averageColor = averageColorReducer
 export type AppState = CommonState & {
   // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
-  confirmer: ConfirmerState
 
   searchBar: SearchBarState
   searchAiBar: SearchAiBarState

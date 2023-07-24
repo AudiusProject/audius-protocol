@@ -1,16 +1,15 @@
 import { findLastIndex } from 'lodash'
 
-// TODO - change back to CommonState once migrated
-import { AppState } from 'store/types'
+import { CommonState } from 'store/commonStore'
 
 // Confirmer selectors
 
 /** Check whether anything is confirming so UI can block reloads. */
-export const getIsConfirming = (state: AppState) =>
+export const getIsConfirming = (state: CommonState) =>
   Object.keys(state.confirmer.confirm).length > 0
 
 export const getResult = (
-  state: AppState,
+  state: CommonState,
   props: { uid: number | string; index: number }
 ) => {
   if (!(props.uid in state.confirmer.confirm) || props.index < 0) {
@@ -26,7 +25,7 @@ export const getResult = (
 }
 
 export const getLatestResult = (
-  state: AppState,
+  state: CommonState,
   props: { uid: number | string }
 ) => {
   if (!(props.uid in state.confirmer.confirm)) {
@@ -43,7 +42,7 @@ export const getLatestResult = (
  * Returns `undefined` if invalid uid or there is no next call.
  * Otherwise, returns `false`. */
 export const getShouldCancelCurrentCall = (
-  state: AppState,
+  state: CommonState,
   props: { uid: number | string }
 ) => {
   if (!(props.uid in state.confirmer.confirm)) {
@@ -71,10 +70,11 @@ export const getShouldCancelCurrentCall = (
   ) {
     return true
   }
+  return false
 }
 
 export const getIndexEquals = (
-  state: AppState,
+  state: CommonState,
   props: { uid: number | string; index: number }
 ) =>
   props.uid in state.confirmer.confirm
@@ -82,7 +82,7 @@ export const getIndexEquals = (
     : false
 
 export const getConfirmLength = (
-  state: AppState,
+  state: CommonState,
   props: { uid: string | number }
 ): number =>
   props.uid in state.confirmer.confirm
@@ -95,7 +95,7 @@ export const getConfirmLength = (
  * calls of the same operation id to be resolved).
  */
 export const getAreRequisiteCallsComplete = (
-  state: AppState,
+  state: CommonState,
   props: {
     uid: string | number
     index: number
@@ -120,7 +120,10 @@ export const getAreRequisiteCallsComplete = (
     )
 }
 
-export const getIsDone = (state: AppState, props: { uid: string | number }) =>
+export const getIsDone = (
+  state: CommonState,
+  props: { uid: string | number }
+) =>
   props.uid in state.confirmer.confirm
     ? state.confirmer.confirm[props.uid].calls.every(
         (call) => call.result !== null || call.cancelled === true
@@ -128,11 +131,11 @@ export const getIsDone = (state: AppState, props: { uid: string | number }) =>
     : true
 
 export const getCommandChain = (
-  state: AppState,
+  state: CommonState,
   props: { uid: string | number }
 ) =>
   props.uid in state.confirmer.complete
     ? state.confirmer.complete[props.uid]
     : []
 
-export const getConfirmCalls = (state: AppState) => state.confirmer.confirm
+export const getConfirmCalls = (state: CommonState) => state.confirmer.confirm

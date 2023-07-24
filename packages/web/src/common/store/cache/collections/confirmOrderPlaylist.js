@@ -4,12 +4,11 @@ import {
   cacheCollectionsActions as collectionActions,
   PlaylistOperations,
   cacheActions,
-  getContext
+  getContext,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import { call, put } from 'redux-saga/effects'
-
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 
 import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { retrieveCollection } from './utils/retrieveCollections'

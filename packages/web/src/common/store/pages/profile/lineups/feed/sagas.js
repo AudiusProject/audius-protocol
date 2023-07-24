@@ -9,11 +9,11 @@ import {
   profilePageFeedLineupActions as feedActions,
   tracksSocialActions,
   collectionsSocialActions,
-  makeUid
+  makeUid,
+  confirmerSelectors
 } from '@audius/common'
 import { select, call, takeEvery, put } from 'redux-saga/effects'
 
-import { getConfirmCalls } from 'common/store/confirmer/selectors'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -22,6 +22,7 @@ const { getProfileUserId, getProfileFeedLineup } = profilePageSelectors
 const { getTracks } = cacheTracksSelectors
 const { getCollections } = cacheCollectionsSelectors
 const { getUserId, getUserHandle } = accountSelectors
+const { getConfirmCalls } = confirmerSelectors
 
 function* getReposts({ offset, limit, handle }) {
   yield waitForRead()

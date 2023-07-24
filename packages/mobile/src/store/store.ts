@@ -8,8 +8,6 @@ import {
 } from '@audius/common'
 import backend from 'audius-client/src/common/store/backend/reducer'
 import type { BackendState } from 'audius-client/src/common/store/backend/types'
-import confirmer from 'audius-client/src/common/store/confirmer/reducer'
-import type { ConfirmerState } from 'audius-client/src/common/store/confirmer/types'
 import signOnReducer from 'audius-client/src/common/store/pages/signon/reducer'
 import type {
   SignOnPageState,
@@ -54,7 +52,6 @@ export type AppState = CommonState & {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
   signOn: SignOnPageState
   backend: BackendState
-  confirmer: ConfirmerState
   searchBar: SearchBarState
 
   drawers: DrawersState
@@ -114,7 +111,6 @@ const rootReducer = combineReducers({
   ...commonStoreReducers,
   // These also belong in common store reducers but are here until we move them to the @audius/common package:
   backend,
-  confirmer,
   signOn: signOnReducer as SignOnPageReducer,
   searchBar,
 

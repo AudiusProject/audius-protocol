@@ -1,7 +1,7 @@
+import { CommonState } from '@audius/common'
 import { connect } from 'react-redux'
 
 import { useDevModeHotkey } from 'hooks/useHotkey'
-import { AppState } from 'store/types'
 
 import styles from './ConfirmerPreview.module.css'
 
@@ -52,7 +52,7 @@ const ConfirmerPreview = ({ confirmer }: ConfirmerPreviewProps) => {
   )
 }
 
-function mapStateToProps(state: AppState) {
+function mapStateToProps(state: CommonState) {
   return {
     confirmer: state.confirmer
   }

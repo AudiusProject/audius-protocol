@@ -8,7 +8,6 @@ import { History } from 'history'
 import { combineReducers } from 'redux'
 
 import backend from 'common/store/backend/reducer'
-import confirmer from 'common/store/confirmer/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import searchAiBar from 'common/store/search-ai-bar/reducer'
 import searchBar from 'common/store/search-bar/reducer'
@@ -40,7 +39,6 @@ const createRootReducer = (routeHistory: History) =>
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
     backend,
     signOn: signOnReducer,
-    confirmer,
     searchBar,
     searchAiBar,
 

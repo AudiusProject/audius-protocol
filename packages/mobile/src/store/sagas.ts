@@ -15,7 +15,8 @@ import {
   relatedArtistsSagas,
   searchUsersModalSagas,
   solanaSagas,
-  toastSagas
+  toastSagas,
+  confirmerSagas
 } from '@audius/common'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
@@ -24,7 +25,6 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
-import confirmerSagas from 'common/store/confirmer/sagas'
 import aiSagas from 'common/store/pages/ai/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionPageSagas from 'common/store/pages/collection/sagas'

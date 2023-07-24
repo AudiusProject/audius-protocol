@@ -2,17 +2,17 @@ import {
   accountSelectors,
   cacheActions,
   Chain,
+  confirmerActions,
   ConfirmRemoveWalletAction,
   getContext,
   Kind,
   newUserMetadata,
   tokenDashboardPageActions,
-  walletActions
+  walletActions,
+  confirmTransaction
 } from '@audius/common'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
-import { requestConfirmation } from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import {
   fetchOpenSeaAssets,
   fetchSolanaCollectibles
@@ -30,6 +30,8 @@ const {
 } = tokenDashboardPageActions
 
 const { getBalance } = walletActions
+
+const { requestConfirmation } = confirmerActions
 
 function* removeWallet(action: ConfirmRemoveWalletAction) {
   yield* waitForWrite()

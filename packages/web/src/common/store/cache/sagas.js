@@ -5,7 +5,8 @@ import {
   cacheActions,
   cacheSelectors,
   cacheConfig,
-  FeatureFlags
+  FeatureFlags,
+  confirmerSelectors
 } from '@audius/common'
 import { pick } from 'lodash'
 import {
@@ -17,9 +18,9 @@ import {
   getContext
 } from 'redux-saga/effects'
 
-import { getConfirmCalls } from 'common/store/confirmer/selectors'
 const { CACHE_PRUNE_MIN } = cacheConfig
 const { getCache } = cacheSelectors
+const { getConfirmCalls } = confirmerSelectors
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 

@@ -1,22 +1,22 @@
 import {
   accountSelectors,
   cacheActions,
+  confirmerActions,
   getContext,
   Kind,
   tokenDashboardPageActions,
   User,
-  walletActions
+  walletActions,
+  confirmTransaction
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
-
-import { requestConfirmation } from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
 const { getUserId } = accountSelectors
 const { getBalance } = walletActions
 const { setWalletAddedConfirmed, updateWalletError } = tokenDashboardPageActions
+const { requestConfirmation } = confirmerActions
 
 export function* addWalletToUser(
   updatedMetadata: User,

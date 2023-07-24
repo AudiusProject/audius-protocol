@@ -11,7 +11,6 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
 import sagas from 'common/store/cache/sagas'
-import { initialState as initialConfirmerState } from 'common/store/confirmer/reducer'
 import {
   allSagas,
   noopReducer,
@@ -19,6 +18,12 @@ import {
   takeSaga
 } from 'store/testHelper'
 const { asCache, initialCacheState } = cacheReducer
+
+const initialConfirmerState = {
+  confirm: {},
+  complete: {},
+  operationSuccessCallIdx: {}
+}
 
 const MOCK_TIMESTAMP = 1479427200000
 

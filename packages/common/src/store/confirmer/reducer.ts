@@ -9,8 +9,7 @@ import {
   CLEAR_CONFIRM,
   INCREMENT_CONFIRM_GROUP_INDEX,
   SET_OPERATION_SUCCESS_CALL
-} from 'common/store/confirmer/actions'
-
+} from './actions'
 import * as actions from './actions'
 import { ConfirmerState } from './types'
 

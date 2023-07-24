@@ -89,7 +89,6 @@ export const updatePlaylistArtwork = async (
 
   if (tracksForImage) {
     if (tracksForImage.length === 0) {
-      console.log('okay full removal!')
       // @ts-expect-error
       collection.cover_art_sizes = undefined
       collection._cover_art_sizes = {}

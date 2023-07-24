@@ -13,7 +13,9 @@ import {
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
-  waitForValue
+  waitForValue,
+  confirmerActions,
+  confirmTransaction
 } from '@audius/common'
 import {
   call,
@@ -26,8 +28,6 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import * as confirmerActions from 'common/store/confirmer/actions'
-import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { dominantColor } from 'utils/imageProcessingUtil'
