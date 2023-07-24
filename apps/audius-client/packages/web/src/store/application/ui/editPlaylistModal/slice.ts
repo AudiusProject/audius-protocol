@@ -7,18 +7,23 @@ export type EditPlaylistModalState = {
   isOpen: boolean
   collectionId: ID | null
   initialFocusedField: Nullable<FocusableFields>
+  isCollectionViewed: boolean
 }
 
 const initialState: EditPlaylistModalState = {
   isOpen: false,
   collectionId: null,
-  initialFocusedField: null
+  initialFocusedField: null,
+  isCollectionViewed: false
 }
 
 type OpenPayload = PayloadAction<{
   collectionId: ID
   // Which field in edit-playlist form should be autofocused
   initialFocusedField?: 'name' | 'description' | 'artwork'
+  // Is the collection currently being viewed
+  // Used to check if we should reroute back to trending on delete
+  isCollectionViewed?: boolean
 }>
 
 const slice = createSlice({
@@ -26,9 +31,12 @@ const slice = createSlice({
   initialState,
   reducers: {
     open: (state, action: OpenPayload) => {
-      const { collectionId, initialFocusedField } = action.payload
+      const { collectionId, initialFocusedField, isCollectionViewed } =
+        action.payload
+
       state.isOpen = true
       state.collectionId = collectionId
+      state.isCollectionViewed = isCollectionViewed ?? false
       if (initialFocusedField) {
         state.initialFocusedField = initialFocusedField
       }
@@ -37,6 +45,7 @@ const slice = createSlice({
       state.isOpen = false
       state.collectionId = null
       state.initialFocusedField = null
+      state.isCollectionViewed = false
     }
   }
 })

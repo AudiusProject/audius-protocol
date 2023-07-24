@@ -15,6 +15,7 @@ import {
 import { PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
+import { useRouteMatch } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -71,6 +72,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const [isHovering, setIsHovering] = useState(false)
   const dispatch = useDispatch()
   const record = useRecord()
+  const isCollectionViewed = useRouteMatch(url)
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
 
@@ -92,10 +94,15 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   const handleEdit = useCallback(() => {
     if (typeof id === 'number') {
-      dispatch(openEditPlaylistModal({ collectionId: id }))
+      dispatch(
+        openEditPlaylistModal({
+          collectionId: id,
+          isCollectionViewed: isCollectionViewed?.isExact ?? false
+        })
+      )
       record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     }
-  }, [dispatch, id, record])
+  }, [dispatch, id, record, isCollectionViewed])
 
   const handleShare = useCallback(() => {
     if (typeof id === 'number') {

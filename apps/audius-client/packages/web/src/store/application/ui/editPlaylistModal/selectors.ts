@@ -12,3 +12,7 @@ export const getCollectionId = (state: AppState) => {
 export const getInitialFocusedField = (state: AppState) => {
   return getBase(state).initialFocusedField
 }
+
+export const getIsCollectionViewed = (state: AppState) => {
+  return getBase(state).isCollectionViewed
+}
