@@ -80,7 +80,7 @@ def update_track_price_history(
     track_record: Track,
     track_metadata,
     blocknumber: int,
-    block_datetime: datetime,
+    timestamp: datetime,
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
@@ -93,7 +93,7 @@ def update_track_price_history(
             usdc_purchase = premium_conditions["usdc_purchase"]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
-            new_record.block_timestamp = (block_datetime,)
+            new_record.block_timestamp = timestamp
             new_record.blocknumber = blocknumber
             new_record.splits = {}
             if "price" in usdc_purchase:
@@ -388,7 +388,7 @@ def create_track(params: ManageEntityParameters):
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
-    update_track_price_history(params.session, track_record, params.metadata)
+    update_track_price_history(params.session, track_record, params.metadata, params.block_number, params.block_datetime)
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
