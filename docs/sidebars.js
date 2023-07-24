@@ -81,6 +81,10 @@ module.exports = {
             },
             {
               type: "doc",
+              id: "developers/sdk/classes/AlbumsApi",
+            },
+            {
+              type: "doc",
               label: "Playlists (Write)",
               id: "developers/write-playlists",
             },

@@ -70,16 +70,13 @@ export function load(app: Application) {
           "withPreMiddleware",
           "request",
         ];
-        console.log("BEEP", c.name);
         const result =
           !methodsToDelete.includes(c.name) &&
           !c.name.toLowerCase().endsWith("raw");
-        console.log("filtering out", c.name, result);
         return result;
       });
       delete r.children;
       r.children = newChildren;
-      console.log(`${r.name} new children`, newChildren);
 
       r.children?.forEach((c) => {
         delete r.parent;
