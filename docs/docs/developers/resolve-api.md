@@ -1,3 +1,7 @@
+---
+title: "Resolve"
+---
+
 ## Methods
 
 ### resolve
