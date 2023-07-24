@@ -9,7 +9,7 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
-import { Genre } from '../../../legacy'
+import { Genre } from '../../types/Genre'
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')

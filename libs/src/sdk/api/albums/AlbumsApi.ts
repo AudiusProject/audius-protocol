@@ -102,6 +102,7 @@ export class AlbumsApi {
 
     const { albumName, ...playlistMetadata } = metadata
 
+    // Call updatePlaylistInternal with parsed inputs
     return await this.playlistsApi.updatePlaylistInternal(
       {
         ...parsedParameters,
