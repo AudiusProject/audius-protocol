@@ -92,12 +92,19 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     FeatureFlags.TASTEMAKER_NOTIFICATIONS
   )
 
+  const isUSDCPurchasesEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USDC_PURCHASES
+  )
+
   const validTypes = [
     isRepostOfRepostEnabled ? 'repost_of_repost' : null,
     isSaveOfRepostEnabled ? 'save_of_repost' : null,
     isTrendingPlaylistEnabled ? 'trending_playlist' : null,
     isTrendingUndergroundEnabled ? 'trending_underground' : null,
-    isTastemakerEnabled ? 'tastemaker' : null
+    isTastemakerEnabled ? 'tastemaker' : null,
+    isUSDCPurchasesEnabled ? 'usdc_purchase_buyer' : null,
+    isUSDCPurchasesEnabled ? 'usdc_purchase_seller' : null
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(

@@ -1,6 +1,9 @@
 import { ReactNode } from 'react'
 
+import { IconCart as IconCartBase } from '@audius/stems'
+
 import { ReactComponent as IconAudius } from 'assets/img/iconAudius.svg'
+// import { ReactComponent as IconCartBase } from 'assets/img/iconCart.svg'
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconPlaylist } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconRemixBase } from 'assets/img/iconRemix.svg'
@@ -16,6 +19,10 @@ import styles from './icons.module.css'
 
 export const IconFollow = () => {
   return <IconUser className={styles.iconFollow} />
+}
+
+export const IconCart = () => {
+  return <IconCartBase className={styles.iconCart} />
 }
 
 export const IconRepost = () => {

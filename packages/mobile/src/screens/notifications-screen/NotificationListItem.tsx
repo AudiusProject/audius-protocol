@@ -25,7 +25,9 @@ import {
   SupporterDethronedNotification,
   RepostOfRepostNotification,
   FavoriteOfRepostNotification,
-  TastemakerNotification
+  TastemakerNotification,
+  USDCPurchaseSellerNotification,
+  USDCPurchaseBuyerNotification
 } from './Notifications'
 
 type NotificationListItemProps = {
@@ -93,6 +95,10 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <AddTrackToPlaylistNotification notification={notification} />
       case NotificationType.SupporterDethroned:
         return <SupporterDethronedNotification notification={notification} />
+      case NotificationType.USDCPurchaseSeller:
+        return <USDCPurchaseSellerNotification notification={notification} />
+      case NotificationType.USDCPurchaseBuyer:
+        return <USDCPurchaseBuyerNotification notification={notification} />
       default:
         return null
     }
