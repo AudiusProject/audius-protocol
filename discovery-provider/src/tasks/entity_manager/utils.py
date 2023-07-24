@@ -236,7 +236,8 @@ class ManageEntityParameters:
 
 # Whether to expect valid metadata json based on the action and entity type
 def expect_cid_metadata_json(metadata, action, entity_type):
-    # TODO after single tx signup, expect metadata for CREATE USER txs, so remove this clause
+    # TODO after single tx sign up is fully rolled out, expect metadata
+    # for CREATE USER txs, so remove this clause
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
     # TODO(michelle) validate metadata for notification, developer app,
@@ -299,7 +300,7 @@ def sanitize_json(json_resp):
 
 
 # Returns metadata, cid
-def parse_metadata(metadata, action, entity_type):
+def parse_metadata(metadata: str, action: str, entity_type: str):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
     try:

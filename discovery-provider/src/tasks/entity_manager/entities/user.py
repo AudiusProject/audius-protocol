@@ -57,8 +57,9 @@ def validate_user_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
-        # TODO remove this clause for non-dict param.metadata after single
-        # transaction sign up is fully rolled out
+        # TODO remove this clause for non-dict params.metadata after single
+        # transaction sign up is fully rolled out, as all metadata for CREATEs
+        # or UPDATEs should have been deserialized into dicts at this point.
         if not isinstance(params.metadata, dict):
             try:
                 user_metadata, _ = parse_metadata(
