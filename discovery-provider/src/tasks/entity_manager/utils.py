@@ -303,11 +303,7 @@ def parse_metadata(metadata, action, entity_type):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
     try:
-        if isinstance(metadata, dict):
-            metadata_dict = metadata
-        else:
-            metadata_dict = json.loads(metadata)
-        data = sanitize_json(metadata_dict)
+        data = sanitize_json(json.loads(metadata))
 
         if "cid" not in data.keys() or "data" not in data.keys():
             raise IndexingValidationError("required keys missing in metadata")
