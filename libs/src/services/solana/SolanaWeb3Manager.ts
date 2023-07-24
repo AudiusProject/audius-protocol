@@ -474,11 +474,13 @@ export class SolanaWeb3Manager {
   async purchaseContent({
     id,
     type,
+    blocknumber,
     splits
   }: {
     id: number
     type: 'track'
     splits: Array<{ address: string; amount: BN }>
+    blocknumber: number
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -525,7 +527,7 @@ export class SolanaWeb3Manager {
         }
       ],
       programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(JSON.stringify({ id, type }))
+      data: Buffer.from(JSON.stringify({ id, type, blocknumber }))
     })
     return await this.transactionHandler.handleTransaction({
       instructions: [...instructions, memoInstruction],
