@@ -21,6 +21,7 @@ import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 import { sortObjectKeys } from '../Auth/utils'
 import type { AuthService } from '../Auth'
 import { isNodeFile } from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
 
 export class Storage implements StorageService {
   /**

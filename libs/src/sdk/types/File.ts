@@ -3,22 +3,26 @@ import { z } from 'zod'
 /**
  * Type representing a file in Node environment
  */
-const NodeFile = z.object({
+const NodeFileSchema = z.object({
   buffer: z.custom<Buffer>((data: unknown) => data),
   name: z.optional(z.string())
 })
+export type NodeFile = z.infer<typeof NodeFileSchema>
 
-const BrowserFile = z.custom<File>((data: unknown) => data)
+const BrowserFileSchema = z.custom<File>((data: unknown) => data)
+export type BrowserFile = z.infer<typeof BrowserFileSchema>
 
 /**
  * Type representing a file in Node and browser environments
  */
-export const CrossPlatformFile = z.union([NodeFile, BrowserFile])
+export const CrossPlatformFileSchema = z.union([
+  NodeFileSchema,
+  BrowserFileSchema
+])
+export type CrossPlatformFile = z.infer<typeof CrossPlatformFileSchema>
 
-export const isNodeFile = (
-  file: z.infer<typeof CrossPlatformFile>
-): file is z.infer<typeof NodeFile> => {
-  if (file && (file as z.infer<typeof NodeFile>).buffer) {
+export const isNodeFile = (file: CrossPlatformFile): file is NodeFile => {
+  if (file && (file as NodeFile).buffer) {
     return true
   }
   return false

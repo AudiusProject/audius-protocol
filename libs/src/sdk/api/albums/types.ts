@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CrossPlatformFile as File } from '../../types/File'
+import { CrossPlatformFileSchema as File } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
