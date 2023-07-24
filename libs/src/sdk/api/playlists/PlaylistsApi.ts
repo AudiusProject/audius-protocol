@@ -441,7 +441,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Method to upload a playlist with already parsed inputs
    * This is used for both playlists and albums
    */
-  public async uploadPlaylistInternal(
+  public async uploadPlaylistInternal<Metadata extends PlaylistMetadata>(
     {
       userId,
       coverArtFile,
@@ -449,7 +449,9 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       onProgress,
       metadata,
       trackMetadatas
-    }: z.infer<ReturnType<typeof createUploadPlaylistSchema>>,
+    }: z.infer<ReturnType<typeof createUploadPlaylistSchema>> & {
+      metadata: Metadata
+    },
     writeOptions?: WriteOptions
   ) {
     // Upload track audio and cover art to storage node
@@ -567,14 +569,18 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Method to update a playlist with already parsed inputs
    * This is used for both playlists and albums
    */
-  public async updatePlaylistInternal(
+  public async updatePlaylistInternal<
+    Metadata extends Partial<PlaylistMetadata>
+  >(
     {
       userId,
       playlistId,
       coverArtFile,
       onProgress,
       metadata
-    }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>>,
+    }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>> & {
+      metadata: Metadata
+    },
     writeOptions?: WriteOptions
   ) {
     // Upload cover art to storage node
