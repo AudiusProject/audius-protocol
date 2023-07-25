@@ -12,6 +12,7 @@ import {
   isPremiumContentUSDCPurchaseGated,
   PremiumContentType
 } from '@audius/common'
+import type { ColorValue } from 'react-native'
 import { View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
@@ -25,7 +26,6 @@ import UserBadges from 'app/components/user-badges'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
@@ -109,28 +109,24 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
     [k in PremiumContentType]: {
       message: string
       icon: ComponentType<SvgProps>
-      color: string
-      colorString: keyof ThemeColors
+      color: ColorValue
     }
   } = useMemo(() => {
     return {
       [PremiumContentType.COLLECTIBLE_GATED]: {
         message: messages.collectibleGated,
         icon: IconCollectible,
-        color: accentBlue,
-        colorString: 'accentBlue'
+        color: accentBlue
       },
       [PremiumContentType.SPECIAL_ACCESS]: {
         message: messages.specialAccess,
         icon: IconSpecialAccess,
-        color: accentBlue,
-        colorString: 'accentBlue'
+        color: accentBlue
       },
       [PremiumContentType.USDC_PURCHASE]: {
         message: messages.premiumTrack,
         icon: IconCart,
-        color: specialLightGreen1,
-        colorString: 'specialLightGreen1'
+        color: specialLightGreen1
       }
     }
   }, [accentBlue, specialLightGreen1])
@@ -139,12 +135,7 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
     return null
   }
 
-  const {
-    message: title,
-    icon: IconComponent,
-    color,
-    colorString
-  } = headerAttributes[type]
+  const { message: title, icon: IconComponent, color } = headerAttributes[type]
 
   return (
     <View style={styles.root}>
@@ -164,7 +155,7 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
             />
             <Text
               fontSize='small'
-              color={colorString}
+              colorValue={color}
               weight='demiBold'
               textTransform='uppercase'
               style={styles.premiumContentLabel}
