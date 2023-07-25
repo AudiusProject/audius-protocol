@@ -160,11 +160,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
-        if key == "is_unlisted":
-            if "is_unlisted" in track_metadata:
-                track_record.is_unlisted = track_metadata["is_unlisted"]
-
-        elif key == "premium_conditions":
+        if key == "premium_conditions":
             if "premium_conditions" in track_metadata and is_valid_json_field(
                 track_metadata, "premium_conditions"
             ):

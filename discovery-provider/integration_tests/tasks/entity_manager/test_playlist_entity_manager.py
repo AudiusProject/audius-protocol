@@ -935,6 +935,13 @@ def test_invalid_playlist_description(app, mocker):
         autospec=True,
     )
 
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
+
     with db.scoped_session() as session:
         total_changes, _ = entity_manager_update(
             update_task,

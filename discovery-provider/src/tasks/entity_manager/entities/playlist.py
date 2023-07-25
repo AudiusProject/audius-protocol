@@ -181,6 +181,8 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
             )
         if params.metadata.get("playlist_contents"):
+            if "playlist_contents" not in params.metadata or "track_ids" not in params.metadata["playlist_contents"]:
+                raise IndexingValidationError("playlist contents requires track_ids")
             playlist_track_count = len(
                 params.metadata["playlist_contents"]["track_ids"]
             )
