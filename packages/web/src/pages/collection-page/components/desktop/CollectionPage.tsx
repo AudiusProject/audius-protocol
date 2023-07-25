@@ -248,6 +248,7 @@ const CollectionPage = ({
       canonicalUrl={canonicalUrl}
       structuredData={structuredData}
       containerClassName={styles.pageContainer}
+      contentClassName={styles.pageContent}
       scrollableSearch
     >
       <Tile
