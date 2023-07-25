@@ -1,7 +1,8 @@
 import axios from "axios";
 import { AntiAbuseConfig } from "./config";
 import { logger } from "./logger";
-import { Users } from "storage/src";
+import { Table, Users } from "storage/src";
+import { Knex } from "knex";
 
 type AbuseRule = {
     rule: number;
@@ -19,9 +20,11 @@ type AbuseStatus = {
   
 
 /// @return true = abuse detected, false = allowed to relay
-export const detectAbuse = async (aaoConfig: AntiAbuseConfig, user: Users, reqIp: string, abbreviated: boolean = false): Promise<boolean> => {
+export const detectAbuse = async (aaoConfig: AntiAbuseConfig, discoveryDb: Knex, senderAddress: string, reqIp: string, abbreviated: boolean = false): Promise<boolean> => {
     try {
-    if (user.handle === null) throw new Error(`user ${user.user_id} has no handle`)
+    const user = await discoveryDb<Users>(Table.Users).where('wallet', '=', senderAddress).andWhere('is_current', '=', true).first()
+    if (user === undefined) throw new Error(`user for sender ${senderAddress} is undefined or has no is_current row`)
+    if (user.handle === null) throw new Error(`user with sender address ${senderAddress} has no handle`)
     const rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
     const {
         appliedRules,

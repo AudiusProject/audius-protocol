@@ -21,6 +21,7 @@
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "eth-sig-util": "^3.0.1",
     "ethers": "^5.7.0",
     "fastify": "^4.19.2",
     "logger": "*",

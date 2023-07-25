@@ -1,6 +1,6 @@
 import { App } from "basekit/src/index";
 import { SharedData } from ".";
-import { RelayRequestType } from "./types/relay";
+import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
 import {
   TransactionReceipt,
   TransactionRequest,
@@ -9,6 +9,8 @@ import { validateSupportedContract, validateTransactionData } from "./validate";
 import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
+import { Users } from "storage/src";
+import { Knex } from "knex";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -17,6 +19,7 @@ export type RelayedTransaction = {
 
 export const relayTransaction = async (
   app: App<SharedData>,
+  headers: RelayRequestHeaders,
   req: RelayRequestType
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
@@ -30,9 +33,10 @@ export const relayTransaction = async (
     aao,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
+  const { reqIp } = headers
 
-  // TODO: recover wallet addr
-  // TODO: query db for user
+
+  const { user } = await recoverUser()
   const isBlockedFromRelay = await detectAbuse(aao, user, reqIp)
 
   log({ msg: "new relay request", req });
@@ -67,3 +71,10 @@ export const relayTransaction = async (
 
   return { receipt, transaction };
 };
+
+const recoverUser = async (discoveryDb: Knex, headers: RelayRequestHeaders): Promise<Users> => {
+  const signer = sigUtil.recoverTypedSignature({
+    sig: 
+  })
+  return {}
+}
