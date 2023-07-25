@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import {
-  IconCampFire,
+  IconCampfire,
   IconDiscord,
   IconDownload,
   IconExplore,
@@ -75,7 +75,7 @@ const dappLinks = [
   },
   {
     text: 'Hot & New',
-    icon: <IconCampFire className={styles.dappLinkIcon} />,
+    icon: <IconCampfire className={styles.dappLinkIcon} />,
     link: AUDIUS_HOT_AND_NEW
   },
   {

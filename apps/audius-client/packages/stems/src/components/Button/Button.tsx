@@ -30,7 +30,8 @@ const TYPE_STYLE_MAP = {
   [Type.DESTRUCTIVE]: styles.destructive
 }
 
-/**
+/** @deprecated (use `HarmonyButton` for new code)
+ *
  * A common Button component. Includes a few variants and options to
  * include and position icons.
  */
