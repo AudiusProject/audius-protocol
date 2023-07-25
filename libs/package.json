@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.3-beta.87",
+  "version": "3.0.3-beta.89",
   "audius": {
-    "releaseSHA": "eded7430bc727c8bed7bd350325f48c3c560a37d"
+    "releaseSHA": "0aa93085fec29884ced9eb8d7fa7f8f027c1c2ac"
   },
   "description": "Audius SDK",
   "main": "dist/index.cjs.js",
@@ -82,6 +82,7 @@
     "ethereumjs-util": "7.1.4",
     "ethereumjs-wallet": "1.0.2",
     "ethers": "5.4.7",
+    "file-type": "16.5.3",
     "form-data": "3.0.0",
     "hashids": "2.2.10",
     "interface-blockstore": "2.0.3",

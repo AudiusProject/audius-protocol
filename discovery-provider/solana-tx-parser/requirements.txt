@@ -1,2 +1,0 @@
-solana==0.21.0
-anchorpy==0.8.0

@@ -6,6 +6,12 @@ import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { UsersApi } from './UsersApi'
+import fs from 'fs'
+import path from 'path'
+
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 
@@ -61,11 +67,11 @@ describe('UsersApi', () => {
       const result = await users.updateProfile({
         userId: '7eP5n',
         profilePictureFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'profilePicture'
         },
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {

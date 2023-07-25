@@ -212,19 +212,13 @@ def is_valid_json_field(metadata, field):
     return False
 
 
-def populate_track_record_metadata(track_record, track_metadata, handle):
+def populate_track_record_metadata(track_record, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
-        if key == "is_unlisted":
-            # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-            # made unlisted again
-            if "is_unlisted" in track_metadata and track_record.is_unlisted:
-                track_record.is_unlisted = track_metadata["is_unlisted"]
-
-        elif key == "premium_conditions":
+        if key == "premium_conditions":
             if "premium_conditions" in track_metadata and is_valid_json_field(
                 track_metadata, "premium_conditions"
             ):
@@ -286,22 +280,24 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Cannot create track {track_id} below the offset"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        track_metadata = params.metadata.get(params.metadata_cid)
-        if track_metadata is not None:
-            track_bio = track_metadata.get("description")
-            track_genre = track_metadata.get("genre")
-            if track_genre is not None and track_genre not in genre_allowlist:
-                raise IndexingValidationError(
-                    f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
-                )
-            if (
-                track_bio is not None
-                and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
-            ):
-                raise IndexingValidationError(
-                    f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
-                )
-    else:
+        if not params.metadata:
+            raise IndexingValidationError(
+                "Metadata is required for playlist creation and update"
+            )
+        track_bio = params.metadata.get("description")
+        track_genre = params.metadata.get("genre")
+        if track_genre is not None and track_genre not in genre_allowlist:
+            raise IndexingValidationError(
+                f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
+            )
+        if (
+            track_bio is not None
+            and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
+        ):
+            raise IndexingValidationError(
+                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+            )
+    if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
@@ -309,6 +305,11 @@ def validate_track_tx(params: ManageEntityParameters):
         if existing_track.owner_id != params.user_id:
             raise IndexingValidationError(
                 f"Existing track {track_id} does not match user"
+            )
+
+        if params.action == Action.UPDATE and not existing_track.is_unlisted and params.metadata.get("is_unlisted"):
+            raise IndexingValidationError(
+                f"Cannot unlist track {track_id}"
             )
 
     if params.action != Action.DELETE:
@@ -341,7 +342,7 @@ def get_handle(params: ManageEntityParameters):
 def update_track_record(
     params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
 ):
-    populate_track_record_metadata(track, metadata, handle)
+    populate_track_record_metadata(track, metadata, handle, params.action)
 
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
