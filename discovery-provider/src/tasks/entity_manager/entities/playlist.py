@@ -167,8 +167,6 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
-        if not existing_playlist.is_private and params.metadata.get("is_private"):
-            raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         if not params.metadata:
             raise IndexingValidationError(
@@ -190,6 +188,9 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 raise IndexingValidationError(
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
+
+        if params.action == Action.UPDATE and not existing_playlist.is_private and params.metadata.get("is_private"):
+            raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
 
 
 def create_playlist(params: ManageEntityParameters):
