@@ -106,7 +106,6 @@ export const useFetchCollectionLineup = (
         metadata: track
       }))
 
-      // @ts-expect-error
       dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       dispatch(

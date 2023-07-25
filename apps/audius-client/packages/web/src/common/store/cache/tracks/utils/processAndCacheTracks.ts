@@ -4,10 +4,9 @@ import {
   TrackMetadata,
   makeUid,
   cacheActions,
-  getContext,
-  put
+  getContext
 } from '@audius/common'
-import { call } from 'typed-redux-saga'
+import { put, call } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
 

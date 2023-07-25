@@ -1,9 +1,10 @@
+import { put } from 'typed-redux-saga'
+
 import { Kind } from 'models/Kind'
 import { UserMetadata } from 'models/User'
 import { AudiusBackend } from 'services/audius-backend'
 import { cacheActions } from 'store/cache'
 import { getContext } from 'store/effects'
-import { put } from 'store/put'
 import { makeUid } from 'utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
