@@ -1,7 +1,8 @@
 import assert from 'assert'
-import Web3 from 'web3'
+import Web3Libs from '../LibsWeb3'
+import type Web3 from 'web3'
 
-const web3 = new Web3()
+const web3 = new Web3Libs()
 
 // From https://github.com/AudiusProject/sig/blob/main/node/index.js
 export async function hashAndSign(input: string, privateKey: string) {
