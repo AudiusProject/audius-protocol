@@ -249,23 +249,25 @@ def get_purchase_metadata_from_memo(
     for memo in memos:
         logger.debug(f"index_user_bank.py | MEMO {memo}")
         try:
-            content_metadata = json.loads(memo)
-            logger.debug(f"index_user_bank.py | Found JSON in memo: {content_metadata}")
-            if (
-                "type" in content_metadata
-                and "id" in content_metadata
-                and "blocknumber" in content_metadata
-            ):
+            content_metadata = memo.split(":")
+            if len(content_metadata) == 3:
+                type_str, id_str, blocknumber_str = content_metadata
+                type = PurchaseType[type_str.lower()]
+                id = int(id_str)
+                blocknumber = int(blocknumber_str)
+
                 # TODO: Wait for blocknumber to be indexed by ACDC
-                (id, type, _) = content_metadata["id"], content_metadata["type"], content_metadata["blocknumber"]
+                logger.debug(
+                    f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}"
+                )
                 price = None
                 splits = None
-                if PurchaseType[type.lower()] == PurchaseType.track:
+                if type == PurchaseType.track:
                     result: TrackPriceHistory = (
                         session.query(TrackPriceHistory)
                         .filter(
                             TrackPriceHistory.track_id == id,
-                            TrackPriceHistory.block_timestamp < timestamp
+                            TrackPriceHistory.block_timestamp < timestamp,
                         )
                         .order_by(desc(TrackPriceHistory.block_timestamp))
                         .first()
@@ -274,24 +276,27 @@ def get_purchase_metadata_from_memo(
                         price = result.total_price_cents
                         splits = result.splits
                 else:
-                    logger.error(
-                        f"index_user_bank.py | Unknown content type {content_metadata['type']}"
-                    )
+                    logger.error(f"index_user_bank.py | Unknown content type {type}")
                 if price is not None and splits is not None:
                     return {
-                        "type": PurchaseType[content_metadata["type"].lower()],
-                        "id": content_metadata["id"],
+                        "type": type,
+                        "id": id,
                         "price": price * USDC_PER_USD_CENT,
-                        "splits": splits
+                        "splits": splits,
                     }
                 else:
                     logger.error(
                         f"index_user_bank.py | Couldn't find premium conditions for {content_metadata}"
                     )
-        except json.JSONDecodeError as e:
-            logger.debug(f"index_user_bank.py | Couldn't parse memo as json {e}")
-
-    logger.error(f"index_user_bank.py | Failed to find content metadata")
+            else:
+                logger.debug(
+                    f"index_user_bank.py | Ignoring memo, no content metadata found: {memo}"
+                )
+        except (ValueError, KeyError) as e:
+            logger.debug(
+                f"index_user_bank.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
+            )
+    logger.error("index_user_bank.py | Failed to find any content metadata")
     return None
 
 
