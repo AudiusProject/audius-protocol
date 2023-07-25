@@ -13,12 +13,11 @@ func init() {
 	BATCH_SIZE = 3
 
 	config = &Config{
-		MoveFiles: true,
-		MoveDir:   "/tmp/reaper_test/to_delete",
-		WalkDir:   "/tmp/reaper_test/to_walk",
-		LogDir:    "/tmp/reaper_test/logs",
-		isTest:    true,
-		dbUrl:     dbUrl,
+		DeleteFiles: true,
+		WalkDir:     "/tmp/reaper_test/to_walk",
+		LogDir:      "/tmp/reaper_test/logs",
+		isTest:      true,
+		dbUrl:       dbUrl,
 	}
 
 	fmt.Printf("config: %+v\n", config)
@@ -27,23 +26,23 @@ func init() {
 func TestReaper(t *testing.T) {
 
 	var (
-		b   *Batcher
+		r   *Reaper
 		err error
 	)
 
-	b, err = NewBatcher(config)
+	r, err = NewReaper(config)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer b.Close()
+	defer r.Close()
 
-	err = generateTestFixtures(b)
+	err = r.generateTestFixtures()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// before
-	b.Walk()
+	// before - drop segments and unreferenced files
+	r.Walk()
 	expected := map[string]map[string]int{
 		"copy320": {
 			"bytes_used":  0,
@@ -77,14 +76,14 @@ func TestReaper(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(expected, b.counter) {
-		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, b.counter)
+	if !reflect.DeepEqual(expected, r.counter) {
+		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, r.counter)
 	} else {
-		b.report()
+		r.report()
 	}
 
-	// after
-	b.Walk()
+	// after - did the files actually get deleted
+	r.Walk()
 	expected = map[string]map[string]int{
 		"copy320": {
 			"bytes_used":  0,
@@ -118,10 +117,17 @@ func TestReaper(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(expected, b.counter) {
-		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, b.counter)
+	if !reflect.DeepEqual(expected, r.counter) {
+		t.Errorf("Maps are not equal. Expected: %v, Actual: %v", expected, r.counter)
 	} else {
-		b.report()
+		r.report()
 	}
 
+	// did the segment rows get removed from the db
+	query := `SELECT COUNT(*) FROM "FilesTest" WHERE "type" = 'track'`
+	var count int
+	err = r.DB.QueryRow(query).Scan(&count)
+	if count != 0 {
+		t.Errorf("Segment rows not removed. Expected: %v, Actual: %v", 0, count)
+	}
 }

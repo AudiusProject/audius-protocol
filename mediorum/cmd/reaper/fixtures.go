@@ -7,17 +7,15 @@ import (
 	"path/filepath"
 )
 
-func generateTestFixtures(b *Batcher) error {
+func (r *Reaper) generateTestFixtures() error {
 
 	var err error
 
-	// directories := []string{"111", "222", "333", "444", "555", "666", "777", "888", "999", "000"}
-	// files := []string{"Qmaaa", "Qmbbb", "Qmccc", "Qmddd", "Qmeee"}
 	directories := []string{"111", "222", "333", "444"}
 	files := []string{"Qmaaa", "Qmbbb", "Qmccc"}
 
 	for _, dir := range directories {
-		dirPath := filepath.Join(b.Config.WalkDir, dir)
+		dirPath := filepath.Join(r.Config.WalkDir, dir)
 
 		err := os.MkdirAll(dirPath, os.ModePerm)
 		if err != nil {
@@ -42,7 +40,7 @@ func generateTestFixtures(b *Batcher) error {
 		type TEXT
 	)`
 
-	_, err = b.DB.Exec(query)
+	_, err = r.DB.Exec(query)
 	if err != nil {
 		log.Fatal("Failed to create table: ", err)
 	}
@@ -60,7 +58,7 @@ func generateTestFixtures(b *Batcher) error {
 	}
 
 	for _, row := range data {
-		_, err := b.DB.Exec("INSERT INTO \"FilesTest\" (\"storagePath\", type) VALUES ($1, $2)", row.StoragePath, row.Type)
+		_, err := r.DB.Exec("INSERT INTO \"FilesTest\" (\"storagePath\", type) VALUES ($1, $2)", row.StoragePath, row.Type)
 		if err != nil {
 			log.Println("Failed to insert row: ", err)
 		}
