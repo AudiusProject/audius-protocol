@@ -184,7 +184,7 @@ def get_top_trending_to_notify(db):
 
 
 def index_trending_notifications(
-    db: SessionManager, timestamp: int, top_trending: List[Track]
+    db: SessionManager, timestamp: int, top_trending: List[dict]
 ):
     # Get the top 5 trending tracks from the new trending calculations
     # Get the most recent trending tracks notifications

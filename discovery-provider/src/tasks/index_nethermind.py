@@ -3,7 +3,7 @@ import concurrent.futures
 import copy
 import os
 from datetime import datetime
-from operator import itemgetter, or_
+from operator import or_
 from typing import List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
@@ -233,6 +233,10 @@ def is_block_on_chain(web3: Web3, block: Block):
 
 
 def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
+    if latest_database_block.number is None:
+        logger.info(f"Block number invalid {latest_database_block}, returning early")
+        return False
+
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
@@ -387,7 +391,7 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
         .filter(Block.blockhash == revert_block_parent_hash)
         .first()
     )
-    if not parent_number_results:
+    if not parent_number_results or parent_number_results[0] is None:
         return
     parent_number = parent_number_results[0]
     with concurrent.futures.ThreadPoolExecutor() as executor:

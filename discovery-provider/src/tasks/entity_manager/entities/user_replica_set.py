@@ -153,7 +153,7 @@ def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
         raise IndexingValidationError(f"User {user_id} does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
     user = params.existing_records["User"][user_id]
-    user_sp_ids = [user.primary_id]
+    user_sp_ids: List[int] = [user.primary_id] if user.primary_id else []
     if user.secondary_ids:
         user_sp_ids = user_sp_ids + user.secondary_ids
     if user.wallet and user.wallet.lower() != params.signer.lower():

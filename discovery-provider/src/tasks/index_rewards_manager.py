@@ -181,7 +181,8 @@ def get_valid_instruction(
     try:
         account_keys = tx_message.account_keys
         has_transfer_instruction = any(
-            log == "Program log: Instruction: Transfer" for log in meta.log_messages
+            log == "Program log: Instruction: Transfer"
+            for log in (meta.log_messages or [])
         )
 
         if not has_transfer_instruction:
@@ -244,7 +245,9 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return tx_metadata
-        transfer_instruction_data = parse_transfer_instruction_data(instruction.data)
+        transfer_instruction_data = parse_transfer_instruction_data(
+            str(instruction.data)
+        )
         amount = transfer_instruction_data["amount"]
         eth_recipient = transfer_instruction_data["eth_recipient"]
         id = transfer_instruction_data["id"]
@@ -315,7 +318,7 @@ def process_batch_sol_reward_manager_txs(
         challenge_disbursements = []
         audio_tx_histories = []
         for tx in reward_manager_txs:
-            timestamp = datetime.datetime.utcfromtimestamp(tx["timestamp"])
+            timestamp = datetime.datetime.utcfromtimestamp(float(tx["timestamp"] or 0))
             # Add transaction
             session.add(
                 RewardManagerTransaction(
@@ -470,7 +473,7 @@ def get_transaction_signatures(
             )
             is_initial_fetch = False
 
-            transactions_array = transactions_history["result"]
+            transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
                 logger.info(
@@ -480,15 +483,15 @@ def get_transaction_signatures(
                 # Current batch of transactions
                 transaction_signature_batch = []
                 for tx_info in transactions_array:
-                    tx_sig = tx_info["signature"]
-                    tx_slot = tx_info["slot"]
+                    tx_sig = str(tx_info.signature)
+                    tx_slot = tx_info.slot
                     logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if tx_info["slot"] > latest_processed_slot:
+                    if tx_info.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx_info["slot"] <= latest_processed_slot and (
-                        min_slot is None or tx_info["slot"] > min_slot
+                    elif tx_info.slot <= latest_processed_slot and (
+                        min_slot is None or tx_info.slot > min_slot
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
@@ -506,7 +509,7 @@ def get_transaction_signatures(
 
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
-                last_tx_signature = last_tx["signature"]
+                last_tx_signature = last_tx.signature
 
                 # Append batch of processed signatures
                 if transaction_signature_batch:

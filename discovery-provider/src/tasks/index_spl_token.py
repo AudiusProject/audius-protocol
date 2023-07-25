@@ -31,7 +31,6 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
-from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
@@ -446,7 +445,7 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: Optional[int]):
     while not cached_offset_tx_found:
         last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
         if last_cached_tx_raw:
-            last_cached_tx: ConfirmedSignatureForAddressResult = json.loads(
+            last_cached_tx: RpcConfirmedTransactionStatusWithSignature = json.loads(
                 last_cached_tx_raw[0]
             )
             redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
@@ -454,9 +453,9 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: Optional[int]):
             if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
                 redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
             # Return if a valid signature is found
-            if last_cached_tx["slot"] > latest_db_slot:
+            if last_cached_tx.slot > latest_db_slot:
                 cached_offset_tx_found = True
-                last_tx_signature = last_cached_tx["signature"]
+                last_tx_signature = last_cached_tx.signature
                 return last_tx_signature
         else:
             break

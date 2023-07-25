@@ -97,11 +97,9 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 f"Invalid Create Grant transaction, active grant from {user_id} to {metadata['grantee_address']} already exists"
             )
-        if (
-            params.existing_records["User"][user_id].wallet
-            and params.existing_records["User"][user_id].wallet.lower()
-            != params.signer.lower()
-        ):
+
+        wallet = params.existing_records["User"][user_id].wallet
+        if wallet and wallet.lower() != params.signer.lower():
             raise IndexingValidationError(
                 "Invalid Create Grant transaction, user does not match signer"
             )
@@ -117,10 +115,10 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             )
 
         # Signer can be either the user in the grant or the developer app.
+        wallet = params.existing_records["User"][user_id].wallet
         if (
-            params.existing_records["User"][user_id].wallet
-            and params.existing_records["User"][user_id].wallet.lower()
-            != params.signer.lower()
+            wallet
+            and wallet.lower() != params.signer.lower()
             and params.signer.lower() != existing_grant.grantee_address.lower()
         ):
             raise IndexingValidationError(

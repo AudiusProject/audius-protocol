@@ -476,7 +476,7 @@ def get_audio_token(solana_client: Client):
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
         program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
-        payer=Keypair.generate(),  # not making any txs so payer is not required
+        payer=Keypair(),
     )
     return waudio_token
 

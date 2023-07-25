@@ -126,11 +126,9 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
-    if (
-        params.existing_records["User"][user_id].wallet
-        and params.existing_records["User"][user_id].wallet.lower()
-        != params.signer.lower()
-    ):
+
+    wallet = params.existing_records["User"][user_id].wallet
+    if wallet and wallet.lower() != params.signer.lower():
         raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user does not match signer"
         )

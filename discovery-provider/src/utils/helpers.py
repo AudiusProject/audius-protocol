@@ -536,5 +536,5 @@ def get_final_poa_block() -> int:
     return final_poa_block
 
 
-def format_total_audio_balance(balance: str) -> str:
+def format_total_audio_balance(balance: str) -> int:
     return int(int(balance) / 1e18)
