@@ -152,3 +152,7 @@ export function getId(state: CommonState, props: { kind: Kind; uid: UID }) {
     }
   }
 }
+
+export function getEntryTTL(state: CommonState) {
+  return state.users.entryTTL
+}

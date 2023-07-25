@@ -153,7 +153,11 @@ export enum IntKeys {
    * The start time for discovery notifications indexing, used to determine
    * when we should rollback to identity notifications
    */
-  DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP = 'DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP'
+  DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP = 'DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP',
+  /**
+   * Cache entry TTL to determine when a cache value should be overwritten with new instance
+   */
+  CACHE_ENTRY_TTL = 'CACHE_ENTRY_TTL'
 }
 
 export enum BooleanKeys {

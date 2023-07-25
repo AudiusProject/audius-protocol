@@ -5,9 +5,10 @@ import {
   UserCollectionMetadata,
   cacheActions,
   getContext,
-  CollectionMetadata
+  CollectionMetadata,
+  put
 } from '@audius/common'
-import { put, call } from 'redux-saga/effects'
+import { call } from 'redux-saga/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
@@ -53,7 +54,7 @@ export function* processAndCacheCollections(
     )
   }
 
-  yield put(
+  yield* put(
     cacheActions.add(
       Kind.COLLECTIONS,
       reformattedCollections.map((c) => ({
