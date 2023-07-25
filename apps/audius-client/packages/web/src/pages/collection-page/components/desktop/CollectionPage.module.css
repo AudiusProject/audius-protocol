@@ -2,10 +2,15 @@
   padding-top: 80px;
 }
 
+.pageContent {
+  max-width: calc(1080px + var(--unit-4)) !important;
+}
+
 /* Body Content Wrapper */
 .bodyWrapper {
   min-width: 774px;
   margin-bottom: var(--unit-10);
+  overflow: hidden;
 }
 
 /* Empty Page Section Wrapper */
