@@ -5,8 +5,8 @@ import type {
   UID,
   UserMetadata
 } from '@audius/common'
-import { cacheActions, Kind, makeUid, put } from '@audius/common'
-import { call, select } from 'typed-redux-saga'
+import { cacheActions, Kind, makeUid } from '@audius/common'
+import { call, select, put } from 'typed-redux-saga'
 
 import {
   getCollectionJson,

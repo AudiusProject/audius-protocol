@@ -6,11 +6,10 @@ import {
   accountSelectors,
   cacheActions,
   getContext,
-  reformatUser,
-  put
+  reformatUser
 } from '@audius/common'
 import { uniqBy } from 'lodash'
-import { select } from 'typed-redux-saga'
+import { put, select } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
 const getAccountUser = accountSelectors.getAccountUser
@@ -44,7 +43,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   users = uniqBy(users, 'id')
   users = users.filter((user) => !(currentUserId && user.id === currentUserId))
 
-  yield* put(
+  yield put(
     cacheActions.add(Kind.USERS, users, /* replace */ false, /* persist */ true)
   )
 }

@@ -19,10 +19,9 @@ import {
   newCollectionMetadata,
   confirmerActions,
   confirmTransaction,
-  RequestConfirmationError,
-  put
+  RequestConfirmationError
 } from '@audius/common'
-import { call, select, takeLatest } from 'typed-redux-saga'
+import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
