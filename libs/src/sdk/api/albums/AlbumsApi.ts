@@ -61,7 +61,7 @@ export class AlbumsApi {
     requestParameters: UploadAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata, ...parsedParameters } = parseRequestParameters(
+    const { metadata, ...parsedParameters } = await parseRequestParameters(
       'uploadAlbum',
       createUploadAlbumSchema()
     )(requestParameters)
@@ -95,10 +95,11 @@ export class AlbumsApi {
     requestParameters: UpdateAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { albumId, metadata, ...parsedParameters } = parseRequestParameters(
-      'updateAlbum',
-      createUpdateAlbumSchema()
-    )(requestParameters)
+    const { albumId, metadata, ...parsedParameters } =
+      await parseRequestParameters(
+        'updateAlbum',
+        createUpdateAlbumSchema()
+      )(requestParameters)
 
     const { albumName, ...playlistMetadata } = metadata
 
@@ -123,7 +124,10 @@ export class AlbumsApi {
     requestParameters: DeleteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    parseRequestParameters('deleteAlbum', DeleteAlbumSchema)(requestParameters)
+    await parseRequestParameters(
+      'deleteAlbum',
+      DeleteAlbumSchema
+    )(requestParameters)
 
     return await this.playlistsApi.deletePlaylist(
       {
@@ -141,7 +145,7 @@ export class AlbumsApi {
     requestParameters: FavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata } = parseRequestParameters(
+    const { metadata } = await parseRequestParameters(
       'favoriteAlbum',
       FavoriteAlbumSchema
     )(requestParameters)
@@ -162,7 +166,7 @@ export class AlbumsApi {
     requestParameters: UnfavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    parseRequestParameters(
+    await parseRequestParameters(
       'unfavoriteAlbum',
       UnfavoriteAlbumSchema
     )(requestParameters)
@@ -182,7 +186,7 @@ export class AlbumsApi {
     requestParameters: RepostAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata } = parseRequestParameters(
+    const { metadata } = await parseRequestParameters(
       'repostAlbum',
       RepostAlbumSchema
     )(requestParameters)
@@ -204,7 +208,7 @@ export class AlbumsApi {
     requestParameters: UnrepostAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    parseRequestParameters(
+    await parseRequestParameters(
       'unrepostAlbum',
       UnrepostAlbumSchema
     )(requestParameters)

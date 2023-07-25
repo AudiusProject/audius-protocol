@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CrossPlatformFileSchema as File } from '../../types/File'
+import { AudioFile, ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
@@ -49,14 +49,14 @@ export const createUploadAlbumSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: File,
+      coverArtFile: ImageFile,
       metadata: createUploadAlbumMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
       /**
        * Track metadata is populated from the album if fields are missing
        */
       trackMetadatas: z.array(createAlbumTrackMetadataSchema()),
-      trackFiles: z.array(File)
+      trackFiles: z.array(AudioFile)
     })
     .strict()
 
@@ -69,7 +69,7 @@ export const createUpdateAlbumSchema = () =>
     .object({
       userId: HashId,
       albumId: HashId,
-      coverArtFile: z.optional(File),
+      coverArtFile: z.optional(AudioFile),
       metadata: createUploadAlbumMetadataSchema().partial(),
       onProgress: z.optional(z.function().args(z.number()))
     })
