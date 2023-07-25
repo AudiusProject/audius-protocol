@@ -103,6 +103,12 @@ export type PremiumConditions =
   | PremiumConditionsTipGated
   | PremiumConditionsUSDCPurchase
 
+export enum PremiumContentType {
+  COLLECTIBLE_GATED = 'collectible gated',
+  SPECIAL_ACCESS = 'special access',
+  USDC_PURCHASE = 'usdc purchase'
+}
+
 export const isPremiumContentCollectibleGated = (
   premiumConditions?: Nullable<PremiumConditions>
 ): premiumConditions is PremiumConditionsCollectibleGated =>

@@ -29,6 +29,7 @@ export type Drawer =
   | 'DeleteChat'
   | 'SupportersInfo'
   | 'InboxUnavailable'
+  | 'PremiumTrackPurchase'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -64,6 +65,7 @@ export type DrawerData = {
   DeleteChat: { chatId: string }
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
+  PremiumTrackPurchase: { trackId: ID }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -95,6 +97,7 @@ const initialState: DrawersState = {
   DeleteChat: false,
   SupportersInfo: false,
   InboxUnavailable: false,
+  PremiumTrackPurchase: false,
   data: {}
 }
 

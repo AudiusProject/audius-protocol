@@ -1,3 +1,6 @@
+import type { ComponentType } from 'react'
+import { useMemo } from 'react'
+
 import type { ID } from '@audius/common'
 import {
   SquareSizes,
@@ -5,26 +8,33 @@ import {
   isPremiumContentCollectibleGated,
   usePremiumContentAccess,
   cacheUsersSelectors,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  isPremiumContentUSDCPurchaseGated,
+  PremiumContentType
 } from '@audius/common'
 import { View } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 
+import IconCart from 'app/assets/images/iconCart.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import { DogEar, Text } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useColor } from 'app/utils/theme'
+import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 
 const messages = {
   collectibleGated: 'COLLECTIBLE GATED',
-  specialAccess: 'SPECIAL ACCESS'
+  specialAccess: 'SPECIAL ACCESS',
+  premiumTrack: 'PREMIUM TRACK'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -73,12 +83,15 @@ type TrackDetailsTileProps = {
 
 export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
   const styles = useStyles()
-  const accentBlue = useColor('accentBlue')
+  const { accentBlue, specialLightGreen1 } = useThemeColors()
   const track = useSelector((state) => getTrack(state, { id: trackId }))
   const owner = useSelector((state) => getUser(state, { id: track?.owner_id }))
   const isCollectibleGated = isPremiumContentCollectibleGated(
     track?.premium_conditions
   )
+  const isUSDCPurchaseGated =
+    useIsUSDCEnabled() &&
+    isPremiumContentUSDCPurchaseGated(track?.premium_conditions)
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
 
   const dogEarType = getDogEarType({
@@ -86,9 +99,52 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
     premiumConditions: track?.premium_conditions
   })
 
+  const type = isUSDCPurchaseGated
+    ? PremiumContentType.USDC_PURCHASE
+    : isCollectibleGated
+    ? PremiumContentType.COLLECTIBLE_GATED
+    : PremiumContentType.SPECIAL_ACCESS
+
+  const headerAttributes: {
+    [k in PremiumContentType]: {
+      message: string
+      icon: ComponentType<SvgProps>
+      color: string
+      colorString: keyof ThemeColors
+    }
+  } = useMemo(() => {
+    return {
+      [PremiumContentType.COLLECTIBLE_GATED]: {
+        message: messages.collectibleGated,
+        icon: IconCollectible,
+        color: accentBlue,
+        colorString: 'accentBlue'
+      },
+      [PremiumContentType.SPECIAL_ACCESS]: {
+        message: messages.specialAccess,
+        icon: IconSpecialAccess,
+        color: accentBlue,
+        colorString: 'accentBlue'
+      },
+      [PremiumContentType.USDC_PURCHASE]: {
+        message: messages.premiumTrack,
+        icon: IconCart,
+        color: specialLightGreen1,
+        colorString: 'specialLightGreen1'
+      }
+    }
+  }, [accentBlue, specialLightGreen1])
+
   if (!track || !owner) {
     return null
   }
+
+  const {
+    message: title,
+    icon: IconComponent,
+    color,
+    colorString
+  } = headerAttributes[type]
 
   return (
     <View style={styles.root}>
@@ -101,28 +157,19 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
         />
         <View style={styles.metadataContainer}>
           <View style={styles.premiumContentLabelContainer}>
-            {isCollectibleGated ? (
-              <IconCollectible
-                fill={accentBlue}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-            ) : (
-              <IconSpecialAccess
-                fill={accentBlue}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-            )}
+            <IconComponent
+              fill={color}
+              width={spacing(5)}
+              height={spacing(5)}
+            />
             <Text
               fontSize='small'
-              color='accentBlue'
+              color={colorString}
               weight='demiBold'
+              textTransform='uppercase'
               style={styles.premiumContentLabel}
             >
-              {isCollectibleGated
-                ? messages.collectibleGated
-                : messages.specialAccess}
+              {title}
             </Text>
           </View>
           <Text
