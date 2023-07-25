@@ -77,7 +77,7 @@ def validate_user_tx(params: ManageEntityParameters):
 
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
             raise IndexingValidationError(
-                f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
+                f"User {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
             )
 
     if params.action == Action.CREATE:

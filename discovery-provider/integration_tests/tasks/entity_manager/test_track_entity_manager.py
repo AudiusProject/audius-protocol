@@ -2,9 +2,6 @@ import json
 import logging  # pylint: disable=C0302
 from typing import List
 
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -19,6 +16,8 @@ from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
 )
 from src.utils.db_session import get_db
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +63,7 @@ def test_index_valid_track(app, mocker):
             ],
             "has_current_user_reposted": False,
             "is_current": True,
-            "is_unlisted": False,
+            "is_unlisted": True,
             "is_premium": False,
             "premium_conditions": None,
             "field_visibility": {
@@ -209,7 +208,7 @@ def test_index_valid_track(app, mocker):
             "is_playlist_upload": False,
         },
         "QmUpdateTrack1": {"title": "track 1 2", "description": "updated description"},
-        "QmUpdateTrack2": {"duration": 200},
+        "QmUpdateTrack2": {"duration": 200, "is_unlisted": False},
     }
 
     create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
@@ -382,6 +381,7 @@ def test_index_valid_track(app, mocker):
         )
         assert track_1.description == "updated description"
         assert track_1.ai_attribution_user_id == 2
+        assert track_1.is_unlisted
         assert track_1.is_delete == True
         assert track_1.duration == 100
 
@@ -396,6 +396,7 @@ def test_index_valid_track(app, mocker):
         assert track_2.title == "track 2"
         assert track_2.is_delete == False
         assert track_2.duration == 200
+        assert track_2.is_unlisted == False
 
         track_3: Track = (
             session.query(Track)
@@ -514,9 +515,13 @@ def test_index_invalid_tracks(app, mocker):
             "is_playlist_upload": False,
             "ai_attribution_user_id": 2,
         },
+        "QmInvalidUnlistTrack1Update": {"is_unlisted": True},
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
+    invalid_unlist_track1_json = json.dumps(
+        test_metadata["QmInvalidUnlistTrack1Update"]
+    )
 
     tx_receipts = {
         # invalid create
@@ -699,6 +704,20 @@ def test_index_invalid_tracks(app, mocker):
                         "_action": "Update",
                         "_metadata": "",
                         "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+        "InvalidTrackUnlist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUnlistTrack1Update", "data": {invalid_unlist_track1_json}}}',
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -953,6 +972,13 @@ def test_invalid_track_description(app, mocker):
         side_effect=get_events_side_effect,
         autospec=True,
     )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         total_changes, _ = entity_manager_update(

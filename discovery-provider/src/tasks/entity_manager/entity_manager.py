@@ -270,7 +270,7 @@ def entity_manager_update(
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
-                    logger.info(f"failed to process transaction error {e}")
+                    logger.error(f"failed to process transaction error {e}")
                 except Exception as e:
                     indexing_error = IndexingError(
                         "tx-failure",
@@ -282,7 +282,7 @@ def entity_manager_update(
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
                     )
-                    logger.info(f"skipping transaction hash {indexing_error}")
+                    logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
         records_to_save = []

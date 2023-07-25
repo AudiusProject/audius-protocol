@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import requests
 from flask import Blueprint, request
 
 from src.api_helpers import success_response
@@ -34,12 +35,6 @@ def version():
     return success_response(disc_prov_version, sign_response=False)
 
 
-# Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
-# Optional boolean "verbose" flag to output db connection info.
-# Optional boolean "enforce_block_diff" flag to error on unhealthy blockdiff.
-# Optional int flag to check challenge events age max drift
-# NOTE - can extend this in future to include ganache connectivity, how recently a block
-#   has been added (ex. if it's been more than 30 minutes since last block), etc.
 @bp.route("/health_check", methods=["GET"])
 def health_check():
     args = {
@@ -57,9 +52,16 @@ def health_check():
             "reactions_max_last_reaction_drift", type=int
         ),
     }
+    try:
+        comms_health = {"comms": requests.get("http://comms:8925/comms").json()}
+    except Exception as e:
+        logger.error(f"Error fetching comms health {e}")
+        comms_health = {}
 
     (health_results, error) = get_health(args)
-    return success_response(health_results, 500 if error else 200, sign_response=False)
+    return success_response(
+        health_results, 500 if error else 200, sign_response=False, extras=comms_health
+    )
 
 
 @bp.route("/trusted_notifier_discrepancies_check", methods=["GET"])
