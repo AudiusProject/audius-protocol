@@ -29,6 +29,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
@@ -208,6 +209,16 @@ export const DetailsTileNoAccess = ({
     navigation.navigate('TipArtist')
   }, [tippedUser, navigation, dispatch, source, trackId])
 
+  const handlePurchasePress = useCallback(() => {
+    dispatch(
+      setVisibility({
+        drawer: 'PremiumTrackPurchase',
+        visible: true,
+        data: { trackId }
+      })
+    )
+  }, [dispatch, trackId])
+
   const handlePressArtistName = useCallback(
     (handle: string) => () => {
       navigation.push('Profile', { handle })
@@ -345,9 +356,7 @@ export const DetailsTileNoAccess = ({
               formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
             )}
             size='large'
-            onPress={() => {
-              console.log('Buy button pressed')
-            }}
+            onPress={handlePurchasePress}
             fullWidth
           />
         </>
@@ -375,7 +384,8 @@ export const DetailsTileNoAccess = ({
     renderLockedSpecialAccessDescription,
     handleFollowArtist,
     tippedUser,
-    handleSendTip
+    handleSendTip,
+    handlePurchasePress
   ])
 
   const renderUnlockingSpecialAccessDescription = useCallback(

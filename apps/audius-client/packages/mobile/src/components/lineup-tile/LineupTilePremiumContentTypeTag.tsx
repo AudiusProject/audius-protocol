@@ -3,7 +3,8 @@ import { useMemo } from 'react'
 import {
   isPremiumContentCollectibleGated,
   isPremiumContentUSDCPurchaseGated,
-  type PremiumConditions
+  type PremiumConditions,
+  PremiumContentType
 } from '@audius/common'
 import { View } from 'react-native'
 
@@ -32,12 +33,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.medium
   }
 }))
-
-enum PremiumContentType {
-  COLLECTIBLE_GATED = 'collectible gated',
-  SPECIAL_ACCESS = 'special access',
-  USDC_PURCHASE = 'usdc purchase'
-}
 
 type LineupTilePremiumContentTypeTagProps = {
   premiumConditions: PremiumConditions

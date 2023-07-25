@@ -25,6 +25,7 @@ import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
+import { PremiumTrackPurchaseDrawer } from 'app/components/premium-track-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
@@ -126,7 +127,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
-  InboxUnavailable: InboxUnavailableDrawer
+  InboxUnavailable: InboxUnavailableDrawer,
+  PremiumTrackPurchase: PremiumTrackPurchaseDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

@@ -1,23 +1,29 @@
+import { useCallback } from 'react'
+
 import type { ID, PremiumConditions } from '@audius/common'
 import {
+  formatUSDCWeiToUSDString,
   isPremiumContentUSDCPurchaseGated,
   premiumContentSelectors
 } from '@audius/common'
-import { View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { TouchableOpacity, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconLock from 'app/assets/images/iconLock.svg'
 import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 const { getPremiumTrackStatusMap } = premiumContentSelectors
 
 const messages = {
   unlocking: 'Unlocking',
-  locked: 'Locked'
+  locked: 'Locked',
+  price: (price: string) => `$${price}`
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -51,30 +57,48 @@ export const LineupTileAccessStatus = ({
   premiumConditions: PremiumConditions
 }) => {
   const styles = useStyles()
+  const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
+  const isUSDCPurchase =
+    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
+
+  const handlePurchasePress = useCallback(() => {
+    dispatch(
+      setVisibility({
+        drawer: 'PremiumTrackPurchase',
+        visible: true,
+        data: { trackId }
+      })
+    )
+  }, [dispatch, trackId])
 
   return (
-    <View
-      style={[
-        styles.root,
-        isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
-          ? styles.usdcPurchase
-          : null
-      ]}
+    <TouchableOpacity
+      onPress={isUSDCPurchase ? handlePurchasePress : undefined}
     >
-      {premiumTrackStatus === 'UNLOCKING' ? (
-        <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
-      ) : (
-        <IconLock fill={staticWhite} width={16} height={16} />
-      )}
-      <Text style={styles.text}>
-        {premiumTrackStatus === 'UNLOCKING'
-          ? messages.unlocking
-          : messages.locked}
-      </Text>
-    </View>
+      <View style={[styles.root, isUSDCPurchase ? styles.usdcPurchase : null]}>
+        {premiumTrackStatus === 'UNLOCKING' ? (
+          <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />
+        ) : (
+          <IconLock fill={staticWhite} width={spacing(4)} height={spacing(4)} />
+        )}
+        <Text style={styles.text}>
+          {isUSDCPurchase
+            ? premiumTrackStatus === 'UNLOCKING'
+              ? null
+              : messages.price(
+                  formatUSDCWeiToUSDString(
+                    premiumConditions.usdc_purchase.price
+                  )
+                )
+            : premiumTrackStatus === 'UNLOCKING'
+            ? messages.unlocking
+            : messages.locked}
+        </Text>
+      </View>
+    </TouchableOpacity>
   )
 }
