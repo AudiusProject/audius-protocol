@@ -226,20 +226,23 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Cannot create track {track_id} below the offset"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        if params.metadata:
-            track_bio = params.metadata.get("description")
-            track_genre = params.metadata.get("genre")
-            if track_genre is not None and track_genre not in genre_allowlist:
-                raise IndexingValidationError(
-                    f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
-                )
-            if (
-                track_bio is not None
-                and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
-            ):
-                raise IndexingValidationError(
-                    f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
-                )
+        if not params.metadata:
+            raise IndexingValidationError(
+                "Metadata is required for playlist creation and update"
+            )
+        track_bio = params.metadata.get("description")
+        track_genre = params.metadata.get("genre")
+        if track_genre is not None and track_genre not in genre_allowlist:
+            raise IndexingValidationError(
+                f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
+            )
+        if (
+            track_bio is not None
+            and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
+        ):
+            raise IndexingValidationError(
+                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+            )
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
         if track_id not in params.existing_records[EntityType.TRACK]:
@@ -250,12 +253,10 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
-        if params.metadata:
-            existing_track = params.existing_records[EntityType.TRACK][track_id]
-            if not existing_track.is_unlisted and params.metadata.get("is_unlisted"):
-                raise IndexingValidationError(
-                    f"Cannot unlist track {track_id}"
-                )
+        if params.action == Action.UPDATE and not existing_track.is_unlisted and params.metadata.get("is_unlisted"):
+            raise IndexingValidationError(
+                f"Cannot unlist track {track_id}"
+            )
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
