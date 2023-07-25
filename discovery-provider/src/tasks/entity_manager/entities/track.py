@@ -163,9 +163,6 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
         if key == "is_unlisted":
             # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
             # made unlisted again
-            print(f"asdf track_metadata {track_metadata}")
-
-            print(f"asdf track_record.is_unlisted {track_record.is_unlisted}")
             if "is_unlisted" in track_metadata:
                 track_record.is_unlisted = track_metadata["is_unlisted"]
 
