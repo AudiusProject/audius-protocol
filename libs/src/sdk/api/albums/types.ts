@@ -69,7 +69,7 @@ export const createUpdateAlbumSchema = () =>
     .object({
       userId: HashId,
       albumId: HashId,
-      coverArtFile: z.optional(AudioFile),
+      coverArtFile: z.optional(ImageFile),
       metadata: createUploadAlbumMetadataSchema().partial(),
       onProgress: z.optional(z.function().args(z.number()))
     })
