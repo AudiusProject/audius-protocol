@@ -1,10 +1,12 @@
 import abiDecoder from 'abi-decoder'
 import type { AbiItem, AbiInput } from 'web3-utils'
 import type { Log } from 'web3-core'
+import sigUtil from 'eth-sig-util'
 
 import RegistryABI from '../../data-contracts/ABIs/Registry.json'
 import DiscoverProviderFactoryABI from '../../data-contracts/ABIs/DiscoveryProviderFactory.json'
 import EntityManagerABI from '../../data-contracts/ABIs/EntityManager.json'
+import { generators } from "../../data-contracts/signatureSchemas"
 
 const abiMap: Record<string, AbiItem[]> = {}
 
@@ -62,5 +64,34 @@ export class AudiusABIDecoder {
 
   static decodeLogs(_: string, logs: Log[]) {
     return abiDecoder.decodeLogs(logs)
+  }
+
+  static decodeAbi (encodedABI: string): Map<string, string> {
+    const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
+    const mapping = new Map()
+  
+    // map without leading underscore in _userId
+    decodedABI.params.forEach((param) => {
+      mapping.set(param.name.substring(1), param.value)
+    })
+  
+    return mapping
+  }
+
+  static recoverSigner({encodedAbi, chainId, entityManagerAddress } : { encodedAbi: string, chainId: string, entityManagerAddress: string }): string {
+    const decodedAbi = this.decodeAbi(encodedAbi)
+    const data = generators.getManageEntityData(
+      chainId,
+      entityManagerAddress,
+      decodedAbi.get("userId"),
+      decodedAbi.get("entityType"),
+      decodedAbi.get("entityId"),
+      decodedAbi.get("action"),
+      decodedAbi.get("metadata"),
+      decodedAbi.get("nonce")
+    )
+    const sig = decodedAbi.get("subjectSig")
+    if (sig === undefined) throw new Error("subjectSig is not present in decoded abi")
+    return sigUtil.recoverTypedSignature({ data, sig })
   }
 }

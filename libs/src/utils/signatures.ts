@@ -2,9 +2,6 @@ import { Utils } from './utils'
 import { BN, ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
 import type Web3 from 'web3'
-import { domains, schemas, generators, getNonce } from "../data-contracts/signatureSchemas"
-import { AudiusABIDecoder } from '../AudiusLibs'
-import sigUtil from 'eth-sig-util'
 
 export const sign = (digest: any, privateKey: Buffer) => {
   const buffer = toBuffer(digest)
@@ -139,36 +136,4 @@ function getDomainSeparator(
     ]
   )
   return Utils.keccak256(encoded)
-}
-
-// re-export sig schemas and recover signer function
-export { domains, schemas, generators, getNonce }
-
-export function decodeAbi (encodedABI: string): Map<string, string> {
-  const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
-  const mapping = new Map()
-
-  // map without leading underscore in _userId
-  decodedABI.params.forEach((param) => {
-    mapping.set(param.name.substring(1), param.value)
-  })
-
-  return mapping
-}
-
-export function recoverSigner({encodedAbi, chainId, entityManagerAddress } : { encodedAbi: string, chainId: string, entityManagerAddress: string }): string {
-  const decodedAbi = decodeAbi(encodedAbi)
-  const data = generators.getManageEntityData(
-    chainId,
-    entityManagerAddress,
-    decodedAbi.get("userId"),
-    decodedAbi.get("entityType"),
-    decodedAbi.get("entityId"),
-    decodedAbi.get("action"),
-    decodedAbi.get("metadata"),
-    decodedAbi.get("nonce")
-  )
-  const sig = decodedAbi.get("subjectSig")
-  if (sig === undefined) throw new Error("subjectSig is not present in decoded abi")
-  return sigUtil.recoverTypedSignature({ data, sig })
 }
