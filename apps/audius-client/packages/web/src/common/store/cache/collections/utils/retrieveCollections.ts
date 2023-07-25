@@ -151,7 +151,8 @@ export function* retrieveCollectionByPermalink(
   const {
     fetchTracks = false,
     requiresAllTracks = false,
-    forceRetrieveFromSource = false
+    forceRetrieveFromSource = false,
+    deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield* call(retrieve, {
@@ -214,7 +215,7 @@ export function* retrieveCollectionByPermalink(
     idField: 'playlist_id',
     forceRetrieveFromSource,
     shouldSetLoading: true,
-    deleteExistingEntry: false
+    deleteExistingEntry
   })
 
   return { collections: entries, uids }
@@ -230,6 +231,7 @@ export type RetrieveCollectionsConfig = {
    */
   requiresAllTracks?: boolean
   forceRetrieveFromSource?: boolean
+  deleteExistingEntry?: boolean
 }
 /**
  * Retrieves collections from the cache or from source. If requesting more than
@@ -243,7 +245,8 @@ export function* retrieveCollections(
     userId = null,
     fetchTracks = false,
     requiresAllTracks = false,
-    forceRetrieveFromSource = false
+    forceRetrieveFromSource = false,
+    deleteExistingEntry
   } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield* call(retrieve, {
@@ -311,7 +314,7 @@ export function* retrieveCollections(
     idField: 'playlist_id',
     forceRetrieveFromSource,
     shouldSetLoading: true,
-    deleteExistingEntry: false
+    deleteExistingEntry
   })
 
   return { collections: entries, uids }

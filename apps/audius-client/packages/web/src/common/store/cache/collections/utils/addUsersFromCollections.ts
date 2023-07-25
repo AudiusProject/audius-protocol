@@ -5,10 +5,11 @@ import {
   accountSelectors,
   cacheActions,
   getContext,
-  reformatUser
+  reformatUser,
+  put
 } from '@audius/common'
 import { uniqBy } from 'lodash'
-import { put, select } from 'typed-redux-saga'
+import { select } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'
 

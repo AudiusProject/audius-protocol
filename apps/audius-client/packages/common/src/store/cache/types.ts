@@ -1,3 +1,3 @@
 export type Metadata = {
-  blocknumber: number
+  blocknumber?: number
 }

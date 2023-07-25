@@ -1,11 +1,14 @@
 // @ts-nocheck
+import { pick } from 'lodash'
 
 import { ID, UID } from 'models/Identifiers'
 import { Kind } from 'models/Kind'
+import { getConfirmCalls } from 'store/confirmer/selectors'
+import { getIdFromKindId } from 'utils/uid'
 
+import { getCache } from './selectors'
 import { Metadata } from './types'
 
-export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
 export const ADD_ENTRIES = 'CACHE/ADD_ENTRIES'
 export const UPDATE = 'CACHE/UPDATE'
@@ -17,22 +20,64 @@ export const UNSUBSCRIBE_SUCCEEDED = 'CACHE/UNSUBSCRIBE_SUCCEEDED'
 export const REMOVE = 'CACHE/REMOVE'
 export const REMOVE_SUCCEEDED = 'CACHE/REMOVE_SUCCEEDED'
 export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
-export const SET_CACHE_TYPE = 'CACHE/SET_CACHE_TYPE'
+export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
+
+type Entry<EntryT extends Metadata = Metadata> = {
+  id: ID
+  uid?: UID
+  metadata: EntryT
+  timestamp?: number
+}
 
 /**
  * Signals to add an entry to the cache.
- * @param {Kind} kind
- * @param {array} entries { id, uid, metadata }
- * @param {boolean} replace optionally replaces the entire entry instead of joining metadata
- * @param {boolean} persist optionally persists the cache entry to indexdb
  */
-export const add = (kind, entries, replace = false, persist = true) => ({
-  type: ADD,
-  kind,
-  entries,
-  replace,
-  persist
-})
+export const add = (
+  kind: Kind,
+  entries: Entry[],
+  // optionally replaces the entire entry instead of joining metadata
+  replace = false,
+  // optionally persists the cache entry to indexdb
+  persist = true
+) => {
+  return async (dispatch, getState) => {
+    const state = await getState()
+    const confirmCalls = getConfirmCalls(state)
+    const cache = getCache(state, { kind })
+
+    const confirmCallsInCache = pick(
+      cache.entries,
+      Object.keys(confirmCalls).map((kindId) => getIdFromKindId(kindId))
+    )
+
+    const entriesToAdd = []
+    const entriesToSubscribe = []
+    entries.forEach((entry) => {
+      // If something is confirming and in the cache, we probably don't
+      // want to replace it (unless explicit) because we would lose client
+      // state, e.g. "has_current_user_reposted"
+      if (!replace && entry.id in confirmCallsInCache) {
+        entriesToSubscribe.push({ uid: entry.uid, id: entry.id })
+      } else {
+        entriesToAdd.push(entry)
+      }
+    })
+
+    if (entriesToAdd.length > 0) {
+      dispatch({
+        type: ADD_SUCCEEDED,
+        kind,
+        entries: entriesToAdd,
+        replace,
+        persist
+      })
+    }
+
+    if (entriesToSubscribe.length > 0) {
+      dispatch(cacheActions.subscribe(kind, entriesToSubscribe))
+    }
+  }
+}
 
 export type AddSuccededAction<EntryT extends Metadata = Metadata> = {
   type: typeof ADD_SUCCEEDED
@@ -47,13 +92,6 @@ export type AddSuccededAction<EntryT extends Metadata = Metadata> = {
   replace?: boolean
   // persist optionally persists the cache entry to indexdb
   persist?: boolean
-}
-
-type Entry<EntryT extends Metadata = Metadata> = {
-  id: ID
-  uid: UID
-  metadata: EntryT
-  timestamp: number
 }
 
 type EntriesByKind<EntryT extends Metadata = Metadata> = {
@@ -215,9 +253,13 @@ export const setExpired = (kind, id) => ({
 
 export type CacheType = 'normal' | 'fast' | 'safe-fast'
 
-export type SetCacheTypeAction = { cacheType: CacheType }
+export type SetCacheConfigAction = {
+  cacheType: CacheType
+  entryTTL: number
+  simple: boolean
+}
 
-export const setCacheType = (action: SetCacheTypeAction) => ({
-  type: SET_CACHE_TYPE,
-  ...action
+export const setCacheConfig = (config: SetCacheConfigAction) => ({
+  type: SET_CACHE_CONFIG,
+  ...config
 })
