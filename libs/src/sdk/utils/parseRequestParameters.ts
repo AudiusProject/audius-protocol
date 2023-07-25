@@ -14,8 +14,8 @@ export class ParseRequestError extends Error {
  */
 export const parseRequestParameters =
   <T extends z.ZodType>(name: string, schema: T) =>
-  <J>(requestParameters: J): z.infer<T> => {
-    const result = schema.safeParse(requestParameters)
+  async <J>(requestParameters: J): Promise<z.infer<T>> => {
+    const result = await schema.safeParseAsync(requestParameters)
     if (!result.success) {
       throw new ParseRequestError(name, result.error)
     }
