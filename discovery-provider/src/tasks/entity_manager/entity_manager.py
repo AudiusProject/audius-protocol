@@ -5,8 +5,6 @@ from typing import Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
-from web3.types import TxReceipt
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
@@ -69,8 +67,6 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     RecordDict,
     expect_cid_metadata_json,
-    generate_metadata_cid_v1,
-    get_metadata_type_and_format,
     get_record_key,
     parse_metadata,
     save_cid_metadata,
@@ -79,6 +75,7 @@ from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
+from web3.types import TxReceipt
 
 logger = StructuredLogger(__name__)
 

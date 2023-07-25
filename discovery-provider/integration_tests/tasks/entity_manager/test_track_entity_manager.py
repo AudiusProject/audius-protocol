@@ -208,13 +208,8 @@ def test_index_valid_track(app, mocker):
             "iswc": "",
             "is_playlist_upload": False,
         },
-        "QmUpdateTrack1": {
-            "title": "track 1 2",
-            "description": "updated description"
-        },
-        "QmUpdateTrack2": {
-            "duration": 200
-        },
+        "QmUpdateTrack1": {"title": "track 1 2", "description": "updated description"},
+        "QmUpdateTrack2": {"duration": 200},
     }
 
     create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
