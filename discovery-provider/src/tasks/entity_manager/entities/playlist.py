@@ -167,19 +167,24 @@ def validate_playlist_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
+        if not existing_playlist.is_private and params.metadata.get("is_private"):
+            raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        playlist_metadata = params.metadata.get(params.metadata_cid)
-        if playlist_metadata:
-            playlist_description = playlist_metadata.get("description")
-            if (
-                playlist_description
-                and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
-            ):
-                raise IndexingValidationError(
-                    f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
-                )
+        if not params.metadata:
+            raise IndexingValidationError(
+                "Metadata is required for playlist creation and update"
+            )
+        playlist_description = params.metadata.get("description")
+        if (
+            playlist_description
+            and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
+        ):
+            raise IndexingValidationError(
+                f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
+            )
+        if params.metadata.get("playlist_contents"):
             playlist_track_count = len(
-                playlist_metadata["playlist_contents"]["track_ids"]
+                params.metadata["playlist_contents"]["track_ids"]
             )
             if playlist_track_count > PLAYLIST_TRACK_LIMIT:
                 raise IndexingValidationError(
