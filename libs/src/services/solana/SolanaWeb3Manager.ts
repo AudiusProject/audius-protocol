@@ -527,7 +527,7 @@ export class SolanaWeb3Manager {
         }
       ],
       programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(JSON.stringify({ id, type, blocknumber }))
+      data: Buffer.from(`${type}:${id}:${blocknumber}`)
     })
     return await this.transactionHandler.handleTransaction({
       instructions: [...instructions, memoInstruction],
