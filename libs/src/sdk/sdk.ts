@@ -22,91 +22,16 @@ import {
 import fetch from 'cross-fetch'
 import { addAppNameMiddleware } from './middleware'
 import {
-  AuthService,
-  DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
-  EntityManagerService,
   Auth,
-  StorageService,
   Storage,
   EntityManager,
   AppAuth
 } from './services'
-import {
-  StorageNodeSelector,
-  StorageNodeSelectorService
-} from './services/StorageNodeSelector'
+import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
-import { z } from 'zod'
-
-type ServicesContainer = {
-  /**
-   * Service used to choose discovery node
-   */
-  discoveryNodeSelector: DiscoveryNodeSelectorService
-
-  /**
-   * Service used to choose storage node
-   */
-  storageNodeSelector: StorageNodeSelectorService
-
-  /**
-   * Service used to write and update entities on chain
-   */
-  entityManager: EntityManagerService
-
-  /**
-   * Service used to store and retrieve content e.g. tracks and images
-   */
-  storage: StorageService
-
-  /**
-   * Helpers to faciliate requests that require signatures or encryption
-   */
-  auth: AuthService
-}
-
-const DevAppSchema = z.object({
-  /**
-   * Your app name
-   */
-  appName: z.optional(z.string()),
-  /**
-   * Services injection
-   */
-  services: z.optional(z.custom<Partial<ServicesContainer>>()),
-  /**
-   * API key, required for writes
-   */
-  apiKey: z.string().min(1),
-  /**
-   * API secret, required for writes
-   */
-  apiSecret: z.string().min(1)
-})
-
-const CustomAppSchema = z.object({
-  /**
-   * Your app name
-   */
-  appName: z.string().min(1),
-  /**
-   * Services injection
-   */
-  services: z.optional(z.custom<Partial<ServicesContainer>>()),
-  /**
-   * API key, required for writes
-   */
-  apiKey: z.optional(z.string()),
-  /**
-   * API secret, required for writes
-   */
-  apiSecret: z.optional(z.string())
-})
-
-const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])
-
-type SdkConfig = z.infer<typeof SdkConfigSchema>
+import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
+import { Logger } from './services/Logger'
 
 /**
  * The Audius SDK
@@ -143,6 +68,9 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
+  const defaultLogger = new Logger()
+  const logger = config.services?.logger ?? defaultLogger
+
   const defaultAuthService =
     config.apiKey && config.apiSecret
       ? new AppAuth(config.apiKey, config.apiSecret)
@@ -155,7 +83,8 @@ const initializeServices = (config: SdkConfig) => {
     new StorageNodeSelector({
       auth: config.services?.auth ?? defaultAuthService,
       discoveryNodeSelector:
-        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector,
+      logger
     })
 
   const defaultEntityManager = new EntityManager({
@@ -163,16 +92,16 @@ const initializeServices = (config: SdkConfig) => {
     discoveryNodeSelector:
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
-  const entityManager = config.services?.entityManager ?? defaultEntityManager
 
   const defaultStorage = new Storage({ storageNodeSelector })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    entityManager,
+    entityManager: defaultEntityManager,
     storage: defaultStorage,
-    auth: defaultAuthService
+    auth: defaultAuthService,
+    logger
   }
   return { ...defaultServices, ...config.services }
 }
