@@ -9,20 +9,17 @@ import time
 import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
-from typing import Optional, cast
+from typing import List, Optional, cast
 
 import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
-from solders.pubkey import Pubkey
-from solders.transaction_status import UiMessage, UiTransactionStatusMeta
+from solders.instruction import CompiledInstruction
+from solders.message import Message
+from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
 from src import exceptions
-from src.solana.solana_transaction_types import (
-    TransactionMessage,
-    TransactionMessageInstruction,
-)
 from web3 import Web3
 
 from . import multihash
@@ -422,7 +419,7 @@ def get_solana_tx_token_balances(meta: UiTransactionStatusMeta, idx: int):
     pre_balance_dict = next(
         (
             balance
-            for balance in meta.pre_token_balances
+            for balance in (meta.pre_token_balances or [])
             if balance.account_index == idx
         ),
         None,
@@ -430,7 +427,7 @@ def get_solana_tx_token_balances(meta: UiTransactionStatusMeta, idx: int):
     post_balance_dict = next(
         (
             balance
-            for balance in meta.post_token_balances
+            for balance in (meta.post_token_balances or [])
             if balance.account_index == idx
         ),
         None,
@@ -442,26 +439,26 @@ def get_solana_tx_token_balances(meta: UiTransactionStatusMeta, idx: int):
     return (pre_balance, post_balance)
 
 
-def get_solana_tx_owner(meta, idx) -> str:
+def get_solana_tx_owner(meta: UiTransactionStatusMeta, idx: int) -> str:
     return next(
         (
-            balance["owner"]
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == idx
+            str(balance.owner)
+            for balance in (meta.pre_token_balances or [])
+            if balance.account_index == idx
         ),
         "",
     )
 
 
 def get_valid_instruction(
-    tx_message: UiMessage, meta: UiTransactionStatusMeta, program_address: str
-) -> Optional[TransactionMessageInstruction]:
+    tx_message: Message, meta: UiTransactionStatusMeta, program_address: str
+) -> Optional[CompiledInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
     checks accounts keys for claimable token program
     """
     account_keys = tx_message.account_keys
-    instructions = tx_message.instructions
+    instructions: List[CompiledInstruction] = tx_message.instructions
     program_index = list(map(lambda x: str(x), account_keys)).index(program_address)
     for instruction in instructions:
         if instruction.program_id_index == program_index:
@@ -473,7 +470,7 @@ def get_valid_instruction(
 def has_log(meta: UiTransactionStatusMeta, instruction: str):
     if meta is None:
         return False
-    return any(log == instruction for log in meta.log_messages)
+    return any(log == instruction for log in (meta.log_messages or []))
 
 
 # The transaction might list sender/receiver in a different order in the pubKeys.
@@ -518,8 +515,8 @@ def has_log(meta: UiTransactionStatusMeta, instruction: str):
 #       ],
 #       "indexToProgramIds": {}
 #     },
-def get_account_index(instruction: TransactionMessageInstruction, index: int):
-    return instruction["accounts"][index]
+def get_account_index(instruction: CompiledInstruction, index: int):
+    return instruction.accounts[index]
 
 
 # get block number with a final POA block offset

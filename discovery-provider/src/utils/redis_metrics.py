@@ -28,12 +28,12 @@ from src.utils.config import shared_config
 from src.utils.helpers import get_ip
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.query_params import app_name_param
+from src.utils.redis_connection import get_redis
 from werkzeug.wrappers.response import Response as wResponse
 
 logger = logging.getLogger(__name__)
 
-REDIS_URL = shared_config["redis"]["url"]
-REDIS = redis.Redis.from_url(url=REDIS_URL)
+REDIS = get_redis()
 
 # interval in minutes for pulling metrics from other nodes
 METRICS_INTERVAL = 5

@@ -4,11 +4,15 @@ import json
 import logging
 import time
 from decimal import Decimal
-from typing import Any, List, Optional, Set, TypedDict
+from typing import Any, Generic, List, Optional, Set, TypedDict, TypeVar, cast
 
 import base58
 from redis import Redis
+from solders.instruction import CompiledInstruction
+from solders.message import Message
 from solders.pubkey import Pubkey
+from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+from solders.transaction import Transaction
 from src.exceptions import SolanaTransactionFetchError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
@@ -103,24 +107,27 @@ def cache_latest_spl_audio_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
     cache_latest_sol_db_tx(redis, latest_sol_spl_token_db_key, latest_tx)
 
 
-def parse_memo_instruction(result: Any) -> str:
+def parse_memo_instruction(tx_message: Message) -> str:
     try:
-        txs = result["transaction"]
+        account_keys = tx_message.account_keys
+        instructions: List[CompiledInstruction] = tx_message.instructions
         memo_instruction = next(
             (
                 inst
-                for inst in txs["message"]["instructions"]
-                if inst["programIdIndex"] == MEMO_INSTRUCTION_INDEX
+                for inst in instructions
+                if inst.program_id_index == MEMO_INSTRUCTION_INDEX
             ),
             None,
         )
+
         if not memo_instruction:
             return ""
 
-        memo_account = txs["message"]["accountKeys"][MEMO_INSTRUCTION_INDEX]
+        memo_account = str(account_keys[MEMO_INSTRUCTION_INDEX])
+
         if not memo_account or memo_account != PURCHASE_AUDIO_MEMO_PROGRAM:
             return ""
-        return memo_instruction["data"]
+        return str(memo_instruction.data)
     except Exception as e:
         logger.error(f"index_spl_token.py | Error parsing memo, {e}", exc_info=True)
         raise e
@@ -143,14 +150,19 @@ def decode_memo_and_extract_vendor(memo_encoded: str) -> str:
 
 def parse_spl_token_transaction(
     solana_client_manager: SolanaClientManager,
-    tx_sig: ConfirmedSignatureForAddressResult,
+    tx_sig: str,
 ) -> Optional[SplTokenTransactionInfo]:
     try:
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig["signature"])
-        result = tx_info["result"]
-        meta = result["meta"]
-        error = meta["err"]
-        if error:
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        result = tx_info.value
+        if not result:
+            return None
+
+        meta = result.transaction.meta
+        if not meta:
+            return None
+
+        if meta.err:
             return None
 
         has_transfer_checked_instruction = has_log(meta, TRANSFER_CHECKED_INSTRUCTION)
@@ -159,7 +171,7 @@ def parse_spl_token_transaction(
                 f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
             )
             return None
-        tx_message = result["transaction"]["message"]
+        tx_message = cast(Transaction, result.transaction.transaction).message
         instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
         if not instruction:
             logger.error(
@@ -167,14 +179,14 @@ def parse_spl_token_transaction(
             )
             return None
 
-        memo_encoded = parse_memo_instruction(result)
+        memo_encoded = parse_memo_instruction(tx_message)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
         sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
         receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
-        account_keys = tx_message["accountKeys"]
-        sender_token_account = account_keys[sender_idx]
-        receiver_token_account = account_keys[receiver_idx]
+        account_keys = tx_message.account_keys
+        sender_token_account = str(account_keys[sender_idx])
+        receiver_token_account = str(account_keys[receiver_idx])
         sender_root_account = get_solana_tx_owner(meta, sender_idx)
         receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
         prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
@@ -191,9 +203,11 @@ def parse_spl_token_transaction(
 
         receiver_spl_tx_info: SplTokenTransactionInfo = {
             "user_bank": receiver_token_account,
-            "signature": tx_sig["signature"],
-            "slot": result["slot"],
-            "timestamp": datetime.datetime.utcfromtimestamp(result["blockTime"]),
+            "signature": tx_sig,
+            "slot": result.slot,
+            "timestamp": datetime.datetime.utcfromtimestamp(
+                float(result.block_time or 0)
+            ),
             "vendor": vendor,
             "prebalance": prebalance,
             "postbalance": postbalance,
@@ -206,7 +220,7 @@ def parse_spl_token_transaction(
     except SolanaTransactionFetchError:
         return None
     except Exception as e:
-        signature = tx_sig["signature"]
+        signature = tx_sig
         logger.error(
             f"index_spl_token.py | Error processing {signature}, {e}", exc_info=True
         )
@@ -287,7 +301,7 @@ def parse_sol_tx_batch(
     db: SessionManager,
     solana_client_manager: SolanaClientManager,
     redis: Redis,
-    tx_sig_batch_records: List[ConfirmedSignatureForAddressResult],
+    tx_sig_batch_records: List[RpcConfirmedTransactionStatusWithSignature],
     solana_logger: SolanaIndexingLogger,
 ):
     """
@@ -309,7 +323,7 @@ def parse_sol_tx_batch(
             executor.submit(
                 parse_spl_token_transaction,
                 solana_client_manager,
-                tx_sig,
+                str(tx_sig.signature),
             ): tx_sig
             for tx_sig in tx_sig_batch_records
         }
@@ -375,8 +389,8 @@ def parse_sol_tx_batch(
         if tx_sig_batch_records:
             last_tx = tx_sig_batch_records[0]
 
-            last_scanned_slot = last_tx["slot"]
-            last_scanned_signature = last_tx["signature"]
+            last_scanned_slot = last_tx.slot
+            last_scanned_signature = str(last_tx.signature)
             solana_logger.add_log(
                 f"Updating last_scanned_slot to {last_scanned_slot} and signature to {last_scanned_signature}"
             )
@@ -385,7 +399,7 @@ def parse_sol_tx_batch(
                 {
                     "signature": last_scanned_signature,
                     "slot": last_scanned_slot,
-                    "timestamp": last_tx["blockTime"],
+                    "timestamp": last_tx.block_time or 0,
                 },
             )
 
@@ -409,14 +423,17 @@ def parse_sol_tx_batch(
     return (update_user_ids, updated_root_accounts, updated_token_accounts)
 
 
-def split_list(list, n):
-    for i in range(0, len(list), n):
-        yield list[i : i + n]
+T = TypeVar("T")
+
+
+def split_list(l: List[T], n: int):
+    for i in range(0, len(l), n):
+        yield l[i : i + n]
 
 
 # Push to head of array containing seen transactions
 # Used to avoid re-traversal from chain tail when slot diff > certain number
-def cache_traversed_tx(redis: Redis, tx: ConfirmedSignatureForAddressResult):
+def cache_traversed_tx(redis: Redis, tx: RpcConfirmedTransactionStatusWithSignature):
     redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(tx))
 
 
@@ -473,11 +490,11 @@ def process_spl_token_tx(
     # Loop exit condition
     intersection_found = False
 
-    # List of signatures that will be populated as we traverse recent operations
-    transaction_signatures: List[ConfirmedSignatureForAddressResult] = []
+    # List of batches of signatures that will be populated as we traverse recent operations
+    transaction_signatures: List[List[RpcConfirmedTransactionStatusWithSignature]] = []
 
     # Current batch of transactions
-    transaction_signature_batch = []
+    transaction_signature_batch: List[RpcConfirmedTransactionStatusWithSignature] = []
 
     # Current batch
     page_count = 0
@@ -498,7 +515,7 @@ def process_spl_token_tx(
         )
         is_initial_fetch = False
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
-        transactions_array = transactions_history["result"]
+        transactions_array = transactions_history.value
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
             # really represents the end of known history for this ProgramId
@@ -512,21 +529,21 @@ def process_spl_token_tx(
                 intersection_found = True
             else:
                 for tx in transactions_array:
-                    if tx["slot"] > latest_processed_slot:
+                    if tx.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx)
-                    elif tx["slot"] <= latest_processed_slot:
+                    elif tx.slot <= latest_processed_slot:
                         intersection_found = True
                         break
             # Restart processing at the end of this transaction signature batch
             last_tx = transactions_array[-1]
-            last_tx_signature = last_tx["signature"]
+            last_tx_signature = last_tx.signature
 
             # Append to recently seen cache
             cache_traversed_tx(redis, last_tx)
 
             # Append batch of processed signatures
             if transaction_signature_batch:
-                transaction_signatures.extend(transaction_signature_batch)
+                transaction_signatures.append(transaction_signature_batch)
 
             # Ensure processing does not grow unbounded
             if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:

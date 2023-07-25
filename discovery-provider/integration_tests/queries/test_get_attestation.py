@@ -18,10 +18,11 @@ from src.queries.get_attestation import (
 from src.tasks.index_oracles import oracle_addresses_key
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 from web3 import Web3
 
 REDIS_URL = shared_config["redis"]["url"]
-redis_handle = redis.Redis.from_url(url=REDIS_URL)
+redis_handle = get_redis()
 
 
 def test_get_attestation(app):

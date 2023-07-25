@@ -10,13 +10,14 @@ from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 
 
 def test_mobile_install_challenge(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     with app.app_context():
         db = get_db()

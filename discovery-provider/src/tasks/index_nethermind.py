@@ -4,7 +4,7 @@ import copy
 import os
 from datetime import datetime
 from operator import itemgetter, or_
-from typing import cast
+from typing import List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
@@ -39,7 +39,7 @@ from src.utils.redis_constants import (
 from src.utils.structured_logger import StructuredLogger, log_duration
 from web3 import Web3
 from web3.exceptions import BlockNotFound
-from web3.types import BlockData, HexStr
+from web3.types import BlockData, HexStr, TxReceipt
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -68,21 +68,24 @@ default_config_start_hash = "0x0"
 zero_address = "0x0000000000000000000000000000000000000000"
 
 
-def fetch_tx_receipt(tx_hash: HexBytes):
+class TxReceiptAndHash(TypedDict):
+    tx_receipt: TxReceipt
+    tx_hash: str
+
+
+def fetch_tx_receipt(tx_hash: HexBytes) -> TxReceiptAndHash:
     receipt = web3.eth.get_transaction_receipt(tx_hash)
-    response = {}
-    response["tx_receipt"] = receipt
-    response["tx_hash"] = tx_hash.hex()
-    return response
+    return {"tx_receipt": receipt, "tx_hash": tx_hash.hex()}
 
 
 @log_duration(logger)
-def fetch_tx_receipts(block):
-    block_transactions = block.transactions
-    block_tx_with_receipts = {}
+def fetch_tx_receipts(block: BlockData):
+    block_transactions = cast(Sequence[HexBytes], block["transactions"])
+    block_tx_with_receipts: dict[str, TxReceipt] = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_tx_receipt = {
-            executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
+            executor.submit(fetch_tx_receipt, tx): tx
+            for tx in (block_transactions or [])
         }
         for future in concurrent.futures.as_completed(future_to_tx_receipt):
             tx = future_to_tx_receipt[future]
@@ -92,7 +95,7 @@ def fetch_tx_receipts(block):
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
                 logger.error(
-                    f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}"
+                    f"index_nethermind.py | fetch_tx_receipts {tx.hex()} generated {exc}"
                 )
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
@@ -137,9 +140,9 @@ def add_indexed_block_to_db(
     session: Session, next_block: BlockData, current_block: Block
 ):
     block_model = Block(
-        blockhash=web3.to_hex(next_block.get("hash")),
-        parenthash=web3.to_hex(next_block.get("parentHash")),
-        number=next_block.get("number"),
+        blockhash=web3.to_hex(next_block["hash"]),
+        parenthash=web3.to_hex(next_block["parentHash"]),
+        number=next_block["number"],
         is_current=True,
     )
 
@@ -153,13 +156,13 @@ def add_indexed_block_to_redis(block, redis):
 
 
 def process_state_changes(
-    session,
-    tx_type_to_grouped_lists_map,
-    block,
+    session: Session,
+    tx_type_to_grouped_lists_map: dict[str, List[TxReceipt]],
+    block: BlockData,
 ):
-    block_number, block_hash, block_timestamp = itemgetter(
-        "number", "hash", "timestamp"
-    )(block)
+    block_number = block["number"]
+    block_hash = block["hash"].hex()
+    block_timestamp = block["timestamp"]
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -235,7 +238,7 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     try:
         next_block = web3.eth.get_block(next_block_number)
         next_block = copy.deepcopy(next_block)
-        next_block.update({"number": next_block.get("number") + final_poa_block})
+        next_block.update({"number": next_block["number"] + final_poa_block})
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -243,7 +246,9 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         return False
 
 
-def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_block=0):
+def get_relevant_blocks(
+    web3: Web3, latest_database_block: Block, final_poa_block=0
+) -> Tuple[BlockData | bool, BlockData | bool]:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         is_block_on_chain_future = executor.submit(
             is_block_on_chain, web3, latest_database_block
@@ -257,7 +262,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
         if (
             next_block
-            and web3.to_hex(next_block.parentHash) != latest_database_block.blockhash
+            and web3.to_hex(next_block.parent_hash) != latest_database_block.blockhash
             and latest_database_block.number != 0
         ):
             block_on_chain = False
@@ -274,7 +279,7 @@ def index_next_block(
     """
     redis = index_nethermind.redis
     shared_config = index_nethermind.shared_config
-    next_block_number = next_block.get("number")
+    next_block_number = next_block["number"]
     logger.set_context("block", next_block_number)
 
     indexing_transaction_index_sort_order_start_block = (
@@ -284,7 +289,7 @@ def index_next_block(
 
     challenge_bus: ChallengeEventBus = index_nethermind.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
-        txs_grouped_by_type = {
+        txs_grouped_by_type: dict[str, List[TxReceipt]] = {
             ENTITY_MANAGER: [],
         }
         try:
@@ -305,7 +310,7 @@ def index_next_block(
 
             # Parse tx events in each block
             for tx in sorted_txs:
-                tx_hash = tx.transactionHash.hex()
+                tx_hash = tx["transactionHash"].hex()
                 tx_receipt = tx_receipt_dict[tx_hash]
                 contract_type = get_contract_type_for_tx(
                     txs_grouped_by_type, tx, tx_receipt
@@ -333,10 +338,10 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
-            if cast(int, next_block.get("number")) % 100 == 0:
+            if cast(int, next_block["number"]) % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
-                    session, cast(int, next_block.get("timestamp"))
+                    session, cast(int, next_block["timestamp"])
                 )
                 if should_update:
                     celery.send_task(
@@ -350,10 +355,10 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
-            if cast(int, next_block.get("number")) % 100 == 0:
+            if cast(int, next_block["number"]) % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
-                    kwargs={"current_block_timestamp": next_block.get("timestamp")},
+                    kwargs={"current_block_timestamp": next_block["timestamp"]},
                 )
         except Exception as e:
             # Do not throw error, as this should not stop indexing

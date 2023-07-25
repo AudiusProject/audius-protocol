@@ -7,12 +7,12 @@ from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.utils import db_session, helpers
 from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
+from src.utils.redis_connection import get_redis
 
 # The maximum number of skipped transactions allowed
 MAX_SKIPPED_TX = 20
 
-REDIS_URL = shared_config["redis"]["url"]
-REDIS = redis.Redis.from_url(url=REDIS_URL)
+REDIS = get_redis()
 
 INDEXING_ERROR_KEY = "indexing:error"
 logger = logging.getLogger(__name__)

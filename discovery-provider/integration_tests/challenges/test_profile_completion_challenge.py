@@ -11,13 +11,14 @@ from src.models.social.save import Save, SaveType
 from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
 
 
 def test_profile_completion_challenge_with_tracks(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     # create user
     with app.app_context():
@@ -223,7 +224,7 @@ def test_profile_completion_challenge_with_tracks(app):
 
 
 def test_profile_completion_challenge_with_playlists(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     # create user
     with app.app_context():

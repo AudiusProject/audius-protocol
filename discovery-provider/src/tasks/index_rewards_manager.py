@@ -10,6 +10,7 @@ from redis import Redis
 from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
+from solders.transaction import Transaction
 from solders.transaction_status import UiTransaction, UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -239,7 +240,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
             return tx_metadata
-        tx_message = cast(UiTransaction, result.transaction.transaction).message
+        tx_message = cast(Transaction, result.transaction.transaction).message
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return tx_metadata

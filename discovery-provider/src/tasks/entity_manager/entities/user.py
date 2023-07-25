@@ -586,7 +586,7 @@ def validate_signature(
 
 def recover_user_id_hash(web3, user_id, signature):
     message_hash = defunct_hash_message(text=f"AudiusUserID:{user_id}")
-    wallet_address: str = web3.eth.account.recoverHash(
+    wallet_address: str = web3.eth.account._recover_hash(
         message_hash, signature=signature
     )
     return wallet_address

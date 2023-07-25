@@ -38,7 +38,7 @@ class DeleteDeveloperAppMetadata(TypedDict):
 def get_app_address_from_signature(app_signature):
     web3 = web3_provider.get_eth_web3()
     message_hash = defunct_hash_message(text=app_signature["message"])
-    app_address = web3.eth.account.recoverHash(
+    app_address = web3.eth.account._recover_hash(
         message_hash, signature=app_signature["signature"]
     )
     return app_address.lower()

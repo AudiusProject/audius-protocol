@@ -43,6 +43,7 @@ from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
+from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import final_poa_block_redis_key
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
@@ -434,7 +435,7 @@ def configure_celery(celery, test_config=None):
     )
 
     # Initialize Redis connection
-    redis_inst = redis.Redis.from_url(url=redis_url)
+    redis_inst = get_redis()
 
     # backfill cid data if url is provided
     env = os.getenv("audius_discprov_env")

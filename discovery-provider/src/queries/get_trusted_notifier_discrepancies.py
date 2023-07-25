@@ -39,6 +39,8 @@ def check_user_delist_status_cursor(redis: Redis):
                 user_delist_cursor_check = redis.get(
                     USER_DELIST_STATUS_CURSOR_CHECK_KEY
                 )
+                if user_delist_cursor_check is not None:
+                    user_delist_cursor_check = user_delist_cursor_check.decode()
                 if user_delist_cursor_check != "ok":
                     # If not ok, re-run query every 5 min to quickly suppress errors
                     # once resolved
@@ -92,6 +94,8 @@ def check_track_delist_status_cursor(redis: Redis):
                 track_delist_cursor_check = redis.get(
                     TRACK_DELIST_STATUS_CURSOR_CHECK_KEY
                 )
+                if track_delist_cursor_check is not None:
+                    track_delist_cursor_check = track_delist_cursor_check.decode()
                 if track_delist_cursor_check != "ok":
                     # If not ok, re-run query every 5 min to quickly suppress errors
                     # once resolved
@@ -143,6 +147,8 @@ def get_user_delist_discrepancies(redis: Redis):
             # Only run query every 12h
             if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 user_delist_discrepancies = redis.get(USER_DELIST_DISCREPANCIES_KEY)
+                if user_delist_discrepancies is not None:
+                    user_delist_discrepancies = user_delist_discrepancies.decode()
                 if user_delist_discrepancies != "[]":
                     # If discrepancies, re-run query every 5 min to quickly suppress errors
                     # once resolved
@@ -209,6 +215,8 @@ def get_track_delist_discrepancies(redis: Redis):
             # Only run query every 12h
             if latest_check > datetime.now(timezone.utc) - timedelta(hours=12):
                 track_delist_discrepancies = redis.get(TRACK_DELIST_DISCREPANCIES_KEY)
+                if track_delist_discrepancies is not None:
+                    track_delist_discrepancies = track_delist_discrepancies.decode()
                 if track_delist_discrepancies != "[]":
                     # If discrepancies, re-run query every 5 min to quickly suppress errors
                     # once resolved

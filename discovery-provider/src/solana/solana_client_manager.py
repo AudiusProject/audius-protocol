@@ -84,7 +84,7 @@ class SolanaClientManager:
         until: Optional[str] = None,
         limit: Optional[int] = None,
         retries: int = DEFAULT_MAX_RETRIES,
-    ):
+    ) -> GetSignaturesForAddressResp:
         """
         Fetches confirmed signatures for transactions given an address.
 
