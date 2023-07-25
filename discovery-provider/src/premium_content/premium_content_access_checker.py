@@ -3,6 +3,7 @@ import logging
 from typing import Any, Callable, Dict, List, TypedDict, cast
 
 from sqlalchemy.orm.session import Session
+
 from src.models.tracks.track import Track
 from src.premium_content.helpers import (
     does_user_follow_artist,

@@ -2,9 +2,9 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from typing import Any, Optional, TypedDict
 
-import redis
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
+
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow

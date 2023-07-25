@@ -1,10 +1,10 @@
 import logging
 from typing import Dict, List, Optional
 
-import redis
+from sqlalchemy.orm.session import Session
+
 from integration_tests.queries.test_get_challenges import DefaultUpdater
 from integration_tests.utils import populate_mock_db_blocks
-from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,

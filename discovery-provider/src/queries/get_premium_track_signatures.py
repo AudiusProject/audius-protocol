@@ -12,6 +12,8 @@ import base58
 from eth_typing import ChecksumAddress
 from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
@@ -24,7 +26,6 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import METADATA_PROGRAM_ID_PK
 from src.utils import db_session, web3_provider
 from src.utils.config import shared_config
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 

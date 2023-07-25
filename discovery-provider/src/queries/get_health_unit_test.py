@@ -5,6 +5,7 @@ from time import time
 from unittest.mock import MagicMock, patch
 
 from hexbytes import HexBytes
+
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.queries.get_health import get_health

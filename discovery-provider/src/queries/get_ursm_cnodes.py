@@ -1,4 +1,5 @@
 from sqlalchemy import desc
+
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.queries.query_helpers import paginate_query
 from src.utils import helpers

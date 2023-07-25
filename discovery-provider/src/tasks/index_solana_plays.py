@@ -11,6 +11,7 @@ from solders.pubkey import Pubkey
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
 from solders.transaction import Transaction
 from sqlalchemy import desc
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play

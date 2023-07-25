@@ -3,11 +3,12 @@ import logging
 from typing import Dict, List, Optional, Tuple
 
 import aiohttp
+from web3 import Web3
+
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import is_fqdn, load_eth_abi_values
 from src.utils.redis_cache import get_json_cached_key
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
-import redis
+from web3.types import BlockData
+
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.tasks.index_trending import (
@@ -13,7 +14,6 @@ from src.tasks.index_trending import (
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from web3.types import BlockData
 
 REDIS_URL = shared_config["redis"]["url"]
 

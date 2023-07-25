@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 import pytz
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,

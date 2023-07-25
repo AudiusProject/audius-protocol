@@ -4,6 +4,7 @@ from typing import List
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+
 from src.models.users.user_balance import UserBalance
 from src.utils.spl_audio import to_wei
 

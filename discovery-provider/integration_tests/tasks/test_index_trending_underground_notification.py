@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
-from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
+
+from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.queries.get_underground_trending import make_underground_trending_cache_key

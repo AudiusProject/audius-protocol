@@ -1,13 +1,13 @@
 import json
 from unittest.mock import create_autospec
 
-from integration_tests.utils import populate_mock_db
-from solders.pubkey import Pubkey
 from solders.rpc.responses import (
     GetTransactionResp,
     RpcConfirmedTransactionStatusWithSignature,
 )
 from solders.signature import Signature
+
+from integration_tests.utils import populate_mock_db
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,

@@ -1,11 +1,10 @@
 import logging
 
-import redis
 from sqlalchemy import func
+
 from src.models.indexing.block import Block
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.utils import db_session, helpers
-from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 from src.utils.redis_connection import get_redis
 

@@ -3,6 +3,7 @@ import time
 from typing import List
 
 from sqlalchemy import desc, func
+
 from src.models.social.hourly_play_counts import HourlyPlayCount
 from src.models.social.play import Play
 from src.tasks.celery_app import celery

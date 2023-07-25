@@ -1,6 +1,7 @@
 import enum
 
 from sqlalchemy import Boolean, Column, Enum, Index, Integer, String
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

@@ -8,7 +8,6 @@ import time
 from collections import defaultdict
 from typing import Any, Dict
 
-import redis
 from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
@@ -16,6 +15,9 @@ from flask_cors import CORS
 from opentelemetry.instrumentation.flask import FlaskInstrumentor  # type: ignore
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
+from web3 import Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import playlist_stream_bp
@@ -47,8 +49,6 @@ from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import final_poa_block_redis_key
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from web3 import Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 

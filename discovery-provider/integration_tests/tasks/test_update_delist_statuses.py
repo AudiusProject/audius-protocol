@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import List
 from unittest import mock
 
-from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
+
+from integration_tests.utils import populate_mock_db
 from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.delisting.track_delist_status import (
     DelistTrackReason,

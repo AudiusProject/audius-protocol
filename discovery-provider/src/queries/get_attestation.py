@@ -6,6 +6,8 @@ from hexbytes import HexBytes
 from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
+from web3 import Web3
+
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
@@ -18,7 +20,6 @@ from src.tasks.index_oracles import (
 from src.utils.config import shared_config
 from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_wallets_cached
 from src.utils.redis_connection import get_redis
-from web3 import Web3
 
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None

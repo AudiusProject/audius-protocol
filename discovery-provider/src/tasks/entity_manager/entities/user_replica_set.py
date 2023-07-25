@@ -2,6 +2,8 @@ import logging
 from typing import Any, List, Tuple
 
 from redis import Redis
+from web3 import Web3
+
 from src.app import get_eth_abi_values
 from src.exceptions import IndexingValidationError
 from src.tasks.entity_manager.utils import (
@@ -23,7 +25,6 @@ from src.utils.redis_cache import (
     get_json_cached_key,
     set_json_cached_key,
 )
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 

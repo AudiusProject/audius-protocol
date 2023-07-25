@@ -4,6 +4,7 @@ from typing import DefaultDict, Dict, List, Optional, Tuple, TypedDict, cast
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement

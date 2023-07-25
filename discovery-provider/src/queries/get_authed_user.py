@@ -1,6 +1,7 @@
 import logging
 
 from eth_account.messages import defunct_hash_message
+
 from src.models.users.user import User
 from src.utils import web3_provider
 from src.utils.db_session import get_db_read_replica

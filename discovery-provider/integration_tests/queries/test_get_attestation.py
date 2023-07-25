@@ -1,12 +1,13 @@
 from unittest.mock import patch
 
 import pytest
-import redis
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
-from integration_tests.queries.test_get_challenges import setup_db
 from solders.pubkey import Pubkey
+from web3 import Web3
+
+from integration_tests.queries.test_get_challenges import setup_db
 from src.queries.get_attestation import (
     ADD_SENDER_MESSAGE_PREFIX,
     REWARDS_MANAGER_ACCOUNT,
@@ -19,7 +20,6 @@ from src.tasks.index_oracles import oracle_addresses_key
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from web3 import Web3
 
 REDIS_URL = shared_config["redis"]["url"]
 redis_handle = get_redis()

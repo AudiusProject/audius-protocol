@@ -1,8 +1,8 @@
 from datetime import datetime
 
-import redis
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
+
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.referral_challenge import (
     referral_challenge_manager,

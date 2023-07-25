@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta
 
-import redis
-from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import or_
+
+from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.trending_challenge import (
     should_trending_challenge_update,

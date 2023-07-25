@@ -3,9 +3,10 @@ import json
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 
-import redis
 from flask import Response as fResponse
 from flask.globals import request
+from werkzeug.wrappers.response import Response as wResponse
+
 from src.models.metrics.aggregate_daily_app_name_metrics import (
     AggregateDailyAppNameMetric,
 )
@@ -24,12 +25,10 @@ from src.models.metrics.aggregate_monthly_total_users_metrics import (
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
     AggregateMonthlyUniqueUsersMetric,
 )
-from src.utils.config import shared_config
 from src.utils.helpers import get_ip
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.query_params import app_name_param
 from src.utils.redis_connection import get_redis
-from werkzeug.wrappers.response import Response as wResponse
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from decimal import Decimal
-from typing import Any, Generic, List, Optional, Set, TypedDict, TypeVar, cast
+from typing import List, Optional, Set, TypedDict, TypeVar, cast
 
 import base58
 from redis import Redis
@@ -13,6 +13,7 @@ from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
 from solders.transaction import Transaction
+
 from src.exceptions import SolanaTransactionFetchError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain

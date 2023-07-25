@@ -2,6 +2,7 @@ import logging
 from typing import List  # pylint: disable=C0302
 
 from sqlalchemy import asc
+
 from src import exceptions
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount

@@ -7,10 +7,11 @@ import os
 from typing import Optional
 
 import requests
-from src.utils.config import shared_config
-from src.utils.multi_provider import MultiProvider
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
+
+from src.utils.config import shared_config
+from src.utils.multi_provider import MultiProvider
 
 logger = logging.getLogger(__name__)
 

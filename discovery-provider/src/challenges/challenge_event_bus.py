@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from typing import Any, DefaultDict, Dict, List, Optional, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager

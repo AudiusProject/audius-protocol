@@ -19,8 +19,9 @@ from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
-from src import exceptions
 from web3 import Web3
+
+from src import exceptions
 
 from . import multihash
 

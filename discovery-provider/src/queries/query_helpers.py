@@ -7,6 +7,7 @@ from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
+
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist

@@ -2,11 +2,12 @@ import datetime
 import json
 import logging
 
-import redis
-
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
+from web3 import Web3
+from web3.auto import w3
+
 from src.queries.get_health import get_latest_chain_block_set_if_nx
 from src.queries.get_sol_plays import get_sol_play_health_info
 
@@ -15,8 +16,6 @@ from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
-from web3 import Web3
-from web3.auto import w3
 
 redis_conn = get_redis()
 web3_connection = web3_provider.get_web3()

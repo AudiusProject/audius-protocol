@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.models.indexing.block import Block

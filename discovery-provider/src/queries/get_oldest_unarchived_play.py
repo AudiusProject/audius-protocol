@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import func
+
 from src.models.social.play import Play
 from src.utils import db_session
 

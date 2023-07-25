@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.models.indexing.block import Block

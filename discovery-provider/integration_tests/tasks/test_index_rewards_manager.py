@@ -1,9 +1,10 @@
 import json
 from unittest.mock import create_autospec
 
-from integration_tests.utils import populate_mock_db
 from solders.rpc.responses import GetTransactionResp
 from sqlalchemy import desc
+
+from integration_tests.utils import populate_mock_db
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
 from src.models.users.audio_transactions_history import (

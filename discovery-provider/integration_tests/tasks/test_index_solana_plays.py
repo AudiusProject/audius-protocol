@@ -1,6 +1,7 @@
 import json
 
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+
 from src.tasks.index_solana_plays import (
     REDIS_TX_CACHE_QUEUE_PREFIX,
     cache_traversed_tx,

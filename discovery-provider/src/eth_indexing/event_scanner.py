@@ -1,13 +1,9 @@
 import datetime
 import logging
 import time
-from typing import Any, List, NotRequired, Tuple, Type, TypedDict, Union
+from typing import List, Tuple, Type, Union
 
 from eth_abi.codec import ABICodec
-from src.models.indexing.eth_block import EthBlock
-from src.models.users.associated_wallet import AssociatedWallet
-from src.models.users.user import User
-from src.queries.get_balances import enqueue_immediate_balance_refresh
 from web3 import Web3
 from web3._utils.events import get_event_data
 
@@ -18,6 +14,11 @@ from web3.contract import Contract
 from web3.contract.base_contract import BaseContractEvent
 from web3.exceptions import BlockNotFound
 from web3.types import BlockIdentifier, EventData
+
+from src.models.indexing.eth_block import EthBlock
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 logger = logging.getLogger(__name__)
 

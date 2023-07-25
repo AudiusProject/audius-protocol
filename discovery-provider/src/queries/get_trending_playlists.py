@@ -7,6 +7,7 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
+
 from src.api.v1.helpers import (
     extend_playlist,
     extend_track,

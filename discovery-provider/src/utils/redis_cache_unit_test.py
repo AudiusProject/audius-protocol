@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import flask
 from dateutil import parser
+
 from src.utils.redis_cache import (
     cache,
     get_all_json_cached_key,

@@ -1,6 +1,9 @@
 import logging
 import time
 
+from web3 import Web3
+from web3.providers.rpc import HTTPProvider
+
 from src.eth_indexing.event_scanner import EventScanner
 from src.tasks.cache_user_balance import get_token_address
 from src.tasks.celery_app import celery
@@ -8,8 +11,6 @@ from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import index_eth_last_completion_redis_key
-from web3 import Web3
-from web3.providers.rpc import HTTPProvider
 
 logger = logging.getLogger(__name__)
 

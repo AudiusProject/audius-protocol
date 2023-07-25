@@ -3,12 +3,14 @@ import time
 from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
-from solana.rpc.api import Client
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from spl.token.client import Token
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
+from solana.rpc.api import Client
 from src.app import get_eth_abi_values
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -28,7 +30,6 @@ from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 from src.utils.session_manager import SessionManager
 from src.utils.spl_audio import to_wei
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")

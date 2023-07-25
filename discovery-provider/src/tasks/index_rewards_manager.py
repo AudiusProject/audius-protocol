@@ -11,9 +11,10 @@ from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.transaction import Transaction
-from solders.transaction_status import UiTransaction, UiTransactionStatusMeta
+from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction

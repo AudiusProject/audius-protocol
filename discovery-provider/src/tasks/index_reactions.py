@@ -6,6 +6,7 @@ from typing import List, TypedDict, Union, cast
 import requests
 from redis import Redis
 from sqlalchemy.orm.session import Session
+
 from src.models.social.reaction import Reaction
 from src.tasks.aggregates import init_task_and_acquire_lock
 from src.tasks.celery_app import celery

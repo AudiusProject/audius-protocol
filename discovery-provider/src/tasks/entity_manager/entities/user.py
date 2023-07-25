@@ -8,6 +8,8 @@ from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
@@ -37,7 +39,6 @@ from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 

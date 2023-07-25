@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import redis
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager

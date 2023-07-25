@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, cast
 
 from flask_restx import reqparse
+
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType

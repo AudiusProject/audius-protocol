@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,

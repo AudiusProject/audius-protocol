@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import redis
 from sqlalchemy.orm import Session
+
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,

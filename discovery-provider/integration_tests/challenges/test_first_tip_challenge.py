@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.send_first_tip_challenge import send_first_tip_challenge_manager
 from src.models.indexing.block import Block

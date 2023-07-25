@@ -4,6 +4,7 @@ from typing import List
 from unittest import TestCase
 
 import pytest
+
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.models.social.repost import RepostType

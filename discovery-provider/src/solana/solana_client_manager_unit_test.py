@@ -1,8 +1,8 @@
-import json
 from unittest import mock
 
 import pytest
 from solders.rpc.responses import GetTransactionResp
+
 from src.solana.solana_client_manager import SolanaClientManager
 
 solana_client_manager = SolanaClientManager(

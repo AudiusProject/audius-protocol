@@ -3,6 +3,7 @@ import time
 from typing import Optional, TypedDict, Union, cast
 
 from eth_account.messages import defunct_hash_message
+
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.utils import (

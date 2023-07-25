@@ -1,6 +1,5 @@
 from datetime import date, timedelta
 
-import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.models.indexing.block import Block

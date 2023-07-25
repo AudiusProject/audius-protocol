@@ -1,14 +1,15 @@
 from typing import List
 
 from freezegun import freeze_time
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 first_set_new_apps_data = [
     {

@@ -3,6 +3,7 @@ import logging
 
 from flask import request
 from sqlalchemy import and_, desc, func, or_
+
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-import redis
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.models.indexing.block import Block
