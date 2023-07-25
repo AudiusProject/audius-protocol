@@ -123,7 +123,7 @@ export { ReactComponent as PbIconRepeat } from '../../assets/icons/pbIconRepeat.
 export { ReactComponent as PbIconShuffle } from '../../assets/icons/pbIconShuffle.svg'
 export { ReactComponent as PbIconVolume } from '../../assets/icons/pbIconVolume.svg'
 export { ReactComponent as IconTrending } from '../../assets/icons/iconTrending.svg'
-export { ReactComponent as IconCampFire } from '../../assets/icons/iconCampFire.svg'
+export { ReactComponent as IconCampfire } from '../../assets/icons/iconCampfire.svg'
 export { ReactComponent as IconSpecialAccess } from '../../assets/icons/iconSpecialAccess.svg'
 export { ReactComponent as IconCollectible } from '../../assets/icons/iconCollectible.svg'
 export { ReactComponent as IconVisibilityPublic } from '../../assets/icons/iconVisibilityPublic.svg'

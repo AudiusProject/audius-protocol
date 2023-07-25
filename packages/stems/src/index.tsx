@@ -15,6 +15,7 @@ export {
   Type as ButtonType,
   Size as ButtonSize
 } from './components/Button'
+export * from './components/HarmonyButton'
 export {
   IconButton,
   IconButtonProps,

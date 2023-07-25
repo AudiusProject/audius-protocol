@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import {
   IconExplore,
   IconTrending,
-  IconCampFire,
+  IconCampfire,
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
@@ -147,7 +147,7 @@ const NavBanner = (props: NavBannerProps) => {
             onClick={onClickHotAndNew}
             href={AUDIUS_HOT_AND_NEW}
           >
-            <IconCampFire className={styles.linkIcon} />
+            <IconCampfire className={styles.linkIcon} />
             <h3 className={styles.iconLinkText}>{messages.hotAndNew}</h3>
           </a>
         </div>

@@ -69,6 +69,16 @@ root {
   --text-subdued: var(--neutral-light-4);
   --text-disabled: var(--neutral-light-7);
 
+  /* Semantic Borders */
+  --border-default: var(--neutral-light-8);
+  --border-strong: var(--neutral-light-7);
+
+  /* Semantic Background */
+  --background-default: var(--background);
+  --background-surface-1: var(--neutral-light-10);
+  --background-surface-2: var(--neutral-light-9);
+  --background-white: var(--white);
+
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient-color-1: #5b23e1;
