@@ -161,8 +161,6 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
         if key == "is_unlisted":
-            # Only update `is_unlisted` if the track is unlisted. Once public, track cannot be
-            # made unlisted again
             if "is_unlisted" in track_metadata:
                 track_record.is_unlisted = track_metadata["is_unlisted"]
 
