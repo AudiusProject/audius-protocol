@@ -114,8 +114,11 @@ def update_track_price_history(
         )
         if (
             not old_record
-            or old_record.total_price_cents != new_record.total_price_cents
-            or old_record.splits != new_record.splits
+            or old_record.block_timestamp != new_record.block_timestamp
+            and (
+                old_record.total_price_cents != new_record.total_price_cents
+                or old_record.splits != new_record.splits
+            )
         ):
             logger.debug(
                 f"track.py | Updating price history for {track_record.track_id}. Old record={old_record} New record={new_record}"
@@ -372,7 +375,13 @@ def create_track(params: ManageEntityParameters):
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
-    update_track_price_history(params.session, track_record, params.metadata, params.block_number, params.block_datetime)
+    update_track_price_history(
+        params.session,
+        track_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )

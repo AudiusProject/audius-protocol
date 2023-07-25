@@ -303,7 +303,7 @@ def get_purchase_metadata_from_memo(
 def validate_purchase(
     purchase_metadata: PurchaseMetadataDict,
     balance_changes: dict[str, BalanceChange],
-    sender_account: str
+    sender_account: str,
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
     is_valid = True
