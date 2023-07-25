@@ -7,9 +7,9 @@ import {
   CommonState
 } from '@audius/common'
 import {
-  Button,
-  ButtonSize,
-  ButtonType,
+  HarmonyButton,
+  HarmonyButtonSize,
+  HarmonyButtonType,
   IconPause,
   IconPlay
 } from '@audius/stems'
@@ -78,12 +78,14 @@ export const PlayPauseButton = ({
   }
 
   return (
-    <Button
+    <HarmonyButton
       name={isPreview ? 'preview' : 'play'}
-      size={ButtonSize.LARGE}
-      type={isPreview ? ButtonType.SECONDARY : ButtonType.PRIMARY_ALT}
+      size={HarmonyButtonSize.LARGE}
+      variant={
+        isPreview ? HarmonyButtonType.SECONDARY : HarmonyButtonType.PRIMARY
+      }
       text={playing ? messages.pause : playText}
-      leftIcon={playing ? <IconPause /> : <PlayIconComponent />}
+      iconLeft={playing ? IconPause : PlayIconComponent}
       onClick={onPlay}
       minWidth={180}
       disabled={disabled}
