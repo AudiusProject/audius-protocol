@@ -10,7 +10,7 @@ import (
 // configures default http client to use 1.1.1.1 for DNS resolver
 // so that culturestake nodes can talk to each other
 // based on: https://koraygocmen.medium.com/custom-dns-resolver-for-the-default-http-client-in-go-a1420db38a5d
-func init() {
+func UseCustomDNS() {
 	var (
 		dnsResolverIP        = "1.1.1.1:53"
 		dnsResolverProto     = "udp"
