@@ -549,6 +549,7 @@ user_favorited_tracks_parser.add_argument(
 )
 
 user_tracks_library_parser = user_favorited_tracks_parser.copy()
+user_tracks_library_parser.remove_argument("current_user")
 user_tracks_library_parser.add_argument(
     "type",
     required=False,

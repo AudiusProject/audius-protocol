@@ -770,8 +770,7 @@ class UserTracksLibraryFull(Resource):
         """Fetch a user's full library tracks."""
         args = user_tracks_library_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
-        current_user_id = get_current_user_id(args)
-        if authed_user_id != current_user_id and authed_user_id != id:
+        if authed_user_id != decoded_id:
             full_ns.abort(403)
             return
 
@@ -785,13 +784,13 @@ class UserTracksLibraryFull(Resource):
         get_tracks_args = GetTrackLibraryArgs(
             filter_deleted=False,
             user_id=decoded_id,
-            current_user_id=current_user_id,
+            current_user_id=decoded_id,
             limit=limit,
             offset=offset,
             query=query,
             sort_method=sort_method,
             sort_direction=sort_direction,
-            filter_type=filter_type
+            filter_type=filter_type,
         )
         library_tracks = get_track_library(get_tracks_args)
         tracks = list(map(extend_activity, library_tracks))
