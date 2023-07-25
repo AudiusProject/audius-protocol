@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 
-import type { TextProps as RNTextProps, TextStyle } from 'react-native'
+import type {
+  ColorValue,
+  TextProps as RNTextProps,
+  TextStyle
+} from 'react-native'
 import { Platform, Text as RNText } from 'react-native'
 
 import type { FontSize, FontWeight, TextVariant } from 'app/styles'
@@ -13,6 +17,7 @@ export type TextProps = RNTextProps & {
   variant?: TextVariant
   noGutter?: boolean
   color?: 'inherit' | 'error' | 'warning' | keyof ThemeColors
+  colorValue?: ColorValue
   weight?: FontWeight
   fontSize?: FontSize | 'inherit'
   textTransform?: TextStyle['textTransform']
@@ -32,6 +37,7 @@ export const Text = (props: TextProps) => {
     noGutter,
     style,
     color = 'neutral',
+    colorValue,
     weight,
     fontSize: fontSizeProp,
     textTransform,
@@ -52,7 +58,7 @@ export const Text = (props: TextProps) => {
             ? palette.accentRed
             : color === 'warning'
             ? palette.accentOrange
-            : palette[color]
+            : colorValue ?? palette[color]
       },
       weight && {
         fontFamily: typography.fontByWeight[weight],
@@ -67,7 +73,16 @@ export const Text = (props: TextProps) => {
       noGutter && { marginBottom: 0 },
       { textTransform }
     ],
-    [variant, color, weight, fontSize, noGutter, textTransform, palette]
+    [
+      variant,
+      color,
+      palette,
+      colorValue,
+      weight,
+      fontSize,
+      noGutter,
+      textTransform
+    ]
   )
 
   return <RNText style={[styles.root, customStyles, style]} {...other} />
