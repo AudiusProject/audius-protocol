@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"mediorum/cidutil"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -84,7 +85,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
 
 			// TODO(theo): Don't repair Qm CIDs for now (isMine will still be true). Remove this once all nodes have enough space to store Qm CIDs
-			if isLegacyCID(cid) {
+			if cidutil.IsLegacyCID(cid) {
 				myRank = 999
 			}
 
@@ -94,7 +95,8 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				continue
 			}
 
-			alreadyHave, err := ss.bucket.Exists(ctx, cid)
+			key := cidutil.ShardCID(cid)
+			alreadyHave, err := ss.bucket.Exists(ctx, key)
 			if err != nil {
 				logger.Error("exist check failed", "err", err)
 				continue
@@ -102,13 +104,13 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			// in cleanup mode do some extra checks:
 			// - validate CID, delete if invalid (doesn't apply to Qm CIDs because their hash is not the CID)
-			if cleanupMode && alreadyHave && !isLegacyCID(cid) {
-				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
-					err := validateCID(cid, r)
+			if cleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
+				if r, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+					err := cidutil.ValidateCID(cid, r)
 					r.Close()
 					if err != nil {
 						logger.Error("deleting invalid CID", "err", err)
-						ss.bucket.Delete(ctx, cid)
+						ss.bucket.Delete(ctx, key)
 						alreadyHave = false
 					}
 				}

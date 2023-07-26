@@ -3,17 +3,14 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"io"
+	"mediorum/cidutil"
 	"mime"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
-	"github.com/multiformats/go-multihash"
 	"github.com/oklog/ulid/v2"
 )
 
@@ -160,7 +157,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			formFileCID, err := computeFileHeaderCID(formFile)
+			formFileCID, err := cidutil.ComputeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
 				return
@@ -213,7 +210,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
-	if isLegacyCID(jobID) {
+	if cidutil.IsLegacyCID(jobID) {
 		c.SetParamNames("dirCid", "fileName")
 		c.SetParamValues(jobID, variant)
 		return ss.serveLegacyDirCid(c)
@@ -250,39 +247,4 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
 	}
-}
-
-func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
-	f, err := fh.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	return computeFileCID(f)
-}
-
-func computeFileCID(f io.ReadSeeker) (string, error) {
-	defer f.Seek(0, 0)
-	builder := cid.V1Builder{}
-	hash, err := multihash.SumStream(f, multihash.SHA2_256, -1)
-	if err != nil {
-		return "", err
-	}
-	cid, err := builder.Sum(hash)
-	if err != nil {
-		return "", err
-	}
-	return cid.String(), nil
-}
-
-// note: any Qm CID will be invalid because its hash won't match the contents
-func validateCID(expectedCID string, f io.ReadSeeker) error {
-	computed, err := computeFileCID(f)
-	if err != nil {
-		return err
-	}
-	if computed != expectedCID {
-		return fmt.Errorf("expected cid: %s but contents hashed to %s", expectedCID, computed)
-	}
-	return nil
 }
