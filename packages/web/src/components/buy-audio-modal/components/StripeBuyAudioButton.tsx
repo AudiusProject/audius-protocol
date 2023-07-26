@@ -5,6 +5,7 @@ import {
   buyAudioSelectors,
   buyAudioActions
 } from '@audius/common'
+import { loadStripeOnramp } from '@stripe/crypto'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -27,10 +28,6 @@ const {
 
 const STRIPE_PUBLISHABLE_KEY =
   process.env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
-
-// TODO: Replace this with Stripe npm package when available
-// @ts-ignore
-const StripeOnRamp = window.StripeOnramp
 
 const messages = {
   belowThreshold: 'Link by Stripe requires a purchase minimum of $1 USD'
@@ -73,7 +70,15 @@ export const StripeBuyAudioButton = () => {
         amount,
         destinationWallet: (await getRootSolanaAccount()).publicKey.toString()
       })
-      const stripeOnRampInstance = StripeOnRamp(STRIPE_PUBLISHABLE_KEY)
+      if (!STRIPE_PUBLISHABLE_KEY) {
+        throw new Error('Stripe publishable key not found')
+      }
+      const stripeOnRampInstance = await loadStripeOnramp(
+        STRIPE_PUBLISHABLE_KEY
+      )
+      if (!stripeOnRampInstance) {
+        throw new Error('Stripe onramp instance not found')
+      }
       const session = stripeOnRampInstance.createSession({
         clientSecret: res.client_secret
       })
