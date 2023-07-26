@@ -135,6 +135,13 @@ class SortDirection(str, enum.Enum):
     desc = "desc"
 
 
+class LibraryFilterType(str, enum.Enum):
+    all = "all"
+    repost = "repost"
+    favorite = "favorite"
+    purchase = "purchase"
+
+
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows

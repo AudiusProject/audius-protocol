@@ -365,20 +365,13 @@ def merge_metadata(
             .first()
         )
         prev_cid_metadata = prev_cid_data_record.data if prev_cid_data_record else {}
-    if prev_cid_metadata:
-        # merge previous and current metadata
-        updated_metadata = prev_cid_metadata | params.metadata
+    # merge previous and current metadata
+    updated_metadata = prev_cid_metadata | params.metadata
 
-        # generate a cid
-        updated_metadata_cid = str(
-            generate_metadata_cid_v1(json.dumps(updated_metadata))
-        )
+    # generate a cid
+    updated_metadata_cid = str(generate_metadata_cid_v1(json.dumps(updated_metadata)))
 
-        return updated_metadata, updated_metadata_cid
-    else:
-        params.logger.error(
-            f"Could not find previous metadata blob for {record}", exc_info=True
-        )
+    return updated_metadata, updated_metadata_cid
 
 
 class UserEventMetadata(TypedDict, total=False):

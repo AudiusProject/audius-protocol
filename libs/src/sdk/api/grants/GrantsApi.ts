@@ -23,7 +23,7 @@ export class GrantsApi {
    * When user authorizes app to perform actions on their behalf
    */
   async createGrant(requestParameters: CreateGrantRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'createGrant',
       CreateGrantSchema
     )(requestParameters)
@@ -44,7 +44,7 @@ export class GrantsApi {
    * When user revokes an app's authorization to perform actions on their behalf
    */
   async revokeGrant(requestParameters: RevokeGrantRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'revokeGrant',
       RevokeGrantSchema
     )(requestParameters)

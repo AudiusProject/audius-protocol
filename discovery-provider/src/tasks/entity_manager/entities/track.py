@@ -233,10 +233,7 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
             )
-        if (
-            track_bio is not None
-            and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION
-        ):
+        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
             )
@@ -250,10 +247,12 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Existing track {track_id} does not match user"
             )
 
-        if params.action == Action.UPDATE and not existing_track.is_unlisted and params.metadata.get("is_unlisted"):
-            raise IndexingValidationError(
-                f"Cannot unlist track {track_id}"
-            )
+        if (
+            params.action == Action.UPDATE
+            and not existing_track.is_unlisted
+            and params.metadata.get("is_unlisted")
+        ):
+            raise IndexingValidationError(f"Cannot unlist track {track_id}")
 
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")

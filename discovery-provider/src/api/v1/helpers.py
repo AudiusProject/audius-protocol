@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, cast
+from typing import Dict, Union, cast
 
 from flask_restx import reqparse
 
@@ -10,7 +10,7 @@ from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
-from src.queries.query_helpers import SortDirection, SortMethod
+from src.queries.query_helpers import LibraryFilterType, SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
@@ -549,6 +549,17 @@ user_favorited_tracks_parser.add_argument(
     choices=SortDirection._member_names_,
 )
 
+user_tracks_library_parser = user_favorited_tracks_parser.copy()
+user_tracks_library_parser.remove_argument("current_user")
+user_tracks_library_parser.add_argument(
+    "type",
+    required=False,
+    description="The type of tracks to return: favorited, reposted, purchased, or all. Defaults to favorite",
+    type=str,
+    choices=LibraryFilterType._member_names_,
+    default=LibraryFilterType.favorite,
+)
+
 user_track_listen_count_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
@@ -688,16 +699,20 @@ def format_offset(args, max_offset=MAX_LIMIT):
     return max(min(int(offset), max_offset), MIN_OFFSET)
 
 
-def format_query(args):
+def format_query(args) -> Union[str, None]:
     return args.get("query", None)
 
 
-def format_sort_method(args):
+def format_sort_method(args) -> Union[SortMethod, None]:
     return args.get("sort_method", None)
 
 
-def format_sort_direction(args):
+def format_sort_direction(args) -> Union[SortDirection, None]:
     return args.get("sort_direction", None)
+
+
+def format_library_filter(args) -> LibraryFilterType:
+    return args.get("type", LibraryFilterType.favorite)
 
 
 def get_default_max(value, default, max=None):
