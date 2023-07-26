@@ -66,8 +66,8 @@ export class AudiusABIDecoder {
     return abiDecoder.decodeLogs(logs)
   }
 
-  static decodeAbi (encodedABI: string): Map<string, string> {
-    const decodedABI = AudiusABIDecoder.decodeMethod('EntityManager', encodedABI)
+  static decodeAbi (contractName: string, encodedABI: string): Map<string, string> {
+    const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
     const mapping = new Map()
   
     // map without leading underscore in _userId
@@ -79,7 +79,7 @@ export class AudiusABIDecoder {
   }
 
   static recoverSigner({encodedAbi, chainId, entityManagerAddress } : { encodedAbi: string, chainId: string, entityManagerAddress: string }): string {
-    const decodedAbi = this.decodeAbi(encodedAbi)
+    const decodedAbi = this.decodeAbi('EntityManager', encodedAbi)
     const data = generators.getManageEntityData(
       chainId,
       entityManagerAddress,
