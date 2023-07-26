@@ -76,7 +76,7 @@ const initializeServices = (config: SdkConfig) => {
       ? new AppAuth(config.apiKey, config.apiSecret)
       : new Auth()
 
-  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector()
+  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector({ logger })
 
   const storageNodeSelector =
     config.services?.storageNodeSelector ??

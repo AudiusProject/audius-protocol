@@ -28,6 +28,7 @@ import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import type { LoggerService } from '../Logger'
 
 const getPathFromUrl = (url: string) => {
   const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/
@@ -71,9 +72,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
   private set isBehind(isBehind: boolean) {
     if (isBehind && !this._isBehind) {
-      this.warn('using behind discovery node', this.selectedNode)
+      this.logger.warn('using behind discovery node', this.selectedNode)
     } else if (!isBehind && this._isBehind) {
-      this.info('discovery node no longer behind', this.selectedNode)
+      this.logger.info('discovery node no longer behind', this.selectedNode)
     }
     this._isBehind = isBehind
   }
@@ -115,6 +116,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   public removeEventListener
 
+  private readonly logger: LoggerService
+
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
@@ -141,6 +144,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     )
     this.removeEventListener = this.eventEmitter.removeListener.bind(
       this.eventEmitter
+    )
+
+    this.logger = this.config.logger.createPrefixedLogger(
+      '[discover-node-selector]'
     )
   }
 
@@ -267,7 +274,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.reselectLock = true
 
     try {
-      this.debug('Selecting new discovery node...')
+      this.logger.debug('Selecting new discovery node...')
       const decisionTree: Decision[] = []
 
       // Get all the services we have
@@ -332,7 +339,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             decisionTree.push({
               stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
             })
-            this.error('Failed to select discovery node', decisionTree)
+            this.logger.error('Failed to select discovery node', decisionTree)
             return null
           }
         }
@@ -356,9 +363,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           decisionTree.push({
             stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
           })
-          this.debug('No healthy services found. Attempting another round...', {
-            attemptedServicesCount
-          })
+          this.logger.debug(
+            'No healthy services found. Attempting another round...',
+            {
+              attemptedServicesCount
+            }
+          )
         }
       }
 
@@ -375,7 +385,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         this.selectedNode = selectedService
         this.eventEmitter.emit('change', selectedService)
       }
-      this.info(`Selected discprov ${selectedService}`, decisionTree, {
+      this.logger.info(`Selected discprov ${selectedService}`, decisionTree, {
         attemptedServicesCount
       })
       this.isBehind = false
@@ -407,10 +417,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       if (health !== HealthCheckStatus.HEALTHY) {
         if (reason === 'Aborted') {
           // Ignore aborted requests
-          this.debug('health_check', endpoint, health, reason)
+          this.logger.debug('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.UNHEALTHY) {
           this.unhealthyServices.add(endpoint)
-          this.warn('health_check', endpoint, health, reason)
+          this.logger.warn('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.BEHIND) {
           this.unhealthyServices.add(endpoint)
           if (data) {
@@ -420,12 +430,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
               version: data.version!
             }
           }
-          this.warn('health_check', endpoint, health, reason)
+          this.logger.warn('health_check', endpoint, health, reason)
         }
         throw new Error(`${endpoint} ${health}: ${reason}`)
       } else {
         // We're healthy!
-        this.debug('health_check', endpoint, health)
+        this.logger.debug('health_check', endpoint, health)
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
@@ -435,7 +445,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         ) {
           this.services = data.network.discovery_nodes
         } else {
-          this.warn(
+          this.logger.warn(
             "Couldn't load new service list from healthy service",
             endpoint
           )
@@ -447,7 +457,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     try {
       return await promiseAny(requestPromises)
     } catch (e) {
-      this.error('No healthy nodes', e)
+      this.logger.error('No healthy nodes', e)
       return null
     }
   }
@@ -483,7 +493,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           version: data.version
         }
       }
-      this.warn(
+      this.logger.warn(
         'api_health_check failed, reselecting',
         endpoint,
         health,
@@ -544,7 +554,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     endpoint: string
   }): Promise<Response | undefined> {
     // On request failure, check health_check and reselect if unhealthy
-    this.warn('request failed', endpoint, context)
+    this.logger.warn('request failed', endpoint, context)
     const { health, data, reason } = await getDiscoveryNodeHealthCheck({
       endpoint,
       healthCheckThresholds: this.config.healthCheckThresholds
@@ -568,24 +578,5 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       }
     }
     return undefined
-  }
-
-  private debug(...args: any[]) {
-    console.debug('[audius-sdk][discovery-node-selector]', ...args)
-  }
-
-  /** console.info proxy utility to add a prefix */
-  private info(...args: any[]) {
-    console.info('[audius-sdk][discovery-node-selector]', ...args)
-  }
-
-  /** console.warn proxy utility to add a prefix */
-  private warn(...args: any[]) {
-    console.warn('[audius-sdk][discovery-node-selector]', ...args)
-  }
-
-  /** console.error proxy utility to add a prefix */
-  private error(...args: any[]) {
-    console.warn('[audius-sdk][discovery-node-selector]', ...args)
   }
 }
