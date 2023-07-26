@@ -922,7 +922,6 @@ def test_index_invalid_playlists(app, mocker):
             )
             .first()
         )
-        print(f"asdf current_album {current_album}")
         assert current_album.is_current == True
         assert current_album.is_album == True
         assert current_album.playlist_contents == {"track_ids": []}
