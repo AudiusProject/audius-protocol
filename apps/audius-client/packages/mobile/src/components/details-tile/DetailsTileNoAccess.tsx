@@ -65,7 +65,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderWidth: 1,
     borderColor: palette.neutralLight7,
     borderRadius: spacing(2),
-    gap: spacing(2)
+    gap: spacing(2),
+    width: '100%'
   },
   titleContainer: {
     ...flexRowCentered(),
