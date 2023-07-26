@@ -25,30 +25,32 @@ export const CreatePlaylistSchema = z
 
 export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
 
+export const createUpdatePlaylistMetadataSchema = () =>
+  createUploadPlaylistMetadataSchema()
+    .partial()
+    .merge(
+      z.object({
+        isPrivate: z.optional(z.boolean()),
+        playlistContents: z.optional(
+          z.array(
+            z.object({
+              timestamp: z.number(),
+              metadataTimestamp: z.optional(z.number()),
+              trackId: HashId
+            })
+          )
+        )
+      })
+    )
+    .strict()
+
 export const createUpdatePlaylistSchema = () =>
   z
     .object({
       userId: HashId,
       playlistId: HashId,
       coverArtFile: z.optional(ImageFile),
-      metadata: createUploadPlaylistMetadataSchema()
-        .partial()
-        .merge(
-          z
-            .object({
-              isPrivate: z.optional(z.boolean()),
-              playlistContents: z.optional(
-                z.array(
-                  z.object({
-                    timestamp: z.number(),
-                    metadataTimestamp: z.optional(z.number()),
-                    trackId: HashId
-                  })
-                )
-              )
-            })
-            .strict()
-        ),
+      metadata: createUpdatePlaylistMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()

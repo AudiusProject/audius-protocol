@@ -11,7 +11,6 @@ import {
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import {
   Configuration,
-  Playlist,
   PlaylistsApi as GeneratedPlaylistsApi
 } from '../generated/default'
 import {
@@ -37,12 +36,14 @@ import {
   UnfavoritePlaylistRequest,
   UnfavoritePlaylistSchema,
   UpdatePlaylistRequest,
-  UploadPlaylistRequest
+  UploadPlaylistRequest,
+  createUpdatePlaylistMetadataSchema
 } from './types'
 import { retry3 } from '../../utils/retry'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
+import { pick } from 'lodash'
 import type { LoggerService } from '../../services/Logger'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
@@ -194,7 +195,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         updateMetadata: (playlist) => ({
           ...playlist,
           playlistContents: [
-            ...playlist.playlistContents,
+            ...(playlist.playlistContents ?? []),
             {
               trackId: requestParameters.trackId,
               timestamp: currentBlock.timestamp
@@ -225,7 +226,10 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         userId: requestParameters.userId,
         playlistId: requestParameters.playlistId,
         updateMetadata: (playlist) => {
-          if (playlist.playlistContents.length <= trackIndex) {
+          if (
+            !playlist.playlistContents ||
+            playlist.playlistContents.length <= trackIndex
+          ) {
             throw new Error(`No track exists at index ${trackIndex}`)
           }
           playlist.playlistContents.splice(trackIndex, 1)
@@ -414,7 +418,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       userId: string
       playlistId: string
       updateMetadata: (
-        fetchedMetadata: Playlist
+        fetchedMetadata: UpdatePlaylistRequest['metadata']
       ) => UpdatePlaylistRequest['metadata']
     },
     writeOptions?: WriteOptions
@@ -430,11 +434,15 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       throw new Error(`Could not fetch playlist: ${playlistId}`)
     }
 
+    const supportedUpdateFields = Object.keys(
+      createUpdatePlaylistMetadataSchema().shape
+    )
+
     return await this.updatePlaylist(
       {
         userId,
         playlistId,
-        metadata: updateMetadata(playlist)
+        metadata: updateMetadata(pick(playlist, supportedUpdateFields))
       },
       writeOptions
     )
@@ -501,7 +509,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         const audioResponse = audioResponses[i]
 
         if (!audioResponse) {
-          throw new Error(`Failed to upload track: ${trackMetadata}`)
+          throw new Error(`Failed to upload track: ${trackMetadata.title}`)
         }
 
         // Update metadata to include uploaded CIDs
