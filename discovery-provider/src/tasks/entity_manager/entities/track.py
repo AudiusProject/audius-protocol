@@ -348,9 +348,6 @@ def update_track_record(
 ):
     populate_track_record_metadata(track, metadata, handle, params.action)
 
-    # ensure txhash is from the current tx
-    track.txhash = params.txhash
-
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:
         track.cover_art_sizes = track.cover_art
