@@ -9,6 +9,8 @@ import (
 	"io"
 	"log"
 	"mediorum/cidutil"
+	"strings"
+	"sync"
 
 	_ "embed"
 
@@ -87,33 +89,51 @@ func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
 		if err != nil {
 			log.Fatalf("error listing bucket: %v", err)
 		}
-		keys = append(keys, obj.Key)
+		if strings.HasPrefix(obj.Key, "ba") { // ignore "my_cuckoo" key and keys that already migrated (in case of restart halfway through)
+			keys = append(keys, obj.Key)
+		}
 	}
+
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5) // semaphore to limit 5 uploads at a time
 
 	// migrate keys to sharded locations
 	for _, key := range keys {
-		newKey := cidutil.ShardCID(key)
-		fmt.Printf("migrating %s to %s\n", key, newKey)
-		r, err := bucket.NewReader(ctx, key, nil)
-		if err != nil {
-			log.Fatalf("error creating reader for unsharded key: %v", err)
-		}
-		defer r.Close()
-		w, err := bucket.NewWriter(ctx, newKey, nil)
-		if err != nil {
-			log.Fatalf("error creating writer to sharded key: %v", err)
-		}
-		defer w.Close()
-		_, err = io.Copy(w, r)
-		if err != nil {
-			log.Fatalf("error migrating blob: %v", err)
-		}
+		wg.Add(1)
 
-		err = bucket.Delete(ctx, key)
-		if err != nil {
-			log.Fatalf("error deleting old blob: %v", err)
-		}
+		go func(k string) {
+			defer wg.Done()
+
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			newKey := cidutil.ShardCID(k)
+			r, err := bucket.NewReader(ctx, k, nil)
+			if err != nil {
+				log.Fatalf("error creating reader for unsharded key: %v (migrating %s to %s)", err, k, newKey)
+			}
+			defer r.Close()
+
+			w, err := bucket.NewWriter(ctx, newKey, nil)
+			if err != nil {
+				log.Fatalf("error creating writer to sharded key: %v (migrating %s to %s)", err, k, newKey)
+			}
+			defer w.Close()
+
+			_, err = io.Copy(w, r)
+			if err != nil {
+				log.Fatalf("error migrating blob: %v (migrating %s to %s)", err, k, newKey)
+			}
+
+			err = bucket.Delete(ctx, k)
+			if err != nil {
+				log.Fatalf("error deleting old blob: %v (migrating %s to %s)", err, k, newKey)
+			}
+		}(key)
 	}
 
+	wg.Wait()
+
 	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
+	fmt.Println("finished sharding CDK bucket")
 }
