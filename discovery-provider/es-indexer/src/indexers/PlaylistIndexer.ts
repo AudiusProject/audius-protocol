@@ -215,8 +215,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
     row.repost_count = row.reposted_by.length
     row.save_count = row.saved_by.length
     const slug = row.routes[row.routes.length - 1]
-    const collection_type = row.is_album ? 'album' : 'playlist'
-    row.permalink = `/${row.user.handle}/${collection_type}/${slug}`
+    const collectionType = row.is_album ? 'album' : 'playlist'
+    row.permalink = `/${row.user.handle}/${collectionType}/${slug}`
   }
 
   private async getTracks(trackIds: number[]) {
