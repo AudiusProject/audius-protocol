@@ -9,6 +9,7 @@ import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from './TrackUploadHelper'
+import { Logger } from '../../services/Logger'
 import fs from 'fs'
 import path from 'path'
 
@@ -70,19 +71,22 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

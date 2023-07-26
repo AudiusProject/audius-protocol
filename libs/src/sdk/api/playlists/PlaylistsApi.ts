@@ -11,7 +11,6 @@ import {
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import {
   Configuration,
-  Playlist,
   PlaylistsApi as GeneratedPlaylistsApi
 } from '../generated/default'
 import {
@@ -37,12 +36,15 @@ import {
   UnfavoritePlaylistRequest,
   UnfavoritePlaylistSchema,
   UpdatePlaylistRequest,
-  UploadPlaylistRequest
+  UploadPlaylistRequest,
+  createUpdatePlaylistMetadataSchema
 } from './types'
 import { retry3 } from '../../utils/retry'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
+import { pick } from 'lodash'
+import type { LoggerService } from '../../services/Logger'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
@@ -51,13 +53,15 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
+    this.logger = logger.createPrefixedLogger('[playlists-api]')
   }
 
-  /**
+  /** @hidden
    * Create a playlist from existing tracks
    */
   async createPlaylist(
@@ -82,7 +86,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ))
 
@@ -123,7 +127,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
   }
 
-  /**
+  /** @hidden
    * Upload a playlist
    * Uploads the specified tracks and combines them into a playlist
    */
@@ -141,7 +145,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return await this.uploadPlaylistInternal(parsedParameters, writeOptions)
   }
 
-  /**
+  /** @hidden
    * Publish a playlist
    * Changes a playlist from private to public
    */
@@ -168,7 +172,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Add a single track to the end of a playlist
    * For more control use updatePlaylist
    */
@@ -191,7 +195,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         updateMetadata: (playlist) => ({
           ...playlist,
           playlistContents: [
-            ...playlist.playlistContents,
+            ...(playlist.playlistContents ?? []),
             {
               trackId: requestParameters.trackId,
               timestamp: currentBlock.timestamp
@@ -203,7 +207,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Removes a single track at the given index of playlist
    * For more control use updatePlaylist
    */
@@ -222,7 +226,10 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         userId: requestParameters.userId,
         playlistId: requestParameters.playlistId,
         updateMetadata: (playlist) => {
-          if (playlist.playlistContents.length <= trackIndex) {
+          if (
+            !playlist.playlistContents ||
+            playlist.playlistContents.length <= trackIndex
+          ) {
             throw new Error(`No track exists at index ${trackIndex}`)
           }
           playlist.playlistContents.splice(trackIndex, 1)
@@ -236,7 +243,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Update a playlist
    */
   async updatePlaylist(
@@ -253,7 +260,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return await this.updatePlaylistInternal(parsedParameters, writeOptions)
   }
 
-  /**
+  /** @hidden
    * Delete a playlist
    */
   async deletePlaylist(
@@ -276,7 +283,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Favorite a playlist
    */
   async favoritePlaylist(
@@ -300,7 +307,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unfavorite a playlist
    */
   async unfavoritePlaylist(
@@ -323,7 +330,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Repost a playlist
    */
   async repostPlaylist(
@@ -347,7 +354,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unrepost a playlist
    */
   async unrepostPlaylist(
@@ -370,7 +377,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @internal
    * Combines the metadata for a track and a collection (playlist or album),
    * taking the metadata from the playlist when the track is missing it.
    */
@@ -399,7 +406,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return trackMetadata
   }
 
-  /**
+  /** @internal
    * Update helper method that first fetches a playlist and then updates it
    */
   private async fetchAndUpdatePlaylist(
@@ -411,7 +418,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       userId: string
       playlistId: string
       updateMetadata: (
-        fetchedMetadata: Playlist
+        fetchedMetadata: UpdatePlaylistRequest['metadata']
       ) => UpdatePlaylistRequest['metadata']
     },
     writeOptions?: WriteOptions
@@ -427,11 +434,15 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       throw new Error(`Could not fetch playlist: ${playlistId}`)
     }
 
+    const supportedUpdateFields = Object.keys(
+      createUpdatePlaylistMetadataSchema().shape
+    )
+
     return await this.updatePlaylist(
       {
         userId,
         playlistId,
-        metadata: updateMetadata(playlist)
+        metadata: updateMetadata(pick(playlist, supportedUpdateFields))
       },
       writeOptions
     )
@@ -464,7 +475,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ),
       ...trackFiles.map(
@@ -477,7 +488,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
                 template: 'audio'
               }),
             (e) => {
-              console.log('Retrying uploadTrackAudio', e)
+              this.logger.info('Retrying uploadTrackAudio', e)
             }
           )
       )
@@ -498,7 +509,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         const audioResponse = audioResponses[i]
 
         if (!audioResponse) {
-          throw new Error(`Failed to upload track: ${trackMetadata}`)
+          throw new Error(`Failed to upload track: ${trackMetadata.title}`)
         }
 
         // Update metadata to include uploaded CIDs
@@ -594,7 +605,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ))
 

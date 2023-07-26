@@ -1,5 +1,6 @@
 import type { Auth } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
+import type { LoggerService } from '../Logger'
 
 export type StorageNodeSelectorService = {
   getSelectedNode: () => Promise<string | null>
@@ -15,4 +16,5 @@ export type StorageNodeSelectorConfig = {
   bootstrapNodes?: StorageNode[]
   auth: Auth
   discoveryNodeSelector: DiscoveryNodeSelectorService
+  logger: LoggerService
 }

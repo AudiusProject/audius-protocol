@@ -213,6 +213,24 @@ def test_index_valid_user(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmCreateUser2": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Forrest",
+            "handle": "forrest",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmForrestProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmForrestProfile",
+            "bio": "this is forrest",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {"contents": []},
+            "events": None,
+            "user_id": USER_ID_OFFSET + 1,
+        },
         "QmCreateUser3": {
             "is_verified": False,
             "is_deactivated": False,
@@ -236,6 +254,7 @@ def test_index_valid_user(app, mocker):
     update_user1_artist_pick_json = json.dumps(test_metadata["QmUpdateUser1ArtistPick"])
     update_user1_json = json.dumps(test_metadata["QmUpdateUser1"])
     update_user2_json = json.dumps(test_metadata["QmUpdateUser2"])
+    create_user2_json = json.dumps(test_metadata["QmCreateUser2"])
     create_user3_json = json.dumps(test_metadata["QmCreateUser3"])
 
     tx_receipts = {
@@ -289,7 +308,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
-                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {update_user1_json}}}',
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {create_user2_json}}}',
                         "_signer": "user2wallet",
                     }
                 )

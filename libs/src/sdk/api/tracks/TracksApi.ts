@@ -1,5 +1,5 @@
 import snakecaseKeys from 'snakecase-keys'
-import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {
   Configuration,
@@ -35,20 +35,10 @@ import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
-
-// Subclass type masking adapted from Damir Arh's method:
-// https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
-// Get the type of the generated TracksApi excluding streamTrack
-type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
-  [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
-} & BaseAPI
-
-// Create a new "class" that masks our generated TracksApi with the new type
-const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
-  GeneratedTracksApi
+import type { LoggerService } from '../../services/Logger'
 
 // Extend that new class
-export class TracksApi extends TracksApiWithoutStream {
+export class TracksApi extends GeneratedTracksApi {
   private readonly trackUploadHelper: TrackUploadHelper
 
   constructor(
@@ -56,16 +46,21 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
+    this.logger = logger.createPrefixedLogger('[tracks-api]')
   }
 
   /**
    * Get the url of the track's streamable mp3 file
    */
-  async streamTrack(requestParameters: StreamTrackRequest): Promise<string> {
+  // @ts-expect-error
+  override async streamTrack(
+    requestParameters: StreamTrackRequest
+  ): Promise<string> {
     if (
       requestParameters.trackId === null ||
       requestParameters.trackId === undefined
@@ -84,7 +79,7 @@ export class TracksApi extends TracksApiWithoutStream {
     return `${host}${BASE_PATH}${path}`
   }
 
-  /**
+  /** @hidden
    * Upload a track
    */
   async uploadTrack(
@@ -124,7 +119,7 @@ export class TracksApi extends TracksApiWithoutStream {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          this.logger.info('Retrying uploadTrackCoverArt', e)
         }
       ),
       retry3(
@@ -136,7 +131,7 @@ export class TracksApi extends TracksApiWithoutStream {
             options: uploadOptions
           }),
         (e) => {
-          console.log('Retrying uploadTrackAudio', e)
+          this.logger.info('Retrying uploadTrackAudio', e)
         }
       )
     ])
@@ -170,7 +165,7 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
-  /**
+  /** @hidden
    * Update a track
    */
   async updateTrack(
@@ -207,7 +202,7 @@ export class TracksApi extends TracksApiWithoutStream {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          this.logger.info('Retrying uploadTrackCoverArt', e)
         }
       ))
 
@@ -237,7 +232,7 @@ export class TracksApi extends TracksApiWithoutStream {
             auth: this.auth
           }),
         (e) => {
-          console.log('Retrying editFileV2', e)
+          this.logger.info('Retrying editFileV2', e)
         }
       )
 
@@ -262,7 +257,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Delete a track
    */
   async deleteTrack(
@@ -285,7 +280,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Favorite a track
    */
   async favoriteTrack(
@@ -309,7 +304,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Unfavorite a track
    */
   async unfavoriteTrack(
@@ -332,7 +327,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Repost a track
    */
   async repostTrack(
@@ -356,7 +351,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Unrepost a track
    */
   async unrepostTrack(
