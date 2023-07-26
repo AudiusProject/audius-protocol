@@ -678,12 +678,16 @@ def test_index_invalid_playlists(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-    private_metadata = {
+    test_metadata = {
         "UpdatePlaylistInvalidPrivate": {
             "is_private": True
         },
+        "UpdatePlaylistInvalidAlbum": {
+            "is_album": True
+        },
     }
-    private_metadata = json.dumps(private_metadata["UpdatePlaylistInvalidPrivate"])
+    private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
+    album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
 
     tx_receipts = {
         # invalid create
@@ -800,6 +804,20 @@ def test_index_invalid_playlists(app, mocker):
                 )
             },
         ],
+        "UpdatePlaylistInvalidAlbum": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidAlbum", "data": {album_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # invalid deletes
         "DeletePlaylistInvalidSigner": [
             {
@@ -882,9 +900,11 @@ def test_index_invalid_playlists(app, mocker):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 1  # no new playlists indexed
-        assert all_playlists[0].is_current == True
-        assert all_playlists[0].is_private == False
+        assert len(all_playlists) == 2
+        current_playlist: List[Playlist] = session.query(Playlist).filter(Playlist.is_current == True).first()
+        assert current_playlist.is_current == True
+        assert current_playlist.is_private == False
+        assert current_playlist.is_album == False
 
 
 def test_invalid_playlist_description(app, mocker):
