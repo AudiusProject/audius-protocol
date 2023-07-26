@@ -1,3 +1,5 @@
+<hr />
+
 ### updateProfile
 
 #### updateProfile(`requestParameters`, `writeOptions?`)
@@ -35,8 +37,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `coverArtFile`       | `File`                                                                                                     | `undefined`   | No        |                                                                                                                                                                           |
 | `metadata`           | `{ name?: string; bio?: string; location?: string; isDeactivated?: boolean; artistPickTrackId?: string; }` | N/A           | Yes       |                                                                                                                                                                           |
 | `onProgress`         | `(progress: number) => void`                                                                               | `undefined`   | No        | Callback for receiving updates on the progress of the profile pic and/or cover art upload. Not relevant if neither `coverArtFile` nor `profilePictureFile` are specified. |
-
-| `userId` | `string` | N/A | Yes | |
+| `userId`             | `string`                                                                                                   | N/A           | Yes       |                                                                                                                                                                           |
 
 #### `writeOptions` parameters (advanced)
 

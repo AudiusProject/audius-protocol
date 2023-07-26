@@ -85,21 +85,6 @@ module.exports = {
             },
             {
               type: "doc",
-              label: "Playlists (Write)",
-              id: "developers/write-playlists",
-            },
-            {
-              type: "doc",
-              label: "Albums (Write)",
-              id: "developers/write-albums",
-            },
-            {
-              type: "doc",
-              label: "Tracks (Write)",
-              id: "developers/write-tracks",
-            },
-            {
-              type: "doc",
               label: "Resolve",
               id: "developers/resolve-api",
             },

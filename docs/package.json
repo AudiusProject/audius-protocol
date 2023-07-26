@@ -6,7 +6,7 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "start-remote": "npm run start -- --host 0.0.0.0",
-    "build": "docusaurus build",
+    "build": "rm merged.txt && docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
@@ -15,7 +15,7 @@
     "write-heading-ids": "docusaurus write-heading-ids",
     "prepare:translations": "sh scripts/prepare-translations.sh",
     "link-typedoc-plugin": "ln -sf $(pwd)/typedoc-plugin-audius-theme $(pwd)/node_modules",
-    "init-sdk-docgen": "cd $(pwd)/node_modules/@audius/sdk && npm i && cd ../../../ && npm run link-typedoc-plugin"
+    "init-sdk-docgen": "cd $(pwd)/node_modules/@audius/sdk && npm i && cd ../../typedoc-plugin-audius-theme && npm run build && cd ../../ && npm run link-typedoc-plugin"
   },
   "dependencies": {
     "@audius/sdk": "file:../libs",

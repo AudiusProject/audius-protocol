@@ -4,7 +4,9 @@ Enable users to either authorize your app to perform actions on their behalf (i.
 
 ## Methods
 
-### oauth.init(params: {`successCallback`, `errorCallback`})
+### init
+
+#### init(`params`)
 
 Enables the Audius OAuth functionality. Call this before using any other `oauth` methods.
 
@@ -13,6 +15,7 @@ Enables the Audius OAuth functionality. Call this before using any other `oauth`
 - successCallback `(profile: UserProfile) => void` - function to be called when the user successfully authorizes or authenticates with Audius. This function will be called with the user's profile information, which is an object with the following shape:
 
   ```typescript
+  // `UserProfile` type:
   {
     userId: number; // unique Audius user identifier
     email: string;
@@ -43,7 +46,9 @@ audiusSdk.oauth.init({
 });
 ```
 
-### oauth.renderButton(params: {element, scope, buttonOptions})
+### renderButton
+
+#### renderButton(`params`)
 
 Replaces the element passed in the first parameter with the Log In with Audius button.
 
@@ -95,7 +100,9 @@ audiusSdk.renderButton({
 });
 ```
 
-### oauth.login(params: {scope})
+### login
+
+#### login(`params`)
 
 Opens the Log In with Audius popup, which begins the authentication flow. Use this if you have your own link or button implementation, and don't want to use `renderButton`.
 
@@ -123,7 +130,9 @@ function logInWithAudius() {
 <button onclick="logInWithAudius()">Continue with Audius!</button>
 ```
 
-### oauth.isWriteAccessGranted(params: {userId})
+### isWriteAccessGranted
+
+#### isWriteAccessGranted(`params`)
 
 Checks whether your app has write permissions to the given user's account.
 
@@ -131,7 +140,7 @@ Checks whether your app has write permissions to the given user's account.
 
 - userId `string` - User's Audius user ID
 
-**Returns**: Promise/<boolean/>
+**Returns**: `Promise<boolean>`
 
 **Example**
 

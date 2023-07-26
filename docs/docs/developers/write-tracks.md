@@ -1,3 +1,5 @@
+<hr />
+
 ### uploadTrack
 
 #### uploadTrack(`requestParameters`, `writeOptions?`)

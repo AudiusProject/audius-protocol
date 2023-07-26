@@ -15,7 +15,7 @@ The Audius JavaScript (TypeScript) SDK allows you to easily interact with the Au
 - 🔍 Search and display users, tracks, and playlists
 - 🎵 Stream and upload tracks
 - ❤️ Favorite, repost, and curate playlists
-- ✍️ Allow your users to [log in with their Audius account](/developers/log-in-with-audius) and act on their behalf
+- ✍️ Allow your users to [log in with their Audius account](https://docs.audius.org/developers/log-in-with-audius) and act on their behalf
 
 ...and much more!
 
@@ -62,22 +62,22 @@ If you plan to write data to Audius (e.g. upload a track, favorite a playlist, e
 ### Node.js example
 
 ```js title="In Node.js environment"
-import { sdk } from "@audius/sdk";
+import { sdk } from '@audius/sdk'
 
 // If client-side, do NOT include the API secret:
-const audiusSdk = sdk({ apiKey: "Your API Key goes here" });
+const audiusSdk = sdk({ apiKey: 'Your API Key goes here' })
 
 // If server-side, include the API secret if you plan to write data using the SDK – e.g. upload a track, favorite a playlist, etc.
 const audiusSdk = sdk({
-  apiKey: "Your API Key goes here",
-  apiSecret: "Your API Secret goes here",
-});
+  apiKey: 'Your API Key goes here',
+  apiSecret: 'Your API Secret goes here'
+})
 ```
 
 ### HTML + JS example
 
 ```js title="In web page"
-const audiusSdk = window.audiusSdk({ apiKey: "Your API key goes here" });
+const audiusSdk = window.audiusSdk({ apiKey: 'Your API key goes here' })
 ```
 
 :::warning
@@ -98,51 +98,51 @@ If you included your API secret in the previous step, you'll be able do both rea
 
 ```js
 // Fetch your first track!
-const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
-console.log(track, "Track fetched!");
+const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
+console.log(track, 'Track fetched!')
 
 // If you initialized the SDK with your API secret, you can write data as well.
 // For example, to favorite the track above:
 const userId = (
   await audiusSdk.users.getUserByHandle({
-    handle: "Your Audius handle goes here",
+    handle: 'Your Audius handle goes here'
   })
-).data?.id;
+).data?.id
 const track = await audiusSdk.tracks.favoriteTrack({
-  trackId: "D7KyD",
-  userId,
-});
+  trackId: 'D7KyD',
+  userId
+})
 ```
 
 ## Full Node.js example
 
 ```js title="app.js" showLineNumbers
-import Web3 from "web3";
-import { sdk } from "@audius/sdk";
+import Web3 from 'web3'
+import { sdk } from '@audius/sdk'
 
 // If running in a browser, set window.Web3
-window.Web3 = Web3;
+window.Web3 = Web3
 
 const audiusSdk = sdk({
-  apiKey: "Your API Key goes here",
-  apiSecret: "Your API Secret goes here", // EXCLUDE this if running client-side
-});
+  apiKey: 'Your API Key goes here',
+  apiSecret: 'Your API Secret goes here' // EXCLUDE this if running client-side
+})
 
-const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
-console.log(track, "Track fetched!");
+const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
+console.log(track, 'Track fetched!')
 
 const userId = (
   await audiusSdk.users.getUserByHandle({
-    handle: "Your Audius handle goes here",
+    handle: 'Your Audius handle goes here'
   })
-).data?.id;
+).data?.id
 
 // Only possible if `apiSecret` is passed into `sdk` above:
 const track = await audiusSdk.tracks.favoriteTrack({
-  trackId: "D7KyD",
-  userId,
-});
-console.log("Track favorited!");
+  trackId: 'D7KyD',
+  userId
+})
+console.log('Track favorited!')
 ```
 
 :::note
@@ -162,13 +162,13 @@ If your bundler doesn't automatically polyfill node libraries (like when using c
     <script>
       const fn = async () => {
         const audiusSdk = window.audiusSdk({
-          apiKey: "Your API Key goes here",
-        });
-        const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
-        console.log(track, "Track fetched!");
-      };
+          apiKey: 'Your API Key goes here'
+        })
+        const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
+        console.log(track, 'Track fetched!')
+      }
 
-      fn();
+      fn()
     </script>
   </head>
   <body>
@@ -179,6 +179,6 @@ If your bundler doesn't automatically polyfill node libraries (like when using c
 
 ## What's next?
 
-- [Get authorization](/developers/log-in-with-audius) to access your app's users' Audius accounts
+- [Get authorization](https://docs.audius.org/developers/log-in-with-audius) to access your app's users' Audius accounts
 
-- [Explore the API docs](/developers/sdk/classes/TracksApi) to see what else you can do with the Audius SDK
+- [Explore the API docs](https://docs.audius.org/developers/sdk/classes/TracksApi) to see what else you can do with the Audius SDK

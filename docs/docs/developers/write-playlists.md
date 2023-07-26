@@ -1,3 +1,5 @@
+<hr />
+
 ### createPlaylist
 
 #### createPlaylist(`requestParameters`, `writeOptions?`)
@@ -148,7 +150,7 @@ Return type:
 
 #### addTrackToPlaylist(`requestParameters`, `writeOptions?`)
 
-Add a single track to the end of a playlist. For more control, use [updatePlaylist](#updatePlaylist).
+Add a single track to the end of a playlist. For more control, use [updatePlaylist](#updateplaylist).
 
 Example:
 

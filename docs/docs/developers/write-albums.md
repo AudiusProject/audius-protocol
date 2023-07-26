@@ -1,3 +1,5 @@
+<hr />
+
 ### uploadAlbum
 
 #### uploadAlbum(`requestParameters`, `writeOptions?`)

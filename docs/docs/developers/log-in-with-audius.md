@@ -130,7 +130,7 @@ audiusSdk.oauth.renderButton({
 <div id="audiusLogInButton"></div>
 ```
 
-[`renderButton`](/developers/sdk-oauth-methods#oauthrenderbuttonparams-element-scope-buttonoptions) replaces the given `element` with the Log In with Audius button.
+[`renderButton`](/developers/sdk-oauth-methods#oauthrenderbutton) replaces the given `element` with the Log In with Audius button.
 
 If `scope` is set to `"write"`, the user will be prompted to grant your app read/write access to their account (allowing your app to perform actions like uploading a track on the user's behalf). If `scope` is set to `"read"`, the user will be prompted to grant your app read-only access to their account.
 
@@ -148,7 +148,7 @@ Use [this playground](https://9ncjui.csb.app/) to explore the different button o
 
 :::
 
-If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthloginparams-scope).
+If you don't want to use `renderButton`, you can implement a login button yourself and invoke the login popup with [`audiusSdk.oauth.login`](/developers/sdk-oauth-methods#oauthlogin).
 
 <details>
 <summary>Optional: Show loader until the button is ready</summary>
@@ -441,6 +441,6 @@ const track = await audiusSdk.tracks.favoriteTrack({
 });
 ```
 
-See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/classes) for further reading.
+See [Getting Started](/developers/sdk) with the SDK or [the SDK methods reference](/developers/sdk/classes/TracksApi) for further reading.
 
 #### [A quick note on email](#retrieving-email-addresses)
