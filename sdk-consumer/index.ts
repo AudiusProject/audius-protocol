@@ -33,6 +33,7 @@ import {
   RepostAlbumRequest,
   UnrepostAlbumRequest,
   UpdateProfileRequest,
+  Logger,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -59,6 +60,10 @@ const audiusSdk = sdk({
       web3ProviderUrl: developmentConfig.web3ProviderUrl,
       contractAddress: developmentConfig.entityManagerContractAddress,
       identityServiceUrl: developmentConfig.identityServiceUrl,
+      logger: new Logger(),
+    }),
+    logger: new Logger({
+      logLevel: "info",
     }),
   },
   apiKey: "",

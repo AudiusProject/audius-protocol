@@ -3,6 +3,7 @@ import type {
   EntityManagerService,
   WriteOptions
 } from '../../services/EntityManager/types'
+import type { LoggerService } from '../../services/Logger'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
@@ -31,13 +32,15 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    auth: AuthService
+    auth: AuthService,
+    logger: LoggerService
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
       storage,
       entityManager,
-      auth
+      auth,
+      logger
     )
   }
 

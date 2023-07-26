@@ -100,9 +100,10 @@ describe('AlbumsApi', () => {
   beforeAll(() => {
     albums = new AlbumsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      logger
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

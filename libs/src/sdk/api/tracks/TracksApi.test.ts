@@ -74,9 +74,10 @@ describe('TracksApi', () => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

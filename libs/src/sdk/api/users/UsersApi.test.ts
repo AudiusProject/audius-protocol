@@ -49,9 +49,10 @@ describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

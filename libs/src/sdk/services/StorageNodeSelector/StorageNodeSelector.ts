@@ -96,7 +96,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
         this.initialDiscoveryFetchPromise,
         new Promise<void>((resolve) =>
           setTimeout(() => {
-            console.warn('List of storage nodes could not be fetched')
+            this.logger.warn('List of storage nodes could not be fetched')
             resolve()
           }, DISCOVERY_RESPONSE_TIMEOUT)
         )

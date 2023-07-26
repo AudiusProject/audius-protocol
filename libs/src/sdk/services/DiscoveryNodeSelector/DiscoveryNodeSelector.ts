@@ -574,7 +574,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         // Retry once on new endpoint
         return await context.fetch(`${newEndpoint}${path}`, context.init)
       } catch (e) {
-        console.error('Retry on new node failed', newEndpoint)
+        this.logger.error('Retry on new node failed', newEndpoint)
       }
     }
     return undefined

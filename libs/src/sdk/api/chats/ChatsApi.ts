@@ -61,6 +61,7 @@ import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeS
 import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import type { LoggerService } from '../../services/Logger'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
 
@@ -97,7 +98,8 @@ export class ChatsApi
   constructor(
     config: Configuration,
     private readonly auth: AuthService,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
+    private readonly logger: LoggerService
   ) {
     super(config)
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
@@ -117,6 +119,8 @@ export class ChatsApi
         })
       }
     })
+
+    this.logger = logger.createPrefixedLogger('[chats-api]')
   }
 
   // #region QUERY
@@ -227,7 +231,7 @@ export class ChatsApi
     try {
       sharedSecret = await this.getChatSecret(chatId)
     } catch (e) {
-      console.error("[audius-sdk] Couldn't get chat secret", e)
+      this.logger.error("[audius-sdk] Couldn't get chat secret", e)
       throw new Error("[audius-sdk] Couldn't get chat secret")
     }
     const path = `/comms/chats/${chatId}/messages`
@@ -260,7 +264,7 @@ export class ChatsApi
           sharedSecret,
           base64.decode(m.message)
         ).catch((e) => {
-          console.error(
+          this.logger.error(
             "[audius-sdk]: Error: Couldn't decrypt chat message",
             m,
             e
@@ -683,7 +687,7 @@ export class ChatsApi
         )
       }
     } catch (e) {
-      console.error(
+      this.logger.error(
         "[audius-sdk]: Error: Couldn't decrypt last chat message",
         c,
         e
@@ -800,7 +804,7 @@ export class ChatsApi
                 sharedSecret,
                 base64.decode(data.rpc.params.message)
               ).catch((e) => {
-                console.error(
+                this.logger.error(
                   "[audius-sdk]: Error: Couldn't decrypt websocket chat message",
                   data,
                   e

@@ -52,7 +52,12 @@ export const sdk = (config: SdkConfig) => {
   // Initialize OAuth
   const oauth =
     typeof window !== 'undefined'
-      ? new OAuth({ appName, apiKey, usersApi: apis.users })
+      ? new OAuth({
+          appName,
+          apiKey,
+          usersApi: apis.users,
+          logger: services.logger
+        })
       : undefined
 
   return {
@@ -62,14 +67,14 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
+  const defaultLogger = new Logger()
+  const logger = config.services?.logger ?? defaultLogger
+
   if (config.apiSecret && isBrowser) {
-    console.warn(
+    logger.warn(
       "apiSecret should only be provided server side so that it isn't exposed"
     )
   }
-
-  const defaultLogger = new Logger()
-  const logger = config.services?.logger ?? defaultLogger
 
   const defaultAuthService =
     config.apiKey && config.apiSecret
@@ -93,7 +98,7 @@ const initializeServices = (config: SdkConfig) => {
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
 
-  const defaultStorage = new Storage({ storageNodeSelector })
+  const defaultStorage = new Storage({ storageNodeSelector, logger })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector: storageNodeSelector,
@@ -127,25 +132,29 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const users = new UsersApi(
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
@@ -156,7 +165,8 @@ const initializeApis = ({
       middleware
     }),
     services.auth,
-    services.discoveryNodeSelector
+    services.discoveryNodeSelector,
+    services.logger
   )
   const grants = new GrantsApi(
     generatedApiClientConfig,
