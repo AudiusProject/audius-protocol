@@ -370,7 +370,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /** @ignore
+  /** @internal
    * Combines the metadata for a track and a collection (playlist or album),
    * taking the metadata from the playlist when the track is missing it.
    */
@@ -378,7 +378,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     trackMetadata: PlaylistTrackMetadata,
     playlistMetadata: PlaylistMetadata
   ) {
-    this.unrepostPlaylist
     const metadata = trackMetadata
 
     if (!metadata.mood) metadata.mood = playlistMetadata.mood
@@ -400,7 +399,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return trackMetadata
   }
 
-  /** @ignore
+  /** @internal
    * Update helper method that first fetches a playlist and then updates it
    */
   private async fetchAndUpdatePlaylist(
