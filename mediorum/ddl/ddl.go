@@ -92,7 +92,9 @@ func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
 		if err != nil {
 			log.Fatalf("error listing bucket: %v", err)
 		}
-		if strings.HasPrefix(obj.Key, "ba") && !strings.Contains(obj.Key, "/") { // ignore "my_cuckoo" key and keys that already migrated (in case of restart halfway through)
+		// ignore "my_cuckoo" key and keys that already migrated (in case of restart halfway through)
+		// also ignore .tmp files that fileblob creates
+		if strings.HasPrefix(obj.Key, "ba") && !strings.Contains(obj.Key, "/") && !strings.HasSuffix(obj.Key, ".tmp") {
 			keys = append(keys, obj.Key)
 		}
 	}
