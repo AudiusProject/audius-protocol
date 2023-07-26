@@ -52,6 +52,8 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: "http://audius-protocol-discovery-provider-1",
 });
 
+const logger = new Logger({ logLevel: "info" });
+
 const audiusSdk = sdk({
   services: {
     discoveryNodeSelector,
@@ -60,11 +62,9 @@ const audiusSdk = sdk({
       web3ProviderUrl: developmentConfig.web3ProviderUrl,
       contractAddress: developmentConfig.entityManagerContractAddress,
       identityServiceUrl: developmentConfig.identityServiceUrl,
-      logger: new Logger(),
+      logger,
     }),
-    logger: new Logger({
-      logLevel: "info",
-    }),
+    logger,
   },
   apiKey: "",
   apiSecret: "",
