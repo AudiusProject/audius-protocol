@@ -25,6 +25,7 @@
     "logger": "*",
     "morgan": "^1.10.0",
     "pino": "^8.14.1",
+    "rate-limiter-flexible": "^2.4.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
