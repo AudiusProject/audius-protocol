@@ -188,4 +188,5 @@ immutable_user_fields = immutable_fields | {
     "handle_lc",
     "wallet",
     "is_available",
+    "is_verified"
 }
