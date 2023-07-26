@@ -293,7 +293,11 @@ const TrackTile = ({
             ) : (
               <a
                 href={permalink}
-                className={cn(typeStyles.titleMedium, styles.title)}
+                className={cn(
+                  typeStyles.title,
+                  typeStyles.titleMedium,
+                  styles.title
+                )}
                 onClick={onClickTitleWrapper}
               >
                 {title}
@@ -318,9 +322,14 @@ const TrackTile = ({
           </div>
 
           <div
-            className={cn(typeStyles.bodyXSmall, styles.socialsRow, {
-              [styles.isHidden]: isUnlisted
-            })}
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.socialsRow,
+              {
+                [styles.isHidden]: isUnlisted
+              }
+            )}
           >
             {isLoading ? (
               <Skeleton width='30%' className={styles.skeleton} />
@@ -331,7 +340,13 @@ const TrackTile = ({
               </>
             )}
           </div>
-          <div className={cn(typeStyles.bodyXSmall, styles.topRight)}>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.topRight
+            )}
+          >
             {isUnlisted ? (
               <div className={styles.topRightIconLabel}>
                 <IconHidden className={styles.topRightIcon} />
@@ -342,7 +357,13 @@ const TrackTile = ({
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
           </div>
-          <div className={cn(typeStyles.bodyXSmall, styles.bottomRight)}>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.bottomRight
+            )}
+          >
             {!isLoading
               ? renderLockedOrPlaysContent({
                   doesUserHaveAccess,

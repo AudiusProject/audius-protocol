@@ -10,23 +10,9 @@ export type FontWeight =
   | 'thin' // 200
   | 'ultraLight' // 100
 
-export type TextStrength = 'weak' | 'default' | 'strong'
-export type TextStrengthInfo = {
-  fontWeight: FontWeight
-}
-type TextTransformValue = 'uppercase' | 'lowercase' | 'capitalize' | 'inherit'
+export type TextStrength = 'Weak' | 'Default' | 'Strong'
 
-export type TextSize = 'XL' | 'L' | 'M' | 'S' | 'XS'
-export type TextSizeInfo = {
-  tag: ElementType
-  fontSize: string | number
-  lineHeight: string | number
-  letterSpacing?: string | number
-  textTransform?: TextTransformValue
-}
+export type TextSize = 'XLarge' | 'Large' | 'Medium' | 'Small' | 'XSmall'
 
 export type TextVariant = 'display' | 'heading' | 'title' | 'label' | 'body'
-export type TextVariantSizeInfo = Partial<Record<TextSize, TextSizeInfo>>
-export type TextVariantStrengthInfo = Partial<
-  Record<TextStrength, TextStrengthInfo>
->
+export type VariantSizeTagMap = Partial<Record<TextSize, ElementType>>

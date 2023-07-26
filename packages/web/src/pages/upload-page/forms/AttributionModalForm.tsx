@@ -158,8 +158,12 @@ export const AttributionModalForm = () => {
 
   const preview = (
     <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
-      <label className={typeStyles.titleLarge}>{messages.title}</label>
-      <div className={typeStyles.bodyMedium}>{messages.description}</div>
+      <label className={cn(typeStyles.title, typeStyles.titleLarge)}>
+        {messages.title}
+      </label>
+      <div className={cn(typeStyles.body, typeStyles.bodyMedium)}>
+        {messages.description}
+      </div>
     </div>
   )
 
@@ -224,7 +228,7 @@ const AttributionModalFields = () => {
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
         <div
-          className={typeStyles.titleLarge}
+          className={cn(typeStyles.title, typeStyles.titleLarge)}
         >{`${messages.isrc.header} / ${messages.iswc.header}`}</div>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <InputV2
@@ -243,7 +247,9 @@ const AttributionModalFields = () => {
       </div>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-        <div className={typeStyles.titleLarge}>{messages.licenseType}</div>
+        <div className={cn(typeStyles.title, typeStyles.titleLarge)}>
+          {messages.licenseType}
+        </div>
         <div className={styles.attributionCommercialRow}>
           <div
             className={cn(
@@ -252,7 +258,7 @@ const AttributionModalFields = () => {
               layoutStyles.gap2
             )}
           >
-            <div className={typeStyles.titleMedium}>
+            <div className={cn(typeStyles.title, typeStyles.titleMedium)}>
               {messages.allowAttribution.header}
             </div>
             <SegmentedControl
@@ -274,7 +280,7 @@ const AttributionModalFields = () => {
               }
             )}
           >
-            <div className={typeStyles.titleMedium}>
+            <div className={cn(typeStyles.title, typeStyles.titleMedium)}>
               {messages.commercialUse.header}
             </div>
             <SegmentedControl
@@ -290,7 +296,7 @@ const AttributionModalFields = () => {
         </div>
         <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
           <div
-            className={cn(typeStyles.titleMedium, {
+            className={cn(typeStyles.title, typeStyles.titleMedium, {
               [styles.disabled]: !allowAttribution
             })}
           >
@@ -316,7 +322,9 @@ const AttributionModalFields = () => {
               ))}
             </div>
           ) : null}
-          <div className={typeStyles.titleMedium}>{licenseType}</div>
+          <div className={cn(typeStyles.title, typeStyles.titleMedium)}>
+            {licenseType}
+          </div>
         </div>
         {licenseDescription ? (
           <div className={typeStyles.bodySmall}>{licenseDescription}</div>

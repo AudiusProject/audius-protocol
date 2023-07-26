@@ -51,7 +51,13 @@ const BottomButtons = (props: BottomButtonsProps) => {
     !props.doesUserHaveAccess
   ) {
     return (
-      <div className={cn(typeStyles.titleSmall, styles.bottomButtons)}>
+      <div
+        className={cn(
+          typeStyles.title,
+          typeStyles.titleSmall,
+          styles.bottomButtons
+        )}
+      >
         <div className={styles.premiumContentContainer}>
           <PremiumConditionsPill
             premiumConditions={props.premiumConditions}

@@ -479,6 +479,7 @@ const TrackHeader = ({
         <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
           <h3
             className={cn(
+              typeStyles.body,
               typeStyles.bodyMedium,
               styles.description,
               styles.withSectionDivider

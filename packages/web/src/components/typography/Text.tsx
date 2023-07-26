@@ -1,20 +1,12 @@
-import { CSSProperties, ReactNode } from 'react'
+import { CSSProperties, ElementType, ReactNode } from 'react'
+
+import cn from 'classnames'
 
 import { getCurrentThemeColors, ThemeColor } from 'utils/theme/theme'
 
-import { fontWeightMap, variantInfoMap, variantStrengthMap } from './constants'
-import {
-  TextSizeInfo,
-  TextStrengthInfo,
-  TextVariant,
-  TextSize,
-  TextStrength
-} from './types'
-
-const defaultBodyInfo: TextSizeInfo & TextStrengthInfo = {
-  ...variantInfoMap.body.M!,
-  ...variantStrengthMap.body.default!
-}
+import { variantTagMap } from './constants'
+import { TextVariant, TextSize, TextStrength } from './types'
+import styles from './typography.module.css'
 
 export type TextProps = {
   className?: string
@@ -29,43 +21,34 @@ export const Text = (props: TextProps) => {
   const {
     className,
     children,
-    variant = 'body',
-    strength = 'default',
-    size = 'M',
+    variant = 'body' as TextVariant,
+    strength = 'Default' as TextStrength,
+    size = 'Medium' as TextSize,
     color = '--neutral',
     ...otherProps
   } = props
 
+  const Tag: ElementType = variantTagMap[variant][size] ?? 'p'
+
   const themeColors = getCurrentThemeColors()
   const textColor = themeColors[color] ?? themeColors['--neutral']
-
-  const variantSizeInfo = variantInfoMap[variant][size] ?? {}
-  const variantStrengthInfo = variantStrengthMap[variant][strength] ?? {}
-
-  const {
-    tag: Tag,
-    fontSize,
-    lineHeight,
-    letterSpacing,
-    fontWeight,
-    textTransform
-  } = {
-    ...defaultBodyInfo,
-    ...variantSizeInfo,
-    ...variantStrengthInfo
-  }
-
   const styleObject: CSSProperties = {
-    fontWeight: fontWeightMap[fontWeight].toString(),
-    fontSize,
-    lineHeight,
-    letterSpacing,
-    textTransform,
     color: textColor
   }
 
+  type TextClass = keyof typeof styles
+  const variantClassNames = [
+    variant as TextClass,
+    `${variant}${size}` as TextClass,
+    `${variant}${strength}` as TextClass
+  ].map((cn) => styles[cn])
+
   return (
-    <Tag className={className} style={styleObject} {...otherProps}>
+    <Tag
+      className={cn(...variantClassNames, className)}
+      style={styleObject}
+      {...otherProps}
+    >
       {children}
     </Tag>
   )
