@@ -56,7 +56,7 @@ export class AlbumsApi {
   }
 
   // WRITES
-  /**
+  /** @hidden
    * Upload an album
    * Uploads the specified tracks and combines them into an album
    */
@@ -91,7 +91,7 @@ export class AlbumsApi {
     }
   }
 
-  /**
+  /** @hidden
    * Update an album
    */
   async updateAlbum(
@@ -120,7 +120,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Delete an album
    */
   async deleteAlbum(
@@ -141,7 +141,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Favorite an album
    */
   async favoriteAlbum(
@@ -162,7 +162,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Unfavorite an album
    */
   async unfavoriteAlbum(
@@ -182,7 +182,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Repost an album
    */
   async repostAlbum(
@@ -204,7 +204,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Unrepost an album
    */
   async unrepostAlbum(

@@ -1,5 +1,5 @@
 import snakecaseKeys from 'snakecase-keys'
-import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {
   Configuration,
@@ -37,19 +37,8 @@ import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import type { LoggerService } from '../../services/Logger'
 
-// Subclass type masking adapted from Damir Arh's method:
-// https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
-// Get the type of the generated TracksApi excluding streamTrack
-type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
-  [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
-} & BaseAPI
-
-// Create a new "class" that masks our generated TracksApi with the new type
-const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
-  GeneratedTracksApi
-
 // Extend that new class
-export class TracksApi extends TracksApiWithoutStream {
+export class TracksApi extends GeneratedTracksApi {
   private readonly trackUploadHelper: TrackUploadHelper
 
   constructor(
@@ -68,7 +57,10 @@ export class TracksApi extends TracksApiWithoutStream {
   /**
    * Get the url of the track's streamable mp3 file
    */
-  async streamTrack(requestParameters: StreamTrackRequest): Promise<string> {
+  // @ts-expect-error
+  override async streamTrack(
+    requestParameters: StreamTrackRequest
+  ): Promise<string> {
     if (
       requestParameters.trackId === null ||
       requestParameters.trackId === undefined
@@ -87,7 +79,7 @@ export class TracksApi extends TracksApiWithoutStream {
     return `${host}${BASE_PATH}${path}`
   }
 
-  /**
+  /** @hidden
    * Upload a track
    */
   async uploadTrack(
@@ -173,7 +165,7 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
-  /**
+  /** @hidden
    * Update a track
    */
   async updateTrack(
@@ -265,7 +257,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Delete a track
    */
   async deleteTrack(
@@ -288,7 +280,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Favorite a track
    */
   async favoriteTrack(
@@ -312,7 +304,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Unfavorite a track
    */
   async unfavoriteTrack(
@@ -335,7 +327,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Repost a track
    */
   async repostTrack(
@@ -359,7 +351,7 @@ export class TracksApi extends TracksApiWithoutStream {
     })
   }
 
-  /**
+  /** @hidden
    * Unrepost a track
    */
   async unrepostTrack(
