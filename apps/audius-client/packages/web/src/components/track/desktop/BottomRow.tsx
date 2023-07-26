@@ -113,7 +113,13 @@ export const BottomRow = ({
 
   if (isTrack && premiumConditions && !isLoading && !doesUserHaveAccess) {
     return (
-      <div className={cn(typeStyles.titleSmall, styles.bottomRow)}>
+      <div
+        className={cn(
+          typeStyles.title,
+          typeStyles.titleSmall,
+          styles.bottomRow
+        )}
+      >
         <PremiumConditionsPill
           premiumConditions={premiumConditions}
           unlocking={premiumTrackStatus === 'UNLOCKING'}

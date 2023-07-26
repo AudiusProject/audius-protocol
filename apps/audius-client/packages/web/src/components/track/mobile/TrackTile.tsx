@@ -125,7 +125,14 @@ export const RankIcon = ({
   className?: string
 }) => {
   return isVisible ? (
-    <div className={cn(typeStyles.bodyXsmall, styles.rankContainer, className)}>
+    <div
+      className={cn(
+        typeStyles.body,
+        typeStyles.bodyXSmall,
+        styles.rankContainer,
+        className
+      )}
+    >
       {showCrown ? <IconCrown /> : <IconTrending />}
       {index + 1}
     </div>
@@ -276,6 +283,7 @@ const TrackTile = (props: CombinedProps) => {
       <div className={styles.mainContent} onClick={handleClick}>
         <div
           className={cn(
+            typeStyles.body,
             typeStyles.bodyXSmall,
             styles.topRight,
             styles.statText
@@ -317,7 +325,11 @@ const TrackTile = (props: CombinedProps) => {
             })}
           >
             <a
-              className={cn(typeStyles.titleMedium, styles.title)}
+              className={cn(
+                typeStyles.title,
+                typeStyles.titleMedium,
+                styles.title
+              )}
               href={permalink}
               onClick={props.goToTrackPage}
             >
@@ -368,7 +380,13 @@ const TrackTile = (props: CombinedProps) => {
           )}
         </div>
         {coSign ? (
-          <div className={cn(typeStyles.bodyXSmall, styles.coSignText)}>
+          <div
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.coSignText
+            )}
+          >
             <div className={styles.name}>
               {coSign.user.name}
               <UserBadges userId={coSign.user.user_id} badgeSize={8} />
@@ -379,7 +397,13 @@ const TrackTile = (props: CombinedProps) => {
             })}
           </div>
         ) : null}
-        <div className={cn(typeStyles.bodyXSmall, styles.statsRow)}>
+        <div
+          className={cn(
+            typeStyles.body,
+            typeStyles.bodyXSmall,
+            styles.statsRow
+          )}
+        >
           <div className={styles.stats}>
             <RankIcon
               showCrown={showRankIcon}
@@ -434,7 +458,12 @@ const TrackTile = (props: CombinedProps) => {
             )}
           </div>
           <div
-            className={cn(typeStyles.bodyXSmall, styles.bottomRight, fadeIn)}
+            className={cn(
+              typeStyles.body,
+              typeStyles.bodyXSmall,
+              styles.bottomRight,
+              fadeIn
+            )}
           >
             {!isLoading
               ? renderLockedOrPlaysContent({
