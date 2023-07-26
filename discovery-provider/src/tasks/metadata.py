@@ -164,6 +164,7 @@ immutable_fields = {
     "slot",
     "metadata_multihash",
     "is_current",
+    "is_delete",
 }
 
 immutable_playlist_fields = immutable_fields | {
@@ -179,7 +180,7 @@ immutable_track_fields = immutable_fields | {
     "preview_cid",
     "length",
     "duration",
-    "is_available"
+    "is_available",
 }
 
 immutable_user_fields = immutable_fields | {
@@ -188,5 +189,5 @@ immutable_user_fields = immutable_fields | {
     "handle_lc",
     "wallet",
     "is_available",
-    "is_verified"
+    "is_verified",
 }
