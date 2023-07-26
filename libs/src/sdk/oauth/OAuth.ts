@@ -166,7 +166,7 @@ export class OAuth {
   }
 
   async isWriteAccessGranted(params: IsWriteAccessGrantedRequest) {
-    const { userId, apiKey } = parseRequestParameters(
+    const { userId, apiKey } = await parseRequestParameters(
       'isWriteAccessGranted',
       IsWriteAccessGrantedSchema
     )(params)

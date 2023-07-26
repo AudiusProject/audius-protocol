@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { CrossPlatformFileSchema as File } from '../../types/File'
+import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,
-    profilePictureFile: z.optional(File),
-    coverArtFile: z.optional(File),
+    profilePictureFile: z.optional(ImageFile),
+    coverArtFile: z.optional(ImageFile),
     onProgress: z.optional(z.function().args(z.number())),
     metadata: z
       .object({

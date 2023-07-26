@@ -101,7 +101,7 @@ export class TracksApi extends TracksApiWithoutStream {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = parseRequestParameters(
+    } = await parseRequestParameters(
       'uploadTrack',
       createUploadTrackSchema()
     )(requestParameters)
@@ -188,7 +188,7 @@ export class TracksApi extends TracksApiWithoutStream {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = parseRequestParameters(
+    } = await parseRequestParameters(
       'updateTrack',
       createUpdateTrackSchema()
     )(requestParameters)
@@ -273,7 +273,7 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'deleteTrack',
       DeleteTrackSchema
     )(requestParameters)
@@ -296,7 +296,7 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = parseRequestParameters(
+    const { userId, trackId, metadata } = await parseRequestParameters(
       'favoriteTrack',
       FavoriteTrackSchema
     )(requestParameters)
@@ -320,7 +320,7 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'unfavoriteTrack',
       UnfavoriteTrackSchema
     )(requestParameters)
@@ -343,7 +343,7 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = parseRequestParameters(
+    const { userId, trackId, metadata } = await parseRequestParameters(
       'respostTrack',
       RepostTrackSchema
     )(requestParameters)
@@ -367,7 +367,7 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'unrepostTrack',
       UnrepostTrackSchema
     )(requestParameters)

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CrossPlatformFileSchema as File } from '../../types/File'
+import { AudioFile, ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
@@ -15,7 +15,7 @@ const CreatePlaylistMetadataSchema = z
 
 export const CreatePlaylistSchema = z
   .object({
-    coverArtFile: z.optional(File),
+    coverArtFile: z.optional(ImageFile),
     metadata: CreatePlaylistMetadataSchema,
     onProgress: z.optional(z.function().args(z.number())),
     trackIds: z.optional(z.array(HashId)),
@@ -30,7 +30,7 @@ export const createUpdatePlaylistSchema = () =>
     .object({
       userId: HashId,
       playlistId: HashId,
-      coverArtFile: z.optional(File),
+      coverArtFile: z.optional(ImageFile),
       metadata: createUploadPlaylistMetadataSchema()
         .partial()
         .merge(
@@ -96,14 +96,14 @@ export const createUploadPlaylistSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: File,
+      coverArtFile: ImageFile,
       metadata: createUploadPlaylistMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
       /**
        * Track metadata is populated from the playlist if fields are missing
        */
       trackMetadatas: z.array(createPlaylistTrackMetadataSchema()),
-      trackFiles: z.array(File)
+      trackFiles: z.array(AudioFile)
     })
     .strict()
 

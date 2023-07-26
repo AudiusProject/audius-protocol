@@ -11,6 +11,15 @@ import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
 import { Genre } from '../../types/Genre'
 import { Logger } from '../../services/Logger'
+import fs from 'fs'
+import path from 'path'
+
+const wavFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/wav-file.wav')
+)
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -116,7 +125,7 @@ describe('PlaylistsApi', () => {
       const result = await playlists.createPlaylist({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -137,7 +146,7 @@ describe('PlaylistsApi', () => {
         await playlists.createPlaylist({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {} as any,
@@ -152,7 +161,7 @@ describe('PlaylistsApi', () => {
       const result = await playlists.uploadPlaylist({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -167,7 +176,7 @@ describe('PlaylistsApi', () => {
         ],
         trackFiles: [
           {
-            buffer: Buffer.from([]),
+            buffer: wavFile,
             name: 'trackArt'
           }
         ]
@@ -185,7 +194,7 @@ describe('PlaylistsApi', () => {
         await playlists.uploadPlaylist({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {} as any,
@@ -196,7 +205,7 @@ describe('PlaylistsApi', () => {
           ],
           trackFiles: [
             {
-              buffer: Buffer.from([]),
+              buffer: wavFile,
               name: 'trackArt'
             }
           ]
@@ -280,7 +289,7 @@ describe('PlaylistsApi', () => {
         userId: '7eP5n',
         playlistId: 'x5pJ3Aj',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -302,7 +311,7 @@ describe('PlaylistsApi', () => {
           userId: '7eP5n',
           playlistId: 'x5pJ3Aj',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {

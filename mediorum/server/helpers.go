@@ -45,10 +45,6 @@ func cleanHost(host string) string {
 	return u.Host
 }
 
-func isLegacyCID(cid string) bool {
-	return len(cid) == 46 && strings.HasPrefix(cid, "Qm")
-}
-
 func sniffMimeType(r io.ReadSeeker) string {
 	buffer := make([]byte, 512)
 	r.Read(buffer)
