@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"mediorum/cidutil"
 	"mediorum/server/signature"
 	"mime"
 	"net/http"
@@ -33,8 +32,7 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 
 func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
-	cid := c.Param("cid")
-	key := cidutil.ShardCID(cid)
+	key := c.Param("cid")
 	attr, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
@@ -70,15 +68,14 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
-	cid := c.Param("cid")
-	logger := ss.logger.With("cid", cid)
-	key := cidutil.ShardCID(cid)
+	key := c.Param("cid")
+	logger := ss.logger.With("cid", key)
 
 	shouldCheckDelistStatus := true
 	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
 		shouldCheckDelistStatus = false
 	}
-	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, cid) {
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
@@ -90,7 +87,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	if cidutil.IsLegacyCID(cid) {
+	if isLegacyCID(key) {
 		logger.Debug("serving legacy cid")
 		return ss.serveLegacyCid(c)
 	}
@@ -117,7 +114,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return c.NoContent(200)
 		}
 
-		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
+		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 		return nil
 	}
 
@@ -125,14 +122,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", cid, healthyHosts).
+		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
 	if err != nil {
 		return err
 	}
 	for _, blob := range blobs {
 		// do a check server is up and has blob
-		if ss.hostHasBlob(blob.Host, cid) {
+		if ss.hostHasBlob(blob.Host, key) {
 			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
@@ -265,8 +262,7 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 
 func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 	ctx := c.Request().Context()
-	cid := c.Param("cid")
-	key := cidutil.ShardCID(cid)
+	key := c.Param("cid")
 
 	blob, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
@@ -295,7 +291,7 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 		}
 		defer inp.Close()
 
-		err = cidutil.ValidateCID(cid, inp)
+		err = validateCID(cid, inp)
 		if err != nil {
 			logger.Info("postBlob got invalid CID", "err", err)
 			return c.JSON(400, map[string]string{

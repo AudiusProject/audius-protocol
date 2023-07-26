@@ -1,7 +1,6 @@
 package server
 
 import (
-	"mediorum/cidutil"
 	"time"
 
 	"github.com/tysonmote/rendezvous"
@@ -15,7 +14,7 @@ func (ss *MediorumServer) rendezvous(h string) ([]string, bool) {
 	isMine := slices.Index(orderedHosts, ss.Config.Self.Host) < ss.Config.ReplicationFactor
 	if ss.Config.StoreAll {
 		isMine = true
-	} else if cidutil.IsLegacyCID(h) {
+	} else if isLegacyCID(h) {
 		// TODO(theo): Don't store Qm CIDs for now unless STORE_ALL is true. Remove this once all nodes have enough space to store Qm CIDs
 		isMine = false
 	}

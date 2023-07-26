@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"mediorum/cidutil"
 	"sync"
 	"testing"
 	"time"
@@ -32,7 +31,7 @@ func TestRepair(t *testing.T) {
 
 	// first, write a blob only to my storage
 	data := []byte("repair test")
-	cid, err := cidutil.ComputeFileCID(bytes.NewReader(data))
+	cid, err := computeFileCID(bytes.NewReader(data))
 	assert.NoError(t, err)
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
@@ -104,7 +103,7 @@ func TestRepair(t *testing.T) {
 			rendezvousOrder = append(rendezvousOrder, byHost[h])
 		}
 
-		// make leader lose file
+		// make leader loose file
 		leader := rendezvousOrder[0]
 		leader.dropFromMyBucket(cid)
 
