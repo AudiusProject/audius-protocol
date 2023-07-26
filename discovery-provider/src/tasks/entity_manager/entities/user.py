@@ -33,6 +33,7 @@ from src.tasks.entity_manager.utils import (
     parse_metadata,
     validate_signer,
 )
+from src.tasks.metadata import immutable_user_fields
 from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
@@ -200,6 +201,7 @@ def create_user(
             user_metadata,
             params.web3,
             params.challenge_bus,
+            params.action
         )
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
@@ -265,6 +267,7 @@ def update_user(
         params.metadata,
         params.web3,
         params.challenge_bus,
+        params.action
     )
 
     updated_metadata, updated_metadata_cid = merge_metadata(
@@ -295,6 +298,7 @@ def update_user_metadata(
     metadata: Dict,
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
+    action
 ):
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
@@ -302,6 +306,9 @@ def update_user_metadata(
         # Update the user_record when the corresponding field exists
         # in metadata
         if key in metadata:
+            if key in immutable_user_fields and action == Action.UPDATE:
+                # skip fields that cannot be modified after creation
+                continue
             setattr(user_record, key, metadata[key])
 
     if "collectibles" in metadata:
@@ -365,20 +372,15 @@ def merge_metadata(
             .first()
         )
         prev_cid_metadata = prev_cid_data_record.data if prev_cid_data_record else {}
-    if prev_cid_metadata:
-        # merge previous and current metadata
-        updated_metadata = prev_cid_metadata | params.metadata
+    # merge previous and current metadata
+    updated_metadata = prev_cid_metadata | params.metadata
 
-        # generate a cid
-        updated_metadata_cid = str(
-            generate_metadata_cid_v1(json.dumps(updated_metadata))
-        )
+    # generate a cid
+    updated_metadata_cid = str(
+        generate_metadata_cid_v1(json.dumps(updated_metadata))
+    )
 
-        return updated_metadata, updated_metadata_cid
-    else:
-        params.logger.error(
-            f"Could not find previous metadata blob for {record}", exc_info=True
-        )
+    return updated_metadata, updated_metadata_cid
 
 
 class UserEventMetadata(TypedDict, total=False):

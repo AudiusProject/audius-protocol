@@ -185,7 +185,7 @@ export interface GetUsersFromRepostsRequest {
  */
 export class TracksApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
     async bestNewReleasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -211,7 +211,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a list of tracks using their IDs or permalinks
      */
     async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
@@ -249,7 +249,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets random tracks found on the \"Feeling Lucky\" smart playlist
      */
     async getFeelingLuckyTracksRaw(requestParameters: GetFeelingLuckyTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -291,7 +291,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
     async getMostLovedTracksRaw(requestParameters: GetMostLovedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -329,7 +329,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets premium track signatures for passed in premium track ids
      */
     async getPremiumTrackSignaturesRaw(requestParameters: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -366,7 +366,7 @@ export class TracksApi extends runtime.BaseAPI {
         await this.getPremiumTrackSignaturesRaw(requestParameters, initOverrides);
     }
 
-    /**
+    /** @hidden
      * Get recommended tracks
      */
     async getRecommendedTracksRaw(requestParameters: GetRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -412,7 +412,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get recommended tracks using the given trending strategy version
      */
     async getRecommendedTracksWithVersionRaw(requestParameters: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -462,7 +462,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a list of tracks that have stems available for remixing
      */
     async getRemixableTracksRaw(requestParameters: GetRemixableTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
@@ -500,7 +500,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
      */
     async getTrackRaw(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
@@ -546,7 +546,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets all the tracks that the given track remixes
      */
     async getTrackRemixParentsRaw(requestParameters: GetTrackRemixParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixingResponse>> {
@@ -588,7 +588,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get all tracks that remix the given track
      */
     async getTrackRemixesRaw(requestParameters: GetTrackRemixesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixesResponseFull>> {
@@ -630,7 +630,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get the remixable stems of a track
      */
     async getTrackStemsRaw(requestParameters: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StemsResponse>> {
@@ -660,7 +660,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the track IDs of the top trending tracks on Audius
      */
     async getTrendingTrackIDsRaw(requestParameters: GetTrendingTrackIDsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
@@ -690,7 +690,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending (most popular) tracks on Audius
      */
     async getTrendingTracksRaw(requestParameters: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -736,7 +736,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version
      */
     async getTrendingTracksIDsWithVersionRaw(requestParameters: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
@@ -770,7 +770,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
      */
     async getTrendingTracksWithVersionRaw(requestParameters: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -820,7 +820,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the tracks found on the \"Under the Radar\" smart playlist
      */
     async getUnderTheRadarTracksRaw(requestParameters: GetUnderTheRadarTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -870,7 +870,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending underground tracks on Audius
      */
     async getUndergroundTrendingTracksRaw(requestParameters: GetUndergroundTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -908,7 +908,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
      */
     async getUndergroundTrendingTracksWithVersionRaw(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
@@ -950,7 +950,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get users that favorited a track
      */
     async getUsersFromFavoritesRaw(requestParameters: GetUsersFromFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackFavoritesResponseFull>> {
@@ -992,7 +992,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get the users that reposted a track
      */
     async getUsersFromRepostsRaw(requestParameters: GetUsersFromRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackRepostsResponseFull>> {

@@ -10,12 +10,14 @@ import type {
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { defaultStorageNodeSelectorConfig } from './constants'
+import type { LoggerService } from '../Logger'
 
 const DISCOVERY_RESPONSE_TIMEOUT = 15000
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfig
   private readonly auth: AuthService
+  private readonly logger: LoggerService
   private nodes: StorageNode[]
   private orderedNodes?: string[] // endpoints (lowercase)
   private selectedNode?: string | null
@@ -30,6 +32,9 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       defaultStorageNodeSelectorConfig
     )
     this.auth = this.config.auth
+    this.logger = this.config.logger.createPrefixedLogger(
+      '[storage-node-selector]'
+    )
     this.nodes = this.config.bootstrapNodes ?? []
     this.discoveryNodeSelector = this.config.discoveryNodeSelector
 
@@ -52,13 +57,15 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   }
 
   private async onChangeDiscoveryNode(endpoint: string) {
-    this.info('Updating list of available content nodes')
+    this.logger.info('Updating list of available content nodes')
     if (this.selectedDiscoveryNode === endpoint) return
     this.selectedDiscoveryNode = endpoint
     const healthCheckEndpoint = `${endpoint}/health_check`
     const discoveryHealthCheckResponse = await fetch(healthCheckEndpoint)
     if (!discoveryHealthCheckResponse.ok) {
-      this.warn('Discovery provider health check did not respond successfully')
+      this.logger.warn(
+        'Discovery provider health check did not respond successfully'
+      )
       return
     }
 
@@ -67,7 +74,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     const contentNodes = responseData.data.network?.content_nodes
 
     if (!contentNodes) {
-      this.warn(
+      this.logger.warn(
         'Discovery provider health check did not contain any available content nodes'
       )
       return
@@ -89,7 +96,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
         this.initialDiscoveryFetchPromise,
         new Promise<void>((resolve) =>
           setTimeout(() => {
-            console.warn('List of storage nodes could not be fetched')
+            this.logger.warn('List of storage nodes could not be fetched')
             resolve()
           }, DISCOVERY_RESPONSE_TIMEOUT)
         )
@@ -132,7 +139,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     this.selectedNode = selectedNode
-    this.info('Selected content node', this.selectedNode)
+    this.logger.info('Selected content node', this.selectedNode)
     return this.selectedNode ?? null
   }
 
@@ -140,15 +147,5 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     const endpoints = this.nodes.map((node) => node.endpoint.toLowerCase())
     const hash = new RendezvousHash(...endpoints)
     return hash.getN(this.nodes.length, key)
-  }
-
-  /** console.info proxy utility to add a prefix */
-  private info(...args: any[]) {
-    console.info('[audius-sdk][storage-node-selector]', ...args)
-  }
-
-  /** console.warn proxy utility to add a prefix */
-  private warn(...args: any[]) {
-    console.warn('[audius-sdk][storage-node-selector]', ...args)
   }
 }

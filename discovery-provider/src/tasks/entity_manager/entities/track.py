@@ -22,6 +22,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     validate_signer,
 )
+from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
@@ -256,6 +257,9 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
             if key in track_metadata:
+                if key in immutable_track_fields and action == Action.UPDATE:
+                    # skip fields that cannot be modified after creation
+                    continue
                 setattr(track_record, key, track_metadata[key])
 
     return track_record

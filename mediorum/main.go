@@ -62,6 +62,10 @@ func startStagingOrProd(isProd bool) {
 		g = registrar.NewAudiusApiGatewayProd()
 	}
 
+	// use custom DNS in staging + prod
+	// could scope it down to a TLD, but first want to test it works everywhere without surprises
+	httputil.UseCustomDNS()
+
 	var peers, signers []server.Peer
 	var err error
 

@@ -8,6 +8,7 @@ import { EntityManager } from './EntityManager'
 import { developmentConfig } from '../../config'
 import { Action, EntityType } from './types'
 import Web3 from '../../utils/web3'
+import { Logger } from '../Logger'
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
@@ -102,11 +103,14 @@ const mswHandlers = [
 
 const server = setupServer(...mswHandlers)
 
+const logger = new Logger()
+
 const entityManager = new EntityManager({
   discoveryNodeSelector,
   web3ProviderUrl: '',
   contractAddress: developmentConfig.entityManagerContractAddress,
-  identityServiceUrl: developmentConfig.identityServiceUrl
+  identityServiceUrl: developmentConfig.identityServiceUrl,
+  logger
 })
 
 describe('EntityManager', () => {
@@ -170,7 +174,8 @@ describe('EntityManager', () => {
         discoveryNodeSelector,
         web3ProviderUrl: '',
         contractAddress: developmentConfig.entityManagerContractAddress,
-        identityServiceUrl: developmentConfig.identityServiceUrl
+        identityServiceUrl: developmentConfig.identityServiceUrl,
+        logger
       }
 
       const discoveryEntityManager = new EntityManager({
@@ -179,7 +184,7 @@ describe('EntityManager', () => {
       })
 
       const relayEntityManagerUndefined = new EntityManager({
-        ...sharedDefaultConfig,
+        ...sharedDefaultConfig
       })
 
       const relayEntityManagerFalse = new EntityManager({
@@ -188,11 +193,15 @@ describe('EntityManager', () => {
       })
 
       const discoveryRelayUrl = await discoveryEntityManager.getRelayEndpoint()
-      const identityRelayUrlUndefined = await relayEntityManagerUndefined.getRelayEndpoint()
-      const identityRelayUrlFalse = await relayEntityManagerFalse.getRelayEndpoint()
+      const identityRelayUrlUndefined =
+        await relayEntityManagerUndefined.getRelayEndpoint()
+      const identityRelayUrlFalse =
+        await relayEntityManagerFalse.getRelayEndpoint()
 
       expect(discoveryRelayUrl).toEqual(discoveryNode)
-      expect(identityRelayUrlUndefined).toEqual(developmentConfig.identityServiceUrl)
+      expect(identityRelayUrlUndefined).toEqual(
+        developmentConfig.identityServiceUrl
+      )
       expect(identityRelayUrlUndefined).toEqual(identityRelayUrlFalse)
     })
   })
