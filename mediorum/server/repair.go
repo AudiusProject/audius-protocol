@@ -8,7 +8,6 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"golang.org/x/exp/slices"
-	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) startRepairer() {
@@ -45,46 +44,6 @@ func (ss *MediorumServer) startRepairer() {
 		time.Sleep(sleep)
 
 	}
-}
-
-type ProblemBlob struct {
-	Key   string
-	R     int
-	Hosts string
-}
-
-func (ss *MediorumServer) findProblemBlobsBaseQuery(overReplicated bool) *gorm.DB {
-	comparator := "<"
-	if overReplicated {
-		comparator = ">"
-	}
-
-	healthyHosts := ss.findHealthyPeers(5 * time.Minute)
-
-	return ss.crud.DB.Model(&Blob{}).
-		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
-		Where("host in ?", healthyHosts).
-		Group("key").
-		Having(fmt.Sprintf("count(distinct host) %s %d", comparator, ss.Config.ReplicationFactor)).
-		Order("random()")
-
-}
-
-func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, error) {
-	problems := []ProblemBlob{}
-	err := ss.findProblemBlobsBaseQuery(overReplicated).
-		Limit(1000). // repair 1000 problem blobs at a time
-		Scan(&problems).
-		Error
-	return problems, err
-}
-
-func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, error) {
-	var count int64 = 0
-	err := ss.findProblemBlobsBaseQuery(overReplicated).
-		Count(&count).
-		Error
-	return count, err
 }
 
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {

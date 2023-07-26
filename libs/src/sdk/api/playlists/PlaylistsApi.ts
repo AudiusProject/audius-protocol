@@ -66,7 +66,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   ) {
     // Parse inputs
     const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'createPlaylist',
         CreatePlaylistSchema
       )(requestParameters)
@@ -132,7 +132,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const parsedParameters = parseRequestParameters(
+    const parsedParameters = await parseRequestParameters(
       'uploadPlaylist',
       createUploadPlaylistSchema()
     )(requestParameters)
@@ -150,7 +150,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    parseRequestParameters(
+    await parseRequestParameters(
       'publishPlaylist',
       PublishPlaylistSchema
     )(requestParameters)
@@ -177,7 +177,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    parseRequestParameters(
+    await parseRequestParameters(
       'addTrackToPlaylist',
       AddTrackToPlaylistSchema
     )(requestParameters)
@@ -212,7 +212,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { trackIndex } = parseRequestParameters(
+    const { trackIndex } = await parseRequestParameters(
       'removeTrackFromPlaylist',
       RemoveTrackFromPlaylistSchema
     )(requestParameters)
@@ -244,7 +244,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const parsedParameters = parseRequestParameters(
+    const parsedParameters = await parseRequestParameters(
       'updatePlaylist',
       createUpdatePlaylistSchema()
     )(requestParameters)
@@ -261,7 +261,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = parseRequestParameters(
+    const { userId, playlistId } = await parseRequestParameters(
       'deletePlaylist',
       DeletePlaylistSchema
     )(requestParameters)
@@ -284,7 +284,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseRequestParameters(
       'favoritePlaylist',
       FavoritePlaylistSchema
     )(requestParameters)
@@ -308,7 +308,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = parseRequestParameters(
+    const { userId, playlistId } = await parseRequestParameters(
       'unfavoritePlaylist',
       UnfavoritePlaylistSchema
     )(requestParameters)
@@ -331,7 +331,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseRequestParameters(
       'respostPlaylist',
       RepostPlaylistSchema
     )(requestParameters)
@@ -355,7 +355,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = parseRequestParameters(
+    const { userId, playlistId } = await parseRequestParameters(
       'unrepostPlaylist',
       UnrepostPlaylistSchema
     )(requestParameters)

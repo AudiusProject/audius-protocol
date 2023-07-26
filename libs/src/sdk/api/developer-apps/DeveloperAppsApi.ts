@@ -40,7 +40,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     requestParameters: CreateDeveloperAppRequest,
     writeOptions?: WriteOptions
   ) {
-    const { name, userId, description } = parseRequestParameters(
+    const { name, userId, description } = await parseRequestParameters(
       'createDeveloperApp',
       CreateDeveloperAppSchema
     )(requestParameters)
@@ -83,7 +83,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    * Delete a developer app
    */
   async deleteDeveloperApp(requestParameters: DeleteDeveloperAppRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'deleteDeveloperApp',
       DeleteDeveloperAppSchema
     )(requestParameters)

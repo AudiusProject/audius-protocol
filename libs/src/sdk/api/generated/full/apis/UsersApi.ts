@@ -212,6 +212,17 @@ export interface GetUserByHandleRequest {
     userId?: string;
 }
 
+export interface GetUserLibraryTracksRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    query?: string;
+    sortMethod?: GetUserLibraryTracksSortMethodEnum;
+    sortDirection?: GetUserLibraryTracksSortDirectionEnum;
+    type?: GetUserLibraryTracksTypeEnum;
+}
+
 export interface GetUserReplicaSetRequest {
     id: string;
     userId?: string;
@@ -1097,6 +1108,66 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Gets a user\'s saved/reposted/purchased/all tracks
+     * Fetch a user\'s full library tracks
+     */
+    async getUserLibraryTracksRaw(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserLibraryTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.type !== undefined) {
+            queryParameters['type'] = requestParameters.type;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FavoritesResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a user\'s saved/reposted/purchased/all tracks
+     * Fetch a user\'s full library tracks
+     */
+    async getUserLibraryTracks(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+        const response = await this.getUserLibraryTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Gets the user\'s replica set
      */
     async getUserReplicaSetRaw(requestParameters: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
@@ -1333,6 +1404,40 @@ export const GetTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandleFilterTracksEnum[keyof typeof GetTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksSortMethodEnum = {
+    Title: 'title',
+    ArtistName: 'artist_name',
+    ReleaseDate: 'release_date',
+    LastListenDate: 'last_listen_date',
+    AddedDate: 'added_date',
+    Length: 'length',
+    Plays: 'plays',
+    Reposts: 'reposts',
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
+} as const;
+export type GetUserLibraryTracksSortMethodEnum = typeof GetUserLibraryTracksSortMethodEnum[keyof typeof GetUserLibraryTracksSortMethodEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUserLibraryTracksSortDirectionEnum = typeof GetUserLibraryTracksSortDirectionEnum[keyof typeof GetUserLibraryTracksSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksTypeEnum = {
+    All: 'all',
+    Repost: 'repost',
+    Favorite: 'favorite',
+    Purchase: 'purchase'
+} as const;
+export type GetUserLibraryTracksTypeEnum = typeof GetUserLibraryTracksTypeEnum[keyof typeof GetUserLibraryTracksTypeEnum];
 /**
  * @export
  */

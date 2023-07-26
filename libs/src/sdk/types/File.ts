@@ -1,5 +1,12 @@
 import { z } from 'zod'
 
+let fileType: any
+if (typeof window !== 'undefined' && window) {
+  fileType = require('file-type')
+} else {
+  fileType = require('file-type/browser')
+}
+
 /**
  * Type representing a file in Node environment
  */
@@ -27,3 +34,38 @@ export const isNodeFile = (file: CrossPlatformFile): file is NodeFile => {
   }
   return false
 }
+
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/bmp',
+  'image/tiff',
+  'image/gif',
+  'image/webp'
+]
+
+export const ALLOWED_AUDIO_MIME_TYPES = [
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/aiff',
+  'audio/flac',
+  'audio/ogg',
+  'audio/wav',
+  'audio/vnd.wave'
+]
+
+const getFileType = async (file: CrossPlatformFile) => {
+  return isNodeFile(file)
+    ? await fileType.fromBuffer(file.buffer)
+    : await fileType.fromBlob(file)
+}
+
+export const ImageFile = CrossPlatformFileSchema.refine(async (file) => {
+  const fileType = await getFileType(file)
+  return fileType && ALLOWED_IMAGE_MIME_TYPES.includes(fileType.mime)
+}, `Image file has invalid file type. Supported file types are: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}`)
+
+export const AudioFile = CrossPlatformFileSchema.refine(async (file) => {
+  const fileType = await getFileType(file)
+  return fileType && ALLOWED_AUDIO_MIME_TYPES.includes(fileType.mime)
+}, `Audio file has invalid file type. Supported file types are: ${ALLOWED_AUDIO_MIME_TYPES.join(', ')}`)

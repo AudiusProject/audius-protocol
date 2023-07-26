@@ -39,7 +39,7 @@ func TestRepair(t *testing.T) {
 
 	time.Sleep(crudrWait)
 
-	// verify it reports as under-replicated
+	// assert it only exists on 1 host
 	{
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
@@ -52,12 +52,8 @@ func TestRepair(t *testing.T) {
 	// wait for crud replication
 	time.Sleep(crudrWait)
 
-	// verify replicated + not a problem
+	// assert it exists on R hosts
 	{
-		problems, err := ss.findProblemBlobs(false)
-		assert.NoError(t, err)
-		assert.Len(t, problems, 0)
-
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.Len(t, blobs, replicationFactor)
@@ -74,7 +70,7 @@ func TestRepair(t *testing.T) {
 	// wait for crud
 	time.Sleep(crudrWait)
 
-	// verify over-replicated
+	// assert over-replicated
 	{
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
@@ -87,12 +83,8 @@ func TestRepair(t *testing.T) {
 	// wait for crud replication
 	time.Sleep(crudrWait)
 
-	// verify all good
+	// assert R copies
 	{
-		problems, err := ss.findProblemBlobs(false)
-		assert.NoError(t, err)
-		assert.Len(t, problems, 0)
-
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.Equal(t, replicationFactor, len(blobs))

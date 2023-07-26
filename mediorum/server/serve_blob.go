@@ -31,50 +31,6 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	return c.JSON(200, problems)
-}
-
-func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
-	ctx := c.Request().Context()
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	results := map[string]string{}
-	for _, problem := range problems {
-		_, isMine := ss.rendezvous(problem.Key)
-		if !isMine {
-			continue
-		}
-		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-
-		// don't validate legacy CIDs because their hash won't match the file contents
-		if cidutil.IsLegacyCID(problem.Key) {
-			continue
-		}
-
-		defer r.Close()
-		cid, err := cidutil.ComputeFileCID(r)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-		if cid != problem.Key {
-			results[problem.Key] = fmt.Sprintf("computed cid %s", cid)
-		}
-	}
-	return c.JSON(200, results)
-}
-
 func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")

@@ -45,7 +45,7 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'updateProfile',
         UpdateProfileSchema
       )(requestParameters)
@@ -108,7 +108,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = parseRequestParameters(
+    const { userId, followeeUserId } = await parseRequestParameters(
       'followUser',
       FollowUserSchema
     )(requestParameters)
@@ -131,7 +131,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = parseRequestParameters(
+    const { userId, followeeUserId } = await parseRequestParameters(
       'unfollowUser',
       UnfollowUserSchema
     )(requestParameters)
@@ -154,7 +154,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseRequestParameters(
       'subscribeToUser',
       SubscribeToUserSchema
     )(requestParameters)
@@ -177,7 +177,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseRequestParameters(
       'unsubscribeFromUser',
       UnsubscribeFromUserSchema
     )(requestParameters)
