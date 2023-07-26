@@ -31,7 +31,7 @@ AUDIUS_STORAGE_DRIVER_URL="s3://my-bucket?region=us-west-1"
 [GCS storage](https://cloud.google.com/storage/docs/creating-buckets)
 ```
 GOOGLE_APPLICATION_CREDENTIALS="/path/to/creds.json"
-AUDIUS_STORAGE_DRIVER_URL="gcs://my-bucket"
+AUDIUS_STORAGE_DRIVER_URL="gs://my-bucket"
 ```
 
 [Azure storage](https://azure.microsoft.com/en-us/products/storage/blobs)
