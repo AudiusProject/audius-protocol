@@ -17,11 +17,12 @@ import {
   MAX_TRACK_TRANSCODE_TIMEOUT,
   POLL_STATUS_INTERVAL
 } from './constants'
-import type { CrossPlatformFile as File } from '../../types/File'
-import { isNodeFile } from '../../utils/file'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 import { sortObjectKeys } from '../Auth/utils'
 import type { AuthService } from '../Auth'
+import { isNodeFile } from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
+import type { LoggerService } from '../Logger'
 
 export class Storage implements StorageService {
   /**
@@ -29,10 +30,12 @@ export class Storage implements StorageService {
    */
   private readonly config: StorageServiceConfig
   private readonly storageNodeSelector: StorageNodeSelectorService
+  private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
     this.storageNodeSelector = this.config.storageNodeSelector
+    this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
   /**
@@ -111,8 +114,11 @@ export class Storage implements StorageService {
     Object.keys(options).forEach((key) => {
       formData.append(key, `${options[key]}`)
     })
-    // TODO: Test this in a browser env
-    formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
+    formData.append(
+      'files',
+      isNodeFile(file) ? file.buffer : file,
+      file.name ?? 'blob'
+    )
 
     const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
 
@@ -174,7 +180,7 @@ export class Storage implements StorageService {
         }
 
         // Swallow errors caused by failure to establish connection to node so we can retry polling
-        console.error(`Failed to poll for processing status, ${e}`)
+        this.logger.error(`Failed to poll for processing status, ${e}`)
       }
 
       await wait(POLL_STATUS_INTERVAL)

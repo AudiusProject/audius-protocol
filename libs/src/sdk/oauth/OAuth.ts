@@ -1,4 +1,5 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
+import type { LoggerService } from '../services/Logger'
 import { isOAuthScopeValid } from '../utils/oauthScope'
 import { parseRequestParameters } from '../utils/parseRequestParameters'
 import {
@@ -117,6 +118,7 @@ type OAuthConfig = {
   appName?: string
   apiKey?: string
   usersApi: UsersApi
+  logger: LoggerService
 }
 
 export class OAuth {
@@ -126,6 +128,7 @@ export class OAuth {
   loginErrorCallback: LoginErrorCallback | null
   apiKey: string | null
   env: OAuthEnv = 'production'
+  logger: LoggerService
 
   constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
@@ -138,6 +141,7 @@ export class OAuth {
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
     this.popupCheckInterval = null
+    this.logger = config.logger.createPrefixedLogger('[oauth]')
   }
 
   init({
@@ -162,7 +166,7 @@ export class OAuth {
   }
 
   async isWriteAccessGranted(params: IsWriteAccessGrantedRequest) {
-    const { userId, apiKey } = parseRequestParameters(
+    const { userId, apiKey } = await parseRequestParameters(
       'isWriteAccessGranted',
       IsWriteAccessGrantedSchema
     )(params)
@@ -242,7 +246,7 @@ export class OAuth {
     buttonOptions?: ButtonOptions
   }) {
     if (!element) {
-      console.error('Target element for Audius OAuth button is empty.')
+      this.logger.error('Target element for Audius OAuth button is empty.')
     }
     const style = document.createElement('style')
     style.textContent = CSS
@@ -290,7 +294,7 @@ export class OAuth {
     if (this.loginErrorCallback) {
       this.loginErrorCallback(errorMessage)
     } else {
-      console.error(errorMessage)
+      this.logger.error(errorMessage)
     }
   }
 

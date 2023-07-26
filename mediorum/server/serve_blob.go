@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mediorum/cidutil"
 	"mediorum/server/signature"
 	"mime"
 	"net/http"
@@ -30,53 +31,10 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	return c.JSON(200, problems)
-}
-
-func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
-	ctx := c.Request().Context()
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	results := map[string]string{}
-	for _, problem := range problems {
-		_, isMine := ss.rendezvous(problem.Key)
-		if !isMine {
-			continue
-		}
-		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-
-		// don't validate legacy CIDs because their hash won't match the file contents
-		if isLegacyCID(problem.Key) {
-			continue
-		}
-
-		defer r.Close()
-		cid, err := computeFileCID(r)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-		if cid != problem.Key {
-			results[problem.Key] = fmt.Sprintf("computed cid %s", cid)
-		}
-	}
-	return c.JSON(200, results)
-}
-
 func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
+	cid := c.Param("cid")
+	key := cidutil.ShardCID(cid)
 	attr, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
@@ -112,14 +70,15 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
-	logger := ss.logger.With("cid", key)
+	cid := c.Param("cid")
+	logger := ss.logger.With("cid", cid)
+	key := cidutil.ShardCID(cid)
 
 	shouldCheckDelistStatus := true
 	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
 		shouldCheckDelistStatus = false
 	}
-	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, cid) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
@@ -131,7 +90,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	if isLegacyCID(key) {
+	if cidutil.IsLegacyCID(cid) {
 		logger.Debug("serving legacy cid")
 		return ss.serveLegacyCid(c)
 	}
@@ -158,7 +117,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return c.NoContent(200)
 		}
 
-		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 		return nil
 	}
 
@@ -166,14 +125,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
+		Where("key = ? and host in ?", cid, healthyHosts).
 		Find(&blobs).Error
 	if err != nil {
 		return err
 	}
 	for _, blob := range blobs {
 		// do a check server is up and has blob
-		if ss.hostHasBlob(blob.Host, key) {
+		if ss.hostHasBlob(blob.Host, cid) {
 			dest := ss.replaceHost(c, blob.Host)
 			return c.Redirect(302, dest.String())
 		}
@@ -306,7 +265,8 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 
 func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
+	cid := c.Param("cid")
+	key := cidutil.ShardCID(cid)
 
 	blob, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
@@ -335,7 +295,7 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 		}
 		defer inp.Close()
 
-		err = validateCID(cid, inp)
+		err = cidutil.ValidateCID(cid, inp)
 		if err != nil {
 			logger.Info("postBlob got invalid CID", "err", err)
 			return c.JSON(400, map[string]string{

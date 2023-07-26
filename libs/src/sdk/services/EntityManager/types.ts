@@ -1,6 +1,7 @@
 import type { AuthService } from '../Auth'
 import type { TransactionReceipt } from 'web3-core'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
+import type { LoggerService } from '../Logger'
 
 export type EntityManagerConfig = {
   contractAddress: string
@@ -8,6 +9,7 @@ export type EntityManagerConfig = {
   identityServiceUrl: string
   discoveryNodeSelector: DiscoveryNodeSelectorService
   useDiscoveryRelay?: boolean
+  logger: LoggerService
 }
 
 export type EntityManagerService = {

@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import type { CrossPlatformFile as File } from '../../types/File'
+import { AudioFile, ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { isFileValid } from '../../utils/file'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
+import { Genre } from '../../types/Genre'
 
 export const getAlbumSchema = z.object({
   userId: z.string(),
@@ -21,9 +21,11 @@ export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
 export const createUploadAlbumMetadataSchema = () =>
   z
     .object({
-      description: z.optional(z.string().max(1000)),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       albumName: z.string(),
+      description: z.optional(z.string().max(1000)),
+      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+      license: z.optional(z.string()),
+      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
       releaseDate: z.optional(
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
@@ -47,18 +49,14 @@ export const createUploadAlbumSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as File)
-      ),
+      coverArtFile: ImageFile,
       metadata: createUploadAlbumMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
       /**
        * Track metadata is populated from the album if fields are missing
        */
       trackMetadatas: z.array(createAlbumTrackMetadataSchema()),
-      trackFiles: z.array(
-        z.custom<File>((data: unknown) => isFileValid(data as File))
-      )
+      trackFiles: z.array(AudioFile)
     })
     .strict()
 
@@ -71,9 +69,7 @@ export const createUpdateAlbumSchema = () =>
     .object({
       userId: HashId,
       albumId: HashId,
-      coverArtFile: z.optional(
-        z.custom<File>((data: unknown) => isFileValid(data as File))
-      ),
+      coverArtFile: z.optional(ImageFile),
       metadata: createUploadAlbumMetadataSchema().partial(),
       onProgress: z.optional(z.function().args(z.number()))
     })

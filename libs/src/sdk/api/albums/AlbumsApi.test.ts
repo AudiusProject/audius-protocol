@@ -9,6 +9,17 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
+import { Genre } from '../../types/Genre'
+import { Logger } from '../../services/Logger'
+import fs from 'fs'
+import path from 'path'
+
+const wavFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/wav-file.wav')
+)
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -87,18 +98,21 @@ describe('AlbumsApi', () => {
   let albums: AlbumsApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     albums = new AlbumsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      logger
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -111,10 +125,11 @@ describe('AlbumsApi', () => {
       const result = await albums.uploadAlbum({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
+          genre: Genre.ACOUSTIC,
           albumName: 'My Album',
           mood: Mood.TENDER
         },
@@ -125,7 +140,7 @@ describe('AlbumsApi', () => {
         ],
         trackFiles: [
           {
-            buffer: Buffer.from([]),
+            buffer: wavFile,
             name: 'trackArt'
           }
         ]
@@ -143,7 +158,7 @@ describe('AlbumsApi', () => {
         await albums.uploadAlbum({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {} as any,
@@ -154,7 +169,7 @@ describe('AlbumsApi', () => {
           ],
           trackFiles: [
             {
-              buffer: Buffer.from([]),
+              buffer: wavFile,
               name: 'trackArt'
             }
           ]
@@ -169,10 +184,11 @@ describe('AlbumsApi', () => {
         userId: '7eP5n',
         albumId: 'x5pJ3Aj',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
+          genre: Genre.ACOUSTIC,
           albumName: 'My Album edited',
           mood: Mood.TENDER
         }
@@ -190,7 +206,7 @@ describe('AlbumsApi', () => {
           userId: '7eP5n',
           albumId: 'x5pJ3Aj',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {
