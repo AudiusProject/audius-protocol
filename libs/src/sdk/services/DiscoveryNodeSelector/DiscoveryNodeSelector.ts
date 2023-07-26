@@ -147,7 +147,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     )
 
     this.logger = this.config.logger.createPrefixedLogger(
-      '[discover-node-selector]'
+      '[discovery-node-selector]'
     )
   }
 
