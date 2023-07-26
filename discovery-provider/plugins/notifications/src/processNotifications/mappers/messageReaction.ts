@@ -51,7 +51,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       logger.info(
-        `Not sending notifications to deactivated user ${this.receiverUserId}`
+        `Not sending notifications: receiver ${this.receiverUserId} is deactivated`
       )
       return
     }
@@ -82,7 +82,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
       )
     } else {
       logger.info(
-        `Not sending browser notification to user ${this.receiverUserId}: user does not have browser notifications enabled for messages`
+        `Not sending browser notification: receiver ${this.receiverUserId} does not have browser notifications enabled for messages`
       )
     }
 
@@ -93,7 +93,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
       )
     if (!pushNotificationsEnabled) {
       logger.info(
-        `Not sending push notification to user ${this.receiverUserId}: user does not have push notifications enabled for messages`
+        `Not sending push notification: receiver ${this.receiverUserId} does not have push notifications enabled for messages`
       )
     }
 
