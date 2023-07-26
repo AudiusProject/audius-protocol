@@ -1,13 +1,16 @@
 import assert from 'assert'
-import Web3Libs from '../LibsWeb3'
-import type Web3 from 'web3'
+import type Web3Type from 'web3'
+import Web3 from '../LibsWeb3'
 
-const web3 = new Web3Libs()
+const web3Instance = new Web3()
 
 // From https://github.com/AudiusProject/sig/blob/main/node/index.js
 export async function hashAndSign(input: string, privateKey: string) {
-  const toSignHash = web3.utils.keccak256(input)
-  const signedMessage = await web3.eth.accounts.sign(toSignHash, privateKey)
+  const toSignHash = web3Instance.utils.keccak256(input)
+  const signedMessage = await web3Instance.eth.accounts.sign(
+    toSignHash,
+    privateKey
+  )
   return signedMessage.signature
 }
 
@@ -20,7 +23,7 @@ interface WalletResponse {
  * Recover the public wallet address given the response contains the signature and timestamp
  * @param {object} response entire service provider response (not axios)
  */
-export function recoverWallet(web3: Web3, response: WalletResponse) {
+export function recoverWallet(web3: Web3Type, response: WalletResponse) {
   let recoveredDelegateWallet = null
 
   const dataForRecovery = JSON.parse(JSON.stringify(response))
