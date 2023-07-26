@@ -1317,12 +1317,8 @@ export const audiusBackend = ({
     if (isAlbum) isPrivate = false
 
     try {
-      const web3 = await audiusLibs.web3Manager.getWeb3()
-      const currentBlockNumber = await web3.eth.getBlockNumber()
-      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
       const playlistTracks = trackIds.map((trackId) => ({
-        track: trackId,
-        metadata_time: currentBlock.timestamp
+        track: trackId
       }))
       const response = await audiusLibs.EntityManager.createPlaylist({
         ...metadata,
