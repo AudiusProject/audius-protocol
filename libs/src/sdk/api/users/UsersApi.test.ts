@@ -78,7 +78,7 @@ describe('UsersApi', () => {
           name: 'name',
           bio: 'bio',
           location: 'location',
-          artistPickTrackId: 1,
+          artistPickTrackId: '7eP5n',
           isDeactivated: false
         }
       })
