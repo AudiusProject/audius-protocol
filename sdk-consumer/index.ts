@@ -33,6 +33,7 @@ import {
   RepostAlbumRequest,
   UnrepostAlbumRequest,
   UpdateProfileRequest,
+  Logger,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -51,6 +52,8 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: "http://audius-protocol-discovery-provider-1",
 });
 
+const logger = new Logger({ logLevel: "info" });
+
 const audiusSdk = sdk({
   services: {
     discoveryNodeSelector,
@@ -59,7 +62,9 @@ const audiusSdk = sdk({
       web3ProviderUrl: developmentConfig.web3ProviderUrl,
       contractAddress: developmentConfig.entityManagerContractAddress,
       identityServiceUrl: developmentConfig.identityServiceUrl,
+      logger,
     }),
+    logger,
   },
   apiKey: "",
   apiSecret: "",

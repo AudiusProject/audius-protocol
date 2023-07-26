@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.3-beta.89",
+  "version": "3.0.3-beta.91",
   "audius": {
-    "releaseSHA": "0aa93085fec29884ced9eb8d7fa7f8f027c1c2ac"
+    "releaseSHA": "afd0df394030809c1f41d8180821f167f67c689c"
   },
   "description": "Audius SDK",
   "main": "dist/index.cjs.js",

@@ -15,7 +15,6 @@ export const decodeHashId = (id: string) => {
     if (isNaN(num)) return null
     return num
   } catch (e) {
-    console.error(`Failed to decode ${id}`, e)
     return null
   }
 }
@@ -29,7 +28,6 @@ export const encodeHashId = (id: number | null) => {
     const encodedId = hashids.encode(id)
     return encodedId
   } catch (e) {
-    console.error(`Failed to encode ${id}`, e)
     return null
   }
 }

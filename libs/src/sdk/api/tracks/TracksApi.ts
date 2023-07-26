@@ -35,6 +35,7 @@ import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
+import type { LoggerService } from '../../services/Logger'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -56,10 +57,12 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
+    this.logger = logger.createPrefixedLogger('[tracks-api]')
   }
 
   /**
@@ -124,7 +127,7 @@ export class TracksApi extends TracksApiWithoutStream {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          this.logger.info('Retrying uploadTrackCoverArt', e)
         }
       ),
       retry3(
@@ -136,7 +139,7 @@ export class TracksApi extends TracksApiWithoutStream {
             options: uploadOptions
           }),
         (e) => {
-          console.log('Retrying uploadTrackAudio', e)
+          this.logger.info('Retrying uploadTrackAudio', e)
         }
       )
     ])
@@ -207,7 +210,7 @@ export class TracksApi extends TracksApiWithoutStream {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          this.logger.info('Retrying uploadTrackCoverArt', e)
         }
       ))
 
@@ -237,7 +240,7 @@ export class TracksApi extends TracksApiWithoutStream {
             auth: this.auth
           }),
         (e) => {
-          console.log('Retrying editFileV2', e)
+          this.logger.info('Retrying editFileV2', e)
         }
       )
 

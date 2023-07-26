@@ -44,6 +44,7 @@ import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import { pick } from 'lodash'
+import type { LoggerService } from '../../services/Logger'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
   private readonly trackUploadHelper: TrackUploadHelper
@@ -52,10 +53,12 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
+    this.logger = logger.createPrefixedLogger('[playlists-api]')
   }
 
   /**
@@ -83,7 +86,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ))
 
@@ -472,7 +475,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ),
       ...trackFiles.map(
@@ -485,7 +488,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
                 template: 'audio'
               }),
             (e) => {
-              console.log('Retrying uploadTrackAudio', e)
+              this.logger.info('Retrying uploadTrackAudio', e)
             }
           )
       )
@@ -602,7 +605,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadPlaylistCoverArt', e)
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
         }
       ))
 

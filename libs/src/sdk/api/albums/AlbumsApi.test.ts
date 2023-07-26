@@ -10,6 +10,7 @@ import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
 import { Genre } from '../../types/Genre'
+import { Logger } from '../../services/Logger'
 import fs from 'fs'
 import path from 'path'
 
@@ -97,18 +98,21 @@ describe('AlbumsApi', () => {
   let albums: AlbumsApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     albums = new AlbumsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      logger
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
