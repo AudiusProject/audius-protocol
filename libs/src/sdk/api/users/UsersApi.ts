@@ -36,7 +36,7 @@ export class UsersApi extends GeneratedUsersApi {
     super(configuration)
   }
 
-  /**
+  /** @hidden
    * Update a user profile
    */
   async updateProfile(
@@ -100,7 +100,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Follow a user
    */
   async followUser(
@@ -123,7 +123,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unfollow a user
    */
   async unfollowUser(
@@ -146,7 +146,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Subscribe to a user
    */
   async subscribeToUser(
@@ -169,7 +169,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unsubscribe from a user
    */
   async unsubscribeFromUser(
