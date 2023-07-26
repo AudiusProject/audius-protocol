@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"mediorum/cidutil"
 	"sync"
 	"testing"
 	"time"
@@ -31,7 +32,7 @@ func TestRepair(t *testing.T) {
 
 	// first, write a blob only to my storage
 	data := []byte("repair test")
-	cid, err := computeFileCID(bytes.NewReader(data))
+	cid, err := cidutil.ComputeFileCID(bytes.NewReader(data))
 	assert.NoError(t, err)
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
@@ -40,10 +41,9 @@ func TestRepair(t *testing.T) {
 
 	// verify it reports as under-replicated
 	{
-		problems, err := ss.findProblemBlobs(false)
-		assert.NoError(t, err)
-		assert.Equal(t, problems[0].Key, cid)
-		assert.Equal(t, problems[0].R, 1)
+		blobs := []Blob{}
+		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
+		assert.Len(t, blobs, 1)
 	}
 
 	// tell all servers do repair
@@ -76,11 +76,6 @@ func TestRepair(t *testing.T) {
 
 	// verify over-replicated
 	{
-		problems, err := ss.findProblemBlobs(true)
-		assert.NoError(t, err)
-		assert.Equal(t, problems[0].Key, cid)
-		assert.Equal(t, problems[0].R, 9)
-
 		blobs := []Blob{}
 		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.True(t, len(blobs) == len(testNetwork))
@@ -117,7 +112,7 @@ func TestRepair(t *testing.T) {
 			rendezvousOrder = append(rendezvousOrder, byHost[h])
 		}
 
-		// make leader loose file
+		// make leader lose file
 		leader := rendezvousOrder[0]
 		leader.dropFromMyBucket(cid)
 

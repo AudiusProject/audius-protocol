@@ -1,13 +1,18 @@
 package ddl
 
 import (
+	"context"
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"mediorum/cidutil"
 
 	_ "embed"
+
+	"gocloud.dev/blob"
 )
 
 //go:embed cid_lookup.sql
@@ -23,31 +28,13 @@ var mediorumMigrationTable = `
 	);
 `
 
-func Migrate(db *sql.DB) {
+func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
 	runMigration(db, cidLookupDDL)
 	runMigration(db, delistStatusesDDL)
 
-	// stagger re-seeding between 1-3hrs. TODO: safe to remove after everyone runs it once
-	// min := time.Duration(60)
-	// max := time.Duration(180)
-	// diff := max.Minutes() - min.Minutes()
-	// randomTime := min + time.Duration(rand.Float64()*diff)*time.Minute
-	// time.AfterFunc(randomTime, func() {
-	// 	fmt.Println("dropping tables and re-seeding...")
-	// 	ddl := `begin; truncate mediorum_migrations; drop table cid_lookup; drop table cid_cursor; drop table cid_log; commit;`
-	// 	h := md5string(ddl)
-	// 	var alreadyRan bool
-	// 	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
-	// 	if alreadyRan {
-	// 		fmt.Printf("re-seed hash %s exists skipping ddl \n", h)
-	// 		return
-	// 	}
-
-	// 	mustExec(db, ddl)
-	// 	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
-	// 	os.Exit(0)
-	// })
+	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
+	migrateShardBucket(db, bucket)
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -75,4 +62,58 @@ func mustExec(db *sql.DB, ddl string, va ...interface{}) {
 func md5string(s string) string {
 	hash := md5.Sum([]byte(s))
 	return hex.EncodeToString(hash[:])
+}
+
+func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
+	h := "shardBucket"
+
+	var alreadyRan bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
+	if alreadyRan {
+		fmt.Printf("hash %s exists skipping ddl \n", h)
+		return
+	}
+
+	ctx := context.Background()
+
+	// collect all keys
+	keys := []string{}
+	iter := bucket.List(nil)
+	for {
+		obj, err := iter.Next(ctx)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("error listing bucket: %v", err)
+		}
+		keys = append(keys, obj.Key)
+	}
+
+	// migrate keys to sharded locations
+	for _, key := range keys {
+		newKey := cidutil.ShardCID(key)
+		fmt.Printf("migrating %s to %s\n", key, newKey)
+		r, err := bucket.NewReader(ctx, key, nil)
+		if err != nil {
+			log.Fatalf("error creating reader for unsharded key: %v", err)
+		}
+		defer r.Close()
+		w, err := bucket.NewWriter(ctx, newKey, nil)
+		if err != nil {
+			log.Fatalf("error creating writer to sharded key: %v", err)
+		}
+		defer w.Close()
+		_, err = io.Copy(w, r)
+		if err != nil {
+			log.Fatalf("error migrating blob: %v", err)
+		}
+
+		err = bucket.Delete(ctx, key)
+		if err != nil {
+			log.Fatalf("error deleting old blob: %v", err)
+		}
+	}
+
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
 }
