@@ -45,7 +45,7 @@ export interface GetAudioTransactionHistoryCountRequest {
  */
 export class TransactionsApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Gets the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryRaw(requestParameters: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
@@ -103,7 +103,7 @@ export class TransactionsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryCountRaw(requestParameters: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {

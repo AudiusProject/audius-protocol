@@ -68,7 +68,7 @@ export interface StreamTrackRequest {
  */
 export class TracksApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Gets a list of tracks using their IDs or permalinks
      */
     async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -102,7 +102,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a track by ID
      */
     async getTrackRaw(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackResponse>> {
@@ -132,7 +132,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending (most popular) tracks on Audius
      */
     async getTrendingTracksRaw(requestParameters: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -166,7 +166,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the top 100 trending underground tracks on Audius
      */
     async getUndergroundTrendingTracksRaw(requestParameters: GetUndergroundTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -200,7 +200,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Search for a track or tracks
      */
     async searchTracksRaw(requestParameters: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackSearch>> {
@@ -238,7 +238,7 @@ export class TracksApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
      * Get the streamable MP3 file of a track
      */
