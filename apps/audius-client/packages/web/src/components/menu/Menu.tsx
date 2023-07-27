@@ -16,15 +16,15 @@ import TrackMenu, { OwnProps as TrackMenuProps } from './TrackMenu'
 import UserMenu, { OwnProps as UserMenuProps } from './UserMenu'
 
 export type MenuOptionType =
-  | UserMenuProps
-  | CollectionMenuProps
-  | TrackMenuProps
+  | Omit<UserMenuProps, 'children'>
+  | Omit<CollectionMenuProps, 'children'>
+  | Omit<TrackMenuProps, 'children'>
 
 export type MenuType = MenuOptionType['type']
 
 export type MenuProps = {
   children: PopupMenuProps['renderTrigger']
-  menu: Omit<MenuOptionType, 'children'>
+  menu: MenuOptionType
   onClose?: () => void
   zIndex?: number
 }
@@ -47,28 +47,18 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
   )
 
   if (menu.type === 'user') {
-    return <UserMenu {...(menu as UserMenuProps)}>{renderMenu}</UserMenu>
+    return <UserMenu {...menu}>{renderMenu}</UserMenu>
   } else if (menu.type === 'album' || menu.type === 'playlist') {
     return (
-      <CollectionMenu
-        onClose={props.onClose}
-        {...(menu as CollectionMenuProps)}
-      >
+      <CollectionMenu onClose={props.onClose} {...menu}>
         {renderMenu}
       </CollectionMenu>
     )
   } else if (menu.type === 'track') {
-    return <TrackMenu {...(menu as TrackMenuProps)}>{renderMenu}</TrackMenu>
+    return <TrackMenu {...menu}>{renderMenu}</TrackMenu>
   } else if (menu.type === 'notification') {
   }
   return null
 })
-
-Menu.defaultProps = {
-  menu: {
-    type: 'track',
-    handle: ''
-  }
-}
 
 export default Menu

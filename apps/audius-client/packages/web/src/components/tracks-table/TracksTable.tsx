@@ -407,8 +407,6 @@ export const TracksTable = ({
             isArtistPick={track.user?.artist_pick_track_id === track.track_id}
             index={cellInfo.row.index}
             trackTitle={track.name}
-            albumId={null}
-            albumName={null}
             trackPermalink={track.permalink}
           />
         </div>

@@ -65,24 +65,24 @@ export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element
   extraMenuItems?: PopupMenuItem[]
   handle: string
-  includeAddToPlaylist: boolean
-  includeArtistPick: boolean
-  includeEdit: boolean
+  includeAddToPlaylist?: boolean
+  includeArtistPick?: boolean
+  includeEdit?: boolean
   includeEmbed?: boolean
-  includeFavorite: boolean
-  includeRepost: boolean
-  includeShare: boolean
-  includeTrackPage: boolean
-  isArtistPick: boolean
-  isDeleted: boolean
-  isFavorited: boolean
-  isOwner: boolean
+  includeFavorite?: boolean
+  includeRepost?: boolean
+  includeShare?: boolean
+  includeTrackPage?: boolean
+  isArtistPick?: boolean
+  isDeleted?: boolean
+  isFavorited?: boolean
+  isOwner?: boolean
   isOwnerDeactivated?: boolean
-  isReposted: boolean
+  isReposted?: boolean
   isUnlisted?: boolean
   trackId: ID
   trackTitle: string
-  genre: Genre
+  genre?: Genre
   trackPermalink: string
   type: 'track'
 }
