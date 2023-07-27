@@ -15,7 +15,7 @@ from src.queries.get_audio_transactions_history import (
     get_audio_transactions_history_count,
 )
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER, auth_middleware
+from src.utils.auth_middleware import auth_middleware
 
 from .models.transactions import transaction_details
 
