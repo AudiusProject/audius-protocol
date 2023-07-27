@@ -311,7 +311,7 @@ class FullBulkTracks(Resource):
         description="""Gets a list of tracks using their IDs or permalinks""",
     )
     @full_ns.expect(full_track_route_parser)
-    @full_ns.marshal_with(full_track_response)
+    @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=5)
     def get(self):
         args = full_track_route_parser.parse_args()
