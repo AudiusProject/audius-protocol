@@ -115,7 +115,7 @@ export const formOAuthResponse = async ({
     const storageNode = storageNodeSelector.getNodes(
       account.profile_picture_sizes
     )[0]
-    const base = `${storageNode}${account.profile_picture_sizes}/`
+    const base = `${storageNode}/content/${account.profile_picture_sizes}/`
     profilePicture = {
       '150x150': `${base}150x150.jpg`,
       '480x480': `${base}480x480.jpg`,
@@ -123,7 +123,7 @@ export const formOAuthResponse = async ({
     }
   } else if (account.profile_picture) {
     const storageNode = storageNodeSelector.getNodes(account.profile_picture)[0]
-    const url = `${storageNode}${account.profile_picture}`
+    const url = `${storageNode}/content/${account.profile_picture}`
     profilePicture = {
       '150x150': url,
       '480x480': url,
