@@ -79,6 +79,9 @@ root {
   --background-surface-2: var(--neutral-light-9);
   --background-white: var(--white);
 
+  /* Semantic Other */
+  --focus: var(--secondary);
+
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);
   --page-header-gradient-color-1: #5b23e1;

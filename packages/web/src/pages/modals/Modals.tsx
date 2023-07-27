@@ -23,6 +23,7 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { InboxSettingsModal } from 'components/inbox-settings-modal/InboxSettingsModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import PasswordResetModal from 'components/password-reset/PasswordResetModal'
+import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { ShareModal } from 'components/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { StripeOnRampModal } from 'components/stripe-on-ramp-modal'
@@ -69,7 +70,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal,
-  AiAttributionSettings: AiAttributionSettingsModal
+  AiAttributionSettings: AiAttributionSettingsModal,
+  PremiumContentPurchase: PremiumContentPurchaseModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

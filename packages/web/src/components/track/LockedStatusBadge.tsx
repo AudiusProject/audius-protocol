@@ -5,13 +5,13 @@ import styles from './LockedStatusBadge.module.css'
 
 export type LockedStatusBadgeProps = {
   locked: boolean
-  variant: 'premium' | 'gated'
+  variant?: 'premium' | 'gated'
 }
 
 /** Renders a small badge with locked or unlocked icon */
 export const LockedStatusBadge = ({
   locked,
-  variant
+  variant = 'gated'
 }: LockedStatusBadgeProps) => {
   const LockComponent = locked ? IconLock : IconLockUnlocked
   return (
