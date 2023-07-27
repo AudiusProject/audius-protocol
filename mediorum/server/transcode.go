@@ -487,6 +487,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		return onError(err, upload.Status, "getting file")
 	}
 	defer temp.Close()
+	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
