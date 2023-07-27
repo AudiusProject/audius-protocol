@@ -170,10 +170,7 @@ type TransferWAudioBalanceConfig = {
 export async function transferWAudioBalance(args: TransferWAudioBalanceConfig) {
   const instructions = await createTransferInstructions(args)
   return await args.transactionHandler.handleTransaction({
-    instructions: [
-      instructions.secpTransactionInstruction,
-      instructions.transferInstruction
-    ],
+    instructions,
     errorMapping: ClaimableProgramError,
     feePayerOverride: args.feePayerKey
   })
@@ -292,14 +289,11 @@ export const createTransferInstructions = async ({
 
   const ethAddressArr = SolanaUtils.ethAddressToArray(senderEthAddress)
   const transferDataInstr = Uint8Array.of(1, ...ethAddressArr)
+  const transferInstruction = new TransactionInstruction({
+    keys: accounts,
+    programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
+    data: Buffer.from(transferDataInstr)
+  })
 
-  const instructions = {
-    secpTransactionInstruction,
-    transferInstruction: new TransactionInstruction({
-      keys: accounts,
-      programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
-      data: Buffer.from(transferDataInstr)
-    })
-  }
-  return instructions
+  return [secpTransactionInstruction, transferInstruction]
 }

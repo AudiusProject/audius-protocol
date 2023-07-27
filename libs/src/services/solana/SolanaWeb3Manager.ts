@@ -5,7 +5,7 @@ import solanaWeb3, {
   LAMPORTS_PER_SOL,
   TransactionInstruction
 } from '@solana/web3.js'
-import type BN from 'bn.js'
+import BN from 'bn.js'
 import splToken from '@solana/spl-token'
 
 import { createTransferInstructions, transferWAudioBalance } from './transfer'
@@ -479,7 +479,7 @@ export class SolanaWeb3Manager {
   }: {
     id: number
     type: 'track'
-    splits: Array<{ address: string; amount: BN }>
+    splits: Record<string, number | BN>
     blocknumber: number
   }) {
     if (!this.web3Manager) {
@@ -487,37 +487,39 @@ export class SolanaWeb3Manager {
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
-    if (splits.length !== 1) {
+    if (Object.values(splits).length !== 1) {
       throw new Error(
         'Purchasing content only supports a single split. Specifying more splits coming soon!'
       )
     }
+
+    const totalAmount = Object.values(splits).reduce<BN>(
+      (sum, split) => (split instanceof BN ? sum.add(split) : sum.addn(split)),
+      new BN(0)
+    )
+
     const senderEthAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(
       senderEthAddress,
       this.claimableTokenPDAs.usdc,
       this.solanaTokenKey
     )
-    const instructions = []
-    for (const { address, amount } of splits) {
-      const { secpTransactionInstruction, transferInstruction } =
-        await createTransferInstructions({
-          amount,
-          feePayerKey: this.feePayerKey,
-          senderEthAddress,
-          senderEthPrivateKey:
-            this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
-          senderSolanaAddress,
-          recipientSolanaAddress: address,
-          claimableTokenPDA: this.claimableTokenPDAs.usdc,
-          solanaTokenProgramKey: this.solanaTokenKey,
-          claimableTokenProgramKey: this.claimableTokenProgramKey,
-          connection: this.connection,
-          mintKey: this.mints.usdc
-        })
-      instructions.push(secpTransactionInstruction)
-      instructions.push(transferInstruction)
-    }
+
+    const instructions = await createTransferInstructions({
+      amount: totalAmount,
+      feePayerKey: this.feePayerKey,
+      senderEthAddress,
+      senderEthPrivateKey:
+        this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
+      senderSolanaAddress,
+      recipientSolanaAddress: Object.keys(splits)[0]!,
+      claimableTokenPDA: this.claimableTokenPDAs.usdc,
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      mintKey: this.mints.usdc
+    })
+
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
