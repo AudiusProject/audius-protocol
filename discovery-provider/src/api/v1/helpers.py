@@ -27,6 +27,8 @@ def make_image(endpoint, cid, width="", height=""):
 
 
 def get_primary_endpoint(user, cid):
+    if not cid:
+        return ""
     healthy_nodes = get_all_healthy_content_nodes_cached(redis)
     if not healthy_nodes:
         logger.error(
@@ -45,7 +47,7 @@ def add_track_artwork(track):
         return track
     cid = track["cover_art_sizes"]
     endpoint = get_primary_endpoint(track["user"], cid)
-    if not endpoint or not cid:
+    if not endpoint:
         return track
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
@@ -61,7 +63,7 @@ def add_playlist_artwork(playlist):
         return playlist
     cid = playlist["playlist_image_sizes_multihash"]
     endpoint = get_primary_endpoint(playlist["user"], cid)
-    if not endpoint or not cid:
+    if not endpoint:
         return playlist
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
