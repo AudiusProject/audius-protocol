@@ -7,7 +7,15 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
+from flask_restx import (
+    Namespace,
+    Resource,
+    fields,
+    inputs,
+    marshal,
+    marshal_with,
+    reqparse,
+)
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -311,7 +319,7 @@ class FullBulkTracks(Resource):
         description="""Gets a list of tracks using their IDs or permalinks""",
     )
     @full_ns.expect(full_track_route_parser)
-    @full_ns.marshal_with(full_tracks_response)
+    @full_ns.response(200, 'Success', full_tracks_response)
     @cache(ttl_sec=5)
     def get(self):
         args = full_track_route_parser.parse_args()
@@ -365,7 +373,7 @@ class FullBulkTracks(Resource):
             tracks = extend_track(tracks[0])
         else:
             tracks = [extend_track(track) for track in tracks]
-        return success_response(tracks)
+        return success_response(marshal(tracks, track_full, None, False, None, False))
 
 
 # Stream
