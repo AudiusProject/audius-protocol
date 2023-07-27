@@ -1,6 +1,7 @@
 import { CSSProperties, ElementType, ReactNode } from 'react'
 
 import cn from 'classnames'
+import { camelCase } from 'lodash'
 
 import { getCurrentThemeColors, ThemeColor } from 'utils/theme/theme'
 
@@ -22,8 +23,8 @@ export const Text = (props: TextProps) => {
     className,
     children,
     variant = 'body' as TextVariant,
-    strength = 'Default' as TextStrength,
-    size = 'Medium' as TextSize,
+    strength = 'default' as TextStrength,
+    size = 'medium' as TextSize,
     color = '--neutral',
     ...otherProps
   } = props
@@ -39,8 +40,8 @@ export const Text = (props: TextProps) => {
   type TextClass = keyof typeof styles
   const variantClassNames = [
     variant as TextClass,
-    `${variant}${size}` as TextClass,
-    `${variant}${strength}` as TextClass
+    camelCase(`${variant} ${size}`) as TextClass,
+    camelCase(`${variant} ${strength}`) as TextClass
   ].map((cn) => styles[cn])
 
   return (

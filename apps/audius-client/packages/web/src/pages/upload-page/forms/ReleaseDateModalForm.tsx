@@ -50,7 +50,7 @@ export const ReleaseDateModalForm = () => {
   const preview = (
     <div className={styles.preview}>
       <div className={styles.header}>
-        <Text className={styles.title} variant='title' size='Large'>
+        <Text className={styles.title} variant='title' size='large'>
           {messages.title}
         </Text>
       </div>
@@ -83,7 +83,7 @@ export const ReleaseDateModalForm = () => {
         <Text
           className={cn(styles.title, styles.modalHeading)}
           variant='title'
-          size='Large'
+          size='large'
         >
           {messages.title}
         </Text>

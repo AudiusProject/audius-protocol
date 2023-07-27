@@ -10,9 +10,9 @@ export type FontWeight =
   | 'thin' // 200
   | 'ultraLight' // 100
 
-export type TextStrength = 'Weak' | 'Default' | 'Strong'
+export type TextStrength = 'weak' | 'default' | 'strong'
 
-export type TextSize = 'XLarge' | 'Large' | 'Medium' | 'Small' | 'XSmall'
+export type TextSize = 'xLarge' | 'large' | 'medium' | 'small' | 'xSmall'
 
 export type TextVariant = 'display' | 'heading' | 'title' | 'label' | 'body'
 export type VariantSizeTagMap = Partial<Record<TextSize, ElementType>>

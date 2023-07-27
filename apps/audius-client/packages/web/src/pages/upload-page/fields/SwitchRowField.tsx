@@ -35,7 +35,7 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <Text className={styles.title} variant='title' size='Large'>
+        <Text className={styles.title} variant='title' size='large'>
           {header}
         </Text>
         <Text>{description}</Text>
