@@ -2,6 +2,7 @@ import { ComponentPropsWithoutRef, MutableRefObject, RefCallback } from 'react'
 
 import cn from 'classnames'
 
+import { HelperText } from './HelperText'
 import styles from './InputV2.module.css'
 import { useFocusState } from './useFocusState'
 
@@ -27,6 +28,7 @@ export type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   error?: boolean
   inputClassName?: string
   label?: string
+  helperText?: string
 }
 
 export const InputV2 = (props: InputV2Props) => {
@@ -48,13 +50,14 @@ export const InputV2 = (props: InputV2Props) => {
     onFocus: onFocusProp,
     onBlur: onBlurProp,
     placeholder,
+    helperText,
     ...other
   } = props
 
   const characterCount = value ? `${value}`.length : 0
   const nearCharacterLimit = maxLength && characterCount >= 0.9 * maxLength
   const elevatePlaceholder = variant === InputV2Variant.ELEVATED_PLACEHOLDER
-  const label = required && !elevatePlaceholder ? `${labelProp} *` : labelProp
+  const label = required ? `${labelProp} *` : labelProp
 
   /**
    * Since Firefox doesn't support the :has() pseudo selector,
@@ -82,7 +85,7 @@ export const InputV2 = (props: InputV2Props) => {
       onBlur={handleBlur}
       ref={inputRef}
       required={required}
-      className={inputClassName}
+      className={cn(styles.textInput, inputClassName)}
       value={value}
       maxLength={maxLength}
       disabled={disabled}
@@ -92,30 +95,33 @@ export const InputV2 = (props: InputV2Props) => {
   )
 
   return (
-    <div className={cn(styles.root, style, className)}>
-      {elevatePlaceholder ? (
-        <label className={styles.elevatedLabel}>
-          <span
-            className={cn(styles.label, {
-              [styles.hasValue]: characterCount > 0
-            })}
-          >
-            {label}
-          </span>
-          {input}
-        </label>
-      ) : (
-        input
-      )}
+    <>
+      <div className={cn(styles.root, style, className)}>
+        {elevatePlaceholder ? (
+          <label className={styles.elevatedLabel}>
+            <span
+              className={cn(styles.label, {
+                [styles.hasValue]: characterCount > 0
+              })}
+            >
+              {label}
+            </span>
+            {input}
+          </label>
+        ) : (
+          input
+        )}
 
-      {showMaxLength && (
-        <div className={styles.characterCount}>
-          <span>
-            {characterCount}/{maxLength}
-          </span>
-        </div>
-      )}
-      {children}
-    </div>
+        {showMaxLength && (
+          <div className={styles.characterCount}>
+            <span>
+              {characterCount}/{maxLength}
+            </span>
+          </div>
+        )}
+        {children}
+      </div>
+      {helperText ? <HelperText error={error}>{helperText}</HelperText> : null}
+    </>
   )
 }

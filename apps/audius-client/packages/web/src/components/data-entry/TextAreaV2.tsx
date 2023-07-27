@@ -9,6 +9,7 @@ import {
 import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
 
+import { HelperText } from './HelperText'
 import styles from './TextAreaV2.module.css'
 import { useFocusState } from './useFocusState'
 
@@ -46,6 +47,7 @@ export type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   maxVisibleRows?: number
   showMaxLength?: boolean
   error?: boolean
+  helperText?: string
 }
 
 const CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT = 0.875
@@ -66,6 +68,7 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
       onFocus: onFocusProp,
       onBlur: onBlurProp,
       error,
+      helperText,
       ...other
     } = props
 
@@ -111,44 +114,53 @@ export const TextAreaV2 = forwardRef<HTMLTextAreaElement, TextAreaV2Props>(
     }, [growTextArea, value])
 
     return (
-      <div
-        className={cn(
-          styles.root,
-          { [styles.focused]: isFocused, [styles.error]: error },
-          style,
-          className
-        )}
-      >
-        <div ref={rootRef} className={styles.scrollArea} style={{ maxHeight }}>
-          <textarea
-            ref={mergeRefs([textareaRef, forwardedRef])}
-            maxLength={maxLength ?? undefined}
-            value={value}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            {...other}
-          />
-          <div className={styles.right}>
-            <div className={styles.bottomRight}>
-              <div
-                className={styles.children}
-                style={{ height: `${sizeToLineHeight[size]}px` }}
-              >
-                {children}
+      <>
+        <div
+          className={cn(
+            styles.root,
+            { [styles.focused]: isFocused, [styles.error]: error },
+            style,
+            className
+          )}
+        >
+          <div
+            ref={rootRef}
+            className={styles.scrollArea}
+            style={{ maxHeight }}
+          >
+            <textarea
+              ref={mergeRefs([textareaRef, forwardedRef])}
+              maxLength={maxLength ?? undefined}
+              value={value}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              {...other}
+            />
+            <div className={styles.right}>
+              <div className={styles.bottomRight}>
+                <div
+                  className={styles.children}
+                  style={{ height: `${sizeToLineHeight[size]}px` }}
+                >
+                  {children}
+                </div>
               </div>
             </div>
           </div>
+          {showMaxLength ? (
+            <div
+              className={cn(styles.characterCount, {
+                [styles.nearLimit]: nearCharacterLimit
+              })}
+            >
+              {characterCount}/{maxLength}
+            </div>
+          ) : null}
         </div>
-        {showMaxLength ? (
-          <div
-            className={cn(styles.characterCount, {
-              [styles.nearLimit]: nearCharacterLimit
-            })}
-          >
-            {characterCount}/{maxLength}
-          </div>
+        {helperText ? (
+          <HelperText error={error}>{helperText}</HelperText>
         ) : null}
-      </div>
+      </>
     )
   }
 )

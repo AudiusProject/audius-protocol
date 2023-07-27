@@ -2,11 +2,11 @@ import { Component } from 'react'
 
 import Select from 'antd/lib/select'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
 
 import styles from './DropdownInput.module.css'
+import { HelperText } from './HelperText'
 
 const Option = Select.Option
 
@@ -47,11 +47,14 @@ class DropdownInput extends Component {
       id,
       focused = this.state.focused,
       popupContainer: popupContainerProp,
-      footer
+      footer,
+      helperText,
+      placeholder: placeholderProp,
+      onSelect: ignoredonSelect,
+      ...other
     } = this.props
-    let { placeholder } = this.props
-
-    if (isRequired && placeholder) placeholder = placeholder + ' *'
+    const placeholder =
+      isRequired && placeholderProp ? `${placeholderProp}*` : placeholderProp
 
     const style = {
       [styles.horizontal]: layout === 'horizontal',
@@ -155,32 +158,18 @@ class DropdownInput extends Component {
             notFoundContent={''}
             getPopupContainer={popupContainer}
             onDropdownVisibleChange={this.onVisibleChange}
+            {...other}
           >
             {options}
           </Select>
           <IconCaretDown className={styles.arrow} />
         </div>
+        {helperText ? (
+          <HelperText error={error}>{helperText}</HelperText>
+        ) : null}
       </div>
     )
   }
-}
-
-DropdownInput.propTypes = {
-  placeholder: PropTypes.string,
-  defaultValue: PropTypes.string,
-  menu: PropTypes.object,
-  label: PropTypes.string,
-  labelStyle: PropTypes.string,
-  dropdownStyle: PropTypes.string,
-  dropdownInputStyle: PropTypes.string,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  layout: PropTypes.oneOf(['horizontal', 'vertical']),
-  variant: PropTypes.oneOf(['default', 'alternative']),
-  disabled: PropTypes.bool,
-  mount: PropTypes.oneOf(['parent', 'page', 'body']),
-  isRequired: PropTypes.bool,
-  error: PropTypes.bool,
-  onSelect: PropTypes.func
 }
 
 DropdownInput.defaultProps = {

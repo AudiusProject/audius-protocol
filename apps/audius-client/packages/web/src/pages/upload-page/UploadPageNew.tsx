@@ -83,5 +83,3 @@ export const UploadPageNew = (props: UploadPageProps) => {
     </Page>
   )
 }
-
-export default UploadPageNew
