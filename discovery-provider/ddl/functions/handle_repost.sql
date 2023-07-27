@@ -46,7 +46,7 @@ begin
 
       -- action_log: repost track
       if owner_user_id is not null then
-        insert into zzz.action_log
+        insert into action_log
           (actor_user_id, verb, track_id, user_id, created_at, blocknumber)
         values
           (new.user_id, 'repost', new.repost_item_id, owner_user_id, new.created_at, new.blocknumber)
@@ -66,7 +66,7 @@ begin
 
       -- action_log: repost playlist
       if owner_user_id is not null then
-        insert into zzz.action_log
+        insert into action_log
           (actor_user_id, verb, playlist_id, user_id, created_at, blocknumber)
         values
           (new.user_id, 'repost', new.repost_item_id, owner_user_id, new.created_at, new.blocknumber)

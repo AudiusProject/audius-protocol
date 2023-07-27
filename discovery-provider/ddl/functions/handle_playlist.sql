@@ -42,7 +42,7 @@ begin
     )
     then
       -- action_log
-      insert into zzz.action_log
+      insert into action_log
         (actor_user_id, verb, playlist_id, created_at, blocknumber)
       values
         (new.playlist_owner_id, 'post', new.playlist_id, new.created_at, new.blocknumber)

@@ -57,7 +57,7 @@ begin
     if delta = 1 AND new.is_playlist_upload = FALSE THEN
 
       -- action_log: post track
-      insert into zzz.action_log
+      insert into action_log
         (actor_user_id, verb, track_id, created_at, blocknumber)
       values
         (new.owner_id, 'post', new.track_id, new.created_at, new.blocknumber)

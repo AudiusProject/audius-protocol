@@ -50,7 +50,7 @@ begin
     -- create a notification for the followee
     if new.is_delete is false then
       -- action_log
-      insert into zzz.action_log
+      insert into action_log
         (actor_user_id, verb, user_id, created_at, blocknumber)
       values
         (new.follower_user_id, 'follow', new.followee_user_id, new.created_at, new.blocknumber)

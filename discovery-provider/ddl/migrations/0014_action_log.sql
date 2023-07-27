@@ -1,9 +1,8 @@
 begin;
 
-drop schema if exists zzz CASCADE;
-create schema zzz;
+drop table if exists action_log;
 
-create table zzz.action_log (
+create table action_log (
   actor_user_id int not null,
 
   -- one of: follow, repost, heart, tip, etc.
@@ -25,7 +24,7 @@ create table zzz.action_log (
 );
 
 -- repost playlist
-insert into zzz.action_log
+insert into action_log
   (actor_user_id, verb, playlist_id, user_id, created_at, blocknumber)
 select
   r.user_id, 'repost', r.repost_item_id, p.playlist_owner_id, r.created_at, r.blocknumber
@@ -43,7 +42,7 @@ order by r.blocknumber desc
 
 
 -- repost track
-insert into zzz.action_log
+insert into action_log
   (actor_user_id, verb, track_id, user_id, created_at, blocknumber)
 select
   r.user_id, 'repost', r.repost_item_id, t.owner_id, r.created_at, r.blocknumber
@@ -62,7 +61,7 @@ order by r.blocknumber desc
 
 
 -- follow
-insert into zzz.action_log
+insert into action_log
   (actor_user_id, verb, user_id, created_at, blocknumber)
 select
     follower_user_id, 'follow', followee_user_id, created_at, blocknumber
@@ -73,7 +72,7 @@ order by blocknumber desc
 
 
 -- post track
-insert into zzz.action_log
+insert into action_log
   (actor_user_id, verb, track_id, created_at, blocknumber)
 select
     owner_id, 'post', track_id, created_at, blocknumber
@@ -86,7 +85,7 @@ order by blocknumber desc
 ;
 
 -- post playlist
-insert into zzz.action_log
+insert into action_log
   (actor_user_id, verb, playlist_id, created_at, blocknumber)
 select
     playlist_owner_id, 'post', playlist_id, created_at, blocknumber
@@ -98,25 +97,53 @@ order by blocknumber desc
 ;
 
 
-create index action_log_created_at_idx on zzz.action_log(created_at, actor_user_id);
-create index action_log_user_id_idx on zzz.action_log(user_id, created_at);
--- create index action_log_track_id_idx on zzz.action_log(track_id);
--- create index action_log_playlist_id_idx on zzz.action_log(playlist_id);
+create index action_log_created_at_idx on action_log(created_at, actor_user_id);
+create index action_log_user_id_idx on action_log(user_id, created_at);
+-- create index action_log_track_id_idx on action_log(track_id);
+-- create index action_log_playlist_id_idx on action_log(playlist_id);
 
 commit;
 
 
 /*
-FEED:
+TMI FEED:
 
-explain select * from zzz.action_log
-where actor_user_id in (select user_id from zzz.action_log where verb = 'follow' and actor_user_id = 197005)
+explain select * from action_log
+where actor_user_id in (select user_id from action_log where verb = 'follow' and actor_user_id = 197005)
 order by created_at desc
-limit 1000;
+limit 100;
+
+Grouped Feed:
+
+select
+  verb,
+  user_id,
+  playlist_id,
+  track_id,
+  min(created_at),
+  array_to_json(array_agg(row_to_json(al)))
+from action_log al
+where actor_user_id in (select user_id from action_log where verb = 'follow' and actor_user_id = 197005)
+group by 1, 2, 3, 4
+order by 5 desc
+limit 100;
+
+
+explain select
+  verb,
+  user_id,
+  playlist_id,
+  track_id,
+  min(created_at)
+from action_log al
+where actor_user_id in (select user_id from action_log where verb = 'follow' and actor_user_id = 197005)
+group by 1, 2, 3, 4
+order by 5 desc
+limit 100;
 
 NOTIFS:
 
-explain select * from zzz.action_log
+explain select * from action_log
 where user_id = 197005
 order by created_at desc
 limit 1000;

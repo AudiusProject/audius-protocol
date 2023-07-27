@@ -38,7 +38,7 @@ begin
 
     assert (select count(*) from aggregate_user) = 2;
     assert (select count(*) from aggregate_track) = 1;
-    assert (select count(*) from zzz.action_log) = 5;
+    assert (select count(*) from action_log) = 5;
 
     select * from aggregate_user into agg_user where user_id = 1;
     assert agg_user.follower_count = 0;
