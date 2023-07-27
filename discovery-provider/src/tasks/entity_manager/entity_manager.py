@@ -68,6 +68,7 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     RecordDict,
     expect_cid_metadata_json,
+    generate_metadata_cid_v1,
     get_metadata_type_and_format,
     get_record_key,
     parse_metadata,
@@ -177,17 +178,6 @@ def entity_manager_update(
                     # update logger context with this tx event
                     logger.update_context(event["args"])
 
-                    # add processed metadata to cid_metadata dicts to batch save to cid_data table
-                    # later
-                    if expect_cid_metadata_json(
-                        params.metadata, params.action, params.entity_type
-                    ):
-                        metadata_type, _ = get_metadata_type_and_format(
-                            params.entity_type
-                        )
-                        cid_type[params.metadata_cid] = metadata_type
-                        cid_metadata[params.metadata_cid] = params.metadata
-
                     if (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.PLAYLIST
@@ -237,7 +227,7 @@ def entity_manager_update(
                         and params.entity_type == EntityType.USER
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        update_user(params)
+                        update_user(params, cid_type, cid_metadata)
                     elif (
                         params.action == Action.VERIFY
                         and params.entity_type == EntityType.USER
@@ -292,7 +282,7 @@ def entity_manager_update(
                     logger.info("process transaction")  # log event context
                 except IndexingValidationError as e:
                     # swallow exception to keep indexing
-                    logger.info(f"failed to process transaction error {e}")
+                    logger.error(f"failed to process transaction error {e}")
                 except Exception as e:
                     indexing_error = IndexingError(
                         "tx-failure",
@@ -304,7 +294,7 @@ def entity_manager_update(
                     create_and_raise_indexing_error(
                         indexing_error, update_task.redis, session
                     )
-                    logger.info("skipping transaction hash")
+                    logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
         records_to_save = get_records_to_save(params, new_records, original_records)

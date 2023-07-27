@@ -1,9 +1,7 @@
 package loadtest
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"mediorum/server"
 	"sort"
 	"sync"
@@ -12,26 +10,6 @@ import (
 
 func (tc *TestClient) problems(wg *sync.WaitGroup, peer *server.Peer) {
 	defer wg.Done()
-	url := fmt.Sprintf("%s%s", peer.Host, "/internal/blobs/problems")
-	resp, err := tc.HttpClient.Get(url)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		fmt.Println(resp.Status)
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-	var results []server.ProblemBlob
-	if err := json.Unmarshal(body, &results); err != nil {
-		fmt.Println("ERR Can not unmarshal JSON")
-		fmt.Println(peer.Host)
-		return
-	}
-	tc.report[peer.Host] = append(tc.report[peer.Host], len(results))
 }
 
 func (tc *TestClient) Report(wg *sync.WaitGroup) {

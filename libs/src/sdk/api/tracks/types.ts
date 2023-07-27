@@ -1,52 +1,61 @@
 import { z } from 'zod'
-import type { CrossPlatformFile as File } from '../../types/File'
+import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { isFileValid } from '../../utils/file'
 
-export const PremiumConditionsEthNFTCollection = z.object({
-  chain: z.literal('eth'),
-  address: z.string(),
-  standard: z.union([z.literal('ERC721'), z.literal('ERC1155')]),
-  name: z.string(),
-  slug: z.string(),
-  imageUrl: z.optional(z.string()),
-  externalLink: z.optional(z.string())
-})
+export const PremiumConditionsEthNFTCollection = z
+  .object({
+    chain: z.literal('eth'),
+    address: z.string(),
+    standard: z.union([z.literal('ERC721'), z.literal('ERC1155')]),
+    name: z.string(),
+    slug: z.string(),
+    imageUrl: z.optional(z.string()),
+    externalLink: z.optional(z.string())
+  })
+  .strict()
 
-export const PremiumConditionsSolNFTCollection = z.object({
-  chain: z.literal('sol'),
-  address: z.string(),
-  name: z.string(),
-  imageUrl: z.optional(z.string()),
-  externalLink: z.optional(z.string())
-})
+export const PremiumConditionsSolNFTCollection = z
+  .object({
+    chain: z.literal('sol'),
+    address: z.string(),
+    name: z.string(),
+    imageUrl: z.optional(z.string()),
+    externalLink: z.optional(z.string())
+  })
+  .strict()
 
 export const PremiumConditionsNFTCollection = z.union([
   PremiumConditionsEthNFTCollection,
   PremiumConditionsSolNFTCollection
 ])
 
-export const PremiumConditionsFollowUserId = z.object({
-  followUserId: z.number()
-})
+export const PremiumConditionsFollowUserId = z
+  .object({
+    followUserId: HashId
+  })
+  .strict()
 
-export const PremiumConditionsTipUserId = z.object({
-  tipUserId: z.number()
-})
+export const PremiumConditionsTipUserId = z
+  .object({
+    tipUserId: HashId
+  })
+  .strict()
 
 export const createUploadTrackMetadataSchema = () =>
   z
     .object({
-      aiAttributionUserId: z.optional(z.number()),
+      aiAttributionUserId: z.optional(HashId),
       description: z.optional(z.string().max(1000)),
       download: z.optional(
-        z.object({
-          cid: z.string(),
-          isDownloadable: z.boolean(),
-          requiresFollow: z.boolean()
-        })
+        z
+          .object({
+            cid: z.string(),
+            isDownloadable: z.boolean(),
+            requiresFollow: z.boolean()
+          })
+          .strict()
       ),
       fieldVisibility: z.optional(
         z.object({
@@ -76,15 +85,17 @@ export const createUploadTrackMetadataSchema = () =>
         z.date().max(new Date(), { message: 'should not be in the future' })
       ),
       remixOf: z.optional(
-        z.object({
-          tracks: z
-            .array(
-              z.object({
-                parentTrackId: z.number()
-              })
-            )
-            .min(1)
-        })
+        z
+          .object({
+            tracks: z
+              .array(
+                z.object({
+                  parentTrackId: HashId
+                })
+              )
+              .min(1)
+          })
+          .strict()
       ),
       tags: z.optional(z.string()),
       title: z.string(),
@@ -102,12 +113,10 @@ export const createUploadTrackSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as File)
-      ),
+      coverArtFile: ImageFile,
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
+      trackFile: AudioFile
     })
     .strict()
 
@@ -121,23 +130,15 @@ export type UploadTrackRequest = Omit<
 }
 
 export const createUpdateTrackSchema = () =>
-  createUploadTrackSchema()
-    .pick({
-      userId: true,
-      coverArtFile: true,
-      metadata: true,
-      onProgress: true
+  z
+    .object({
+      userId: HashId,
+      trackId: HashId,
+      metadata: createUploadTrackMetadataSchema().partial(),
+      transcodePreview: z.optional(z.boolean()),
+      coverArtFile: z.optional(ImageFile),
+      onProgress: z.optional(z.function().args(z.number()))
     })
-    .merge(
-      z.object({
-        trackId: HashId
-      })
-    )
-    .merge(
-      z.object({
-        transcodePreview: z.optional(z.boolean())
-      })
-    )
     .strict()
 
 export type UpdateTrackRequest = Omit<
@@ -161,13 +162,15 @@ export const FavoriteTrackSchema = z
     userId: HashId,
     trackId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a save of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isSaveOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a save of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isSaveOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()
@@ -188,13 +191,15 @@ export const RepostTrackSchema = z
     userId: HashId,
     trackId: HashId,
     metadata: z.optional(
-      z.object({
-        /**
-         * Is this a repost of a repost? Used to dispatch notifications
-         * when a user favorites another user's repost
-         */
-        isRepostOfRepost: z.boolean()
-      })
+      z
+        .object({
+          /**
+           * Is this a repost of a repost? Used to dispatch notifications
+           * when a user favorites another user's repost
+           */
+          isRepostOfRepost: z.boolean()
+        })
+        .strict()
     )
   })
   .strict()

@@ -2,6 +2,7 @@ import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { AlbumsApi } from './api/albums/AlbumsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
@@ -21,91 +22,16 @@ import {
 import fetch from 'cross-fetch'
 import { addAppNameMiddleware } from './middleware'
 import {
-  AuthService,
-  DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
-  EntityManagerService,
   Auth,
-  StorageService,
   Storage,
   EntityManager,
   AppAuth
 } from './services'
-import {
-  StorageNodeSelector,
-  StorageNodeSelectorService
-} from './services/StorageNodeSelector'
+import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
-import { z } from 'zod'
-
-type ServicesContainer = {
-  /**
-   * Service used to choose discovery node
-   */
-  discoveryNodeSelector: DiscoveryNodeSelectorService
-
-  /**
-   * Service used to choose storage node
-   */
-  storageNodeSelector: StorageNodeSelectorService
-
-  /**
-   * Service used to write and update entities on chain
-   */
-  entityManager: EntityManagerService
-
-  /**
-   * Service used to store and retrieve content e.g. tracks and images
-   */
-  storage: StorageService
-
-  /**
-   * Helpers to faciliate requests that require signatures or encryption
-   */
-  auth: AuthService
-}
-
-const DevAppSchema = z.object({
-  /**
-   * Your app name
-   */
-  appName: z.optional(z.string()),
-  /**
-   * Services injection
-   */
-  services: z.optional(z.custom<Partial<ServicesContainer>>()),
-  /**
-   * API key, required for writes
-   */
-  apiKey: z.string().min(1),
-  /**
-   * API secret, required for writes
-   */
-  apiSecret: z.string().min(1)
-})
-
-const CustomAppSchema = z.object({
-  /**
-   * Your app name
-   */
-  appName: z.string().min(1),
-  /**
-   * Services injection
-   */
-  services: z.optional(z.custom<Partial<ServicesContainer>>()),
-  /**
-   * API key, required for writes
-   */
-  apiKey: z.optional(z.string()),
-  /**
-   * API secret, required for writes
-   */
-  apiSecret: z.optional(z.string())
-})
-
-const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])
-
-type SdkConfig = z.infer<typeof SdkConfigSchema>
+import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
+import { Logger } from './services/Logger'
 
 /**
  * The Audius SDK
@@ -126,7 +52,12 @@ export const sdk = (config: SdkConfig) => {
   // Initialize OAuth
   const oauth =
     typeof window !== 'undefined'
-      ? new OAuth({ appName, apiKey, usersApi: apis.users })
+      ? new OAuth({
+          appName,
+          apiKey,
+          usersApi: apis.users,
+          logger: services.logger
+        })
       : undefined
 
   return {
@@ -136,8 +67,11 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
+  const defaultLogger = new Logger()
+  const logger = config.services?.logger ?? defaultLogger
+
   if (config.apiSecret && isBrowser) {
-    console.warn(
+    logger.warn(
       "apiSecret should only be provided server side so that it isn't exposed"
     )
   }
@@ -147,14 +81,15 @@ const initializeServices = (config: SdkConfig) => {
       ? new AppAuth(config.apiKey, config.apiSecret)
       : new Auth()
 
-  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector()
+  const defaultDiscoveryNodeSelector = new DiscoveryNodeSelector({ logger })
 
   const storageNodeSelector =
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       auth: config.services?.auth ?? defaultAuthService,
       discoveryNodeSelector:
-        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
+        config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector,
+      logger
     })
 
   const defaultEntityManager = new EntityManager({
@@ -162,16 +97,16 @@ const initializeServices = (config: SdkConfig) => {
     discoveryNodeSelector:
       config.services?.discoveryNodeSelector ?? defaultDiscoveryNodeSelector
   })
-  const entityManager = config.services?.entityManager ?? defaultEntityManager
 
-  const defaultStorage = new Storage({ storageNodeSelector })
+  const defaultStorage = new Storage({ storageNodeSelector, logger })
 
   const defaultServices: ServicesContainer = {
     storageNodeSelector: storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    entityManager,
+    entityManager: defaultEntityManager,
     storage: defaultStorage,
-    auth: defaultAuthService
+    auth: defaultAuthService,
+    logger
   }
   return { ...defaultServices, ...config.services }
 }
@@ -197,19 +132,29 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const users = new UsersApi(
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
+  )
+  const albums = new AlbumsApi(
+    generatedApiClientConfig,
+    services.storage,
+    services.entityManager,
+    services.auth,
+    services.logger
   )
   const playlists = new PlaylistsApi(
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth
+    services.auth,
+    services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
@@ -220,7 +165,8 @@ const initializeApis = ({
       middleware
     }),
     services.auth,
-    services.discoveryNodeSelector
+    services.discoveryNodeSelector,
+    services.logger
   )
   const grants = new GrantsApi(
     generatedApiClientConfig,
@@ -252,6 +198,7 @@ const initializeApis = ({
   return {
     tracks,
     users,
+    albums,
     playlists,
     tips,
     resolve,

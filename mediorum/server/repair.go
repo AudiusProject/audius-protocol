@@ -3,12 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"strings"
+	"mediorum/cidutil"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"golang.org/x/exp/slices"
-	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) startRepairer() {
@@ -47,46 +46,6 @@ func (ss *MediorumServer) startRepairer() {
 	}
 }
 
-type ProblemBlob struct {
-	Key   string
-	R     int
-	Hosts string
-}
-
-func (ss *MediorumServer) findProblemBlobsBaseQuery(overReplicated bool) *gorm.DB {
-	comparator := "<"
-	if overReplicated {
-		comparator = ">"
-	}
-
-	healthyHosts := ss.findHealthyPeers(5 * time.Minute)
-
-	return ss.crud.DB.Model(&Blob{}).
-		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
-		Where("host in ?", healthyHosts).
-		Group("key").
-		Having(fmt.Sprintf("count(distinct host) %s %d", comparator, ss.Config.ReplicationFactor)).
-		Order("random()")
-
-}
-
-func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, error) {
-	problems := []ProblemBlob{}
-	err := ss.findProblemBlobsBaseQuery(overReplicated).
-		Limit(1000). // repair 1000 problem blobs at a time
-		Scan(&problems).
-		Error
-	return problems, err
-}
-
-func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, error) {
-	var count int64 = 0
-	err := ss.findProblemBlobsBaseQuery(overReplicated).
-		Count(&count).
-		Error
-	return count, err
-}
-
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
 
@@ -122,13 +81,13 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			logger := logger.With("cid", cid)
 
-			// don't try to repair legacy blob formats
-			if !strings.HasPrefix(cid, "ba") {
-				continue
-			}
-
 			preferredHosts, isMine := ss.rendezvous(cid)
 			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
+
+			// TODO(theo): Don't repair Qm CIDs for now (isMine will still be true). Remove this once all nodes have enough space to store Qm CIDs
+			if cidutil.IsLegacyCID(cid) {
+				myRank = 999
+			}
 
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
@@ -136,29 +95,30 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 				continue
 			}
 
-			isOnDisk, err := ss.bucket.Exists(ctx, cid)
+			key := cidutil.ShardCID(cid)
+			alreadyHave, err := ss.bucket.Exists(ctx, key)
 			if err != nil {
 				logger.Error("exist check failed", "err", err)
 				continue
 			}
 
 			// in cleanup mode do some extra checks:
-			// - validate CID, delete if invalid
-			if cleanupMode && isOnDisk {
-				if r, err := ss.bucket.NewReader(ctx, cid, nil); err == nil {
-					err := validateCID(cid, r)
+			// - validate CID, delete if invalid (doesn't apply to Qm CIDs because their hash is not the CID)
+			if cleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
+				if r, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+					err := cidutil.ValidateCID(cid, r)
 					r.Close()
 					if err != nil {
 						logger.Error("deleting invalid CID", "err", err)
-						ss.bucket.Delete(ctx, cid)
-						isOnDisk = false
+						ss.bucket.Delete(ctx, key)
+						alreadyHave = false
 					}
 				}
 
 			}
 
 			// get blobs that I should have
-			if isMine && !isOnDisk {
+			if isMine && !alreadyHave {
 				success := false
 				for _, host := range preferredHosts {
 					if host == ss.Config.Self.Host {
@@ -181,7 +141,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			// delete over-replicated blobs:
 			// check all the nodes ahead of me in the preferred order to ensure they have it
 			// if R nodes in front of me have it, I can safely delete
-			if cleanupMode && !isMine && isOnDisk {
+			if cleanupMode && !isMine && alreadyHave {
 				depth := 0
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {
@@ -207,7 +167,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			// even tho this blob isn't "mine"
 			// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
 			// and pull file if under-replicated
-			if cleanupMode && !isMine && !isOnDisk && myRank < ss.Config.ReplicationFactor*2 {
+			if cleanupMode && !isMine && !alreadyHave && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {

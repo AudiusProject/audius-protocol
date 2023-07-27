@@ -23,12 +23,12 @@ export class GrantsApi {
    * When user authorizes app to perform actions on their behalf
    */
   async createGrant(requestParameters: CreateGrantRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'createGrant',
       CreateGrantSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
@@ -38,25 +38,18 @@ export class GrantsApi {
       }),
       auth: this.auth
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      error: false
-    }
   }
 
   /**
    * When user revokes an app's authorization to perform actions on their behalf
    */
   async revokeGrant(requestParameters: RevokeGrantRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'revokeGrant',
       RevokeGrantSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.GRANT,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
@@ -66,12 +59,5 @@ export class GrantsApi {
       }),
       auth: this.auth
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      error: false
-    }
   }
 }

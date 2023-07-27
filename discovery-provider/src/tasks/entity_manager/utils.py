@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 from src.models.indexing.em_log import EMLog
 
+from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
@@ -235,6 +236,8 @@ class ManageEntityParameters:
 
 # Whether to expect valid metadata json based on the action and entity type
 def expect_cid_metadata_json(metadata, action, entity_type):
+    # TODO after single tx sign up is fully rolled out, expect metadata
+    # for CREATE USER txs, so remove this clause
     if action == Action.CREATE and entity_type == EntityType.USER:
         return False
     # TODO(michelle) validate metadata for notification, developer app,
@@ -297,7 +300,7 @@ def sanitize_json(json_resp):
 
 
 # Returns metadata, cid
-def parse_metadata(metadata, action, entity_type):
+def parse_metadata(metadata: str, action: str, entity_type: str):
     if not expect_cid_metadata_json(metadata, action, entity_type):
         return metadata, None
     try:
@@ -308,12 +311,19 @@ def parse_metadata(metadata, action, entity_type):
 
         cid = data["cid"]
         metadata_json = data["data"]
-        _, metadata_format = get_metadata_type_and_format(entity_type)
-        formatted_json = get_metadata_from_json(metadata_format, metadata_json)
 
-        # Only index valid changes
-        if formatted_json == metadata_format:
-            raise IndexingValidationError("no valid metadata changes detected")
+        # Don't format metadata for UPDATEs
+        # This is to support partial updates
+        # Individual entities are responsible for updating existing records with metadata
+        if action != Action.UPDATE:
+            _, metadata_format = get_metadata_type_and_format(entity_type)
+            formatted_json = get_metadata_from_json(metadata_format, metadata_json)
+
+            # Only index valid changes
+            if formatted_json == metadata_format:
+                raise IndexingValidationError("no valid metadata changes detected")
+        else:
+            formatted_json = metadata_json
 
         return formatted_json, cid
     except Exception as e:
@@ -388,3 +398,11 @@ def validate_signer(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Signer does not match user {params.user_id} or an authorized wallet"
             )
+
+
+# Generate a cid from a json object
+def generate_metadata_cid_v1(metadata: object):
+    encoded_metadata = json.dumps(metadata).encode("utf-8")
+    bytes = bytearray(encoded_metadata)
+    hash = multihash.digest(bytes, "sha2-256")
+    return CID("base32", 1, "json", hash)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mediorum/cidutil"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
@@ -41,21 +42,21 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	ctx := context.Background()
 	logger := ss.logger.With("task", "replicateToMyBucket", "cid", fileName)
 	logger.Info("replicateToMyBucket")
+	key := cidutil.ShardCID(fileName)
 
 	// already have?
-	alreadyHave, _ := ss.bucket.Exists(ctx, fileName)
+	alreadyHave, _ := ss.bucket.Exists(ctx, key)
 	if !alreadyHave {
-		w, err := ss.bucket.NewWriter(ctx, fileName, nil)
+		w, err := ss.bucket.NewWriter(ctx, key, nil)
 		if err != nil {
 			return err
 		}
+		defer w.Close()
 
 		_, err = io.Copy(w, file)
 		if err != nil {
 			return err
 		}
-
-		w.Close()
 	}
 
 	// record that we "have" this key
@@ -79,10 +80,11 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	logger := ss.logger.With("task", "dropFromMyBucket", "cid", fileName)
-
 	logger.Info("deleting blob")
+
+	key := cidutil.ShardCID(fileName)
 	ctx := context.Background()
-	err := ss.bucket.Delete(ctx, fileName)
+	err := ss.bucket.Delete(ctx, key)
 	if err != nil {
 		logger.Error("failed to delete", "err", err)
 	}

@@ -40,7 +40,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     requestParameters: CreateDeveloperAppRequest,
     writeOptions?: WriteOptions
   ) {
-    const { name, userId, description } = parseRequestParameters(
+    const { name, userId, description } = await parseRequestParameters(
       'createDeveloperApp',
       CreateDeveloperAppSchema
     )(requestParameters)
@@ -70,12 +70,10 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       ...writeOptions
     })
 
-    const txReceipt = response.txReceipt
     const apiKey = address.slice(2).toLowerCase()
     const apiSecret = privateKey.slice(2).toLowerCase()
     return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
+      ...response,
       apiKey,
       apiSecret
     }
@@ -85,12 +83,12 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    * Delete a developer app
    */
   async deleteDeveloperApp(requestParameters: DeleteDeveloperAppRequest) {
-    const { userId, appApiKey } = parseRequestParameters(
+    const { userId, appApiKey } = await parseRequestParameters(
       'deleteDeveloperApp',
       DeleteDeveloperAppSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.DEVELOPER_APP,
       entityId: 0, // Contract requires uint, but we don't actually need this field for this action. Just use 0.
@@ -100,11 +98,5 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       }),
       auth: this.auth
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber
-    }
   }
 }

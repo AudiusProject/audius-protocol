@@ -213,6 +213,24 @@ def test_index_valid_user(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmCreateUser2": {
+            "is_verified": False,
+            "is_deactivated": False,
+            "name": "Forrest",
+            "handle": "forrest",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmForrestProfile",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmForrestProfile",
+            "bio": "this is forrest",
+            "location": "Los Angeles, CA",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {"contents": []},
+            "events": None,
+            "user_id": USER_ID_OFFSET + 1,
+        },
         "QmCreateUser3": {
             "is_verified": False,
             "is_deactivated": False,
@@ -236,6 +254,7 @@ def test_index_valid_user(app, mocker):
     update_user1_artist_pick_json = json.dumps(test_metadata["QmUpdateUser1ArtistPick"])
     update_user1_json = json.dumps(test_metadata["QmUpdateUser1"])
     update_user2_json = json.dumps(test_metadata["QmUpdateUser2"])
+    create_user2_json = json.dumps(test_metadata["QmCreateUser2"])
     create_user3_json = json.dumps(test_metadata["QmCreateUser3"])
 
     tx_receipts = {
@@ -247,7 +266,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET,
                         "_action": "Create",
-                        "_metadata": "1,2,3",
+                        "_metadata": f'{{"cid": "QmCreateUser1", "data": {update_user1_json}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -289,7 +308,7 @@ def test_index_valid_user(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
-                        "_metadata": "2,3,4",
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {create_user2_json}}}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -341,8 +360,18 @@ def test_index_valid_user(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+                "metadata_multihash": "QmCreateUser1",
+            },
+            {
+                "user_id": 2,
+                "handle": "user-1",
+                "wallet": "User2Wallet",
+                "metadata_multihash": "QmCreateUser2",
+            },
         ],
         "tracks": [
             {
@@ -365,6 +394,18 @@ def test_index_valid_user(app, mocker):
             {
                 "user_id": USER_ID_OFFSET,
                 "grantee_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+        ],
+        "cid_datas": [
+            {
+                "cid": "QmCreateUser1",
+                "type": "user",
+                "data": {},
+            },
+            {
+                "cid": "QmCreateUser2",
+                "type": "user",
+                "data": {},
             },
         ],
     }
@@ -419,7 +460,7 @@ def test_index_valid_user(app, mocker):
         assert user_3.handle == "isaac"
 
         all_cid: List[CIDData] = session.query(CIDData).all()
-        assert len(all_cid) == 4
+        assert len(all_cid) == 6
 
         calls = [
             mock.call.dispatch(ChallengeEvent.profile_update, 1, USER_ID_OFFSET),
@@ -1056,7 +1097,7 @@ def test_index_empty_bio(app, mocker):
                         "_entityType": "User",
                         "_userId": USER_ID_OFFSET + 1,
                         "_action": "Create",
-                        "_metadata": "2,3,4",
+                        "_metadata": f'{{"cid": "QmCreateUser2", "data": {update_user2a_json}}}',
                         "_signer": "user2wallet",
                     }
                 )
@@ -1122,9 +1163,22 @@ def test_index_empty_bio(app, mocker):
 
     entities = {
         "users": [
-            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+            {
+                "user_id": 2,
+                "handle": "user-1",
+                "wallet": "User2Wallet",
+                "metadata_multihash": "QmCreateUser2",
+            },
+        ],
+        "cid_datas": [
+            {
+                "cid": "QmCreateUser2",
+                "type": "user",
+                "data": {},
+            },
         ],
     }
+
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:

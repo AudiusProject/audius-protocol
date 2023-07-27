@@ -1,5 +1,5 @@
 import snakecaseKeys from 'snakecase-keys'
-import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {
   Configuration,
@@ -34,20 +34,11 @@ import {
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import { TrackUploadHelper } from './TrackUploadHelper'
-
-// Subclass type masking adapted from Damir Arh's method:
-// https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
-// Get the type of the generated TracksApi excluding streamTrack
-type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
-  [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
-} & BaseAPI
-
-// Create a new "class" that masks our generated TracksApi with the new type
-const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
-  GeneratedTracksApi
+import { encodeHashId } from '../../utils/hashId'
+import type { LoggerService } from '../../services/Logger'
 
 // Extend that new class
-export class TracksApi extends TracksApiWithoutStream {
+export class TracksApi extends GeneratedTracksApi {
   private readonly trackUploadHelper: TrackUploadHelper
 
   constructor(
@@ -55,16 +46,21 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
     this.trackUploadHelper = new TrackUploadHelper(configuration)
+    this.logger = logger.createPrefixedLogger('[tracks-api]')
   }
 
   /**
    * Get the url of the track's streamable mp3 file
    */
-  async streamTrack(requestParameters: StreamTrackRequest): Promise<string> {
+  // @ts-expect-error
+  override async streamTrack(
+    requestParameters: StreamTrackRequest
+  ): Promise<string> {
     if (
       requestParameters.trackId === null ||
       requestParameters.trackId === undefined
@@ -83,7 +79,7 @@ export class TracksApi extends TracksApiWithoutStream {
     return `${host}${BASE_PATH}${path}`
   }
 
-  /**
+  /** @hidden
    * Upload a track
    */
   async uploadTrack(
@@ -97,7 +93,7 @@ export class TracksApi extends TracksApiWithoutStream {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = parseRequestParameters(
+    } = await parseRequestParameters(
       'uploadTrack',
       createUploadTrackSchema()
     )(requestParameters)
@@ -123,7 +119,7 @@ export class TracksApi extends TracksApiWithoutStream {
             template: 'img_square'
           }),
         (e) => {
-          console.log('Retrying uploadTrackCoverArt', e)
+          this.logger.info('Retrying uploadTrackCoverArt', e)
         }
       ),
       retry3(
@@ -135,7 +131,7 @@ export class TracksApi extends TracksApiWithoutStream {
             options: uploadOptions
           }),
         (e) => {
-          console.log('Retrying uploadTrackAudio', e)
+          this.logger.info('Retrying uploadTrackAudio', e)
         }
       )
     ])
@@ -163,16 +159,13 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
     return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      trackId
+      ...response,
+      trackId: encodeHashId(trackId)
     }
   }
 
-  /**
+  /** @hidden
    * Update a track
    */
   async updateTrack(
@@ -187,7 +180,7 @@ export class TracksApi extends TracksApiWithoutStream {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = parseRequestParameters(
+    } = await parseRequestParameters(
       'updateTrack',
       createUpdateTrackSchema()
     )(requestParameters)
@@ -199,22 +192,24 @@ export class TracksApi extends TracksApiWithoutStream {
     )
 
     // Upload track cover art to storage node
-    const coverArtResp = await retry3(
-      async () =>
-        await this.storage.uploadFile({
-          file: coverArtFile,
-          onProgress,
-          template: 'img_square'
-        }),
-      (e) => {
-        console.log('Retrying uploadTrackCoverArt', e)
-      }
-    )
+    const coverArtResp =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          this.logger.info('Retrying uploadTrackCoverArt', e)
+        }
+      ))
 
     // Update metadata to include uploaded CIDs
     const updatedMetadata = {
       ...metadata,
-      coverArtSizes: coverArtResp.id
+      ...(coverArtResp ? { coverArtSizes: coverArtResp.id } : {})
     }
 
     if (transcodePreview) {
@@ -237,19 +232,18 @@ export class TracksApi extends TracksApiWithoutStream {
             auth: this.auth
           }),
         (e) => {
-          console.log('Retrying editFileV2', e)
+          this.logger.info('Retrying editFileV2', e)
         }
       )
 
       // Update metadata to include updated preview CID
       const previewKey = `320_preview|${updatedMetadata.previewStartSeconds}`
       updatedMetadata.previewCid = updatePreviewResp.results[previewKey]
-
     }
 
     // Write metadata to chain
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -261,15 +255,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber
-    }
   }
 
-  /**
+  /** @hidden
    * Delete a track
    */
   async deleteTrack(
@@ -277,12 +265,12 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'deleteTrack',
       DeleteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -290,12 +278,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
-  /**
+  /** @hidden
    * Favorite a track
    */
   async favoriteTrack(
@@ -303,12 +288,12 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = parseRequestParameters(
+    const { userId, trackId, metadata } = await parseRequestParameters(
       'favoriteTrack',
       FavoriteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -317,12 +302,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
-  /**
+  /** @hidden
    * Unfavorite a track
    */
   async unfavoriteTrack(
@@ -330,12 +312,12 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'unfavoriteTrack',
       UnfavoriteTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -343,12 +325,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
-  /**
+  /** @hidden
    * Repost a track
    */
   async repostTrack(
@@ -356,12 +335,12 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = parseRequestParameters(
+    const { userId, trackId, metadata } = await parseRequestParameters(
       'respostTrack',
       RepostTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -370,12 +349,9 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 
-  /**
+  /** @hidden
    * Unrepost a track
    */
   async unrepostTrack(
@@ -383,12 +359,12 @@ export class TracksApi extends TracksApiWithoutStream {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = parseRequestParameters(
+    const { userId, trackId } = await parseRequestParameters(
       'unrepostTrack',
       UnrepostTrackSchema
     )(requestParameters)
 
-    const response = await this.entityManager.manageEntity({
+    return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
@@ -396,8 +372,5 @@ export class TracksApi extends TracksApiWithoutStream {
       auth: this.auth,
       ...writeOptions
     })
-    const txReceipt = response.txReceipt
-
-    return txReceipt
   }
 }

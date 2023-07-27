@@ -1,5 +1,6 @@
 import base64
 import json
+from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import request
@@ -20,6 +21,7 @@ from src.api.v1.helpers import (
     format_aggregate_monthly_plays_for_user,
     format_authorized_app,
     format_developer_app,
+    format_library_filter,
     format_limit,
     format_offset,
     format_query,
@@ -36,6 +38,7 @@ from src.api.v1.helpers import (
     track_history_parser,
     user_favorited_tracks_parser,
     user_track_listen_count_route_parser,
+    user_tracks_library_parser,
     user_tracks_route_parser,
     verify_token_parser,
 )
@@ -74,7 +77,6 @@ from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
-from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
 from src.queries.get_subscribers import (
     get_subscribers_for_user,
@@ -87,6 +89,11 @@ from src.queries.get_support_for_user import (
 from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
+from src.queries.get_track_library import (
+    GetTrackLibraryArgs,
+    LibraryFilterType,
+    get_track_library,
+)
 from src.queries.get_tracks import GetTrackArgs, get_tracks
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
@@ -743,6 +750,53 @@ class FavoritedTracks(Resource):
         return success_response(favorites)
 
 
+USER_TRACKS_LIBRARY_ROUTE = "/<string:id>/library/tracks"
+
+
+@full_ns.route(USER_TRACKS_LIBRARY_ROUTE)
+class UserTracksLibraryFull(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="Get User Library Tracks",
+        description="Gets a user's saved/reposted/purchased/all tracks",
+        params={"id": "A user ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_tracks_library_parser)
+    @full_ns.marshal_with(favorites_full_response)
+    @auth_middleware()
+    @cache(ttl_sec=5)
+    def get(self, id: str, authed_user_id: Optional[int] = None):
+        """Fetch a user's full library tracks."""
+        args = user_tracks_library_parser.parse_args()
+        decoded_id = decode_with_abort(id, ns)
+        if authed_user_id != decoded_id:
+            full_ns.abort(403)
+            return
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        query = format_query(args)
+        sort_method = format_sort_method(args)
+        sort_direction = format_sort_direction(args)
+        filter_type = format_library_filter(args)
+
+        get_tracks_args = GetTrackLibraryArgs(
+            filter_deleted=False,
+            user_id=decoded_id,
+            current_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+            query=query,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+            filter_type=filter_type,
+        )
+        library_tracks = get_track_library(get_tracks_args)
+        tracks = list(map(extend_activity, library_tracks))
+        return success_response(tracks)
+
+
 USER_FAVORITED_TRACKS_ROUTE = "/<string:id>/favorites/tracks"
 
 
@@ -761,7 +815,7 @@ class UserFavoritedTracksFull(Resource):
         query = format_query(args)
         sort_method = format_sort_method(args)
         sort_direction = format_sort_direction(args)
-        get_tracks_args = GetSaveTracksArgs(
+        get_tracks_args = GetTrackLibraryArgs(
             filter_deleted=False,
             user_id=decoded_id,
             current_user_id=current_user_id,
@@ -770,8 +824,9 @@ class UserFavoritedTracksFull(Resource):
             query=query,
             sort_method=sort_method,
             sort_direction=sort_direction,
+            filter_type=LibraryFilterType.favorite,
         )
-        track_saves = get_save_tracks(get_tracks_args)
+        track_saves = get_track_library(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
         return success_response(tracks)
 

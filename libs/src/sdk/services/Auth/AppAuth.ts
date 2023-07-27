@@ -9,8 +9,8 @@ export class AppAuth implements AuthService {
   private readonly apiSecret: string
 
   constructor(apiKey: string, apiSecret: string) {
-    this.apiKey = apiKey
-    this.apiSecret = apiSecret
+    this.apiKey = apiKey.replace(/^0x/, '')
+    this.apiSecret = apiSecret.replace(/^0x/, '')
   }
 
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =

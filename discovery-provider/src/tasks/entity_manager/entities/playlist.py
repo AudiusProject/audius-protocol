@@ -17,6 +17,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     validate_signer,
 )
+from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
@@ -168,23 +169,31 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
             )
     if params.action == Action.CREATE or params.action == Action.UPDATE:
-        playlist_metadata = params.metadata.get(params.metadata_cid)
-        if playlist_metadata:
-            playlist_description = playlist_metadata.get("description")
-            if (
-                playlist_description
-                and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
-            ):
-                raise IndexingValidationError(
-                    f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
-                )
+        if not params.metadata:
+            raise IndexingValidationError(
+                "Metadata is required for playlist creation and update"
+            )
+        playlist_description = params.metadata.get("description")
+        if (
+            playlist_description
+            and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
+        ):
+            raise IndexingValidationError(
+                f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
+            )
+        if params.metadata.get("playlist_contents"):
+            if "playlist_contents" not in params.metadata or "track_ids" not in params.metadata["playlist_contents"]:
+                raise IndexingValidationError("playlist contents requires track_ids")
             playlist_track_count = len(
-                playlist_metadata["playlist_contents"]["track_ids"]
+                params.metadata["playlist_contents"]["track_ids"]
             )
             if playlist_track_count > PLAYLIST_TRACK_LIMIT:
                 raise IndexingValidationError(
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
+
+        if params.action == Action.UPDATE and not existing_playlist.is_private and params.metadata.get("is_private"):
+            raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
 
 
 def create_playlist(params: ManageEntityParameters):
@@ -203,7 +212,7 @@ def create_playlist(params: ManageEntityParameters):
             }
         )
         last_added_to = params.block_datetime
-    create_playlist_record = Playlist(
+    playlist_record = Playlist(
         playlist_id=playlist_id,
         metadata_multihash=params.metadata_cid,
         playlist_owner_id=params.user_id,
@@ -227,13 +236,13 @@ def create_playlist(params: ManageEntityParameters):
         is_delete=False,
     )
 
-    update_playlist_routes_table(params, create_playlist_record, True)
+    update_playlist_routes_table(params, playlist_record, True)
 
-    params.add_record(playlist_id, create_playlist_record)
+    params.add_record(playlist_id, playlist_record)
 
     if tracks:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, create_playlist_record
+            params.challenge_bus, params.block_number, playlist_record
         )
 
 
@@ -257,22 +266,22 @@ def update_playlist(params: ManageEntityParameters):
     ):  # override with last updated playlist is in this block
         existing_playlist = params.new_records[EntityType.PLAYLIST][playlist_id][-1]
 
-    updated_playlist = copy_record(
+    playlist_record = copy_record(
         existing_playlist,
         params.block_number,
         params.event_blockhash,
         params.txhash,
         params.block_datetime,
     )
-    process_playlist_data_event(params, updated_playlist)
+    process_playlist_data_event(params, playlist_record)
 
-    update_playlist_routes_table(params, updated_playlist, False)
+    update_playlist_routes_table(params, playlist_record, False)
 
-    params.add_record(playlist_id, updated_playlist)
+    params.add_record(playlist_id, playlist_record)
 
-    if updated_playlist.playlist_contents["track_ids"]:
+    if playlist_record.playlist_contents["track_ids"]:
         dispatch_challenge_playlist_upload(
-            params.challenge_bus, params.block_number, updated_playlist
+            params.challenge_bus, params.block_number, playlist_record
         )
 
 
@@ -305,8 +314,9 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for track in playlist_tracks:
             track_id = track["track"]
-            metadata_time = track["metadata_time"]
-            metadata_index_time_dict[track_id][metadata_time] = track["time"]
+            if "metadata_time" in track:
+                metadata_time = track["metadata_time"]
+                metadata_index_time_dict[track_id][metadata_time] = track["time"]
 
         updated_tracks = []
         for track in playlist_metadata["playlist_contents"]["track_ids"]:
@@ -369,30 +379,22 @@ def process_playlist_data_event(
     block_datetime = params.block_datetime
     metadata_cid = params.metadata_cid
 
-    playlist_record.is_album = (
-        playlist_metadata["is_album"] if "is_album" in playlist_metadata else False
-    )
-    playlist_record.description = playlist_metadata["description"]
-    playlist_record.playlist_image_multihash = playlist_metadata[
-        "playlist_image_sizes_multihash"
-    ]
-    playlist_record.playlist_image_sizes_multihash = playlist_metadata[
-        "playlist_image_sizes_multihash"
-    ]
-    playlist_record.playlist_name = playlist_metadata["playlist_name"]
-    playlist_record.is_private = (
-        playlist_metadata["is_private"] if "is_private" in playlist_metadata else False
-    )
-
-    if playlist_metadata["is_image_autogenerated"] != None:
-        playlist_record.is_image_autogenerated = playlist_metadata[
-            "is_image_autogenerated"
-        ]
-
-    playlist_record.playlist_contents = process_playlist_contents(
-        playlist_record, playlist_metadata, block_integer_time
-    )
-
+    # Iterate over the playlist_record keys
+    playlist_record_attributes = playlist_record.get_attributes_dict()
+    for key, _ in playlist_record_attributes.items():
+        # Update the playlist_record when the corresponding field exists
+        # in playlist_metadata
+        if key == "playlist_contents":
+            if not playlist_metadata.get(key) or playlist_record.is_album:
+                continue
+            playlist_record.playlist_contents = process_playlist_contents(
+                playlist_record, playlist_metadata, block_integer_time
+            )
+        elif key in playlist_metadata:
+            if key in immutable_playlist_fields and params.action == Action.UPDATE:
+                # skip fields that cannot be modified after creation
+                continue
+            setattr(playlist_record, key, playlist_metadata[key])
     playlist_record.last_added_to = None
     track_ids = playlist_record.playlist_contents["track_ids"]
     if track_ids:

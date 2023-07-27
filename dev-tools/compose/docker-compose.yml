@@ -51,7 +51,7 @@ services:
     <<: *common
     healthcheck:
       # identity_service is the last db to be created in init-db.sql
-      test: ["CMD", "pg_isready", "--dbname", "identity_service"]
+      test: [ "CMD", "pg_isready", "--dbname", "identity_service" ]
       interval: 10s
       timeout: 5s
 
@@ -130,7 +130,13 @@ services:
     extends:
       file: docker-compose.pedalboard.yml
       service: trending-challenge-rewards
-    <<: *common  
+    <<: *common
+
+  relay:
+    extends:
+      file: docker-compose.pedalboard.yml
+      service: relay
+    <<: *common
 
   # Comms (aka dms)
 

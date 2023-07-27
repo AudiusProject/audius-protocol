@@ -6,6 +6,7 @@ import (
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
+	"mediorum/persistence"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -64,12 +65,11 @@ type MediorumConfig struct {
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
 	IsV2Only            bool
+	StoreAll            bool
 	VersionJson         VersionJson
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
-
-	// StoreAll          bool   // todo: set this to true for "full node"
 
 	privateKey *ecdsa.PrivateKey
 }
@@ -144,12 +144,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// ensure dir
 	os.MkdirAll(config.Dir, os.ModePerm)
-	if strings.HasPrefix(config.BlobStoreDSN, "file://") {
-		os.MkdirAll(strings.TrimPrefix(config.BlobStoreDSN, "file://"), os.ModePerm)
-	}
 
 	// bucket
-	bucket, err := blob.OpenBucket(context.Background(), config.BlobStoreDSN)
+	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +174,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud)
+	dbMigrate(crud, bucket)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -226,18 +223,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS())
 
-	if config.Env != "stage" && config.Env != "prod" {
-		// public: uis
-		routes.GET("", ss.serveUploadUI)
-		routes.GET("/", ss.serveUploadUI)
-	} else {
-		routes.GET("", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/health_check")
-		})
-		routes.GET("/", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/health_check")
-		})
-	}
+	routes.GET("", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+	})
+	routes.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+	})
 
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
@@ -292,15 +283,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// internal: blobs
-	internalApi.GET("/blobs/broken", ss.getBlobBroken)
-	internalApi.GET("/blobs/problems", ss.getBlobProblems)
-
 	// old info routes
 	// TODO: remove
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/double_check/:cid", ss.getBlobDoubleCheck)
 
 	// new info routes
 	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)

@@ -1,6 +1,7 @@
 import type { Middleware } from '../../api/generated/default'
 import type { DeepPartial } from '../../utils/deepPartial'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import type { LoggerService } from '../Logger'
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
@@ -74,6 +75,8 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    * @example ['https://discoverynode.audius.co', 'https://disoverynode2.audius.co']
    */
   bootstrapServices: string[]
+
+  logger: LoggerService
 }
 
 export type DiscoveryNodeSelectorServiceConfig =
