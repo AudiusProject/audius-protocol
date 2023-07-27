@@ -4,6 +4,7 @@
   flex-direction: column;
   overflow: auto;
 }
+
 .modalContainer {
   max-width: 536px;
   /* Need to account for the dropdown outside modal */
@@ -58,12 +59,6 @@
 
 .deleteButtonIcon path {
   fill: var(--neutral-light-6);
-}
-
-.title {
-  font-size: var(--font-s);
-  font-weight: var(--font-demi-bold);
-  color: var(--neutral);
 }
 
 .dropdownContainer {

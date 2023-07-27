@@ -6,6 +6,8 @@ import { Formik, useField } from 'formik'
 import { get, set } from 'lodash'
 import moment from 'moment'
 
+import { Text } from 'components/typography'
+
 import { EditFormValues } from '../components/EditPageNew'
 import { DatePickerField } from '../fields/DatePickerField'
 import { ModalField } from '../fields/ModalField'
@@ -48,9 +50,11 @@ export const ReleaseDateModalForm = () => {
   const preview = (
     <div className={styles.preview}>
       <div className={styles.header}>
-        <label className={styles.title}>{messages.title}</label>
+        <Text className={styles.title} variant='title' size='Large'>
+          {messages.title}
+        </Text>
       </div>
-      <div className={styles.description}>{messages.description}</div>
+      <Text>{messages.description}</Text>
       <div className={styles.valueDisplay}>
         <IconCalendar className={styles.calendarIcon} />
         <input
@@ -76,10 +80,14 @@ export const ReleaseDateModalForm = () => {
         icon={<IconCalendar className={styles.titleIcon} />}
         preview={preview}
       >
-        <h3 className={cn(styles.title, styles.modalHeading)}>
+        <Text
+          className={cn(styles.title, styles.modalHeading)}
+          variant='title'
+          size='Large'
+        >
           {messages.title}
-        </h3>
-        <p className={styles.description}>{messages.description}</p>
+        </Text>
+        <Text>{messages.description}</Text>
         <div className={styles.datePicker}>
           <DatePickerField name={RELEASE_DATE} label={messages.title} />
         </div>

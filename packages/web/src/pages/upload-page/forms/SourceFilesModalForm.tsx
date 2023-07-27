@@ -6,6 +6,7 @@ import { get, set } from 'lodash'
 
 import { ReactComponent as IconSourceFiles } from 'assets/img/iconSourceFiles.svg'
 import { Divider } from 'components/divider'
+import { Text } from 'components/typography'
 
 import { ModalField } from '../fields/ModalField'
 import {
@@ -78,9 +79,11 @@ export const SourceFilesModalForm = () => {
   const preview = (
     <div className={styles.preview}>
       <div className={styles.header}>
-        <label className={styles.title}>{messages.title}</label>
+        <Text className={styles.title} variant='title' size='Large'>
+          {messages.title}
+        </Text>
       </div>
-      <div className={styles.description}>{messages.description}</div>
+      <Text>{messages.description}</Text>
     </div>
   )
 

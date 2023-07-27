@@ -11,18 +11,7 @@
 }
 
 .title {
-  color: var(--neutral);
-  font-family: Avenir Next LT Pro;
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
   line-height: 20px;
-}
-
-.description {
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  line-height: 130%;
 }
 
 .switch :global(label) {
