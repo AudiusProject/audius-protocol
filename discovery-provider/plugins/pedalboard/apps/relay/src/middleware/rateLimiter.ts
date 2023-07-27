@@ -5,7 +5,7 @@ import {
   RelayRateLimiter,
   ValidLimits,
 } from "./rateLimitConfig";
-import { Knex } from "knex";
+import knex, { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { readConfig } from "../config";
@@ -14,6 +14,7 @@ import { Table, Users } from "storage/src";
 // TODO: stick these into app object and pass in to handler
 const globalRateLimiter = new RelayRateLimiter();
 const globalConfig = readConfig();
+const discoveryDb = knex({ client: "pg" })
 
 export const relayRateLimiter = async (
   req: FastifyRequest<{ Body: RelayRequestType }>,
@@ -33,7 +34,7 @@ export const relayRateLimiter = async (
     entityManagerAddress: globalConfig.entityManagerContractAddress,
   });
 
-  const limit = await determineLimit()
+  const limit = await determineLimit(discoveryDb, [], signer, encodedABI)
 
   try {
     const res = await globalRateLimiter.consume({
