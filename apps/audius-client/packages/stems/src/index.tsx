@@ -8,6 +8,7 @@ import './assets/styles/layers.css'
 
 export * from './components/Icons'
 export * from './styles/colors'
+export * from './utils/styles'
 
 export {
   Button,

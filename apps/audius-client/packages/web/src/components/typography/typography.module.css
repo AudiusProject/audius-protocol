@@ -131,30 +131,35 @@
 .labelXLarge {
   font-size: var(--unit-5);
   line-height: var(--unit-6);
+  text-transform: uppercase;
 }
 
 /* 16 / 16 */
 .labelLarge {
   font-size: var(--unit-4);
   line-height: var(--unit-4);
+  text-transform: uppercase;
 }
 
 /* 14 / 16 */
 .labelMedium {
   font-size: calc(var(--unit) * 3.5);
   line-height: var(--unit-4);
+  text-transform: uppercase;
 }
 
 /* 12 /12 */
 .labelSmall {
   font-size: var(--unit-3);
   line-height: var(--unit-3);
+  text-transform: uppercase;
 }
 
 /* 10 / 12 */
 .labelXSmall {
   font-size: calc(var(--unit) * 2.5);
   line-height: var(--unit-3);
+  text-transform: uppercase;
 }
 
 .labelWeak {
@@ -196,4 +201,15 @@
 
 .bodyStrong {
   font-weight: var(--font-demi-bold);
+}
+
+/* Special Styles */
+
+.link {
+  color: var(--focus);
+}
+
+.link:hover {
+  color: var(--focus);
+  text-decoration: underline !important;
 }
