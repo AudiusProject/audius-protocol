@@ -30,19 +30,29 @@ begin
   end if;
 
   -- update agg user
-  update aggregate_user 
+  update aggregate_user
   set repost_count = repost_count + delta
   where user_id = new.user_id;
 
   -- update agg track or playlist
   if new.repost_type = 'track' then
     milestone_name := 'TRACK_REPOST_COUNT';
-    update aggregate_track 
+    update aggregate_track
     set repost_count = repost_count + delta
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if new.is_delete IS FALSE then
 		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.repost_item_id;
+
+      -- action_log: repost track
+      if owner_user_id is not null then
+        insert into zzz.action_log
+          (actor_user_id, verb, track_id, user_id, created_at, blocknumber)
+        values
+          (new.user_id, 'repost', new.repost_item_id, owner_user_id, new.created_at, new.blocknumber)
+        on conflict do nothing;
+      end if;
+
 	  end if;
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
@@ -53,13 +63,23 @@ begin
 
   	if new.is_delete IS FALSE then
 		  select playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.repost_item_id;
+
+      -- action_log: repost playlist
+      if owner_user_id is not null then
+        insert into zzz.action_log
+          (actor_user_id, verb, playlist_id, user_id, created_at, blocknumber)
+        values
+          (new.user_id, 'repost', new.repost_item_id, owner_user_id, new.created_at, new.blocknumber)
+        on conflict do nothing;
+      end if;
+
 	  end if;
   end if;
 
   -- create a milestone if applicable
   select new_val into milestone where new_val in (10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000);
   if new.is_delete = false and milestone is not null and owner_user_id is not null then
-    insert into milestones 
+    insert into milestones
       (id, name, threshold, blocknumber, slot, timestamp)
     values
       (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)

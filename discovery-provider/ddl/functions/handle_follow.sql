@@ -14,11 +14,11 @@ begin
     delta := 1;
   end if;
 
-  update aggregate_user 
-  set following_count = following_count + delta 
+  update aggregate_user
+  set following_count = following_count + delta
   where user_id = new.follower_user_id;
 
-  update aggregate_user 
+  update aggregate_user
   set follower_count = follower_count + delta
   where user_id = new.followee_user_id
   returning follower_count into new_follower_count;
@@ -26,7 +26,7 @@ begin
   -- create a milestone if applicable
   select new_follower_count into milestone where new_follower_count in (10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000);
   if milestone is not null and new.is_delete is false then
-      insert into milestones 
+      insert into milestones
         (id, name, threshold, blocknumber, slot, timestamp)
       values
         (new.followee_user_id, 'FOLLOWER_COUNT', milestone, new.blocknumber, new.slot, new.created_at)
@@ -49,6 +49,13 @@ begin
   begin
     -- create a notification for the followee
     if new.is_delete is false then
+      -- action_log
+      insert into zzz.action_log
+        (actor_user_id, verb, user_id, created_at, blocknumber)
+      values
+        (new.follower_user_id, 'follow', new.followee_user_id, new.created_at, new.blocknumber)
+      on conflict do nothing;
+
       insert into notification
       (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
       values
@@ -75,7 +82,7 @@ exception
     raise warning 'An error occurred in %: %', tg_name, sqlerrm;
     raise;
 
-end; 
+end;
 $$ language plpgsql;
 
 do $$ begin

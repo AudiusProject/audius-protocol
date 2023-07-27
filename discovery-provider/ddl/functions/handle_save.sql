@@ -18,7 +18,7 @@ begin
     entity_type := 'track';
   else
     insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
-    
+
     entity_type := 'playlist';
   end if;
 
@@ -51,6 +51,15 @@ begin
 
   	if new.is_delete IS FALSE then
 		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.save_item_id;
+
+      -- action_log
+      if owner_user_id is not null then
+        insert into zzz.action_log
+          (actor_user_id, verb, track_id, user_id, created_at, blocknumber)
+        values
+          (new.user_id, 'heart', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
+        on conflict do nothing;
+      end if;
 	  end if;
   else
     milestone_name := 'PLAYLIST_SAVE_COUNT';
@@ -62,6 +71,15 @@ begin
 
     if new.is_delete IS FALSE then
 		  select playlists.playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.save_item_id;
+
+      -- action_log
+      if owner_user_id is not null then
+        insert into zzz.action_log
+          (actor_user_id, verb, playlist_id, user_id, created_at, blocknumber)
+        values
+          (new.user_id, 'heart', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
+        on conflict do nothing;
+      end if;
 	  end if;
 
   end if;
@@ -69,7 +87,7 @@ begin
   -- create a milestone if applicable
   select new_val into milestone where new_val in (10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000);
   if new.is_delete = false and milestone is not null then
-    insert into milestones 
+    insert into milestones
       (id, name, threshold, blocknumber, slot, timestamp)
     values
       (new.save_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
@@ -95,10 +113,10 @@ begin
       insert into notification
         (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
         values
-        ( 
+        (
           new.blocknumber,
-          ARRAY [owner_user_id], 
-          new.created_at, 
+          ARRAY [owner_user_id],
+          new.created_at,
           'save',
           new.user_id,
           'save:' || new.save_item_id || ':type:'|| new.save_type,
@@ -164,16 +182,16 @@ begin
     if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null then
       select
         case when tracks.owner_id = new.user_id then TRUE else FALSE end as boolean into is_remix_cosign
-        from tracks 
+        from tracks
         where is_current and track_id = (track_remix_of->'tracks'->0->>'parent_track_id')::int;
       if is_remix_cosign then
         insert into notification
           (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
           values
-          ( 
+          (
             new.blocknumber,
-            ARRAY [owner_user_id], 
-            new.created_at, 
+            ARRAY [owner_user_id],
+            new.created_at,
             'cosign',
             new.user_id,
             'cosign:parent_track' || (track_remix_of->'tracks'->0->>'parent_track_id')::int || ':original_track:'|| new.save_item_id,
@@ -195,7 +213,7 @@ exception
       raise warning 'An error occurred in %: %', tg_name, sqlerrm;
       raise;
 
-end; 
+end;
 $$ language plpgsql;
 
 

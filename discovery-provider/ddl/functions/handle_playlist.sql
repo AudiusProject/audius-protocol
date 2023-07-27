@@ -23,29 +23,36 @@ begin
 
   if delta != 0 then
     if new.is_album then
-      update aggregate_user 
+      update aggregate_user
       set album_count = album_count + delta
       where user_id = new.playlist_owner_id;
     else
-      update aggregate_user 
+      update aggregate_user
       set playlist_count = playlist_count + delta
       where user_id = new.playlist_owner_id;
     end if;
   end if;
   -- Create playlist notification
   begin
-    if new.is_private = FALSE AND 
+    if new.is_private = FALSE AND
     new.is_delete = FALSE AND
     (
       new.created_at = new.updated_at OR
       old_row.is_private = TRUE
     )
     then
+      -- action_log
+      insert into zzz.action_log
+        (actor_user_id, verb, playlist_id, created_at, blocknumber)
+      values
+        (new.playlist_owner_id, 'post', new.playlist_id, new.created_at, new.blocknumber)
+      on conflict do nothing;
+
       select array(
-        select subscriber_id 
-          from subscriptions 
-          where is_current and 
-          not is_delete and 
+        select subscriber_id
+          from subscriptions
+          where is_current and
+          not is_delete and
           user_id=new.playlist_owner_id
       ) into subscriber_user_ids;
       if array_length(subscriber_user_ids, 1)	> 0 then
