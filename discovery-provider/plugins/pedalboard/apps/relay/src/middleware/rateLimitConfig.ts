@@ -49,7 +49,7 @@ export class RelayRateLimiter {
     for (const [operation, {owner, app, whitelist}] of rateLimits) {
       const leastCommonMultiple = lcm([owner, app, whitelist])
       if (leastCommonMultiple === null) throw new Error(`no LCM for ${owner} ${app} ${whitelist}`)
-      const opts = { points: leastCommonMultiple }
+      const opts = { points: leastCommonMultiple, duration: 60 }
       const rateLimiter = new RateLimiterMemory(opts)
       rateLimiters.set(operation, rateLimiter)
     }
@@ -68,6 +68,7 @@ export class RelayRateLimiter {
     const amountOfAllowedRequests = rateLimits[key.limit]
     const constructedKey = this.constructRateLimiterKey(key)
     const pointsToConsume = rateLimiter.points / amountOfAllowedRequests
+    logger.info({ constructedKey, pointsToConsume, totalPoints: rateLimiter.points, amountOfAllowedRequests, title: "rate-limit-math" })
     return rateLimiter.consume(constructedKey, pointsToConsume)
   }
 
