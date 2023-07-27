@@ -6,15 +6,7 @@
 }
 
 .title {
-  font-family: var(--font-family);
-  font-style: normal;
-  font-weight: var(--font-bold);
-  font-size: var(--font-l);
   line-height: 20px;
-}
-
-.description {
-  font-weight: var(--font-medium);
 }
 
 .preview {

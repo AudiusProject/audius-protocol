@@ -10,6 +10,7 @@ import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
+import { Text } from 'components/typography'
 import { Dropzone } from 'components/upload/Dropzone'
 
 import styles from './SourceFilesView.module.css'
@@ -165,7 +166,9 @@ const StemListItem = ({
           textClassName={styles.dropdownText}
         />
       </div>
-      <div className={styles.title}>{metadata.title}</div>
+      <Text size='Small' strength='Strong'>
+        {metadata.title}
+      </Text>
       {renderDeleteButton()}
     </li>
   )

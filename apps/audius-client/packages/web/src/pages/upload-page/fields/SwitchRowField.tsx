@@ -1,8 +1,9 @@
 import { ChangeEvent, ComponentProps, PropsWithChildren } from 'react'
 
 import { Switch } from '@audius/stems'
-import cn from 'classnames'
 import { useField } from 'formik'
+
+import { Text } from 'components/typography'
 
 import styles from './SwitchRowField.module.css'
 
@@ -34,8 +35,10 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <h3 className={cn(styles.title, styles.modalHeading)}>{header}</h3>
-        <p className={styles.description}>{description}</p>
+        <Text className={styles.title} variant='title' size='Large'>
+          {header}
+        </Text>
+        <Text>{description}</Text>
         {(inverted ? !field.checked : field.checked) ? children : null}
       </div>
       <Switch
