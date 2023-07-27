@@ -20,9 +20,9 @@ export const main = async () => {
 
   const apiKey = process.env.SANDBOX_API_KEY;
   const apiSecret = process.env.SANDBOX_API_SECRET;
-  const initialSelectedNode = stagingConfig.discoveryNodes[0]
+  const initialSelectedNode = stagingConfig.discoveryNodes[0];
 
-  console.log(`using ${initialSelectedNode}`)
+  console.log(`using ${initialSelectedNode}`);
 
   const discoveryNodeSelector = new DiscoveryNodeSelector({
     initialSelectedNode,

@@ -28,7 +28,9 @@ export const webServer = async (app: App<SharedData>) => {
   );
 
   try {
-    const { config: { serverHost, serverPort } } = app.viewAppData()
+    const {
+      config: { serverHost, serverPort },
+    } = app.viewAppData();
     await fastify.listen({ port: serverPort, host: serverHost });
   } catch (err) {
     fastify.log.error("fastify server crashed", err);
@@ -42,6 +44,6 @@ const relayPostConfig = {
       200: RelayResponse,
     },
   },
-  // 
-  preHandler: [relayRateLimiter]
-}
+  //
+  preHandler: [relayRateLimiter],
+};

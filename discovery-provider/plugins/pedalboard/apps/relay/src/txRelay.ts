@@ -39,7 +39,6 @@ export const relayTransaction = async (
   await validateTransactionData(encodedABI);
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
-  logger.info({ senderWallet });
 
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
