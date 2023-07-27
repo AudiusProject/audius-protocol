@@ -234,12 +234,12 @@ const (
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
-	key := cidutil.ShardCID(fileHash)
-	temp, err := os.CreateTemp("", key)
+	temp, err := os.CreateTemp("", fileHash)
 	if err != nil {
 		return nil, err
 	}
 
+	key := cidutil.ShardCID(fileHash)
 	blob, err := ss.bucket.NewReader(context.Background(), key, nil)
 	if err != nil {
 		return nil, err
@@ -489,6 +489,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		return onError(err, upload.Status, "getting file")
 	}
 	defer temp.Close()
+	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
