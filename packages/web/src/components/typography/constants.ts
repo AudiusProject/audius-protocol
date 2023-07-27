@@ -13,34 +13,34 @@ export const fontWeightMap: Record<FontWeight, number> = {
 
 export const variantTagMap: Record<TextVariant, VariantSizeTagMap> = {
   display: {
-    XLarge: 'h1',
-    Large: 'h1',
-    Medium: 'h1',
-    Small: 'h1'
+    xLarge: 'h1',
+    large: 'h1',
+    medium: 'h1',
+    small: 'h1'
   },
   heading: {
-    XLarge: 'h1',
-    Large: 'h2',
-    Medium: 'h3',
-    Small: 'h4'
+    xLarge: 'h1',
+    large: 'h2',
+    medium: 'h3',
+    small: 'h4'
   },
   title: {
-    Large: 'p',
-    Medium: 'p',
-    Small: 'p',
-    XSmall: 'p'
+    large: 'p',
+    medium: 'p',
+    small: 'p',
+    xSmall: 'p'
   },
   label: {
-    XLarge: 'label',
-    Large: 'label',
-    Medium: 'label',
-    Small: 'label',
-    XSmall: 'label'
+    xLarge: 'label',
+    large: 'label',
+    medium: 'label',
+    small: 'label',
+    xSmall: 'label'
   },
   body: {
-    Large: 'p',
-    Medium: 'p',
-    Small: 'p',
-    XSmall: 'p'
+    large: 'p',
+    medium: 'p',
+    small: 'p',
+    xSmall: 'p'
   }
 }

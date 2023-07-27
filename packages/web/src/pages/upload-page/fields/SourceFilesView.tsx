@@ -166,7 +166,7 @@ const StemListItem = ({
           textClassName={styles.dropdownText}
         />
       </div>
-      <Text size='Small' strength='Strong'>
+      <Text size='small' strength='strong'>
         {metadata.title}
       </Text>
       {renderDeleteButton()}

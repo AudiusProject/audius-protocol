@@ -12,7 +12,6 @@ import { InputV2, InputV2Variant } from 'components/data-entry/InputV2'
 import { Divider } from 'components/divider'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
-import typeStyles from 'components/typography/typography.module.css'
 
 import { EditFormValues } from '../components/EditPageNew'
 import { ModalField } from '../fields/ModalField'
@@ -159,7 +158,7 @@ export const AttributionModalForm = () => {
 
   const preview = (
     <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
-      <Text variant='title' size='Large'>
+      <Text variant='title' size='large'>
         {messages.title}
       </Text>
       <Text>{messages.description}</Text>
@@ -226,7 +225,7 @@ const AttributionModalFields = () => {
       </SwitchRowField>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-        <Text variant='title' size='Large'>
+        <Text variant='title' size='large'>
           {`${messages.isrc.header} / ${messages.iswc.header}`}
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
@@ -246,7 +245,7 @@ const AttributionModalFields = () => {
       </div>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-        <Text variant='title' size='Large'>
+        <Text variant='title' size='large'>
           {messages.licenseType}
         </Text>
         <div className={styles.attributionCommercialRow}>
@@ -257,7 +256,7 @@ const AttributionModalFields = () => {
               layoutStyles.gap2
             )}
           >
-            <Text variant='title' size='Medium'>
+            <Text variant='title' size='medium'>
               {messages.allowAttribution.header}
             </Text>
             <SegmentedControl
@@ -279,7 +278,7 @@ const AttributionModalFields = () => {
               }
             )}
           >
-            <Text variant='title' size='Medium'>
+            <Text variant='title' size='medium'>
               {messages.commercialUse.header}
             </Text>
             <SegmentedControl
@@ -299,7 +298,7 @@ const AttributionModalFields = () => {
               [styles.disabled]: !allowAttribution
             })}
             variant='title'
-            size='Medium'
+            size='medium'
           >
             {messages.derivativeWorks.header}
           </Text>
@@ -323,12 +322,12 @@ const AttributionModalFields = () => {
               ))}
             </div>
           ) : null}
-          <Text variant='title' size='Medium'>
+          <Text variant='title' size='medium'>
             {licenseType}
           </Text>
         </div>
         {licenseDescription ? (
-          <Text size='Small'>{licenseDescription}</Text>
+          <Text size='small'>{licenseDescription}</Text>
         ) : null}
       </div>
     </div>

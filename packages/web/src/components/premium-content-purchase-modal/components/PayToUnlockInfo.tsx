@@ -20,14 +20,14 @@ export const PayToUnlockInfo = () => {
     <div className={styles.container}>
       <Text
         variant='label'
-        size='Large'
-        strength='Strong'
+        size='large'
+        strength='strong'
         className={styles.header}
       >
         <span>{messages.payToUnlock}</span>
         <LockedStatusBadge locked />
       </Text>
-      <Text className={styles.copy} variant='body'>
+      <Text className={styles.copy}>
         <span>{messages.copyPart1}</span>
         <Link
           className={typeStyles.link}

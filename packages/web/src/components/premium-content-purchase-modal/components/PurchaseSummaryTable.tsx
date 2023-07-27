@@ -29,8 +29,8 @@ export const PurchaseSummaryTable = ({
   existingBalance
 }: PurchaseSummaryTableProps) => {
   return (
-    <Text className={styles.container} variant='body'>
-      <Text className={styles.row} variant='label' size='Large'>
+    <Text className={styles.container}>
+      <Text className={styles.row} variant='label' size='large'>
         {messages.summary}
       </Text>
       <div className={styles.row}>

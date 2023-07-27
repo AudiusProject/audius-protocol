@@ -79,7 +79,7 @@ export const SourceFilesModalForm = () => {
   const preview = (
     <div className={styles.preview}>
       <div className={styles.header}>
-        <Text className={styles.title} variant='title' size='Large'>
+        <Text className={styles.title} variant='title' size='large'>
           {messages.title}
         </Text>
       </div>

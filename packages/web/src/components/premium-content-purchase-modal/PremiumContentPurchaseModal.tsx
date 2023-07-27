@@ -48,8 +48,8 @@ export const PremiumContentPurchaseModal = () => {
         <Text
           variant='label'
           color='--neutral-light-2'
-          size='XLarge'
-          strength='Strong'
+          size='xLarge'
+          strength='strong'
           className={styles.title}
         >
           <Icon size='large' icon={IconCart} />
