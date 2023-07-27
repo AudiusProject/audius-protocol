@@ -1,3 +1,5 @@
+import { RateLimiterMemory } from "rate-limiter-flexible"
+
 // type alias for ease
 export type RelayRateLimits = Map<string, RelayRateLimitConfig>
 
@@ -10,11 +12,52 @@ export type RelayRateLimitConfig = {
     whiteList: number,
 }
 
-export const getRelayRateLimits = (): RelayRateLimits => 
-    Object.entries(RELAY_RATE_LIMITS).reduce((acc, [key, value]) => {
+export type RateLimiterKey = {
+  operation: Operation,
+  limit: Limit,
+  ip: string,
+}
+
+// so code is easier to follow
+export type Operation = string
+export type Limit = string
+// operation -> three limit types -> rate limiters
+export type RateLimiters = Map<Operation, Map<Limit, RateLimiterMemory>>
+
+export class RelayRateLimiter {
+  private readonly rateLimits: RelayRateLimits
+  private rateLimiters: RateLimiters
+  private readonly keySeparator = ":"
+
+  constructor() {
+    this.rateLimits = this.readRelayRateLimits()
+    this.rateLimiters = this.initRateLimiters(this.rateLimits)
+  }
+
+  /** Initializing methods */
+  private readRelayRateLimits(): RelayRateLimits {
+    return Object.entries(RELAY_RATE_LIMITS).reduce((acc, [key, value]) => {
         acc.set(key, value)
         return acc
     }, new Map())
+  }
+
+  private initRateLimiters(rateLimits: RelayRateLimits): RateLimiters {
+    return new Map()
+  }
+
+
+  /** Rate Limiter Utilities */
+  constructRateLimiterKey(key: RateLimiterKey): string {
+    const { operation, limit, ip } = key
+    return [operation, limit, ip].join(this.keySeparator)
+  }
+
+  deconstructRateLimiterKey(key: string): RateLimiterKey {
+    const [operation, limit, ip] = key.split(this.keySeparator)
+    return { operation, limit, ip }
+  }
+}
 
 const RELAY_RATE_LIMITS = {
     "CreateUser": {
