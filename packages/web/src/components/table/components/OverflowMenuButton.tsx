@@ -2,33 +2,20 @@ import cn from 'classnames'
 
 import { ReactComponent as IconOptions } from 'assets/img/iconKebabHorizontal.svg'
 import tabStyles from 'components/actions-tab/ActionsTab.module.css'
-import Menu, { MenuProps } from 'components/menu/Menu'
+import Menu from 'components/menu/Menu'
+import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 
 import styles from './OverflowMenuButton.module.css'
 
-type OverflowMenuButtonProps = {
-  albumId?: number | null
-  albumName?: string | null
+type BaseOverflowMenuButtonProps = Omit<TrackMenuProps, 'children' | 'type'>
+
+type OverflowMenuButtonProps = BaseOverflowMenuButtonProps & {
   className?: string
   date?: any
-  handle: string
-  hiddenUntilHover?: boolean
-  includeEdit?: boolean
-  includeAddToPlaylist?: boolean
-  includeFavorite?: boolean
   index?: number
-  isArtistPick?: boolean
-  isDeleted?: boolean
-  isFavorited?: boolean
-  isOwner?: boolean
-  isOwnerDeactivated?: boolean
-  isReposted?: boolean
   onClick?: (e: any) => void
   onRemove?: (trackId: number, index: number, uid: string, date: number) => void
   removeText?: string
-  trackId?: number
-  trackPermalink?: string
-  trackTitle?: string
   uid?: string
 }
 
@@ -36,16 +23,14 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const {
     className,
     date,
-    includeEdit = true,
     index,
-    isFavorited,
-    isOwnerDeactivated,
     onClick,
     onRemove,
     removeText,
-    trackId,
-    uid
+    uid,
+    ...other
   } = props
+  const { includeEdit = true, isFavorited, isOwnerDeactivated, trackId } = other
 
   const removeMenuItem = {
     text: removeText,
@@ -57,14 +42,12 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   }
 
   const overflowMenu = {
-    menu: {
-      type: 'track' as MenuProps['menu']['type'],
-      mount: 'page',
-      includeEdit,
-      includeShare: true,
-      ...props,
-      extraMenuItems: onRemove ? [removeMenuItem] : []
-    }
+    ...other,
+    type: 'track' as const,
+    mount: 'page',
+    includeEdit,
+    includeShare: true,
+    extraMenuItems: onRemove ? [removeMenuItem] : []
   }
 
   if (isOwnerDeactivated && !onRemove && !isFavorited) {
@@ -73,7 +56,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   return (
     <div onClick={onClick} className={cn(styles.tableOptionsButton, className)}>
-      <Menu {...overflowMenu}>
+      <Menu menu={overflowMenu}>
         {(ref, triggerPopup) => (
           <div
             className={tabStyles.iconKebabHorizontalWrapper}

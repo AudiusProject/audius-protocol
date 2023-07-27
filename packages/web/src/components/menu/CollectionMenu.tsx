@@ -22,18 +22,18 @@ type PlaylistId = number
 
 export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element
-  extraMenuItems: PopupMenuItem[]
+  extraMenuItems?: PopupMenuItem[]
   handle: string
   includeEdit?: boolean
-  includeEmbed: boolean
-  includeFavorite: boolean
-  includeRepost: boolean
-  includeShare: boolean
-  includeVisitPage: boolean
-  isFavorited: boolean
-  isOwner: boolean
-  isPublic: boolean
-  isReposted: boolean
+  includeEmbed?: boolean
+  includeFavorite?: boolean
+  includeRepost?: boolean
+  includeShare?: boolean
+  includeVisitPage?: boolean
+  isFavorited?: boolean
+  isOwner?: boolean
+  isPublic?: boolean
+  isReposted?: boolean
   onClose?: () => void
   onRepost?: () => void
   onShare?: () => void
@@ -146,7 +146,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
     if (includeVisitPage) {
       menu.items.push(playlistPageMenuItem)
     }
-    if (extraMenuItems.length > 0) {
+    if (extraMenuItems && extraMenuItems.length > 0) {
       menu.items = menu.items.concat(extraMenuItems)
     }
     if (includeEmbed && isPublic) {
