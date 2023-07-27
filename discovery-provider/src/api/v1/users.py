@@ -9,6 +9,7 @@ from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
     abort_not_found,
+    add_auth_headers_to_parser,
     current_user_parser,
     decode_with_abort,
     extend_activity,
@@ -107,7 +108,7 @@ from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER, auth_middleware
+from src.utils.auth_middleware import auth_middleware
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
@@ -752,19 +753,7 @@ class FavoritedTracks(Resource):
 
 USER_TRACKS_LIBRARY_ROUTE = "/<string:id>/library/tracks"
 
-
-user_tracks_library_parser.add_argument(
-    MESSAGE_HEADER,
-    required=True,
-    description="The data that was signed by the user for signature recovery",
-    location="headers",
-)
-user_tracks_library_parser.add_argument(
-    SIGNATURE_HEADER,
-    required=True,
-    description="The signature of data, used for signature recovery",
-    location="headers",
-)
+add_auth_headers_to_parser(user_tracks_library_parser)
 
 
 @full_ns.route(USER_TRACKS_LIBRARY_ROUTE)
