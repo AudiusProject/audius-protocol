@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 from typing import Dict, Union, cast
 
@@ -11,9 +12,13 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import LibraryFilterType, SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
+from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
+from src.utils.redis_connection import get_redis
+from src.utils.rendezvous import RendezvousHash
 from src.utils.spl_audio import to_wei_string
 
+redis = get_redis()
 logger = logging.getLogger(__name__)
 
 
@@ -21,18 +26,25 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
-def get_primary_endpoint(user):
-    raw_endpoint = user.get("creator_node_endpoint")
-    if not raw_endpoint:
+def get_primary_endpoint(user, cid):
+    healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+    if not healthy_nodes:
+        logger.error(
+            f"No healthy Content Nodes found for fetching cid for {user.user_id}: {cid}"
+        )
         return ""
-    return raw_endpoint.split(",")[0]
+
+    rendezvous = RendezvousHash(
+        *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+    )
+    return rendezvous.get(cid)
 
 
 def add_track_artwork(track):
     if "user" not in track:
         return track
-    endpoint = get_primary_endpoint(track["user"])
     cid = track["cover_art_sizes"]
+    endpoint = get_primary_endpoint(track["user"], cid)
     if not endpoint or not cid:
         return track
     artwork = {
@@ -47,8 +59,8 @@ def add_track_artwork(track):
 def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
-    endpoint = get_primary_endpoint(playlist["user"])
     cid = playlist["playlist_image_sizes_multihash"]
+    endpoint = get_primary_endpoint(playlist["user"], cid)
     if not endpoint or not cid:
         return playlist
     artwork = {
@@ -80,22 +92,21 @@ def add_user_artwork(user):
     user["cover_photo_legacy"] = user.get("cover_photo")
     user["profile_picture_legacy"] = user.get("profile_picture")
 
-    endpoint = get_primary_endpoint(user)
-    if not endpoint:
-        return user
-    cover_cid = user.get("cover_photo_sizes")
     profile_cid = user.get("profile_picture_sizes")
-    if profile_cid:
+    profile_endpoint = get_primary_endpoint(user, profile_cid)
+    cover_cid = user.get("cover_photo_sizes")
+    cover_endpoint = get_primary_endpoint(user, cover_cid)
+    if profile_endpoint and profile_cid:
         profile = {
-            "150x150": make_image(endpoint, profile_cid, 150, 150),
-            "480x480": make_image(endpoint, profile_cid, 480, 480),
-            "1000x1000": make_image(endpoint, profile_cid, 1000, 1000),
+            "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
+            "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
+            "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
         }
         user["profile_picture"] = profile
-    if cover_cid:
+    if cover_endpoint and cover_cid:
         cover = {
-            "640x": make_image(endpoint, cover_cid, 640),
-            "2000x": make_image(endpoint, cover_cid, 2000),
+            "640x": make_image(cover_endpoint, cover_cid, 640),
+            "2000x": make_image(cover_endpoint, cover_cid, 2000),
         }
         user["cover_photo"] = cover
     return user
