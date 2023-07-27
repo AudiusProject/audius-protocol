@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify"
 import { logger } from "../logger"
 import { RelayRequestType } from "../types/relay"
-import { Limit, RelayRateLimits } from "./rateLimitConfig"
+import { RelayRateLimits, ValidLimits } from "./rateLimitConfig"
 import { Knex } from "knex"
 
 export const relayRateLimiter = async (req: FastifyRequest<{ Body: RelayRequestType }>, rep: FastifyReply): Promise<void> => {
@@ -41,7 +41,7 @@ const errorResponseRateLimited = (rep: FastifyReply) => {
     rep.code(429).send('Too many requests, please try again later')
 }
 
-const determineLimit = (discoveryDb: Knex, limits: RelayRateLimits, signer: string, encodedABI: string): Limit => {
+const determineLimit = (discoveryDb: Knex, limits: RelayRateLimits, signer: string, encodedABI: string): ValidLimits => {
     // 1. get limits based on key "CreateUser", "UpdateTrack", etc
 
     // 2. get user record from db
@@ -53,5 +53,5 @@ const determineLimit = (discoveryDb: Knex, limits: RelayRateLimits, signer: stri
     // 5. if not allowlist, return "owner" limit
 
     // 6. if not either (user undefined) return app
-    return Limit.App
+    return "app"
 }

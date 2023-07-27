@@ -1,4 +1,6 @@
-import { RateLimiterMemory } from "rate-limiter-flexible"
+import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible"
+import lcm from "compute-lcm"
+import { logger } from "../logger"
 
 // type alias for ease
 export type RelayRateLimits = Map<string, RelayRateLimitConfig>
@@ -9,20 +11,20 @@ export type RelayRateLimitConfig = {
     // how many times the official app is limited to
     app: number,
     // how many times the whitelisted users are limited to
-    whiteList: number,
+    whitelist: number,
 }
 
 export type RateLimiterKey = {
   operation: Operation,
-  limit: Limit,
+  limit: ValidLimits,
   ip: string,
 }
 
 // so code is easier to follow
 export type Operation = string
-export type Limit = string
-// operation -> three limit types -> rate limiters
-export type RateLimiters = Map<Operation, Map<Limit, RateLimiterMemory>>
+export type ValidLimits = "owner" | "app" | "whitelist"
+// operation -> in mem rate limiter
+export type RateLimiters = Map<Operation, RateLimiterMemory>
 
 export class RelayRateLimiter {
   private readonly rateLimits: RelayRateLimits
@@ -43,9 +45,31 @@ export class RelayRateLimiter {
   }
 
   private initRateLimiters(rateLimits: RelayRateLimits): RateLimiters {
-    return new Map()
+    const rateLimiters = new Map<string, RateLimiterMemory>()
+    for (const [operation, {owner, app, whitelist}] of rateLimits) {
+      const leastCommonMultiple = lcm([owner, app, whitelist])
+      if (leastCommonMultiple === null) throw new Error(`no LCM for ${owner} ${app} ${whitelist}`)
+      const opts = { points: leastCommonMultiple }
+      const rateLimiter = new RateLimiterMemory(opts)
+      rateLimiters.set(operation, rateLimiter)
+    }
+    return rateLimiters
   }
 
+  async consume(key: RateLimiterKey): Promise<RateLimiterRes> {
+    const rateLimiter = this.rateLimiters.get(key.operation)
+    const rateLimits = this.rateLimits.get(key.operation)
+    if (rateLimiter === undefined) {
+      throw new Error(`Rate limit not found | ${key.operation} not created`)
+    }
+    if (rateLimits === undefined) {
+      throw new Error(`Rate limit not found | ${key.operation} not configured`)
+    }
+    const amountOfAllowedRequests = rateLimits[key.limit]
+    const constructedKey = this.constructRateLimiterKey(key)
+    const pointsToConsume = rateLimiter.points / amountOfAllowedRequests
+    return rateLimiter.consume(constructedKey, pointsToConsume)
+  }
 
   /** Rate Limiter Utilities */
   constructRateLimiterKey(key: RateLimiterKey): string {
@@ -54,7 +78,8 @@ export class RelayRateLimiter {
   }
 
   deconstructRateLimiterKey(key: string): RateLimiterKey {
-    const [operation, limit, ip] = key.split(this.keySeparator)
+    const [operation, limitStr, ip] = key.split(this.keySeparator)
+    const limit = limitStr as ValidLimits
     return { operation, limit, ip }
   }
 }
