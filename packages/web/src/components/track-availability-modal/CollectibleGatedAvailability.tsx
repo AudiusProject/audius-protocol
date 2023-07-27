@@ -116,7 +116,6 @@ export const CollectibleGatedAvailability = ({
       <DropdownInput
         aria-label={messages.pickACollection}
         placeholder={messages.pickACollection}
-        mount={null}
         popupContainer={(triggerNode: HTMLElement) =>
           // hack to escape the collapsible container which has overflow: hidden
           // maintains scrollability, unlike `mount={'page'}

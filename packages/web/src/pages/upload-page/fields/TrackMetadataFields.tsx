@@ -1,15 +1,14 @@
-import { useState } from 'react'
+import { GENRES } from '@audius/common'
 
-import { GENRES, getCanonicalName, getErrorMessage } from '@audius/common'
-import { useField } from 'formik'
-
-import DropdownInput from 'components/data-entry/DropdownInput'
-import Input from 'components/data-entry/Input'
-import TagInput from 'components/data-entry/TagInput'
-import TextArea from 'components/data-entry/TextArea'
-import UploadArtwork from 'components/upload/UploadArtwork'
+import { InputV2Variant } from 'components/data-entry/InputV2'
+import {
+  ArtworkField,
+  DropdownField,
+  TagField,
+  TextAreaField,
+  TextField
+} from 'components/form-fields'
 import { moodMap } from 'utils/Moods'
-import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './TrackMetadataFields.module.css'
 
@@ -19,107 +18,58 @@ const MOODS = Object.keys(moodMap).map((k) => ({
 }))
 
 const messages = {
-  genre: 'Pick a Genre'
+  trackName: 'Track Name',
+  genre: 'Pick a Genre',
+  mood: 'Pick a Mood',
+  description: 'Description'
 }
 
-type TrackMetadataFieldsProps = {
-  /** Whether or not the preview is playing. */
-  playing: boolean
-  type: 'track'
-}
-
-const TrackMetadataFields = (props: TrackMetadataFieldsProps) => {
-  const [imageProcessingError, setImageProcessingError] = useState(false)
-  const [artworkField, , artworkHelpers] = useField('artwork')
-  const [titleField, titleMeta, titleHelpers] = useField('title')
-  const [genreField, genreMeta, genreHelpers] = useField('genre')
-  const [, moodMeta, moodHelpers] = useField('mood')
-  const [, tagsMeta, tagsHelpers] = useField('tags')
-  const [, descriptionMeta, descriptionHelpers] = useField('description')
-
-  const onDropArtwork = async (selectedFiles: File[], source: string) => {
-    try {
-      let file = selectedFiles[0]
-      file = await resizeImage(file)
-      // @ts-ignore writing to read-only property. Maybe bugged?
-      file.name = selectedFiles[0].name
-      const url = URL.createObjectURL(file)
-      artworkHelpers.setValue({ url, file, source })
-      setImageProcessingError(false)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      setImageProcessingError(true)
-    }
-  }
-
+export const TrackMetadataFields = () => {
   return (
     <div className={styles.basic}>
       <div className={styles.artwork}>
-        <UploadArtwork
-          artworkUrl={artworkField.value?.url}
-          onDropArtwork={onDropArtwork}
-          imageProcessingError={imageProcessingError}
-        />
+        <ArtworkField name='artwork' />
       </div>
       <div className={styles.fields}>
         <div className={styles.trackName}>
-          <Input
-            name='name'
-            id='track-name-input'
-            placeholder={`${
-              props.type.charAt(0).toUpperCase() + props.type.slice(1)
-            } Name`}
-            defaultValue={titleMeta.initialValue}
-            characterLimit={64}
-            error={!!titleMeta.error}
-            variant={'elevatedPlaceholder'}
-            onChange={titleHelpers.setValue}
-            onBlur={titleField.onBlur}
+          <TextField
+            name='title'
+            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+            label={messages.trackName}
+            maxLength={64}
+            required
           />
         </div>
         <div className={styles.categorization}>
-          <DropdownInput
+          <DropdownField
+            name='genre'
             aria-label={messages.genre}
             placeholder={messages.genre}
             mount='parent'
             menu={{ items: GENRES }}
-            defaultValue={getCanonicalName(genreField.value) || ''}
-            error={!!genreMeta.error}
-            onSelect={genreHelpers.setValue}
             size='large'
           />
-          <DropdownInput
-            placeholder='Pick a Mood'
+          <DropdownField
+            name='mood'
+            placeholder={messages.mood}
             mount='parent'
             menu={{ items: MOODS }}
-            defaultValue={moodMeta.initialValue}
-            error={!!moodMeta.error}
-            onSelect={moodHelpers.setValue}
             size='large'
           />
         </div>
         <div className={styles.tags}>
-          <TagInput
-            defaultTags={(tagsMeta.initialValue || '')
-              .split(',')
-              .filter((t: string | null) => t)}
-            onChangeTags={(value: string[]) =>
-              tagsHelpers.setValue([...value].join(','))
-            }
-          />
+          <TagField name='tags' />
         </div>
         <div className={styles.description}>
-          <TextArea
+          <TextAreaField
+            name='description'
             className={styles.textArea}
-            placeholder='Description'
-            defaultValue={descriptionMeta.initialValue || ''}
-            onChange={descriptionHelpers.setValue}
-            characterLimit={1000}
+            placeholder={messages.description}
+            maxLength={1000}
+            showMaxLength
           />
         </div>
       </div>
     </div>
   )
 }
-
-export default TrackMetadataFields

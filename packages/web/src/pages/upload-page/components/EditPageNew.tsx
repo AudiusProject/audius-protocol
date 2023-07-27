@@ -1,18 +1,24 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { ExtendedTrackMetadata, Nullable } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-import { Formik } from 'formik'
+import { Form, Formik } from 'formik'
 import moment from 'moment'
 import * as Yup from 'yup'
 
 import PreviewButton from 'components/upload/PreviewButton'
 
-import TrackMetadataFields from '../fields/TrackMetadataFields'
+import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 
 import styles from './EditPageNew.module.css'
 import { TrackModalArray } from './TrackModalArray'
 import { TrackForUpload } from './types'
+
+const messages = {
+  titleError: 'Your track must have a name',
+  artworkError: 'Artwork is required',
+  genreError: 'Genre is required'
+}
 
 type EditPageProps = {
   tracks: TrackForUpload[]
@@ -29,34 +35,35 @@ export type EditFormValues = ExtendedTrackMetadata & {
 }
 
 const EditTrackSchema = Yup.object().shape({
-  title: Yup.string().required('Required'),
+  title: Yup.string().required(messages.titleError),
   artwork: Yup.object({
     url: Yup.string()
-  })
-    // .when('trackArtwork', {
-    //   is: undefined,
-    //   then: Yup.object().required('Required').nullable()
-    // })
-    .nullable(),
+  }).required(messages.artworkError),
   trackArtwork: Yup.string().nullable(),
-  //   genre: Yup.string().required('Required'),
-  genre: Yup.string(),
+  genre: Yup.string().required(messages.genreError),
   description: Yup.string().max(1000).nullable()
 })
 
 export const EditPageNew = (props: EditPageProps) => {
   const { tracks, setTracks, onContinue } = props
 
-  const initialValues: EditFormValues = {
-    ...tracks[0].metadata,
-    artwork: null,
-    releaseDate: moment().startOf('day'),
-    licenseType: {
-      allowAttribution: null,
-      commercialUse: null,
-      derivativeWorks: null
-    }
-  }
+  const [{ metadata: trackMetadata }] = tracks
+
+  const initialValues: EditFormValues = useMemo(
+    () => ({
+      ...trackMetadata,
+      artwork: null,
+      description: '',
+      releaseDate: moment().startOf('day'),
+      tags: '',
+      licenseType: {
+        allowAttribution: null,
+        commercialUse: null,
+        derivativeWorks: null
+      }
+    }),
+    [trackMetadata]
+  )
 
   const onSubmit = useCallback(
     (values: EditFormValues) => {
@@ -72,10 +79,10 @@ export const EditPageNew = (props: EditPageProps) => {
       onSubmit={onSubmit}
       validationSchema={EditTrackSchema}
     >
-      {(formikProps) => (
-        <>
+      {() => (
+        <Form>
           <div className={styles.editForm}>
-            <TrackMetadataFields playing={false} type='track' />
+            <TrackMetadataFields />
             <TrackModalArray />
             <PreviewButton playing={false} onClick={() => {}} />
           </div>
@@ -86,12 +93,11 @@ export const EditPageNew = (props: EditPageProps) => {
               text='Continue'
               name='continue'
               rightIcon={<IconArrow />}
-              onClick={() => formikProps.handleSubmit()}
               textClassName={styles.continueButtonText}
               className={styles.continueButton}
             />
           </div>
-        </>
+        </Form>
       )}
     </Formik>
   )

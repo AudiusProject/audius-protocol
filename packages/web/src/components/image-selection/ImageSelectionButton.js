@@ -84,6 +84,7 @@ const ImageSelectionButton = ({
             leftIcon={<IconPencil />}
             type={ButtonType.WHITE}
             onClick={handleClick}
+            buttonType='button'
           />
           <ImageSelectionPopup
             anchorRef={anchorRefProp ?? anchorRefInner}
@@ -112,6 +113,7 @@ const ImageSelectionButton = ({
               leftIcon={<IconPencil />}
               type={ButtonType.WHITE}
               onClick={handleClick}
+              buttonType='button'
             />
           </ReactDropzone>
           {error ? (

@@ -8,9 +8,16 @@ type TextFieldProps = InputV2Props & {
 
 export const TextField = (props: TextFieldProps) => {
   const { name, ...other } = props
-  const [field, meta] = useField(name)
+  const [field, { touched, error }] = useField(name)
 
-  const hasError = Boolean(meta.touched && meta.error)
+  const hasError = Boolean(touched && error)
 
-  return <InputV2 {...field} error={hasError} {...other} />
+  return (
+    <InputV2
+      {...field}
+      error={hasError}
+      helperText={hasError ? error : undefined}
+      {...other}
+    />
+  )
 }

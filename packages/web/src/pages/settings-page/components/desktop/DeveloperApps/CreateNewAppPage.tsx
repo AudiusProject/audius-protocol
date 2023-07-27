@@ -16,8 +16,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { InputV2Variant } from 'components/data-entry/InputV2'
-import { TextAreaField } from 'components/form-fields/TextAreaField'
-import { TextField } from 'components/form-fields/TextField'
+import { TextAreaField, TextField } from 'components/form-fields'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
 
