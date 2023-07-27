@@ -3,15 +3,15 @@ import { logger } from "../logger";
 import { RelayRequestType } from "../types/relay";
 import {
   RelayRateLimiter,
-  RelayRateLimits,
   ValidLimits,
 } from "./rateLimitConfig";
 import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { readConfig } from "../config";
+import { Table, Users } from "storage/src";
 
-// TODO: stick this into app object and pass in to handler
+// TODO: stick these into app object and pass in to handler
 const globalRateLimiter = new RelayRateLimiter();
 const globalConfig = readConfig();
 
@@ -33,11 +33,13 @@ export const relayRateLimiter = async (
     entityManagerAddress: globalConfig.entityManagerContractAddress,
   });
 
+  const limit = await determineLimit()
+
   try {
     const res = await globalRateLimiter.consume({
       operation,
       ip,
-      limit: "app",
+      limit,
     });
     insertReplyHeaders(rep, res);
   } catch (e) {
@@ -92,22 +94,18 @@ const insertReplyHeaders = (rep: FastifyReply, data: RateLimiterRes) => {
   rep.header("X-RateLimit-Consumed", consumedPoints);
 };
 
-const determineLimit = (
+const determineLimit = async (
   discoveryDb: Knex,
-  limits: RelayRateLimits,
+  allowlist: string[],
   signer: string,
   encodedABI: string
-): ValidLimits => {
-  // 1. get limits based on key "CreateUser", "UpdateTrack", etc
-
-  // 2. get user record from db
-
-  // 3. if user check allowlist
-
-  // 4. if allowlist, return "whitelist" limit
-
-  // 5. if not allowlist, return "owner" limit
-
-  // 6. if not either (user undefined) return app
-  return "app";
+): Promise<ValidLimits> => {
+    const isAllowed = allowlist.includes(signer)
+    if (isAllowed) return "whitelist"
+    const user = await discoveryDb<Users>(Table.Users)
+        .where('wallet', '=', signer)
+        .andWhere('is_current', '=', true)
+        .first()
+    if (user !== undefined) return "owner"
+    return "app"
 };

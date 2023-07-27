@@ -8,6 +8,7 @@ import {
 import { validateSupportedContract, validateTransactionData } from "./validate";
 import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
+import { ethers } from "ethers";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -25,7 +26,6 @@ export const relayTransaction = async (
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
-    requiredConfirmations,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
 
@@ -55,8 +55,24 @@ export const relayTransaction = async (
 
   log("signed and sent");
 
-  // internally polls until mined
-  const receipt = await submit.wait(requiredConfirmations);
-
+  // query chain until tx is mined
+  const receipt = await confirm(web3, submit.hash)
   return { receipt, transaction };
 };
+
+const confirm = async (web3: ethers.providers.JsonRpcProvider, txHash: string): Promise<TransactionReceipt> => {
+  const result = await Promise.race([confirmIndefinitely(web3, txHash), delay(6000)])
+  if (result === undefined) throw new Error(`txhash ${txHash} could not be confirmed`)
+  return result as TransactionReceipt
+}
+
+const confirmIndefinitely = async (web3: ethers.providers.JsonRpcProvider, txHash: string): Promise<TransactionReceipt> => {
+  const receipt = await web3.getTransactionReceipt(txHash)
+  if (receipt !== null) return receipt
+  await delay(500)
+  return confirmIndefinitely(web3, txHash)
+}
+
+const delay = (ms: number) => {
+  return new Promise( resolve => setTimeout(resolve, ms) );
+}

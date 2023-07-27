@@ -29,10 +29,11 @@ export const readConfig = (): Config => {
         return developmentConfig.entityManagerContractAddress;
     }
   };
-  logger.info(`running on ${process.env.ENVIRONMENT} network`);
+  const environment = process.env.environment || "stage"
+  logger.info(`running on ${environment} network`);
   return {
-    environment: process.env.environment || "dev",
-    rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
+    environment,
+    rpcEndpoint: process.env.rpcEndpoint || "https://poa-gateway.staging.audius.co/",
     acdcChainId: process.env.acdcChainId || "1056801",
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
