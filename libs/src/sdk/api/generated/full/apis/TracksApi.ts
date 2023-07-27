@@ -214,7 +214,7 @@ export class TracksApi extends runtime.BaseAPI {
     /** @hidden
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
+    async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
         if (requestParameters.userId !== undefined) {
@@ -238,13 +238,13 @@ export class TracksApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => FullTrackResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
+    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
         const response = await this.getBulkTracksRaw(requestParameters, initOverrides);
         return await response.value();
     }
