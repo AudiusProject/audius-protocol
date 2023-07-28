@@ -8,7 +8,7 @@
   },
   "scripts": {
     "audius-cmd": "node src/index.mjs",
-    "test": "bats test"
+    "test": "./node_modules/.bin/bats test"
   },
   "author": "Audius",
   "license": "Apache-2.0",
