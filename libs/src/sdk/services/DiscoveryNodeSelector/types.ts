@@ -76,6 +76,9 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    */
   bootstrapServices: string[]
 
+  /**
+   * Logger service, defaults to console logging
+   */
   logger: LoggerService
 }
 
