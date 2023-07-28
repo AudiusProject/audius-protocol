@@ -1,6 +1,4 @@
 import concurrent.futures
-import json
-import logging
 import re
 import time
 from datetime import datetime
@@ -14,7 +12,6 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
@@ -263,7 +260,7 @@ def get_purchase_metadata_from_memo(
                 price = None
                 splits = None
                 if type == PurchaseType.track:
-                    result: TrackPriceHistory = (
+                    result = (
                         session.query(TrackPriceHistory)
                         .filter(
                             TrackPriceHistory.track_id == id,
@@ -277,7 +274,11 @@ def get_purchase_metadata_from_memo(
                         splits = result.splits
                 else:
                     logger.error(f"index_user_bank.py | Unknown content type {type}")
-                if price is not None and splits is not None:
+                if (
+                    price is not None
+                    and splits is not None
+                    and isinstance(splits, dict)
+                ):
                     return {
                         "type": type,
                         "id": id,
@@ -286,7 +287,7 @@ def get_purchase_metadata_from_memo(
                     }
                 else:
                     logger.error(
-                        f"index_user_bank.py | Couldn't find premium conditions for {content_metadata}"
+                        f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
                     )
             else:
                 logger.debug(
