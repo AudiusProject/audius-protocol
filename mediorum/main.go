@@ -135,6 +135,7 @@ func startStagingOrProd(isProd bool) {
 		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 		StoreAll:            os.Getenv("STORE_ALL") == "true",
 		VersionJson:         GetVersionJson(),
+		MigrateQmCids:       os.Getenv("MIGRATE_QM_CIDS") == "true",
 	}
 
 	ss, err := server.New(config)

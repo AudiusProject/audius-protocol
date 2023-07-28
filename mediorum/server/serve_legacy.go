@@ -214,12 +214,6 @@ func getDiskPathOnlyIfFileExists(storagePath, dirMultihash, multihash string) st
 	}
 
 	// try computing the path different ways that were previously used by the legacy creator node
-	if dirMultihash != "" {
-		diskPath = computeFilePathInDir(dirMultihash, multihash)
-		if _, err := os.Stat(diskPath); err == nil {
-			return diskPath
-		}
-	}
 	diskPath = computeFilePath(multihash)
 	if _, err := os.Stat(diskPath); err == nil {
 		return diskPath
@@ -227,6 +221,14 @@ func getDiskPathOnlyIfFileExists(storagePath, dirMultihash, multihash string) st
 	diskPath = computeLegacyFilePath(multihash)
 	if _, err := os.Stat(diskPath); err == nil {
 		return diskPath
+	}
+
+	// try computing yet another path based on the dirMultihash
+	if dirMultihash != "" {
+		diskPath = computeFilePathInDir(dirMultihash, multihash)
+		if _, err := os.Stat(diskPath); err == nil {
+			return diskPath
+		}
 	}
 
 	// we tried everything, and there's no other location we can think of to find the CID at
