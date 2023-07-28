@@ -254,9 +254,15 @@
   margin-right: var(--unit-20);
 }
 
+.small .bottomRight {
+  /* Match socialsRow to keep these in line */
+  height: 18px;
+}
+
 .socialInfo {
   display: inline-flex;
-  width: 100%;
+  flex: 1 1 100%;
+  min-width: 0;
   justify-content: flex-start;
 }
 
