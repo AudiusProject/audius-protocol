@@ -85,10 +85,7 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    if (
-        "premium_conditions" in track_metadata
-        and track_metadata["premium_conditions"] is not None
-    ):
+    if track_metadata.get("premium_conditions", None) is not None:
         premium_conditions = track_metadata["premium_conditions"]
         if "usdc_purchase" in premium_conditions:
             usdc_purchase = premium_conditions["usdc_purchase"]
