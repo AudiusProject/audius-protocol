@@ -9,16 +9,16 @@ from src.models.users.usdc_purchase import USDCPurchase
 logger = logging.getLogger(__name__)
 
 
-def does_user_have_nft_collection(
-    session: Session, user_id: int, condition_options: Any
-):
+def does_user_have_nft_collection(**kwargs):
     # Return False here as we want to avoid this check here, in favor of
     # calling the /tracks/<user-id>/nft-gated-signatures endpoint to check
     # whether a user has access to nft-gated tracks.
     return False
 
 
-def does_user_follow_artist(session: Session, user_id: int, condition_options: int):
+def does_user_follow_artist(
+    session: Session, user_id: int, condition_options: int, **kwargs
+):
     follow_user_id = condition_options
     result = (
         session.query(Follow)
@@ -31,7 +31,9 @@ def does_user_follow_artist(session: Session, user_id: int, condition_options: i
     return True if result else False
 
 
-def does_user_support_artist(session: Session, user_id: int, condition_options: int):
+def does_user_support_artist(
+    session: Session, user_id: int, condition_options: int, **kwargs
+):
     supporting_user_id = condition_options
     result = (
         session.query(AggregateUserTip)
@@ -48,7 +50,7 @@ def has_user_purchased_content(
     user_id: int,
     content_id: int,
     content_type: str,
-    condition_options: Any,
+    **kwargs,
 ):
     result = (
         session.query(USDCPurchase)
