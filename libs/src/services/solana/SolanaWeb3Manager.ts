@@ -471,6 +471,14 @@ export class SolanaWeb3Manager {
     })
   }
 
+  /**
+   * Purchases USDC gated content
+   * @param params.id the id of the content, eg. the track ID
+   * @param params.type the type of the content, eg. "track"
+   * @param params.blocknumber the blocknumber the content was last updated
+   * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @returns the transaction signature and/or an error
+   */
   async purchaseContent({
     id,
     type,
