@@ -81,7 +81,8 @@
 
 .socialInfo {
   display: inline-flex;
-  width: 100%;
+  flex: 1 1 100%;
+  min-width: 0;
   justify-content: flex-start;
 }
 
