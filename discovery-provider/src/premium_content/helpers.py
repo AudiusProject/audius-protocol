@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 from sqlalchemy.orm.session import Session
 from src.models.social.follow import Follow
