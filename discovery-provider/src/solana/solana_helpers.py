@@ -35,3 +35,6 @@ ASSOCIATED_TOKEN_PROGRAM_ID_PK = PublicKey(ASSOCIATED_TOKEN_PROGRAM_ID)
 # NOTE: This is static and will not change
 METADATA_PROGRAM_ID = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
 METADATA_PROGRAM_ID_PK = PublicKey(METADATA_PROGRAM_ID)
+
+# Static Memo Program ID
+MEMO_PROGRAM_ID = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"

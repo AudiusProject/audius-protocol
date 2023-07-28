@@ -44,7 +44,7 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_token_balances
+from src.utils.helpers import get_solana_tx_token_balance_changes
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
@@ -249,16 +249,18 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 
         challenge_id, specifier = transfer_instruction
         receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
-        pre_balance, post_balance = get_solana_tx_token_balances(meta, receiver_index)
-        if pre_balance == -1 or post_balance == -1:
+        account_keys = tx_message["accountKeys"]
+        receiver_user_bank = account_keys[receiver_index]
+        balance_changes = get_solana_tx_token_balance_changes(meta=meta, account_keys=account_keys)
+        if receiver_user_bank not in balance_changes:
             raise Exception("Reward recipient balance missing!")
         tx_metadata["transfer_instruction"] = {
             "amount": amount,
             "eth_recipient": eth_recipient,
             "challenge_id": challenge_id,
             "specifier": specifier,
-            "prebalance": pre_balance,
-            "postbalance": post_balance,
+            "prebalance": balance_changes[receiver_user_bank]["pre_balance"],
+            "postbalance": balance_changes[receiver_user_bank]["post_balance"],
         }
         return tx_metadata
     except Exception as e:
