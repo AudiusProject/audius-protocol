@@ -3,14 +3,33 @@ import type { TransactionReceipt } from 'web3-core'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
-export type EntityManagerConfig = {
+export type EntityManagerConfigInternal = {
+  /**
+   * Address of the EntityManager contract
+   */
   contractAddress: string
+  /**
+   * The URL of the Web3 provider service
+   */
   web3ProviderUrl: string
+  /**
+   * The URL of the Audius Identity Service, used for relays
+   */
   identityServiceUrl: string
+  /**
+   * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
+   */
   discoveryNodeSelector: DiscoveryNodeSelectorService
-  useDiscoveryRelay?: boolean
+  /**
+   * Whether to use discovery for relay instead of identity
+   */
+  useDiscoveryRelay: boolean
+  /**
+   * Logger service, defaults to console
+   */
   logger: LoggerService
 }
+export type EntityManagerConfig = Partial<EntityManagerConfigInternal>
 
 export type EntityManagerService = {
   manageEntity: (
