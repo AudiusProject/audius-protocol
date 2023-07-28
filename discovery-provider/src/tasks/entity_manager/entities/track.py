@@ -101,11 +101,28 @@ def update_track_price_history(
                 price = usdc_purchase["price"]
                 if isinstance(price, int):
                     new_record.total_price_cents = price
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase premium conditions 'price'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Price missing from usdc_purchase premium conditions"
+                )
+
             if "splits" in usdc_purchase:
                 splits = usdc_purchase["splits"]
                 # TODO: better validation of splits
                 if isinstance(splits, dict):
                     new_record.splits = splits
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase premium conditions 'splits'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Splits missing from usdc_purchase premium conditions"
+                )
     if new_record:
         old_record: Union[TrackPriceHistory, None] = (
             session.query(TrackPriceHistory)
