@@ -152,6 +152,9 @@
                   },
                   {
                     "$ref": "#/definitions/PremiumConditionsTipUserId"
+                  },
+                  {
+                    "$ref": "#/definitions/PremiumConditionsUSDCPurchase"
                   }
                 ]
               }
@@ -454,6 +457,25 @@
                 "tip_user_id"
             ],
             "title": "PremiumConditionsTipUserId"
+        },
+        "PremiumConditionsUSDCPurchase": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "price": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "splits": {
+              "type": "object",
+              "patternProperties": {
+                "^[1-9A-HJ-NP-Za-km-z]{32,44}$": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
         }
     }
 }
