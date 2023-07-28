@@ -39,6 +39,10 @@
 
 .statButton {
   text-transform: uppercase;
+  /* Specific value to ensure the button width doesn't change when variants
+   *  and text changes
+  */
+  width: 142px;
 }
 
 .iconButton svg {

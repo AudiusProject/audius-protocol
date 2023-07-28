@@ -154,7 +154,7 @@ export const StatBanner = (props: StatsBannerProps) => {
     onToggleSubscribe
   } = props
   let buttons = null
-  const followButtonRef = useRef<HTMLDivElement>(null)
+  const followButtonRef = useRef<HTMLButtonElement>(null)
 
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
 
@@ -247,21 +247,20 @@ export const StatBanner = (props: StatsBannerProps) => {
                 onToggleSubscribe={onToggleSubscribe}
               />
             ) : null}
-            <div ref={followButtonRef}>
-              <FollowButton
-                following={following}
-                onFollow={onFollow}
-                onUnfollow={onUnfollow}
-                widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
-                className={styles.statButton}
-              />
-              <ArtistRecommendationsPopup
-                anchorRef={followButtonRef}
-                artistId={profileId!}
-                isVisible={areArtistRecommendationsVisible}
-                onClose={onCloseArtistRecommendations!}
-              />
-            </div>
+            <FollowButton
+              ref={followButtonRef}
+              following={following}
+              onFollow={onFollow}
+              onUnfollow={onUnfollow}
+              widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
+              className={styles.statButton}
+            />
+            <ArtistRecommendationsPopup
+              anchorRef={followButtonRef}
+              artistId={profileId!}
+              isVisible={areArtistRecommendationsVisible}
+              onClose={onCloseArtistRecommendations!}
+            />
           </div>
         </>
       )

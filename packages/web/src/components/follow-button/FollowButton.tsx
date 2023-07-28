@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, forwardRef, MouseEvent } from 'react'
 
 import {
   Button,
@@ -38,97 +38,105 @@ const defaultMessages: FollowMessages = {
   unfollow: 'Unfollow'
 }
 
-export const FollowButton: React.FC<FollowButtonProps> = ({
-  color,
-  className,
-  following = false,
-  onUnfollow,
-  onFollow,
-  isDisabled,
-  messages = defaultMessages,
-  stopPropagation,
-  showIcon = true,
-  size = 'medium',
-  invertedColor = false,
-  ...buttonProps
-}) => {
-  const [isHovering, setIsHovering] = useState(false)
-  const [isHoveringClicked, setIsHoveringClicked] = useState(false)
+export const FollowButton = forwardRef<HTMLButtonElement, FollowButtonProps>(
+  function FollowButton(props, ref) {
+    const {
+      color,
+      className,
+      following = false,
+      onUnfollow,
+      onFollow,
+      isDisabled,
+      messages = defaultMessages,
+      stopPropagation,
+      showIcon = true,
+      size = 'medium',
+      invertedColor = false,
+      ...buttonProps
+    } = props
+    const [isHovering, setIsHovering] = useState(false)
+    const [isHoveringClicked, setIsHoveringClicked] = useState(false)
 
-  const onMouseEnter = useCallback(() => {
-    setIsHovering(true)
-  }, [setIsHovering])
-  const onMouseLeave = useCallback(() => {
-    setIsHovering(false)
-  }, [setIsHovering])
+    const handleMouseEnter = useCallback(() => {
+      setIsHovering(true)
+    }, [setIsHovering])
 
-  const style = {
-    [styles.noIcon]: !showIcon,
-    [styles.full]: size === 'full',
-    [styles.medium]: size === 'medium',
-    [styles.small]: size === 'small'
+    const handleMouseLeave = useCallback(() => {
+      setIsHovering(false)
+    }, [setIsHovering])
+
+    const style = {
+      [styles.noIcon]: !showIcon,
+      [styles.full]: size === 'full',
+      [styles.medium]: size === 'medium',
+      [styles.small]: size === 'small'
+    }
+
+    const handleClick = useCallback(
+      (e: MouseEvent<HTMLButtonElement>) => {
+        if (following) {
+          onUnfollow?.()
+        } else {
+          onFollow?.()
+        }
+        setIsHoveringClicked(true)
+        if (stopPropagation) {
+          e.stopPropagation()
+          e.nativeEvent.stopImmediatePropagation()
+        }
+      },
+      [following, onUnfollow, onFollow, setIsHoveringClicked, stopPropagation]
+    )
+
+    useEffect(() => {
+      if (!isHovering && isHoveringClicked) setIsHoveringClicked(false)
+    }, [isHovering, isHoveringClicked, setIsHoveringClicked])
+
+    const isFollowing = following || (!following && isHoveringClicked)
+
+    let buttonType
+    if (color) {
+      buttonType = ButtonType.PRIMARY
+    } else {
+      buttonType =
+        !isFollowing && !invertedColor
+          ? ButtonType.SECONDARY
+          : ButtonType.PRIMARY_ALT
+    }
+
+    let icon
+    let text
+
+    if (!following && !isHoveringClicked) {
+      icon = <IconFollow width={18} height={18} />
+      text = messages.follow
+    } else if (isFollowing && !isHovering) {
+      icon = <IconFollowing width={18} height={18} />
+      text = messages.following
+    } else if (isFollowing && isHovering) {
+      icon = <IconUnfollow width={18} height={18} />
+      text = messages.unfollow
+    }
+
+    if (!showIcon) icon = null
+
+    return (
+      <Button
+        ref={ref}
+        {...buttonProps}
+        color={color}
+        className={cn(styles.followButton, className, style)}
+        textClassName={styles.followButtonText}
+        iconClassName={styles.followButtonIcon}
+        type={buttonType}
+        onClick={handleClick}
+        disabled={isDisabled}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        leftIcon={icon}
+        size={ButtonSize.SMALL}
+        text={text}
+      />
+    )
   }
-
-  const onClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (following) {
-        onUnfollow?.()
-      } else {
-        onFollow?.()
-      }
-      setIsHoveringClicked(true)
-      if (stopPropagation) {
-        e.stopPropagation()
-        e.nativeEvent.stopImmediatePropagation()
-      }
-    },
-    [following, onUnfollow, onFollow, setIsHoveringClicked, stopPropagation]
-  )
-
-  useEffect(() => {
-    if (!isHovering && isHoveringClicked) setIsHoveringClicked(false)
-  }, [isHovering, isHoveringClicked, setIsHoveringClicked])
-
-  let buttonType
-  if (color) {
-    buttonType = ButtonType.PRIMARY
-  } else {
-    buttonType =
-      !following && !isHovering && !isHoveringClicked && !invertedColor
-        ? ButtonType.SECONDARY
-        : ButtonType.PRIMARY_ALT
-  }
-
-  let icon
-  let text
-  if (!following && !isHoveringClicked) {
-    icon = <IconFollow width={18} height={18} />
-    text = messages.follow
-  } else if (!following && isHoveringClicked) {
-    icon = <IconFollowing width={18} height={18} />
-    text = messages.following
-  } else {
-    icon = <IconUnfollow width={18} height={18} />
-    text = messages.unfollow
-  }
-
-  if (!showIcon) icon = null
-
-  return (
-    <Button
-      {...buttonProps}
-      color={color}
-      className={cn(styles.followButton, className, style)}
-      textClassName={styles.followButtonText}
-      iconClassName={styles.followButtonIcon}
-      type={buttonType}
-      onClick={onClick}
-      disabled={isDisabled}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      leftIcon={icon}
-      size={ButtonSize.SMALL}
-      text={text}
-    />
-  )
-}
+)
