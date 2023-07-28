@@ -71,6 +71,13 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
+
+	// the only keys we store with ".jpg" suffixes are of the format "<cid>/<size>.jpg", so remove the ".jpg" if it's just like "<cid>.jpg"
+	// this is to support clients that forget to leave off the .jpg for this legacy format
+	if strings.HasSuffix(cid, ".jpg") && !strings.Contains(cid, "/") {
+		cid = cid[:len(cid)-4]
+	}
+
 	logger := ss.logger.With("cid", cid)
 	key := cidutil.ShardCID(cid)
 
