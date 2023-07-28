@@ -20,7 +20,8 @@ const solanaAudiusAnchorDataProgramId = config.get(
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111'
+  /* secp */ 'KeccakSecp256k11111111111111111111111111111',
+  /* memo */ 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 ])
 
 if (solanaAudiusAnchorDataProgramId) {
