@@ -94,7 +94,7 @@ def test_get_solana_tx_token_balances():
     )
     assert changes["fake2"]["pre_balance"] == 500000000
     assert changes["fake2"]["post_balance"] == 5623032749
-    assert changes["fake2"]["change"] == 623032749
+    assert changes["fake2"]["change"] == 5123032749
 
 
 def test_get_solana_tx_owner():
