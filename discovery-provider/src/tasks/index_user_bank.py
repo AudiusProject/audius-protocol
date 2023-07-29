@@ -14,6 +14,7 @@ from solders.transaction import Transaction
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.tracks.track_price_history import TrackPriceHistory
@@ -327,7 +328,7 @@ def validate_purchase(
 
 def index_purchase(
     session: Session,
-    receiver_user_id: Union[int, None],
+    receiver_user_id: int,
     receiver_account: str,
     sender_user_id: int,
     sender_account: str,
@@ -383,7 +384,7 @@ def index_purchase(
 
 def validate_and_index_purchase(
     session: Session,
-    receiver_user_id: Union[int, None],
+    receiver_user_id: int,
     receiver_account: str,
     sender_user_id: int,
     sender_account: str,
@@ -874,7 +875,7 @@ def process_user_bank_txs() -> None:
 
                 tx_slot2 = tx_value.slot
                 timestamp = float(tx_value.block_time or 0)
-                parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
+                parsed_timestamp = datetime.utcfromtimestamp(timestamp)
 
                 logger.debug(
                     f"index_user_bank.py | parse_user_bank_transaction |\

@@ -208,7 +208,7 @@ def create_user(
             user_metadata,
             params.web3,
             params.challenge_bus,
-            params.action
+            params.action,
         )
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
@@ -270,7 +270,7 @@ def update_user(
         params.metadata,
         params.web3,
         params.challenge_bus,
-        params.action
+        params.action,
     )
 
     updated_metadata, updated_metadata_cid = merge_metadata(
@@ -301,7 +301,7 @@ def update_user_metadata(
     metadata: Dict,
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
-    action
+    action,
 ):
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()

@@ -14,6 +14,7 @@ from solders.transaction import Transaction
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -257,7 +258,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 
         challenge_id, specifier = transfer_instruction
         receiver_index = instruction.accounts[TRANSFER_RECEIVER_ACCOUNT_INDEX]
-        account_keys = tx_message.account_keys
+        account_keys = list(map(lambda key: str(key), tx_message.account_keys))
         receiver_user_bank = account_keys[receiver_index]
         balance_changes = get_solana_tx_token_balance_changes(
             meta=meta, account_keys=account_keys

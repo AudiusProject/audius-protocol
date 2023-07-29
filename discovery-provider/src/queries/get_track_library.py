@@ -10,7 +10,6 @@ from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import Repost
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
-from src.models.tracks.track import Track
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.usdc_purchase import USDCPurchase
 from src.models.users.user import User

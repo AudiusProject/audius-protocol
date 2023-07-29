@@ -184,7 +184,7 @@ def parse_spl_token_transaction(
 
         sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
         receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
-        account_keys = tx_message.account_keys
+        account_keys = list(map(lambda key: str(key), tx_message.account_keys))
         sender_token_account = str(account_keys[sender_idx])
         receiver_token_account = str(account_keys[receiver_idx])
         sender_root_account = get_solana_tx_owner(meta, sender_idx)

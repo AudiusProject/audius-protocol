@@ -21,9 +21,10 @@ from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
+from web3 import Web3
+
 from src import exceptions
 from src.solana.solana_helpers import MEMO_PROGRAM_ID
-from web3 import Web3
 
 from . import multihash
 
@@ -422,7 +423,7 @@ class BalanceChange(TypedDict):
 
 
 def get_solana_tx_token_balance_changes(
-    account_keys: List[Pubkey], meta: UiTransactionStatusMeta
+    account_keys: List[str], meta: UiTransactionStatusMeta
 ):
     """Extracts the pre and post balances and determines change for a solana transaction metadata object"""
     balance_changes: dict[str, BalanceChange] = {}
@@ -442,7 +443,7 @@ def get_solana_tx_token_balance_changes(
         pre_balance = int(pre_balance_dict.ui_token_amount.amount)
         post_balance = int(post_balance_dict.ui_token_amount.amount)
         change = post_balance - pre_balance
-        balance_changes[str(account_key)] = {
+        balance_changes[account_key] = {
             "pre_balance": pre_balance,
             "post_balance": post_balance,
             "change": change,
