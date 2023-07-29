@@ -76,7 +76,7 @@ const messages = {
   timeLeft: 'left',
   played: 'Played',
   generatedWithAi: 'Generated With AI',
-  actionGroupLabel: 'collection actions'
+  actionGroupLabel: 'track actions'
 }
 
 export type GiantTrackTileProps = {

@@ -5,7 +5,7 @@ export default defineConfig({
   defaultCommandTimeout: 10000,
   retries: {
     runMode: 2,
-    openMode: 0,
+    openMode: 0
   },
   e2e: {
     // We've imported your old cypress plugins here.
@@ -13,6 +13,8 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return require('./cypress/plugins/index.ts').default(on, config)
     },
-    baseUrl: 'http://localhost:3001',
+    baseUrl: 'http://localhost:3001'
   },
+  viewportHeight: 800,
+  viewportWidth: 1300
 })
