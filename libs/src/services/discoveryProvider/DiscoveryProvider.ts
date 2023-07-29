@@ -21,6 +21,7 @@ import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
 import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
+import fetch from 'cross-fetch'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2

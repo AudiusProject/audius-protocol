@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { createReadStream } from "fs";
 import { spawn } from "child_process";
 
@@ -6,6 +6,7 @@ import chalk from "chalk";
 import { program } from "commander";
 
 import { initializeAudiusLibs } from "./utils.mjs";
+import { Genre } from "@audius/sdk";
 
 function generateWhiteNoise(duration, outFile) {
   return new Promise((resolve, reject) => {
@@ -80,7 +81,11 @@ program.command("upload-track")
           duration: 60, // TODO: get duration from track file locally
           title: trackTitle,
           tags: tags,
-          genre: genre || `genre ${rand}`,
+          genre:
+            genre ||
+            Genre[
+              Object.keys(Genre)[randomInt(Object.keys(Genre).length - 1)]
+            ],
           mood: mood || `mood ${rand}`,
           credits_splits: "",
           created_at: "",
@@ -92,9 +97,11 @@ program.command("upload-track")
           iswc: null,
           track_segments: [],
           is_premium: premiumConditions !== "",
-          premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : null,
+          premium_conditions: premiumConditions
+            ? JSON.parse(premiumConditions)
+            : null,
           ai_attribution_user_id: null,
-          preview_start_seconds: previewStartSeconds
+          preview_start_seconds: previewStartSeconds,
         },
         () => null
       );
