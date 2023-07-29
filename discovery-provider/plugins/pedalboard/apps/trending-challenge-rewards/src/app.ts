@@ -1,7 +1,7 @@
 import App from "basekit/src/app";
 import { Knex } from "knex";
 import { Ok, Err, Result } from "ts-results";
-import { AudiusLibs } from "@audius/sdk";
+import { AudiusLibs, RewardsAttester } from "@audius/sdk";
 import { SharedData } from "./config";
 import {
   ChallengeDisbursementUserbank,
@@ -296,6 +296,15 @@ const getAllChallenges = async (
 
     if (!dryRun) {
       console.log("submitting")
+      const attester = new RewardsAttester({
+        libs,
+        parallelization: 15,
+        quorumSize: 10,
+        aaoEndpoint: AAOEndpoint,
+        aaoAddress: oracleEthAddress,
+        endpoints,
+        feePayerOverride,
+      })
       const { error } = await rewards.submitAndEvaluate(args);
 
       if (error) {
