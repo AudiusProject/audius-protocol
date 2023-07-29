@@ -21,9 +21,6 @@ describe('Upload Track', () => {
 
     cy.findByRole('button', { name: /continue/i }).click()
 
-    // Gated content prompt
-    cy.findByRole('button', { name: /got it/i }).click()
-
     cy.findByRole('combobox', { name: /pick a genre/i }).click()
     cy.findByRole('option', { name: /rock/i }).click()
 
