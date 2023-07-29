@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Optional
+from typing import Optional, Union
 
 from eth_account.messages import encode_defunct
 from flask import request
@@ -36,6 +36,7 @@ from src.api.v1.helpers import (
     search_parser,
     success_response,
     track_history_parser,
+    user_collections_library_parser,
     user_favorited_tracks_parser,
     user_track_listen_count_route_parser,
     user_tracks_library_parser,
@@ -69,6 +70,11 @@ from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_challenges import get_challenges
+from src.queries.get_collection_library import (
+    CollectionType,
+    GetCollectionLibraryArgs,
+    get_collection_library,
+)
 from src.queries.get_developer_apps import (
     get_developer_apps_by_user,
     get_developer_apps_with_grant_for_user,
@@ -105,6 +111,7 @@ from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
+from src.queries.query_helpers import LimitedSortMethod
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
@@ -751,6 +758,8 @@ class FavoritedTracks(Resource):
 
 
 USER_TRACKS_LIBRARY_ROUTE = "/<string:id>/library/tracks"
+USER_PLAYLISTS_LIBRARY_ROUTE = "/<string:id>/library/playlists"
+USER_ALBUMS_LIBRARY_ROUTE = "/<string:id>/library/albums"
 
 
 @full_ns.route(USER_TRACKS_LIBRARY_ROUTE)
@@ -795,6 +804,74 @@ class UserTracksLibraryFull(Resource):
         library_tracks = get_track_library(get_tracks_args)
         tracks = list(map(extend_activity, library_tracks))
         return success_response(tracks)
+
+
+def get_user_collections(
+    id: str, collection_type: CollectionType, authed_user_id: Optional[int] = None
+):
+    """Fetches albums or playlists from a user's library"""
+    args = user_collections_library_parser.parse_args()
+    decoded_id = decode_with_abort(id, ns)
+    if authed_user_id != decoded_id:
+        full_ns.abort(403)
+        return
+
+    offset = format_offset(args)
+    limit = format_limit(args)
+    query = format_query(args)
+    filter_type = format_library_filter(args)
+    sort_method: Optional[LimitedSortMethod] = args.get("sort_method")
+    sort_direction = format_sort_direction(args)
+
+    get_collection_args = GetCollectionLibraryArgs(
+        user_id=decoded_id,
+        collection_type=collection_type,
+        limit=limit,
+        offset=offset,
+        query=query,
+        filter_type=filter_type,
+        sort_direction=sort_direction,
+        sort_method=sort_method,
+    )
+    library_collections = get_collection_library(get_collection_args)
+    collections = list(map(extend_activity, library_collections))
+    return success_response(collections)
+
+
+@full_ns.route(USER_PLAYLISTS_LIBRARY_ROUTE)
+class UserPlaylistsLibraryFull(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="Get User Library Playlists",
+        description="",
+        params={"id": "A user ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_collections_library_parser)
+    @full_ns.marshal_with(favorites_full_response)
+    @auth_middleware()
+    @cache(ttl_sec=5)
+    def get(self, id: str, authed_user_id: Optional[int] = None):
+        """Fetch a user's full library playlists."""
+        return get_user_collections(id, CollectionType.playlist, authed_user_id)
+
+
+@full_ns.route(USER_ALBUMS_LIBRARY_ROUTE)
+class UserAlbumsLibraryFull(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="Get User Library Albums",
+        description="",
+        params={"id": "A user ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_collections_library_parser)
+    @full_ns.marshal_with(favorites_full_response)
+    @auth_middleware()
+    @cache(ttl_sec=5)
+    def get(self, id: str, authed_user_id: Optional[int] = None):
+        """Fetch a user's full library playlists."""
+        return get_user_collections(id, CollectionType.album, authed_user_id)
 
 
 USER_FAVORITED_TRACKS_ROUTE = "/<string:id>/favorites/tracks"

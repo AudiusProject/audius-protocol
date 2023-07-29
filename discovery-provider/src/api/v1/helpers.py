@@ -10,7 +10,12 @@ from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
-from src.queries.query_helpers import LibraryFilterType, SortDirection, SortMethod
+from src.queries.query_helpers import (
+    LibraryFilterType,
+    LimitedSortMethod,
+    SortDirection,
+    SortMethod,
+)
 from src.queries.reactions import ReactionResponse
 from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
@@ -584,12 +589,41 @@ user_tracks_library_parser.remove_argument("current_user")
 user_tracks_library_parser.add_argument(
     "type",
     required=False,
-    description="The type of tracks to return: favorited, reposted, purchased, or all. Defaults to favorite",
+    description="The type of entity to return: favorited, reposted, purchased, or all. Defaults to favorite",
     type=str,
     choices=LibraryFilterType._member_names_,
     default=LibraryFilterType.favorite,
 )
 add_auth_headers_to_parser(user_tracks_library_parser)
+
+user_collections_library_parser = pagination_with_current_user_parser.copy()
+user_collections_library_parser.remove_argument("current_user")
+user_collections_library_parser.add_argument(
+    "query", required=False, description="The filter query"
+)
+user_collections_library_parser.add_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=LimitedSortMethod._member_names_,
+)
+user_collections_library_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+user_collections_library_parser.add_argument(
+    "type",
+    required=False,
+    description="The type of entity to return: favorited, reposted, purchased, or all. Defaults to favorite",
+    type=str,
+    choices=LibraryFilterType._member_names_,
+    default=LibraryFilterType.favorite,
+)
+add_auth_headers_to_parser(user_collections_library_parser)
 
 user_track_listen_count_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
