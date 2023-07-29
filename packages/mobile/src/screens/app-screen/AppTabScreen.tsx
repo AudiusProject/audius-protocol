@@ -13,6 +13,7 @@ import { FeatureFlags } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { StripeOnrampEmbed } from 'app/components/stripe-onramp-embed'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
@@ -111,6 +112,7 @@ export type AppTabScreenParamList = {
   Chat: {
     chatId: string
   }
+  StripeOnrampEmbed: { clientSecret: string }
 }
 
 const forFade = ({ current }) => ({
@@ -335,6 +337,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
           options={{ fullScreenGestureEnabled: false }}
         />
       </Stack.Group>
+      <Stack.Screen name='StripeOnrampEmbed' component={StripeOnrampEmbed} />
     </Stack.Navigator>
   )
 }

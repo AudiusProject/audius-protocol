@@ -75,6 +75,8 @@
     "@snapchat/snap-kit-react-native": "0.4.0",
     "@solana-mobile/mobile-wallet-adapter-protocol": "0.9.9",
     "@solana-mobile/mobile-wallet-adapter-protocol-web3js": "0.9.9",
+    "@stripe/crypto": "0.0.4",
+    "@stripe/stripe-js": "1.54.1",
     "@svgr/core": "5.5.0",
     "@walletconnect/react-native-dapp": "1.8.0",
     "array.prototype.flat": "1.2.5",
