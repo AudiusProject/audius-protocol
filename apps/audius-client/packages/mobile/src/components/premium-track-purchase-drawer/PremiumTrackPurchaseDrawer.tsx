@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import {
   cacheTracksSelectors,
   formatUSDCWeiToUSDString,
@@ -9,13 +7,15 @@ import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
-import { LockedStatusBadge, Text, Button } from 'app/components/core'
+import { LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { makeStyles, flexRowCentered } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 import { TrackDetailsTile } from '../track-details-tile'
+
+import { StripePurchaseConfirmationButton } from './StripePurchaseConfirmationButton'
 
 const { getTrack } = cacheTracksSelectors
 
@@ -31,8 +31,7 @@ const messages = {
   price: (price: string) => `$${price}`,
   payToUnlock: 'Pay-To-Unlock',
   disclaimer:
-    'By clicking on "Buy", you agree to our Terms of Use. Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.',
-  buy: (price: string) => `Buy $${price}`
+    'By clicking on "Buy", you agree to our Terms of Use. Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -95,14 +94,10 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
-  const { neutralLight2, specialLightGreen1 } = useThemeColors()
+  const neutralLight2 = useColor('neutralLight2')
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
   const track = useSelector((state) => getTrack(state, { id: trackId }))
-
-  const handleConfirmPress = useCallback(() => {
-    console.log('buy button pressed')
-  }, [])
 
   const { premium_conditions: premiumConditions } = track ?? {}
 
@@ -153,14 +148,7 @@ export const PremiumTrackPurchaseDrawer = () => {
           </View>
           <Text>{messages.disclaimer}</Text>
         </View>
-        <Button
-          title={messages.buy(price)}
-          onPress={handleConfirmPress}
-          variant={'primary'}
-          size='large'
-          color={specialLightGreen1}
-          fullWidth
-        />
+        <StripePurchaseConfirmationButton price={price} />
       </View>
     </NativeDrawer>
   )
