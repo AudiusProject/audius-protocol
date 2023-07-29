@@ -12,6 +12,7 @@ import (
 	"image/png"
 	"io"
 	"log"
+	"mediorum/cidutil"
 	"mediorum/crudr"
 	"mime/multipart"
 	"os"
@@ -238,7 +239,8 @@ func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
 		return nil, err
 	}
 
-	blob, err := ss.bucket.NewReader(context.Background(), fileHash, nil)
+	key := cidutil.ShardCID(fileHash)
+	blob, err := ss.bucket.NewReader(context.Background(), key, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +367,7 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 
 	// replicate to peers
 	// attempt to forward to an assigned node
-	resultHash, err := computeFileCID(dest)
+	resultHash, err := cidutil.ComputeFileCID(dest)
 	if err != nil {
 		return onError(err, upload.Status, "computeFileCID")
 	}
@@ -432,7 +434,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 
 	// replicate to peers
 	// attempt to forward to an assigned node
-	resultHash, err := computeFileCID(dest)
+	resultHash, err := cidutil.ComputeFileCID(dest)
 	if err != nil {
 		return onError(err, upload.Status, "computeFileCID")
 	}
@@ -487,6 +489,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		return onError(err, upload.Status, "getting file")
 	}
 	defer temp.Close()
+	defer os.Remove(temp.Name())
 
 	switch JobTemplate(upload.Template) {
 	case JobTemplateImgSquare:
@@ -495,7 +498,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetBox := range squares {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			resultHash, err := computeFileCID(out)
+			resultHash, err := cidutil.ComputeFileCID(out)
 			if err != nil {
 				return onError(err, upload.Status, "computeFileCID")
 			}
@@ -515,7 +518,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetWidth := range widths {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			resultHash, err := computeFileCID(out)
+			resultHash, err := cidutil.ComputeFileCID(out)
 			if err != nil {
 				return onError(err, upload.Status, "computeFileCID")
 			}

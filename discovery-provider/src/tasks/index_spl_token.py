@@ -42,7 +42,7 @@ from src.utils.config import shared_config
 from src.utils.helpers import (
     get_account_index,
     get_solana_tx_owner,
-    get_solana_tx_token_balances,
+    get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
 )
@@ -189,15 +189,17 @@ def parse_spl_token_transaction(
         receiver_token_account = str(account_keys[receiver_idx])
         sender_root_account = get_solana_tx_owner(meta, sender_idx)
         receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
-        prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
+        balance_changes = get_solana_tx_token_balance_changes(
+            meta=meta, account_keys=account_keys
+        )
 
         # Balance is expected to change if there is a transfer instruction.
-        if postbalance == -1 or prebalance == -1:
+        if receiver_token_account not in balance_changes:
             logger.error(
                 f"index_spl_token.py | {tx_sig} error while parsing pre and post balances"
             )
             return None
-        if postbalance - prebalance == 0:
+        if balance_changes[receiver_token_account]["change"] == 0:
             logger.error(f"index_spl_token.py | {tx_sig} no balance change found")
             return None
 
@@ -209,8 +211,8 @@ def parse_spl_token_transaction(
                 float(result.block_time or 0)
             ),
             "vendor": vendor,
-            "prebalance": prebalance,
-            "postbalance": postbalance,
+            "prebalance": balance_changes[receiver_token_account]["pre_balance"],
+            "postbalance": balance_changes[receiver_token_account]["post_balance"],
             "sender_wallet": sender_root_account,
             "root_accounts": [sender_root_account, receiver_root_account],
             "token_accounts": [sender_token_account, receiver_token_account],

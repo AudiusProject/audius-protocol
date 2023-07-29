@@ -7,8 +7,7 @@ from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
-
+from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -246,9 +245,7 @@ class BulkTracks(Resource):
         200, "Success", tracks_response
     )  # Manually set the expected response to be a list of tracks using using @ns.response
     @ns.expect(track_slug_parser)
-    @marshal_with(
-        track_response
-    )  # Don't document using the marshaller - required for backwards compat supporting non-list responses
+    @ns.response(200, "Success", tracks_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_slug_parser.parse_args()
@@ -297,11 +294,15 @@ class BulkTracks(Resource):
                 abort_not_found(ids, ns)
 
         # For backwards compatibility, the old handle/slug route returned an object, not an array
+        # Manually handle marshalling to accomodate while also allowing new SDK to have array as return type
         if handle and slug:
             tracks = extend_track(tracks[0])
+            response, status = success_response(tracks)
+            return marshal(response, track_response), status
         else:
             tracks = [extend_track(track) for track in tracks]
-        return success_response(tracks)
+            response, status = success_response(tracks)
+            return marshal(response, tracks_response), status
 
 
 @full_ns.route("")
@@ -312,7 +313,7 @@ class FullBulkTracks(Resource):
         description="""Gets a list of tracks using their IDs or permalinks""",
     )
     @full_ns.expect(full_track_route_parser)
-    @full_ns.marshal_with(full_track_response)
+    @full_ns.response(200, "Success", full_tracks_response)
     @cache(ttl_sec=5)
     def get(self):
         args = full_track_route_parser.parse_args()
@@ -362,11 +363,15 @@ class FullBulkTracks(Resource):
                 abort_not_found(ids, full_ns)
 
         # For backwards compatibility, the old handle/slug route returned an object, not an array
+        # Manually handle marshalling to accomodate while also allowing new SDK to have array as return type
         if handle and slug:
             tracks = extend_track(tracks[0])
+            response, status = success_response(tracks)
+            return marshal(response, full_track_response), status
         else:
             tracks = [extend_track(track) for track in tracks]
-        return success_response(tracks)
+            response, status = success_response(tracks)
+            return marshal(response, full_tracks_response), status
 
 
 # Stream

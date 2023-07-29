@@ -17,6 +17,7 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     validate_signer,
 )
+from src.tasks.metadata import immutable_playlist_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 
@@ -386,14 +387,17 @@ def process_playlist_data_event(
     for key, _ in playlist_record_attributes.items():
         # Update the playlist_record when the corresponding field exists
         # in playlist_metadata
-        if key in playlist_metadata:
+        if key == "playlist_contents":
+            if not playlist_metadata.get(key) or playlist_record.is_album:
+                continue
+            playlist_record.playlist_contents = process_playlist_contents(
+                playlist_record, playlist_metadata, block_integer_time
+            )
+        elif key in playlist_metadata:
+            if key in immutable_playlist_fields and params.action == Action.UPDATE:
+                # skip fields that cannot be modified after creation
+                continue
             setattr(playlist_record, key, playlist_metadata[key])
-
-    if "playlist_contents" in playlist_metadata:
-        playlist_record.playlist_contents = process_playlist_contents(
-            playlist_record, playlist_metadata, block_integer_time
-        )
-
     playlist_record.last_added_to = None
     track_ids = playlist_record.playlist_contents["track_ids"]
     if track_ids:

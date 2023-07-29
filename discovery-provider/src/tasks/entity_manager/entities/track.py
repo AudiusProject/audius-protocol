@@ -1,5 +1,8 @@
-from typing import Dict
+from datetime import datetime
+from typing import Dict, Union
 
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import null
 
 from src.challenges.challenge_event import ChallengeEvent
@@ -8,6 +11,7 @@ from src.exceptions import IndexingValidationError
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
@@ -19,9 +23,13 @@ from src.tasks.entity_manager.utils import (
     copy_record,
     validate_signer,
 )
+from src.tasks.metadata import immutable_track_fields
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
+from src.utils.structured_logger import StructuredLogger
+
+logger = StructuredLogger(__name__)
 
 
 def update_stems_table(session, track_record, track_metadata):
@@ -67,6 +75,71 @@ def update_remixes_table(session, track_record, track_metadata):
                         parent_track_id=parent_track_id, child_track_id=child_track_id
                     )
                     session.add(remix)
+
+
+def update_track_price_history(
+    session: Session,
+    track_record: Track,
+    track_metadata,
+    blocknumber: int,
+    timestamp: datetime,
+):
+    """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
+    new_record = None
+    if track_metadata.get("premium_conditions", None) is not None:
+        premium_conditions = track_metadata["premium_conditions"]
+        if "usdc_purchase" in premium_conditions:
+            usdc_purchase = premium_conditions["usdc_purchase"]
+            new_record = TrackPriceHistory()
+            new_record.track_id = track_record.track_id
+            new_record.block_timestamp = timestamp
+            new_record.blocknumber = blocknumber
+            new_record.splits = {}
+            if "price" in usdc_purchase:
+                price = usdc_purchase["price"]
+                if isinstance(price, int):
+                    new_record.total_price_cents = price
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase premium conditions 'price'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Price missing from usdc_purchase premium conditions"
+                )
+
+            if "splits" in usdc_purchase:
+                splits = usdc_purchase["splits"]
+                # TODO: better validation of splits
+                if isinstance(splits, dict):
+                    new_record.splits = splits
+                else:
+                    raise IndexingValidationError(
+                        "Invalid type of usdc_purchase premium conditions 'splits'"
+                    )
+            else:
+                raise IndexingValidationError(
+                    "Splits missing from usdc_purchase premium conditions"
+                )
+    if new_record:
+        old_record: Union[TrackPriceHistory, None] = (
+            session.query(TrackPriceHistory)
+            .filter(TrackPriceHistory.track_id == track_record.track_id)
+            .order_by(desc(TrackPriceHistory.block_timestamp))
+            .first()
+        )
+        if (
+            not old_record
+            or old_record.block_timestamp != new_record.block_timestamp
+            and (
+                old_record.total_price_cents != new_record.total_price_cents
+                or old_record.splits != new_record.splits
+            )
+        ):
+            logger.debug(
+                f"track.py | Updating price history for {track_record.track_id}. Old record={old_record} New record={new_record}"
+            )
+            session.add(new_record)
 
 
 @helpers.time_method
@@ -199,6 +272,9 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
             if key in track_metadata:
+                if key in immutable_track_fields and action == Action.UPDATE:
+                    # skip fields that cannot be modified after creation
+                    continue
                 setattr(track_record, key, track_metadata[key])
 
     return track_record
@@ -318,6 +394,13 @@ def create_track(params: ManageEntityParameters):
 
     update_stems_table(params.session, track_record, params.metadata)
     update_remixes_table(params.session, track_record, params.metadata)
+    update_track_price_history(
+        params.session,
+        track_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
+    )
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
@@ -346,6 +429,13 @@ def update_track(params: ManageEntityParameters):
 
     update_track_routes_table(
         params.session, track_record, params.metadata, params.pending_track_routes
+    )
+    update_track_price_history(
+        params.session,
+        track_record,
+        params.metadata,
+        params.block_number,
+        params.block_datetime,
     )
     update_track_record(params, track_record, params.metadata, handle)
     update_remixes_table(params.session, track_record, params.metadata)

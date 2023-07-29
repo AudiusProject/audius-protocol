@@ -9,19 +9,21 @@ import time
 import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
-from typing import List, Optional, cast
+from typing import List, Optional, TypedDict, cast
 
+import base58
 import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
 from solders.instruction import CompiledInstruction
 from solders.message import Message
+from solders.pubkey import Pubkey
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
-from web3 import Web3
-
 from src import exceptions
+from src.solana.solana_helpers import MEMO_PROGRAM_ID
+from web3 import Web3
 
 from . import multihash
 
@@ -413,31 +415,55 @@ def split_list(list, n):
         yield list[i : i + n]
 
 
-def get_solana_tx_token_balances(meta: UiTransactionStatusMeta, idx: int):
-    """Extracts the pre and post balances for a given index from a solana transaction
-    metadata object
-    """
-    pre_balance_dict = next(
-        (
-            balance
-            for balance in (meta.pre_token_balances or [])
-            if balance.account_index == idx
-        ),
-        None,
-    )
-    post_balance_dict = next(
-        (
-            balance
-            for balance in (meta.post_token_balances or [])
-            if balance.account_index == idx
-        ),
-        None,
-    )
-    if pre_balance_dict is None or post_balance_dict is None:
-        return (-1, -1)
-    pre_balance = int(pre_balance_dict.ui_token_amount.amount)
-    post_balance = int(post_balance_dict.ui_token_amount.amount)
-    return (pre_balance, post_balance)
+class BalanceChange(TypedDict):
+    pre_balance: int
+    post_balance: int
+    change: int
+
+
+def get_solana_tx_token_balance_changes(
+    account_keys: List[Pubkey], meta: UiTransactionStatusMeta
+):
+    """Extracts the pre and post balances and determines change for a solana transaction metadata object"""
+    balance_changes: dict[str, BalanceChange] = {}
+    for pre_balance_dict in meta.pre_token_balances or []:
+        post_balance_dict = next(
+            (
+                balance
+                for balance in (meta.post_token_balances or [])
+                if balance.account_index == pre_balance_dict.account_index
+            ),
+            None,
+        )
+        if post_balance_dict is None:
+            continue
+
+        account_key = account_keys[pre_balance_dict.account_index]
+        pre_balance = int(pre_balance_dict.ui_token_amount.amount)
+        post_balance = int(post_balance_dict.ui_token_amount.amount)
+        change = post_balance - pre_balance
+        balance_changes[str(account_key)] = {
+            "pre_balance": pre_balance,
+            "post_balance": post_balance,
+            "change": change,
+        }
+    return balance_changes
+
+
+def decode_all_solana_memos(tx_message: Message):
+    """Finds all memo instructions in a transaction and base58 decodes their instruction data as a string"""
+    try:
+        memo_program_index = tx_message.account_keys.index(
+            Pubkey.from_string(MEMO_PROGRAM_ID)
+        )
+        return [
+            base58.b58decode(instruction.data).decode("utf8")
+            for instruction in tx_message.instructions
+            if instruction.program_id_index == memo_program_index
+        ]
+    except:
+        # Do nothing, there's no memos
+        return []
 
 
 def get_solana_tx_owner(meta: UiTransactionStatusMeta, idx: int) -> str:

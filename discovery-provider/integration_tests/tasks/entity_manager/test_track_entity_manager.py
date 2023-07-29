@@ -2,9 +2,6 @@ import json
 import logging  # pylint: disable=C0302
 from typing import List
 
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -19,6 +16,8 @@ from src.tasks.entity_manager.utils import (
     TRACK_ID_OFFSET,
 )
 from src.utils.db_session import get_db
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +128,7 @@ def test_index_valid_track(app, mocker):
             "isrc": "",
             "iswc": "",
             "is_playlist_upload": True,
+            "duration": 200,
         },
         "QmCreateTrack3": {
             "owner_id": 1,
@@ -209,7 +209,7 @@ def test_index_valid_track(app, mocker):
             "is_playlist_upload": False,
         },
         "QmUpdateTrack1": {"title": "track 1 2", "description": "updated description"},
-        "QmUpdateTrack2": {"duration": 200, "is_unlisted": False},
+        "QmUpdateTrack2": {"is_unlisted": False},
     }
 
     create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
@@ -517,12 +517,14 @@ def test_index_invalid_tracks(app, mocker):
             "ai_attribution_user_id": 2,
         },
         "QmInvalidUnlistTrack1Update": {"is_unlisted": True},
+        "InvalidTrackIdUpdate": {"track_id": 1234, "bogus_field": "bogus"},
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
     invalid_unlist_track1_json = json.dumps(
         test_metadata["QmInvalidUnlistTrack1Update"]
     )
+    invalid_track_id_update = json.dumps(test_metadata["InvalidTrackIdUpdate"])
 
     tx_receipts = {
         # invalid create
@@ -723,6 +725,20 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
+        "InvalidTrackIdUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "InvalidTrackIdUpdate", "data": {invalid_track_id_update}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # invalid deletes
         "DeleteTrackInvalidSigner": [
             {
@@ -876,7 +892,11 @@ def test_index_invalid_tracks(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 1  # no new tracks indexed
+        assert len(all_tracks) == 2
+        current_track: List[Track] = (
+            session.query(Track).filter(Track.is_current == True).first()
+        )
+        assert current_track.track_id == TRACK_ID_OFFSET
 
 
 def test_invalid_track_description(app, mocker):

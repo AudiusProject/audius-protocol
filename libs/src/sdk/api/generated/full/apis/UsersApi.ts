@@ -212,6 +212,19 @@ export interface GetUserByHandleRequest {
     userId?: string;
 }
 
+export interface GetUserLibraryTracksRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    query?: string;
+    sortMethod?: GetUserLibraryTracksSortMethodEnum;
+    sortDirection?: GetUserLibraryTracksSortDirectionEnum;
+    type?: GetUserLibraryTracksTypeEnum;
+}
+
 export interface GetUserReplicaSetRequest {
     id: string;
     userId?: string;
@@ -232,7 +245,7 @@ export interface GetUsersTrackHistoryRequest {
  */
 export class UsersApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * All users that subscribe to the provided users
      */
     async bulkGetSubscribersRaw(requestParameters: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
@@ -266,7 +279,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get all users that subscribe to the users listed in the JSON request
      */
     async bulkGetSubscribersViaJSONRequestRaw(requestParameters: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
@@ -300,7 +313,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
     async getAIAttributedTracksByUserHandleRaw(requestParameters: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -362,7 +375,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a user\'s favorite tracks
      */
     async getFavoritesRaw(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
@@ -416,7 +429,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * All users that follow the provided user
      */
     async getFollowersRaw(requestParameters: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullFollowersResponse>> {
@@ -458,7 +471,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * All users that the provided user follows
      */
     async getFollowingRaw(requestParameters: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
@@ -500,7 +513,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(requestParameters: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
@@ -542,7 +555,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the given user\'s reposts
      */
     async getRepostsRaw(requestParameters: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
@@ -584,7 +597,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the user\'s reposts by the user handle
      */
     async getRepostsByHandleRaw(requestParameters: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
@@ -626,7 +639,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * All users that subscribe to the provided user
      */
     async getSubscribersRaw(requestParameters: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullSubscribersResponse>> {
@@ -668,7 +681,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the specified supporter of the given user
      */
     async getSupporterRaw(requestParameters: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporter>> {
@@ -706,7 +719,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the supporters of the given user
      */
     async getSupportersRaw(requestParameters: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporters>> {
@@ -748,7 +761,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the support from the given user to the supported user
      */
     async getSupportingRaw(requestParameters: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
@@ -786,7 +799,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the users that the given user supports
      */
     async getSupportingsRaw(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
@@ -828,7 +841,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get the Top Users having at least one track by follower count
      */
     async getTopUsersRaw(requestParameters: GetTopUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopUsersResponseFull>> {
@@ -866,7 +879,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get the Top Users for a Given Genre
      */
     async getTopUsersInGenreRaw(requestParameters: GetTopUsersInGenreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopGenreUsersResponseFull>> {
@@ -904,7 +917,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the tracks created by a user using their user ID
      */
     async getTracksByUserRaw(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -966,7 +979,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets the tracks created by a user using the user\'s handle
      */
     async getTracksByUserHandleRaw(requestParameters: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -1028,7 +1041,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a single user by their user ID
      */
     async getUserRaw(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
@@ -1062,7 +1075,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets a single user by their handle
      */
     async getUserByHandleRaw(requestParameters: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
@@ -1096,7 +1109,83 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /** @hidden
+     * Gets a user\'s saved/reposted/purchased/all tracks
+     * Fetch a user\'s full library tracks
+     */
+    async getUserLibraryTracksRaw(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserLibraryTracks.');
+        }
+
+        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
+        }
+
+        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.userId !== undefined) {
+            queryParameters['user_id'] = requestParameters.userId;
+        }
+
+        if (requestParameters.query !== undefined) {
+            queryParameters['query'] = requestParameters.query;
+        }
+
+        if (requestParameters.sortMethod !== undefined) {
+            queryParameters['sort_method'] = requestParameters.sortMethod;
+        }
+
+        if (requestParameters.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        }
+
+        if (requestParameters.type !== undefined) {
+            queryParameters['type'] = requestParameters.type;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        }
+
+        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FavoritesResponseFullFromJSON(jsonValue));
+    }
+
     /**
+     * Gets a user\'s saved/reposted/purchased/all tracks
+     * Fetch a user\'s full library tracks
+     */
+    async getUserLibraryTracks(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+        const response = await this.getUserLibraryTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
      * Gets the user\'s replica set
      */
     async getUserReplicaSetRaw(requestParameters: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
@@ -1130,7 +1219,7 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Get the tracks the user recently listened to.
      */
     async getUsersTrackHistoryRaw(requestParameters: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponseFull>> {
@@ -1333,6 +1422,40 @@ export const GetTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandleFilterTracksEnum[keyof typeof GetTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksSortMethodEnum = {
+    Title: 'title',
+    ArtistName: 'artist_name',
+    ReleaseDate: 'release_date',
+    LastListenDate: 'last_listen_date',
+    AddedDate: 'added_date',
+    Length: 'length',
+    Plays: 'plays',
+    Reposts: 'reposts',
+    Saves: 'saves',
+    MostListensByUser: 'most_listens_by_user'
+} as const;
+export type GetUserLibraryTracksSortMethodEnum = typeof GetUserLibraryTracksSortMethodEnum[keyof typeof GetUserLibraryTracksSortMethodEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUserLibraryTracksSortDirectionEnum = typeof GetUserLibraryTracksSortDirectionEnum[keyof typeof GetUserLibraryTracksSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryTracksTypeEnum = {
+    All: 'all',
+    Repost: 'repost',
+    Favorite: 'favorite',
+    Purchase: 'purchase'
+} as const;
+export type GetUserLibraryTracksTypeEnum = typeof GetUserLibraryTracksTypeEnum[keyof typeof GetUserLibraryTracksTypeEnum];
 /**
  * @export
  */

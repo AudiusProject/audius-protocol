@@ -2,12 +2,13 @@ import solanaWeb3, {
   Connection,
   Keypair,
   PublicKey,
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL,
+  TransactionInstruction
 } from '@solana/web3.js'
-import type BN from 'bn.js'
+import BN from 'bn.js'
 import splToken from '@solana/spl-token'
 
-import { transferWAudioBalance } from './transfer'
+import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import {
   createAssociatedTokenAccount,
@@ -59,6 +60,10 @@ type CreateSenderParams = Omit<
 > & { feePayerOverride: Nullable<string> }
 
 type MintName = 'usdc' | 'audio'
+
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+)
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -463,6 +468,81 @@ export class SolanaWeb3Manager {
       connection: this.connection,
       mintKey: this.mints.audio,
       transactionHandler: this.transactionHandler
+    })
+  }
+
+  /**
+   * Purchases USDC gated content
+   * @param params.id the id of the content, eg. the track ID
+   * @param params.type the type of the content, eg. "track"
+   * @param params.blocknumber the blocknumber the content was last updated
+   * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @returns the transaction signature and/or an error
+   */
+  async purchaseContent({
+    id,
+    type,
+    blocknumber,
+    splits
+  }: {
+    id: number
+    type: 'track'
+    splits: Record<string, number | BN>
+    blocknumber: number
+  }) {
+    if (!this.web3Manager) {
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
+    }
+    if (Object.values(splits).length !== 1) {
+      throw new Error(
+        'Purchasing content only supports a single split. Specifying more splits coming soon!'
+      )
+    }
+
+    const totalAmount = Object.values(splits).reduce<BN>(
+      (sum, split) => (split instanceof BN ? sum.add(split) : sum.addn(split)),
+      new BN(0)
+    )
+
+    const senderEthAddress = this.web3Manager.getWalletAddress()
+    const senderSolanaAddress = await getBankAccountAddress(
+      senderEthAddress,
+      this.claimableTokenPDAs.usdc,
+      this.solanaTokenKey
+    )
+
+    const instructions = await createTransferInstructions({
+      amount: totalAmount,
+      feePayerKey: this.feePayerKey,
+      senderEthAddress,
+      senderEthPrivateKey:
+        this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
+      senderSolanaAddress,
+      recipientSolanaAddress: Object.keys(splits)[0]!,
+      claimableTokenPDA: this.claimableTokenPDAs.usdc,
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      mintKey: this.mints.usdc
+    })
+
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: new PublicKey(this.feePayerKey),
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(`${type}:${id}:${blocknumber}`)
+    })
+    return await this.transactionHandler.handleTransaction({
+      instructions: [...instructions, memoInstruction],
+      skipPreflight: true,
+      feePayerOverride: this.feePayerKey
     })
   }
 

@@ -6,6 +6,7 @@ import (
 	"mediorum/ddl"
 	"time"
 
+	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -61,7 +62,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr) {
+func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Blob{}, &Upload{})
@@ -75,7 +76,7 @@ func dbMigrate(crud *crudr.Crudr) {
 	sqlDb, _ := crud.DB.DB()
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb)
+	ddl.Migrate(sqlDb, bucket)
 
 	slog.Info("db: migrate done")
 

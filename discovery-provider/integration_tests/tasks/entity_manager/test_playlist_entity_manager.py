@@ -4,9 +4,6 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -18,6 +15,8 @@ from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -677,12 +676,19 @@ def test_index_invalid_playlists(app, mocker):
     with app.app_context():
         db = get_db()
         web3 = Web3()
-        update_task = UpdateTask(web3, None)
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
+        update_task = UpdateTask(web3, challenge_event_bus)
 
-    private_metadata = {
+    test_metadata = {
         "UpdatePlaylistInvalidPrivate": {"is_private": True},
+        "AlbumTracklistUpdate": {
+            "playlist_contents": {"track_ids": [{"track": 1, "time": 1}]}
+        },
+        "UpdatePlaylistInvalidAlbum": {"is_album": True},
     }
-    private_metadata = json.dumps(private_metadata["UpdatePlaylistInvalidPrivate"])
+    private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
+    album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
+    album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
 
     tx_receipts = {
         # invalid create
@@ -799,6 +805,34 @@ def test_index_invalid_playlists(app, mocker):
                 )
             },
         ],
+        "UpdateAlbumTracklistUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "AlbumTracklistUpdate", "data": {album_tracklist_update_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            }
+        ],
+        "UpdatePlaylistInvalidAlbum": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "UpdatePlaylistInvalidAlbum", "data": {album_metadata}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # invalid deletes
         "DeletePlaylistInvalidSigner": [
             {
@@ -865,6 +899,11 @@ def test_index_invalid_playlists(app, mocker):
         ],
         "playlists": [
             {"playlist_id": PLAYLIST_ID_OFFSET, "playlist_owner_id": 1},
+            {
+                "playlist_id": PLAYLIST_ID_OFFSET + 1,
+                "playlist_owner_id": 1,
+                "is_album": True,
+            },
         ],
     }
     populate_mock_db(db, entities)
@@ -881,9 +920,30 @@ def test_index_invalid_playlists(app, mocker):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 1  # no new playlists indexed
-        assert all_playlists[0].is_current == True
-        assert all_playlists[0].is_private == False
+        assert len(all_playlists) == 4
+
+        current_playlist: Playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET
+            )
+            .first()
+        )
+        assert current_playlist.is_current == True
+        assert current_playlist.is_private == False
+        assert current_playlist.is_album == False
+
+        current_album: Playlist = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1,
+            )
+            .first()
+        )
+        assert current_album.is_current == True
+        assert current_album.is_album == True
+        assert current_album.playlist_contents == {"track_ids": []}
 
 
 def test_invalid_playlist_description(app, mocker):
@@ -937,6 +997,9 @@ def test_invalid_playlist_description(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+        "playlist": [
+            {"playlist_id": 1, "playlist_owner_id": 1, "is_album": True},
         ],
     }
     populate_mock_db(db, entities)

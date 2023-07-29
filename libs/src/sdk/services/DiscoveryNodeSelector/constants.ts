@@ -1,4 +1,5 @@
 import { productionConfig } from '../../config'
+import { Logger } from '../Logger'
 import type { DiscoveryNodeSelectorServiceConfigInternal } from './types'
 
 /**
@@ -20,5 +21,6 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
       maxSlotDiffPlays: null,
       maxBlockDiff: 15
     },
-    bootstrapServices: productionConfig.discoveryNodes
+    bootstrapServices: productionConfig.discoveryNodes,
+    logger: new Logger()
   }

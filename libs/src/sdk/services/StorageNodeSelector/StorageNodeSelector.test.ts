@@ -7,6 +7,7 @@ import { setupServer } from 'msw/node'
 
 import type { AuthService } from '../Auth/types'
 import type { EIP712TypedData } from 'eth-sig-util'
+import { Logger } from '../Logger'
 
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',
@@ -39,6 +40,7 @@ class MockAuth implements AuthService {
 }
 
 const auth = new MockAuth()
+const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
 })
@@ -98,7 +100,8 @@ describe('StorageNodeSelector', () => {
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
       auth,
-      discoveryNodeSelector
+      discoveryNodeSelector,
+      logger
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
@@ -117,7 +120,8 @@ describe('StorageNodeSelector', () => {
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
       auth,
-      discoveryNodeSelector
+      discoveryNodeSelector,
+      logger
     })
 
     expect(await storageNodeSelector.getSelectedNode()).toEqual(
@@ -135,7 +139,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      auth
+      auth,
+      logger
     })
 
     await waitForExpect(async () => {
@@ -156,7 +161,8 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      auth
+      auth,
+      logger
     })
 
     await waitForExpect(async () => {
@@ -173,7 +179,8 @@ describe('StorageNodeSelector', () => {
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
       auth,
-      discoveryNodeSelector
+      discoveryNodeSelector,
+      logger
     })
 
     expect(await storageNodeSelector.getNodes(cid)).toEqual([
