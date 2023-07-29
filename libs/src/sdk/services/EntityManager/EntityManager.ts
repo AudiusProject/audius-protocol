@@ -19,6 +19,7 @@ import {
 import {
   BlockConfirmation,
   EntityManagerConfig,
+  EntityManagerConfigInternal,
   EntityManagerService,
   ManageEntityOptions
 } from './types'
@@ -28,7 +29,7 @@ export class EntityManager implements EntityManagerService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private readonly config: EntityManagerConfig
+  private readonly config: EntityManagerConfigInternal
 
   private readonly contract: Contract
   private readonly web3: Web3Type

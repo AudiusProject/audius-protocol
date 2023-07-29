@@ -7,14 +7,27 @@ import (
 )
 
 var (
-	v0CID = "QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22"
-	v1CID = "baeaaaiqsecffzabbj7utfkkmywbhlls46twtaq3fbvpbozvugl4bqszfru7u2"
-	uuid  = "FKFFJMUVC2JJKRZLS64KM5M7AI3HJCWJ"
+	v0CID         = "QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22"
+	v0CIDMigrated = "QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22/150x150.jpg"
+	v1CID         = "baeaaaiqsecffzabbj7utfkkmywbhlls46twtaq3fbvpbozvugl4bqszfru7u2"
+	uuid          = "FKFFJMUVC2JJKRZLS64KM5M7AI3HJCWJ"
 )
 
 func TestIsLegacyCID(t *testing.T) {
 	if !IsLegacyCID(v0CID) {
 		t.Errorf("IsLegacyCID failed for v0 CID")
+	}
+
+	if !IsLegacyCIDStrict(v0CID) {
+		t.Errorf("IsLegacyCIDStrict failed for v0 CID")
+	}
+
+	if !IsLegacyCID(v0CIDMigrated) {
+		t.Errorf("IsLegacyCID failed for migrated v0 CID")
+	}
+
+	if IsLegacyCIDStrict(v0CIDMigrated) {
+		t.Errorf("IsLegacyCIDStrict failed for migrated v0 CID")
 	}
 
 	if IsLegacyCID(v1CID) {
