@@ -59,6 +59,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     FeatureFlags.PLAYLIST_UPDATES_POST_QA
   )
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   // Retrieve tracks with the the collection so we confirm with the
@@ -95,10 +96,16 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     action.trackId,
     `collection:${action.playlistId}`
   )
+  const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
+  const currentBlock = (yield* call(
+    [web3.eth, 'getBlock'],
+    currentBlockNumber
+  )) as { timestamp: number }
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({
       track: action.trackId,
+      metadata_time: currentBlock?.timestamp as number,
       time: 0,
       uid: trackUid
     })
