@@ -1,59 +1,79 @@
 export const getConnectedWallets = `
-const wallets = await audiusSdk.users.getConnectedWallets({
+const walletsResponse = await audiusSdk.users.getConnectedWallets({
     id: "eAZl3"
-})
+});
+
+const wallets = walletsResponse.data;
 `;
 
 export const getFavorites = `
-const favorites = await audiusSdk.users.getFavorites({
+const favoritesResponse = await audiusSdk.users.getFavorites({
     id: "eAZl3"
-})
+});
+
+const favorites = favoritesResponse.data;
 `;
 
 export const getReposts = `
-const reposts = await audiusSdk.users.getReposts({
+const repostsResponse = await audiusSdk.users.getReposts({
     id: "eAZl3"
-})
+});
+
+const resposts = repostsResponse.data;
 `;
 
 export const getSupporters = `
-const supporters = await audiusSdk.users.getSupporters({
+const supportersResponse = await audiusSdk.users.getSupporters({
     id: "eAZl3"
-})
+});
+
+const supporters = supportersResponse.data;
 `;
 
 export const getSupportings = `
-const supportings = await audiusSdk.users.getSupportings({
+const supportingsResponse = await audiusSdk.users.getSupportings({
     id: "eAZl3"
-})
+});
+
+const supportings = supportingsResponse.data;
 `;
 
 export const getTopTrackTags = `
-const tags = await audiusSdk.users.getTopTrackTags({
+const tagsResponse = await audiusSdk.users.getTopTrackTags({
     id: "eAZl3"
-})
+});
+
+const tags = tagsResponse.data;
 `;
 
 export const getTracksByUser = `
-const tracks = await audiusSdk.users.getTracksByUser({
+const tracksResponse = await audiusSdk.users.getTracksByUser({
     id: "eAZl3"
-})
+});
+
+const tracks = tracksResponse.data;
 `;
 
 export const getUser = `
-const user = await audiusSdk.users.getUser({
+const userResponse = await audiusSdk.users.getUser({
     id: "eAZl3"
-})
+});
+
+const user = userResponse.data;
 `;
 
 export const getUserIdFromWallet = `
-const id = await audiusSdk.users.getUserIDFromWallet({
+const idResponse = await audiusSdk.users.getUserIDFromWallet({
     associatedWallet: '0x10c16c7B8b1DDCFE65990ec822DE4379dd8a86dE'
-})
+});
+
+const userId = idResponse.data;
 `;
 
 export const searchUsers = `
-const users = await audiusSdk.users.searchUsers({
+const usersResponse = await audiusSdk.users.searchUsers({
     query: 'skrillex'
 })
+
+const users = usersResponse.data;
 `;

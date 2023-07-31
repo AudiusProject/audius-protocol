@@ -61,7 +61,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     this.logger = logger.createPrefixedLogger('[playlists-api]')
   }
 
-  /**
+  /** @hidden
    * Create a playlist from existing tracks
    */
   async createPlaylist(
@@ -127,7 +127,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
   }
 
-  /**
+  /** @hidden
    * Upload a playlist
    * Uploads the specified tracks and combines them into a playlist
    */
@@ -145,7 +145,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return await this.uploadPlaylistInternal(parsedParameters, writeOptions)
   }
 
-  /**
+  /** @hidden
    * Publish a playlist
    * Changes a playlist from private to public
    */
@@ -172,7 +172,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Add a single track to the end of a playlist
    * For more control use updatePlaylist
    */
@@ -207,7 +207,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Removes a single track at the given index of playlist
    * For more control use updatePlaylist
    */
@@ -243,7 +243,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Update a playlist
    */
   async updatePlaylist(
@@ -260,7 +260,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return await this.updatePlaylistInternal(parsedParameters, writeOptions)
   }
 
-  /**
+  /** @hidden
    * Delete a playlist
    */
   async deletePlaylist(
@@ -283,7 +283,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Favorite a playlist
    */
   async favoritePlaylist(
@@ -307,7 +307,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unfavorite a playlist
    */
   async unfavoritePlaylist(
@@ -330,7 +330,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Repost a playlist
    */
   async repostPlaylist(
@@ -354,7 +354,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unrepost a playlist
    */
   async unrepostPlaylist(
@@ -377,7 +377,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     })
   }
 
-  /**
+  /** @internal
    * Combines the metadata for a track and a collection (playlist or album),
    * taking the metadata from the playlist when the track is missing it.
    */
@@ -406,7 +406,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     return trackMetadata
   }
 
-  /**
+  /** @internal
    * Update helper method that first fetches a playlist and then updates it
    */
   private async fetchAndUpdatePlaylist(

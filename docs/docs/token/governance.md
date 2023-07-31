@@ -1,6 +1,6 @@
 # Governance
 
-## How Audius Governance Work
+## How Audius Governance Works
 
 Governance is the process by which AUDIO token holders enact change to Audius through on-chain proposals.
 
