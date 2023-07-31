@@ -6,6 +6,13 @@ import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { UsersApi } from './UsersApi'
+import { Logger } from '../../services/Logger'
+import fs from 'fs'
+import path from 'path'
+
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 
@@ -37,18 +44,21 @@ describe('UsersApi', () => {
   let users: UsersApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -61,18 +71,18 @@ describe('UsersApi', () => {
       const result = await users.updateProfile({
         userId: '7eP5n',
         profilePictureFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'profilePicture'
         },
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
           name: 'name',
           bio: 'bio',
           location: 'location',
-          artistPickTrackId: 1,
+          artistPickTrackId: '7eP5n',
           isDeactivated: false
         }
       })

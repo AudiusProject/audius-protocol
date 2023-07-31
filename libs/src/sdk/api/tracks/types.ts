@@ -1,9 +1,8 @@
 import { z } from 'zod'
-import type { CrossPlatformFile as File } from '../../types/File'
+import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { isFileValid } from '../../utils/file'
 
 export const PremiumConditionsEthNFTCollection = z
   .object({
@@ -34,20 +33,20 @@ export const PremiumConditionsNFTCollection = z.union([
 
 export const PremiumConditionsFollowUserId = z
   .object({
-    followUserId: z.number()
+    followUserId: HashId
   })
   .strict()
 
 export const PremiumConditionsTipUserId = z
   .object({
-    tipUserId: z.number()
+    tipUserId: HashId
   })
   .strict()
 
 export const createUploadTrackMetadataSchema = () =>
   z
     .object({
-      aiAttributionUserId: z.optional(z.number()),
+      aiAttributionUserId: z.optional(HashId),
       description: z.optional(z.string().max(1000)),
       download: z.optional(
         z
@@ -91,7 +90,7 @@ export const createUploadTrackMetadataSchema = () =>
             tracks: z
               .array(
                 z.object({
-                  parentTrackId: z.number()
+                  parentTrackId: HashId
                 })
               )
               .min(1)
@@ -114,12 +113,10 @@ export const createUploadTrackSchema = () =>
   z
     .object({
       userId: HashId,
-      coverArtFile: z.custom<File>((data: unknown) =>
-        isFileValid(data as File)
-      ),
+      coverArtFile: ImageFile,
       metadata: createUploadTrackMetadataSchema(),
       onProgress: z.optional(z.function().args(z.number())),
-      trackFile: z.custom<File>((data: unknown) => isFileValid(data as File))
+      trackFile: AudioFile
     })
     .strict()
 
@@ -139,9 +136,7 @@ export const createUpdateTrackSchema = () =>
       trackId: HashId,
       metadata: createUploadTrackMetadataSchema().partial(),
       transcodePreview: z.optional(z.boolean()),
-      coverArtFile: z.optional(
-        z.custom<File>((data: unknown) => isFileValid(data as File))
-      ),
+      coverArtFile: z.optional(ImageFile),
       onProgress: z.optional(z.function().args(z.number()))
     })
     .strict()

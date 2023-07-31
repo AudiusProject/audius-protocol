@@ -9,6 +9,16 @@ import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from './TrackUploadHelper'
+import { Logger } from '../../services/Logger'
+import fs from 'fs'
+import path from 'path'
+
+const wavFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/wav-file.wav')
+)
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -61,19 +71,22 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -86,7 +99,7 @@ describe('TracksApi', () => {
       const result = await tracks.uploadTrack({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -95,7 +108,7 @@ describe('TracksApi', () => {
           mood: Mood.TENDER
         },
         trackFile: {
-          buffer: Buffer.from([]),
+          buffer: wavFile,
           name: 'trackArt'
         }
       })
@@ -112,14 +125,14 @@ describe('TracksApi', () => {
         await tracks.uploadTrack({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {
             title: 'BachGavotte'
           } as any,
           trackFile: {
-            buffer: Buffer.from([]),
+            buffer: wavFile,
             name: 'trackArt'
           }
         })
@@ -133,7 +146,7 @@ describe('TracksApi', () => {
         userId: '7eP5n',
         trackId: 'ogRRByg',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -155,7 +168,7 @@ describe('TracksApi', () => {
           userId: '7eP5n',
           trackId: 'ogRRByg',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {

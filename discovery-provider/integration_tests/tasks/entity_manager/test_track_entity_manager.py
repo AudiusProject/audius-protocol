@@ -63,7 +63,7 @@ def test_index_valid_track(app, mocker):
             ],
             "has_current_user_reposted": False,
             "is_current": True,
-            "is_unlisted": False,
+            "is_unlisted": True,
             "is_premium": False,
             "premium_conditions": None,
             "field_visibility": {
@@ -128,6 +128,7 @@ def test_index_valid_track(app, mocker):
             "isrc": "",
             "iswc": "",
             "is_playlist_upload": True,
+            "duration": 200
         },
         "QmCreateTrack3": {
             "owner_id": 1,
@@ -212,7 +213,7 @@ def test_index_valid_track(app, mocker):
             "description": "updated description"
         },
         "QmUpdateTrack2": {
-            "duration": 200
+            "is_unlisted": False
         },
     }
 
@@ -386,6 +387,7 @@ def test_index_valid_track(app, mocker):
         )
         assert track_1.description == "updated description"
         assert track_1.ai_attribution_user_id == 2
+        assert track_1.is_unlisted
         assert track_1.is_delete == True
         assert track_1.duration == 100
 
@@ -400,6 +402,7 @@ def test_index_valid_track(app, mocker):
         assert track_2.title == "track 2"
         assert track_2.is_delete == False
         assert track_2.duration == 200
+        assert track_2.is_unlisted == False
 
         track_3: Track = (
             session.query(Track)
@@ -518,9 +521,18 @@ def test_index_invalid_tracks(app, mocker):
             "is_playlist_upload": False,
             "ai_attribution_user_id": 2,
         },
+        "QmInvalidUnlistTrack1Update": {
+            "is_unlisted": True
+        },
+        "InvalidTrackIdUpdate": {
+            "track_id": 1234,
+            "bogus_field": "bogus"
+        }
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
+    invalid_unlist_track1_json = json.dumps(test_metadata["QmInvalidUnlistTrack1Update"])
+    invalid_track_id_update = json.dumps(test_metadata["InvalidTrackIdUpdate"])
 
     tx_receipts = {
         # invalid create
@@ -707,6 +719,34 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
+        "InvalidTrackUnlist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmInvalidUnlistTrack1Update", "data": {invalid_unlist_track1_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidTrackIdUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "InvalidTrackIdUpdate", "data": {invalid_track_id_update}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # invalid deletes
         "DeleteTrackInvalidSigner": [
             {
@@ -859,8 +899,10 @@ def test_index_invalid_tracks(app, mocker):
         )
 
         # validate db records
-        all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 1  # no new tracks indexed
+        all_tracks: List[Track] = session.query(Track).all()        
+        assert len(all_tracks) == 2
+        current_track: List[Track] = session.query(Track).filter(Track.is_current == True).first()      
+        assert current_track.track_id == TRACK_ID_OFFSET
 
 
 def test_invalid_track_description(app, mocker):
@@ -957,6 +999,13 @@ def test_invalid_track_description(app, mocker):
         side_effect=get_events_side_effect,
         autospec=True,
     )
+
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+        ],
+    }
+    populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
         total_changes, _ = entity_manager_update(

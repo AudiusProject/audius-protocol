@@ -62,6 +62,10 @@ func startStagingOrProd(isProd bool) {
 		g = registrar.NewAudiusApiGatewayProd()
 	}
 
+	// use custom DNS in staging + prod
+	// could scope it down to a TLD, but first want to test it works everywhere without surprises
+	httputil.UseCustomDNS()
+
 	var peers, signers []server.Peer
 	var err error
 
@@ -107,6 +111,11 @@ func startStagingOrProd(isProd bool) {
 		}()
 	}
 
+	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
+	if err != nil {
+		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
+	}
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -131,6 +140,7 @@ func startStagingOrProd(isProd bool) {
 		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 		StoreAll:            os.Getenv("STORE_ALL") == "true",
 		VersionJson:         GetVersionJson(),
+		MigrateQmCidIters:   migrateQmCidIters,
 	}
 
 	ss, err := server.New(config)

@@ -9,6 +9,17 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Storage } from '../../services/Storage'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { Mood } from '../../types/Mood'
+import { Genre } from '../../types/Genre'
+import { Logger } from '../../services/Logger'
+import fs from 'fs'
+import path from 'path'
+
+const wavFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/wav-file.wav')
+)
+const pngFile = fs.readFileSync(
+  path.resolve(__dirname, '../../test/png-file.png')
+)
 
 jest.mock('../../services/EntityManager')
 jest.mock('../../services/DiscoveryNodeSelector')
@@ -87,18 +98,21 @@ describe('PlaylistsApi', () => {
   let playlists: PlaylistsApi
 
   const auth = new Auth()
+  const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
     auth,
-    discoveryNodeSelector
+    discoveryNodeSelector,
+    logger
   })
 
   beforeAll(() => {
     playlists = new PlaylistsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector }),
+      new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager(),
-      auth
+      auth,
+      new Logger()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})
@@ -111,7 +125,7 @@ describe('PlaylistsApi', () => {
       const result = await playlists.createPlaylist({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -132,7 +146,7 @@ describe('PlaylistsApi', () => {
         await playlists.createPlaylist({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {} as any,
@@ -147,11 +161,12 @@ describe('PlaylistsApi', () => {
       const result = await playlists.uploadPlaylist({
         userId: '7eP5n',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
           playlistName: 'My Playlist',
+          genre: Genre.ACOUSTIC,
           mood: Mood.TENDER
         },
         trackMetadatas: [
@@ -161,7 +176,7 @@ describe('PlaylistsApi', () => {
         ],
         trackFiles: [
           {
-            buffer: Buffer.from([]),
+            buffer: wavFile,
             name: 'trackArt'
           }
         ]
@@ -179,7 +194,7 @@ describe('PlaylistsApi', () => {
         await playlists.uploadPlaylist({
           userId: '7eP5n',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {} as any,
@@ -190,7 +205,7 @@ describe('PlaylistsApi', () => {
           ],
           trackFiles: [
             {
-              buffer: Buffer.from([]),
+              buffer: wavFile,
               name: 'trackArt'
             }
           ]
@@ -274,7 +289,7 @@ describe('PlaylistsApi', () => {
         userId: '7eP5n',
         playlistId: 'x5pJ3Aj',
         coverArtFile: {
-          buffer: Buffer.from([]),
+          buffer: pngFile,
           name: 'coverArt'
         },
         metadata: {
@@ -296,7 +311,7 @@ describe('PlaylistsApi', () => {
           userId: '7eP5n',
           playlistId: 'x5pJ3Aj',
           coverArtFile: {
-            buffer: Buffer.from([]),
+            buffer: pngFile,
             name: 'coverArt'
           },
           metadata: {

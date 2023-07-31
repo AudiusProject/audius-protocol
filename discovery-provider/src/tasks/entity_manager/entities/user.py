@@ -33,6 +33,7 @@ from src.tasks.entity_manager.utils import (
     parse_metadata,
     validate_signer,
 )
+from src.tasks.metadata import immutable_user_fields
 from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
@@ -57,21 +58,26 @@ def validate_user_tx(params: ManageEntityParameters):
 
     if params.action == Action.CREATE or params.action == Action.UPDATE:
         user_bio = None
-        try:
-            # TODO(michelle) validate metadata for notification, developer app
-            # pass in UPDATE until this is fixed
-            user_metadata, _ = parse_metadata(
-                params.metadata, Action.UPDATE, EntityType.USER
-            )
-            if user_metadata:
-                user_bio = user_metadata.get("bio")
-        except Exception:
-            # enforce json metadata after single transaction sign up
-            # dont want to raise here, only check bio IF it exists
-            pass
+        # TODO remove this clause for non-dict params.metadata after single
+        # transaction sign up is fully rolled out, as all metadata for CREATEs
+        # or UPDATEs should have been deserialized into dicts at this point.
+        if not isinstance(params.metadata, dict):
+            try:
+                user_metadata, _ = parse_metadata(
+                    params.metadata, Action.UPDATE, EntityType.USER
+                )
+                if user_metadata:
+                    user_bio = user_metadata.get("bio")
+            except Exception:
+                # enforce json metadata after single transaction sign up
+                # dont want to raise here, only check bio IF it exists
+                pass
+        else:
+            user_bio = params.metadata.get("bio")
+
         if user_bio and len(user_bio) > CHARACTER_LIMIT_USER_BIO:
             raise IndexingValidationError(
-                f"Playlist {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
+                f"User {user_id} bio exceeds character limit {CHARACTER_LIMIT_USER_BIO}"
             )
 
     if params.action == Action.CREATE:
@@ -182,6 +188,12 @@ def create_user(
         user_metadata, metadata_cid = parse_metadata(
             params.metadata, Action.UPDATE, EntityType.USER
         )
+    except Exception:
+        # fallback to multi tx signup if parsing fails
+        pass
+
+    # If parsing succeeds, we know this is a single tx signup
+    if user_metadata is not None:
         validate_user_metadata(
             params.session,
             user_record,
@@ -195,14 +207,12 @@ def create_user(
             user_metadata,
             params.web3,
             params.challenge_bus,
+            params.action
         )
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = user_metadata
         user_record.metadata_multihash = metadata_cid
-    except Exception:
-        # fallback to multi tx signup
-        pass
 
     if params.metadata == "v2":
         user_record.is_storage_v2 = True
@@ -260,6 +270,7 @@ def update_user(
         params.metadata,
         params.web3,
         params.challenge_bus,
+        params.action
     )
 
     updated_metadata, updated_metadata_cid = merge_metadata(
@@ -290,6 +301,7 @@ def update_user_metadata(
     metadata: Dict,
     web3: Web3,
     challenge_event_bus: ChallengeEventBus,
+    action
 ):
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
@@ -297,6 +309,9 @@ def update_user_metadata(
         # Update the user_record when the corresponding field exists
         # in metadata
         if key in metadata:
+            if key in immutable_user_fields and action == Action.UPDATE:
+                # skip fields that cannot be modified after creation
+                continue
             setattr(user_record, key, metadata[key])
 
     if "collectibles" in metadata:
@@ -360,20 +375,15 @@ def merge_metadata(
             .first()
         )
         prev_cid_metadata = prev_cid_data_record.data if prev_cid_data_record else {}
-    if prev_cid_metadata:
-        # merge previous and current metadata
-        updated_metadata = prev_cid_metadata | params.metadata
+    # merge previous and current metadata
+    updated_metadata = prev_cid_metadata | params.metadata
 
-        # generate a cid
-        updated_metadata_cid = str(
-            generate_metadata_cid_v1(json.dumps(updated_metadata))
-        )
+    # generate a cid
+    updated_metadata_cid = str(
+        generate_metadata_cid_v1(json.dumps(updated_metadata))
+    )
 
-        return updated_metadata, updated_metadata_cid
-    else:
-        params.logger.error(
-            f"Could not find previous metadata blob for {record}", exc_info=True
-        )
+    return updated_metadata, updated_metadata_cid
 
 
 class UserEventMetadata(TypedDict, total=False):

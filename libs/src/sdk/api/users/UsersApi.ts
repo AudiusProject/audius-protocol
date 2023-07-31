@@ -25,18 +25,21 @@ import {
   UnsubscribeFromUserSchema,
   UpdateProfileSchema
 } from './types'
+import type { LoggerService } from '../../services/Logger'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly logger: LoggerService
   ) {
     super(configuration)
+    this.logger = logger.createPrefixedLogger('[users-api]')
   }
 
-  /**
+  /** @hidden
    * Update a user profile
    */
   async updateProfile(
@@ -45,7 +48,7 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'updateProfile',
         UpdateProfileSchema
       )(requestParameters)
@@ -60,7 +63,7 @@ export class UsersApi extends GeneratedUsersApi {
               template: 'img_square'
             }),
           (e) => {
-            console.log('Retrying uploadProfilePicture', e)
+            this.logger.info('Retrying uploadProfilePicture', e)
           }
         ),
       coverArtFile &&
@@ -72,7 +75,7 @@ export class UsersApi extends GeneratedUsersApi {
               template: 'img_backdrop'
             }),
           (e) => {
-            console.log('Retrying uploadProfileCoverArt', e)
+            this.logger.info('Retrying uploadProfileCoverArt', e)
           }
         )
     ])
@@ -100,7 +103,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Follow a user
    */
   async followUser(
@@ -108,7 +111,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = parseRequestParameters(
+    const { userId, followeeUserId } = await parseRequestParameters(
       'followUser',
       FollowUserSchema
     )(requestParameters)
@@ -123,7 +126,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unfollow a user
    */
   async unfollowUser(
@@ -131,7 +134,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = parseRequestParameters(
+    const { userId, followeeUserId } = await parseRequestParameters(
       'unfollowUser',
       UnfollowUserSchema
     )(requestParameters)
@@ -146,7 +149,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Subscribe to a user
    */
   async subscribeToUser(
@@ -154,7 +157,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseRequestParameters(
       'subscribeToUser',
       SubscribeToUserSchema
     )(requestParameters)
@@ -169,7 +172,7 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
-  /**
+  /** @hidden
    * Unsubscribe from a user
    */
   async unsubscribeFromUser(
@@ -177,7 +180,7 @@ export class UsersApi extends GeneratedUsersApi {
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseRequestParameters(
       'unsubscribeFromUser',
       UnsubscribeFromUserSchema
     )(requestParameters)

@@ -2,12 +2,15 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mediorum/cidutil"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -41,11 +44,12 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	ctx := context.Background()
 	logger := ss.logger.With("task", "replicateToMyBucket", "cid", fileName)
 	logger.Info("replicateToMyBucket")
+	key := cidutil.ShardCID(fileName)
 
 	// already have?
-	alreadyHave, _ := ss.bucket.Exists(ctx, fileName)
+	alreadyHave, _ := ss.bucket.Exists(ctx, key)
 	if !alreadyHave {
-		w, err := ss.bucket.NewWriter(ctx, fileName, nil)
+		w, err := ss.bucket.NewWriter(ctx, key, nil)
 		if err != nil {
 			return err
 		}
@@ -78,10 +82,11 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	logger := ss.logger.With("task", "dropFromMyBucket", "cid", fileName)
-
 	logger.Info("deleting blob")
+
+	key := cidutil.ShardCID(fileName)
 	ctx := context.Background()
-	err := ss.bucket.Delete(ctx, fileName)
+	err := ss.bucket.Delete(ctx, key)
 	if err != nil {
 		logger.Error("failed to delete", "err", err)
 	}
@@ -199,4 +204,34 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 
 	return ss.replicateToMyBucket(cid, resp.Body)
+}
+
+func (ss *MediorumServer) moveFromDiskToMyBucket(diskPath string, key string, checkIsMetadata bool) error {
+	source, err := os.Open(diskPath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	// ignore this file if it's a metadata file
+	if checkIsMetadata {
+		bytes, err := io.ReadAll(source)
+		if err != nil {
+			return err
+		}
+		var jsonData map[string]interface{}
+		err = json.Unmarshal(bytes, &jsonData)
+		if err == nil {
+			// if unmarshal is successful, it's a JSON/metadata file (not an image or track)
+			return nil
+		}
+	}
+
+	// write to bucket, record in blobs table that we have it, and delete the original file from disk
+	err = ss.replicateToMyBucket(key, source)
+	if err == nil {
+		return os.Remove(diskPath)
+	} else {
+		return err
+	}
 }

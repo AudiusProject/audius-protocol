@@ -1,6 +1,7 @@
 import logging
+import re
 from datetime import datetime
-from typing import Dict, cast
+from typing import Dict, Union, cast
 
 from flask_restx import reqparse
 from src import api_helpers
@@ -9,11 +10,16 @@ from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
-from src.queries.query_helpers import SortDirection, SortMethod
+from src.queries.query_helpers import LibraryFilterType, SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
+from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
+from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
+from src.utils.redis_connection import get_redis
+from src.utils.rendezvous import RendezvousHash
 from src.utils.spl_audio import to_wei_string
 
+redis = get_redis()
 logger = logging.getLogger(__name__)
 
 
@@ -21,19 +27,28 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
-def get_primary_endpoint(user):
-    raw_endpoint = user.get("creator_node_endpoint")
-    if not raw_endpoint:
+def get_primary_endpoint(user, cid):
+    if not cid:
         return ""
-    return raw_endpoint.split(",")[0]
+    healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+    if not healthy_nodes:
+        logger.error(
+            f"No healthy Content Nodes found for fetching cid for {user.user_id}: {cid}"
+        )
+        return ""
+
+    rendezvous = RendezvousHash(
+        *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+    )
+    return rendezvous.get(cid)
 
 
 def add_track_artwork(track):
     if "user" not in track:
         return track
-    endpoint = get_primary_endpoint(track["user"])
     cid = track["cover_art_sizes"]
-    if not endpoint or not cid:
+    endpoint = get_primary_endpoint(track["user"], cid)
+    if not endpoint:
         return track
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
@@ -47,9 +62,9 @@ def add_track_artwork(track):
 def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
-    endpoint = get_primary_endpoint(playlist["user"])
     cid = playlist["playlist_image_sizes_multihash"]
-    if not endpoint or not cid:
+    endpoint = get_primary_endpoint(playlist["user"], cid)
+    if not endpoint:
         return playlist
     artwork = {
         "150x150": make_image(endpoint, cid, 150, 150),
@@ -80,22 +95,21 @@ def add_user_artwork(user):
     user["cover_photo_legacy"] = user.get("cover_photo")
     user["profile_picture_legacy"] = user.get("profile_picture")
 
-    endpoint = get_primary_endpoint(user)
-    if not endpoint:
-        return user
-    cover_cid = user.get("cover_photo_sizes")
     profile_cid = user.get("profile_picture_sizes")
-    if profile_cid:
+    profile_endpoint = get_primary_endpoint(user, profile_cid)
+    cover_cid = user.get("cover_photo_sizes")
+    cover_endpoint = get_primary_endpoint(user, cover_cid)
+    if profile_endpoint and profile_cid:
         profile = {
-            "150x150": make_image(endpoint, profile_cid, 150, 150),
-            "480x480": make_image(endpoint, profile_cid, 480, 480),
-            "1000x1000": make_image(endpoint, profile_cid, 1000, 1000),
+            "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
+            "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
+            "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
         }
         user["profile_picture"] = profile
-    if cover_cid:
+    if cover_endpoint and cover_cid:
         cover = {
-            "640x": make_image(endpoint, cover_cid, 640),
-            "2000x": make_image(endpoint, cover_cid, 2000),
+            "640x": make_image(cover_endpoint, cover_cid, 640),
+            "2000x": make_image(cover_endpoint, cover_cid, 2000),
         }
         user["cover_photo"] = cover
     return user
@@ -486,6 +500,23 @@ class DescriptiveArgument(reqparse.Argument):
         return param
 
 
+# Helper to allow consumer to pass message and signature headers as request params
+def add_auth_headers_to_parser(parser):
+    parser.add_argument(
+        MESSAGE_HEADER,
+        required=True,
+        description="The data that was signed by the user for signature recovery",
+        location="headers",
+    )
+    parser.add_argument(
+        SIGNATURE_HEADER,
+        required=True,
+        description="The signature of data, used for signature recovery",
+        location="headers",
+    )
+    return parser
+
+
 current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
@@ -547,6 +578,18 @@ user_favorited_tracks_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
+
+user_tracks_library_parser = user_favorited_tracks_parser.copy()
+user_tracks_library_parser.remove_argument("current_user")
+user_tracks_library_parser.add_argument(
+    "type",
+    required=False,
+    description="The type of tracks to return: favorited, reposted, purchased, or all. Defaults to favorite",
+    type=str,
+    choices=LibraryFilterType._member_names_,
+    default=LibraryFilterType.favorite,
+)
+add_auth_headers_to_parser(user_tracks_library_parser)
 
 user_track_listen_count_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
@@ -687,16 +730,20 @@ def format_offset(args, max_offset=MAX_LIMIT):
     return max(min(int(offset), max_offset), MIN_OFFSET)
 
 
-def format_query(args):
+def format_query(args) -> Union[str, None]:
     return args.get("query", None)
 
 
-def format_sort_method(args):
+def format_sort_method(args) -> Union[SortMethod, None]:
     return args.get("sort_method", None)
 
 
-def format_sort_direction(args):
+def format_sort_direction(args) -> Union[SortDirection, None]:
     return args.get("sort_direction", None)
+
+
+def format_library_filter(args) -> LibraryFilterType:
+    return args.get("type", LibraryFilterType.favorite)
 
 
 def get_default_max(value, default, max=None):

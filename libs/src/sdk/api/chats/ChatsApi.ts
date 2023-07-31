@@ -61,6 +61,7 @@ import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeS
 import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import type { LoggerService } from '../../services/Logger'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
 
@@ -97,7 +98,8 @@ export class ChatsApi
   constructor(
     config: Configuration,
     private readonly auth: AuthService,
-    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
+    private readonly logger: LoggerService
   ) {
     super(config)
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
@@ -117,6 +119,8 @@ export class ChatsApi
         })
       }
     })
+
+    this.logger = logger.createPrefixedLogger('[chats-api]')
   }
 
   // #region QUERY
@@ -126,7 +130,7 @@ export class ChatsApi
    * @param requestParameters.currentUserId the user to listen for chat events for
    */
   public async listen(requestParameters?: ChatListenRequest) {
-    const parsedArgs = parseRequestParameters(
+    const parsedArgs = await parseRequestParameters(
       'listen',
       ChatListenRequestSchema
     )(requestParameters)
@@ -147,7 +151,7 @@ export class ChatsApi
    * @returns the chat response
    */
   public async get(requestParameters: ChatGetRequest) {
-    const { chatId, currentUserId } = parseRequestParameters(
+    const { chatId, currentUserId } = await parseRequestParameters(
       'get',
       ChatGetRequestSchema
     )(requestParameters)
@@ -169,10 +173,11 @@ export class ChatsApi
    * @returns the chat list response
    */
   public async getAll(requestParameters?: ChatGetAllRequest) {
-    const { currentUserId, limit, before, after } = parseRequestParameters(
-      'getAll',
-      ChatGetAllRequestSchema
-    )(requestParameters)
+    const { currentUserId, limit, before, after } =
+      await parseRequestParameters(
+        'getAll',
+        ChatGetAllRequestSchema
+      )(requestParameters)
     const path = `/comms/chats`
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
@@ -218,7 +223,7 @@ export class ChatsApi
     requestParameters: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
     const { currentUserId, chatId, limit, before, after } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'getMessages',
         ChatGetMessagesRequestSchema
       )(requestParameters)
@@ -227,7 +232,7 @@ export class ChatsApi
     try {
       sharedSecret = await this.getChatSecret(chatId)
     } catch (e) {
-      console.error("[audius-sdk] Couldn't get chat secret", e)
+      this.logger.error("[audius-sdk] Couldn't get chat secret", e)
       throw new Error("[audius-sdk] Couldn't get chat secret")
     }
     const path = `/comms/chats/${chatId}/messages`
@@ -260,7 +265,7 @@ export class ChatsApi
           sharedSecret,
           base64.decode(m.message)
         ).catch((e) => {
-          console.error(
+          this.logger.error(
             "[audius-sdk]: Error: Couldn't decrypt chat message",
             m,
             e
@@ -281,7 +286,7 @@ export class ChatsApi
    * @returns the unread count response
    */
   public async getUnreadCount(requestParameters?: ChatGetUnreadCountRequest) {
-    const parsedArgs = parseRequestParameters(
+    const parsedArgs = await parseRequestParameters(
       'getUnreadCount',
       ChatGetUnreadCountRequestSchema
     )(requestParameters)
@@ -310,7 +315,7 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { userIds, currentUserId } = parseRequestParameters(
+    const { userIds, currentUserId } = await parseRequestParameters(
       'getPermissions',
       ChatGetPermissionRequestSchema
     )(requestParameters)
@@ -334,7 +339,7 @@ export class ChatsApi
    * @returns the blockers response
    */
   public async getBlockers(requestParameters?: ChatGetBlockersRequest) {
-    const parsedArgs = parseRequestParameters(
+    const parsedArgs = await parseRequestParameters(
       'getBlockers',
       ChatGetBlockersRequestSchema
     )(requestParameters)
@@ -359,7 +364,7 @@ export class ChatsApi
    * @returns
    */
   public async getBlockees(requestParameters?: ChatGetBlockersRequest) {
-    const parsedArgs = parseRequestParameters(
+    const parsedArgs = await parseRequestParameters(
       'getBlockees',
       ChatGetBlockersRequestSchema
     )(requestParameters)
@@ -384,7 +389,7 @@ export class ChatsApi
    * @returns the unfurl response
    */
   public async unfurl(requestParameters: ChatUnfurlRequest) {
-    const { urls } = parseRequestParameters(
+    const { urls } = await parseRequestParameters(
       'unfurl',
       ChatUnfurlRequestSchema
     )(requestParameters)
@@ -412,10 +417,11 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async create(requestParameters: ChatCreateRequest) {
-    const { currentUserId, userId, invitedUserIds } = parseRequestParameters(
-      'create',
-      ChatCreateRequestSchema
-    )(requestParameters)
+    const { currentUserId, userId, invitedUserIds } =
+      await parseRequestParameters(
+        'create',
+        ChatCreateRequestSchema
+      )(requestParameters)
 
     const chatId = [userId, ...invitedUserIds].sort().join(':')
     const chatSecret = secp.utils.randomPrivateKey()
@@ -442,7 +448,7 @@ export class ChatsApi
    */
   public async invite(requestParameters: ChatInviteRequest) {
     const { currentUserId, chatId, userId, invitedUserIds } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'invite',
         ChatInviteRequestSchema
       )(requestParameters)
@@ -469,7 +475,7 @@ export class ChatsApi
    */
   public async message(requestParameters: ChatMessageRequest) {
     const { currentUserId, chatId, message, messageId } =
-      parseRequestParameters(
+      await parseRequestParameters(
         'message',
         ChatMessageRequestSchema
       )(requestParameters)
@@ -498,7 +504,10 @@ export class ChatsApi
    */
   public async react(requestParameters: ChatReactRequest) {
     const { currentUserId, chatId, messageId, reaction } =
-      parseRequestParameters('react', ChatReactRequestSchema)(requestParameters)
+      await parseRequestParameters(
+        'react',
+        ChatReactRequestSchema
+      )(requestParameters)
     return await this.sendRpc({
       current_user_id: currentUserId,
       method: 'chat.react',
@@ -517,7 +526,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async read(requestParameters: ChatReadRequest) {
-    const { currentUserId, chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = await parseRequestParameters(
       'read',
       ChatReadRequestSchema
     )(requestParameters)
@@ -537,7 +546,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async block(requestParameters: ChatBlockRequest) {
-    const { currentUserId, userId } = parseRequestParameters(
+    const { currentUserId, userId } = await parseRequestParameters(
       'block',
       ChatBlockRequestSchema
     )(requestParameters)
@@ -557,7 +566,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async unblock(requestParameters: ChatBlockRequest) {
-    const { currentUserId, userId } = parseRequestParameters(
+    const { currentUserId, userId } = await parseRequestParameters(
       'unblock',
       ChatBlockRequestSchema
     )(requestParameters)
@@ -577,7 +586,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async delete(requestParameters: ChatDeleteRequest) {
-    const { currentUserId, chatId } = parseRequestParameters(
+    const { currentUserId, chatId } = await parseRequestParameters(
       'delete',
       ChatDeleteRequestSchema
     )(requestParameters)
@@ -597,7 +606,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async permit(requestParameters: ChatPermitRequest) {
-    const { currentUserId, permit } = parseRequestParameters(
+    const { currentUserId, permit } = await parseRequestParameters(
       'permit',
       ChatPermitRequestSchema
     )(requestParameters)
@@ -683,7 +692,7 @@ export class ChatsApi
         )
       }
     } catch (e) {
-      console.error(
+      this.logger.error(
         "[audius-sdk]: Error: Couldn't decrypt last chat message",
         c,
         e
@@ -800,7 +809,7 @@ export class ChatsApi
                 sharedSecret,
                 base64.decode(data.rpc.params.message)
               ).catch((e) => {
-                console.error(
+                this.logger.error(
                   "[audius-sdk]: Error: Couldn't decrypt websocket chat message",
                   data,
                   e

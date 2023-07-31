@@ -15,11 +15,6 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	m := Metrics{}
 	m.Host = ss.Config.Self.Host
 
-	count, err := ss.findProblemBlobsCount(false)
-	if err != nil {
-		return err
-	}
-	m.ProblemBlobs = count
 	var ucount int64
 	ss.crud.DB.Model(&Upload{}).Count(&ucount)
 	m.Uploads = ucount

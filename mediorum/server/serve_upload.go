@@ -3,18 +3,15 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"io"
+	"mediorum/cidutil"
 	"mime"
-	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
-	"github.com/multiformats/go-multihash"
 	"github.com/oklog/ulid/v2"
 )
 
@@ -164,7 +161,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			formFileCID, err := computeFileHeaderCID(formFile)
+			formFileCID, err := cidutil.ComputeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
 				return
@@ -217,10 +214,39 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
-	if isLegacyCID(jobID) {
-		c.SetParamNames("dirCid", "fileName")
-		c.SetParamValues(jobID, variant)
-		return ss.serveLegacyDirCid(c)
+	if cidutil.IsLegacyCID(jobID) {
+		// check if file is migrated first - it would have a single key and no upload object in the db
+		key := jobID + "/" + variant
+		exists, err := ss.bucket.Exists(c.Request().Context(), key)
+		if err != nil {
+			ss.logger.Warn("migrated blob exists check failed", "err", err)
+		} else if exists {
+			blob, err := ss.bucket.NewReader(c.Request().Context(), key, nil)
+			if err != nil {
+				return err
+			}
+			defer blob.Close()
+
+			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+			return nil
+		}
+
+		// check if file is migrated but on another host
+		host, err := ss.findNodeToServeBlob(key)
+		if err != nil {
+			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets. return `err` instead
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
+		} else if host != "" {
+			dest := ss.replaceHost(c, host)
+			return c.Redirect(302, dest.String())
+		} else {
+			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
+		}
 	} else {
 		var upload *Upload
 		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
@@ -254,39 +280,4 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
 	}
-}
-
-func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
-	f, err := fh.Open()
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-	return computeFileCID(f)
-}
-
-func computeFileCID(f io.ReadSeeker) (string, error) {
-	defer f.Seek(0, 0)
-	builder := cid.V1Builder{}
-	hash, err := multihash.SumStream(f, multihash.SHA2_256, -1)
-	if err != nil {
-		return "", err
-	}
-	cid, err := builder.Sum(hash)
-	if err != nil {
-		return "", err
-	}
-	return cid.String(), nil
-}
-
-// note: any Qm CID will be invalid because its hash won't match the contents
-func validateCID(expectedCID string, f io.ReadSeeker) error {
-	computed, err := computeFileCID(f)
-	if err != nil {
-		return err
-	}
-	if computed != expectedCID {
-		return fmt.Errorf("expected cid: %s but contents hashed to %s", expectedCID, computed)
-	}
-	return nil
 }

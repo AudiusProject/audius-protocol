@@ -67,6 +67,7 @@ type MediorumConfig struct {
 	IsV2Only            bool
 	StoreAll            bool
 	VersionJson         VersionJson
+	MigrateQmCidIters   int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -174,7 +175,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud)
+	dbMigrate(crud, bucket)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -223,18 +224,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS())
 
-	if config.Env != "stage" && config.Env != "prod" {
-		// public: uis
-		routes.GET("", ss.serveUploadUI)
-		routes.GET("/", ss.serveUploadUI)
-	} else {
-		routes.GET("", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/health_check")
-		})
-		routes.GET("/", func(c echo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/health_check")
-		})
-	}
+	routes.GET("", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+	})
+	routes.GET("/", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+	})
 
 	// public: uploads
 	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
@@ -289,12 +284,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// internal: blobs
-	internalApi.GET("/blobs/broken", ss.getBlobBroken)
-	internalApi.GET("/blobs/problems", ss.getBlobProblems)
-
-	// old info routes
-	// TODO: remove
+	// old info routes (but we need them because some migrated ":cid" keys are really like "Qm.../150x150.jpg" which would mess up the path param)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 
@@ -308,6 +298,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+
+	// Qm CID migration
+	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
+	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
 
 	// reverse proxy fallback to legacy CN (NodeJS server container)
 	if !config.IsV2Only {
@@ -362,6 +356,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorDiskAndDbStatus()
 
 	go ss.monitorCidCursors()
+
+	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

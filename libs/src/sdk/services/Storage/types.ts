@@ -1,8 +1,20 @@
 import type { CrossPlatformFile as File } from '../../types/File'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 import type { AuthService } from '../Auth'
+import type { LoggerService } from '../Logger'
 
-export type StorageServiceConfig = {
+export type StorageServiceConfigInternal = {
+  /**
+   * The StorageNodeSelector service used to get the relevant storage node for content
+   */
+  storageNodeSelector: StorageNodeSelectorService
+  /**
+   * Logger service, defaults to console
+   */
+  logger: LoggerService
+}
+
+export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
   storageNodeSelector: StorageNodeSelectorService
 }
 

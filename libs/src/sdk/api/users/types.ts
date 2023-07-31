@@ -1,17 +1,12 @@
 import { z } from 'zod'
-import type { CrossPlatformFile as File } from '../../types/File'
+import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
-import { isFileValid } from '../../utils/file'
 
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,
-    profilePictureFile: z.optional(
-      z.custom<File>((data: unknown) => isFileValid(data as File))
-    ),
-    coverArtFile: z.optional(
-      z.custom<File>((data: unknown) => isFileValid(data as File))
-    ),
+    profilePictureFile: z.optional(ImageFile),
+    coverArtFile: z.optional(ImageFile),
     onProgress: z.optional(z.function().args(z.number())),
     metadata: z
       .object({
@@ -19,7 +14,7 @@ export const UpdateProfileSchema = z
         bio: z.optional(z.string()),
         location: z.optional(z.string()),
         isDeactivated: z.optional(z.boolean()),
-        artistPickTrackId: z.optional(z.number())
+        artistPickTrackId: z.optional(HashId)
       })
       .strict()
   })

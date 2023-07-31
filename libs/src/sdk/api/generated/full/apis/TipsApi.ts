@@ -41,7 +41,7 @@ export interface GetTipsRequest {
  */
 export class TipsApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Gets the most recent tips on the network
      */
     async getTipsRaw(requestParameters: GetTipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetTipsResponse>> {
