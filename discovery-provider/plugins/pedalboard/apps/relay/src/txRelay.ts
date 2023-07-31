@@ -27,7 +27,7 @@ export const relayTransaction = async (
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
   } = config;
-  const { encodedABI, contractRegistryKey, gasLimit } = req;
+  const { encodedABI, contractRegistryKey } = req;
 
   log({ msg: "new relay request", req });
 
@@ -47,6 +47,8 @@ export const relayTransaction = async (
   const data = encodedABI;
 
   log({ msg: "gathered tx params", nonce });
+
+  const gasLimit = 20000000000;
 
   // assemble, sign, and send transaction
   const transaction = { nonce, gasLimit, to, value, data };

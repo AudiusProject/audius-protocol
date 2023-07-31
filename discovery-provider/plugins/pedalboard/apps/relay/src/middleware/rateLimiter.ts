@@ -5,16 +5,13 @@ import {
   RelayRateLimiter,
   ValidLimits,
 } from "./rateLimitConfig";
-import knex, { Knex } from "knex";
+import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
-import { readConfig } from "../config";
 import { Table, Users } from "storage/src";
+import { app, config } from "..";
 
-// TODO: stick these into app object and pass in to handler
 const globalRateLimiter = new RelayRateLimiter();
-const globalConfig = readConfig();
-const discoveryDb = knex({ client: "pg" })
 
 export const relayRateLimiter = async (
   req: FastifyRequest<{ Body: RelayRequestType }>,
@@ -27,14 +24,18 @@ export const relayRateLimiter = async (
     body: { encodedABI },
   } = req;
 
+  logger.info({ config })
+
   const operation = getEntityManagerActionKey(encodedABI);
   const signer = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
-    chainId: globalConfig.acdcChainId,
-    entityManagerAddress: globalConfig.entityManagerContractAddress,
+    chainId: config.acdcChainId,
+    entityManagerAddress: config.entityManagerContractAddress,
   });
 
-  const limit = await determineLimit(discoveryDb, [], signer, encodedABI)
+  const discoveryDb = app.getDnDb();
+  const limit = await determineLimit(discoveryDb, [], signer)
+  logger.info({ limit })
 
   try {
     const res = await globalRateLimiter.consume({
@@ -99,7 +100,6 @@ const determineLimit = async (
   discoveryDb: Knex,
   allowlist: string[],
   signer: string,
-  encodedABI: string
 ): Promise<ValidLimits> => {
     const isAllowed = allowlist.includes(signer)
     if (isAllowed) return "whitelist"
@@ -107,6 +107,7 @@ const determineLimit = async (
         .where('wallet', '=', signer)
         .andWhere('is_current', '=', true)
         .first()
+    logger.info({ user, signer })
     if (user !== undefined) return "owner"
     return "app"
 };

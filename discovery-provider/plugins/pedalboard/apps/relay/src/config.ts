@@ -20,7 +20,8 @@ export type Config = {
 export const readConfig = (): Config => {
   dotenv.config();
   const entityManagerContractAddress = (): string => {
-    switch (process.env.ENVIRONMENT) {
+    const environment = process.env.environment || "stage"
+    switch (environment) {
       case "prod":
         return productionConfig.entityManagerContractAddress;
       case "stage":

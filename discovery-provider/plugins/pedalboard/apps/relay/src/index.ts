@@ -11,18 +11,17 @@ export type SharedData = {
   wallets: WalletManager;
 };
 
-const main = async () => {
-  const config = readConfig();
-  const web3 = new ethers.providers.JsonRpcProvider(config.rpcEndpoint);
-  const wallets = new WalletManager(web3);
+export const config = readConfig();
+export const web3 = new ethers.providers.JsonRpcProvider(config.rpcEndpoint);
+export const wallets = new WalletManager(web3);
 
-  const appData = {
-    config,
-    web3,
-    wallets,
-  };
+const appData = {
+  config,
+  web3,
+  wallets,
+};
 
-  await new App<SharedData>(appData)
+export const app = new App<SharedData>(appData)
     .tick({ minutes: 5 }, async (app) => {
       /** TODO: update and cache health check */
     })
@@ -31,7 +30,9 @@ const main = async () => {
     })
     .tick({ hours: 6 }, regenerateWallets)
     .task(webServer)
-    .run();
+
+const main = async () => {
+  await app.run();
 };
 
 main().catch(logger.error.bind(logger));
