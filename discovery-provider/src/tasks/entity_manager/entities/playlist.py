@@ -204,6 +204,9 @@ def create_playlist(params: ManageEntityParameters):
     tracks_with_index_time = []
     last_added_to = None
     for track in tracks:
+        if "track" not in track or "time" not in track:
+            raise IndexingValidationError(f"Cannot add {track} to playlist {playlist_id}")
+
         tracks_with_index_time.append(
             {
                 "track": track["track"],
