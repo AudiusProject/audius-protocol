@@ -725,7 +725,7 @@ export class RewardsAttester {
 
     const res = await this.libs.solanaWeb3Manager!.createUserBankIfNeeded({
       feePayerOverride,
-      sourceEthAddress: wallet
+      ethAddress: wallet
     })
 
     if ('error' in res) {

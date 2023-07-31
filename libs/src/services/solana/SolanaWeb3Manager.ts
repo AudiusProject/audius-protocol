@@ -232,27 +232,27 @@ export class SolanaWeb3Manager {
   }
 
   async doesUserbankExist({
-    sourceEthAddress,
+    ethAddress,
     mint = DEFAULT_MINT
   }: {
-    sourceEthAddress?: string
+    ethAddress?: string
     mint?: MintName
   }) {
-    const userbank = await this.deriveUserBank({ sourceEthAddress, mint })
+    const userbank = await this.deriveUserBank({ ethAddress, mint })
     const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
     return !!tokenAccount
   }
 
   /**
-   * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
+   * Creates a solana bank account, either for optional `ethAddress` or from the web3 provider's eth address
    */
   async createUserBank({
     feePayerOverride,
-    sourceEthAddress,
+    ethAddress,
     mint = DEFAULT_MINT
   }: {
     feePayerOverride: string
-    sourceEthAddress?: string
+    ethAddress?: string
     mint: MintName
   }) {
     if (!this.web3Manager) {
@@ -261,9 +261,8 @@ export class SolanaWeb3Manager {
       )
     }
 
-    const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
-      ethAddress: sourceEthAddress ?? ethAddress,
+      ethAddress: ethAddress ?? this.web3Manager.getWalletAddress(),
       claimableTokenPDAKey: this.claimableTokenPDAs[mint],
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
@@ -280,11 +279,11 @@ export class SolanaWeb3Manager {
    */
   async createUserBankIfNeeded({
     feePayerOverride,
-    sourceEthAddress,
+    ethAddress,
     mint = DEFAULT_MINT
   }: {
     feePayerOverride: string
-    sourceEthAddress?: string
+    ethAddress?: string
     mint?: MintName
   }): Promise<
     | { error: string; errorCode: string | number | null }
@@ -293,11 +292,11 @@ export class SolanaWeb3Manager {
         userbank: solanaWeb3.PublicKey
       }
   > {
-    const didExist = await this.doesUserbankExist({ sourceEthAddress, mint })
+    const didExist = await this.doesUserbankExist({ ethAddress, mint })
     if (!didExist) {
       const response = await this.createUserBank({
         feePayerOverride,
-        sourceEthAddress,
+        ethAddress,
         mint
       })
       if (response.error) {
@@ -308,7 +307,7 @@ export class SolanaWeb3Manager {
       }
     }
 
-    const derived = await this.deriveUserBank({ sourceEthAddress, mint })
+    const derived = await this.deriveUserBank({ ethAddress, mint })
     return { userbank: derived, didExist }
   }
 
@@ -346,13 +345,13 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
+   * Gets a solana bank account from `ethAddress` or the current web3 provider's eth address.
    */
   async deriveUserBank({
-    sourceEthAddress,
+    ethAddress,
     mint = DEFAULT_MINT
   }: {
-    sourceEthAddress?: string
+    ethAddress?: string
     mint?: MintName
   }) {
     if (!this.web3Manager) {
@@ -362,7 +361,7 @@ export class SolanaWeb3Manager {
     }
 
     const derivationSourceAddress =
-      sourceEthAddress ?? this.web3Manager.getWalletAddress()
+      ethAddress ?? this.web3Manager.getWalletAddress()
 
     const bank = await getBankAccountAddress(
       derivationSourceAddress,
