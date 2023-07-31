@@ -27,7 +27,9 @@ import {
   APISearch,
   APISearchTrack,
   APISearchAutocomplete,
-  APISearchPlaylist
+  APISearchPlaylist,
+  APIActivityV2,
+  isApiActivityV2
 } from './types'
 
 export const makeUser = (
@@ -390,13 +392,16 @@ export const makePlaylist = (
 }
 
 export const makeActivity = (
-  activity: APIActivity
+  activity: APIActivity | APIActivityV2
 ): UserTrackMetadata | UserCollectionMetadata | undefined => {
-  switch (activity.item_type) {
-    case 'track':
-      return makeTrack(activity.item)
-    case 'playlist':
-      return makePlaylist(activity.item)
+  if (isApiActivityV2(activity)) {
+    return activity.itemType === 'track'
+      ? makeTrack(activity.item)
+      : makePlaylist(activity.item)
+  } else {
+    return activity.item_type === 'track'
+      ? makeTrack(activity.item)
+      : makePlaylist(activity.item)
   }
 }
 

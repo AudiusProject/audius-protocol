@@ -42,5 +42,8 @@ export const auth = {
   getAddress: async () => {
     await waitForLibsInit()
     return window.audiusLibs?.hedgehog?.wallet?.getAddressString() ?? ''
+  },
+  hashAndSign: async (_data: string) => {
+    return 'Not implemented'
   }
 }

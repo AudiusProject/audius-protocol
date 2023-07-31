@@ -210,6 +210,17 @@ export type APIActivity = { timestamp: string } & (
   | { item_type: 'playlist'; item: APIPlaylist }
 )
 
+export type APIActivityV2 = { timestamp: string } & (
+  | { itemType: 'track'; item: APITrack }
+  | { itemType: 'playlist'; item: APIPlaylist }
+)
+
+export const isApiActivityV2 = (
+  activity: APIActivity | APIActivityV2
+): activity is APIActivityV2 => {
+  return (activity as APIActivityV2).itemType !== undefined
+}
+
 export type APISearch = {
   users?: APIUser[]
   followed_users?: APIUser[]
