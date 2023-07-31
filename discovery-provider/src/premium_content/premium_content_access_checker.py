@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Dict, List, TypedDict, cast
+from typing import Dict, List, TypedDict, Union, cast
 
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
@@ -47,7 +47,7 @@ class PremiumContentAccessHandler(Protocol):
         user_id: int,
         content_id: int,
         content_type: PremiumContentType,
-        condition_options: dict,
+        condition_options: Union[Dict, int],
     ) -> bool:
         pass
 
