@@ -76,6 +76,19 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	// this is to support clients that forget to leave off the .jpg for this legacy format
 	if strings.HasSuffix(cid, ".jpg") && !strings.Contains(cid, "/") {
 		cid = cid[:len(cid)-4]
+
+		// find and replace cid parameter for future calls
+		names := c.ParamNames()
+		values := c.ParamValues()
+		for i, name := range names {
+			if name == "cid" {
+				values[i] = cid
+			}
+		}
+
+		// set parameters back to the context
+		c.SetParamNames(names...)
+		c.SetParamValues(values...)
 	}
 
 	logger := ss.logger.With("cid", cid)
