@@ -17,9 +17,6 @@ export const relayRateLimiter = async (
   req: FastifyRequest<{ Body: RelayRequestType }>,
   rep: FastifyReply
 ): Promise<void> => {
-  const ip = getIp(req);
-  logger.info(`incoming request from ${ip}`);
-
   const {
     body: { encodedABI },
   } = req;
@@ -40,7 +37,7 @@ export const relayRateLimiter = async (
   try {
     const res = await globalRateLimiter.consume({
       operation,
-      ip,
+      signer,
       limit,
     });
     insertReplyHeaders(rep, res);
@@ -52,18 +49,6 @@ export const relayRateLimiter = async (
     logger.error({ msg: "rate limit internal error", e });
     errorResponseInternal(rep);
   }
-};
-
-const getIp = (req: FastifyRequest): string => {
-  const { socket } = req;
-  const { remoteAddress } = socket;
-  const forwardedFor = req.headers["X-Forwarded-For"];
-  if (forwardedFor) {
-    // could be string[] or string
-    if (Array.isArray(forwardedFor)) return forwardedFor[0];
-    return forwardedFor; // is string
-  }
-  return remoteAddress!;
 };
 
 const getEntityManagerActionKey = (encodedABI: string): string => {

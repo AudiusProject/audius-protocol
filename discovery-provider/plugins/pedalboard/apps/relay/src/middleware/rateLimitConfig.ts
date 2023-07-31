@@ -17,7 +17,7 @@ export type RelayRateLimitConfig = {
 export type RateLimiterKey = {
   operation: Operation;
   limit: ValidLimits;
-  ip: string;
+  signer: string;
 };
 
 // so code is easier to follow
@@ -81,14 +81,14 @@ export class RelayRateLimiter {
 
   /** Rate Limiter Utilities */
   constructRateLimiterKey(key: RateLimiterKey): string {
-    const { operation, limit, ip } = key;
-    return [operation, limit, ip].join(this.keySeparator);
+    const { operation, limit, signer } = key;
+    return [operation, limit, signer].join(this.keySeparator);
   }
 
   deconstructRateLimiterKey(key: string): RateLimiterKey {
-    const [operation, limitStr, ip] = key.split(this.keySeparator);
+    const [operation, limitStr, signer] = key.split(this.keySeparator);
     const limit = limitStr as ValidLimits;
-    return { operation, limit, ip };
+    return { operation, limit, signer };
   }
 }
 
