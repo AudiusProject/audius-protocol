@@ -60,6 +60,7 @@ type CreateSenderParams = Omit<
 > & { feePayerOverride: Nullable<string> }
 
 type MintName = 'usdc' | 'audio'
+const DEFAULT_MINT: MintName = 'audio'
 
 const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -230,8 +231,14 @@ export class SolanaWeb3Manager {
     )
   }
 
-  async doesUserbankExist(sourceEthAddress?: string) {
-    const userbank = await this.deriveUserBank(sourceEthAddress)
+  async doesUserbankExist({
+    sourceEthAddress,
+    mint = DEFAULT_MINT
+  }: {
+    sourceEthAddress?: string
+    mint?: MintName
+  }) {
+    const userbank = await this.deriveUserBank({ sourceEthAddress, mint })
     const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
     return !!tokenAccount
   }
@@ -239,11 +246,15 @@ export class SolanaWeb3Manager {
   /**
    * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
    */
-  async createUserBank(
-    feePayerOverride: string,
-    recipientEthAddress?: string,
-    mint: MintName = 'audio'
-  ) {
+  async createUserBank({
+    feePayerOverride,
+    sourceEthAddress,
+    mint = DEFAULT_MINT
+  }: {
+    feePayerOverride: string
+    sourceEthAddress?: string
+    mint: MintName
+  }) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -252,7 +263,7 @@ export class SolanaWeb3Manager {
 
     const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
-      ethAddress: recipientEthAddress ?? ethAddress,
+      ethAddress: sourceEthAddress ?? ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAs[mint],
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
@@ -267,22 +278,28 @@ export class SolanaWeb3Manager {
    * Creates a userbank if needed.
    * Returns the userbank address as `userbank` if it was created or already existed, or `error` if it failed to create.
    */
-  async createUserBankIfNeeded(
-    feePayerOverride: string,
+  async createUserBankIfNeeded({
+    feePayerOverride,
+    sourceEthAddress,
+    mint = DEFAULT_MINT
+  }: {
+    feePayerOverride: string
     sourceEthAddress?: string
-  ): Promise<
+    mint?: MintName
+  }): Promise<
     | { error: string; errorCode: string | number | null }
     | {
         didExist: boolean
         userbank: solanaWeb3.PublicKey
       }
   > {
-    const didExist = await this.doesUserbankExist(sourceEthAddress)
+    const didExist = await this.doesUserbankExist({ sourceEthAddress, mint })
     if (!didExist) {
-      const response = await this.createUserBank(
+      const response = await this.createUserBank({
         feePayerOverride,
-        sourceEthAddress
-      )
+        sourceEthAddress,
+        mint
+      })
       if (response.error) {
         return {
           error: response.error,
@@ -291,7 +308,7 @@ export class SolanaWeb3Manager {
       }
     }
 
-    const derived = await this.deriveUserBank(sourceEthAddress)
+    const derived = await this.deriveUserBank({ sourceEthAddress, mint })
     return { userbank: derived, didExist }
   }
 
@@ -301,7 +318,7 @@ export class SolanaWeb3Manager {
    */
   async createAssociatedTokenAccount(
     solanaAddress: string,
-    mint: MintName = 'audio'
+    mint: MintName = DEFAULT_MINT
   ) {
     await createAssociatedTokenAccount({
       feePayerKey: this.feePayerKey,
@@ -319,7 +336,7 @@ export class SolanaWeb3Manager {
    */
   async findAssociatedTokenAddress(
     solanaAddress: string,
-    mint: MintName = 'audio'
+    mint: MintName = DEFAULT_MINT
   ) {
     return await findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
@@ -331,7 +348,13 @@ export class SolanaWeb3Manager {
   /**
    * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
    */
-  async deriveUserBank(sourceEthAddress?: string, mint: MintName = 'audio') {
+  async deriveUserBank({
+    sourceEthAddress,
+    mint = DEFAULT_MINT
+  }: {
+    sourceEthAddress?: string
+    mint?: MintName
+  }) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -353,7 +376,10 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(solanaAddress: string, mint: MintName = 'audio') {
+  async getTokenAccountInfo(
+    solanaAddress: string,
+    mint: MintName = DEFAULT_MINT
+  ) {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),

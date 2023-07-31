@@ -723,10 +723,10 @@ export class RewardsAttester {
       throw Error('Unexpectedly missing feepayer override')
     }
 
-    const res = await this.libs.solanaWeb3Manager!.createUserBankIfNeeded(
+    const res = await this.libs.solanaWeb3Manager!.createUserBankIfNeeded({
       feePayerOverride,
-      wallet
-    )
+      sourceEthAddress: wallet
+    })
 
     if ('error' in res) {
       this.logger.error(
