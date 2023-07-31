@@ -1,6 +1,6 @@
 ---
 sidebar_label: REST API
-sidebar_position: 1
+sidebar_position: 2
 description: >-
   The Audius API is entirely free to use. We ask that you adhere to the
   guidelines in this doc and always credit artists.
@@ -16,4 +16,4 @@ Try it out!
 curl https://discoveryprovider.audius.co/v1/tracks/trending?app_name=ExampleApp
 ```
 
-## [Full API Reference](https://audiusproject.github.io/api-docs/#audius-api-docs)  👈  
+## [Full API Reference](https://audiusproject.github.io/api-docs/#audius-api-docs) 👈

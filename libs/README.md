@@ -36,6 +36,8 @@ If your project is in a Node.js environment, run this in your terminal:
 npm install web3 @audius/sdk
 ```
 
+[@audius/sdk on NPM](https://www.npmjs.com/package/@audius/sdk)
+
 ### HTML + JS
 
 Otherwise, include the SDK script tag in your web page. The Audius SDK will then be assigned to `window.audiusSdk`.
@@ -56,10 +58,6 @@ If you plan to write data to Audius (e.g. upload a track, favorite a playlist, e
 ```js title="In Node.js environment"
 import { sdk } from '@audius/sdk'
 
-// If client-side, do NOT include the API secret:
-const audiusSdk = sdk({ apiKey: 'Your API Key goes here' })
-
-// If server-side, include the API secret if you plan to write data using the SDK – e.g. upload a track, favorite a playlist, etc.
 const audiusSdk = sdk({
   apiKey: 'Your API Key goes here',
   apiSecret: 'Your API Secret goes here'
@@ -74,7 +72,7 @@ const audiusSdk = window.audiusSdk({ apiKey: 'Your API key goes here' })
 
 :::warning
 
-Do NOT include your API secret if you are running the SDK on the client side, as this will expose your secret.
+Do NOT include your API secret if you are running the SDK on the frontend, as this will expose your secret.
 
 :::
 
@@ -109,15 +107,11 @@ const track = await audiusSdk.tracks.favoriteTrack({
 ## Full Node.js example
 
 ```js title="app.js" showLineNumbers
-import Web3 from 'web3'
 import { sdk } from '@audius/sdk'
-
-// If running in a browser, set window.Web3
-window.Web3 = Web3
 
 const audiusSdk = sdk({
   apiKey: 'Your API Key goes here',
-  apiSecret: 'Your API Secret goes here' // EXCLUDE this if running client-side
+  apiSecret: 'Your API Secret goes here'
 })
 
 const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
@@ -129,7 +123,6 @@ const userId = (
   })
 ).data?.id
 
-// Only possible if `apiSecret` is passed into `sdk` above:
 const track = await audiusSdk.tracks.favoriteTrack({
   trackId: 'D7KyD',
   userId
@@ -139,7 +132,24 @@ console.log('Track favorited!')
 
 :::note
 
-If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package
+Writing data (such as uploading or favoriting a track) is only possible if you provide an apiSecret
+
+:::
+
+:::note
+
+If you are using the sdk in a browser environment you will need to do:
+
+```js
+import Web3 from 'web3'
+window.Web3 = Web3
+```
+
+:::
+
+:::note
+
+If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package.
 
 :::
 

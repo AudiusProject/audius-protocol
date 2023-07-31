@@ -6,7 +6,6 @@ sidebar_position: 3
 # Log In with Audius
 
 <p align="center">
-<img src="/img/readOAuth2.png" width="341" alt="Log In with Audius popup" />
 <img src="/img/writeOAuth.png" width="252" alt="Log In with Audius popup" />
 <center><sup><i>UI for read and read/write authorization flows</i></sup></center>
 </p>
