@@ -128,12 +128,8 @@ function setLastIndexedTimestamp(
         notifications.length - 1
       ].notification.timestamp.toISOString()
     redis.set(redisKey, lastIndexedTimestamp)
-    // TODO remove
-    // console.log(`dmNotifications task: setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
   } else {
     redis.set(redisKey, maxTimestamp.toISOString())
-    // TODO remove
-    // console.log(`dmNotifications task: setting last indexed timestamp to ${maxTimestamp.toISOString()} for key ${redisKey}`)
   }
 }
 
@@ -157,15 +153,12 @@ export async function sendDMNotifications(
     const cursors = await getCursors(redis)
 
     timer.logMessage(DMPhase.GET_UNREAD_MESSAGES)
-    // TODO remove
-    // console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
     const unreadMessages = await getUnreadMessages(
       discoveryDB,
       cursors.minMessageTimestamp,
       cursors.maxTimestamp
     )
     if (unreadMessages.length > 0) {
-      // TODO remove
       console.log(
         `dmNotifications: unread message notifications: ${JSON.stringify(
           unreadMessages
@@ -181,7 +174,6 @@ export async function sendDMNotifications(
       cursors.maxTimestamp
     )
     if (unreadReactions.length > 0) {
-      // TODO remove
       console.log(
         `dmNotifications: unread message reaction notifications: ${JSON.stringify(
           unreadReactions

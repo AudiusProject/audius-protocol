@@ -33,20 +33,20 @@ export const PremiumConditionsNFTCollection = z.union([
 
 export const PremiumConditionsFollowUserId = z
   .object({
-    followUserId: z.number()
+    followUserId: HashId
   })
   .strict()
 
 export const PremiumConditionsTipUserId = z
   .object({
-    tipUserId: z.number()
+    tipUserId: HashId
   })
   .strict()
 
 export const createUploadTrackMetadataSchema = () =>
   z
     .object({
-      aiAttributionUserId: z.optional(z.number()),
+      aiAttributionUserId: z.optional(HashId),
       description: z.optional(z.string().max(1000)),
       download: z.optional(
         z
@@ -90,7 +90,7 @@ export const createUploadTrackMetadataSchema = () =>
             tracks: z
               .array(
                 z.object({
-                  parentTrackId: z.number()
+                  parentTrackId: HashId
                 })
               )
               .min(1)

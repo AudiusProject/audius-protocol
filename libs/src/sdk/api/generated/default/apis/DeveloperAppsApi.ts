@@ -32,7 +32,7 @@ export interface GetDeveloperAppRequest {
  */
 export class DeveloperAppsApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Gets developer app matching given address (API key)
      */
     async getDeveloperAppRaw(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperAppResponse>> {

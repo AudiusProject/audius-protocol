@@ -14,7 +14,7 @@ export const UpdateProfileSchema = z
         bio: z.optional(z.string()),
         location: z.optional(z.string()),
         isDeactivated: z.optional(z.boolean()),
-        artistPickTrackId: z.optional(z.number())
+        artistPickTrackId: z.optional(HashId)
       })
       .strict()
   })

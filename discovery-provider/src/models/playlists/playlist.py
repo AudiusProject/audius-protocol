@@ -75,7 +75,8 @@ class Playlist(Base, RepresentableMixin):
     @property
     def permalink(self):
         if self.user and self.user[0].handle and self._slug:
-            return f"/{self.user[0].handle}/playlist/{self._slug}"
+            collection_type = 'album' if self.is_album else 'playlist'
+            return f"/{self.user[0].handle}/{collection_type}/{self._slug}"
         return ""
 
     # unpacking args into @validates

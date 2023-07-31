@@ -19,18 +19,21 @@ import {
 import {
   BlockConfirmation,
   EntityManagerConfig,
+  EntityManagerConfigInternal,
   EntityManagerService,
   ManageEntityOptions
 } from './types'
+import type { LoggerService } from '../Logger'
 
 export class EntityManager implements EntityManagerService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private readonly config: EntityManagerConfig
+  private readonly config: EntityManagerConfigInternal
 
   private readonly contract: Contract
   private readonly web3: Web3Type
+  private readonly logger: LoggerService
 
   constructor(config?: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
@@ -43,6 +46,7 @@ export class EntityManager implements EntityManagerService {
       EntityManagerABI as AbiItem[],
       this.config.contractAddress
     )
+    this.logger = this.config.logger.createPrefixedLogger('[entity-manager]')
   }
 
   /**
@@ -115,7 +119,7 @@ export class EntityManager implements EntityManagerService {
         blockNumber: jsonResponse.receipt.blockNumber
       }
     } else if (response.status === 429) {
-      console.error(
+      this.logger.error(
         'API Rate Limit Exceeded: You have exceeded the allowed number of requests for this action. Please wait and try again later. If you require a higher rate limit, please send an email to api@audius.co with your request, detailing the reasons and expected usage.'
       )
       throw new Error(

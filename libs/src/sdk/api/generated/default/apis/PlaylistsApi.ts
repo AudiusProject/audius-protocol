@@ -54,7 +54,7 @@ export interface SearchPlaylistsRequest {
  */
 export class PlaylistsApi extends runtime.BaseAPI {
 
-    /**
+    /** @hidden
      * Get a playlist by ID
      */
     async getPlaylistRaw(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistResponse>> {
@@ -88,7 +88,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Fetch tracks within a playlist.
      */
     async getPlaylistTracksRaw(requestParameters: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistTracksResponse>> {
@@ -118,7 +118,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Gets trending playlists for a time period
      */
     async getTrendingPlaylistsRaw(requestParameters: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingPlaylistsResponse>> {
@@ -148,7 +148,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
+    /** @hidden
      * Search for a playlist
      */
     async searchPlaylistsRaw(requestParameters: SearchPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistSearchResult>> {

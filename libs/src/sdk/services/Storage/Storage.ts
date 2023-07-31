@@ -8,6 +8,7 @@ import type {
   ProgressCB,
   StorageService,
   StorageServiceConfig,
+  StorageServiceConfigInternal,
   UploadResponse
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
@@ -22,17 +23,20 @@ import { sortObjectKeys } from '../Auth/utils'
 import type { AuthService } from '../Auth'
 import { isNodeFile } from '../../types/File'
 import type { CrossPlatformFile as File } from '../../types/File'
+import type { LoggerService } from '../Logger'
 
 export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private readonly config: StorageServiceConfig
+  private readonly config: StorageServiceConfigInternal
   private readonly storageNodeSelector: StorageNodeSelectorService
+  private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
     this.storageNodeSelector = this.config.storageNodeSelector
+    this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
   /**
@@ -177,7 +181,7 @@ export class Storage implements StorageService {
         }
 
         // Swallow errors caused by failure to establish connection to node so we can retry polling
-        console.error(`Failed to poll for processing status, ${e}`)
+        this.logger.error(`Failed to poll for processing status, ${e}`)
       }
 
       await wait(POLL_STATUS_INTERVAL)

@@ -3,6 +3,7 @@ import type {
   EntityManagerService,
   WriteOptions
 } from '../../services/EntityManager/types'
+import type { LoggerService } from '../../services/Logger'
 import { parseRequestParameters } from '../../utils/parseRequestParameters'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
@@ -31,13 +32,15 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    auth: AuthService
+    auth: AuthService,
+    logger: LoggerService
   ) {
     this.playlistsApi = new PlaylistsApi(
       configuration,
       storage,
       entityManager,
-      auth
+      auth,
+      logger
     )
   }
 
@@ -53,7 +56,7 @@ export class AlbumsApi {
   }
 
   // WRITES
-  /**
+  /** @hidden
    * Upload an album
    * Uploads the specified tracks and combines them into an album
    */
@@ -88,7 +91,7 @@ export class AlbumsApi {
     }
   }
 
-  /**
+  /** @hidden
    * Update an album
    */
   async updateAlbum(
@@ -117,7 +120,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Delete an album
    */
   async deleteAlbum(
@@ -138,7 +141,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Favorite an album
    */
   async favoriteAlbum(
@@ -159,7 +162,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Unfavorite an album
    */
   async unfavoriteAlbum(
@@ -179,7 +182,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Repost an album
    */
   async repostAlbum(
@@ -201,7 +204,7 @@ export class AlbumsApi {
     )
   }
 
-  /**
+  /** @hidden
    * Unrepost an album
    */
   async unrepostAlbum(

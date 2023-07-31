@@ -1,10 +1,13 @@
 import { productionConfig } from '../../config'
 import { Auth } from '../Auth/Auth'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
-import type { StorageNodeSelectorConfig } from './types'
+import { Logger } from '../Logger'
+import type { StorageNodeSelectorConfigInternal } from './types'
 
-export const defaultStorageNodeSelectorConfig: StorageNodeSelectorConfig = {
-  bootstrapNodes: productionConfig.storageNodes,
-  auth: new Auth(),
-  discoveryNodeSelector: new DiscoveryNodeSelector()
-}
+export const defaultStorageNodeSelectorConfig: StorageNodeSelectorConfigInternal =
+  {
+    bootstrapNodes: productionConfig.storageNodes,
+    auth: new Auth(),
+    discoveryNodeSelector: new DiscoveryNodeSelector(),
+    logger: new Logger()
+  }

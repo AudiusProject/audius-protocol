@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mediorum/cidutil"
 	"mediorum/server/signature"
 	"mime"
 	"net/http"
@@ -30,53 +31,10 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) getBlobProblems(c echo.Context) error {
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	return c.JSON(200, problems)
-}
-
-func (ss *MediorumServer) getBlobBroken(c echo.Context) error {
-	ctx := c.Request().Context()
-	problems, err := ss.findProblemBlobs(false)
-	if err != nil {
-		return err
-	}
-	results := map[string]string{}
-	for _, problem := range problems {
-		_, isMine := ss.rendezvous(problem.Key)
-		if !isMine {
-			continue
-		}
-		r, err := ss.bucket.NewReader(ctx, problem.Key, nil)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-
-		// don't validate legacy CIDs because their hash won't match the file contents
-		if isLegacyCID(problem.Key) {
-			continue
-		}
-
-		defer r.Close()
-		cid, err := computeFileCID(r)
-		if err != nil {
-			results[problem.Key] = err.Error()
-			continue
-		}
-		if cid != problem.Key {
-			results[problem.Key] = fmt.Sprintf("computed cid %s", cid)
-		}
-	}
-	return c.JSON(200, results)
-}
-
 func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
+	cid := c.Param("cid")
+	key := cidutil.ShardCID(cid)
 	attr, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
@@ -112,14 +70,36 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
-	logger := ss.logger.With("cid", key)
+	cid := c.Param("cid")
 
+	// the only keys we store with ".jpg" suffixes are of the format "<cid>/<size>.jpg", so remove the ".jpg" if it's just like "<cid>.jpg"
+	// this is to support clients that forget to leave off the .jpg for this legacy format
+	if strings.HasSuffix(cid, ".jpg") && !strings.Contains(cid, "/") {
+		cid = cid[:len(cid)-4]
+
+		// find and replace cid parameter for future calls
+		names := c.ParamNames()
+		values := c.ParamValues()
+		for i, name := range names {
+			if name == "cid" {
+				values[i] = cid
+			}
+		}
+
+		// set parameters back to the context
+		c.SetParamNames(names...)
+		c.SetParamValues(values...)
+	}
+
+	logger := ss.logger.With("cid", cid)
+	key := cidutil.ShardCID(cid)
+
+	// return 403 if the requested CID is delisted
 	shouldCheckDelistStatus := true
 	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
 		shouldCheckDelistStatus = false
 	}
-	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, key) {
+	if shouldCheckDelistStatus && ss.isCidBlacklisted(ctx, cid) {
 		logger.Info("cid is blacklisted")
 		return c.String(403, "cid is blacklisted by this node")
 	}
@@ -131,11 +111,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	if isLegacyCID(key) {
-		logger.Debug("serving legacy cid")
-		return ss.serveLegacyCid(c)
-	}
-
+	// check our bucket and serve the file if we have it
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
 		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -158,28 +134,47 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return c.NoContent(200)
 		}
 
-		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 		return nil
 	}
 
 	// redirect to it
+	host, err := ss.findNodeToServeBlob(cid)
+	if err == nil && host != "" {
+		dest := ss.replaceHost(c, host)
+		return c.Redirect(302, dest.String())
+	}
+
+	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
+	if cidutil.IsLegacyCID(cid) {
+		logger.Debug("serving legacy cid")
+		return ss.serveLegacyCid(c)
+	}
+
+	if err != nil {
+		logger.Warn("error finding node to serve blob", "err", err)
+		return err
+	}
+	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
 		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
 	if err != nil {
-		return err
+		return "", err
 	}
+
 	for _, blob := range blobs {
-		// do a check server is up and has blob
 		if ss.hostHasBlob(blob.Host, key) {
-			dest := ss.replaceHost(c, blob.Host)
-			return c.Redirect(302, dest.String())
+			return blob.Host, nil
 		}
 	}
 
-	return c.String(404, "blob not found")
+	return "", nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
@@ -306,7 +301,8 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 
 func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("cid")
+	cid := c.Param("cid")
+	key := cidutil.ShardCID(cid)
 
 	blob, err := ss.bucket.NewReader(ctx, key, nil)
 	if err != nil {
@@ -335,7 +331,7 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 		}
 		defer inp.Close()
 
-		err = validateCID(cid, inp)
+		err = cidutil.ValidateCID(cid, inp)
 		if err != nil {
 			logger.Info("postBlob got invalid CID", "err", err)
 			return c.JSON(400, map[string]string{
