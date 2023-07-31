@@ -64,11 +64,6 @@ function* getTracks({ offset, limit }) {
       trackIds: allSavedTrackIds.filter((id) => id !== null)
     })
     const tracksMap = tracks.reduce((map, track) => {
-      // If the track hasn't confirmed save from the backend, pretend it is for the client.
-      if (!track.has_current_user_saved) {
-        track.has_current_user_saved = true
-        track.save_count += 1
-      }
       track.dateSaved = allSavedTrackTimestamps[track.track_id]
 
       map[track.track_id] = track
