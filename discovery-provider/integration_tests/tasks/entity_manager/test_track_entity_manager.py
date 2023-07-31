@@ -128,6 +128,7 @@ def test_index_valid_track(app, mocker):
             "isrc": "",
             "iswc": "",
             "is_playlist_upload": True,
+            "duration": 200
         },
         "QmCreateTrack3": {
             "owner_id": 1,
@@ -212,7 +213,6 @@ def test_index_valid_track(app, mocker):
             "description": "updated description"
         },
         "QmUpdateTrack2": {
-            "duration": 200,
             "is_unlisted": False
         },
     }
@@ -523,11 +523,16 @@ def test_index_invalid_tracks(app, mocker):
         },
         "QmInvalidUnlistTrack1Update": {
             "is_unlisted": True
+        },
+        "InvalidTrackIdUpdate": {
+            "track_id": 1234,
+            "bogus_field": "bogus"
         }
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
     invalid_unlist_track1_json = json.dumps(test_metadata["QmInvalidUnlistTrack1Update"])
+    invalid_track_id_update = json.dumps(test_metadata["InvalidTrackIdUpdate"])
 
     tx_receipts = {
         # invalid create
@@ -728,6 +733,20 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
+        "InvalidTrackIdUpdate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "InvalidTrackIdUpdate", "data": {invalid_track_id_update}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         # invalid deletes
         "DeleteTrackInvalidSigner": [
             {
@@ -881,7 +900,9 @@ def test_index_invalid_tracks(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()        
-        assert len(all_tracks) == 1  # no new tracks indexed
+        assert len(all_tracks) == 2
+        current_track: List[Track] = session.query(Track).filter(Track.is_current == True).first()      
+        assert current_track.track_id == TRACK_ID_OFFSET
 
 
 def test_invalid_track_description(app, mocker):

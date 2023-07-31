@@ -84,7 +84,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			preferredHosts, isMine := ss.rendezvous(cid)
 			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
 
-			// TODO(theo): Don't repair Qm CIDs for now (isMine will still be true). Remove this once all nodes have enough space to store Qm CIDs
+			// TODO(theo): Don't repair Qm keys for now (isMine will still be true). Remove this once all nodes have enough space to store Qm keys
 			if cidutil.IsLegacyCID(cid) {
 				myRank = 999
 			}
@@ -103,7 +103,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			}
 
 			// in cleanup mode do some extra checks:
-			// - validate CID, delete if invalid (doesn't apply to Qm CIDs because their hash is not the CID)
+			// - validate CID, delete if invalid (doesn't apply to Qm keys because their hash is not the CID)
 			if cleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
 				if r, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
 					err := cidutil.ValidateCID(cid, r)

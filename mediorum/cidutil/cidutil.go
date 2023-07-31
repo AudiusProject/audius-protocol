@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"path/filepath"
+	"strings"
 
 	"github.com/ipfs/go-cid"
 	"github.com/multiformats/go-multihash"
@@ -45,18 +46,28 @@ func ValidateCID(expectedCID string, f io.ReadSeeker) error {
 	return nil
 }
 
+// Returns true both for "Qm" CIDs AND for for keys like "Qmwhatever/150x150.jpg" to support legacy migrated keys
 func IsLegacyCID(cid string) bool {
-	return len(cid) == 46 && cid[:2] == "Qm"
+	return strings.HasPrefix(cid, "Qm")
+}
+
+// Only returns true for exact v0 CIDs (46 chars and start with "Qm")
+func IsLegacyCIDStrict(cid string) bool {
+	return IsLegacyCID(cid) && len(cid) == 46
 }
 
 // Returns a sharded filepath/key for CID based on CID version.
 // V0: last 3 chars, offset by 1
 // V1: last 5 chars
+// Fallback: unchanged (for legacy migrated keys like "Qm.../150x150.jpg")
 func ShardCID(cidStr string) string {
-	if IsLegacyCID(cidStr) {
+	if IsLegacyCIDStrict(cidStr) {
 		return shardLegacyCID(cidStr)
 	}
-	return shardCIDV1(cidStr)
+	if strings.HasPrefix(cidStr, "ba") {
+		return shardCIDV1(cidStr)
+	}
+	return cidStr
 }
 
 // Returns sharded filepath for CID V0. Ex: returns "QuP/QmY7Yh4UquoXHLPFo2XbhXkhBvFoPwmQUSa92pxnxjQuPU" for "QmY7Yh4UquoXHLPFo2XbhXkhBvFoPwmQUSa92pxnxjQuPU"

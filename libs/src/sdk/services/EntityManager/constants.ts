@@ -1,13 +1,14 @@
-import type { EntityManagerConfig } from './types'
+import type { EntityManagerConfigInternal } from './types'
 import { productionConfig } from '../../config'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import { Logger } from '../Logger'
 
-export const defaultEntityManagerConfig: EntityManagerConfig = {
+export const defaultEntityManagerConfig: EntityManagerConfigInternal = {
   contractAddress: productionConfig.entityManagerContractAddress,
   web3ProviderUrl: productionConfig.web3ProviderUrl,
   identityServiceUrl: productionConfig.identityServiceUrl,
   discoveryNodeSelector: new DiscoveryNodeSelector(),
+  useDiscoveryRelay: false,
   logger: new Logger()
 }
 

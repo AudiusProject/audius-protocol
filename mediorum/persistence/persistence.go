@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gocloud.dev/blob"
@@ -87,6 +88,23 @@ func checkStorageCredentials(blobDriverUrl string) error {
 				log.Println("failed to create local persistent storage dir: ", err)
 				return err
 			}
+		}
+
+		// clean up .tmp files left behind by fileblob driver
+		err := filepath.WalkDir(uri, func(path string, d os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if !d.IsDir() && strings.HasSuffix(d.Name(), ".tmp") {
+				if err := os.Remove(path); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			log.Println("failed to clean up temp files: " + err.Error())
 		}
 
 		return nil

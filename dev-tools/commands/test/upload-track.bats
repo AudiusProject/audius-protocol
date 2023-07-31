@@ -4,7 +4,7 @@ setup_file() {
     load 'common-setup'
     _common_setup
 
-    export TEST_HANDLE="test-user-handle-$RANDOM"
+    export TEST_HANDLE="test_$RANDOM"
     timeout 120s npm run audius-cmd -- create-user "$TEST_HANDLE"
 }
 
