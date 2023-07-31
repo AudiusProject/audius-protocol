@@ -122,7 +122,7 @@ export const parseSplWallet = async (arg) => {
     if (!splWallet) {
       const { userbank } =
         await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded({
-          wallet: ercWallet,
+          sourceEthAddress: ercWallet,
         });
       return userbank;
     }
