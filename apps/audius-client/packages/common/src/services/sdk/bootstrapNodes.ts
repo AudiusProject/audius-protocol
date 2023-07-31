@@ -288,10 +288,6 @@ const productionBootstrapNodes = [
     endpoint: 'https://audius-content-1.jollyworld.xyz'
   },
   {
-    delegateOwnerWallet: '0xF3C9a244d87300D376402c85AC60f64e628Bf600',
-    endpoint: 'https://audius-content-1.decentralizeaudio.xyz'
-  },
-  {
     delegateOwnerWallet: '0x0E0aF7035581C615d07372be16D99A9B64E5B2e9',
     endpoint: 'https://audius-creator-1.theblueprint.xyz'
   },
