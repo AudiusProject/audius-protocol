@@ -61,7 +61,6 @@ export const servicesConfig: ServicesConfig = {
     "https://audius-discovery-2.cultur3stake.com",
     "https://blockdaemon-audius-discovery-08.bdnodes.net",
     "https://audius-metadata-5.figment.io",
-    "https://audius-metadata-1.decentralizeaudio.xyz",
     "https://dn1.stuffisup.com",
     "https://audius-discovery-1.theblueprint.xyz",
     "https://audius-discovery-2.theblueprint.xyz",
@@ -313,10 +312,6 @@ export const servicesConfig: ServicesConfig = {
     {
       "endpoint": "https://audius-content-1.jollyworld.xyz",
       "delegateOwnerWallet": "0x125A9f40CFB329266ef415b9510D4E716Dba8Da6"
-    },
-    {
-      "endpoint": "https://audius-content-1.decentralizeaudio.xyz",
-      "delegateOwnerWallet": "0xF3C9a244d87300D376402c85AC60f64e628Bf600"
     },
     {
       "endpoint": "https://audius-creator-1.theblueprint.xyz",
