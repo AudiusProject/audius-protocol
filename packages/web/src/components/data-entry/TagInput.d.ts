@@ -1,6 +1,8 @@
 export type TagInputProps = {
   placeholder?: string
-  defaultTags: string[]
+  defaultTags?: string[]
+  // For controlled input
+  tags?: Set<string>
   maxTags?: number
   maxCharacters?: number
   minCharacters?: number

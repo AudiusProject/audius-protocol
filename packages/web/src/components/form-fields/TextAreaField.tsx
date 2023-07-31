@@ -8,9 +8,9 @@ type TextAreaFieldProps = TextAreaV2Props & {
 
 export const TextAreaField = (props: TextAreaFieldProps) => {
   const { name, ...other } = props
-  const [field, meta] = useField(name)
+  const [{ value, ...field }, meta] = useField(name)
 
   const hasError = Boolean(meta.touched && meta.error)
 
-  return <TextAreaV2 {...field} error={hasError} {...other} />
+  return <TextAreaV2 value={value} {...field} error={hasError} {...other} />
 }
