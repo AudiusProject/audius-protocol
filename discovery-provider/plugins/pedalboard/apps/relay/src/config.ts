@@ -9,6 +9,7 @@ import { logger } from "./logger";
 export type Config = {
   environment: string;
   rpcEndpoint: string;
+  acdcChainId: string;
   entityManagerContractAddress: string;
   entityManagerContractRegistryKey: string;
   requiredConfirmations: number;
@@ -20,7 +21,8 @@ export type Config = {
 export const readConfig = (): Config => {
   dotenv.config();
   const entityManagerContractAddress = (): string => {
-    switch (process.env.ENVIRONMENT) {
+    const environment = process.env.environment || "stage"
+    switch (environment) {
       case "prod":
         return productionConfig.entityManagerContractAddress;
       case "stage":
@@ -32,7 +34,8 @@ export const readConfig = (): Config => {
   logger.info(`running on ${process.env.ENVIRONMENT} network`);
   return {
     environment: process.env.environment || "dev",
-    rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
+    rpcEndpoint: process.env.rpcEndpoint || "https://poa-gateway.staging.audius.co",
+    acdcChainId: process.env.acdcChainId || "1056801",
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
     requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
