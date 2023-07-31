@@ -1,10 +1,9 @@
 import {
-  cacheTracksSelectors,
   formatUSDCWeiToUSDString,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  useGetTrackById
 } from '@audius/common'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
 import { LockedStatusBadge, Text } from 'app/components/core'
@@ -16,8 +15,6 @@ import { useColor } from 'app/utils/theme'
 import { TrackDetailsTile } from '../track-details-tile'
 
 import { StripePurchaseConfirmationButton } from './StripePurchaseConfirmationButton'
-
-const { getTrack } = cacheTracksSelectors
 
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
@@ -97,13 +94,13 @@ export const PremiumTrackPurchaseDrawer = () => {
   const neutralLight2 = useColor('neutralLight2')
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
-  const track = useSelector((state) => getTrack(state, { id: trackId }))
-
+  const { data: track } = useGetTrackById(
+    { id: trackId },
+    { disabled: !trackId }
+  )
   const { premium_conditions: premiumConditions } = track ?? {}
-
   if (!track || !isPremiumContentUSDCPurchaseGated(premiumConditions))
     return null
-
   const price = formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
 
   return (
