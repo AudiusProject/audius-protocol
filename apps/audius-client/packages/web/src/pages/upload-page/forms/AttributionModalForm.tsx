@@ -13,12 +13,13 @@ import { Divider } from 'components/divider'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
-import { EditFormValues } from '../components/EditPageNew'
 import { ModalField } from '../fields/ModalField'
 import { SwitchRowField } from '../fields/SwitchRowField'
 import { computeLicenseIcons } from '../utils/computeLicenseIcons'
 
 import styles from './AttributionModalForm.module.css'
+import { SingleTrackEditValues } from './types'
+import { useTrackField } from './utils'
 const { computeLicense } = creativeCommons
 
 const messages = {
@@ -68,8 +69,12 @@ const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const AI_USER_ID = 'ai_attribution_user_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
+const LICENSE_TYPE = 'licenseType'
+const ALLOW_ATTRIBUTION_BASE = 'allowAttribution'
 const ALLOW_ATTRIBUTION = 'licenseType.allowAttribution'
+const COMMERCIAL_USE_BASE = 'commercialUse'
 const COMMERCIAL_USE = 'licenseType.commercialUse'
+const DERIVATIVE_WORKS_BASE = 'derivativeWorks'
 const DERIVATIVE_WORKS = 'licenseType.derivativeWorks'
 
 const allowAttributionValues = [
@@ -91,6 +96,8 @@ const derivativeWorksValues = [
 type AttributionFormValues = {
   [IS_AI_ATTRIBUTED]: boolean
   [AI_USER_ID]?: number
+  [ISRC]: string
+  [ISWC]: string
   [ALLOW_ATTRIBUTION]: boolean
   [COMMERCIAL_USE]: boolean
   [DERIVATIVE_WORKS]: Nullable<boolean>
@@ -98,21 +105,30 @@ type AttributionFormValues = {
 
 export const AttributionModalForm = () => {
   const [{ value: aiUserId }, , { setValue: setAiUserId }] =
-    useField<EditFormValues[typeof AI_USER_ID]>(AI_USER_ID)
+    useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
-    useField<EditFormValues[typeof ISRC]>(ISRC)
+    useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
-    useField<EditFormValues[typeof ISWC]>(ISWC)
+    useTrackField<SingleTrackEditValues[typeof ISWC]>(ISWC)
   const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
-    useField<boolean>(ALLOW_ATTRIBUTION)
+    useTrackField<
+      SingleTrackEditValues[typeof LICENSE_TYPE][typeof ALLOW_ATTRIBUTION_BASE]
+    >(ALLOW_ATTRIBUTION)
   const [{ value: commercialUse }, , { setValue: setCommercialUse }] =
-    useField<boolean>(COMMERCIAL_USE)
+    useTrackField<
+      SingleTrackEditValues[typeof LICENSE_TYPE][typeof COMMERCIAL_USE_BASE]
+    >(COMMERCIAL_USE)
   const [{ value: derivativeWorks }, , { setValue: setDerivateWorks }] =
-    useField<Nullable<boolean>>(DERIVATIVE_WORKS)
+    useTrackField<
+      SingleTrackEditValues[typeof LICENSE_TYPE][typeof DERIVATIVE_WORKS_BASE]
+    >(DERIVATIVE_WORKS)
 
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
+    if (aiUserId) {
+      set(initialValues, IS_AI_ATTRIBUTED, true)
+    }
     set(initialValues, ISRC, isrcValue)
     set(initialValues, ISWC, iswcValue)
     set(initialValues, ALLOW_ATTRIBUTION, allowAttribution)
@@ -130,7 +146,7 @@ export const AttributionModalForm = () => {
 
   const onSubmit = useCallback(
     (values: AttributionFormValues) => {
-      if (values[IS_AI_ATTRIBUTED]) {
+      if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID))
       } else {
         setAiUserId(undefined)
@@ -138,7 +154,7 @@ export const AttributionModalForm = () => {
       setIsrc(get(values, ISRC))
       setIswc(get(values, ISWC))
       setAllowAttribution(get(values, ALLOW_ATTRIBUTION))
-      if (values[ALLOW_ATTRIBUTION]) {
+      if (get(values, ALLOW_ATTRIBUTION)) {
         setCommercialUse(get(values, COMMERCIAL_USE))
         setDerivateWorks(get(values, DERIVATIVE_WORKS))
       } else {
@@ -191,11 +207,11 @@ const AttributionModalFields = () => {
   const [iswcField] = useField(ISWC)
 
   const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
-    useField<boolean>('allowAttribution')
+    useField<boolean>(ALLOW_ATTRIBUTION)
   const [{ value: commercialUse }, , { setValue: setCommercialUse }] =
-    useField<boolean>('commercialUse')
+    useField<boolean>(COMMERCIAL_USE)
   const [{ value: derivativeWorks }, , { setValue: setDerivateWorks }] =
-    useField<Nullable<boolean>>('derivativeWorks')
+    useField<Nullable<boolean>>(DERIVATIVE_WORKS)
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -260,7 +276,8 @@ const AttributionModalFields = () => {
               {messages.allowAttribution.header}
             </Text>
             <SegmentedControl
-              defaultSelected={allowAttribution}
+              // @ts-ignore boolean support works
+              selected={allowAttribution}
               // @ts-ignore boolean support works
               options={allowAttributionValues}
               // @ts-ignore
@@ -283,7 +300,8 @@ const AttributionModalFields = () => {
             </Text>
             <SegmentedControl
               fullWidth
-              defaultSelected={commercialUse}
+              // @ts-ignore boolean support works
+              selected={commercialUse}
               // @ts-ignore boolean support works
               options={commercialUseValues}
               // @ts-ignore
@@ -304,7 +322,8 @@ const AttributionModalFields = () => {
           </Text>
           <SegmentedControl
             fullWidth
-            defaultSelected={derivativeWorks}
+            // @ts-ignore boolean support works
+            selected={derivativeWorks}
             // @ts-ignore boolean support works
             options={derivativeWorksValues}
             // @ts-ignore

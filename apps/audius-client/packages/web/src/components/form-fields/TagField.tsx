@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { removeNullable } from '@audius/common'
 import { useField } from 'formik'
@@ -10,10 +10,14 @@ type TagFieldProps = Partial<TagInputProps> & {
 }
 export const TagField = (props: TagFieldProps) => {
   const { name, ...other } = props
-  const [field, , { setValue }] = useField(name)
+  const [field, , { setValue }] = useField<string>(name)
   const { value, ...otherField } = field
 
-  const tags = value.split(',').filter(removeNullable)
+  const tagList = useMemo(
+    () => (value ?? '').split(',').filter(removeNullable),
+    [value]
+  )
+  const tagSet = useMemo(() => new Set(value ? tagList : []), [tagList, value])
 
   const handleChangeTags = useCallback(
     (value: Set<string>) => setValue([...value].join(',')),
@@ -22,7 +26,7 @@ export const TagField = (props: TagFieldProps) => {
 
   return (
     <TagInput
-      defaultTags={tags}
+      tags={tagSet}
       {...otherField}
       onChangeTags={handleChangeTags}
       {...other}

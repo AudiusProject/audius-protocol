@@ -70,7 +70,6 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
             initialVisibleMonth={() => moment()} // PropTypes.func or null,
             hideKeyboardShortcutsPanel
-            small
             noBorder
           />
         </div>
