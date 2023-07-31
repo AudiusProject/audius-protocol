@@ -74,6 +74,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	logger := ss.logger.With("cid", cid)
 	key := cidutil.ShardCID(cid)
 
+	// return 403 if the requested CID is delisted
 	shouldCheckDelistStatus := true
 	if checkedDelistStatus, exists := c.Get("checkedDelistStatus").(bool); exists && checkedDelistStatus {
 		shouldCheckDelistStatus = false
@@ -90,11 +91,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	if cidutil.IsLegacyCID(cid) {
-		logger.Debug("serving legacy cid")
-		return ss.serveLegacyCid(c)
-	}
-
+	// check our bucket and serve the file if we have it
 	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
 		isAudioFile := strings.HasPrefix(attrs.ContentType, "audio")
 		// detect mime type and block mp3 streaming outside of the /tracks/cidstream route
@@ -122,23 +119,42 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// redirect to it
+	host, err := ss.findNodeToServeBlob(cid)
+	if err == nil && host != "" {
+		dest := ss.replaceHost(c, host)
+		return c.Redirect(302, dest.String())
+	}
+
+	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
+	if cidutil.IsLegacyCID(cid) {
+		logger.Debug("serving legacy cid")
+		return ss.serveLegacyCid(c)
+	}
+
+	if err != nil {
+		logger.Warn("error finding node to serve blob", "err", err)
+		return err
+	}
+	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", cid, healthyHosts).
+		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
 	if err != nil {
-		return err
+		return "", err
 	}
+
 	for _, blob := range blobs {
-		// do a check server is up and has blob
-		if ss.hostHasBlob(blob.Host, cid) {
-			dest := ss.replaceHost(c, blob.Host)
-			return c.Redirect(302, dest.String())
+		if ss.hostHasBlob(blob.Host, key) {
+			return blob.Host, nil
 		}
 	}
 
-	return c.String(404, "blob not found")
+	return "", nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {

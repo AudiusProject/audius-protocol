@@ -215,9 +215,38 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	if cidutil.IsLegacyCID(jobID) {
-		c.SetParamNames("dirCid", "fileName")
-		c.SetParamValues(jobID, variant)
-		return ss.serveLegacyDirCid(c)
+		// check if file is migrated first - it would have a single key and no upload object in the db
+		key := jobID + "/" + variant
+		exists, err := ss.bucket.Exists(c.Request().Context(), key)
+		if err != nil {
+			ss.logger.Warn("migrated blob exists check failed", "err", err)
+		} else if exists {
+			blob, err := ss.bucket.NewReader(c.Request().Context(), key, nil)
+			if err != nil {
+				return err
+			}
+			defer blob.Close()
+
+			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+			return nil
+		}
+
+		// check if file is migrated but on another host
+		host, err := ss.findNodeToServeBlob(key)
+		if err != nil {
+			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets. return `err` instead
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
+		} else if host != "" {
+			dest := ss.replaceHost(c, host)
+			return c.Redirect(302, dest.String())
+		} else {
+			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
+		}
 	} else {
 		var upload *Upload
 		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
