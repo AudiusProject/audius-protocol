@@ -1,7 +1,12 @@
 import { Logger } from '../Logger'
-import type { StorageServiceConfig } from './types'
+import { StorageNodeSelector } from '../StorageNodeSelector'
+import { defaultStorageNodeSelectorConfig } from '../StorageNodeSelector/constants'
+import type { StorageServiceConfigInternal } from './types'
 
-export const defaultStorageServiceConfig: Partial<StorageServiceConfig> = {
+export const defaultStorageServiceConfig: StorageServiceConfigInternal = {
+  storageNodeSelector: new StorageNodeSelector(
+    defaultStorageNodeSelectorConfig
+  ),
   logger: new Logger()
 }
 

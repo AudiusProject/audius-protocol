@@ -20,7 +20,7 @@ def get_authed_user(data: str, signature: str):
             session.query(User.user_id)
             .filter(User.wallet == user_wallet.lower())
             .filter(User.is_current == True)
-            .one_or_none()
+            .first()
         )
         if not result:
             return None

@@ -214,6 +214,8 @@ export interface GetUserByHandleRequest {
 
 export interface GetUserLibraryTracksRequest {
     id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -1116,6 +1118,14 @@ export class UsersApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserLibraryTracks.');
         }
 
+        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
+        }
+
+        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
+        }
+
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -1147,6 +1157,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        }
+
+        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        }
 
         const response = await this.request({
             path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),

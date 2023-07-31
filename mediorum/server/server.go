@@ -67,6 +67,7 @@ type MediorumConfig struct {
 	IsV2Only            bool
 	StoreAll            bool
 	VersionJson         VersionJson
+	MigrateQmCidIters   int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -283,8 +284,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// old info routes
-	// TODO: remove
+	// old info routes (but we need them because some migrated ":cid" keys are really like "Qm.../150x150.jpg" which would mess up the path param)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 
@@ -298,6 +298,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+
+	// Qm CID migration
+	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
+	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
 
 	// reverse proxy fallback to legacy CN (NodeJS server container)
 	if !config.IsV2Only {
@@ -352,6 +356,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorDiskAndDbStatus()
 
 	go ss.monitorCidCursors()
+
+	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

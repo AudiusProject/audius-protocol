@@ -273,7 +273,7 @@ cat >solana-program-config.json <<EOF
     "anchorAdminStoragePrivateKey": "$(cat "$admin_account_keypair")",
     "trackListenCountAddress": "$(solana address -k target/deploy/track_listen_count-keypair.json)",
     "audiusEthRegistryAddress": "$(solana address -k target/deploy/audius_eth_registry-keypair.json)",
-    "validSigner": "$(solana address -k "$valid_signer_keypair")"
+    "validSigner": "$(solana address -k "$valid_signer_keypair")",
     "signerGroup": "$(solana address -k "$signer_group_keypair")",
     "feePayerWallets": [{ "privateKey": $(cat "$feepayer_keypair") }],
     "feePayerWalletPubkey": "$(solana address -k "$feepayer_keypair")",
@@ -282,7 +282,7 @@ cat >solana-program-config.json <<EOF
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$valid_signer_eth_private_key",
     "splToken": "$(solana address -k "$token_keypair")",
-    "fakeUSDCTokenMint": "$(solana address -k "$fake_usdc_token_keypair"),
+    "fakeUSDCTokenMint": "$(solana address -k "$fake_usdc_token_keypair")",
     "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
     "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
     "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
