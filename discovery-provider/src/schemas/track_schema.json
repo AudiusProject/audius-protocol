@@ -475,7 +475,8 @@
                 }
               }
             }
-          }
+          },
+          "required": ["price", "splits"]
         }
     }
 }
