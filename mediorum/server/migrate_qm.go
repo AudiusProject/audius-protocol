@@ -14,43 +14,45 @@ import (
 )
 
 func (ss *MediorumServer) startQmCidMigration() {
-	// Wait 1m after boot to start migration
+	// wait 1m after boot to start migration
 	time.Sleep(time.Minute)
 
 	logger := ss.logger.With("task", "migrate_qm")
-
 	start := time.Now()
 
-	if ss.Config.MigrateQmCids {
-		// make sure the node has the legacy CN filesystem mounted
-		if _, err := os.Stat("/file_storage/files"); err == nil {
-			logger.Info("Qm CID migration starting")
-		} else if os.IsNotExist(err) {
-			logger.Error("Qm CID migration failed because legacy CN filesystem is not mounted")
-			return
-		} else {
-			logger.Error("Qm CID migration failed because legacy CN filesystem is not mounted", "err", err)
-			return
-		}
-
-		err := ss.migrateQmCids()
-		took := time.Since(start)
-		if err != nil {
-			logger.Error("Qm CID migration failed", "err", err, "took_minutes", took.Minutes())
-		} else {
-			logger.Info("Qm CID migration successfully completed", "took_minutes", took.Minutes())
-		}
+	// make sure the node has the legacy CN filesystem mounted
+	if _, err := os.Stat("/file_storage/files"); err == nil {
+		logger.Info("Qm CID migration starting")
+	} else if os.IsNotExist(err) {
+		logger.Error("Qm CID migration failed because legacy CN filesystem is not mounted")
+		return
 	} else {
-		logger.Info("Qm CID migration disabled")
+		logger.Error("Qm CID migration failed because legacy CN filesystem is not mounted", "err", err)
+		return
+	}
+
+	err := ss.migrateQmCids()
+	took := time.Since(start)
+	if err != nil {
+		logger.Error("Qm CID migration failed", "err", err, "took_minutes", took.Minutes())
+	} else {
+		logger.Info("Qm CID migration successfully completed", "took_minutes", took.Minutes())
 	}
 }
 
 func (ss *MediorumServer) migrateQmCids() error {
 	lastMultihash := ""
+	iter := 0
 
 	for {
 		ctx := context.Background()
 		logger := ss.logger.With("task", "migrate_qm", "lastMultihash", lastMultihash)
+
+		if iter == ss.Config.MigrateQmCidIters {
+			logger.Info("finished Qm CID migration after max iters", "iter", iter)
+			return nil
+		}
+		iter++
 
 		/* assumes unique fileUUID for each row. confirmed with:
 		SELECT *

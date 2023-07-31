@@ -8,6 +8,7 @@ import type {
   ProgressCB,
   StorageService,
   StorageServiceConfig,
+  StorageServiceConfigInternal,
   UploadResponse
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
@@ -28,7 +29,7 @@ export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private readonly config: StorageServiceConfig
+  private readonly config: StorageServiceConfigInternal
   private readonly storageNodeSelector: StorageNodeSelectorService
   private readonly logger: LoggerService
 

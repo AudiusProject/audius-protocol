@@ -111,6 +111,11 @@ func startStagingOrProd(isProd bool) {
 		}()
 	}
 
+	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
+	if err != nil {
+		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
+	}
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -135,7 +140,7 @@ func startStagingOrProd(isProd bool) {
 		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 		StoreAll:            os.Getenv("STORE_ALL") == "true",
 		VersionJson:         GetVersionJson(),
-		MigrateQmCids:       os.Getenv("MIGRATE_QM_CIDS") == "true",
+		MigrateQmCidIters:   migrateQmCidIters,
 	}
 
 	ss, err := server.New(config)

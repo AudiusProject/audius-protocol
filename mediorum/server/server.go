@@ -67,7 +67,7 @@ type MediorumConfig struct {
 	IsV2Only            bool
 	StoreAll            bool
 	VersionJson         VersionJson
-	MigrateQmCids       bool
+	MigrateQmCidIters   int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there

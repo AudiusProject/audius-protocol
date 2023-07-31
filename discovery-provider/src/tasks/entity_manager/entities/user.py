@@ -188,6 +188,12 @@ def create_user(
         user_metadata, metadata_cid = parse_metadata(
             params.metadata, Action.UPDATE, EntityType.USER
         )
+    except Exception:
+        # fallback to multi tx signup if parsing fails
+        pass
+
+    # If parsing succeeds, we know this is a single tx signup
+    if user_metadata is not None:
         validate_user_metadata(
             params.session,
             user_record,
@@ -207,9 +213,6 @@ def create_user(
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = user_metadata
         user_record.metadata_multihash = metadata_cid
-    except Exception:
-        # fallback to multi tx signup
-        pass
 
     if params.metadata == "v2":
         user_record.is_storage_v2 = True
