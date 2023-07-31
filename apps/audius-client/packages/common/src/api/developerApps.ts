@@ -101,7 +101,7 @@ const developerAppsApi = createApi({
         const encodedUserId = encodeHashId(userId) as string
         const sdk = await audiusSdk()
 
-        return await sdk.developerApps.deleteDeveloperApp({
+        await sdk.developerApps.deleteDeveloperApp({
           userId: encodedUserId,
           appApiKey: apiKey
         })

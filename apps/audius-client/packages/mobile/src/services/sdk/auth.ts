@@ -15,7 +15,7 @@ export const auth = {
       }
     )
   },
-  signTransaction: async (data) => {
+  signTransaction: async (_data) => {
     // TODO(nkang): Can probably just use eth-sig-util signTransaction like in the web audiusSdk service, but need to test it thoroughly in a mobile env. So saving that for later.
     return 'Not implemented'
   },
@@ -30,5 +30,8 @@ export const auth = {
   getAddress: async () => {
     await waitForLibsInit()
     return audiusLibs?.hedgehog?.wallet?.getAddressString() ?? ''
+  },
+  hashAndSign: async (_data: string) => {
+    return 'Not implemented'
   }
 }
