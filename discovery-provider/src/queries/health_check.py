@@ -54,7 +54,7 @@ def health_check():
     try:
         comms_health = {"comms": requests.get("http://comms:8925/comms").json()}
     except Exception as e:
-        logger.error(f"Error fetching comms health {e}")
+        logger.debug(f"Error fetching comms health {e}")
         comms_health = {}
 
     (health_results, error) = get_health(args)
