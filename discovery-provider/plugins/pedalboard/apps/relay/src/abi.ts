@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { ManageEntityParameters } from "./types/entityManager";
-import sigUtil from "eth-sig-util"
-import { abi as EMABI } from "@audius/sdk/data-contracts/signatureSchemas.js"
+import sigUtil from "eth-sig-util";
+import { abi as EMABI } from "@audius/sdk/data-contracts/signatureSchemas.js";
 
 export const ENTITY_MANAGER_ABI = [
   {
@@ -193,7 +193,7 @@ export const decodeAbi = (data: string): ManageEntityParameters => {
 };
 
 export const recoverSigner = (decodedAbi: ManageEntityParameters): string => {
-  const data = AudiusLibs
-  const sig = ethers.utils.hexStripZeros(decodedAbi.subjectSig)
-  return sigUtil.recoverTypedSignature({ data, sig })
-}
+  const data = AudiusLibs;
+  const sig = ethers.utils.hexStripZeros(decodedAbi.subjectSig);
+  return sigUtil.recoverTypedSignature({ data, sig });
+};

@@ -10,7 +10,10 @@ export const relayHandler = async (
   req: RelayRequestType
 ): Promise<RelayResponseType> => {
   try {
-    const headers = { encodedDataMessage: reqHeaders[''], signature: reqHeaders[''] }
+    const headers = {
+      encodedDataMessage: reqHeaders[""],
+      signature: reqHeaders[""],
+    };
     const { receipt } = await relayTransaction(app, headers, req);
     return {
       receipt: {

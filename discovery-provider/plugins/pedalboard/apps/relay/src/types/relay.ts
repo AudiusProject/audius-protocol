@@ -22,9 +22,3 @@ export const RelayResponse = Type.Object({
 });
 
 export type RelayResponseType = Static<typeof RelayResponse>;
-
-export type RelayRequestHeaders = {
-  encodedDataMessage?: string | string[],
-  signature?: string | string[],
-  reqIp: string,
-}

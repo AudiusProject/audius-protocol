@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
 import { Users } from "storage/src";
 import { Knex } from "knex";
+import { AudiusABIDecoder } from "@audius/sdk";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -33,11 +34,9 @@ export const relayTransaction = async (
     aao,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
-  const { reqIp } = headers
+  const { reqIp } = headers;
 
-
-  const { user } = await recoverUser()
-  const isBlockedFromRelay = await detectAbuse(aao, user, reqIp)
+  const isBlockedFromRelay = await detectAbuse(aao, user, reqIp);
 
   log({ msg: "new relay request", req });
 
@@ -72,9 +71,14 @@ export const relayTransaction = async (
   return { receipt, transaction };
 };
 
-const recoverUser = async (discoveryDb: Knex, headers: RelayRequestHeaders): Promise<Users> => {
-  const signer = sigUtil.recoverTypedSignature({
-    sig: 
-  })
-  return {}
-}
+const recoverUser = async (
+  discoveryDb: Knex,
+  headers: RelayRequestHeaders
+): Promise<Users> => {
+  const signer = AudiusABIDecoder.recoverSigner({
+    encodedAbi: encodedABI,
+    chainId: config.acdcChainId,
+    entityManagerAddress: config.entityManagerContractAddress,
+  });
+  return {};
+};
