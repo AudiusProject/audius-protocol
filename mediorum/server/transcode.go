@@ -234,7 +234,7 @@ const (
 )
 
 func (ss *MediorumServer) getKeyToTempFile(fileHash string) (*os.File, error) {
-	temp, err := os.CreateTemp("", fileHash)
+	temp, err := os.CreateTemp("", "mediorumTemp")
 	if err != nil {
 		return nil, err
 	}
@@ -577,7 +577,7 @@ type FFProbeResult struct {
 }
 
 func ffprobeUpload(file *multipart.FileHeader) (*FFProbeResult, error) {
-	temp, err := os.CreateTemp("", "probe")
+	temp, err := os.CreateTemp("", "mediorumProbe")
 	if err != nil {
 		return nil, err
 	}
