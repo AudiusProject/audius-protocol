@@ -1,7 +1,7 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
 import type { LoggerService } from '../services/Logger'
 import { isOAuthScopeValid } from '../utils/oauthScope'
-import { parseRequestParameters } from '../utils/parseRequestParameters'
+import { parseparams } from '../utils/parseparams'
 import {
   OAuthScope,
   IsWriteAccessGrantedSchema,
@@ -166,7 +166,7 @@ export class OAuth {
   }
 
   async isWriteAccessGranted(params: IsWriteAccessGrantedRequest) {
-    const { userId, apiKey } = await parseRequestParameters(
+    const { userId, apiKey } = await parseparams(
       'isWriteAccessGranted',
       IsWriteAccessGrantedSchema
     )(params)

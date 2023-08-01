@@ -1,7 +1,7 @@
 import { developmentConfig, productionConfig, stagingConfig } from './config'
 import { sdk } from './sdk'
 import { DiscoveryNodeSelector } from './services'
-import { ParseRequestError } from './utils/parseRequestParameters'
+import { ParseRequestError } from './utils/parseparams'
 import { Genre } from './types/Genre'
 import { Mood } from './types/Mood'
 ;(window as any).audiusSdk = sdk

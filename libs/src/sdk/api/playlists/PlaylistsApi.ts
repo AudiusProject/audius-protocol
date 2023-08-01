@@ -8,7 +8,7 @@ import {
   EntityType,
   WriteOptions
 } from '../../services/EntityManager/types'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseparams } from '../../utils/parseparams'
 import {
   Configuration,
   PlaylistsApi as GeneratedPlaylistsApi
@@ -65,15 +65,12 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Create a playlist from existing tracks
    */
   async createPlaylist(
-    requestParameters: CreatePlaylistRequest,
+    params: CreatePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      await parseRequestParameters(
-        'createPlaylist',
-        CreatePlaylistSchema
-      )(requestParameters)
+      await parseparams('createPlaylist', CreatePlaylistSchema)(params)
 
     // Upload cover art to storage node
     const coverArtResponse =
@@ -132,14 +129,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Uploads the specified tracks and combines them into a playlist
    */
   async uploadPlaylist(
-    requestParameters: UploadPlaylistRequest,
+    params: UploadPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseRequestParameters(
+    const parsedParameters = await parseparams(
       'uploadPlaylist',
       createUploadPlaylistSchema()
-    )(requestParameters)
+    )(params)
 
     // Call uploadPlaylistInternal with parsed inputs
     return await this.uploadPlaylistInternal(parsedParameters, writeOptions)
@@ -150,19 +147,16 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Changes a playlist from private to public
    */
   async publishPlaylist(
-    requestParameters: PublishPlaylistRequest,
+    params: PublishPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    await parseRequestParameters(
-      'publishPlaylist',
-      PublishPlaylistSchema
-    )(requestParameters)
+    await parseparams('publishPlaylist', PublishPlaylistSchema)(params)
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => ({
           ...playlist,
           isPrivate: false
@@ -177,27 +171,24 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * For more control use updatePlaylist
    */
   async addTrackToPlaylist(
-    requestParameters: AddTrackToPlaylistRequest,
+    params: AddTrackToPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    await parseRequestParameters(
-      'addTrackToPlaylist',
-      AddTrackToPlaylistSchema
-    )(requestParameters)
+    await parseparams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
 
     const currentBlock = await this.entityManager.getCurrentBlock()
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => ({
           ...playlist,
           playlistContents: [
             ...(playlist.playlistContents ?? []),
             {
-              trackId: requestParameters.trackId,
+              trackId: params.trackId,
               timestamp: currentBlock.timestamp
             }
           ]
@@ -212,19 +203,19 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * For more control use updatePlaylist
    */
   async removeTrackFromPlaylist(
-    requestParameters: RemoveTrackFromPlaylistRequest,
+    params: RemoveTrackFromPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { trackIndex } = await parseRequestParameters(
+    const { trackIndex } = await parseparams(
       'removeTrackFromPlaylist',
       RemoveTrackFromPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => {
           if (
             !playlist.playlistContents ||
@@ -247,14 +238,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Update a playlist
    */
   async updatePlaylist(
-    requestParameters: UpdatePlaylistRequest,
+    params: UpdatePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseRequestParameters(
+    const parsedParameters = await parseparams(
       'updatePlaylist',
       createUpdatePlaylistSchema()
-    )(requestParameters)
+    )(params)
 
     // Call updatePlaylistInternal with parsed inputs
     return await this.updatePlaylistInternal(parsedParameters, writeOptions)
@@ -264,14 +255,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Delete a playlist
    */
   async deletePlaylist(
-    requestParameters: DeletePlaylistRequest,
+    params: DeletePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseparams(
       'deletePlaylist',
       DeletePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -287,14 +278,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Favorite a playlist
    */
   async favoritePlaylist(
-    requestParameters: FavoritePlaylistRequest,
+    params: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseparams(
       'favoritePlaylist',
       FavoritePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -311,14 +302,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unfavorite a playlist
    */
   async unfavoritePlaylist(
-    requestParameters: UnfavoritePlaylistRequest,
+    params: UnfavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseparams(
       'unfavoritePlaylist',
       UnfavoritePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -334,14 +325,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Repost a playlist
    */
   async repostPlaylist(
-    requestParameters: RepostPlaylistRequest,
+    params: RepostPlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseparams(
       'respostPlaylist',
       RepostPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -358,14 +349,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unrepost a playlist
    */
   async unrepostPlaylist(
-    requestParameters: FavoritePlaylistRequest,
+    params: FavoritePlaylistRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseparams(
       'unrepostPlaylist',
       UnrepostPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,

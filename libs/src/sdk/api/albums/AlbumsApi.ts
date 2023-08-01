@@ -4,7 +4,7 @@ import type {
   WriteOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseparams } from '../../utils/parseparams'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
 import {
@@ -45,13 +45,13 @@ export class AlbumsApi {
   }
 
   // READS
-  async getAlbum(requestParameters: getAlbumRequest) {
-    const { userId, albumId } = requestParameters
+  async getAlbum(params: getAlbumRequest) {
+    const { userId, albumId } = params
     return await this.playlistsApi.getPlaylist({ userId, playlistId: albumId })
   }
 
-  async getAlbumTracks(requestParameters: getAlbumTracksRequest) {
-    const { albumId } = requestParameters
+  async getAlbumTracks(params: getAlbumTracksRequest) {
+    const { albumId } = params
     return await this.playlistsApi.getPlaylistTracks({ playlistId: albumId })
   }
 
@@ -60,14 +60,11 @@ export class AlbumsApi {
    * Upload an album
    * Uploads the specified tracks and combines them into an album
    */
-  async uploadAlbum(
-    requestParameters: UploadAlbumRequest,
-    writeOptions?: WriteOptions
-  ) {
-    const { metadata, ...parsedParameters } = await parseRequestParameters(
+  async uploadAlbum(params: UploadAlbumRequest, writeOptions?: WriteOptions) {
+    const { metadata, ...parsedParameters } = await parseparams(
       'uploadAlbum',
       createUploadAlbumSchema()
-    )(requestParameters)
+    )(params)
 
     const { albumName, ...playlistMetadata } = metadata
 
@@ -94,15 +91,11 @@ export class AlbumsApi {
   /** @hidden
    * Update an album
    */
-  async updateAlbum(
-    requestParameters: UpdateAlbumRequest,
-    writeOptions?: WriteOptions
-  ) {
-    const { albumId, metadata, ...parsedParameters } =
-      await parseRequestParameters(
-        'updateAlbum',
-        createUpdateAlbumSchema()
-      )(requestParameters)
+  async updateAlbum(params: UpdateAlbumRequest, writeOptions?: WriteOptions) {
+    const { albumId, metadata, ...parsedParameters } = await parseparams(
+      'updateAlbum',
+      createUpdateAlbumSchema()
+    )(params)
 
     const { albumName, ...playlistMetadata } = metadata
 
@@ -123,19 +116,13 @@ export class AlbumsApi {
   /** @hidden
    * Delete an album
    */
-  async deleteAlbum(
-    requestParameters: DeleteAlbumRequest,
-    writeOptions?: WriteOptions
-  ) {
-    await parseRequestParameters(
-      'deleteAlbum',
-      DeleteAlbumSchema
-    )(requestParameters)
+  async deleteAlbum(params: DeleteAlbumRequest, writeOptions?: WriteOptions) {
+    await parseparams('deleteAlbum', DeleteAlbumSchema)(params)
 
     return await this.playlistsApi.deletePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId
+        userId: params.userId,
+        playlistId: params.albumId
       },
       writeOptions
     )
@@ -145,17 +132,17 @@ export class AlbumsApi {
    * Favorite an album
    */
   async favoriteAlbum(
-    requestParameters: FavoriteAlbumRequest,
+    params: FavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    const { metadata } = await parseRequestParameters(
+    const { metadata } = await parseparams(
       'favoriteAlbum',
       FavoriteAlbumSchema
-    )(requestParameters)
+    )(params)
     return await this.playlistsApi.favoritePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId,
+        userId: params.userId,
+        playlistId: params.albumId,
         metadata
       },
       writeOptions
@@ -166,17 +153,14 @@ export class AlbumsApi {
    * Unfavorite an album
    */
   async unfavoriteAlbum(
-    requestParameters: UnfavoriteAlbumRequest,
+    params: UnfavoriteAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    await parseRequestParameters(
-      'unfavoriteAlbum',
-      UnfavoriteAlbumSchema
-    )(requestParameters)
+    await parseparams('unfavoriteAlbum', UnfavoriteAlbumSchema)(params)
     return await this.playlistsApi.unfavoritePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId
+        userId: params.userId,
+        playlistId: params.albumId
       },
       writeOptions
     )
@@ -185,19 +169,16 @@ export class AlbumsApi {
   /** @hidden
    * Repost an album
    */
-  async repostAlbum(
-    requestParameters: RepostAlbumRequest,
-    writeOptions?: WriteOptions
-  ) {
-    const { metadata } = await parseRequestParameters(
+  async repostAlbum(params: RepostAlbumRequest, writeOptions?: WriteOptions) {
+    const { metadata } = await parseparams(
       'repostAlbum',
       RepostAlbumSchema
-    )(requestParameters)
+    )(params)
 
     return await this.playlistsApi.repostPlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId,
+        userId: params.userId,
+        playlistId: params.albumId,
         metadata
       },
       writeOptions
@@ -208,17 +189,14 @@ export class AlbumsApi {
    * Unrepost an album
    */
   async unrepostAlbum(
-    requestParameters: UnrepostAlbumRequest,
+    params: UnrepostAlbumRequest,
     writeOptions?: WriteOptions
   ) {
-    await parseRequestParameters(
-      'unrepostAlbum',
-      UnrepostAlbumSchema
-    )(requestParameters)
+    await parseparams('unrepostAlbum', UnrepostAlbumSchema)(params)
     return await this.playlistsApi.unrepostPlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.albumId
+        userId: params.userId,
+        playlistId: params.albumId
       },
       writeOptions
     )

@@ -10,7 +10,7 @@ import {
   RevokeGrantRequest,
   RevokeGrantSchema
 } from './types'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseparams } from '../../utils/parseparams'
 
 export class GrantsApi {
   constructor(
@@ -22,11 +22,11 @@ export class GrantsApi {
   /**
    * When user authorizes app to perform actions on their behalf
    */
-  async createGrant(requestParameters: CreateGrantRequest) {
-    const { userId, appApiKey } = await parseRequestParameters(
+  async createGrant(params: CreateGrantRequest) {
+    const { userId, appApiKey } = await parseparams(
       'createGrant',
       CreateGrantSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -43,11 +43,11 @@ export class GrantsApi {
   /**
    * When user revokes an app's authorization to perform actions on their behalf
    */
-  async revokeGrant(requestParameters: RevokeGrantRequest) {
-    const { userId, appApiKey } = await parseRequestParameters(
+  async revokeGrant(params: RevokeGrantRequest) {
+    const { userId, appApiKey } = await parseparams(
       'revokeGrant',
       RevokeGrantSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,

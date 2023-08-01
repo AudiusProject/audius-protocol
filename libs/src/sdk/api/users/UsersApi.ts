@@ -7,7 +7,7 @@ import {
   WriteOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseparams } from '../../utils/parseparams'
 import { retry3 } from '../../utils/retry'
 import {
   Configuration,
@@ -43,15 +43,12 @@ export class UsersApi extends GeneratedUsersApi {
    * Update a user profile
    */
   async updateProfile(
-    requestParameters: UpdateProfileRequest,
+    params: UpdateProfileRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
-      await parseRequestParameters(
-        'updateProfile',
-        UpdateProfileSchema
-      )(requestParameters)
+      await parseparams('updateProfile', UpdateProfileSchema)(params)
 
     const [profilePictureResp, coverArtResp] = await Promise.all([
       profilePictureFile &&
@@ -106,15 +103,12 @@ export class UsersApi extends GeneratedUsersApi {
   /** @hidden
    * Follow a user
    */
-  async followUser(
-    requestParameters: FollowUserRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async followUser(params: FollowUserRequest, writeOptions?: WriteOptions) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseRequestParameters(
+    const { userId, followeeUserId } = await parseparams(
       'followUser',
       FollowUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -129,15 +123,12 @@ export class UsersApi extends GeneratedUsersApi {
   /** @hidden
    * Unfollow a user
    */
-  async unfollowUser(
-    requestParameters: UnfollowUserRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async unfollowUser(params: UnfollowUserRequest, writeOptions?: WriteOptions) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseRequestParameters(
+    const { userId, followeeUserId } = await parseparams(
       'unfollowUser',
       UnfollowUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -153,14 +144,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Subscribe to a user
    */
   async subscribeToUser(
-    requestParameters: SubscribeToUserRequest,
+    params: SubscribeToUserRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseparams(
       'subscribeToUser',
       SubscribeToUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -176,14 +167,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Unsubscribe from a user
    */
   async unsubscribeFromUser(
-    requestParameters: UnsubscribeFromUserRequest,
+    params: UnsubscribeFromUserRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseparams(
       'unsubscribeFromUser',
       UnsubscribeFromUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,

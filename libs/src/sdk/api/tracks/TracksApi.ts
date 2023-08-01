@@ -32,7 +32,7 @@ import {
   WriteOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseparams } from '../../utils/parseparams'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import type { LoggerService } from '../../services/Logger'
@@ -58,22 +58,17 @@ export class TracksApi extends GeneratedTracksApi {
    * Get the url of the track's streamable mp3 file
    */
   // @ts-expect-error
-  override async streamTrack(
-    requestParameters: StreamTrackRequest
-  ): Promise<string> {
-    if (
-      requestParameters.trackId === null ||
-      requestParameters.trackId === undefined
-    ) {
+  override async streamTrack(params: StreamTrackRequest): Promise<string> {
+    if (params.trackId === null || params.trackId === undefined) {
       throw new RequiredError(
         'trackId',
-        'Required parameter requestParameters.trackId was null or undefined when calling getTrack.'
+        'Required parameter params.trackId was null or undefined when calling getTrack.'
       )
     }
 
     const path = `/tracks/{track_id}/stream`.replace(
       `{${'track_id'}}`,
-      encodeURIComponent(String(requestParameters.trackId))
+      encodeURIComponent(String(params.trackId))
     )
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
@@ -82,10 +77,7 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Upload a track
    */
-  async uploadTrack(
-    requestParameters: UploadTrackRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async uploadTrack(params: UploadTrackRequest, writeOptions?: WriteOptions) {
     // Parse inputs
     const {
       userId,
@@ -93,10 +85,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseRequestParameters(
-      'uploadTrack',
-      createUploadTrackSchema()
-    )(requestParameters)
+    } = await parseparams('uploadTrack', createUploadTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -168,10 +157,7 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Update a track
    */
-  async updateTrack(
-    requestParameters: UpdateTrackRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async updateTrack(params: UpdateTrackRequest, writeOptions?: WriteOptions) {
     // Parse inputs
     const {
       userId,
@@ -180,10 +166,7 @@ export class TracksApi extends GeneratedTracksApi {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = await parseRequestParameters(
-      'updateTrack',
-      createUpdateTrackSchema()
-    )(requestParameters)
+    } = await parseparams('updateTrack', createUpdateTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -260,15 +243,12 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Delete a track
    */
-  async deleteTrack(
-    requestParameters: DeleteTrackRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async deleteTrack(params: DeleteTrackRequest, writeOptions?: WriteOptions) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseparams(
       'deleteTrack',
       DeleteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -284,14 +264,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Favorite a track
    */
   async favoriteTrack(
-    requestParameters: FavoriteTrackRequest,
+    params: FavoriteTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseRequestParameters(
+    const { userId, trackId, metadata } = await parseparams(
       'favoriteTrack',
       FavoriteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -308,14 +288,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Unfavorite a track
    */
   async unfavoriteTrack(
-    requestParameters: UnfavoriteTrackRequest,
+    params: UnfavoriteTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseparams(
       'unfavoriteTrack',
       UnfavoriteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -330,15 +310,12 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Repost a track
    */
-  async repostTrack(
-    requestParameters: RepostTrackRequest,
-    writeOptions?: WriteOptions
-  ) {
+  async repostTrack(params: RepostTrackRequest, writeOptions?: WriteOptions) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseRequestParameters(
+    const { userId, trackId, metadata } = await parseparams(
       'respostTrack',
       RepostTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -355,14 +332,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Unrepost a track
    */
   async unrepostTrack(
-    requestParameters: UnrepostTrackRequest,
+    params: UnrepostTrackRequest,
     writeOptions?: WriteOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseparams(
       'unrepostTrack',
       UnrepostTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
