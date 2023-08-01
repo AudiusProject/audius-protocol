@@ -2,7 +2,7 @@ import { Component, useState, useCallback } from 'react'
 
 import {
   GENRES,
-  ELECTRONIC_PREFIX,
+  convertGenreLabelToValue,
   getCanonicalName,
   createRemixOfMetadata,
   creativeCommons,
@@ -252,10 +252,7 @@ const BasicForm = (props) => {
               isRequired={props.requiredFields.genre}
               error={props.invalidFields.genre}
               onSelect={(value) =>
-                props.onChangeField(
-                  'genre',
-                  value.replace(ELECTRONIC_PREFIX, '')
-                )
+                props.onChangeField('genre', convertGenreLabelToValue(value))
               }
               size='large'
             />
