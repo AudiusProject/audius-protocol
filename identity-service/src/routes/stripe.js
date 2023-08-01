@@ -28,6 +28,11 @@ module.exports = function (app) {
       if (!destinationWallet || !amount || !destinationCurrency) {
         return errorResponseBadRequest('Missing input param')
       }
+      if (destinationCurrency !== 'sol' && destinationCurrency !== 'usdc') {
+        return errorResponseBadRequest(
+          'Invalid destination currency: only support sol and usdc'
+        )
+      }
 
       const urlEncodedData = new URLSearchParams({
         customer_wallet_address: destinationWallet,
@@ -40,7 +45,7 @@ module.exports = function (app) {
         customer_ip_address: getIP(req)
       })
       urlEncodedData.append(
-        'transaction_details[supported_destination_networks][]',
+        'transaction_details[supported_destination_currencies[]',
         'usdc'
       )
 
