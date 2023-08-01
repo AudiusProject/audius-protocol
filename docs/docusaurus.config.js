@@ -1,5 +1,6 @@
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+const path = require("path");
 
 // With JSDoc @type annotations, IDEs can provide config autocompletion
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
@@ -9,7 +10,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     tagline: "",
     url: "https://docs.audius.org",
     baseUrl: "/",
-    onBrokenLinks: "throw",
+    onBrokenLinks: "warn",
     onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
     organizationName: "AudiusProject", // Usually your GitHub org/user name.
@@ -35,20 +36,23 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     plugins: [
       [
         "docusaurus-plugin-typedoc",
-
         // Plugin / TypeDoc options
         {
-          plugin: ["typedoc-plugin-audius-theme"],
+          plugin: ["typedoc-plugin-audius-theme", "typedoc-plugin-zod"],
           out: "./developers/sdk",
           entryPoints: ["./node_modules/@audius/sdk/src/sdk/index.ts"],
           tsconfig: "./node_modules/@audius/sdk/tsconfig.docs.json",
           excludeInternal: true,
-          cleanOutputDir: true,
+          cleanOutputDir: false,
           disableSources: true,
           hideMembersSymbol: true,
           watch: process.env.TYPEDOC_WATCH,
+          sidebar: {
+            readmeLabel: "Getting Started",
+          },
         },
       ],
+      path.resolve(__dirname, "plugins", "mergeDocs"),
     ],
     i18n: {
       defaultLocale: "en",

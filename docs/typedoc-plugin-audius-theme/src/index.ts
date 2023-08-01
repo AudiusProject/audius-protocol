@@ -6,7 +6,7 @@ import {
   DeclarationReflection,
   Reflection,
   Converter,
-  Context
+  Context,
 } from "typedoc";
 import * as examples from "./examples";
 
@@ -33,9 +33,50 @@ export function load(app: Application) {
           ReflectionKind.Property,
           ReflectionKind.Constructor,
         ];
+
         const result = !kindsToDelete.includes(g.kind);
         return result;
       });
+      const newChildren = r.children?.filter((c) => {
+        const methodsToDelete = [
+          "createPlaylist",
+          "uploadPlaylist",
+          "addTrackToPlaylist",
+          "removeTrackFromPlaylist",
+          "updatePlaylist",
+          "deletePlaylist",
+          "favoritePlaylist",
+          "unfavoritePlaylist",
+          "repostPlaylist",
+          "unrepostPlaylist",
+          "publishPlaylist",
+          "fetchAndUpdatePlaylist",
+          "uploadTrack",
+          "updateTrack",
+          "deleteTrack",
+          "favoriteTrack",
+          "unfavoriteTrack",
+          "repostTrack",
+          "unrepostTrack",
+          "uploadAlbum",
+          "updateAlbum",
+          "deleteAlbum",
+          "favoriteAlbum",
+          "unfavoriteAlbum",
+          "repostAlbum",
+          "unrepostAlbum",
+          "withMiddleware",
+          "withPostMiddleware",
+          "withPreMiddleware",
+          "request",
+        ];
+        const result =
+          !methodsToDelete.includes(c.name) &&
+          !c.name.toLowerCase().endsWith("raw");
+        return result;
+      });
+      delete r.children;
+      r.children = newChildren;
 
       r.children?.forEach((c) => {
         delete r.parent;
@@ -65,8 +106,8 @@ export function load(app: Application) {
 
     reflections.forEach((r: Reflection) => {
       // Remove full namespace entirely
-      if (r.getFullName().startsWith('full.')) {
-        context.project.removeReflection(r)
+      if (r.getFullName().startsWith("full.")) {
+        context.project.removeReflection(r);
       }
     });
   };
