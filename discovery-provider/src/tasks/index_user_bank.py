@@ -5,6 +5,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, Union
 
+from discovery-provider.src.exceptions import SolanaTransactionFetchError
+
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
@@ -711,8 +713,11 @@ def get_sol_tx_info(
     solana_client_manager: SolanaClientManager,
     tx_sig: str,
 ):
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-    return (tx_info, tx_sig)
+    try:
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        return (tx_info, tx_sig)
+    except SolanaTransactionFetchError:
+        return (None, None)
 
 
 def process_user_bank_txs() -> None:
