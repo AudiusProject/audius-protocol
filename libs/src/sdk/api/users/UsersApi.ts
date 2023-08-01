@@ -7,7 +7,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
   Configuration,
@@ -48,7 +48,7 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
-      await parseparams('updateProfile', UpdateProfileSchema)(params)
+      await parseParams('updateProfile', UpdateProfileSchema)(params)
 
     const [profilePictureResp, coverArtResp] = await Promise.all([
       profilePictureFile &&
@@ -108,7 +108,7 @@ export class UsersApi extends GeneratedUsersApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseparams(
+    const { userId, followeeUserId } = await parseParams(
       'followUser',
       FollowUserSchema
     )(params)
@@ -131,7 +131,7 @@ export class UsersApi extends GeneratedUsersApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseparams(
+    const { userId, followeeUserId } = await parseParams(
       'unfollowUser',
       UnfollowUserSchema
     )(params)
@@ -154,7 +154,7 @@ export class UsersApi extends GeneratedUsersApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseparams(
+    const { userId, subscribeeUserId } = await parseParams(
       'subscribeToUser',
       SubscribeToUserSchema
     )(params)
@@ -177,7 +177,7 @@ export class UsersApi extends GeneratedUsersApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseparams(
+    const { userId, subscribeeUserId } = await parseParams(
       'unsubscribeFromUser',
       UnsubscribeFromUserSchema
     )(params)

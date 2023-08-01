@@ -8,7 +8,7 @@ import {
   EntityType,
   AdvancedOptions
 } from '../../services/EntityManager/types'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import {
   Configuration,
   PlaylistsApi as GeneratedPlaylistsApi
@@ -70,7 +70,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
   ) {
     // Parse inputs
     const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      await parseparams('createPlaylist', CreatePlaylistSchema)(params)
+      await parseParams('createPlaylist', CreatePlaylistSchema)(params)
 
     // Upload cover art to storage node
     const coverArtResponse =
@@ -133,7 +133,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseparams(
+    const parsedParameters = await parseParams(
       'uploadPlaylist',
       createUploadPlaylistSchema()
     )(params)
@@ -151,7 +151,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    await parseparams('publishPlaylist', PublishPlaylistSchema)(params)
+    await parseParams('publishPlaylist', PublishPlaylistSchema)(params)
 
     return await this.fetchAndUpdatePlaylist(
       {
@@ -175,7 +175,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    await parseparams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
+    await parseParams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
 
     const currentBlock = await this.entityManager.getCurrentBlock()
 
@@ -207,7 +207,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { trackIndex } = await parseparams(
+    const { trackIndex } = await parseParams(
       'removeTrackFromPlaylist',
       RemoveTrackFromPlaylistSchema
     )(params)
@@ -242,7 +242,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseparams(
+    const parsedParameters = await parseParams(
       'updatePlaylist',
       createUpdatePlaylistSchema()
     )(params)
@@ -259,7 +259,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseparams(
+    const { userId, playlistId } = await parseParams(
       'deletePlaylist',
       DeletePlaylistSchema
     )(params)
@@ -282,7 +282,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseparams(
+    const { userId, playlistId, metadata } = await parseParams(
       'favoritePlaylist',
       FavoritePlaylistSchema
     )(params)
@@ -306,7 +306,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseparams(
+    const { userId, playlistId } = await parseParams(
       'unfavoritePlaylist',
       UnfavoritePlaylistSchema
     )(params)
@@ -329,7 +329,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseparams(
+    const { userId, playlistId, metadata } = await parseParams(
       'respostPlaylist',
       RepostPlaylistSchema
     )(params)
@@ -353,7 +353,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseparams(
+    const { userId, playlistId } = await parseParams(
       'unrepostPlaylist',
       UnrepostPlaylistSchema
     )(params)

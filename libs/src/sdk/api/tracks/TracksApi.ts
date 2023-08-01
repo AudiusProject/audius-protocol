@@ -32,7 +32,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import type { LoggerService } from '../../services/Logger'
@@ -88,7 +88,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseparams('uploadTrack', createUploadTrackSchema())(params)
+    } = await parseParams('uploadTrack', createUploadTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -172,7 +172,7 @@ export class TracksApi extends GeneratedTracksApi {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = await parseparams('updateTrack', createUpdateTrackSchema())(params)
+    } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -254,7 +254,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseparams(
+    const { userId, trackId } = await parseParams(
       'deleteTrack',
       DeleteTrackSchema
     )(params)
@@ -277,7 +277,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseparams(
+    const { userId, trackId, metadata } = await parseParams(
       'favoriteTrack',
       FavoriteTrackSchema
     )(params)
@@ -301,7 +301,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseparams(
+    const { userId, trackId } = await parseParams(
       'unfavoriteTrack',
       UnfavoriteTrackSchema
     )(params)
@@ -324,7 +324,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseparams(
+    const { userId, trackId, metadata } = await parseParams(
       'respostTrack',
       RepostTrackSchema
     )(params)
@@ -348,7 +348,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseparams(
+    const { userId, trackId } = await parseParams(
       'unrepostTrack',
       UnrepostTrackSchema
     )(params)

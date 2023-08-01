@@ -60,7 +60,7 @@ import type TypedEmitter from 'typed-emitter'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import type { LoggerService } from '../../services/Logger'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
@@ -130,7 +130,7 @@ export class ChatsApi
    * @param params.currentUserId the user to listen for chat events for
    */
   public async listen(params?: ChatListenRequest) {
-    const parsedArgs = await parseparams(
+    const parsedArgs = await parseParams(
       'listen',
       ChatListenRequestSchema
     )(params)
@@ -151,7 +151,7 @@ export class ChatsApi
    * @returns the chat response
    */
   public async get(params: ChatGetRequest) {
-    const { chatId, currentUserId } = await parseparams(
+    const { chatId, currentUserId } = await parseParams(
       'get',
       ChatGetRequestSchema
     )(params)
@@ -173,7 +173,7 @@ export class ChatsApi
    * @returns the chat list response
    */
   public async getAll(params?: ChatGetAllRequest) {
-    const { currentUserId, limit, before, after } = await parseparams(
+    const { currentUserId, limit, before, after } = await parseParams(
       'getAll',
       ChatGetAllRequestSchema
     )(params)
@@ -221,7 +221,7 @@ export class ChatsApi
   public async getMessages(
     params: ChatGetMessagesRequest
   ): Promise<TypedCommsResponse<ChatMessage[]>> {
-    const { currentUserId, chatId, limit, before, after } = await parseparams(
+    const { currentUserId, chatId, limit, before, after } = await parseParams(
       'getMessages',
       ChatGetMessagesRequestSchema
     )(params)
@@ -284,7 +284,7 @@ export class ChatsApi
    * @returns the unread count response
    */
   public async getUnreadCount(params?: ChatGetUnreadCountRequest) {
-    const parsedArgs = await parseparams(
+    const parsedArgs = await parseParams(
       'getUnreadCount',
       ChatGetUnreadCountRequestSchema
     )(params)
@@ -313,7 +313,7 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const { userIds, currentUserId } = await parseparams(
+    const { userIds, currentUserId } = await parseParams(
       'getPermissions',
       ChatGetPermissionRequestSchema
     )(params)
@@ -337,7 +337,7 @@ export class ChatsApi
    * @returns the blockers response
    */
   public async getBlockers(params?: ChatGetBlockersRequest) {
-    const parsedArgs = await parseparams(
+    const parsedArgs = await parseParams(
       'getBlockers',
       ChatGetBlockersRequestSchema
     )(params)
@@ -362,7 +362,7 @@ export class ChatsApi
    * @returns
    */
   public async getBlockees(params?: ChatGetBlockersRequest) {
-    const parsedArgs = await parseparams(
+    const parsedArgs = await parseParams(
       'getBlockees',
       ChatGetBlockersRequestSchema
     )(params)
@@ -387,7 +387,7 @@ export class ChatsApi
    * @returns the unfurl response
    */
   public async unfurl(params: ChatUnfurlRequest) {
-    const { urls } = await parseparams(
+    const { urls } = await parseParams(
       'unfurl',
       ChatUnfurlRequestSchema
     )(params)
@@ -415,7 +415,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async create(params: ChatCreateRequest) {
-    const { currentUserId, userId, invitedUserIds } = await parseparams(
+    const { currentUserId, userId, invitedUserIds } = await parseParams(
       'create',
       ChatCreateRequestSchema
     )(params)
@@ -444,7 +444,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async invite(params: ChatInviteRequest) {
-    const { currentUserId, chatId, userId, invitedUserIds } = await parseparams(
+    const { currentUserId, chatId, userId, invitedUserIds } = await parseParams(
       'invite',
       ChatInviteRequestSchema
     )(params)
@@ -470,7 +470,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async message(params: ChatMessageRequest) {
-    const { currentUserId, chatId, message, messageId } = await parseparams(
+    const { currentUserId, chatId, message, messageId } = await parseParams(
       'message',
       ChatMessageRequestSchema
     )(params)
@@ -498,7 +498,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async react(params: ChatReactRequest) {
-    const { currentUserId, chatId, messageId, reaction } = await parseparams(
+    const { currentUserId, chatId, messageId, reaction } = await parseParams(
       'react',
       ChatReactRequestSchema
     )(params)
@@ -520,7 +520,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async read(params: ChatReadRequest) {
-    const { currentUserId, chatId } = await parseparams(
+    const { currentUserId, chatId } = await parseParams(
       'read',
       ChatReadRequestSchema
     )(params)
@@ -540,7 +540,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async block(params: ChatBlockRequest) {
-    const { currentUserId, userId } = await parseparams(
+    const { currentUserId, userId } = await parseParams(
       'block',
       ChatBlockRequestSchema
     )(params)
@@ -560,7 +560,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async unblock(params: ChatBlockRequest) {
-    const { currentUserId, userId } = await parseparams(
+    const { currentUserId, userId } = await parseParams(
       'unblock',
       ChatBlockRequestSchema
     )(params)
@@ -580,7 +580,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async delete(params: ChatDeleteRequest) {
-    const { currentUserId, chatId } = await parseparams(
+    const { currentUserId, chatId } = await parseParams(
       'delete',
       ChatDeleteRequestSchema
     )(params)
@@ -600,7 +600,7 @@ export class ChatsApi
    * @returns the rpc object
    */
   public async permit(params: ChatPermitRequest) {
-    const { currentUserId, permit } = await parseparams(
+    const { currentUserId, permit } = await parseParams(
       'permit',
       ChatPermitRequestSchema
     )(params)

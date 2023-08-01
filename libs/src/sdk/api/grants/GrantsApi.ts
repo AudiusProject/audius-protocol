@@ -10,7 +10,7 @@ import {
   RevokeGrantRequest,
   RevokeGrantSchema
 } from './types'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 
 export class GrantsApi {
   constructor(
@@ -23,7 +23,7 @@ export class GrantsApi {
    * When user authorizes app to perform actions on their behalf
    */
   async createGrant(params: CreateGrantRequest) {
-    const { userId, appApiKey } = await parseparams(
+    const { userId, appApiKey } = await parseParams(
       'createGrant',
       CreateGrantSchema
     )(params)
@@ -44,7 +44,7 @@ export class GrantsApi {
    * When user revokes an app's authorization to perform actions on their behalf
    */
   async revokeGrant(params: RevokeGrantRequest) {
-    const { userId, appApiKey } = await parseparams(
+    const { userId, appApiKey } = await parseParams(
       'revokeGrant',
       RevokeGrantSchema
     )(params)

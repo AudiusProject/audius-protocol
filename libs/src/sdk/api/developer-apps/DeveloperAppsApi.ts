@@ -12,7 +12,7 @@ import {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import {
   CreateDeveloperAppRequest,
   CreateDeveloperAppSchema,
@@ -40,7 +40,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     params: CreateDeveloperAppRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { name, userId, description } = await parseparams(
+    const { name, userId, description } = await parseParams(
       'createDeveloperApp',
       CreateDeveloperAppSchema
     )(params)
@@ -83,7 +83,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    * Delete a developer app
    */
   async deleteDeveloperApp(params: DeleteDeveloperAppRequest) {
-    const { userId, appApiKey } = await parseparams(
+    const { userId, appApiKey } = await parseParams(
       'deleteDeveloperApp',
       DeleteDeveloperAppSchema
     )(params)

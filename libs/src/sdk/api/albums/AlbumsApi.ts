@@ -4,7 +4,7 @@ import type {
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
-import { parseparams } from '../../utils/parseparams'
+import { parseParams } from '../../utils/parseParams'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
 import {
@@ -64,7 +64,7 @@ export class AlbumsApi {
     params: UploadAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { metadata, ...parsedParameters } = await parseparams(
+    const { metadata, ...parsedParameters } = await parseParams(
       'uploadAlbum',
       createUploadAlbumSchema()
     )(params)
@@ -98,7 +98,7 @@ export class AlbumsApi {
     params: UpdateAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { albumId, metadata, ...parsedParameters } = await parseparams(
+    const { albumId, metadata, ...parsedParameters } = await parseParams(
       'updateAlbum',
       createUpdateAlbumSchema()
     )(params)
@@ -126,7 +126,7 @@ export class AlbumsApi {
     params: DeleteAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    await parseparams('deleteAlbum', DeleteAlbumSchema)(params)
+    await parseParams('deleteAlbum', DeleteAlbumSchema)(params)
 
     return await this.playlistsApi.deletePlaylist(
       {
@@ -144,7 +144,7 @@ export class AlbumsApi {
     params: FavoriteAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { metadata } = await parseparams(
+    const { metadata } = await parseParams(
       'favoriteAlbum',
       FavoriteAlbumSchema
     )(params)
@@ -165,7 +165,7 @@ export class AlbumsApi {
     params: UnfavoriteAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    await parseparams('unfavoriteAlbum', UnfavoriteAlbumSchema)(params)
+    await parseParams('unfavoriteAlbum', UnfavoriteAlbumSchema)(params)
     return await this.playlistsApi.unfavoritePlaylist(
       {
         userId: params.userId,
@@ -182,7 +182,7 @@ export class AlbumsApi {
     params: RepostAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    const { metadata } = await parseparams(
+    const { metadata } = await parseParams(
       'repostAlbum',
       RepostAlbumSchema
     )(params)
@@ -204,7 +204,7 @@ export class AlbumsApi {
     params: UnrepostAlbumRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    await parseparams('unrepostAlbum', UnrepostAlbumSchema)(params)
+    await parseParams('unrepostAlbum', UnrepostAlbumSchema)(params)
     return await this.playlistsApi.unrepostPlaylist(
       {
         userId: params.userId,
