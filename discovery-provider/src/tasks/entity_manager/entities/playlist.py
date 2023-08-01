@@ -324,12 +324,13 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
             metadata_time = track["time"]
             index_time = block_integer_time  # default to current block for new tracks
 
-            if (
-                track_id in metadata_index_time_dict
-                and metadata_time in metadata_index_time_dict[track_id]
-            ):
-                # track exists in prev record (reorder / delete)
-                index_time = metadata_index_time_dict[track_id][metadata_time]
+            # { track_id: 89027834, time: 802934023 }
+            previous_playlist_tracks = playlist_record["playlist_contents"]["track_ids"]
+            for previous_track in previous_playlist_tracks:
+                previous_track_id = previous_track["track"]
+                previous_track_time = previous_track["time"]
+                if previous_track_id == track_id:
+                    index_time = previous_track_time
 
             updated_tracks.append(
                 {
