@@ -6,7 +6,7 @@ import {
   Action,
   EntityManagerService,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import { parseparams } from '../../utils/parseparams'
 import {
@@ -66,7 +66,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async createPlaylist(
     params: CreatePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, coverArtFile, metadata, onProgress, trackIds } =
@@ -130,7 +130,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async uploadPlaylist(
     params: UploadPlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const parsedParameters = await parseparams(
@@ -148,7 +148,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async publishPlaylist(
     params: PublishPlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     await parseparams('publishPlaylist', PublishPlaylistSchema)(params)
@@ -172,7 +172,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async addTrackToPlaylist(
     params: AddTrackToPlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     await parseparams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
@@ -204,7 +204,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async removeTrackFromPlaylist(
     params: RemoveTrackFromPlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { trackIndex } = await parseparams(
@@ -239,7 +239,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async updatePlaylist(
     params: UpdatePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const parsedParameters = await parseparams(
@@ -256,7 +256,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async deletePlaylist(
     params: DeletePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, playlistId } = await parseparams(
@@ -279,7 +279,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async favoritePlaylist(
     params: FavoritePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, playlistId, metadata } = await parseparams(
@@ -303,7 +303,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async unfavoritePlaylist(
     params: UnfavoritePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, playlistId } = await parseparams(
@@ -326,7 +326,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async repostPlaylist(
     params: RepostPlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, playlistId, metadata } = await parseparams(
@@ -350,7 +350,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    */
   async unrepostPlaylist(
     params: FavoritePlaylistRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, playlistId } = await parseparams(
@@ -412,7 +412,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         fetchedMetadata: UpdatePlaylistRequest['metadata']
       ) => UpdatePlaylistRequest['metadata']
     },
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Fetch playlist
     const playlistResponse = await this.getPlaylist({
@@ -454,7 +454,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }: z.infer<ReturnType<typeof createUploadPlaylistSchema>> & {
       metadata: Metadata
     },
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Upload track audio and cover art to storage node
     const [coverArtResponse, ...audioResponses] = await Promise.all([
@@ -583,7 +583,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>> & {
       metadata: Metadata
     },
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Upload cover art to storage node
     const coverArtResponse =

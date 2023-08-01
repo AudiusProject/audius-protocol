@@ -9,7 +9,7 @@ import type { AuthService, EntityManagerService } from '../../services'
 import {
   Action,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 
 import { parseparams } from '../../utils/parseparams'
@@ -38,7 +38,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    */
   async createDeveloperApp(
     params: CreateDeveloperAppRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     const { name, userId, description } = await parseparams(
       'createDeveloperApp',

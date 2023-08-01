@@ -4,7 +4,7 @@ import {
   Action,
   EntityManagerService,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseparams } from '../../utils/parseparams'
@@ -44,7 +44,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async updateProfile(
     params: UpdateProfileRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
@@ -103,7 +103,10 @@ export class UsersApi extends GeneratedUsersApi {
   /** @hidden
    * Follow a user
    */
-  async followUser(params: FollowUserRequest, advancedOptions?: WriteOptions) {
+  async followUser(
+    params: FollowUserRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
     // Parse inputs
     const { userId, followeeUserId } = await parseparams(
       'followUser',
@@ -125,7 +128,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async unfollowUser(
     params: UnfollowUserRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, followeeUserId } = await parseparams(
@@ -148,7 +151,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async subscribeToUser(
     params: SubscribeToUserRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, subscribeeUserId } = await parseparams(
@@ -171,7 +174,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async unsubscribeFromUser(
     params: UnsubscribeFromUserRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, subscribeeUserId } = await parseparams(

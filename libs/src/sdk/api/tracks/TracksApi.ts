@@ -29,7 +29,7 @@ import type { EntityManagerService, AuthService } from '../../services'
 import {
   Action,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseparams } from '../../utils/parseparams'
@@ -79,7 +79,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async uploadTrack(
     params: UploadTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const {
@@ -162,7 +162,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async updateTrack(
     params: UpdateTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const {
@@ -251,7 +251,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async deleteTrack(
     params: DeleteTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(
@@ -274,7 +274,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async favoriteTrack(
     params: FavoriteTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, trackId, metadata } = await parseparams(
@@ -298,7 +298,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async unfavoriteTrack(
     params: UnfavoriteTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(
@@ -321,7 +321,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async repostTrack(
     params: RepostTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, trackId, metadata } = await parseparams(
@@ -345,7 +345,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async unrepostTrack(
     params: UnrepostTrackRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(

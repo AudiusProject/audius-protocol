@@ -1,7 +1,7 @@
 import type { AuthService, StorageService } from '../../services'
 import type {
   EntityManagerService,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import { parseparams } from '../../utils/parseparams'
@@ -62,7 +62,7 @@ export class AlbumsApi {
    */
   async uploadAlbum(
     params: UploadAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     const { metadata, ...parsedParameters } = await parseparams(
       'uploadAlbum',
@@ -96,7 +96,7 @@ export class AlbumsApi {
    */
   async updateAlbum(
     params: UpdateAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     const { albumId, metadata, ...parsedParameters } = await parseparams(
       'updateAlbum',
@@ -124,7 +124,7 @@ export class AlbumsApi {
    */
   async deleteAlbum(
     params: DeleteAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     await parseparams('deleteAlbum', DeleteAlbumSchema)(params)
 
@@ -142,7 +142,7 @@ export class AlbumsApi {
    */
   async favoriteAlbum(
     params: FavoriteAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     const { metadata } = await parseparams(
       'favoriteAlbum',
@@ -163,7 +163,7 @@ export class AlbumsApi {
    */
   async unfavoriteAlbum(
     params: UnfavoriteAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     await parseparams('unfavoriteAlbum', UnfavoriteAlbumSchema)(params)
     return await this.playlistsApi.unfavoritePlaylist(
@@ -180,7 +180,7 @@ export class AlbumsApi {
    */
   async repostAlbum(
     params: RepostAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     const { metadata } = await parseparams(
       'repostAlbum',
@@ -202,7 +202,7 @@ export class AlbumsApi {
    */
   async unrepostAlbum(
     params: UnrepostAlbumRequest,
-    advancedOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     await parseparams('unrepostAlbum', UnrepostAlbumSchema)(params)
     return await this.playlistsApi.unrepostPlaylist(
