@@ -24,6 +24,7 @@ To run a against staging
 
 ```
 npm run cypress:run-stage
+npm run cypress:open-stage
 ```
 
 **IMPORTANT: Probers by default will make accounts. Don't do this against prod.**
