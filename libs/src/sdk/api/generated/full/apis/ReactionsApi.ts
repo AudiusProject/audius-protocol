@@ -29,19 +29,19 @@ export class ReactionsApi extends runtime.BaseAPI {
     /** @hidden
      * Gets reactions by reacted_to_id and type
      */
-    async bulkGetReactionsRaw(requestParameters: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.reactedToIds === null || requestParameters.reactedToIds === undefined) {
-            throw new runtime.RequiredError('reactedToIds','Required parameter requestParameters.reactedToIds was null or undefined when calling bulkGetReactions.');
+    async bulkGetReactionsRaw(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.reactedToIds === null || params.reactedToIds === undefined) {
+            throw new runtime.RequiredError('reactedToIds','Required parameter params.reactedToIds was null or undefined when calling bulkGetReactions.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.type !== undefined) {
-            queryParameters['type'] = requestParameters.type;
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
         }
 
-        if (requestParameters.reactedToIds) {
-            queryParameters['reacted_to_ids'] = requestParameters.reactedToIds.join(runtime.COLLECTION_FORMATS["csv"]);
+        if (params.reactedToIds) {
+            queryParameters['reacted_to_ids'] = params.reactedToIds.join(runtime.COLLECTION_FORMATS["csv"]);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -59,8 +59,8 @@ export class ReactionsApi extends runtime.BaseAPI {
     /**
      * Gets reactions by reacted_to_id and type
      */
-    async bulkGetReactions(requestParameters: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.bulkGetReactionsRaw(requestParameters, initOverrides);
+    async bulkGetReactions(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.bulkGetReactionsRaw(params, initOverrides);
     }
 
 }

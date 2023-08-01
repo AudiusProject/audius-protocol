@@ -248,15 +248,15 @@ export class UsersApi extends runtime.BaseAPI {
     /** @hidden
      * All users that subscribe to the provided users
      */
-    async bulkGetSubscribersRaw(requestParameters: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
-        if (requestParameters.ids === null || requestParameters.ids === undefined) {
-            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribers.');
+    async bulkGetSubscribersRaw(params: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
+        if (params.ids === null || params.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter params.ids was null or undefined when calling bulkGetSubscribers.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.ids) {
-            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        if (params.ids) {
+            queryParameters['ids'] = params.ids.join(runtime.COLLECTION_FORMATS["csv"]);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -274,23 +274,23 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that subscribe to the provided users
      */
-    async bulkGetSubscribers(requestParameters: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
-        const response = await this.bulkGetSubscribersRaw(requestParameters, initOverrides);
+    async bulkGetSubscribers(params: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
+        const response = await this.bulkGetSubscribersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get all users that subscribe to the users listed in the JSON request
      */
-    async bulkGetSubscribersViaJSONRequestRaw(requestParameters: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
-        if (requestParameters.ids === null || requestParameters.ids === undefined) {
-            throw new runtime.RequiredError('ids','Required parameter requestParameters.ids was null or undefined when calling bulkGetSubscribersViaJSONRequest.');
+    async bulkGetSubscribersViaJSONRequestRaw(params: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
+        if (params.ids === null || params.ids === undefined) {
+            throw new runtime.RequiredError('ids','Required parameter params.ids was null or undefined when calling bulkGetSubscribersViaJSONRequest.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.ids) {
-            queryParameters['ids'] = requestParameters.ids.join(runtime.COLLECTION_FORMATS["csv"]);
+        if (params.ids) {
+            queryParameters['ids'] = params.ids.join(runtime.COLLECTION_FORMATS["csv"]);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -308,57 +308,57 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get all users that subscribe to the users listed in the JSON request
      */
-    async bulkGetSubscribersViaJSONRequest(requestParameters: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
-        const response = await this.bulkGetSubscribersViaJSONRequestRaw(requestParameters, initOverrides);
+    async bulkGetSubscribersViaJSONRequest(params: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
+        const response = await this.bulkGetSubscribersViaJSONRequestRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
-    async getAIAttributedTracksByUserHandleRaw(requestParameters: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getAIAttributedTracksByUserHandle.');
+    async getAIAttributedTracksByUserHandleRaw(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getAIAttributedTracksByUserHandle.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.sort !== undefined) {
-            queryParameters['sort'] = requestParameters.sort;
+        if (params.sort !== undefined) {
+            queryParameters['sort'] = params.sort;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (requestParameters.filterTracks !== undefined) {
-            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        if (params.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = params.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
+            path: `/users/handle/{handle}/tracks/ai_attributed`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -370,49 +370,49 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
-    async getAIAttributedTracksByUserHandle(requestParameters: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
-        const response = await this.getAIAttributedTracksByUserHandleRaw(requestParameters, initOverrides);
+    async getAIAttributedTracksByUserHandle(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
+        const response = await this.getAIAttributedTracksByUserHandleRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a user\'s favorite tracks
      */
-    async getFavoritesRaw(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFavorites.');
+    async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getFavorites.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/favorites/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/favorites/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -424,37 +424,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a user\'s favorite tracks
      */
-    async getFavorites(requestParameters: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
-        const response = await this.getFavoritesRaw(requestParameters, initOverrides);
+    async getFavorites(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+        const response = await this.getFavoritesRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * All users that follow the provided user
      */
-    async getFollowersRaw(requestParameters: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullFollowersResponse>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowers.');
+    async getFollowersRaw(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullFollowersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getFollowers.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/followers`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/followers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -466,37 +466,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that follow the provided user
      */
-    async getFollowers(requestParameters: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullFollowersResponse> {
-        const response = await this.getFollowersRaw(requestParameters, initOverrides);
+    async getFollowers(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullFollowersResponse> {
+        const response = await this.getFollowersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * All users that the provided user follows
      */
-    async getFollowingRaw(requestParameters: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getFollowing.');
+    async getFollowingRaw(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getFollowing.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/following`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/following`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -508,37 +508,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that the provided user follows
      */
-    async getFollowing(requestParameters: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
-        const response = await this.getFollowingRaw(requestParameters, initOverrides);
+    async getFollowing(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
+        const response = await this.getFollowingRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
-    async getRelatedUsersRaw(requestParameters: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getRelatedUsers.');
+    async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getRelatedUsers.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/related`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/related`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -550,37 +550,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a list of users that might be of interest to followers of this user.
      */
-    async getRelatedUsers(requestParameters: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RelatedArtistResponseFull> {
-        const response = await this.getRelatedUsersRaw(requestParameters, initOverrides);
+    async getRelatedUsers(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RelatedArtistResponseFull> {
+        const response = await this.getRelatedUsersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the given user\'s reposts
      */
-    async getRepostsRaw(requestParameters: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getReposts.');
+    async getRepostsRaw(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getReposts.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/reposts`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/reposts`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -592,37 +592,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the given user\'s reposts
      */
-    async getReposts(requestParameters: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
-        const response = await this.getRepostsRaw(requestParameters, initOverrides);
+    async getReposts(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
+        const response = await this.getRepostsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the user\'s reposts by the user handle
      */
-    async getRepostsByHandleRaw(requestParameters: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getRepostsByHandle.');
+    async getRepostsByHandleRaw(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getRepostsByHandle.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/handle/{handle}/reposts`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
+            path: `/users/handle/{handle}/reposts`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -634,37 +634,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s reposts by the user handle
      */
-    async getRepostsByHandle(requestParameters: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
-        const response = await this.getRepostsByHandleRaw(requestParameters, initOverrides);
+    async getRepostsByHandle(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
+        const response = await this.getRepostsByHandleRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * All users that subscribe to the provided user
      */
-    async getSubscribersRaw(requestParameters: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullSubscribersResponse>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSubscribers.');
+    async getSubscribersRaw(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullSubscribersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSubscribers.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/subscribers`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/subscribers`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -676,33 +676,33 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * All users that subscribe to the provided user
      */
-    async getSubscribers(requestParameters: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullSubscribersResponse> {
-        const response = await this.getSubscribersRaw(requestParameters, initOverrides);
+    async getSubscribers(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullSubscribersResponse> {
+        const response = await this.getSubscribersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the specified supporter of the given user
      */
-    async getSupporterRaw(requestParameters: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporter>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporter.');
+    async getSupporterRaw(params: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporter>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupporter.');
         }
 
-        if (requestParameters.supporterUserId === null || requestParameters.supporterUserId === undefined) {
-            throw new runtime.RequiredError('supporterUserId','Required parameter requestParameters.supporterUserId was null or undefined when calling getSupporter.');
+        if (params.supporterUserId === null || params.supporterUserId === undefined) {
+            throw new runtime.RequiredError('supporterUserId','Required parameter params.supporterUserId was null or undefined when calling getSupporter.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/supporters/{supporter_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))).replace(`{${"supporter_user_id"}}`, encodeURIComponent(String(requestParameters.supporterUserId))),
+            path: `/users/{id}/supporters/{supporter_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))).replace(`{${"supporter_user_id"}}`, encodeURIComponent(String(params.supporterUserId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -714,37 +714,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the specified supporter of the given user
      */
-    async getSupporter(requestParameters: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporter> {
-        const response = await this.getSupporterRaw(requestParameters, initOverrides);
+    async getSupporter(params: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporter> {
+        const response = await this.getSupporterRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the supporters of the given user
      */
-    async getSupportersRaw(requestParameters: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporters>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporters.');
+    async getSupportersRaw(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporters>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupporters.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/supporters`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/supporters`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -756,33 +756,33 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the supporters of the given user
      */
-    async getSupporters(requestParameters: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporters> {
-        const response = await this.getSupportersRaw(requestParameters, initOverrides);
+    async getSupporters(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporters> {
+        const response = await this.getSupportersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the support from the given user to the supported user
      */
-    async getSupportingRaw(requestParameters: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupporting.');
+    async getSupportingRaw(params: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupporting.');
         }
 
-        if (requestParameters.supportedUserId === null || requestParameters.supportedUserId === undefined) {
-            throw new runtime.RequiredError('supportedUserId','Required parameter requestParameters.supportedUserId was null or undefined when calling getSupporting.');
+        if (params.supportedUserId === null || params.supportedUserId === undefined) {
+            throw new runtime.RequiredError('supportedUserId','Required parameter params.supportedUserId was null or undefined when calling getSupporting.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/supporting/{supported_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))).replace(`{${"supported_user_id"}}`, encodeURIComponent(String(requestParameters.supportedUserId))),
+            path: `/users/{id}/supporting/{supported_user_id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))).replace(`{${"supported_user_id"}}`, encodeURIComponent(String(params.supportedUserId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -794,37 +794,37 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the support from the given user to the supported user
      */
-    async getSupporting(requestParameters: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
-        const response = await this.getSupportingRaw(requestParameters, initOverrides);
+    async getSupporting(params: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
+        const response = await this.getSupportingRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the users that the given user supports
      */
-    async getSupportingsRaw(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getSupportings.');
+    async getSupportingsRaw(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSupportings.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/supporting`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/supporting`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -836,27 +836,27 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the users that the given user supports
      */
-    async getSupportings(requestParameters: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
-        const response = await this.getSupportingsRaw(requestParameters, initOverrides);
+    async getSupportings(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullGetSupporting> {
+        const response = await this.getSupportingsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get the Top Users having at least one track by follower count
      */
-    async getTopUsersRaw(requestParameters: GetTopUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopUsersResponseFull>> {
+    async getTopUsersRaw(params: GetTopUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopUsersResponseFull>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -874,27 +874,27 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the Top Users having at least one track by follower count
      */
-    async getTopUsers(requestParameters: GetTopUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopUsersResponseFull> {
-        const response = await this.getTopUsersRaw(requestParameters, initOverrides);
+    async getTopUsers(params: GetTopUsersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopUsersResponseFull> {
+        const response = await this.getTopUsersRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get the Top Users for a Given Genre
      */
-    async getTopUsersInGenreRaw(requestParameters: GetTopUsersInGenreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopGenreUsersResponseFull>> {
+    async getTopUsersInGenreRaw(params: GetTopUsersInGenreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopGenreUsersResponseFull>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.genre) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre) {
+            queryParameters['genre'] = params.genre;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -912,57 +912,57 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the Top Users for a Given Genre
      */
-    async getTopUsersInGenre(requestParameters: GetTopUsersInGenreRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopGenreUsersResponseFull> {
-        const response = await this.getTopUsersInGenreRaw(requestParameters, initOverrides);
+    async getTopUsersInGenre(params: GetTopUsersInGenreRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TopGenreUsersResponseFull> {
+        const response = await this.getTopUsersInGenreRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the tracks created by a user using their user ID
      */
-    async getTracksByUserRaw(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getTracksByUser.');
+    async getTracksByUserRaw(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getTracksByUser.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.sort !== undefined) {
-            queryParameters['sort'] = requestParameters.sort;
+        if (params.sort !== undefined) {
+            queryParameters['sort'] = params.sort;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (requestParameters.filterTracks !== undefined) {
-            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        if (params.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = params.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -974,57 +974,57 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the tracks created by a user using their user ID
      */
-    async getTracksByUser(requestParameters: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
-        const response = await this.getTracksByUserRaw(requestParameters, initOverrides);
+    async getTracksByUser(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
+        const response = await this.getTracksByUserRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the tracks created by a user using the user\'s handle
      */
-    async getTracksByUserHandleRaw(requestParameters: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getTracksByUserHandle.');
+    async getTracksByUserHandleRaw(params: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getTracksByUserHandle.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.sort !== undefined) {
-            queryParameters['sort'] = requestParameters.sort;
+        if (params.sort !== undefined) {
+            queryParameters['sort'] = params.sort;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (requestParameters.filterTracks !== undefined) {
-            queryParameters['filter_tracks'] = requestParameters.filterTracks;
+        if (params.filterTracks !== undefined) {
+            queryParameters['filter_tracks'] = params.filterTracks;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/handle/{handle}/tracks`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
+            path: `/users/handle/{handle}/tracks`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1036,29 +1036,29 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the tracks created by a user using the user\'s handle
      */
-    async getTracksByUserHandle(requestParameters: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
-        const response = await this.getTracksByUserHandleRaw(requestParameters, initOverrides);
+    async getTracksByUserHandle(params: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracks> {
+        const response = await this.getTracksByUserHandleRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a single user by their user ID
      */
-    async getUserRaw(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUser.');
+    async getUserRaw(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUser.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1070,29 +1070,29 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a single user by their user ID
      */
-    async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
-        const response = await this.getUserRaw(requestParameters, initOverrides);
+    async getUser(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getUserRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a single user by their handle
      */
-    async getUserByHandleRaw(requestParameters: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getUserByHandle.');
+    async getUserByHandleRaw(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getUserByHandle.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/handle/{handle}`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))),
+            path: `/users/handle/{handle}`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1104,8 +1104,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets a single user by their handle
      */
-    async getUserByHandle(requestParameters: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
-        const response = await this.getUserByHandleRaw(requestParameters, initOverrides);
+    async getUserByHandle(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
+        const response = await this.getUserByHandleRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1113,61 +1113,61 @@ export class UsersApi extends runtime.BaseAPI {
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
-    async getUserLibraryTracksRaw(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserLibraryTracks.');
+    async getUserLibraryTracksRaw(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryTracks.');
         }
 
-        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryTracks.');
         }
 
-        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryTracks.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
-        if (requestParameters.type !== undefined) {
-            queryParameters['type'] = requestParameters.type;
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
         }
 
-        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
         }
 
         const response = await this.request({
-            path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/library/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1180,29 +1180,29 @@ export class UsersApi extends runtime.BaseAPI {
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
-    async getUserLibraryTracks(requestParameters: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
-        const response = await this.getUserLibraryTracksRaw(requestParameters, initOverrides);
+    async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+        const response = await this.getUserLibraryTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the user\'s replica set
      */
-    async getUserReplicaSetRaw(requestParameters: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUserReplicaSet.');
+    async getUserReplicaSetRaw(params: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserReplicaSet.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/replica_set`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1214,49 +1214,49 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s replica set
      */
-    async getUserReplicaSet(requestParameters: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersByContentNode> {
-        const response = await this.getUserReplicaSetRaw(requestParameters, initOverrides);
+    async getUserReplicaSet(params: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersByContentNode> {
+        const response = await this.getUserReplicaSetRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get the tracks the user recently listened to.
      */
-    async getUsersTrackHistoryRaw(requestParameters: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponseFull>> {
-        if (requestParameters.id === null || requestParameters.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling getUsersTrackHistory.');
+    async getUsersTrackHistoryRaw(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUsersTrackHistory.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/users/{id}/history/tracks`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1268,8 +1268,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Get the tracks the user recently listened to.
      */
-    async getUsersTrackHistory(requestParameters: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HistoryResponseFull> {
-        const response = await this.getUsersTrackHistoryRaw(requestParameters, initOverrides);
+    async getUsersTrackHistory(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<HistoryResponseFull> {
+        const response = await this.getUsersTrackHistoryRaw(params, initOverrides);
         return await response.value();
     }
 

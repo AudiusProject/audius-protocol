@@ -50,31 +50,31 @@ export class SearchApi extends runtime.BaseAPI {
     /** @hidden
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchRaw(requestParameters: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
-        if (requestParameters.query === null || requestParameters.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling search.');
+    async searchRaw(params: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
+        if (params.query === null || params.query === undefined) {
+            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling search.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.kind !== undefined) {
-            queryParameters['kind'] = requestParameters.kind;
+        if (params.kind !== undefined) {
+            queryParameters['kind'] = params.kind;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -92,8 +92,8 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async search(requestParameters: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
-        const response = await this.searchRaw(requestParameters, initOverrides);
+    async search(params: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
+        const response = await this.searchRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -101,31 +101,31 @@ export class SearchApi extends runtime.BaseAPI {
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchAutocompleteRaw(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchAutocompleteResponse>> {
-        if (requestParameters.query === null || requestParameters.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchAutocomplete.');
+    async searchAutocompleteRaw(params: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchAutocompleteResponse>> {
+        if (params.query === null || params.query === undefined) {
+            throw new runtime.RequiredError('query','Required parameter params.query was null or undefined when calling searchAutocomplete.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
         }
 
-        if (requestParameters.kind !== undefined) {
-            queryParameters['kind'] = requestParameters.kind;
+        if (params.kind !== undefined) {
+            queryParameters['kind'] = params.kind;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -144,8 +144,8 @@ export class SearchApi extends runtime.BaseAPI {
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchAutocomplete(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
-        const response = await this.searchAutocompleteRaw(requestParameters, initOverrides);
+    async searchAutocomplete(params: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
+        const response = await this.searchAutocompleteRaw(params, initOverrides);
         return await response.value();
     }
 

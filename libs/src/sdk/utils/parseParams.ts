@@ -12,10 +12,10 @@ export class ParseRequestError extends Error {
  * @param schema Zod schema that defines the shape of the request parameters
  * @returns The parsed data or throws an error
  */
-export const parseRequestParameters =
+export const parseParams =
   <T extends z.ZodType>(name: string, schema: T) =>
-  async <J>(requestParameters: J): Promise<z.infer<T>> => {
-    const result = await schema.safeParseAsync(requestParameters)
+  async <J>(params: J): Promise<z.infer<T>> => {
+    const result = await schema.safeParseAsync(params)
     if (!result.success) {
       throw new ParseRequestError(name, result.error)
     }
