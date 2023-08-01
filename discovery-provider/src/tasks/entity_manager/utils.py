@@ -336,7 +336,6 @@ def save_cid_metadata(
 
     for cid, val in cid_metadata.items():
         cid_data = CIDData(cid=cid, type=cid_type[cid], data=val)
-        print(f"asdf cid_data {cid_data}")
         session.merge(cid_data)
 
 

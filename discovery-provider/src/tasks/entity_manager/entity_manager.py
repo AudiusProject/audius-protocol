@@ -300,7 +300,9 @@ def entity_manager_update(
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
-        records_to_save = get_records_to_save(params, new_records, original_records, existing_records_in_json)
+        records_to_save = get_records_to_save(
+            params, new_records, original_records, existing_records_in_json
+        )
 
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
@@ -339,7 +341,9 @@ def entity_manager_update(
     return num_total_changes, changed_entity_ids
 
 
-def get_records_to_save(params, new_records, original_records, existing_records_in_json):
+def get_records_to_save(
+    params, new_records, original_records, existing_records_in_json
+):
     records_to_save = []
     prev_records = {}
 
@@ -366,16 +370,17 @@ def get_records_to_save(params, new_records, original_records, existing_records_
                 and "is_current"
                 in get_record_columns(original_records[record_type][entity_id])
             ):
-                print(f"asdf entity_id {entity_id} {type(entity_id)}")
-                print(f"asdf existing_records_in_json {existing_records_in_json}")
                 original_records[record_type][entity_id].is_current = False
-                prev_records[record_type][entity_id] = existing_records_in_json[record_type][entity_id]
+                print(f"asdf existing_records_in_json {existing_records_in_json}")
+                prev_records[record_type][entity_id] = existing_records_in_json[
+                    record_type
+                ][entity_id]
             else:
                 prev_records[record_type][entity_id] = {}
-    print(f"asdf prev_records {prev_records}")
 
-    revert_block = RevertBlock(blocknumber=params.block_number, prev_records=prev_records)
-    print(f"asdf revert_block {revert_block}")
+    revert_block = RevertBlock(
+        blocknumber=params.block_number, prev_records=prev_records
+    )
     records_to_save.append(revert_block)
 
     # add EM logs to save
@@ -498,6 +503,22 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
     return entities_to_fetch
 
 
+def fetch_records_in_json(
+    session: Session, existing_records, existing_entities, table, identifier
+):
+    json_records = {}
+    print(f"asdf existing_records {existing_records}")
+    for record in existing_records:
+        existing_entities[EntityType.USER] = {getattr(record, identifier): record}
+        sql = text(
+            f"SELECT row_to_json({table}) FROM {table} WHERE {identifier} = {getattr(record, identifier)} and is_current"
+        )
+        print(f"asdf sql {sql}")
+        result = session.execute(sql).fetchone()
+        json_records[identifier] = result[0]
+    return json_records
+
+
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = defaultdict(dict)
     existing_entities_in_json = defaultdict(dict)
@@ -540,14 +561,12 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
             .all()
         )
-        for user in users:
-            existing_entities[EntityType.USER] = {user.user_id: user}
-            sql = text("SELECT row_to_json(users) FROM users WHERE user_id = :user_id and is_current")
+        print(f"asdf users {users}")
+        existing_entities_in_json[EntityType.USER].update(
+            fetch_records_in_json(session, users, existing_entities, "users", "user_id")
+        )
+        print(f"existing_entities_in_json {existing_entities_in_json}")
 
-            # Execute the query and fetch results
-            result = session.execute(sql, {'user_id': user.user_id}).fetchone()
-            existing_entities_in_json[EntityType.USER][user.user_id] = result[0]
-    print(f"asdf result {existing_entities_in_json}")
     if entities_to_fetch[EntityType.ASSOCIATED_WALLET]:
         associated_wallets: List[AssociatedWallet] = (
             session.query(AssociatedWallet)

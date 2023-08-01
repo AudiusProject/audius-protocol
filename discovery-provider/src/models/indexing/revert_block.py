@@ -9,5 +9,5 @@ class RevertBlock(Base, RepresentableMixin):
 
     blocknumber = Column(Integer, nullable=False)
     prev_records = Column(postgresql.JSONB(), nullable=False)
-    
+
     PrimaryKeyConstraint(blocknumber)
