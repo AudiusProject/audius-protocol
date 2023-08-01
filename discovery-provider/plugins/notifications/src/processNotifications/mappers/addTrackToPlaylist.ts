@@ -71,7 +71,6 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }> = await this.dnDB
       .select('playlist_id', 'playlist_name', 'playlist_owner_id', 'playlist_contents')
       .from<PlaylistRow>('playlists')
-      .whereIn("is_current", ["true", "false"])
       .orderBy("blocknumber", "desc")
       .limit(2)
       .whereIn('playlist_id', [this.playlistId])
