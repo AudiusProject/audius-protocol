@@ -32,7 +32,7 @@ steps:
   - run:
       name: Make github draft release
       command: |
-        CN_VERSION="$(jq -r .version creator-node/.version.json)"
+        CN_VERSION="$(jq -r .version mediorum/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
         gh release create -d --target "$CIRCLE_SHA1" -F /tmp/creator-node-changelog "@audius/creator-node@$CN_VERSION"
         gh release create -d --target "$CIRCLE_SHA1" -F /tmp/discovery-provider-changelog "@audius/discovery-provider@$DP_VERSION"

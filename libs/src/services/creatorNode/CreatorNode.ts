@@ -61,43 +61,6 @@ export type CreatorNodeConfig = {
 export class CreatorNode {
   /* Static Utils */
 
-  /**
-   * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
-   * @param endpoint content node endpoint
-   * @param wallet user wallet address
-   * @param timeout max time alloted for clock request
-   * @param params optional query string params
-   */
-  static async getClockValue(
-    endpoint: string,
-    wallet: string,
-    timeout?: number,
-    params: Record<string, string> = {}
-  ) {
-    const baseReq: AxiosRequestConfig = {
-      url: `/users/clock_status/${wallet}`,
-      method: 'get',
-      baseURL: endpoint
-    }
-
-    if (Object.keys(params).length > 0) {
-      baseReq.params = params
-    }
-
-    if (timeout) {
-      baseReq.timeout = timeout
-    }
-
-    try {
-      const { data: body } = await axios(baseReq)
-      return body.data.clockValue
-    } catch (err) {
-      throw new Error(
-        `Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`
-      )
-    }
-  }
-
   /* -------------- */
 
   web3Manager: Nullable<Web3Manager>

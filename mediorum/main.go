@@ -130,14 +130,12 @@ func startStagingOrProd(isProd bool) {
 		PostgresDSN:         os.Getenv("dbUrl"),
 		BlobStoreDSN:        os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		LegacyFSRoot:        getenvWithDefault("storagePath", "/file_storage"),
-		UpstreamCN:          getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
 		TrustedNotifierID:   trustedNotifierID,
 		SPID:                spID,
 		SPOwnerWallet:       os.Getenv("spOwnerWallet"),
 		GitSHA:              os.Getenv("GIT_SHA"),
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
-		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 		StoreAll:            os.Getenv("STORE_ALL") == "true",
 		VersionJson:         GetVersionJson(),
 		MigrateQmCidIters:   migrateQmCidIters,
@@ -188,7 +186,6 @@ func startDevInstance() {
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 		LegacyFSRoot:        "/file_storage",
-		IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 		VersionJson:         GetVersionJson(),
 	}
 
@@ -205,7 +202,6 @@ func startDevCluster() {
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
-	upstreamCNTemplate := getenvWithDefault("upstreamCNTemplate", "http://audius-protocol-creator-node-container-%d:4000")
 	devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 
 	network := devNetwork(hostNameTemplate, devNetworkCount)
@@ -241,14 +237,12 @@ func startDevCluster() {
 			Dir:                 fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:         fmt.Sprintf(dbUrlTemplate, idx+1),
 			ListenPort:          fmt.Sprintf("199%d", idx+1),
-			UpstreamCN:          fmt.Sprintf(upstreamCNTemplate, idx+1),
 			SPID:                spID,
 			SPOwnerWallet:       peer.Wallet,
 			GitSHA:              os.Getenv("GIT_SHA"),
 			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
 			LegacyFSRoot:        "/file_storage",
-			IsV2Only:            os.Getenv("IS_V2_ONLY") == "true",
 			VersionJson:         GetVersionJson(),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)
