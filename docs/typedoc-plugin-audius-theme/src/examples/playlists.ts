@@ -1,21 +1,29 @@
 export const getPlaylist = `
-const playlist = await audiusSdk.playlists.getPlaylist({
+const playlistResponse = await audiusSdk.playlists.getPlaylist({
     playlistId: "AxRP0",
 });
+
+const playlist = playlistReponse.data?.[0];
 `;
 
 export const getPlaylistTracks = `
-const tracks = await audiusSdk.playlists.getPlaylistTracks({
+const playlistResponse = await audiusSdk.playlists.getPlaylistTracks({
     playlistId: "AxRP0",
 });
+
+const playlistTracks = playlistResponse.data;
 `;
 
 export const getTrendingPlaylists = `
-const playlists = await audiusSdk.playlists.getTrendingPlaylists();
+const playlistsResponse = await audiusSdk.playlists.getTrendingPlaylists();
+
+const trendingPlaylists = playlistsResponse.data;
 `;
 
 export const searchPlaylists = `
-const playlists = await audiusSdk.playlists.searchPlaylists({
+const playlistsResponse = await audiusSdk.playlists.searchPlaylists({
     query: 'lo-fi',
 });
+
+const playlists = playlistsResponse.data;
 `;
