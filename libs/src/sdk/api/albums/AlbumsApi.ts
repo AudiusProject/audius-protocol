@@ -60,7 +60,10 @@ export class AlbumsApi {
    * Upload an album
    * Uploads the specified tracks and combines them into an album
    */
-  async uploadAlbum(params: UploadAlbumRequest, writeOptions?: WriteOptions) {
+  async uploadAlbum(
+    params: UploadAlbumRequest,
+    advancedOptions?: WriteOptions
+  ) {
     const { metadata, ...parsedParameters } = await parseparams(
       'uploadAlbum',
       createUploadAlbumSchema()
@@ -78,7 +81,7 @@ export class AlbumsApi {
           isAlbum: true
         }
       },
-      writeOptions
+      advancedOptions
     )
 
     return {
@@ -91,7 +94,10 @@ export class AlbumsApi {
   /** @hidden
    * Update an album
    */
-  async updateAlbum(params: UpdateAlbumRequest, writeOptions?: WriteOptions) {
+  async updateAlbum(
+    params: UpdateAlbumRequest,
+    advancedOptions?: WriteOptions
+  ) {
     const { albumId, metadata, ...parsedParameters } = await parseparams(
       'updateAlbum',
       createUpdateAlbumSchema()
@@ -109,14 +115,17 @@ export class AlbumsApi {
           playlistName: albumName
         }
       },
-      writeOptions
+      advancedOptions
     )
   }
 
   /** @hidden
    * Delete an album
    */
-  async deleteAlbum(params: DeleteAlbumRequest, writeOptions?: WriteOptions) {
+  async deleteAlbum(
+    params: DeleteAlbumRequest,
+    advancedOptions?: WriteOptions
+  ) {
     await parseparams('deleteAlbum', DeleteAlbumSchema)(params)
 
     return await this.playlistsApi.deletePlaylist(
@@ -124,7 +133,7 @@ export class AlbumsApi {
         userId: params.userId,
         playlistId: params.albumId
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -133,7 +142,7 @@ export class AlbumsApi {
    */
   async favoriteAlbum(
     params: FavoriteAlbumRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     const { metadata } = await parseparams(
       'favoriteAlbum',
@@ -145,7 +154,7 @@ export class AlbumsApi {
         playlistId: params.albumId,
         metadata
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -154,7 +163,7 @@ export class AlbumsApi {
    */
   async unfavoriteAlbum(
     params: UnfavoriteAlbumRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     await parseparams('unfavoriteAlbum', UnfavoriteAlbumSchema)(params)
     return await this.playlistsApi.unfavoritePlaylist(
@@ -162,14 +171,17 @@ export class AlbumsApi {
         userId: params.userId,
         playlistId: params.albumId
       },
-      writeOptions
+      advancedOptions
     )
   }
 
   /** @hidden
    * Repost an album
    */
-  async repostAlbum(params: RepostAlbumRequest, writeOptions?: WriteOptions) {
+  async repostAlbum(
+    params: RepostAlbumRequest,
+    advancedOptions?: WriteOptions
+  ) {
     const { metadata } = await parseparams(
       'repostAlbum',
       RepostAlbumSchema
@@ -181,7 +193,7 @@ export class AlbumsApi {
         playlistId: params.albumId,
         metadata
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -190,7 +202,7 @@ export class AlbumsApi {
    */
   async unrepostAlbum(
     params: UnrepostAlbumRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     await parseparams('unrepostAlbum', UnrepostAlbumSchema)(params)
     return await this.playlistsApi.unrepostPlaylist(
@@ -198,7 +210,7 @@ export class AlbumsApi {
         userId: params.userId,
         playlistId: params.albumId
       },
-      writeOptions
+      advancedOptions
     )
   }
 }

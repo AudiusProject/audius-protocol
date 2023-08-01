@@ -77,7 +77,10 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Upload a track
    */
-  async uploadTrack(params: UploadTrackRequest, writeOptions?: WriteOptions) {
+  async uploadTrack(
+    params: UploadTrackRequest,
+    advancedOptions?: WriteOptions
+  ) {
     // Parse inputs
     const {
       userId,
@@ -146,7 +149,7 @@ export class TracksApi extends GeneratedTracksApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
     return {
       ...response,
@@ -157,7 +160,10 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Update a track
    */
-  async updateTrack(params: UpdateTrackRequest, writeOptions?: WriteOptions) {
+  async updateTrack(
+    params: UpdateTrackRequest,
+    advancedOptions?: WriteOptions
+  ) {
     // Parse inputs
     const {
       userId,
@@ -236,14 +242,17 @@ export class TracksApi extends GeneratedTracksApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
   /** @hidden
    * Delete a track
    */
-  async deleteTrack(params: DeleteTrackRequest, writeOptions?: WriteOptions) {
+  async deleteTrack(
+    params: DeleteTrackRequest,
+    advancedOptions?: WriteOptions
+  ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(
       'deleteTrack',
@@ -256,7 +265,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.DELETE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -265,7 +274,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async favoriteTrack(
     params: FavoriteTrackRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, trackId, metadata } = await parseparams(
@@ -280,7 +289,7 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -289,7 +298,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async unfavoriteTrack(
     params: UnfavoriteTrackRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(
@@ -303,14 +312,17 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.UNSAVE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
   /** @hidden
    * Repost a track
    */
-  async repostTrack(params: RepostTrackRequest, writeOptions?: WriteOptions) {
+  async repostTrack(
+    params: RepostTrackRequest,
+    advancedOptions?: WriteOptions
+  ) {
     // Parse inputs
     const { userId, trackId, metadata } = await parseparams(
       'respostTrack',
@@ -324,7 +336,7 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -333,7 +345,7 @@ export class TracksApi extends GeneratedTracksApi {
    */
   async unrepostTrack(
     params: UnrepostTrackRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, trackId } = await parseparams(
@@ -347,7 +359,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.UNREPOST,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 }

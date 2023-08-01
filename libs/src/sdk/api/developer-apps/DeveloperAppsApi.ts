@@ -38,7 +38,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    */
   async createDeveloperApp(
     params: CreateDeveloperAppRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     const { name, userId, description } = await parseparams(
       'createDeveloperApp',
@@ -67,7 +67,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
         }
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
 
     const apiKey = address.slice(2).toLowerCase()

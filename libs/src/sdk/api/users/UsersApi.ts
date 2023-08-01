@@ -44,7 +44,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async updateProfile(
     params: UpdateProfileRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
@@ -96,14 +96,14 @@ export class UsersApi extends GeneratedUsersApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
   /** @hidden
    * Follow a user
    */
-  async followUser(params: FollowUserRequest, writeOptions?: WriteOptions) {
+  async followUser(params: FollowUserRequest, advancedOptions?: WriteOptions) {
     // Parse inputs
     const { userId, followeeUserId } = await parseparams(
       'followUser',
@@ -116,14 +116,17 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: followeeUserId,
       action: Action.FOLLOW,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
   /** @hidden
    * Unfollow a user
    */
-  async unfollowUser(params: UnfollowUserRequest, writeOptions?: WriteOptions) {
+  async unfollowUser(
+    params: UnfollowUserRequest,
+    advancedOptions?: WriteOptions
+  ) {
     // Parse inputs
     const { userId, followeeUserId } = await parseparams(
       'unfollowUser',
@@ -136,7 +139,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: followeeUserId,
       action: Action.UNFOLLOW,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -145,7 +148,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async subscribeToUser(
     params: SubscribeToUserRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, subscribeeUserId } = await parseparams(
@@ -159,7 +162,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: subscribeeUserId,
       action: Action.SUBSCRIBE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -168,7 +171,7 @@ export class UsersApi extends GeneratedUsersApi {
    */
   async unsubscribeFromUser(
     params: UnsubscribeFromUserRequest,
-    writeOptions?: WriteOptions
+    advancedOptions?: WriteOptions
   ) {
     // Parse inputs
     const { userId, subscribeeUserId } = await parseparams(
@@ -182,7 +185,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: subscribeeUserId,
       action: Action.UNSUBSCRIBE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 }
