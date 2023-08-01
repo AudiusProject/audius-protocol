@@ -1,68 +1,59 @@
-import fetch from 'node-fetch'
-import semver from 'semver'
-import { SlashProposalParams } from '../proposal'
-import { Node, audit } from '../audit'
+import fetch from "node-fetch";
+import semver from "semver";
+import { SlashProposalParams } from "../proposal";
+import { Node, audit } from "../audit";
 
-const SLASH_AMOUNT_WEI = 3000 * 1_000_000_000_000_000_000
+const SLASH_AMOUNT_WEI = 3000 * 1_000_000_000_000_000_000;
 
 type AuditResponse = {
-  failedAudit: boolean
+  failedAudit: boolean;
   data: {
-    nodeEndpoint: string
-    nodeVersion: string
-    requiredVersion: string
-    owner: string
-  } | null
-}
-
+    nodeEndpoint: string;
+    nodeVersion: string;
+    requiredVersion: string;
+    owner: string;
+  } | null;
+};
 
 const checkVersion = async (node: Node): Promise<AuditResponse> => {
-  const res = await fetch(`${node.endpoint}/version`)
-  const json = await res.json()
-  const nodeVersion = json.data.version
+  const res = await fetch(`${node.endpoint}/version`);
+  const json = await res.json();
+  const nodeVersion = json.data.version;
 
-  const requiredVersion = '1.2.3'
+  const requiredVersion = "1.2.3";
 
-  const nodeMajorVersion = semver.major(nodeVersion)
-  const nodeMinorVersion = semver.minor(nodeVersion)
+  const nodeMajorVersion = semver.major(nodeVersion);
+  const nodeMinorVersion = semver.minor(nodeVersion);
 
-  const requiredMajorVersion = semver.major(requiredVersion)
-  const requiredMinorVersion = semver.minor(requiredVersion)
+  const requiredMajorVersion = semver.major(requiredVersion);
+  const requiredMinorVersion = semver.minor(requiredVersion);
 
-  const isMajorVersionBehind = nodeMajorVersion < requiredMajorVersion
-  const isMinorVersionBehind = (
+  const isMajorVersionBehind = nodeMajorVersion < requiredMajorVersion;
+  const isMinorVersionBehind =
     nodeMajorVersion === requiredMajorVersion &&
-    nodeMinorVersion < requiredMinorVersion
-  )
-  if (
-    isMajorVersionBehind ||
-    isMinorVersionBehind
-  ) {
-    return ({
+    nodeMinorVersion < requiredMinorVersion;
+  if (isMajorVersionBehind || isMinorVersionBehind) {
+    return {
       failedAudit: true,
       data: {
         nodeEndpoint: node.endpoint,
         nodeVersion,
         requiredVersion,
-        owner: node.owner
-      }
-    })
+        owner: node.owner,
+      },
+    };
   }
 
-  return ({
+  return {
     failedAudit: false,
-    data: null
-  })
-}
+    data: null,
+  };
+};
 
 const createProposal = (auditResponse: AuditResponse): SlashProposalParams => {
-  const {
-    nodeEndpoint,
-    owner,
-    nodeVersion,
-    requiredVersion
-  } = auditResponse.data!
-  return ({
+  const { nodeEndpoint, owner, nodeVersion, requiredVersion } =
+    auditResponse.data!;
+  return {
     amountWei: SLASH_AMOUNT_WEI,
     title: `[Version SLA Audit] Proposal to slash ${owner}`,
     description: `
@@ -73,15 +64,19 @@ Endpoint: ${nodeEndpoint}
 Node version: ${nodeVersion}
 Required version: ${requiredVersion}
 `,
-    owner
-  })
-}
+    owner,
+  };
+};
 
 export const auditVersions = async (nodes: Node[]) => {
   const auditResponses = await Promise.all(
-    nodes.map(async node => checkVersion(node))
-  )
-  const failedAudits = auditResponses.filter(auditResponse => auditResponse.failedAudit)
-  const proposals = failedAudits.map(failedAudit => createProposal(failedAudit))
-  return proposals
-}
+    nodes.map(async (node) => checkVersion(node))
+  );
+  const failedAudits = auditResponses.filter(
+    (auditResponse) => auditResponse.failedAudit
+  );
+  const proposals = failedAudits.map((failedAudit) =>
+    createProposal(failedAudit)
+  );
+  return proposals;
+};
