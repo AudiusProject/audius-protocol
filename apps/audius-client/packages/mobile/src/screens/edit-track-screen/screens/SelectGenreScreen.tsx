@@ -1,4 +1,4 @@
-import { GENRES } from '@audius/common'
+import { convertGenreLabelToValue, GENRES } from '@audius/common'
 import { useField } from 'formik'
 
 import IconGenre from 'app/assets/images/iconGenre.svg'
@@ -11,7 +11,10 @@ const messages = {
   searchText: 'Select Genres'
 }
 
-const genres = GENRES.map((genre) => ({ value: genre, label: genre }))
+const genres = GENRES.map((genre) => ({
+  value: convertGenreLabelToValue(genre),
+  label: genre
+}))
 
 export const SelectGenreScreen = () => {
   const [{ value }, , { setValue }] = useField('genre')

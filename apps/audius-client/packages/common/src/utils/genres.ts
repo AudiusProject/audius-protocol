@@ -85,6 +85,7 @@ export const getCanonicalName = (genre: Genre | any) => {
   return genre
 }
 
+/** User-facing genre labels. Use `convertGenreLabelToValue` to get the correct genre value (to set as the genre in track metadata). */
 export const GENRES = [
   Genre.ELECTRONIC,
   Genre.ROCK,
@@ -115,10 +116,12 @@ export const GENRES = [
   Genre.LATIN,
   Genre.LOFI,
   Genre.HYPERPOP,
-  ...Object.keys(ELECTRONIC_SUBGENRES).map(
-    (subgenre) => `${ELECTRONIC_PREFIX}${subgenre}`
-  )
+  ...Object.values(ELECTRONIC_SUBGENRES)
 ]
+
+export const convertGenreLabelToValue = (genreLabel: typeof GENRES[number]) => {
+  return genreLabel.replace(ELECTRONIC_PREFIX, '')
+}
 
 const NEWLY_ADDED_GENRES: string[] = []
 
