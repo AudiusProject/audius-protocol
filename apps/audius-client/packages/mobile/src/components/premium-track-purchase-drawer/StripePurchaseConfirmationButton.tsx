@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { Button } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { createStripeSession, getUSDCUserBank } from 'app/services/buyCrypto'
+import { setVisibility } from 'app/store/drawers/slice'
 import { useThemeColors } from 'app/utils/theme'
 
 const { getAccountERCWallet } = accountSelectors
@@ -21,6 +22,7 @@ type StripePurchaseConfirmationButtonProps = {
 export const StripePurchaseConfirmationButton = ({
   price
 }: StripePurchaseConfirmationButtonProps) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { specialLightGreen1 } = useThemeColors()
   const ethWallet = useSelector(getAccountERCWallet)
@@ -38,20 +40,27 @@ export const StripePurchaseConfirmationButton = ({
       }
       const res = await createStripeSession({
         amount: price,
-        destinationWallet: usdcUserBank.toString()
+        destinationWallet: usdcUserBank.toString(),
+        destinationCurrency: 'usdc'
       })
       if (res === undefined || res.client_secret === undefined) {
         throw new Error(
           'Stripe session creation failed: could not get client secret'
         )
       }
+      dispatch(
+        setVisibility({
+          drawer: 'PremiumTrackPurchase',
+          visible: false
+        })
+      )
       navigation.navigate('StripeOnrampEmbed', {
         clientSecret: res.client_secret
       })
     } catch (e) {
       console.error(e)
     }
-  }, [ethWallet, navigation, price])
+  }, [dispatch, ethWallet, navigation, price])
 
   return (
     <Button

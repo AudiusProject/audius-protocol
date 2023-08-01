@@ -10,14 +10,17 @@ export const getUSDCUserBank = async (ethWallet: string) => {
 
 export const createStripeSession = async ({
   destinationWallet,
-  amount
+  amount,
+  destinationCurrency
 }: {
   destinationWallet: string
   amount: string
+  destinationCurrency: 'sol' | 'usdc'
 }) => {
   await waitForLibsInit()
   return await audiusLibs?.identityService?.createStripeSession({
     destinationWallet,
-    amount
+    amount,
+    destinationCurrency
   })
 }
