@@ -30,7 +30,13 @@ export const webServer = async (app: App<SharedData>) => {
         },
       },
     },
-    async (req, _rep) => await relayHandler(app, req.headers, req.body)
+    async (req, rep) =>
+      await relayHandler(
+        app,
+        { reqIp: req.socket.remoteAddress! },
+        req.body,
+        rep
+      )
   );
 
   try {

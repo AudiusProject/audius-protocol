@@ -22,7 +22,7 @@ export const relayTransaction = async (
   app: App<SharedData>,
   headers: RelayRequestHeaders,
   req: RelayRequestType,
-  rep: FastifyReply,
+  rep: FastifyReply
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
@@ -38,15 +38,15 @@ export const relayTransaction = async (
   const { encodedABI, contractRegistryKey, gasLimit } = req;
   const { reqIp } = headers;
 
-  const discoveryDb = app.getDnDb()
+  const discoveryDb = app.getDnDb();
   const sender = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
     entityManagerAddress: entityManagerContractAddress,
     chainId: acdcChainId,
-  })
+  });
   const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
   if (isBlockedFromRelay) {
-    errorResponseForbidden(rep)
+    errorResponseForbidden(rep);
   }
 
   log({ msg: "new relay request", req });
