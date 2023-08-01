@@ -216,7 +216,7 @@ export class DiscoveryProviderSelection extends ServiceSelection {
       return false
     }
 
-    // If this service is behind by patches, add it as a backup and reject
+    // If this service is behind, add it as a backup and reject
     if (semver.lt(version, this.currentVersion)) {
       this.addBackup(urlMap[response.config.url as string] as string, data.data)
       return false
