@@ -14,21 +14,10 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
-import { logger } from '../../logger'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
 }
-
-type Track = {
-  time: number;
-  track: number;
-};
-
-type PlaylistContents = {
-  track_ids: Track[];
-};
-
 export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotificationRow> {
   trackId: number
   playlistId: number
@@ -66,15 +55,13 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     const playlistRes: Array<{
       playlist_id: number
       playlist_name: string
-      playlist_owner_id: number,
-      playlist_contents: PlaylistContents,
+      playlist_owner_id: number
     }> = await this.dnDB
-      .select('playlist_id', 'playlist_name', 'playlist_owner_id', 'playlist_contents')
+      .select('playlist_id', 'playlist_name', 'playlist_owner_id')
       .from<PlaylistRow>('playlists')
-      .orderBy("blocknumber", "desc")
-      .limit(2)
+      .where('is_current', true)
       .whereIn('playlist_id', [this.playlistId])
-    const [playlist, old_playlist] = playlistRes
+    const playlist = playlistRes[0]
 
     const res: Array<{
       user_id: number
@@ -95,16 +82,6 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
     if (users?.[track.owner_id]?.isDeactivated) {
       return
-    }
-
-    if (old_playlist !== undefined) {
-      // playlist update happened, not create
-      const old_track_ids = old_playlist.playlist_contents.track_ids.map((track) => track.track)
-      if (old_track_ids.includes(track.track_id)) {
-        logger.info(`playlist update, skipping push ${track} ${playlist.playlist_name}`)
-        // track was already present on playlist
-        return
-      }
     }
 
     // Get the user's notification setting from identity service
