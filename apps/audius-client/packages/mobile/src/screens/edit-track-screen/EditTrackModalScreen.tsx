@@ -8,6 +8,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { ModalScreen } from 'app/components/core'
 import { useTrackImage } from 'app/components/image/TrackImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -23,7 +24,7 @@ const messages = {
   save: 'Save Changes'
 }
 
-export const EditExistingTrackScreen = () => {
+export const EditTrackModalScreen = () => {
   const { params } = useRoute<'EditTrack'>()
   const { id } = params
   const dispatch = useDispatch()
@@ -56,11 +57,13 @@ export const EditExistingTrackScreen = () => {
   }
 
   return (
-    <EditTrackScreen
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      title={messages.title}
-      doneText={messages.save}
-    />
+    <ModalScreen>
+      <EditTrackScreen
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        title={messages.title}
+        doneText={messages.save}
+      />
+    </ModalScreen>
   )
 }

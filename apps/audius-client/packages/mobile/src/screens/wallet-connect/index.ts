@@ -1,2 +1,2 @@
-export { WalletConnectStack as WalletConnectScreen } from './WalletConnectStack'
+export { WalletConnectModalScreen } from './WalletConnectModalScreen'
 export { WalletConnectProvider } from './WalletConnectProvider'

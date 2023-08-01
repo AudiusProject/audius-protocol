@@ -1,2 +1,2 @@
 export * from './EditTrackScreen'
-export * from './EditExistingTrackScreen'
+export * from './EditTrackModalScreen'

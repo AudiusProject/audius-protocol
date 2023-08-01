@@ -3,11 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
-import { EditPlaylistScreen } from '../edit-playlist-screen'
-import { EditExistingTrackScreen } from '../edit-track-screen'
-import { TipArtistModal } from '../tip-artist-screen'
-import { UploadScreen } from '../upload-screen'
-import { WalletConnectScreen } from '../wallet-connect'
+import { EditPlaylistModalScreen } from '../edit-playlist-screen'
+import { EditTrackModalScreen } from '../edit-track-screen'
+import { TipArtistModalScreen } from '../tip-artist-screen'
+import { UploadModalScreen } from '../upload-screen'
+import { WalletConnectModalScreen } from '../wallet-connect'
 
 import { AppTabsScreen } from './AppTabsScreen'
 
@@ -23,29 +23,29 @@ export const AppScreen = () => {
       <Stack.Screen name='AppTabs' component={AppTabsScreen} />
       <Stack.Screen
         name='TipArtist'
-        component={TipArtistModal}
+        component={TipArtistModalScreen}
         options={modalScreenOptions}
       />
       <Stack.Screen
         name='Upload'
-        component={UploadScreen}
+        component={UploadModalScreen}
         options={modalScreenOptions}
       />
       <Stack.Screen
         name='EditTrack'
-        component={EditExistingTrackScreen}
+        component={EditTrackModalScreen}
         options={modalScreenOptions}
       />
       {isPlaylistUpdatesEnabled ? (
         <Stack.Screen
           name='EditPlaylist'
-          component={EditPlaylistScreen}
+          component={EditPlaylistModalScreen}
           options={modalScreenOptions}
         />
       ) : null}
       <Stack.Screen
         name='WalletConnect'
-        component={WalletConnectScreen}
+        component={WalletConnectModalScreen}
         options={modalScreenOptions}
       />
     </Stack.Navigator>

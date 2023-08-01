@@ -4,6 +4,8 @@ import { tippingActions } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useDispatch } from 'react-redux'
 
+import { ModalScreen } from 'app/components/core'
+
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
 import { ConfirmSendTipScreen } from './ConfirmSendTipScreen'
@@ -15,7 +17,7 @@ const Stack = createNativeStackNavigator()
 
 const screenOptionOverrides = { headerRight: () => null }
 
-export const TipArtistModal = () => {
+export const TipArtistModalScreen = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
   const dispatch = useDispatch()
 
@@ -26,10 +28,12 @@ export const TipArtistModal = () => {
   }, [dispatch])
 
   return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name='SendTip' component={SendTipScreen} />
-      <Stack.Screen name='ConfirmTip' component={ConfirmSendTipScreen} />
-      <Stack.Screen name='TipSent' component={TipSentScreen} />
-    </Stack.Navigator>
+    <ModalScreen>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen name='SendTip' component={SendTipScreen} />
+        <Stack.Screen name='ConfirmTip' component={ConfirmSendTipScreen} />
+        <Stack.Screen name='TipSent' component={TipSentScreen} />
+      </Stack.Navigator>
+    </ModalScreen>
   )
 }

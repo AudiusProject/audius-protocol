@@ -10,6 +10,7 @@ import {
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { ModalScreen } from 'app/components/core'
 import { useCollectionImage } from 'app/components/image/CollectionImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 
@@ -18,7 +19,7 @@ import { EditPlaylistNavigator } from './EditPlaylistNavigator'
 const { getMetadata } = createPlaylistModalUISelectors
 const { editPlaylist } = cacheCollectionsActions
 
-export const EditPlaylistScreen = () => {
+export const EditPlaylistModalScreen = () => {
   const playlist = useSelector(getMetadata)
   const dispatch = useDispatch()
 
@@ -50,17 +51,19 @@ export const EditPlaylistScreen = () => {
   }
 
   return (
-    <Formik
-      initialValues={initialValues}
-      initialStatus={{ imageLoading: false, imageGenerating: false }}
-      onSubmit={handleSubmit}
-    >
-      {(formikProps) => (
-        <EditPlaylistNavigator
-          {...formikProps}
-          playlistId={playlist.playlist_id}
-        />
-      )}
-    </Formik>
+    <ModalScreen>
+      <Formik
+        initialValues={initialValues}
+        initialStatus={{ imageLoading: false, imageGenerating: false }}
+        onSubmit={handleSubmit}
+      >
+        {(formikProps) => (
+          <EditPlaylistNavigator
+            {...formikProps}
+            playlistId={playlist.playlist_id}
+          />
+        )}
+      </Formik>
+    </ModalScreen>
   )
 }

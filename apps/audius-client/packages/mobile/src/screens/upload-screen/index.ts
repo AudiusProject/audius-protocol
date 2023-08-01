@@ -1,1 +1,1 @@
-export { UploadScreen } from './screens'
+export { UploadModalScreen } from './screens'
