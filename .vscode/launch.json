@@ -19,40 +19,6 @@
       "name": "(Identity) Test",
       "request": "launch",
       "type": "node-terminal"
-    },
-    {
-      "name": "(Content Node) Attach",
-      "type": "node",
-      "request": "attach",
-      // Increment this port to connect to a different content node instance
-      "port": 9230,
-      "address": "localhost",
-      "localRoot": "${workspaceFolder}/creator-node/",
-      "remoteRoot": "/usr/src/app",
-      "protocol": "inspector"
-    },
-    {
-      "command": "cd creator-node; npm run test:debug",
-      "name": "(Content Node) Test",
-      "request": "launch",
-      "type": "node-terminal"
-    },
-    {
-      "name": "(Storage Node) Launch",
-      "type": "go",
-      "request": "launch",
-      "mode": "debug",
-      "program": "${workspaceFolder}/comms",
-      "env": {
-        "audius_discprov_env": "standalone",
-        "storage_v2": "true",
-        "storage_v2_single_node": "true",
-        "audius_delegate_owner_wallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-        "audius_delegate_private_key": "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
-      },
-      "args": [
-        "storage"
-      ]
     }
   ]
 }

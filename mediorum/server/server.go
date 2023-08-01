@@ -8,7 +8,6 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -56,7 +55,6 @@ type MediorumConfig struct {
 	LegacyFSRoot        string `json:"-"`
 	PrivateKey          string `json:"-"`
 	ListenPort          string
-	UpstreamCN          string
 	TrustedNotifierID   int
 	SPID                int
 	SPOwnerWallet       string
@@ -64,7 +62,6 @@ type MediorumConfig struct {
 	AudiusDockerCompose string
 	AutoUpgradeEnabled  bool
 	WalletIsRegistered  bool
-	IsV2Only            bool
 	StoreAll            bool
 	VersionJson         VersionJson
 	MigrateQmCidIters   int
@@ -108,8 +105,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.Env = env
 	}
 
-	if config.IsV2Only && config.VersionJson == (VersionJson{}) {
-		log.Fatal(".version.json is required for v2-only nodes")
+	if config.VersionJson == (VersionJson{}) {
+		log.Fatal(".version.json is required to be bundled with the mediorum binary")
 	}
 
 	// validate host config
@@ -302,13 +299,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Qm CID migration
 	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
 	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
-
-	// reverse proxy fallback to legacy CN (NodeJS server container)
-	if !config.IsV2Only {
-		upstream, _ := url.Parse(config.UpstreamCN)
-		proxy := httputil.NewSingleHostReverseProxy(upstream)
-		echoServer.Any("*", echo.WrapHandler(proxy))
-	}
 
 	return ss, nil
 

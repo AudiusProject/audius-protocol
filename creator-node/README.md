@@ -1,1 +1,0 @@
-An Audius Content Node (previously known as Creator Node) maintains the availability of content on Audius's decentralized network. The information stored includes Audius user metadata, images, and audio content. The content is backed by either aws S3 or a local directory.
