@@ -314,11 +314,10 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         metadata_time = track["time"]
         index_time = block_integer_time  # default to current block for new tracks
 
-        # { track_id: 89027834, time: 802934023 }
-        previous_playlist_tracks = playlist_record["playlist_contents"]["track_ids"]
+        previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for previous_track in previous_playlist_tracks:
             previous_track_id = previous_track["track"]
-            previous_track_time = previous_track["time"]
+            previous_track_time = previous_track.get("metadata_time") or previous_track["time"]
             if previous_track_id == track_id and previous_track_time == metadata_time:
                 index_time = previous_track_time
 
