@@ -164,16 +164,14 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         base_query = base_query.filter(TracksTable.is_delete == False)
 
     if query:
-        # Disable lazy join on users if query
-        base_query = (
-            base_query.join(User, TracksTable.owner_id == User.user_id)
-            .filter(
-                or_(
-                    TracksTable.title.ilike(f"%{query.lower()}%"),
-                    User.name.ilike(f"%{query.lower()}%"),
-                )
+        #  TODO: [PAY-1643] Implement all query for library
+        if filter_type == LibraryFilterType.all:
+            raise ValueError("Library filter type 'all' does not support query yet")
+        base_query = base_query.join(TracksTable.user, aliased=True).filter(
+            or_(
+                TracksTable.title.ilike(f"%{query.lower()}%"),
+                User.name.ilike(f"%{query.lower()}%"),
             )
-            .options(contains_eager(TracksTable.user))
         )
 
     # Set sort methods
