@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Callable, Dict, List, TypedDict, cast
+from typing import Dict, List, TypedDict, Union, cast
 
 from sqlalchemy.orm.session import Session
 from src.models.tracks.track import Track
@@ -8,12 +8,15 @@ from src.premium_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
     does_user_support_artist,
+    has_user_purchased_content,
 )
+from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.premium_content.premium_content_types import (
     PremiumContentConditions,
     PremiumContentType,
 )
 from src.utils import helpers
+from typing_extensions import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +40,28 @@ class PremiumContentAccessBatchResponse(TypedDict):
     track: PremiumTrackAccessResult
 
 
+class PremiumContentAccessHandler(Protocol):
+    def __call__(
+        self,
+        session: Session,
+        user_id: int,
+        content_id: int,
+        content_type: PremiumContentType,
+        condition_options: Union[Dict, int],
+    ) -> bool:
+        pass
+
+
+handler: PremiumContentAccessHandler = has_user_purchased_content
+
+
 PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
-    PremiumContentConditions, Callable[[Session, int, Any], bool]
+    PremiumContentConditions, PremiumContentAccessHandler
 ] = {
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
+    USDC_PURCHASE_KEY: has_user_purchased_content,
 }
 
 
@@ -106,7 +125,8 @@ class PremiumContentAccessChecker:
             "does_user_have_access": self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
-                premium_content_owner_id=cast(int, content_owner_id),
+                content_id=premium_content_entity.track_id,
+                content_type="track",
                 premium_conditions=cast(dict, premium_conditions),
             ),
         }
@@ -192,7 +212,8 @@ class PremiumContentAccessChecker:
                     "does_user_have_access": self._evaluate_conditions(
                         session=session,
                         user_id=user_id,
-                        premium_content_owner_id=cast(int, content_owner_id),
+                        content_id=track_id,
+                        content_type="track",
                         premium_conditions=premium_conditions,
                     ),
                 }
@@ -227,7 +248,8 @@ class PremiumContentAccessChecker:
         self,
         session: Session,
         user_id: int,
-        premium_content_owner_id: int,
+        content_id: int,
+        content_type: PremiumContentType,
         premium_conditions: Dict,
     ):
         if len(premium_conditions) != 1:
@@ -238,14 +260,20 @@ class PremiumContentAccessChecker:
 
         # Indexing of the premium content should have already validated
         # the premium conditions, but we perform additional checks here just in case.
-        condition, value = list(premium_conditions.items())[0]
+        condition, condition_options = list(premium_conditions.items())[0]
         if condition not in set(PREMIUM_CONDITION_TO_HANDLER_MAP.keys()):
             logging.info(
                 f"premium_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(premium_conditions)}"
             )
             return False
 
-        return PREMIUM_CONDITION_TO_HANDLER_MAP[condition](session, user_id, value)
+        return PREMIUM_CONDITION_TO_HANDLER_MAP[condition](
+            session=session,
+            user_id=user_id,
+            content_id=content_id,
+            content_type=content_type,
+            condition_options=condition_options,
+        )
 
 
 premium_content_access_checker = PremiumContentAccessChecker()
