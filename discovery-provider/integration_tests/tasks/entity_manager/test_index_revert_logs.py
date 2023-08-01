@@ -2,10 +2,13 @@ import json
 import logging  # pylint: disable=C0302
 from typing import List
 
-from src.models.indexing.block import Block
+from integration_tests.utils import populate_mock_db
+from src.models.users.user import User
 
+from src.models.indexing.block import Block
+from src.tasks.entity_manager.utils import EntityType
 from integration_tests.challenges.index_helpers import UpdateTask
-from src.models.indexing.em_log import EMLog
+from src.models.indexing.revert_block import RevertBlock
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
@@ -22,7 +25,10 @@ from web3.datastructures import AttributeDict
 logger = logging.getLogger(__name__)
 
 
-def test_index_em_logs(app, mocker):
+def test_index_revert_blocks(app, mocker):
+    """
+    Test valid indexing of revert_blocks
+    """
     def get_events_side_effect(_, tx_receipt):
         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
@@ -60,7 +66,7 @@ def test_index_em_logs(app, mocker):
             "playlist_library": {"contents": []},
             "events": None,
         },
-        "UpdateUser1Bio": {
+        "UpdateUser2Bio": {
             "is_verified": False,
             "is_deactivated": False,
             "name": "",
@@ -79,7 +85,7 @@ def test_index_em_logs(app, mocker):
         },
     }
     create_user1_json = json.dumps(test_metadata["QmCreateUser1"])
-    update_user1_json = json.dumps(test_metadata["UpdateUser1Bio"])
+    update_user2_json = json.dumps(test_metadata["UpdateUser2Bio"])
     tx_receipts = {
         "CreateUser1": [
             {
@@ -95,16 +101,16 @@ def test_index_em_logs(app, mocker):
                 )
             },
         ],
-        "UpdateUser1Bio": [
+        "UpdateUser2Bio": [
             {
                 "args": AttributeDict(
                     {
-                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityId": 2,
                         "_entityType": "User",
-                        "_userId": USER_ID_OFFSET + 1,
+                        "_userId": 2,
                         "_action": "Update",
-                        "_metadata": f'{{"cid":"UpdateUser1Bio", "data": {update_user1_json}}}',
-                        "_signer": "user1wallet",
+                        "_metadata": f'{{"cid":"UpdateUser2Bio", "data": {update_user2_json}}}',
+                        "_signer": "user2wallet",
                     }
                 )
             },
@@ -116,18 +122,25 @@ def test_index_em_logs(app, mocker):
         for tx_receipt in tx_receipts
     ]
 
-    "Tests valid batch of tracks create/update/delete actions"
+    entities = {
+        "users": [
+            {
+                "user_id": 2,
+                "handle": "user-2",
+                "wallet": "User2Wallet",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    existing_user_2_dict = None
     with db.scoped_session() as session:
+        
         # index transactions
-        block_0 = Block(
-            blockhash="0hash",
-            parenthash="-1hash",
-            number=0,
-            is_current=True,
-        )
-
-        session.add(block_0)
-
+        existing_user_2: User = session.query(User).first()
+        existing_user_2_dict = existing_user_2.__dict__.copy()
+        existing_user_2_dict.pop("_sa_instance_state")
+        print(f"asdf existing_user_2_dict {existing_user_2_dict}")
         entity_manager_update(
             update_task,
             session,
@@ -136,23 +149,24 @@ def test_index_em_logs(app, mocker):
             block_timestamp=1585336422,
             block_hash=0,
         )
-        em_logs: List[EMLog] = session.query(EMLog).all()
-        assert len(em_logs) == 2
+        updated_user_2: User = session.query(User).filter(User.user_id == 2, User.is_current == True).first()
+        assert updated_user_2.bio == "UpdateUser1Bio"
 
-        create_user_1_em_log: List[EMLog] = (
-            session.query(EMLog)
-            .filter(EMLog.txhash == "0x4372656174655573657231")
-            .first()
-        )
-        assert create_user_1_em_log.entity_type == "User"
-        assert create_user_1_em_log.blocknumber == 0
-        assert create_user_1_em_log.prev_record == None
-    
-        update_user_1_em_log: List[EMLog] = (
-            session.query(EMLog)
-            .filter(EMLog.txhash == "0x557064617465557365723142696f")
-            .first()
-        )
-        assert update_user_1_em_log.entity_type == "User"
-        assert update_user_1_em_log.blocknumber == 0
-        assert update_user_1_em_log.prev_record["bio"] == "QmCreateUser1"
+        revert_blocks: List[RevertBlock] = session.query(RevertBlock).all()
+        assert len(revert_blocks) == 1
+        assert revert_blocks[0].blocknumber == 0
+        print(f"asdf revert_blocks {revert_blocks}")
+
+        assert revert_blocks[0].prev_records[EntityType.USER][str(USER_ID_OFFSET + 1)] == {}
+        user_2_json = revert_blocks[0].prev_records[EntityType.USER]["2"]
+        prev_user_2 = User(**user_2_json)
+        session.add(prev_user_2)
+
+    with db.scoped_session() as session:
+        reverted_user_2: User = session.query(User).filter(User.user_id == 2, User.is_current == True).first()
+        reverted_user_2_dict = reverted_user_2.__dict__
+        reverted_user_2_dict.pop("_sa_instance_state")
+        print(f"asdf existing_user_2 {existing_user_2}")
+        print(f"asdf reverted_user_2 {reverted_user_2_dict}")
+        print(f"asdf existing_user_2_dict {existing_user_2_dict}")
+        assert reverted_user_2_dict == existing_user_2_dict

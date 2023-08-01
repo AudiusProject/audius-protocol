@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
-from src.models.indexing.em_log import EMLog
+from src.models.indexing.revert_block import RevertBlock
 
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
@@ -83,6 +83,8 @@ class EntityType(str, Enum):
     PLAYLIST_SEEN = "PlaylistSeen"
     DEVELOPER_APP = "DeveloperApp"
     GRANT = "Grant"
+    ASSOCIATED_WALLET = "AssociatedWallet"
+    USER_EVENT = "UserEvent"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -146,7 +148,7 @@ class ManageEntityParameters:
         event: AttributeDict,
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
-        em_logs: List[EMLog],
+        revert_blocks: List[RevertBlock],
         pending_track_routes: List[TrackRoute],
         pending_playlist_routes: List[PlaylistRoute],
         eth_manager: EthManager,
@@ -182,7 +184,7 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
-        self.em_logs = em_logs
+        self.revert_blocks = revert_blocks
         self.logger = logger  # passed in with EM context
     
     def add_record(self, key, record, record_type=None):
@@ -195,14 +197,7 @@ class ManageEntityParameters:
         # overwrite the current version of this record
         prev_record = self.existing_records[record_type].get(key)
         self.existing_records[record_type][key] = record  # type: ignore
-        # index into em_logs
-        prev_record_dict = None
-        if prev_record:
-            prev_record_dict = {}
-            for column in prev_record.__table__.columns:
-                prev_record_dict[column.name] = str(getattr(prev_record, column.name))
-        em_log = EMLog(txhash=self.txhash, entity_type=record_type, blocknumber=self.block_number, prev_record=prev_record_dict)
-        self.em_logs.append(em_log)
+
 
     def add_notification_seen_record(
         self,
@@ -341,6 +336,7 @@ def save_cid_metadata(
 
     for cid, val in cid_metadata.items():
         cid_data = CIDData(cid=cid, type=cid_type[cid], data=val)
+        print(f"asdf cid_data {cid_data}")
         session.merge(cid_data)
 
 

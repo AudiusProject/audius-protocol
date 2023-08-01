@@ -2,7 +2,8 @@ import json
 import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
-from src.models.indexing.em_log import EMLog
+from src.models.indexing.revert_block import RevertBlock
+from sqlalchemy import text
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
@@ -20,6 +21,8 @@ from src.models.social.save import Save
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user_events import UserEvent
 from src.models.users.user import User
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
@@ -130,7 +133,7 @@ def entity_manager_update(
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
         # fetch existing tracks and playlists
-        existing_records: ExistingRecordDict = fetch_existing_entities(
+        existing_records, existing_records_in_json = fetch_existing_entities(
             session, entities_to_fetch
         )
 
@@ -147,7 +150,7 @@ def entity_manager_update(
         # cid -> metadata
         cid_metadata: Dict[str, Dict] = {}
 
-        em_logs: List[EMLog] = []
+        revert_blocks: List[RevertBlock] = []
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -163,7 +166,7 @@ def entity_manager_update(
                         event,
                         new_records,  # actions below populate these records
                         existing_records,
-                        em_logs,
+                        revert_blocks,
                         pending_track_routes,
                         pending_playlist_routes,
                         update_task.eth_manager,
@@ -297,7 +300,7 @@ def entity_manager_update(
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
-        records_to_save = get_records_to_save(params, new_records, original_records)
+        records_to_save = get_records_to_save(params, new_records, original_records, existing_records_in_json)
 
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
@@ -336,9 +339,12 @@ def entity_manager_update(
     return num_total_changes, changed_entity_ids
 
 
-def get_records_to_save(params, new_records, original_records):
+def get_records_to_save(params, new_records, original_records, existing_records_in_json):
     records_to_save = []
+    prev_records = {}
+
     for record_type, record_dict in new_records.items():
+        prev_records[record_type] = {}
         for entity_id, records in record_dict.items():
             if not records:
                 continue
@@ -352,18 +358,28 @@ def get_records_to_save(params, new_records, original_records):
             if "is_current" in get_record_columns(records[-1]):
                 records[-1].is_current = True
             records_to_save.extend(records)
-
             # invalidate original record if it already existed in the DB
+            # also add revert_blocks
             if (
                 record_type in original_records
                 and entity_id in original_records[record_type]
                 and "is_current"
                 in get_record_columns(original_records[record_type][entity_id])
             ):
+                print(f"asdf entity_id {entity_id} {type(entity_id)}")
+                print(f"asdf existing_records_in_json {existing_records_in_json}")
                 original_records[record_type][entity_id].is_current = False
-    
+                prev_records[record_type][entity_id] = existing_records_in_json[record_type][entity_id]
+            else:
+                prev_records[record_type][entity_id] = {}
+    print(f"asdf prev_records {prev_records}")
+
+    revert_block = RevertBlock(blocknumber=params.block_number, prev_records=prev_records)
+    print(f"asdf revert_block {revert_block}")
+    records_to_save.append(revert_block)
+
     # add EM logs to save
-    records_to_save.extend(params.em_logs)
+    records_to_save.extend(params.revert_blocks)
     return records_to_save
 
 
@@ -394,6 +410,9 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
+            if entity_type == EntityType.USER:
+                entities_to_fetch[EntityType.USER_EVENT].add(entity_id)
+                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(entity_id)
             if (
                 entity_type == EntityType.NOTIFICATION
                 and action == Action.VIEW_PLAYLIST
@@ -481,6 +500,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = defaultdict(dict)
+    existing_entities_in_json = defaultdict(dict)
 
     # PLAYLISTS
     if entities_to_fetch[EntityType.PLAYLIST]:
@@ -520,7 +540,39 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
             .all()
         )
-        existing_entities[EntityType.USER] = {user.user_id: user for user in users}
+        for user in users:
+            existing_entities[EntityType.USER] = {user.user_id: user}
+            sql = text("SELECT row_to_json(users) FROM users WHERE user_id = :user_id and is_current")
+
+            # Execute the query and fetch results
+            result = session.execute(sql, {'user_id': user.user_id}).fetchone()
+            existing_entities_in_json[EntityType.USER][user.user_id] = result[0]
+    print(f"asdf result {existing_entities_in_json}")
+    if entities_to_fetch[EntityType.ASSOCIATED_WALLET]:
+        associated_wallets: List[AssociatedWallet] = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id.in_(entities_to_fetch[EntityType.USER]),
+                AssociatedWallet.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.ASSOCIATED_WALLET] = {
+            wallet.user_id: wallet for wallet in associated_wallets
+        }
+
+    if entities_to_fetch[EntityType.USER_EVENT]:
+        user_events: List[UserEvent] = (
+            session.query(UserEvent)
+            .filter(
+                UserEvent.user_id.in_(entities_to_fetch[EntityType.USER]),
+                UserEvent.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.USER_EVENT] = {
+            event.user_id: event for event in user_events
+        }
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:
@@ -680,7 +732,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for developer_app in developer_apps
         }
 
-    return existing_entities
+    return existing_entities, existing_entities_in_json
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt):
