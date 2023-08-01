@@ -311,14 +311,17 @@ export const getUserBankTransactionMetadata = async (transactionId: string) => {
 
 export const createStripeSession = async ({
   destinationWallet,
-  amount
+  amount,
+  destinationCurrency = 'sol'
 }: {
   destinationWallet: string
   amount: string
+  destinationCurrency?: 'sol' | 'usdc'
 }) => {
   await waitForLibsInit()
   return await libs().identityService!.createStripeSession({
     destinationWallet,
-    amount
+    amount,
+    destinationCurrency
   })
 }
