@@ -3,3 +3,4 @@ mediorum
 mediorum-cmd
 *.db
 build
+*output.txt

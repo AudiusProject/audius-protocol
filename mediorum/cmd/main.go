@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 	"mediorum/cmd/loadtest"
-	"mediorum/cmd/reaper"
+	"mediorum/cmd/segments"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -23,7 +23,6 @@ func getenvWithDefault(key string, fallback string) string {
 }
 
 func initClient() *loadtest.TestClient {
-	fmt.Println("init client")
 	registeredPeers := []server.Peer{}
 	var err error
 
@@ -57,7 +56,7 @@ func initClient() *loadtest.TestClient {
 func main() {
 
 	if len(os.Args) < 2 {
-		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments>`")
 	}
 
 	switch os.Args[1] {
@@ -73,9 +72,12 @@ func main() {
 		metricsCmd.Parse(os.Args[2:])
 		testClient := initClient()
 		loadtest.RunM(testClient)
-	case "reaper":
-		reaper.Run()
+	case "segments":
+		segmentsCmd := flag.NewFlagSet("segments", flag.ExitOnError)
+		segmentsCmdDelete := segmentsCmd.Bool("delete", false, "Delete files and corresponding database rows if set to true")
+		segmentsCmd.Parse(os.Args[2:])
+		segments.Run(*segmentsCmdDelete)
 	default:
-		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|reaper>`")
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments>`")
 	}
 }
