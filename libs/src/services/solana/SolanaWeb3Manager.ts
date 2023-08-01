@@ -237,7 +237,7 @@ export class SolanaWeb3Manager {
   }: {
     ethAddress?: string
     mint?: MintName
-  }) {
+  } = {}) {
     const userbank = await this.deriveUserBank({ ethAddress, mint })
     const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
     return !!tokenAccount
@@ -353,7 +353,7 @@ export class SolanaWeb3Manager {
   }: {
     ethAddress?: string
     mint?: MintName
-  }) {
+  } = {}) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
