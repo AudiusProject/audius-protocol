@@ -1,6 +1,8 @@
 BEGIN;
   DO $$ BEGIN
   IF table_has_column('tracks', 'length') THEN
+      ALTER TABLE "tracks" DISABLE trigger on_track;
+      ALTER TABLE "tracks" DISABLE trigger trg_tracks;
 
       -- Update duration if only the duration of a target track is empty
       UPDATE "tracks"
@@ -27,6 +29,8 @@ BEGIN;
       ALTER TABLE "tracks"
       DROP COLUMN "length";
 
+      ALTER TABLE "tracks" ENABLE trigger on_track;
+      ALTER TABLE "tracks" ENABLE trigger trg_tracks;
 
   END IF;
   END $$;
