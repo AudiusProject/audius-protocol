@@ -68,7 +68,7 @@ def test_playlist_track_added_notification(app):
 
         assert (
             notifications[1].group_id
-            == "track_added_to_playlist:playlist_id:0:track_id:30:blocknumber:0"
+            == "track_added_to_playlist:playlist_id:0:track_id:30"
         )
         assert notifications[1].specifier == "15"
         assert notifications[1].type == "track_added_to_playlist"
