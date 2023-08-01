@@ -16,7 +16,7 @@ const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
 // Directories within the audius-protocol repository used for development
-const serviceDirectoryList = ['discovery-provider', 'creator-node']
+const serviceDirectoryList = ['discovery-provider', 'mediorum']
 const discProvEndpoint1 = 'http://dn1_web-server_1:5000'
 const discProvEndpoint2 = 'http://dn2_web-server_1:5001'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -184,21 +184,6 @@ const run = async () => {
       case 'query-sps-ursm':
         await queryLocalServices(audiusLibs, serviceTypesList, true)
         break
-
-      case 'update-cnode-config': {
-        // Update arbitrary cnode
-        const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
-        const workspace = '../creator-node/compose/env'
-        const { envPath, templatePath, writePath } = await getEnvConfigPathsForContentNode({ workspace, serviceCount })
-        // Local dev, delegate and owner wallet are equal
-        const ownerWallet = ethAccounts[parseInt(serviceCount)]
-        const delegateWallet = ownerWallet
-        const endpoint = makeCreatorNodeEndpoint(serviceCount)
-
-        await _updateCreatorNodeConfig({ ownerWallet, templatePath, writePath, endpoint, isShell: true, delegateWallet, envPath })
-        break
-      }
 
       case 'init-all':
         await _initializeLocalEnvironment(audiusLibs, ethAccounts)

@@ -34,7 +34,6 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 			ReplicationFactor: replicationFactor,
 			Dir:               fmt.Sprintf("/tmp/mediorum_test/%s", peer.Wallet),
 			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5454/m%d", idx+1),
-			IsV2Only:          true,
 			VersionJson: VersionJson{
 				Version: "0.0.0",
 				Service: "content-node",
