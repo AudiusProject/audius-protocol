@@ -4,6 +4,7 @@ import {
   useEnvironmentSelection,
 } from './components/EnvironmentSelector'
 import { SP, useServiceProviders } from './useServiceProviders'
+import { RelTime } from './misc'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -13,6 +14,7 @@ export function DiscoveryHealth() {
   const { data: sps, error } = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content-node'
+  const isDiscovery = nodeType == 'discovery-node'
 
   if (error) return <div>error</div>
   if (!sps) return null
@@ -22,22 +24,25 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
-            <th>Block Diff</th>
+            {isDiscovery && <th>Block Diff</th>}
             <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
             <th>Compose</th>
             <th>Auto Upgrade</th>
-            {isContent && <th>selectedDiscoveryProvider</th>}
+            {isContent && <th>Backend</th>}
             <th>Storage</th>
             <th>DB Size</th>
             <th>Your IP</th>
-            <th>ACDC Health</th>
-            <th>Is Signer</th>
-            <th>Peers</th>
-            <th>Producing</th>
-            <th>ACDC Block</th>
-            <th>ACDC Block Hash</th>
+            {isDiscovery && <th>ACDC Health</th>}
+            {isDiscovery && <th>Is Signer</th>}
+            {isDiscovery && <th>Peers</th>}
+            {isDiscovery && <th>Producing</th>}
+            {isDiscovery && <th>ACDC Block</th>}
+            {isDiscovery && <th>ACDC Block Hash</th>}
+            {isContent && <th>Started</th>}
+            {isContent && <th>Uploads</th>}
+            {isContent && <th>Healthy Peers {'<'}2m</th>}
             <th>Registered Wallet</th>
           </tr>
         </thead>
@@ -57,6 +62,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     sp.endpoint + '/ip_check',
     fetcher
   )
+  const { data: metrics } = useSWR(sp.endpoint + '/internal/metrics', fetcher)
 
   const health = data?.data
   const yourIp = ipCheck?.data
@@ -72,6 +78,19 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         <td>{error || ipCheckError ? 'error' : 'loading'}</td>
       </tr>
     )
+
+  // calculate healthy peers counts
+  const now = new Date()
+  const twoMinutesAgoDate = new Date(now.getTime() - 2 * 60 * 1000)
+  let healthyPeers2m = 0
+  if (health?.peerHealths) {
+    for (const endpoint of Object.keys(health.peerHealths)) {
+      const healthDate = new Date(health.peerHealths[endpoint])
+      if (!isNaN(healthDate.getTime()) && healthDate > twoMinutesAgoDate) {
+        healthyPeers2m++
+      }
+    }
+  }
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const composeSha =
@@ -111,7 +130,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
-      <td className={isBehind}>{health.block_difference}</td>
+      {!isContent && <td className={isBehind}>{health.block_difference}</td>}
       <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
@@ -135,14 +154,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       <td>{autoUpgradeEnabled && '✓'}</td>
       {isContent && (
-        <td>
-          <a
-            href={`${health.selectedDiscoveryProvider}/health_check`}
-            target="_blank"
-          >
-            {health.selectedDiscoveryProvider}
-          </a>
-        </td>
+        <td>{health.blobStorePrefix}</td>
       )}
       <td>
         <progress value={storagePercent} />
@@ -153,14 +165,19 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
-      <td>{health.chain_health?.status}</td>
-      <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>
-      <td>{getPeers(chainDescription)}</td>
-      <td>{getProducing(chainDescription)}</td>
-      <td>{health.chain_health?.block_number}</td>
-      <td>
+      {!isContent && (<td>{health.chain_health?.status}</td>)}
+      {!isContent && <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>}
+      {!isContent && <td>{getPeers(chainDescription)}</td>}
+      {!isContent && <td>{getProducing(chainDescription)}</td>}
+      {!isContent && <td>{health.chain_health?.block_number}</td>}
+      {!isContent && (<td>
         <pre>{health.chain_health?.hash}</pre>
-      </td>
+      </td>)}
+      {isContent && (<td>
+        <RelTime date={health?.startedAt} />
+      </td>)}
+      {isContent && <td>{metrics?.uploads}</td>}
+      {isContent && <td>{healthyPeers2m}</td>}
       <td>
         <pre>{sp.delegateOwnerWallet}</pre>
       </td>
