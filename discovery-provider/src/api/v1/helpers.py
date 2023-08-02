@@ -596,35 +596,15 @@ user_tracks_library_parser.add_argument(
 )
 add_auth_headers_to_parser(user_tracks_library_parser)
 
-user_collections_library_parser = pagination_with_current_user_parser.copy()
-user_collections_library_parser.remove_argument("current_user")
-user_collections_library_parser.add_argument(
-    "query", required=False, description="The filter query"
-)
-user_collections_library_parser.add_argument(
+user_collections_library_parser = user_tracks_library_parser.copy()
+# Replace just the sort method args with the CollectionLibrarySortMethod version
+user_collections_library_parser.replace_argument(
     "sort_method",
     required=False,
     description="The sort method",
     type=str,
     choices=CollectionLibrarySortMethod._member_names_,
 )
-user_collections_library_parser.add_argument(
-    "sort_direction",
-    required=False,
-    description="The sort direction",
-    type=str,
-    choices=SortDirection._member_names_,
-)
-user_collections_library_parser.add_argument(
-    "type",
-    required=False,
-    description="The type of entity to return: favorited, reposted, purchased, or all. Defaults to favorite",
-    type=str,
-    choices=LibraryFilterType._member_names_,
-    default=LibraryFilterType.favorite,
-)
-add_auth_headers_to_parser(user_collections_library_parser)
-
 user_track_listen_count_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
