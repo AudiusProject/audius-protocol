@@ -1,8 +1,6 @@
-<hr />
-
 ### uploadAlbum
 
-#### uploadAlbum(`requestParameters`, `writeOptions?`)
+#### uploadAlbum(`requestParameters`, `advancedOptions?`)
 
 Upload an album.
 
@@ -72,9 +70,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                          | `[]`          | No        | See [here](/developers/UploadTrackMetadata) for full `UploadTrackMetadata` interface. Mood, genre, and tags are inherited from the album if not given. |
 | `userId`         | `string`                                                                                                                                                                              | N/A           | Yes       |                                                                                                                                                        |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -88,7 +86,7 @@ Return type:
 
 ### updateAlbum
 
-#### updateAlbum(`requestParameters`, `writeOptions?`)
+#### updateAlbum(`requestParameters`, `advancedOptions?`)
 
 Update an album. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -127,9 +125,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`     | <code>{ albumName?: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |
 | `onProgress`   | `(progress: number) => void`                                                                                                                                             | `undefined`   | No        |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -143,7 +141,7 @@ Return type:
 
 ### deleteAlbum
 
-#### deleteAlbum(`requestParameters`, `writeOptions?`)
+#### deleteAlbum(`requestParameters`, `advancedOptions?`)
 
 Delete an album
 
@@ -165,9 +163,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `albumId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -181,7 +179,7 @@ Return type:
 
 ### favoriteAlbum
 
-#### favoriteAlbum(`requestParameters`, `writeOptions?`)
+#### favoriteAlbum(`requestParameters`, `advancedOptions?`)
 
 Favorite an album
 
@@ -204,9 +202,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                      |
 | `metadata` | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted album. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -220,7 +218,7 @@ Return type:
 
 ### unfavoriteAlbum
 
-#### unfavoriteAlbum(`requestParameters`, `writeOptions?`)
+#### unfavoriteAlbum(`requestParameters`, `advancedOptions?`)
 
 Unfavorite an album
 
@@ -242,9 +240,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `albumId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -258,7 +256,7 @@ Return type:
 
 ### repostAlbum
 
-#### repostAlbum(`requestParameters`, `writeOptions?`)
+#### repostAlbum(`requestParameters`, `advancedOptions?`)
 
 Repost a album
 
@@ -281,9 +279,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                       |
 | `metadata` | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted album. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -297,7 +295,7 @@ Return type:
 
 ### unrepostAlbum
 
-#### unrepostAlbum(`requestParameters`, `writeOptions?`)
+#### unrepostAlbum(`requestParameters`, `advancedOptions?`)
 
 Unrepost an album
 
@@ -319,9 +317,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `albumId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 

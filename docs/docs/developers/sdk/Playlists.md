@@ -1,8 +1,6 @@
-<hr />
-
 ### createPlaylist
 
-#### createPlaylist(`requestParameters`, `writeOptions?`)
+#### createPlaylist(`requestParameters`, `advancedOptions?`)
 
 Create a playlist from existing tracks
 
@@ -43,9 +41,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackIds`     | `Array<string>`                                                        | `[]`          | Yes       |
 | `userId`       | `string`                                                               | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -59,7 +57,7 @@ Return type:
 
 ### uploadPlaylist
 
-#### uploadPlaylist(`requestParameters`, `writeOptions?`)
+#### uploadPlaylist(`requestParameters`, `advancedOptions?`)
 
 Upload the specified tracks and combine them into a new playlist.
 
@@ -132,9 +130,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                             | `[]`          | No        | See [here](/developers/UploadTrackMetadata) for full `UploadTrackMetadata` interface. Mood, genre, and tags are inherited from the playlist if not given. |
 | `userId`         | `string`                                                                                                                                                                                 | N/A           | Yes       |                                                                                                                                                           |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -148,7 +146,7 @@ Return type:
 
 ### addTrackToPlaylist
 
-#### addTrackToPlaylist(`requestParameters`, `writeOptions?`)
+#### addTrackToPlaylist(`requestParameters`, `advancedOptions?`)
 
 Add a single track to the end of a playlist. For more control, use [updatePlaylist](#updateplaylist).
 
@@ -173,9 +171,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string` | N/A           | Yes       |
 | `trackId`    | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -189,7 +187,7 @@ Return type:
 
 ### removeTrackFromPlaylist
 
-#### removeTrackFromPlaylist(`requestParameters`, `writeOptions?`)
+#### removeTrackFromPlaylist(`requestParameters`, `advancedOptions?`)
 
 Removes a single track at the given index of playlist. For more control, use [updatePlaylist](#updatePlaylist).
 
@@ -213,9 +211,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string` | N/A           | Yes       |
 | `trackId`    | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -229,7 +227,7 @@ Return type:
 
 ### updatePlaylist
 
-#### updatePlaylist(`requestParameters`, `writeOptions?`)
+#### updatePlaylist(`requestParameters`, `advancedOptions?`)
 
 Update a playlist. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -278,9 +276,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`     | <code>{ playlistName?: string; description?: string; playlistContents?: Array<{trackId: string, time: number}>, isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |
 | `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                           | `undefined`   | No        |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -294,7 +292,7 @@ Return type:
 
 ### deletePlaylist
 
-#### deletePlaylist(`requestParameters`, `writeOptions?`)
+#### deletePlaylist(`requestParameters`, `advancedOptions?`)
 
 Delete a playlist
 
@@ -316,9 +314,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | N/A           | Yes       |
 | `userId`     | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -332,7 +330,7 @@ Return type:
 
 ### favoritePlaylist
 
-#### favoritePlaylist(`requestParameters`, `writeOptions?`)
+#### favoritePlaylist(`requestParameters`, `advancedOptions?`)
 
 Favorites a playlist
 
@@ -355,9 +353,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string`                                 | N/A                                    | Yes       |                                                                         |
 | `metadata`   | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted playlist. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -371,7 +369,7 @@ Return type:
 
 ### unfavoritePlaylist
 
-#### unfavoritePlaylist(`requestParameters`, `writeOptions?`)
+#### unfavoritePlaylist(`requestParameters`, `advancedOptions?`)
 
 Unfavorite a playlist
 
@@ -393,9 +391,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | N/A           | Yes       |
 | `userId`     | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -409,7 +407,7 @@ Return type:
 
 ### repostPlaylist
 
-#### repostPlaylist(`requestParameters`, `writeOptions?`)
+#### repostPlaylist(`requestParameters`, `advancedOptions?`)
 
 Repost a playlist
 
@@ -432,9 +430,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string`                                 | N/A                                    | Yes       |                                                                          |
 | `metadata`   | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted playlist. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -448,7 +446,7 @@ Return type:
 
 ### unrepostPlaylist
 
-#### unrepostPlaylist(`requestParameters`, `writeOptions?`)
+#### unrepostPlaylist(`requestParameters`, `advancedOptions?`)
 
 Unrepost a playlist
 
@@ -470,9 +468,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | N/A           | Yes       |
 | `userId`     | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -486,7 +484,7 @@ Return type:
 
 ### publishPlaylist
 
-#### publishPlaylist(`requestParameters`, `writeOptions?`)
+#### publishPlaylist(`requestParameters`, `advancedOptions?`)
 
 Changes a playlist from hidden (private) to public.
 
@@ -508,9 +506,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | N/A           | Yes       |
 | `userId`     | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 

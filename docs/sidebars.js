@@ -69,6 +69,22 @@ module.exports = {
             },
             {
               type: "doc",
+              id: "developers/sdk/Tracks",
+            },
+            {
+              type: "doc",
+              id: "developers/sdk/Users",
+            },
+            {
+              type: "doc",
+              id: "developers/sdk/Playlists",
+            },
+            {
+              type: "doc",
+              id: "developers/sdk/Albums",
+            },
+            {
+              type: "doc",
               id: "developers/sdk-oauth-methods",
             },
           ],

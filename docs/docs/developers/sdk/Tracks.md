@@ -1,8 +1,6 @@
-<hr />
-
 ### uploadTrack
 
-#### uploadTrack(`requestParameters`, `writeOptions?`)
+#### uploadTrack(`requestParameters`, `advancedOptions?`)
 
 Upload a track.
 
@@ -46,9 +44,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackFile`    | `File`                                                   | N/A           | Yes       |                                                                 |
 | `userId`       | `string`                                                 | N/A           | Yes       |                                                                 |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -62,7 +60,7 @@ Return type:
 
 ### updateTrack
 
-#### updateTrack(`requestParameters`, `writeOptions?`)
+#### updateTrack(`requestParameters`, `advancedOptions?`)
 
 Update a track. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -103,9 +101,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | N/A           | Yes       | All fields are optional. |
 | `onProgress`   | `(progress: number) => void`                                          | `undefined`   | No        |                          |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -119,7 +117,7 @@ Return type:
 
 ### deleteTrack
 
-#### deleteTrack(`requestParameters`, `writeOptions?`)
+#### deleteTrack(`requestParameters`, `advancedOptions?`)
 
 Delete a track
 
@@ -141,9 +139,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -157,7 +155,7 @@ Return type:
 
 ### favoriteTrack
 
-#### favoriteTrack(`requestParameters`, `writeOptions?`)
+#### favoriteTrack(`requestParameters`, `advancedOptions?`)
 
 Favorite a track
 
@@ -180,9 +178,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                      |
 | `metadata` | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted track. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -196,7 +194,7 @@ Return type:
 
 ### unfavoriteTrack
 
-#### unfavoriteTrack(`requestParameters`, `writeOptions?`)
+#### unfavoriteTrack(`requestParameters`, `advancedOptions?`)
 
 Unfavorite a track
 
@@ -218,9 +216,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -234,7 +232,7 @@ Return type:
 
 ### repostTrack
 
-#### repostTrack(`requestParameters`, `writeOptions?`)
+#### repostTrack(`requestParameters`, `advancedOptions?`)
 
 Repost a track
 
@@ -257,9 +255,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                       |
 | `metadata` | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted track. |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -273,7 +271,7 @@ Return type:
 
 ### unrepostTrack
 
-#### unrepostTrack(`requestParameters`, `writeOptions?`)
+#### unrepostTrack(`requestParameters`, `advancedOptions?`)
 
 Unrepost a track
 
@@ -295,9 +293,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 

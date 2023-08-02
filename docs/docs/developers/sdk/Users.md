@@ -1,8 +1,6 @@
-<hr />
-
 ### updateProfile
 
-#### updateProfile(`requestParameters`, `writeOptions?`)
+#### updateProfile(`requestParameters`, `advancedOptions?`)
 
 Update a user profile.
 
@@ -39,9 +37,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `onProgress`         | `(progress: number) => void`                                                                               | `undefined`   | No        | Callback for receiving updates on the progress of the profile pic and/or cover art upload. Not relevant if neither `coverArtFile` nor `profilePictureFile` are specified. |
 | `userId`             | `string`                                                                                                   | N/A           | Yes       |                                                                                                                                                                           |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -55,7 +53,7 @@ Return type:
 
 ### followUser
 
-#### followUser(`requestParameters`, `writeOptions?`)
+#### followUser(`requestParameters`, `advancedOptions?`)
 
 Follow a user.
 
@@ -77,9 +75,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`         | `string` | N/A           | Yes       |
 | `followeeUserId` | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -93,7 +91,7 @@ Return type:
 
 ### unfollowUser
 
-#### unfollowUser(`requestParameters`, `writeOptions?`)
+#### unfollowUser(`requestParameters`, `advancedOptions?`)
 
 Unfollow a user.
 
@@ -115,9 +113,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`         | `string` | N/A           | Yes       |
 | `followeeUserId` | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -131,7 +129,7 @@ Return type:
 
 ### subscribeToUser
 
-#### subscribeToUser(`requestParameters`, `writeOptions?`)
+#### subscribeToUser(`requestParameters`, `advancedOptions?`)
 
 Subscribe to a user.
 
@@ -153,9 +151,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`           | `string` | N/A           | Yes       |
 | `subscribeeUserId` | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
@@ -169,7 +167,7 @@ Return type:
 
 ### unsubscribeFromUser
 
-#### unsubscribeFromUser(`requestParameters`, `writeOptions?`)
+#### unsubscribeFromUser(`requestParameters`, `advancedOptions?`)
 
 Unsubscribe from a user.
 
@@ -191,9 +189,9 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`           | `string` | N/A           | Yes       |
 | `subscribeeUserId` | `string` | N/A           | Yes       |
 
-#### `writeOptions` parameters (advanced)
+#### `advancedOptions` parameters (advanced)
 
-You can pass an optional [`writeOptions`](/developers/writeOptions) object as the second argument.
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
 #### Returns
 
