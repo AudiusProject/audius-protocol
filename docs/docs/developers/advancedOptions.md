@@ -1,8 +1,8 @@
 ---
-title: "Interface: AdvancedOptions"
+title: "AdvancedOptions"
 ---
 
-# **`interface`** AdvancedOptions
+# AdvancedOptions
 
 You can pass a `AdvancedOptions` object to any SDK write method for further control of its behavior.
 

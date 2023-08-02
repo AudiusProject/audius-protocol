@@ -33,13 +33,13 @@ const { playlistId } = await audiusSdk.playlists.createPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                   | Default value | Required? |
-| :------------- | :--------------------------------------------------------------------- | :------------ | :-------- |
-| `coverArtFile` | `File`                                                                 | N/A           | No        |
-| `metadata`     | `{ playlistName: string; description?: string; isPrivate?: boolean; }` | N/A           | Yes       |
-| `onProgress`   | `(progress: number) => void`                                           | `undefined`   | No        |
-| `trackIds`     | `Array<string>`                                                        | `[]`          | Yes       |
-| `userId`       | `string`                                                               | N/A           | Yes       |
+| Name           | Type                                                                                                                                              | Description                                                                   | Required?    |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile` | `File`                                                                                                                                            | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`     | <code>{<br/>&nbsp;&nbsp;playlistName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;isPrivate?: boolean;&nbsp;&nbsp;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
+| `onProgress`   | `(progress: number) => void`                                                                                                                      | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackIds`     | `Array<string>`                                                                                                                                   | An array of track IDs to be included in the playlist                          | **Required** |
+| `userId`       | `string`                                                                                                                                          | The ID of the user                                                            | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -121,14 +121,14 @@ const { playlistId } = await audiusSdk.playlists.uploadPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type                                                                                                                                                                                     | Default value | Required? | Notes                                                                                                                                                     |
-| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :-------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `coverArtFile`   | `File`                                                                                                                                                                                   | N/A           | Yes       |                                                                                                                                                           |
-| `metadata`       | <code>{ genre: Genre; playlistName: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |                                                                                                                                                           |
-| `onProgress`     | `(progress: number) => void`                                                                                                                                                             | `undefined`   | No        |                                                                                                                                                           |
-| `trackFiles`     | `Array<File>`                                                                                                                                                                            | `[]`          | No        |                                                                                                                                                           |
-| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                             | `[]`          | No        | See [here](/developers/UploadTrackMetadata) for full `UploadTrackMetadata` interface. Mood, genre, and tags are inherited from the playlist if not given. |
-| `userId`         | `string`                                                                                                                                                                                 | N/A           | Yes       |                                                                                                                                                           |
+| Name             | Type                                                                                                                                                                                                                                                                                                | Description                                                                   | Required?    |
+| :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile`   | `File`                                                                                                                                                                                                                                                                                              | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`       | <code>{ <br/>&nbsp;&nbsp;genre: Genre;<br/>&nbsp;&nbsp;playlistName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;license?: string; <br/>&nbsp;&nbsp;mood?: Mood; <br/>&nbsp;&nbsp;releaseDate?: Date; <br/>&nbsp;&nbsp;tags?: string; <br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
+| `onProgress`     | `(progress: number) => void`                                                                                                                                                                                                                                                                        | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackFiles`     | `Array<File>`                                                                                                                                                                                                                                                                                       | An array of track audio files                                                 | **Required** |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                                                                                                                                        | An array of track files                                                       | _Optional_   |
+| `userId`         | `string`                                                                                                                                                                                                                                                                                            | The ID of the user                                                            | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -140,7 +140,13 @@ Returns a `Promise` containing an object with the new playlist's ID (`playlistId
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; playlistId: string } >`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+  playlistId: string;
+}>;
+```
 
 ---
 
@@ -181,7 +187,13 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; playlistId: string } >`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+  playlistId: string;
+}>;
+```
 
 ---
 
@@ -221,7 +233,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -268,13 +285,13 @@ const { playlistId } = await audiusSdk.playlists.updatePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                                                                                                                                                                                   | Default value | Required? |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :-------- |
-| `playlistId`   | `string`                                                                                                                                                                                                                               | N/A           | Yes       |
-| `userId`       | `string`                                                                                                                                                                                                                               | N/A           | Yes       |
-| `coverArtFile` | `string`                                                                                                                                                                                                                               | `undefined`   | No        |
-| `metadata`     | <code>{ playlistName?: string; description?: string; playlistContents?: Array<{trackId: string, time: number}>, isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |
-| `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                           | `undefined`   | No        |
+| Name           | Type                                                                                                                                                                                                                                                                                                                                    | Description                                                                   | Required?    |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `playlistId`   | `string`                                                                                                                                                                                                                                                                                                                                | The ID of the playlist                                                        | **Required** |
+| `userId`       | `string`                                                                                                                                                                                                                                                                                                                                | The ID of the User                                                            | **Required** |
+| `coverArtFile` | `string`                                                                                                                                                                                                                                                                                                                                | A file that will be used as the cover art for the playlist                    | _Optional_   |
+| `metadata`     | <code>{<br/>&nbsp;&nbsp;playlistName?: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;playlistContents?: {trackId: string, time: number}[],<br/>&nbsp;&nbsp;license?: string;<br/>&nbsp;&nbsp;mood?: Mood;<br/>&nbsp;&nbsp;releaseDate?: Date;<br/>&nbsp;&nbsp;tags?: string;<br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
+| `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                                                                                                                            | A function that will be called with progress events as the image file uploads | _Optional_   |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -286,7 +303,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -309,10 +331,10 @@ await audiusSdk.playlists.deletePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type     | Default value | Required? |
-| :----------- | :------- | :------------ | :-------- |
-| `playlistId` | `string` | N/A           | Yes       |
-| `userId`     | `string` | N/A           | Yes       |
+| Name         | Type     | Description            | Required?    |
+| :----------- | :------- | :--------------------- | :----------- |
+| `playlistId` | `string` | The ID of the playlist | **Required** |
+| `userId`     | `string` | The ID of the User     | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -324,7 +346,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -347,11 +374,11 @@ await audiusSdk.playlists.favoritePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                                     | Default value                          | Required? | Notes                                                                   |
-| :----------- | :--------------------------------------- | :------------------------------------- | :-------- | ----------------------------------------------------------------------- |
-| `playlistId` | `string`                                 | N/A                                    | Yes       |                                                                         |
-| `userId`     | `string`                                 | N/A                                    | Yes       |                                                                         |
-| `metadata`   | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted playlist. |
+| Name         | Type                                                         | Description                                     | Required?    |
+| :----------- | :----------------------------------------------------------- | :---------------------------------------------- | :----------- |
+| `playlistId` | `string`                                                     | The ID of the playlist                          | **Required** |
+| `userId`     | `string`                                                     | The ID of the User                              | **Required** |
+| `metadata`   | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | An object containing details about the favorite | _Optional_   |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -363,7 +390,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -386,10 +418,10 @@ await audiusSdk.playlists.unfavoritePlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type     | Default value | Required? |
-| :----------- | :------- | :------------ | :-------- |
-| `playlistId` | `string` | N/A           | Yes       |
-| `userId`     | `string` | N/A           | Yes       |
+| Name         | Type     | Description            | Required?    |
+| :----------- | :------- | :--------------------- | :----------- |
+| `playlistId` | `string` | The ID of the playlist | **Required** |
+| `userId`     | `string` | The ID of the User     | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -401,7 +433,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -424,11 +461,11 @@ await audiusSdk.playlists.repostPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type                                     | Default value                          | Required? | Notes                                                                    |
-| :----------- | :--------------------------------------- | :------------------------------------- | :-------- | ------------------------------------------------------------------------ |
-| `playlistId` | `string`                                 | N/A                                    | Yes       |                                                                          |
-| `userId`     | `string`                                 | N/A                                    | Yes       |                                                                          |
-| `metadata`   | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted playlist. |
+| Name         | Type                                                           | Description                                   | Required?    |
+| :----------- | :------------------------------------------------------------- | :-------------------------------------------- | :----------- |
+| `playlistId` | `string`                                                       | The ID of the playlist                        | **Required** |
+| `userId`     | `string`                                                       | The ID of the User                            | **Required** |
+| `metadata`   | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | An object containing details about the repost | _Optional_   |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -440,7 +477,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -463,10 +505,10 @@ await audiusSdk.playlists.unrepostPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type     | Default value | Required? |
-| :----------- | :------- | :------------ | :-------- |
-| `playlistId` | `string` | N/A           | Yes       |
-| `userId`     | `string` | N/A           | Yes       |
+| Name         | Type     | Description            | Required?    |
+| :----------- | :------- | :--------------------- | :----------- |
+| `playlistId` | `string` | The ID of the playlist | **Required** |
+| `userId`     | `string` | The ID of the User     | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -478,7 +520,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -501,10 +548,10 @@ await audiusSdk.playlists.publishPlaylist({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name         | Type     | Default value | Required? |
-| :----------- | :------- | :------------ | :-------- |
-| `playlistId` | `string` | N/A           | Yes       |
-| `userId`     | `string` | N/A           | Yes       |
+| Name         | Type     | Description            | Required?    |
+| :----------- | :------- | :--------------------- | :----------- |
+| `playlistId` | `string` | The ID of the playlist | **Required** |
+| `userId`     | `string` | The ID of the User     | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -516,6 +563,11 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
