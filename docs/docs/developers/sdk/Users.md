@@ -1,3 +1,46 @@
+### getFavorites
+
+#### getFavorites(`params`)
+
+Get a user's favorite tracks.
+
+Example:
+
+```typescript
+const { data: favorites } = await audiusSdk.users.getFavorites({
+  id: "eAZl3",
+});
+
+console.log(favorites);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name | Type     | Description        | Required?    |
+| :--- | :------- | :----------------- | :----------- |
+| `id` | `string` | The ID of the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the favorites as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    createdAt: string
+    favoriteItemId: string // The ID of the track, playlist, or album
+    favoriteType: string // The type of favorite ("track", "playlist", or "album")
+    userId: string
+  }[]
+>
+```
+
+---
+
 ### updateProfile
 
 #### updateProfile(`requestParameters`, `advancedOptions?`)
