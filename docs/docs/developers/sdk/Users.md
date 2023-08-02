@@ -2,7 +2,7 @@
 
 #### getFavorites(`params`)
 
-Get a user's favorite tracks.
+Get a user's favorites.
 
 Example:
 
@@ -141,6 +141,50 @@ Create an object with the following fields and pass it as the first argument, as
 #### Returns
 
 The return type is the same as [`getFollowers`](#getfollowers)
+
+---
+
+#### getReposts(`params`)
+
+Get a user's reposts.
+
+Example:
+
+```typescript
+const { data: reposts } = await audiusSdk.users.getReposts({
+  id: "eAZl3",
+});
+
+console.log(reposts);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description                                                        | Required?    |
+| :------- | :------- | :----------------------------------------------------------------- | :----------- |
+| `id`     | `string` | The ID of the user                                                 | **Required** |
+| `limit`  | `number` | The maximum number of reposts to return. Default value is **100**  | _Optional_   |
+| `offset` | `number` | The offset to apply to the list of results. Default value is **0** | _Optional_   |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the reposts as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    item?: {
+      id: string
+    } // The entire item is returned, always contains id
+    itemType?: string // The type of the item ("track", "playlist", or "album")
+    timestamp?: string
+  }[]
+>
+```
 
 ---
 
