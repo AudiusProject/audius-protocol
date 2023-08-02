@@ -56,6 +56,7 @@ type SearchUsersModalProps = {
   }
   renderEmpty?: () => ReactNode
   renderUser: (user: User, closeParentModal: () => void) => ReactNode
+  onCancel?: () => void
 }
 
 export const SearchUsersModal = (props: SearchUsersModalProps) => {
@@ -70,7 +71,8 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
       hasMore: false
     },
     renderUser,
-    renderEmpty = () => null
+    renderEmpty = () => null,
+    onCancel
   } = props
   const dispatch = useDispatch()
   const [isVisible, setIsVisible] = useModalState(modalName)
@@ -102,6 +104,11 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
     setQuery('')
   }, [setIsVisible])
 
+  const handleCancel = useCallback(() => {
+    handleClose()
+    onCancel?.()
+  }, [handleClose, onCancel])
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setQuery(e.target.value)
@@ -121,8 +128,8 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
   return (
-    <Modal isOpen={isVisible} onClose={handleClose}>
-      <ModalHeader onClose={handleClose}>
+    <Modal isOpen={isVisible} onClose={handleCancel}>
+      <ModalHeader onClose={handleCancel}>
         <ModalTitle iconClassName={styles.icon} {...titleProps}></ModalTitle>
       </ModalHeader>
       <div className={styles.modalContent}>

@@ -148,3 +148,4 @@ export { ReactComponent as IconTipping } from '../../assets/icons/iconTipping.sv
 export { ReactComponent as IconError } from '../../assets/icons/iconError.svg'
 export { ReactComponent as IconStars } from '../../assets/icons/iconStars.svg'
 export { ReactComponent as IconSpeaker } from '../../assets/icons/iconSpeaker.svg'
+export { ReactComponent as IconEmbed } from '../../assets/icons/iconEmbed.svg'

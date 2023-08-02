@@ -43,7 +43,7 @@ export const ShareDrawer = ({
     }
 
     const copyLinkAction = {
-      text: messages.copyLink(shareType),
+      text: messages.copyLink,
       icon: <IconLink {...iconSize} />,
       className: styles.copyLinkAction,
       onClick: onCopyLink
@@ -52,13 +52,7 @@ export const ShareDrawer = ({
     return showTikTokShareAction
       ? [shareToTwitterAction, shareToTikTokAction, copyLinkAction]
       : [shareToTwitterAction, copyLinkAction]
-  }, [
-    showTikTokShareAction,
-    onShareToTwitter,
-    onShareToTikTok,
-    onCopyLink,
-    shareType
-  ])
+  }, [showTikTokShareAction, onShareToTwitter, onShareToTikTok, onCopyLink])
 
   return (
     <ActionDrawer
