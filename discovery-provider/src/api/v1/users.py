@@ -856,7 +856,7 @@ class UserPlaylistsLibraryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="Get User Library Playlists",
-        description="",
+        description="Gets a user's saved/reposted/purchased/all playlists",
         params={"id": "A user ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
@@ -874,7 +874,7 @@ class UserAlbumsLibraryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="Get User Library Albums",
-        description="",
+        description="Gets a user's saved/reposted/purchased/all albums",
         params={"id": "A user ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
