@@ -74,5 +74,13 @@
   "sidebar.sidebar.category.Subgraph": {
     "message": "Subgraph",
     "description": "The label for category Subgraph in sidebar sidebar"
+  },
+  "sidebar.sidebar.category.Setup": {
+    "message": "Setup",
+    "description": "The label for category Setup in sidebar sidebar"
+  },
+  "sidebar.sidebar.category.Setup 🧱": {
+    "message": "Setup 🧱",
+    "description": "The label for category Setup 🧱 in sidebar sidebar"
   }
 }
