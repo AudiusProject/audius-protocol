@@ -14,7 +14,7 @@ The Content Node's core service is a web server with an HTTP API to process inco
 - user track file upload
 - user & track data, metadata, and track file retrieval
 
-*The web server is a [NodeJS](https://nodejs.org) [Express app](https://expressjs.com/).*
+_The web server is a [NodeJS](https://nodejs.org) [Express app](https://expressjs.com/)._
 
 ## Persistent Storage (Postgres)
 
@@ -22,18 +22,18 @@ It stores all data in a postgresql database and all images and metadata objects 
 
 Pointers to all content and metadata stored on disk are persisted in the Postgres DB.
 
-*Postgres is managed in the codebase using the [Sequelize ORM](https://sequelize.org/main/) which includes migrations, models and validations*
+_Postgres is managed in the codebase using the [Sequelize ORM](https://sequelize.org/main/) which includes migrations, models and validations_
 
 ## Redis
 
 A [Redis client](https://redis.io/) is used for for resource locking, request rate limiting, and limited caching and key storage.
 
-*Redis is managed in the codebase through the [ioredis](https://github.com/luin/ioredis) npm package*
+_Redis is managed in the codebase through the [ioredis](https://github.com/luin/ioredis) npm package_
 
 ## Track Segmenting
 
 As defined by the [Audius protocol](https://whitepaper.audius.co), the content node uses [FFMPEG](https://ffmpeg.org/ffmpeg.html) to segment & transcode all uploaded track files before storing/serving.
 
-## Data Redundancy**
+## Data Redundancy
 
 As defined by the [Audius protocol](https://whitepaper.audius.co), all content is stored redundantly across multiple nodes to maximize availability. This is all done automatically - every node monitors every other node in the network to ensure minimum redundancy of all data, transfering files as required.
