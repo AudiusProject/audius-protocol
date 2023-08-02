@@ -8,7 +8,7 @@ stores files and stuff
 If you want to move data between providers (e.g., from your disk to AWS or GCS), do the following:
 1. Set `AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM` (in `audius-docker-compose/creator-node/override.env`) to your current provider (most likely local disk - `"file:///tmp/mediorum/blobs"`).
 2. Set `AUDIUS_STORAGE_DRIVER_URL` to the new provider (see below for configuration and to make sure you have the right credentials).
-3. Start the server and wait until you see the following message logged: "Finished moving files between buckets" (NOTE: this may take hours to complete)
+3. Start the server and monitor logs for errors. Once you see the message "Finished moving files between buckets" and the health check responds again, then the migration is complete. NOTE: this may take hours to complete.
 4. Remove the `AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM` env var and restart the server. You're good to go!
 
 ### Configuring GCS Backend
