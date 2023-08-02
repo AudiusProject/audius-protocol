@@ -140,7 +140,6 @@ def test_index_revert_blocks(app, mocker):
         existing_user_2: User = session.query(User).first()
         existing_user_2_dict = existing_user_2.__dict__.copy()
         existing_user_2_dict.pop("_sa_instance_state")
-        print(f"asdf existing_user_2_dict {existing_user_2_dict}")
         entity_manager_update(
             update_task,
             session,
@@ -156,7 +155,6 @@ def test_index_revert_blocks(app, mocker):
         assert len(revert_blocks) == 1
         assert revert_blocks[0].blocknumber == 0
         assert len(revert_blocks[0].prev_records) == 1
-        print(f"revert_blocks {revert_blocks}")
         assert len(revert_blocks[0].prev_records[EntityType.USER]) == 1
 
         user_2_json = revert_blocks[0].prev_records[EntityType.USER][0]        
@@ -167,7 +165,4 @@ def test_index_revert_blocks(app, mocker):
         reverted_user_2: User = session.query(User).filter(User.user_id == 2, User.is_current == True).first()
         reverted_user_2_dict = reverted_user_2.__dict__
         reverted_user_2_dict.pop("_sa_instance_state")
-        print(f"asdf existing_user_2 {existing_user_2}")
-        print(f"asdf reverted_user_2 {reverted_user_2_dict}")
-        print(f"asdf existing_user_2_dict {existing_user_2_dict}")
         assert reverted_user_2_dict == existing_user_2_dict

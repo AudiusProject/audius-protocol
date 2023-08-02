@@ -308,8 +308,6 @@ def entity_manager_update(
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
         num_total_changes += len(new_records)
-        print(f"asdf existing in json {existing_records_in_json}")
-        print(f"asdf records_to_save {records_to_save}")
         # update metrics
         metric_latency.save_time(
             {"scope": "entity_manager_update"},
@@ -347,7 +345,6 @@ def get_records_to_save(
     params, new_records, original_records, existing_records_in_json
 ):
     records_to_save = []
-
     for record_type, record_dict in new_records.items():
         for entity_id, records in record_dict.items():
             if not records:
@@ -372,10 +369,13 @@ def get_records_to_save(
             ):
                 original_records[record_type][entity_id].is_current = False
 
+    prev_records: Dict[EntityType, List[Dict]] = defaultdict(list)
+    for record_type, existing_records in existing_records_in_json.items():
+        if existing_records:
+            prev_records[record_type] = existing_records
     revert_block = RevertBlock(
-        blocknumber=params.block_number, prev_records=existing_records_in_json
+        blocknumber=params.block_number, prev_records=prev_records
     )
-    print(f"asdf revert_block {revert_block}")
     records_to_save.append(revert_block)
 
     # add EM logs to save
@@ -502,13 +502,11 @@ def fetch_records_in_json(
     session: Session, existing_records, existing_entities, table, identifier
 ):
     json_records = {}
-    print(f"asdf existing_records {existing_records}")
     for record in existing_records:
         existing_entities[EntityType.USER] = {getattr(record, identifier): record}
         sql = text(
             f"SELECT row_to_json({table}) FROM {table} WHERE {identifier} = {getattr(record, identifier)} and is_current"
         )
-        print(f"asdf sql {sql}")
         result = session.execute(sql).fetchone()
         json_records[getattr(record, identifier)] = result[0]
     return json_records
@@ -696,9 +694,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
 
         grants: List[Tuple[Grant, Dict]] = session.query(Grant, literal_column(f"row_to_json({Grant.__tablename__})")).filter(or_(*and_queries)).all()
-        print(f"asdf grants {grants}")
         for grant, grant_json in grants:
-            print(f"asdf grant {type(grant)} {type(grant_json)}")
         existing_entities[EntityType.GRANT] = {
             (grant.grantee_address.lower(), grant.user_id): grant for grant, _ in grants
         }

@@ -10,6 +10,7 @@ from web3.datastructures import AttributeDict
 from src.utils.config import shared_config
 from src.utils.redis_connection import get_redis
 from src.models.indexing.skipped_transaction import SkippedTransaction
+from integration_tests.utils import populate_mock_db_blocks
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,8 @@ def test_skip_tx(app, mocker):
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
-
+    populate_mock_db_blocks(db, 0, 1)
+    
     "Tests valid batch of tracks create/update/delete actions"
     with db.scoped_session() as session:
         # index transactions
