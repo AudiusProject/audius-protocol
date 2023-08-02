@@ -517,6 +517,36 @@ Promise<{
 
 ---
 
+### getUserByHandle
+
+#### getUserByHandle(`params`)
+
+Get a user by their handle.
+
+Example:
+
+```typescript
+const { data: user } = await audiusSdk.users.getUserByHandle({
+  handle: "skrillex",
+});
+
+console.log(user);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description            | Required?    |
+| :------- | :------- | :--------------------- | :----------- |
+| `handle` | `string` | The handle of the user | **Required** |
+
+#### Returns
+
+The return type is the same as [`getUser`](#getuser)
+
+---
+
 ### updateProfile
 
 #### updateProfile(`params`, `advancedOptions?`)
