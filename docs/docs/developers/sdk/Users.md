@@ -112,6 +112,38 @@ Promise<{
 
 ---
 
+### getFollowing
+
+#### getFollowing(`params`)
+
+Get users that a user is following
+
+Example:
+
+```typescript
+const { data: following } = await audiusSdk.users.getFollowing({
+  id: "eAZl3",
+});
+
+console.log(following);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description                                                        | Required?    |
+| :------- | :------- | :----------------------------------------------------------------- | :----------- |
+| `id`     | `string` | The ID of the user                                                 | **Required** |
+| `limit`  | `number` | The maximum number of users to return. Default value is **10**     | _Optional_   |
+| `offset` | `number` | The offset to apply to the list of results. Default value is **0** | _Optional_   |
+
+#### Returns
+
+The return type is the same as [`getFollowers`](#getfollowers)
+
+---
+
 ### updateProfile
 
 #### updateProfile(`requestParameters`, `advancedOptions?`)
