@@ -450,7 +450,7 @@ The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
 
 ### updateProfile
 
-#### updateProfile(`requestParameters`, `advancedOptions?`)
+#### updateProfile(`params`, `advancedOptions?`)
 
 Update a user profile.
 
@@ -475,7 +475,7 @@ await audiusSdk.users.updateProfile({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -487,7 +487,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `onProgress`         | `(progress: number) => void`                                                                               | `undefined`   | No        | Callback for receiving updates on the progress of the profile pic and/or cover art upload. Not relevant if neither `coverArtFile` nor `profilePictureFile` are specified. |
 | `userId`             | `string`                                                                                                   | N/A           | Yes       |                                                                                                                                                                           |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -503,7 +503,7 @@ Return type:
 
 ### followUser
 
-#### followUser(`requestParameters`, `advancedOptions?`)
+#### followUser(`params`, `advancedOptions?`)
 
 Follow a user.
 
@@ -516,7 +516,7 @@ await audiusSdk.users.followUser({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -525,7 +525,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`         | `string` | N/A           | Yes       |
 | `followeeUserId` | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -541,7 +541,7 @@ Return type:
 
 ### unfollowUser
 
-#### unfollowUser(`requestParameters`, `advancedOptions?`)
+#### unfollowUser(`params`, `advancedOptions?`)
 
 Unfollow a user.
 
@@ -554,7 +554,7 @@ await audiusSdk.users.unfollowUser({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -563,7 +563,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`         | `string` | N/A           | Yes       |
 | `followeeUserId` | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -579,7 +579,7 @@ Return type:
 
 ### subscribeToUser
 
-#### subscribeToUser(`requestParameters`, `advancedOptions?`)
+#### subscribeToUser(`params`, `advancedOptions?`)
 
 Subscribe to a user.
 
@@ -592,7 +592,7 @@ await audiusSdk.users.subscribeToUser({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -601,7 +601,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`           | `string` | N/A           | Yes       |
 | `subscribeeUserId` | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -617,7 +617,7 @@ Return type:
 
 ### unsubscribeFromUser
 
-#### unsubscribeFromUser(`requestParameters`, `advancedOptions?`)
+#### unsubscribeFromUser(`params`, `advancedOptions?`)
 
 Unsubscribe from a user.
 
@@ -630,7 +630,7 @@ await audiusSdk.users.unsubscribeFromUser({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -639,7 +639,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`           | `string` | N/A           | Yes       |
 | `subscribeeUserId` | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
