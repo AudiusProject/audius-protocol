@@ -1,14 +1,14 @@
 import { removeNullable } from '@audius/common'
 import { useField } from 'formik'
 
-import type { ContextualSubmenuProps } from 'app/components/core'
-import { ContextualSubmenu } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
+import { ContextualMenu } from 'app/components/core'
 
 const messages = {
   label: 'ISRC/ISWC'
 }
 
-type IsrcFieldProps = Partial<ContextualSubmenuProps>
+type IsrcFieldProps = Partial<ContextualMenuProps>
 
 export const IsrcField = (props: IsrcFieldProps) => {
   const [{ value: isrc }] = useField<string>('isrc')
@@ -17,10 +17,10 @@ export const IsrcField = (props: IsrcFieldProps) => {
   const values = [isrc, iswc].filter(removeNullable)
 
   return (
-    <ContextualSubmenu
+    <ContextualMenu
       value={values}
       label={messages.label}
-      submenuScreenName='IsrcIswc'
+      menuScreenName='IsrcIswc'
       {...props}
     />
   )

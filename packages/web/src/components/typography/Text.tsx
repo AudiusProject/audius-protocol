@@ -22,9 +22,9 @@ export const Text = (props: TextProps) => {
   const {
     className,
     children,
-    variant = 'body' as TextVariant,
-    strength = 'default' as TextStrength,
-    size = 'medium' as TextSize,
+    variant = 'body',
+    strength = 'default',
+    size = 'medium',
     color = '--neutral',
     ...otherProps
   } = props

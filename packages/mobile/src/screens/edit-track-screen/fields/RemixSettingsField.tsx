@@ -3,8 +3,8 @@ import { useField } from 'formik'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import type { ContextualSubmenuProps } from 'app/components/core'
-import { Text, ContextualSubmenu } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
+import { Text, ContextualMenu } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { RemixTrackPill } from '../components'
@@ -26,7 +26,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type SelectMoodFieldProps = Partial<ContextualSubmenuProps>
+type SelectMoodFieldProps = Partial<ContextualMenuProps>
 
 export const RemixSettingsField = (props: SelectMoodFieldProps) => {
   const styles = useStyles()
@@ -66,8 +66,8 @@ export const RemixSettingsField = (props: SelectMoodFieldProps) => {
   }
 
   return (
-    <ContextualSubmenu
-      submenuScreenName='RemixSettings'
+    <ContextualMenu
+      menuScreenName='RemixSettings'
       label={messages.label}
       value={value}
       renderValue={renderValue}
