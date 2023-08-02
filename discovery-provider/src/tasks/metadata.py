@@ -44,7 +44,6 @@ class TrackMetadata(TypedDict):
     title: Optional[str]
     route_id: Optional[str]
     duration: int
-    length: int
     preview_start_seconds: Optional[float]
     cover_art: Optional[str]
     cover_art_sizes: Optional[str]
@@ -79,7 +78,6 @@ track_metadata_format: TrackMetadata = {
     "title": None,
     "route_id": None,
     "duration": 0,
-    "length": 0,
     "preview_start_seconds": None,
     "cover_art": None,
     "cover_art_sizes": None,
@@ -178,7 +176,6 @@ immutable_track_fields = immutable_fields | {
     "owner_id",
     "track_cid",
     "preview_cid",
-    "length",
     "duration",
     "is_available",
 }
