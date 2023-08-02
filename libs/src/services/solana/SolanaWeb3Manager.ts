@@ -239,7 +239,7 @@ export class SolanaWeb3Manager {
     mint?: MintName
   } = {}) {
     const userbank = await this.deriveUserBank({ ethAddress, mint })
-    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
+    const tokenAccount = await this.getTokenAccountInfo(userbank.toString(), mint)
     return !!tokenAccount
   }
 
