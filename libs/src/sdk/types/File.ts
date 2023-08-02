@@ -2,9 +2,9 @@ import { z } from 'zod'
 
 let fileType: any
 if (typeof window !== 'undefined' && window) {
-  fileType = require('file-type')
-} else {
   fileType = require('file-type/browser')
+} else {
+  fileType = require('file-type')
 }
 
 /**
