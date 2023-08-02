@@ -1,6 +1,101 @@
+### getTrack
+
+#### getTrack(`params`)
+
+Get a track by id.
+
+Example:
+
+```typescript
+import { Mood, Genre } from "@audius/sdk";
+
+const { data } = await audiusSdk.tracks.getTrack({
+  trackId: "D7KyD",
+});
+
+const track = trackResponse.data;
+console.log(track);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` contains information about the track as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    artwork?: {
+      "_1000x1000"?: string
+      "_150x150"?: string
+      "_480x480"?: string
+    }
+    description?: string
+    downloadable?: boolean
+    duration: number
+    favoriteCount: number
+    genre?: string
+    id: string
+    isStreamable?: string
+    mood?: string
+    permalink?: string
+    playCount: number
+    releaseDate: string
+    remixOf?: {
+      tracks: { parentTrackId: string }[]
+    }
+    repostCount: number
+    tags?: string[]
+    title: string
+    trackCid?: string
+    user: {
+      albumCount: number
+      artistPickTrackId?: string
+      bio?: string
+      coverPhoto?: {
+        "_2000"?: string
+        "_640"?: string
+      }
+      doesFollowCurrentUser?: boolean
+      ercWallet: string
+      followeeCount: number
+      followerCount: number
+      handle: string
+      id: string
+      isAvailable: boolean
+      isDeactivated: boolean
+      isVerified: boolean
+      location?: string
+      name: string
+      playlistCount: number
+      profilePicture?: {
+        "_1000x1000"?: string
+        "_150x150"?: string
+        "_480x480"?: string
+      }
+      repostCount: number
+      splWallet: string
+      supporterCount: number
+      supportingCount: number
+      totalAudioBalance: number
+      trackCount: number
+    },
+  }
+>
+```
+
 ### uploadTrack
 
-#### uploadTrack(`requestParameters`, `advancedOptions?`)
+#### uploadTrack(`parameters`, `advancedOptions?`)
 
 Upload a track.
 
@@ -32,7 +127,7 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `parameters`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -44,7 +139,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackFile`    | `File`                                                   | N/A           | Yes       |                                                                 |
 | `userId`       | `string`                                                 | N/A           | Yes       |                                                                 |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -60,7 +155,7 @@ Return type:
 
 ### updateTrack
 
-#### updateTrack(`requestParameters`, `advancedOptions?`)
+#### updateTrack(`params`, `advancedOptions?`)
 
 Update a track. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -89,7 +184,7 @@ const { trackId } = await audiusSdk.tracks.updateTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -101,7 +196,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | N/A           | Yes       | All fields are optional. |
 | `onProgress`   | `(progress: number) => void`                                          | `undefined`   | No        |                          |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -117,7 +212,7 @@ Return type:
 
 ### deleteTrack
 
-#### deleteTrack(`requestParameters`, `advancedOptions?`)
+#### deleteTrack(`params`, `advancedOptions?`)
 
 Delete a track
 
@@ -130,7 +225,7 @@ await audiusSdk.tracks.deleteTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -139,7 +234,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -155,7 +250,7 @@ Return type:
 
 ### favoriteTrack
 
-#### favoriteTrack(`requestParameters`, `advancedOptions?`)
+#### favoriteTrack(`params`, `advancedOptions?`)
 
 Favorite a track
 
@@ -168,7 +263,7 @@ await audiusSdk.tracks.favoriteTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -178,7 +273,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                      |
 | `metadata` | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted track. |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -194,7 +289,7 @@ Return type:
 
 ### unfavoriteTrack
 
-#### unfavoriteTrack(`requestParameters`, `advancedOptions?`)
+#### unfavoriteTrack(`params`, `advancedOptions?`)
 
 Unfavorite a track
 
@@ -207,7 +302,7 @@ await audiusSdk.tracks.unfavoriteTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -216,7 +311,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -232,7 +327,7 @@ Return type:
 
 ### repostTrack
 
-#### repostTrack(`requestParameters`, `advancedOptions?`)
+#### repostTrack(`params`, `advancedOptions?`)
 
 Repost a track
 
@@ -245,7 +340,7 @@ await audiusSdk.tracks.repostTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -255,7 +350,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`   | `string`                                 | N/A                                    | Yes       |                                                                       |
 | `metadata` | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted track. |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -271,7 +366,7 @@ Return type:
 
 ### unrepostTrack
 
-#### unrepostTrack(`requestParameters`, `advancedOptions?`)
+#### unrepostTrack(`params`, `advancedOptions?`)
 
 Unrepost a track
 
@@ -284,7 +379,7 @@ await audiusSdk.tracks.unrepostTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -293,7 +388,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackId` | `string` | N/A           | Yes       |
 | `userId`  | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
