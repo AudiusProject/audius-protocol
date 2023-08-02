@@ -167,11 +167,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.tag_list = splitTags(row.tags)
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
-    row.duration =
-      row.duration ||
-      Math.ceil(
-        row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
-      )
 
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]

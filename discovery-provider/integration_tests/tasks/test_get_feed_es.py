@@ -80,7 +80,7 @@ def test_get_feed_es(app):
     populate_mock_db(db, basic_entities)
 
     # run indexer catchup
-    subprocess.run(
+    logs = subprocess.run(
         ["npm", "run", "catchup:ci"],
         env=os.environ,
         capture_output=True,
@@ -88,6 +88,7 @@ def test_get_feed_es(app):
         cwd="es-indexer",
         timeout=30,
     )
+    logging.info(logs)
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]
     # actually would be more than 10, but 10 is the default `size`...
