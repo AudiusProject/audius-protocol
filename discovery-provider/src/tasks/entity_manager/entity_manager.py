@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 from src.models.indexing.revert_block import RevertBlock
 from sqlalchemy import text
+from sqlalchemy import literal_column
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
@@ -345,10 +346,8 @@ def get_records_to_save(
     params, new_records, original_records, existing_records_in_json
 ):
     records_to_save = []
-    prev_records = {}
 
     for record_type, record_dict in new_records.items():
-        prev_records[record_type] = {}
         for entity_id, records in record_dict.items():
             if not records:
                 continue
@@ -371,16 +370,11 @@ def get_records_to_save(
                 in get_record_columns(original_records[record_type][entity_id])
             ):
                 original_records[record_type][entity_id].is_current = False
-                print(f"asdf existing_records_in_json {existing_records_in_json}")
-                prev_records[record_type][entity_id] = existing_records_in_json[
-                    record_type
-                ][entity_id]
-            else:
-                prev_records[record_type][entity_id] = {}
 
     revert_block = RevertBlock(
-        blocknumber=params.block_number, prev_records=prev_records
+        blocknumber=params.block_number, prev_records=existing_records_in_json
     )
+    print(f"asdf revert_block {revert_block}")
     records_to_save.append(revert_block)
 
     # add EM logs to save
@@ -521,7 +515,7 @@ def fetch_records_in_json(
 
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = defaultdict(dict)
-    existing_entities_in_json = defaultdict(dict)
+    existing_entities_in_json = defaultdict(list)
 
     # PLAYLISTS
     if entities_to_fetch[EntityType.PLAYLIST]:
@@ -564,41 +558,17 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
             .all()
         )
-        existing_entities_in_json[EntityType.USER].update(
-            fetch_records_in_json(session, users, existing_entities, "users", "user_id")
-        )
-
-    if entities_to_fetch[EntityType.ASSOCIATED_WALLET]:
-        associated_wallets: List[AssociatedWallet] = (
-            session.query(AssociatedWallet)
+        existing_entities[EntityType.USER] = {user.user_id: user for user in users}
+        users_in_json = (
+            session.query(literal_column("row_to_json(users)"))
             .filter(
-                AssociatedWallet.user_id.in_(entities_to_fetch[EntityType.USER]),
-                AssociatedWallet.is_current == True,
+                User.user_id.in_(entities_to_fetch[EntityType.USER]),
+                User.is_current == True,
             )
             .all()
-        )
-        existing_entities[EntityType.ASSOCIATED_WALLET] = {
-            wallet.user_id: wallet for wallet in associated_wallets
-        }
-        existing_entities_in_json[EntityType.ASSOCIATED_WALLET].update(
-            fetch_records_in_json(session, associated_wallets, existing_entities, "associated_wallets", "user_id")
-        )
-
-    if entities_to_fetch[EntityType.USER_EVENT]:
-        user_events: List[UserEvent] = (
-            session.query(UserEvent)
-            .filter(
-                UserEvent.user_id.in_(entities_to_fetch[EntityType.USER_EVENT]),
-                UserEvent.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.USER_EVENT] = {
-            event.user_id: event for event in user_events
-        }
-        existing_entities_in_json[EntityType.USER_EVENT].update(
-            fetch_records_in_json(session, user_events, existing_entities, "user_events", "user_id")
-        )
+        )   
+        existing_entities_in_json[EntityType.USER] = users_in_json[0]
+        print(f"asdf existing_entities_in_json {existing_entities_in_json}")
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:

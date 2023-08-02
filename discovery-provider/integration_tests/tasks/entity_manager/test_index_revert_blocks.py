@@ -75,7 +75,7 @@ def test_index_revert_blocks(app, mocker):
             "profile_picture_sizes": "QmIsaacProfile",
             "cover_photo": None,
             "cover_photo_sizes": "QmIsaacCoverPhoto",
-            "bio": "UpdateUser1Bio",
+            "bio": "UpdateUser2Bio",
             "location": "Los Angeles, CA",
             "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
             "associated_wallets": None,
@@ -150,15 +150,15 @@ def test_index_revert_blocks(app, mocker):
             block_hash=0,
         )
         updated_user_2: User = session.query(User).filter(User.user_id == 2, User.is_current == True).first()
-        assert updated_user_2.bio == "UpdateUser1Bio"
+        assert updated_user_2.bio == "UpdateUser2Bio"
 
         revert_blocks: List[RevertBlock] = session.query(RevertBlock).all()
         assert len(revert_blocks) == 1
         assert revert_blocks[0].blocknumber == 0
-        print(f"asdf revert_blocks {revert_blocks}")
+        assert len(revert_blocks[0].prev_records) == 1
+        assert len(revert_blocks[0].prev_records[EntityType.USER]) == 1
 
-        assert revert_blocks[0].prev_records[EntityType.USER][str(USER_ID_OFFSET + 1)] == {}
-        user_2_json = revert_blocks[0].prev_records[EntityType.USER]["2"]
+        user_2_json = revert_blocks[0].prev_records[EntityType.USER][0]        
         prev_user_2 = User(**user_2_json)
         session.add(prev_user_2)
 
