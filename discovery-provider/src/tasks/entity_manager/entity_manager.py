@@ -515,7 +515,7 @@ def fetch_records_in_json(
         )
         print(f"asdf sql {sql}")
         result = session.execute(sql).fetchone()
-        json_records[identifier] = result[0]
+        json_records[getattr(record, identifier)] = result[0]
     return json_records
 
 
@@ -550,6 +550,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.TRACK] = {
             track.track_id: track for track in tracks
         }
+        existing_entities_in_json[EntityType.TRACK].update(
+            fetch_records_in_json(session, tracks, existing_entities, "tracks", "track_id")
+        )
 
     # USERS
     if entities_to_fetch[EntityType.USER]:
@@ -561,11 +564,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
             .all()
         )
-        print(f"asdf users {users}")
         existing_entities_in_json[EntityType.USER].update(
             fetch_records_in_json(session, users, existing_entities, "users", "user_id")
         )
-        print(f"existing_entities_in_json {existing_entities_in_json}")
 
     if entities_to_fetch[EntityType.ASSOCIATED_WALLET]:
         associated_wallets: List[AssociatedWallet] = (
@@ -579,12 +580,15 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.ASSOCIATED_WALLET] = {
             wallet.user_id: wallet for wallet in associated_wallets
         }
+        existing_entities_in_json[EntityType.ASSOCIATED_WALLET].update(
+            fetch_records_in_json(session, associated_wallets, existing_entities, "associated_wallets", "user_id")
+        )
 
     if entities_to_fetch[EntityType.USER_EVENT]:
         user_events: List[UserEvent] = (
             session.query(UserEvent)
             .filter(
-                UserEvent.user_id.in_(entities_to_fetch[EntityType.USER]),
+                UserEvent.user_id.in_(entities_to_fetch[EntityType.USER_EVENT]),
                 UserEvent.is_current == True,
             )
             .all()
@@ -592,6 +596,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.USER_EVENT] = {
             event.user_id: event for event in user_events
         }
+        existing_entities_in_json[EntityType.USER_EVENT].update(
+            fetch_records_in_json(session, user_events, existing_entities, "user_events", "user_id")
+        )
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:
