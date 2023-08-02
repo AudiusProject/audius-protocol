@@ -220,6 +220,154 @@ The return type is the same as [`getFollowers`](#getfollowers)
 
 ---
 
+### getSupporters
+
+#### getSupporters(`params`)
+
+Get users that are supporting a user (they have sent them a tip).
+
+Example:
+
+```typescript
+const { data: supporters } = await audiusSdk.users.getSupporters({
+  id: "eAZl3",
+});
+
+console.log(supporters);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description                                                        | Required?    |
+| :------- | :------- | :----------------------------------------------------------------- | :----------- |
+| `id`     | `string` | The ID of the user                                                 | **Required** |
+| `limit`  | `number` | The maximum number of users to return. Default value is **10**     | _Optional_   |
+| `offset` | `number` | The offset to apply to the list of results. Default value is **0** | _Optional_   |
+
+#### Returns
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supporters as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+      amount: string
+      rank: number
+      sender: {
+        albumCount: number
+        artistPickTrackId?: string
+        bio?: string
+        coverPhoto?: {
+          "_2000"?: string
+          "_640"?: string
+        }
+        doesFollowCurrentUser?: boolean
+        ercWallet: string
+        followeeCount: number
+        followerCount: number
+        handle: string
+        id: string
+        isAvailable: boolean
+        isDeactivated: boolean
+        isVerified: boolean
+        location?: string
+        name: string
+        playlistCount: number
+        profilePicture?: {
+          "_1000x1000"?: string
+          "_150x150"?: string
+          "_480x480"?: string
+        }
+        repostCount: number
+        splWallet: string
+        supporterCount: number
+        supportingCount: number
+        totalAudioBalance: number
+        trackCount: number
+      }
+    }[]
+>
+```
+
+---
+
+### getSupportings
+
+#### getSupportings(`params`)
+
+Get users that a user is supporting (they have sent them a tip).
+
+Example:
+
+```typescript
+const { data: supportings } = await audiusSdk.users.getSupportings({
+  id: "eAZl3",
+});
+
+console.log(supportings);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description                                                        | Required?    |
+| :------- | :------- | :----------------------------------------------------------------- | :----------- |
+| `id`     | `string` | The ID of the user                                                 | **Required** |
+| `limit`  | `number` | The maximum number of users to return. Default value is **10**     | _Optional_   |
+| `offset` | `number` | The offset to apply to the list of results. Default value is **0** | _Optional_   |
+
+#### Returns
+
+```ts
+Promise<{
+  data: {
+      amount: string
+      rank: number
+      receiver: {
+        albumCount: number
+        artistPickTrackId?: string
+        bio?: string
+        coverPhoto?: {
+          "_2000"?: string
+          "_640"?: string
+        }
+        doesFollowCurrentUser?: boolean
+        ercWallet: string
+        followeeCount: number
+        followerCount: number
+        handle: string
+        id: string
+        isAvailable: boolean
+        isDeactivated: boolean
+        isVerified: boolean
+        location?: string
+        name: string
+        playlistCount: number
+        profilePicture?: {
+          "_1000x1000"?: string
+          "_150x150"?: string
+          "_480x480"?: string
+        }
+        repostCount: number
+        splWallet: string
+        supporterCount: number
+        supportingCount: number
+        totalAudioBalance: number
+        trackCount: number
+      }
+    }[]
+>
+```
+
+---
+
 ### updateProfile
 
 #### updateProfile(`requestParameters`, `advancedOptions?`)
