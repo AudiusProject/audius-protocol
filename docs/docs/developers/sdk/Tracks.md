@@ -90,6 +90,8 @@ Promise<{
 >
 ```
 
+---
+
 ### getTrack
 
 #### getTrack(`params`)
@@ -181,6 +183,8 @@ Promise<{
   }
 >
 ```
+
+---
 
 ### getTrendingTracks
 
@@ -293,7 +297,11 @@ Returns a `Promise` containing a `string` url which can be used to stream the tr
 
 Return type:
 
-`Promise<string>`
+```ts
+Promise<string>;
+```
+
+---
 
 ### uploadTrack
 
@@ -351,7 +359,13 @@ Returns a `Promise` containing an object with the new track's ID (`trackId`), as
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; trackId: string }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+  trackId: string;
+}>;
+```
 
 ---
 
@@ -408,7 +422,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -446,7 +465,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -485,7 +509,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -523,7 +552,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -562,7 +596,12 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
@@ -600,6 +639,11 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
