@@ -59,11 +59,11 @@ activity_model_full = ns.model(
 track_activity_model_full = ns.clone(
     "track_activity_full",
     activity_model_full,
-    {"item_type": fields.Nested(track_full)},
+    {"item": fields.Nested(track_full)},
 )
 
 collection_activity_model_full = ns.clone(
     "collection_activity_full",
     activity_model_full,
-    {"item_type": fields.Nested(full_playlist_model)},
+    {"item": fields.Nested(full_playlist_model)},
 )
