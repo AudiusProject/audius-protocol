@@ -7,11 +7,8 @@ from operator import or_
 from typing import List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
+from redis import Redis
 from sqlalchemy.orm.session import Session
-from web3 import Web3
-from web3.exceptions import BlockNotFound
-from web3.types import BlockData, HexStr, TxReceipt
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
@@ -41,6 +38,9 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
+from web3 import Web3
+from web3.exceptions import BlockNotFound
+from web3.types import BlockData, HexStr, TxReceipt
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -151,9 +151,9 @@ def add_indexed_block_to_db(
     session.add(block_model)
 
 
-def add_indexed_block_to_redis(block, redis):
-    redis.set(most_recent_indexed_block_redis_key, block.number)
-    redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+def add_indexed_block_to_redis(block: BlockData, redis: Redis):
+    redis.set(most_recent_indexed_block_redis_key, block["number"])
+    redis.set(most_recent_indexed_block_hash_redis_key, block["hash"].hex())
 
 
 def process_state_changes(
@@ -242,9 +242,9 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
-        next_block = copy.deepcopy(next_block)
-        next_block.update({"number": next_block["number"] + final_poa_block})
-        return next_block
+        next_block_mut: BlockData = dict(next_block)
+        next_block_mut["number"] = next_block_mut["number"] + final_poa_block
+        return next_block_mut
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
         # Return early because we've likely indexed up to the head of the chain
@@ -267,7 +267,7 @@ def get_relevant_blocks(
 
         if (
             next_block
-            and web3.to_hex(next_block.parent_hash) != latest_database_block.blockhash
+            and web3.to_hex(next_block["parentHash"]) != latest_database_block.blockhash
             and latest_database_block.number != 0
         ):
             block_on_chain = False

@@ -5,8 +5,6 @@ from typing import Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
-from web3.types import TxReceipt
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
@@ -77,6 +75,7 @@ from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
+from web3.types import TxReceipt
 
 logger = StructuredLogger(__name__)
 
@@ -102,7 +101,6 @@ def entity_manager_update(
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
         num_total_changes = 0
-        hex_blockhash = update_task.web3.to_hex(block_hash)
 
         changed_entity_ids: Dict[str, Set[(int)]] = defaultdict(set)
         if not entity_manager_txs:
@@ -159,7 +157,7 @@ def entity_manager_update(
                         update_task.web3,
                         block_timestamp,
                         block_number,
-                        hex_blockhash,
+                        block_hash,
                         txhash,
                         logger,
                     )
