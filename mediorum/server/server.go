@@ -150,23 +150,27 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return nil, err
 	}
 
+	logger := slog.With("self", config.Self.Host)
+
 	// bucket to move all files from
 	if config.MoveFromBlobStoreDSN != "" {
+		if config.MoveFromBlobStoreDSN == config.BlobStoreDSN {
+			log.Fatal("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+		}
 		bucketToMoveFrom, err := persistence.Open(config.MoveFromBlobStoreDSN)
 		if err != nil {
-			log.Fatal("failed to open bucket to move from; please fix AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM env var - it's the driver to move data from, or empty", "err", err)
+			log.Fatalf("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
 			return nil, err
 		}
 
 		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
 		if err != nil {
-			log.Fatal("failed to move files from old bucket; double check AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM env var - it's the driver to move data from, or empty", "err", err)
+			log.Fatalf("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
 			return nil, err
 		}
-	}
 
-	// logger
-	logger := slog.With("self", config.Self.Host)
+		logger.Info("Finished moving files between buckets. Please remove AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM from your environment and restart the server.")
+	}
 
 	// db
 	db := dbMustDial(config.PostgresDSN)

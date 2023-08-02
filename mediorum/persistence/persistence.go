@@ -160,8 +160,9 @@ func MoveAllFiles(from, to *blob.Bucket) error {
 	g.SetLimit(15)
 
 	for _, key := range keys {
+		k := key
 		g.Go(func() error {
-			return moveFile(from, to, key, ctx)
+			return moveFile(from, to, k, ctx)
 		})
 	}
 
@@ -203,26 +204,28 @@ func moveFile(from, to *blob.Bucket, key string, ctx context.Context) error {
 		return fmt.Errorf("error getting reader for key %s: %v", key, err)
 	}
 
-	defer r.Close()
-
 	w, err := to.NewWriter(ctx, key, &blob.WriterOptions{
 		ContentType: attrs.ContentType,
 		ContentMD5:  attrs.MD5,
 		Metadata:    attrs.Metadata,
 	})
 	if err != nil {
+		r.Close()
 		return fmt.Errorf("error getting writer for key %s: %v", key, err)
 	}
 
 	_, err = io.Copy(w, r)
 	if err != nil {
+		r.Close()
 		return fmt.Errorf("error copying data for key %s: %v", key, err)
 	}
 
 	if err := w.Close(); err != nil {
+		r.Close()
 		return fmt.Errorf("error closing writer for key %s: %v", key, err)
 	}
 
+	r.Close()
 	if err := from.Delete(ctx, key); err != nil {
 		return fmt.Errorf("error deleting key %s from old bucket: %v", key, err)
 	}
