@@ -261,6 +261,40 @@ Create an object with the following fields and pass it as the first argument, as
 
 The return type is the same as [`getBulkTracks`](#getbulktracks)
 
+### streamTrack
+
+#### streamTrack(`params`)
+
+Get the url of the track's streamable mp3 file.
+
+Example:
+
+```typescript
+const url = await audiusSdk.tracks.streamTrack({
+  trackId: "PjdWN",
+});
+const audio = new Audio(url);
+audio.play();
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+
+TODO: should we document premium content signature?
+
+#### Returns
+
+Returns a `Promise` containing a `string` url which can be used to stream the track.
+
+Return type:
+
+`Promise<string>`
+
 ### uploadTrack
 
 #### uploadTrack(`parameters`, `advancedOptions?`)
