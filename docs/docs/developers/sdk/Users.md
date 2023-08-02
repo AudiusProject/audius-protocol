@@ -325,6 +325,10 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supportings as described below.
+
+Return type:
+
 ```ts
 Promise<{
   data: {
@@ -363,6 +367,46 @@ Promise<{
         trackCount: number
       }
     }[]
+>
+```
+
+---
+
+### getTopTrackTags
+
+#### getTopTrackTags(`params`)
+
+Get the most used track tags by a user.
+
+Example:
+
+```typescript
+const { data: tags } = await audiusSdk.users.getTopTrackTags({
+  id: "eAZl3",
+});
+
+console.log(tags);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name     | Type     | Description                                                        | Required?    |
+| :------- | :------- | :----------------------------------------------------------------- | :----------- |
+| `id`     | `string` | The ID of the user                                                 | **Required** |
+| `limit`  | `number` | The maximum number of users to return. Default value is **10**     | _Optional_   |
+| `offset` | `number` | The offset to apply to the list of results. Default value is **0** | _Optional_   |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of strings representing the tags
+
+Return type:
+
+```ts
+Promise<{
+  data: string[]
 >
 ```
 
