@@ -70,13 +70,13 @@ const snippetMap = {
   },
   ['save'](notification) {
     const [user] = notification.users
-    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${
+    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${
       notification.entity.name
     }`
   },
   ['save_of_repost'](notification) {
     const [user] = notification.users
-    return `${user.name} saved your repost of ${notification.entity.name}`
+    return `${user.name} favorited your repost of ${notification.entity.name}`
   },
   ['announcement'](notification) {
     return notification.title
