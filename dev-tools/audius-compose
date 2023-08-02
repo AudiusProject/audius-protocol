@@ -69,7 +69,6 @@ def get_git_commit(protocol_dir):
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
     protocol_dir,
-    creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
 ):
@@ -83,12 +82,10 @@ def generate_env(
 
     env["GIT_COMMIT"] = get_git_commit(protocol_dir)
 
-    env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
-
     env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
-        (protocol_dir / "creator-node/.version.json").read_text(),
+        (protocol_dir / "mediorum/.version.json").read_text(),
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
@@ -137,7 +134,7 @@ def generate_env(
 
     bootstrap_sp_ids = []
     bootstrap_sp_owner_wallets = []
-    for replica in range(creator_node_replicas):
+    for replica in range(6):
         if f"CN{replica + 1}_SP_OWNER_ADDRESS" in env:
             bootstrap_sp_ids.append(str(replica + 1))
             bootstrap_sp_owner_wallets.append(env[f"CN{replica + 1}_SP_OWNER_ADDRESS"])
@@ -189,7 +186,6 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=3, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-a", "--args", type=str, multiple=True)
@@ -197,7 +193,6 @@ def cli(ctx, protocol_dir):
 @click.pass_obj
 def build(
     protocol_dir,
-    creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
     args,
@@ -205,7 +200,6 @@ def build(
 ):
     generate_env(
         protocol_dir,
-        creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
     )
@@ -220,7 +214,6 @@ def build(
             "--profile=circle_ci_push",
             "--profile=tests",
             "--profile=identity",
-            "--profile=creator",
             "--profile=discovery",
             "--profile=comms",
             "--profile=storagev2",
@@ -248,7 +241,7 @@ def build(
 @click.pass_context
 def push(ctx, services):
     protocol_dir = ctx.obj
-    services = services or ["creator-node", "discovery-provider", "identity-service"]
+    services = services or ["mediorum", "discovery-provider", "identity-service"]
 
     git_commit = get_git_commit(protocol_dir)
 
@@ -332,7 +325,6 @@ def load_env(protocol_dir, service, environment):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=0, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=1, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
@@ -355,7 +347,6 @@ def load_env(protocol_dir, service, environment):
 @click.pass_obj
 def up(
     protocol_dir,
-    creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
     block_explorer,
@@ -368,7 +359,6 @@ def up(
 ):
     generate_env(
         protocol_dir,
-        creator_node_replicas,
         discovery_provider_replicas,
         elasticsearch_replicas,
     )
@@ -392,7 +382,6 @@ def up(
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=pedalboard"] if pedalboard else []),
-                *(["--profile=creator"] if creator_node_replicas > 0 else []),
                 *(["--profile=comms"] if comms else []),
                 *(["--profile=storagev2"]),
                 *(["--profile=libs"]),
@@ -450,7 +439,7 @@ def test():
 @test.command(name="build")
 @click.pass_obj
 def test_build(protocol_dir):
-    generate_env(protocol_dir, 0, 0, 0)
+    generate_env(protocol_dir, 0, 0)
 
     subprocess.run(
         [
@@ -483,7 +472,7 @@ def test_run(protocol_dir, service, args):
     """
     Runs tests for a given service.
     """
-    generate_env(protocol_dir, 0, 0, 0)
+    generate_env(protocol_dir, 0, 0)
 
     sys.exit(
         subprocess.run(
@@ -511,7 +500,7 @@ def test_up(protocol_dir, service):
     """
     Brings up a testing container for a given service.
     """
-    generate_env(protocol_dir, 0, 0, 0)
+    generate_env(protocol_dir, 0, 0)
 
     sys.exit(
         subprocess.run(
@@ -533,7 +522,7 @@ def test_up(protocol_dir, service):
 @test.command(name="down")
 @click.pass_obj
 def test_down(protocol_dir):
-    generate_env(protocol_dir, 0, 0, 0)
+    generate_env(protocol_dir, 0, 0)
 
     subprocess.run(
         [
@@ -628,14 +617,10 @@ def ps(protocol_dir):
                     ports[publisher["PublishedPort"]] = publisher["TargetPort"]
 
         if service["Service"] in [
-            "creator-node",
             "discovery-provider",
             "discovery-provider-elasticsearch",
         ]:
             replica = int(service["Name"].split("-")[-1])
-        if service["Service"] == "creator-node":
-            name = f"{service['Service']}-{replica}"
-            ports[4000 + replica - 1] = 4000
         if service["Service"] == "discovery-provider":
             name = f"{service['Service']}-{replica}"
             ports[5000 + replica - 1] = 5000

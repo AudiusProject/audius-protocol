@@ -14,6 +14,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_TRACK_DESCRIPTION,
     TRACK_ID_OFFSET,
@@ -80,7 +81,7 @@ def update_remixes_table(session, track_record, track_metadata):
 def update_track_price_history(
     session: Session,
     track_record: Track,
-    track_metadata,
+    track_metadata: dict,
     blocknumber: int,
     timestamp: datetime,
 ):
@@ -88,8 +89,8 @@ def update_track_price_history(
     new_record = None
     if track_metadata.get("premium_conditions", None) is not None:
         premium_conditions = track_metadata["premium_conditions"]
-        if "usdc_purchase" in premium_conditions:
-            usdc_purchase = premium_conditions["usdc_purchase"]
+        if USDC_PURCHASE_KEY in premium_conditions:
+            usdc_purchase = premium_conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp

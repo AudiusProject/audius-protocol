@@ -4,9 +4,6 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -18,6 +15,8 @@ from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -686,10 +685,14 @@ def test_index_invalid_playlists(app, mocker):
             "playlist_contents": {"track_ids": [{"track": 1, "time": 1}]}
         },
         "UpdatePlaylistInvalidAlbum": {"is_album": True},
+        "CreatePlaylistInvalidTracks": {
+            "playlist_contents": {"track_ids": [{"track": 1}]}
+        },
     }
     private_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidPrivate"])
     album_metadata = json.dumps(test_metadata["UpdatePlaylistInvalidAlbum"])
     album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
+    playlist_metadata = json.dumps(test_metadata["CreatePlaylistInvalidTracks"])
 
     tx_receipts = {
         # invalid create
@@ -758,6 +761,20 @@ def test_index_invalid_playlists(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreatePlaylistInvalidTracks": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "CreatePlaylistInvalidTracks", "data": {playlist_metadata}}}',
                         "_signer": "user1wallet",
                     }
                 )

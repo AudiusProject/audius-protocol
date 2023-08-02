@@ -1,21 +1,26 @@
 export const getBulkTracks = `
-const tracks = await audiusSdk.tracks.getBulkTracks();
+const tracksResponse = await audiusSdk.tracks.getBulkTracks({ id: ['D7KyD', 'PjdWN', 'Jwo2A'] });
+const tracks = tracksResponse.data;
 `;
 
 export const getTrack = `
-const track = await audiusSdk.tracks.getTrack({
+const trackResponse = await audiusSdk.tracks.getTrack({
     trackId: "D7KyD",
 });
+
+const track = trackResponse.data;
 `;
 
 export const getTrendingTracks = `
-const tracks = await audiusSdk.tracks.getTrendingTracks();
+const tracksResponse = await audiusSdk.tracks.getTrendingTracks();
+const tracks = tracksResponse.data;
 `;
 
 export const searchTracks = `
-const searchResult = await audiusSdk.tracks.searchTracks({
+const searchResponse = await audiusSdk.tracks.searchTracks({
     query: "skrillex",
 });
+const searchResults = searchResponse.data;
 `;
 
 export const streamTrack = `

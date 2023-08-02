@@ -30,11 +30,19 @@ export const webServer = async (app: App<SharedData>) => {
         },
       },
     },
-    async ({ body }, _rep) => await relayHandler(app, body)
+    async (req, rep) =>
+      await relayHandler(
+        app,
+        { reqIp: req.socket.remoteAddress! },
+        req.body,
+        rep
+      )
   );
 
   try {
-    const { config: { serverHost, serverPort } } = app.viewAppData()
+    const {
+      config: { serverHost, serverPort },
+    } = app.viewAppData();
     await fastify.listen({ port: serverPort, host: serverHost });
   } catch (err) {
     fastify.log.error("fastify server crashed", err);

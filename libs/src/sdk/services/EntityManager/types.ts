@@ -71,7 +71,7 @@ export enum EntityType {
   GRANT = 'Grant'
 }
 
-export type WriteOptions = {
+export type AdvancedOptions = {
   /**
    * Timeout confirmation of the write
    */
@@ -107,7 +107,7 @@ export type ManageEntityOptions = {
    * An instance of AuthService
    */
   auth: AuthService
-} & WriteOptions
+} & AdvancedOptions
 
 export enum BlockConfirmation {
   CONFIRMED = 'CONFIRMED',

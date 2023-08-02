@@ -35,9 +35,9 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
     /** @hidden
      * Gets developer app matching given address (API key)
      */
-    async getDeveloperAppRaw(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperAppResponse>> {
-        if (requestParameters.address === null || requestParameters.address === undefined) {
-            throw new runtime.RequiredError('address','Required parameter requestParameters.address was null or undefined when calling getDeveloperApp.');
+    async getDeveloperAppRaw(params: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperAppResponse>> {
+        if (params.address === null || params.address === undefined) {
+            throw new runtime.RequiredError('address','Required parameter params.address was null or undefined when calling getDeveloperApp.');
         }
 
         const queryParameters: any = {};
@@ -45,7 +45,7 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/developer_apps/{address}`.replace(`{${"address"}}`, encodeURIComponent(String(requestParameters.address))),
+            path: `/developer_apps/{address}`.replace(`{${"address"}}`, encodeURIComponent(String(params.address))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -57,8 +57,8 @@ export class DeveloperAppsApi extends runtime.BaseAPI {
     /**
      * Gets developer app matching given address (API key)
      */
-    async getDeveloperApp(requestParameters: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeveloperAppResponse> {
-        const response = await this.getDeveloperAppRaw(requestParameters, initOverrides);
+    async getDeveloperApp(params: GetDeveloperAppRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeveloperAppResponse> {
+        const response = await this.getDeveloperAppRaw(params, initOverrides);
         return await response.value();
     }
 

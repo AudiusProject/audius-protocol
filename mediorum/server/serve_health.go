@@ -4,11 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mediorum/ethcontracts"
 	"mediorum/server/signature"
-	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/gowebpki/jcs"
@@ -52,11 +49,9 @@ type healthCheckResponseData struct {
 	Dir                       string                     `json:"dir"`
 	BlobStoreDSN              string                     `json:"blobStoreDSN"`
 	ListenPort                string                     `json:"listenPort"`
-	UpstreamCN                string                     `json:"upstreamCN"`
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
 	CidCursors                []cidCursor                `json:"cidCursors"`
 	PeerHealths               map[string]time.Time       `json:"peerHealths"`
-	IsV2Only                  bool                       `json:"isV2Only"`
 	StoreAll                  bool                       `json:"storeAll"`
 }
 
@@ -75,39 +70,19 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	}
 
 	var err error
-	var version string
-	var service string
-	var selectedDiscoveryProvider string
-	if ss.Config.IsV2Only {
-		version = ss.Config.VersionJson.Version
-		service = ss.Config.VersionJson.Service
-		selectedDiscoveryProvider = "<none - v2 only>"
-	} else {
-		var legacyHealth legacyHealth
-		legacyHealth, err = ss.fetchCreatorNodeHealth()
-		if err == nil {
-			version = legacyHealth.Version
-			service = legacyHealth.Service
-			selectedDiscoveryProvider = legacyHealth.SelectedDiscoveryProvider
-		} else if ss.Config.Env == "stage" || ss.Config.Env == "prod" {
-			// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
-			healthy = false
-		}
-	}
-
 	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
 		Healthy:                   healthy,
-		Version:                   version,
-		Service:                   service,
+		Version:                   ss.Config.VersionJson.Version,
+		Service:                   ss.Config.VersionJson.Service,
 		IsSeeding:                 ss.isSeeding,
 		IsSeedingLegacy:           ss.isSeedingLegacy,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
-		SelectedDiscoveryProvider: selectedDiscoveryProvider,
+		SelectedDiscoveryProvider: "<none - v2 only>",
 		SPID:                      ss.Config.SPID,
 		SPOwnerWallet:             ss.Config.SPOwnerWallet,
 		Git:                       ss.Config.GitSHA,
@@ -120,7 +95,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Dir:                       ss.Config.Dir,
 		BlobStoreDSN:              ss.Config.BlobStoreDSN,
 		ListenPort:                ss.Config.ListenPort,
-		UpstreamCN:                ss.Config.UpstreamCN,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
 		Self:                      ss.Config.Self,
@@ -129,7 +103,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		CidCursors:                ss.cachedCidCursors,
 		PeerHealths:               ss.peerHealth,
 		Signers:                   ss.Config.Signers,
-		IsV2Only:                  ss.Config.IsV2Only,
 		StoreAll:                  ss.Config.StoreAll,
 	}
 
@@ -161,37 +134,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Signature: signatureHex,
 		Timestamp: time.Now(),
 	})
-}
-
-func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
-	legacyHealth := legacyHealth{}
-	upstream, err := url.Parse(ss.Config.UpstreamCN)
-	if err != nil {
-		return legacyHealth, err
-	}
-
-	httpClient := http.Client{
-		Timeout: time.Second,
-	}
-
-	req, err := http.NewRequest("GET", upstream.JoinPath("/health_check").String(), nil)
-	if err != nil {
-		return legacyHealth, err
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return legacyHealth, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return legacyHealth, err
-	}
-
-	err = json.Unmarshal(body, &legacyHealth)
-	return legacyHealth, err
 }
 
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {

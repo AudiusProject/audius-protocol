@@ -18,7 +18,7 @@ const truffle_dev_config = artifacts.options['_values']['networks']['development
 const AudiusLibs = 'libs'
 const AudiusDiscoveryNode = 'discovery-provider'
 const AudiusIdentityService = 'identity-service'
-const AudiusCreatorNode = 'creator-node'
+const AudiusCreatorNode = 'mediorum'
 const AudiusDataContracts = 'contracts'
 
 const getDefaultAccount = async () => {

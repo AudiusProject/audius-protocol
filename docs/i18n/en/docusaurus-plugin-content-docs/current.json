@@ -70,5 +70,9 @@
   "sidebar.sidebar.category.Content Node": {
     "message": "Content Node",
     "description": "The label for category Content Node in sidebar sidebar"
+  },
+  "sidebar.sidebar.category.Subgraph": {
+    "message": "Subgraph",
+    "description": "The label for category Subgraph in sidebar sidebar"
   }
 }

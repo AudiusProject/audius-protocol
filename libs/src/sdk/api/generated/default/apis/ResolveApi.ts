@@ -29,15 +29,15 @@ export class ResolveApi extends runtime.BaseAPI {
      * This endpoint allows you to lookup and access API resources when you only know the audius.co URL. Tracks, Playlists, and Users are supported.
      * Resolves and redirects a provided Audius app URL to the API resource URL it represents
      */
-    async resolveRaw(requestParameters: ResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.url === null || requestParameters.url === undefined) {
-            throw new runtime.RequiredError('url','Required parameter requestParameters.url was null or undefined when calling resolve.');
+    async resolveRaw(params: ResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.url === null || params.url === undefined) {
+            throw new runtime.RequiredError('url','Required parameter params.url was null or undefined when calling resolve.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.url !== undefined) {
-            queryParameters['url'] = requestParameters.url;
+        if (params.url !== undefined) {
+            queryParameters['url'] = params.url;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -56,8 +56,8 @@ export class ResolveApi extends runtime.BaseAPI {
      * This endpoint allows you to lookup and access API resources when you only know the audius.co URL. Tracks, Playlists, and Users are supported.
      * Resolves and redirects a provided Audius app URL to the API resource URL it represents
      */
-    async resolve(requestParameters: ResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.resolveRaw(requestParameters, initOverrides);
+    async resolve(params: ResolveRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.resolveRaw(params, initOverrides);
     }
 
 }

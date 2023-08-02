@@ -209,6 +209,9 @@ def create_playlist(params: ManageEntityParameters):
     tracks_with_index_time = []
     last_added_to = None
     for track in tracks:
+        if "track" not in track or "time" not in track:
+            raise IndexingValidationError(f"Cannot add {track} to playlist {playlist_id}")
+
         tracks_with_index_time.append(
             {
                 "track": track["track"],
@@ -311,64 +314,26 @@ def delete_playlist(params: ManageEntityParameters):
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):
-    if playlist_record.metadata_multihash:
-        # playlist already has metadata
-        metadata_index_time_dict: Dict[int, Dict[int, int]] = defaultdict(dict)
-        playlist_tracks = playlist_record.playlist_contents["track_ids"]
-        for track in playlist_tracks:
-            track_id = track["track"]
-            if "metadata_time" in track:
-                metadata_time = track["metadata_time"]
-                metadata_index_time_dict[track_id][metadata_time] = track["time"]
+    updated_tracks = []
+    for track in playlist_metadata["playlist_contents"]["track_ids"]:
+        track_id = track["track"]
+        metadata_time = track["time"]
+        index_time = block_integer_time  # default to current block for new tracks
 
-        updated_tracks = []
-        for track in playlist_metadata["playlist_contents"]["track_ids"]:
-            track_id = track["track"]
-            metadata_time = track["time"]
-            index_time = block_integer_time  # default to current block for new tracks
+        previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
+        for previous_track in previous_playlist_tracks:
+            previous_track_id = previous_track["track"]
+            previous_track_time = previous_track.get("metadata_time") or previous_track["time"]
+            if previous_track_id == track_id and previous_track_time == metadata_time:
+                index_time = previous_track_time
 
-            if (
-                track_id in metadata_index_time_dict
-                and metadata_time in metadata_index_time_dict[track_id]
-            ):
-                # track exists in prev record (reorder / delete)
-                index_time = metadata_index_time_dict[track_id][metadata_time]
-
-            updated_tracks.append(
-                {
-                    "track": track_id,
-                    "time": index_time,
-                    "metadata_time": metadata_time,
-                }
-            )
-    else:
-        # upgrade legacy playlist to include metadata
-        # assume metadata and indexing timestamp is the same
-        track_id_index_times: Set = set()
-        playlist_tracks = playlist_record.playlist_contents["track_ids"]
-        for track in playlist_tracks:
-            track_id = track["track"]
-            index_time = track["time"]
-            track_id_index_times.add((track_id, index_time))
-
-        updated_tracks = []
-        for track in playlist_metadata["playlist_contents"]["track_ids"]:
-            track_id = track["track"]
-            metadata_time = track["time"]
-
-            # use track["time"] if present in previous record else this is a new track
-            index_time = (
-                track["time"]
-                if (track_id, metadata_time) in track_id_index_times
-                else block_integer_time
-            )
-            updated_tracks.append(
-                {
-                    "track": track_id,
-                    "time": index_time,
-                    "metadata_time": metadata_time,
-                }
-            )
+        updated_tracks.append(
+            {
+                "track": track_id,
+                "time": index_time,
+                "metadata_time": metadata_time,
+            }
+        )
 
     return {"track_ids": updated_tracks}
 

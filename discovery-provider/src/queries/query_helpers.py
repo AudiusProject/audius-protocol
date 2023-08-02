@@ -118,11 +118,16 @@ class SortMethod(str, enum.Enum):
     release_date = "release_date"
     last_listen_date = "last_listen_date"
     added_date = "added_date"
-    length = "length"
     plays = "plays"
     reposts = "reposts"
     saves = "saves"
     most_listens_by_user = "most_listens_by_user"
+
+
+class CollectionLibrarySortMethod(str, enum.Enum):
+    added_date = "added_date"
+    reposts = "reposts"
+    saves = "saves"
 
 
 class TransactionSortMethod(str, enum.Enum):

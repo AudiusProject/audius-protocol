@@ -79,6 +79,7 @@ type InAppAudioPurchaseMetadata = {
 type CreateStripeSessionRequest = {
   destinationWallet: string
   amount: string
+  destinationCurrency: 'sol' | 'usdc'
 }
 
 type CreateStripeSessionResponse = {

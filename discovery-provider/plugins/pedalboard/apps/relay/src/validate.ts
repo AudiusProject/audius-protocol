@@ -22,7 +22,7 @@ export const validateSupportedContract = (
 ) => {
   // requestor did not provide a specified contract, expect EntityManager
   // if not outfitted for EM, the 'validateTransactionData' will fail to decode
-  if (requestedContract === undefined) return
+  if (requestedContract === undefined) return;
   if (!supportedContracts.includes(requestedContract))
     throw new Error(
       `requested contract ${requestedContract} not supported by ${supportedContracts}`

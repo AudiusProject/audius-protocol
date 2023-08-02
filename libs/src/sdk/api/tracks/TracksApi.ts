@@ -29,10 +29,10 @@ import type { EntityManagerService, AuthService } from '../../services'
 import {
   Action,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseParams } from '../../utils/parseParams'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import type { LoggerService } from '../../services/Logger'
@@ -58,22 +58,17 @@ export class TracksApi extends GeneratedTracksApi {
    * Get the url of the track's streamable mp3 file
    */
   // @ts-expect-error
-  override async streamTrack(
-    requestParameters: StreamTrackRequest
-  ): Promise<string> {
-    if (
-      requestParameters.trackId === null ||
-      requestParameters.trackId === undefined
-    ) {
+  override async streamTrack(params: StreamTrackRequest): Promise<string> {
+    if (params.trackId === null || params.trackId === undefined) {
       throw new RequiredError(
         'trackId',
-        'Required parameter requestParameters.trackId was null or undefined when calling getTrack.'
+        'Required parameter params.trackId was null or undefined when calling getTrack.'
       )
     }
 
     const path = `/tracks/{track_id}/stream`.replace(
       `{${'track_id'}}`,
-      encodeURIComponent(String(requestParameters.trackId))
+      encodeURIComponent(String(params.trackId))
     )
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
@@ -83,8 +78,8 @@ export class TracksApi extends GeneratedTracksApi {
    * Upload a track
    */
   async uploadTrack(
-    requestParameters: UploadTrackRequest,
-    writeOptions?: WriteOptions
+    params: UploadTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const {
@@ -93,10 +88,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseRequestParameters(
-      'uploadTrack',
-      createUploadTrackSchema()
-    )(requestParameters)
+    } = await parseParams('uploadTrack', createUploadTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -157,7 +149,7 @@ export class TracksApi extends GeneratedTracksApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
     return {
       ...response,
@@ -169,8 +161,8 @@ export class TracksApi extends GeneratedTracksApi {
    * Update a track
    */
   async updateTrack(
-    requestParameters: UpdateTrackRequest,
-    writeOptions?: WriteOptions
+    params: UpdateTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const {
@@ -180,10 +172,7 @@ export class TracksApi extends GeneratedTracksApi {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = await parseRequestParameters(
-      'updateTrack',
-      createUpdateTrackSchema()
-    )(requestParameters)
+    } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -253,7 +242,7 @@ export class TracksApi extends GeneratedTracksApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -261,14 +250,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Delete a track
    */
   async deleteTrack(
-    requestParameters: DeleteTrackRequest,
-    writeOptions?: WriteOptions
+    params: DeleteTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseParams(
       'deleteTrack',
       DeleteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -276,7 +265,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.DELETE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -284,14 +273,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Favorite a track
    */
   async favoriteTrack(
-    requestParameters: FavoriteTrackRequest,
-    writeOptions?: WriteOptions
+    params: FavoriteTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseRequestParameters(
+    const { userId, trackId, metadata } = await parseParams(
       'favoriteTrack',
       FavoriteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -300,7 +289,7 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -308,14 +297,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Unfavorite a track
    */
   async unfavoriteTrack(
-    requestParameters: UnfavoriteTrackRequest,
-    writeOptions?: WriteOptions
+    params: UnfavoriteTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseParams(
       'unfavoriteTrack',
       UnfavoriteTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -323,7 +312,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.UNSAVE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -331,14 +320,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Repost a track
    */
   async repostTrack(
-    requestParameters: RepostTrackRequest,
-    writeOptions?: WriteOptions
+    params: RepostTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId, metadata } = await parseRequestParameters(
+    const { userId, trackId, metadata } = await parseParams(
       'respostTrack',
       RepostTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -347,7 +336,7 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -355,14 +344,14 @@ export class TracksApi extends GeneratedTracksApi {
    * Unrepost a track
    */
   async unrepostTrack(
-    requestParameters: UnrepostTrackRequest,
-    writeOptions?: WriteOptions
+    params: UnrepostTrackRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, trackId } = await parseRequestParameters(
+    const { userId, trackId } = await parseParams(
       'unrepostTrack',
       UnrepostTrackSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -370,7 +359,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.UNREPOST,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 }

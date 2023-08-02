@@ -4,10 +4,10 @@ import {
   Action,
   EntityManagerService,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
   Configuration,
@@ -43,15 +43,12 @@ export class UsersApi extends GeneratedUsersApi {
    * Update a user profile
    */
   async updateProfile(
-    requestParameters: UpdateProfileRequest,
-    writeOptions?: WriteOptions
+    params: UpdateProfileRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { onProgress, profilePictureFile, coverArtFile, userId, metadata } =
-      await parseRequestParameters(
-        'updateProfile',
-        UpdateProfileSchema
-      )(requestParameters)
+      await parseParams('updateProfile', UpdateProfileSchema)(params)
 
     const [profilePictureResp, coverArtResp] = await Promise.all([
       profilePictureFile &&
@@ -99,7 +96,7 @@ export class UsersApi extends GeneratedUsersApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -107,14 +104,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Follow a user
    */
   async followUser(
-    requestParameters: FollowUserRequest,
-    writeOptions?: WriteOptions
+    params: FollowUserRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseRequestParameters(
+    const { userId, followeeUserId } = await parseParams(
       'followUser',
       FollowUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -122,7 +119,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: followeeUserId,
       action: Action.FOLLOW,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -130,14 +127,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Unfollow a user
    */
   async unfollowUser(
-    requestParameters: UnfollowUserRequest,
-    writeOptions?: WriteOptions
+    params: UnfollowUserRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, followeeUserId } = await parseRequestParameters(
+    const { userId, followeeUserId } = await parseParams(
       'unfollowUser',
       UnfollowUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -145,7 +142,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: followeeUserId,
       action: Action.UNFOLLOW,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -153,14 +150,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Subscribe to a user
    */
   async subscribeToUser(
-    requestParameters: SubscribeToUserRequest,
-    writeOptions?: WriteOptions
+    params: SubscribeToUserRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseParams(
       'subscribeToUser',
       SubscribeToUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -168,7 +165,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: subscribeeUserId,
       action: Action.SUBSCRIBE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -176,14 +173,14 @@ export class UsersApi extends GeneratedUsersApi {
    * Unsubscribe from a user
    */
   async unsubscribeFromUser(
-    requestParameters: UnsubscribeFromUserRequest,
-    writeOptions?: WriteOptions
+    params: UnsubscribeFromUserRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, subscribeeUserId } = await parseRequestParameters(
+    const { userId, subscribeeUserId } = await parseParams(
       'unsubscribeFromUser',
       UnsubscribeFromUserSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -191,7 +188,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: subscribeeUserId,
       action: Action.UNSUBSCRIBE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 }
