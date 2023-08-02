@@ -8,11 +8,15 @@ import {
   tracksSocialActions,
   usersSocialActions,
   shareModalUISelectors,
-  shareSoundToTiktokModalActions
+  shareSoundToTiktokModalActions,
+  createChatModalActions,
+  modalsActions,
+  PlayableType
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useModalState } from 'pages/modals/useModalState'
@@ -31,6 +35,8 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareAudioNftPlaylist, shareCollection } = collectionsSocialActions
 const getAccountUser = accountSelectors.getAccountUser
+const { setVisibility } = modalsActions
+const { setState: setCreateChatModalState } = createChatModalActions
 
 export const ShareModal = () => {
   const { isOpen, onClose, onClosed } = useModalState('Share')
@@ -47,6 +53,19 @@ export const ShareModal = () => {
 
   const isOwner =
     content?.type === 'track' && account?.user_id === content.artist.user_id
+
+  const handleShareToDirectMessage = useCallback(async () => {
+    if (!content) return
+    dispatch(setVisibility({ modal: 'CreateChat', visible: true }))
+    dispatch(
+      setCreateChatModalState({
+        // Just care about the link
+        presetMessage: (await getTwitterShareText(content, false)).link,
+        onCancelAction: setVisibility({ modal: 'Share', visible: true })
+      })
+    )
+    onClose()
+  }, [dispatch, onClose, content])
 
   const handleShareToTwitter = useCallback(async () => {
     if (!source || !content) return
@@ -94,12 +113,38 @@ export const ShareModal = () => {
     onClose()
   }, [dispatch, toast, content, source, onClose])
 
+  const handleEmbed = useCallback(() => {
+    if (content?.type === 'track') {
+      dispatch(
+        embedModalActions.open(content.track.track_id, PlayableType.TRACK)
+      )
+      onClose()
+    } else if (content?.type === 'playlist') {
+      dispatch(
+        embedModalActions.open(
+          content.playlist.playlist_id,
+          PlayableType.PLAYLIST
+        )
+      )
+      onClose()
+    } else if (content?.type === 'album') {
+      dispatch(
+        embedModalActions.open(content.album.playlist_id, PlayableType.ALBUM)
+      )
+      onClose()
+    }
+  }, [content, dispatch, onClose])
+
   const shareProps = {
     isOpen,
     isOwner,
+    onShareToDirectMessage: handleShareToDirectMessage,
     onShareToTwitter: handleShareToTwitter,
     onShareToTikTok: handleShareToTikTok,
     onCopyLink: handleCopyLink,
+    onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
+      ? handleEmbed
+      : undefined,
     onClose,
     onClosed,
     showTikTokShareAction: Boolean(

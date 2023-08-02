@@ -10,9 +10,11 @@ const shareTypeMap: Record<ShareType, string> = {
 
 export const messages = {
   modalTitle: (asset: ShareType) => `Share ${shareTypeMap[asset]}`,
-  twitter: 'Share to Twitter',
-  tikTok: 'Share Sound to TikTok',
-  copyLink: (asset: ShareType) => `Copy Link to ${shareTypeMap[asset]}`,
+  directMessage: 'Direct Message',
+  twitter: 'Twitter',
+  tikTok: 'TikTok',
+  copyLink: 'Copy Link',
+  embed: 'Embed',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,
   trackShareText: (title: string, handle: string) =>
     `Check out ${title} by ${handle} on @AudiusProject #Audius`,

@@ -7,7 +7,9 @@ import {
   FOLLOWERS_USER_LIST_TAG,
   followersUserListActions,
   followersUserListSelectors,
-  User
+  User,
+  createChatModalSelectors,
+  createChatModalActions
 } from '@audius/common'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -26,6 +28,8 @@ const messages = {
 
 const { getAccountUser } = accountSelectors
 const { fetchBlockers } = chatActions
+const { getOnCancelAction } = createChatModalSelectors
+const { setState } = createChatModalActions
 
 const CREATE_CHAT_MODAL = 'CreateChat'
 
@@ -33,6 +37,7 @@ export const CreateChatModal = () => {
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
   const [isVisible, setIsVisible] = useModalState(CREATE_CHAT_MODAL)
+  const onCancelAction = useSelector(getOnCancelAction)
   const [user, setUser] = useState<User>()
   const [showInboxUnavailableModal, setShowInboxUnavailableModal] =
     useState(false)
@@ -40,6 +45,13 @@ export const CreateChatModal = () => {
   const { userIds, loading, hasMore } = useSelector(
     followersUserListSelectors.getUserList
   )
+
+  const handleCancel = useCallback(() => {
+    if (onCancelAction) {
+      dispatch(onCancelAction)
+    }
+    dispatch(setState({}))
+  }, [onCancelAction, dispatch])
 
   const loadMore = useCallback(() => {
     if (currentUser) {
@@ -95,6 +107,7 @@ export const CreateChatModal = () => {
           />
         )}
         renderEmpty={() => <CreateChatEmptyResults />}
+        onCancel={handleCancel}
       />
       {user ? (
         <InboxUnavailableModal

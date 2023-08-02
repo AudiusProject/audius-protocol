@@ -75,6 +75,8 @@ import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
 import {
+  createChatModalReducer,
+  CreateChatModalState,
   searchUsersModalReducer,
   SearchUsersModalState,
   ToastState,
@@ -181,6 +183,7 @@ export const reducers = () => ({
 
     relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
+    createChatModal: createChatModalReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -301,6 +304,7 @@ export type CommonState = {
     buyAudio: ReturnType<typeof buyAudioReducer>
     addToPlaylist: AddToPlaylistState
     changePassword: ChangePasswordState
+    createChatModal: CreateChatModalState
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState

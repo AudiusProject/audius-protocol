@@ -33,6 +33,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: var(--unit-6);
   text-align: center;
   height: 100%;
   justify-content: space-around;
@@ -40,7 +41,6 @@
 }
 
 .description {
-  margin-bottom: var(--unit-6);
   font-weight: var(--font-medium);
   font-size: var(--font-l);
   line-height: 1.5;
@@ -48,10 +48,9 @@
 
 .actionList {
   width: 100%;
-}
-
-.actionListItem {
-  margin: var(--unit-3) 0px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-3);
 }
 
 .actionItemIcon {
@@ -67,47 +66,6 @@
 .actionButton .actionButtonLabel {
   font-size: var(--font-l);
   font-weight: var(--font-bold);
-}
-
-.actionButton .twitterIcon path {
-  fill: var(--static-twitter-blue);
-}
-
-.actionButton .twitterActionLabel {
-  color: var(--static-twitter-blue);
-}
-
-/* Reconstructing TikTok icon styles due to stems button specificity */
-.actionButton .tikTokIcon path:nth-of-type(1) {
-  fill: #ee1d52;
-}
-
-.actionButton .tikTokIcon path:nth-of-type(2) {
-  fill: #000;
-}
-
-.actionButton .tikTokIcon path:nth-of-type(3) {
-  fill: #69c9d0;
-}
-
-.actionButton .tikTokIcon path:nth-of-type(4) {
-  fill: #69c9d0;
-}
-
-.actionButton .tikTokIcon path:nth-of-type(5) {
-  fill: #69c9d0;
-}
-
-.actionButton .tikTokIconDark path {
-  fill: var(--static-white);
-}
-
-.actionButton .tikTokActionLabel {
-  color: black;
-}
-
-.actionButton .tikTokActionLabelDark {
-  color: var(--static-white);
 }
 
 .actionButton .shareIcon path {

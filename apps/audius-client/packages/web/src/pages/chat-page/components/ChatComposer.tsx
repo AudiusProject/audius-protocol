@@ -8,16 +8,18 @@ import {
   useEffect
 } from 'react'
 
-import { chatActions } from '@audius/common'
+import { chatActions, createChatModalSelectors } from '@audius/common'
 import { IconButton, IconSend } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
+import { useSelector } from 'utils/reducer'
 
 import styles from './ChatComposer.module.css'
 
 const { sendMessage } = chatActions
+const { getPresetMessage } = createChatModalSelectors
 
 const messages = {
   sendMessage: 'Send Message',
@@ -50,8 +52,10 @@ export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
 export const ChatComposer = (props: ChatComposerProps) => {
   const { chatId, onMessageSent } = props
   const dispatch = useDispatch()
-  const [value, setValue] = useState('')
+  const presetMessage = useSelector(getPresetMessage)
+  const [value, setValue] = useState(presetMessage)
   const ref = useRef<HTMLTextAreaElement>(null)
+  const chatIdRef = useRef(chatId)
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -88,9 +92,12 @@ export const ChatComposer = (props: ChatComposerProps) => {
   useEffect(() => {
     if (chatId) {
       ref.current?.focus()
-      setValue('')
     }
-  }, [ref, chatId])
+    if (chatId !== chatIdRef.current) {
+      setValue('')
+      chatIdRef.current = chatId
+    }
+  }, [ref, chatId, chatIdRef])
 
   return (
     <div className={cn(styles.root, props.className)}>
