@@ -7,8 +7,8 @@ sidebar_position: 2
 
 Build DApps Like Apps
 
-[Github](https://github.com/AudiusProject/hedgehog) 👈  
-  
+[Github](https://github.com/AudiusProject/hedgehog) 👈
+
 Hedgehog is an open-source, client-side Ethereum wallet that uses a username and password. It aims to lower the barrier of entry to crypto projects for non tech-savvy users.
 
 Allow users to interact with your DApp just like they would any other website, no extensions required, without centralizing control of keys.
@@ -51,17 +51,17 @@ Hedgehog isn’t right for every DApp. Massive improvements in user experience a
 
 _\[Good use cases\]_
 
-* **Signing data**: If you’re building decentralized applications that rely on user signed data \(eg. via EIP-712-esque signing schemes\), Hedgehog could help simplify the experience if the stakes are low enough.
-* **Gaming DApp**: Nothing ruins fun as much as signing transactions. If you’re building a gaming DApp that doesn’t use significant financial assets, improving UX is key.
-* **Decentralized Music Player**: If you’re building consumer-facing DApps, Hedgehog will dramatically improve user experience and significantly increase your potential userbase.
+- **Signing data**: If you’re building decentralized applications that rely on user signed data \(eg. via EIP-712-esque signing schemes\), Hedgehog could help simplify the experience if the stakes are low enough.
+- **Gaming DApp**: Nothing ruins fun as much as signing transactions. If you’re building a gaming DApp that doesn’t use significant financial assets, improving UX is key.
+- **Decentralized Music Player**: If you’re building consumer-facing DApps, Hedgehog will dramatically improve user experience and significantly increase your potential userbase.
 
 _\[Bad use cases\]_
 
 If your DApp involves moving around significant sums of money, then the tradeoff in security is most likely not worth it. Hedgehog’s primary improvement to end-user experience is by hiding the wallet and not forcing users to confirm transactions - The opposite of what you’d want when moving money around. We absolutely don’t recommend using Hedgehog in situations like these:
 
-* **Banking DApp**
-* **Decentralized Lending**
-* **Prediction Markets**
+- **Banking DApp**
+- **Decentralized Lending**
+- **Prediction Markets**
 
 ### A Closer Look
 
@@ -71,18 +71,17 @@ Hedgehog is a package that lives in your front end application to create and man
 
 ```javascript
 // Provide getFn, setAuthFn, setUserFn as requests to your database/backend service (more details in docs).
-const hedgehog = new Hedgehog(getFn, setAuthFn, setUserFn)
-let wallet
+const hedgehog = new Hedgehog(getFn, setAuthFn, setUserFn);
+let wallet;
 if (hedgehog.isLoggedIn()) {
-  wallet = hedgehog.getWallet()
+  wallet = hedgehog.getWallet();
 } else {
-  wallet = await hedgehog.login('username', 'password')
+  wallet = await hedgehog.login("username", "password");
   // or
-  wallet = await hedgehog.signUp('username', 'password')
+  wallet = await hedgehog.signUp("username", "password");
 }
 ```
 
-After creating or retrieving a user's wallet, you can either **fund their wallet directly** to pay transaction fees or **relay their transactions through a EIP-712 relayer**.  
-
+After creating or retrieving a user's wallet, you can either **fund their wallet directly** to pay transaction fees or **relay their transactions through a EIP-712 relayer**.
 
 ### 👉 [Take a deeper dive into the docs](https://audiusproject.github.io/hedgehog-docs/#installation) 👈

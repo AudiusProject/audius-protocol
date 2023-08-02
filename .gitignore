@@ -170,8 +170,6 @@ docs/build
 # Generated files
 docs/.docusaurus
 docs/.cache-loader
-docs/docs/developers/sdk
-docs/i18n/en/docusaurus-plugin-content-docs/current/developers/sdk
 
 # Misc
 docs/.env.local
