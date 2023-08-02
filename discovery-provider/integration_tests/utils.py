@@ -94,6 +94,7 @@ def populate_mock_db_blocks(db, min, max, is_current=0):
 
 
 def populate_mock_db(db, entities, block_offset=None):
+    print(f"asdf populate")
     """
     Helper function to populate the mock DB with tracks, users, plays, developer apps, grants, and follows
 
@@ -161,7 +162,9 @@ def populate_mock_db(db, entities, block_offset=None):
             len(subscriptions),
             len(playlist_seens),
         )
+        print(f"asdf num_blocks {num_blocks}")
         for i in range(block_offset, block_offset + num_blocks):
+            print(f"asdf i {i}")
             max_block = session.query(Block).filter(Block.number == i).first()
             session.query(Block).filter(Block.is_current == True).update(
                 {"is_current": False}
@@ -173,6 +176,7 @@ def populate_mock_db(db, entities, block_offset=None):
                     parenthash="0x01",
                     is_current=(i == block_offset + num_blocks - 1),
                 )
+                print(f"asdf block {block}")
                 session.add(block)
                 session.flush()
 

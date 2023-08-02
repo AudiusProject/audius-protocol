@@ -156,6 +156,7 @@ def test_index_revert_blocks(app, mocker):
         assert len(revert_blocks) == 1
         assert revert_blocks[0].blocknumber == 0
         assert len(revert_blocks[0].prev_records) == 1
+        print(f"revert_blocks {revert_blocks}")
         assert len(revert_blocks[0].prev_records[EntityType.USER]) == 1
 
         user_2_json = revert_blocks[0].prev_records[EntityType.USER][0]        

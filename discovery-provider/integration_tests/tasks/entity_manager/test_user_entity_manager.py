@@ -4,7 +4,7 @@ from typing import List
 from unittest import mock
 
 from integration_tests.challenges.index_helpers import UpdateTask
-from integration_tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
@@ -972,7 +972,7 @@ def test_invalid_user_bio(app, mocker):
             side_effect=get_events_side_effect,
             autospec=True,
         )
-
+        populate_mock_db_blocks(db, 0, 1)
         with db.scoped_session() as session:
             total_changes, _ = entity_manager_update(
                 update_task,
