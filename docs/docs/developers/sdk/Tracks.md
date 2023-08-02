@@ -197,12 +197,38 @@ console.log(tracks);
 
 #### Params
 
-Optionally create an object with the following fields and pass it as the first argument, as shown in the example above.
+Optionally create an object with the following fields and pass it as the first argument.
 
-| Name    | Type                                                             | Description                                                                                               | Required?  |
-| :------ | :--------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- | :--------- |
-| `genre` | `Genre` (can be imported from `@audius/sdk`)                     | If provided, the top 100 trending tracks of the genre will be returned                                    | _Optional_ |
-| `time`  | `GetTrendingTracksTimeEnum` (can be imported from `@audius/sdk`) | A time range for which to return the trending track. Default value is `GetTrendingTracksTimeEnum.AllTime` | _Optional_ |
+| Name    | Type                                                             | Description                                                                                                  | Required?  |
+| :------ | :--------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- | :--------- |
+| `genre` | `Genre` (can be imported from `@audius/sdk`)                     | If provided, the top 100 trending tracks of the genre will be returned                                       | _Optional_ |
+| `time`  | `GetTrendingTracksTimeEnum` (can be imported from `@audius/sdk`) | A time range for which to return the trending tracks. Default value is **GetTrendingTracksTimeEnum.AllTime** | _Optional_ |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](#getbulktracks)
+
+### getUndergroundTrendingTracks
+
+#### getUndergroundTrendingTracks(`params`)
+
+Get the top 100 trending underground tracks on Audius.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.tracks.getUndergroundTrendingTracks();
+console.log(tracks);
+```
+
+#### Params
+
+Optionally create an object with the following fields and pass it as the first argument.
+
+| Name     | Type     | Description                                                                  | Required?  |
+| :------- | :------- | :--------------------------------------------------------------------------- | :--------- |
+| `limit`  | `number` | If provided, will return only the given number of tracks. Default is **100** | _Optional_ |
+| `offset` | `number` | An offset to apply to the list of results. Default value is **0**            | _Optional_ |
 
 #### Returns
 
