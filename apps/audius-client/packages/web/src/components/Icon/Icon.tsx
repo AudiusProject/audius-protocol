@@ -1,6 +1,6 @@
-import React from 'react'
+import { SVGProps } from 'react'
 
-import { ColorValue, toCSSVariableName } from '@audius/stems'
+import { ColorValue, IconComponent, toCSSVariableName } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './Icon.module.css'
@@ -15,9 +15,9 @@ type IconSize =
 
 type IconProps = {
   color?: ColorValue
-  icon: React.FC<React.SVGProps<SVGSVGElement>>
+  icon: IconComponent
   size?: IconSize
-} & React.SVGProps<SVGSVGElement>
+} & SVGProps<SVGSVGElement>
 
 /** Renders a stems Icon component
  * Ex: `<Icon icon={IconKebabHorizontal} color='accentGreen' />`
@@ -29,23 +29,26 @@ type IconProps = {
  * - xLarge: 30
  * - xxLarge: 32
  */
-export const Icon = ({
-  color,
-  icon: IconComponent,
-  size = 'small',
-  style,
-  ...iconProps
-}: IconProps) => {
-  const finalStyle = color
+export const Icon = (props: IconProps) => {
+  const {
+    color,
+    icon: IconComponent,
+    size = 'small',
+    style: styleProp,
+    ...iconProps
+  } = props
+
+  const style = color
     ? {
-        ...style,
+        ...styleProp,
         '--icon-color': toCSSVariableName(color)
       }
-    : style
+    : styleProp
+
   return (
     <IconComponent
       className={cn(styles.icon, styles[size])}
-      style={finalStyle}
+      style={style}
       {...iconProps}
     />
   )

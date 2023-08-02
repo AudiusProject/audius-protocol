@@ -2,18 +2,18 @@ import { useCallback } from 'react'
 
 import { Image, View } from 'react-native'
 
-import type { ContextualSubmenuProps } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
 import { Pill, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
-import { ContextualSubmenuField } from './ContextualSubmenuField'
+import { ContextualMenuField } from './ContextualMenuField'
 
 const messages = {
   mood: 'Mood'
 }
 
-type SelectMoodFieldProps = Partial<ContextualSubmenuProps>
+type SelectMoodFieldProps = Partial<ContextualMenuProps>
 
 const useStyles = makeStyles(({ spacing }) => ({
   value: {
@@ -50,9 +50,9 @@ export const SelectMoodField = (props: SelectMoodFieldProps) => {
   )
 
   return (
-    <ContextualSubmenuField
+    <ContextualMenuField
       name='mood'
-      submenuScreenName='SelectMood'
+      menuScreenName='SelectMood'
       label={messages.mood}
       renderValue={renderValue}
       {...props}

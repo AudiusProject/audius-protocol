@@ -1,3 +1,5 @@
-import React from 'react'
+import { ComponentType, SVGProps } from 'react'
 
-export type IconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>
+export type IconComponent = ComponentType<SVGProps<SVGSVGElement>> & {
+  title?: string
+}

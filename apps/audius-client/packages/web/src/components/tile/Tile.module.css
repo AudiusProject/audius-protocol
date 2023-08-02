@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  border: var(--border-width) solid var(--neutral-light-8);
+  border: var(--border-width) solid var(--border-default);
   border-radius: var(--unit-2);
   background-color: var(--white);
   transition: all var(--expressive);
@@ -13,6 +13,17 @@
   position: absolute;
   top: calc(-1 * var(--border-width));
   left: calc(-1 * var(--border-width));
+}
+
+.flat:hover {
+  border: 1px solid var(--border-strong);
+  background: var(--neutral-light-9);
+}
+
+.flat:active {
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--neutral-light-8);
 }
 
 .near {

@@ -9,8 +9,8 @@ import {
 } from '@audius/common'
 import { useField } from 'formik'
 
-import type { ContextualSubmenuProps } from 'app/components/core'
-import { ContextualSubmenu } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
+import { ContextualMenu } from 'app/components/core'
 
 const messages = {
   availability: 'Availability',
@@ -37,7 +37,7 @@ const fieldVisibilityLabelMap = {
 
 const fieldVisibilityKeys = Object.keys(fieldVisibilityLabelMap)
 
-type TrackVisibilityFieldProps = Partial<ContextualSubmenuProps>
+type TrackVisibilityFieldProps = Partial<ContextualMenuProps>
 
 export const TrackVisibilityField = (props: TrackVisibilityFieldProps) => {
   const [{ value: premiumConditions }] =
@@ -67,9 +67,9 @@ export const TrackVisibilityField = (props: TrackVisibilityFieldProps) => {
   }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
 
   return (
-    <ContextualSubmenu
+    <ContextualMenu
       label={messages.availability}
-      submenuScreenName={messages.availability}
+      menuScreenName={messages.availability}
       value={trackAvailabilityLabels}
       {...props}
     />

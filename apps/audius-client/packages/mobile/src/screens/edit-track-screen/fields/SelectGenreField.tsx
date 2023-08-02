@@ -1,19 +1,19 @@
-import type { ContextualSubmenuProps } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
 
-import { ContextualSubmenuField } from './ContextualSubmenuField'
+import { ContextualMenuField } from './ContextualMenuField'
 
 const messages = {
   genre: 'Genre',
   error: 'Selection Required'
 }
 
-type SelectGenreFieldProps = Partial<ContextualSubmenuProps>
+type SelectGenreFieldProps = Partial<ContextualMenuProps>
 
 export const SelectGenreField = (props: SelectGenreFieldProps) => {
   return (
-    <ContextualSubmenuField
+    <ContextualMenuField
       name='genre'
-      submenuScreenName='SelectGenre'
+      menuScreenName='SelectGenre'
       label={messages.genre}
       required
       errorMessage={messages.error}

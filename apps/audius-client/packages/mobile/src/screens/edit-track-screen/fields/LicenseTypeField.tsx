@@ -4,8 +4,8 @@ import type { Nullable } from '@audius/common'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
-import type { ContextualSubmenuProps } from 'app/components/core'
-import { ContextualSubmenu, Pill } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
+import { ContextualMenu, Pill } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -30,7 +30,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type LicenseTypeFieldProps = Partial<ContextualSubmenuProps>
+type LicenseTypeFieldProps = Partial<ContextualMenuProps>
 
 export const LicenseTypeField = (props: LicenseTypeFieldProps) => {
   const [{ value: license }] = useField<Nullable<string>>('license')
@@ -72,10 +72,10 @@ export const LicenseTypeField = (props: LicenseTypeFieldProps) => {
   }, [allowAttribution, commercialUse, derivativeWorks, styles, neutral])
 
   return (
-    <ContextualSubmenu
+    <ContextualMenu
       value={license || messages.noLicense}
       label={messages.licenseType}
-      submenuScreenName='LicenseType'
+      menuScreenName='LicenseType'
       renderValue={
         license && license !== messages.noLicense ? renderValue : undefined
       }

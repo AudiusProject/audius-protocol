@@ -12,7 +12,7 @@ type TileOwnProps<TileComponentType extends ElementType = 'div'> = {
   size?: 'small' | 'medium' | 'large'
   as?: TileComponentType
   dogEar?: DogEarType
-  elevation?: 'near' | 'mid' | 'far'
+  elevation?: 'flat' | 'near' | 'mid' | 'far'
 }
 
 export type TileProps<TileComponentType extends ElementType> =

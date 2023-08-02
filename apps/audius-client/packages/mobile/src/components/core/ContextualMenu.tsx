@@ -14,10 +14,10 @@ import { useThemeColors } from 'app/utils/theme'
 import { InputErrorMessage } from './InputErrorMessage'
 import { Pill } from './Pill'
 
-export type ContextualSubmenuProps = {
+export type ContextualMenuProps = {
   label: string
   value: any
-  submenuScreenName: string
+  menuScreenName: string
   styles?: StylesProp<{
     root: ViewStyle
     divider: ViewStyle
@@ -57,11 +57,11 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
+export const ContextualMenu = (props: ContextualMenuProps) => {
   const {
     label,
     value,
-    submenuScreenName,
+    menuScreenName,
     styles: stylesProp,
     errorMessage,
     error,
@@ -74,8 +74,8 @@ export const ContextualSubmenu = (props: ContextualSubmenuProps) => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.push(submenuScreenName)
-  }, [navigation, submenuScreenName])
+    navigation.push(menuScreenName)
+  }, [navigation, menuScreenName])
 
   const defaultRenderValue = (value: string | string[]) => {
     const values = typeof value === 'string' ? [value] : value

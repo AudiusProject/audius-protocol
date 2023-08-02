@@ -1,19 +1,19 @@
-import type { ContextualSubmenuProps } from 'app/components/core'
-import { ContextualSubmenu } from 'app/components/core'
+import type { ContextualMenuProps } from 'app/components/core'
+import { ContextualMenu } from 'app/components/core'
 
 const messages = {
   advanced: 'Advanced Options'
 }
 
-type AdvancedOptionsFieldProps = Partial<ContextualSubmenuProps>
+type AdvancedOptionsFieldProps = Partial<ContextualMenuProps>
 
 export const AdvancedOptionsField = (props: AdvancedOptionsFieldProps) => {
   return (
-    <ContextualSubmenu
+    <ContextualMenu
       renderValue={() => null}
       label={messages.advanced}
       value={null}
-      submenuScreenName='AdvancedOptions'
+      menuScreenName='AdvancedOptions'
       {...props}
     />
   )
