@@ -157,7 +157,7 @@ func MoveAllFiles(from, to *blob.Bucket) error {
 	}
 
 	g, ctx := errgroup.WithContext(ctx)
-	g.SetLimit(15)
+	g.SetLimit(20)
 
 	for _, key := range keys {
 		k := key

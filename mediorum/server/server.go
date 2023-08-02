@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
@@ -163,6 +164,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 			return nil, err
 		}
 
+		logger.Info(fmt.Sprintf("Moving all files from %s to %s. This may take a few hours...", config.MoveFromBlobStoreDSN, config.BlobStoreDSN))
 		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
 		if err != nil {
 			log.Fatalf("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
