@@ -1,6 +1,6 @@
 ---
-sidebar_label: Advanced Setup
-sidebar_position: 4
+sidebar_label: Advanced
+sidebar_position: 5
 ---
 
 # Advanced Setup
