@@ -264,13 +264,13 @@ mobile-release-saga-dapp-store:
     - run:
         name: Commit changes
         command: |
-          cd packages/mobile/dapp-store
-          git stash
-          git checkout main
-          git pull
-          git stash pop
-          git add .
           git config --global user.email "audius-infra@audius.co"
           git config --global user.name "audius-infra"
+          git add packages/mobile/dapp-store/.asset-manifest.json packages/mobile/dapp-store/config.yaml
+          git checkout .
+          git reset
+          git checkout main
+          git pull
+          git add packages/mobile/dapp-store/.asset-manifest.json packages/mobile/dapp-store/config.yaml
           git commit -m 'Update dapp-store build artifacts'
           git push origin main
