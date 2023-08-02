@@ -19,11 +19,7 @@ app:
     - purpose: icon
       uri: ./media/app_icon.png
 release:
-<<<<<<< Updated upstream
-  address: HU8nxvJjwwS6y1TeVfkB7um14TWiftRPH8niGNYF7EQi
-=======
   address: G5dQaRdDaBhL5R8r3MDhVx1J7yDZbkWr3326vn7rePcF
->>>>>>> Stashed changes
   media:
     - purpose: icon
       uri: ./media/publisher_icon.png
