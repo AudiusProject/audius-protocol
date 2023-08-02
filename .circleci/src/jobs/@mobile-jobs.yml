@@ -323,4 +323,6 @@ mobile-deploy-saga-dapp-store:
   docker:
     - image: circleci/android:api-30-node
   steps:
-    - mobile-release-saga-dapp-store
+    - mobile-release-saga-dapp-store:
+        bundle-id: 'co.audius.app'
+        track: 'alpha'

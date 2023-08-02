@@ -192,10 +192,22 @@ mobile-release-android:
 
 # Deploy Solana saga dApp store
 mobile-release-saga-dapp-store:
+  parameters:
+    bundle-id:
+      default: 'co.audius.app'
+      type: string
+    track:
+      default: 'alpha'
+      type: string
   steps:
     - checkout
     - attach_workspace:
         at: ./
+    - run:
+        name: Add Java to PATH
+        command: |
+          echo 'export PATH=$PATH:$JAVA_HOME/bin' >> ~/.bashrc
+          source ~/.bashrc
     - run:
         name: Install nvm
         command: |
@@ -219,7 +231,13 @@ mobile-release-saga-dapp-store:
     - run:
         name: Recover key
         command: |
+          cd packages/mobile/dapp-store
           echo $SOLANA_DAPP_STORE_PRIVATE_KEY > app-keypair.json
+    - run:
+        name: Increment version code
+        command: |
+          cd packages/mobile/android
+          bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
     - run: 
         name: Build Android
         command: |
@@ -228,22 +246,31 @@ mobile-release-saga-dapp-store:
     - run:
         name: Validate release
         command: |
+          cd packages/mobile/dapp-store
           nvm use
-          npx dapp-store validate release -k app-keypair.json -b $ANDROID_HOME/build-tools/30.0.3
+          npx dapp-store validate release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0
     - run:
         name: Publish APK
         command: |
+          cd packages/mobile/dapp-store
           nvm use
-          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/30.0.3 -u https://audius-fe.rpcpool.com
+          npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0 -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l
     - run:
         name: Issue update to dapp store
         command: |
+          cd packages/mobile/dapp-store
           nvm use
-          npx dapp-store publish update -k app-keypair.json -u https://audius-fe.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
+          npx dapp-store publish update -k app-keypair.json -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l --requestor-is-authorized --complies-with-solana-dapp-store-policies
     - run:
         name: Commit changes
         command: |
-          git checkout main -f
+          cd packages/mobile/dapp-store
+          git stash
+          git checkout main
           git pull
-          git commit -am 'Update dapp-store build artifacts'
+          git stash pop
+          git add .
+          git config --global user.email "audius-infra@audius.co"
+          git config --global user.name "audius-infra"
+          git commit -m 'Update dapp-store build artifacts'
           git push origin main
