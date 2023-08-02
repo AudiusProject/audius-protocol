@@ -10,7 +10,7 @@ export const UploadPage = (props: any) => {
     FeatureFlags.UPLOAD_REDESIGN_ENABLED
   )
 
-  return !isRedesignEnabled ? (
+  return isRedesignEnabled ? (
     <UploadPageNew {...props} />
   ) : (
     <UploadPageLegacy {...props} />
