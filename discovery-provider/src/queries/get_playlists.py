@@ -10,10 +10,10 @@ from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
 from src.models.users.user import User
 from src.queries.query_helpers import (
-    get_users_by_id,
     get_users_ids,
     paginate_query,
     populate_playlist_metadata,
+    populate_user_metadata,
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -114,6 +114,23 @@ def _get_unpopulated_playlists(session, args):
     return (playlists, playlist_ids)
 
 
+def add_users_to_playlists(playlists, session, current_user_id):
+    """Add users to playlists, by populating the users that are attached to `playlists`"""
+    user_id_list = get_users_ids(playlists)
+    # Pull the users off the playlist model
+    users = list(map(lambda playlist: playlist.get("user")[0], playlists))
+    # Populate metadata
+    users = populate_user_metadata(session, user_id_list, users, current_user_id)
+
+    # Reattach
+    users_map = {user["user_id"]: user for user in users}
+    for playlist in playlists:
+        user = users_map[playlist["playlist_owner_id"]]
+        if user:
+            playlist["user"] = user
+    return playlists
+
+
 def get_playlists(args: GetPlaylistsArgs):
     playlists = []
     current_user_id = args.get("current_user_id")
@@ -135,12 +152,7 @@ def get_playlists(args: GetPlaylistsArgs):
             )
 
             if args.get("with_users", False):
-                user_id_list = get_users_ids(playlists)
-                users = get_users_by_id(session, user_id_list, current_user_id)
-                for playlist in playlists:
-                    user = users[playlist["playlist_owner_id"]]
-                    if user:
-                        playlist["user"] = user
+                playlists = add_users_to_playlists(playlists, session, current_user_id)
 
         except NoResultFound:
             pass

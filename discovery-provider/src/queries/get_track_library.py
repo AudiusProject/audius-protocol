@@ -1,10 +1,11 @@
 from typing import Optional, TypedDict
 
 from sqlalchemy import asc, desc, func, or_, text
-from sqlalchemy.orm import aliased
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.orm import aliased, contains_eager
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
-from src.models.social.repost import Repost
+from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
@@ -30,7 +31,7 @@ class GetTrackLibraryArgs(TypedDict):
     # The current user logged in (from query arg)
     current_user_id: int
 
-    # Wehther or not deleted tracks should be filtered out
+    # Whether or not deleted tracks should be filtered out
     filter_deleted: bool
 
     # The maximum number of listens to return
@@ -109,7 +110,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
             Repost.user_id == user_id,
             Repost.is_current == True,
             Repost.is_delete == False,
-            Repost.repost_type == SaveType.track,
+            Repost.repost_type == RepostType.track,
         )
     )
     purchase_base = (
@@ -136,7 +137,6 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         .order_by(TrackWithAggregates.track_id)
     ).subquery()
     TrackWithAggregatesAlias = aliased(TrackWithAggregates, subquery)
-    TracksTable = TrackWithAggregatesAlias
     all_base = session.query(
         TrackWithAggregatesAlias,
         subquery.c.item_created_at.label("item_created_at"),
@@ -164,6 +164,9 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         base_query = base_query.filter(TracksTable.is_delete == False)
 
     if query:
+        #  TODO: [PAY-1643] Implement all query for library
+        if filter_type == LibraryFilterType.all:
+            raise ValueError("Library filter type 'all' does not support query yet")
         base_query = base_query.join(TracksTable.user, aliased=True).filter(
             or_(
                 TracksTable.title.ilike(f"%{query.lower()}%"),
