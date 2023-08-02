@@ -111,7 +111,7 @@ from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
-from src.queries.query_helpers import LimitedSortMethod
+from src.queries.query_helpers import CollectionLibrarySortMethod
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
@@ -820,7 +820,7 @@ def get_user_collections(
     limit = format_limit(args)
     query = format_query(args)
     filter_type = format_library_filter(args)
-    sort_method: Optional[LimitedSortMethod] = args.get("sort_method")
+    sort_method: Optional[CollectionLibrarySortMethod] = args.get("sort_method")
     sort_direction = format_sort_direction(args)
 
     get_collection_args = GetCollectionLibraryArgs(

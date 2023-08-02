@@ -11,8 +11,8 @@ from src.models.users.user import User
 from src.queries import response_name_constants
 from src.queries.get_playlists import add_users_to_playlists
 from src.queries.query_helpers import (
+    CollectionLibrarySortMethod,
     LibraryFilterType,
-    LimitedSortMethod,
     SortDirection,
     add_query_pagination,
     populate_playlist_metadata,
@@ -44,7 +44,7 @@ class GetCollectionLibraryArgs(TypedDict):
     query: Optional[str]
 
     sort_direction: Optional[SortDirection]
-    sort_method: Optional[LimitedSortMethod]
+    sort_method: Optional[CollectionLibrarySortMethod]
 
 
 # Most of the code in this file is copied from/similar to src/queries/get_track_library.py -
@@ -57,7 +57,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     filter_type = args["filter_type"]
 
     query = args.get("query")
-    sort_method = args.get("sort_method", LimitedSortMethod.added_date)
+    sort_method = args.get("sort_method", CollectionLibrarySortMethod.added_date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
 
     # Doesn't yet support album/playlist purchases
@@ -143,17 +143,17 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         )
 
     # Set sort methods
-    if sort_method == LimitedSortMethod.added_date:
+    if sort_method == CollectionLibrarySortMethod.added_date:
         base_query = base_query.order_by(
             sort_fn(text("item_created_at")), desc(PlaylistAlias.playlist_id)
         )
-    elif sort_method == LimitedSortMethod.reposts:
+    elif sort_method == CollectionLibrarySortMethod.reposts:
         base_query = base_query.join(
             AggregatePlaylist,
             AggregatePlaylist.playlist_id == PlaylistAlias.playlist_id,
         ).order_by(sort_fn(AggregatePlaylist.repost_count))
 
-    elif sort_method == LimitedSortMethod.saves:
+    elif sort_method == CollectionLibrarySortMethod.saves:
         base_query = base_query.join(
             AggregatePlaylist,
             AggregatePlaylist.playlist_id == PlaylistAlias.playlist_id,

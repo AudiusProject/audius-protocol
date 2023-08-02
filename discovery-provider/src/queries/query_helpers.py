@@ -124,7 +124,7 @@ class SortMethod(str, enum.Enum):
     most_listens_by_user = "most_listens_by_user"
 
 
-class LimitedSortMethod(str, enum.Enum):
+class CollectionLibrarySortMethod(str, enum.Enum):
     added_date = "added_date"
     reposts = "reposts"
     saves = "saves"

@@ -11,8 +11,8 @@ from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import (
+    CollectionLibrarySortMethod,
     LibraryFilterType,
-    LimitedSortMethod,
     SortDirection,
     SortMethod,
 )
@@ -606,7 +606,7 @@ user_collections_library_parser.add_argument(
     required=False,
     description="The sort method",
     type=str,
-    choices=LimitedSortMethod._member_names_,
+    choices=CollectionLibrarySortMethod._member_names_,
 )
 user_collections_library_parser.add_argument(
     "sort_direction",
