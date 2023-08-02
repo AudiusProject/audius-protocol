@@ -1,3 +1,95 @@
+### getBulkTracks
+
+#### getBulkTracks(`params`)
+
+Get a list of tracks using their IDs or permalinks.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.tracks.getBulkTracks({
+  id: ["D7KyD", "PjdWN", "Jwo2A"],
+});
+console.log(tracks);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name        | Type       | Description                      | Required?  |
+| :---------- | :--------- | :------------------------------- | :--------- |
+| `id`        | `string[]` | An array of IDs of tracks        | _Optional_ |
+| `permalink` | `string[]` | An array of permalinks of tracks | _Optional_ |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the tracks as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    artwork?: {
+      "_1000x1000"?: string
+      "_150x150"?: string
+      "_480x480"?: string
+    }
+    description?: string
+    downloadable?: boolean
+    duration: number
+    favoriteCount: number
+    genre?: string
+    id: string
+    isStreamable?: string
+    mood?: string
+    permalink?: string
+    playCount: number
+    releaseDate: string
+    remixOf?: {
+      tracks: { parentTrackId: string }[]
+    }
+    repostCount: number
+    tags?: string[]
+    title: string
+    trackCid?: string
+    user: {
+      albumCount: number
+      artistPickTrackId?: string
+      bio?: string
+      coverPhoto?: {
+        "_2000"?: string
+        "_640"?: string
+      }
+      doesFollowCurrentUser?: boolean
+      ercWallet: string
+      followeeCount: number
+      followerCount: number
+      handle: string
+      id: string
+      isAvailable: boolean
+      isDeactivated: boolean
+      isVerified: boolean
+      location?: string
+      name: string
+      playlistCount: number
+      profilePicture?: {
+        "_1000x1000"?: string
+        "_150x150"?: string
+        "_480x480"?: string
+      }
+      repostCount: number
+      splWallet: string
+      supporterCount: number
+      supportingCount: number
+      totalAudioBalance: number
+      trackCount: number
+    },
+  }[]
+>
+```
+
 ### getTrack
 
 #### getTrack(`params`)
@@ -7,13 +99,10 @@ Get a track by id.
 Example:
 
 ```typescript
-import { Mood, Genre } from "@audius/sdk";
-
-const { data } = await audiusSdk.tracks.getTrack({
+const { data: track } = await audiusSdk.tracks.getTrack({
   trackId: "D7KyD",
 });
 
-const track = trackResponse.data;
 console.log(track);
 ```
 
