@@ -300,7 +300,6 @@ def test_favorites_sort_methods(session):
         SortMethod.reposts: [23, 21, 20],
         SortMethod.saves: [21, 20, 23],
         # SortMethod.last_listen_date: [] # NOT SUPPORTED
-        # SortMethod.length: [], # NOT SUPPORTED
         # SortMethod.most_listens_by_user: [], # NOT SUPPORTED
     }
     for k, v in sort_method_to_track_id_map.items():

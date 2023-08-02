@@ -38,7 +38,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
             searchable: standardText,
           },
         },
-        length: { type: 'integer' },
         tag_list: lowerKeyword,
         genre: { type: 'keyword' },
         mood: { type: 'keyword' },
@@ -173,7 +172,6 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       Math.ceil(
         row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
       )
-    row.length = row.duration
 
     // permalink
     const currentRoute = row.routes[row.routes.length - 1]

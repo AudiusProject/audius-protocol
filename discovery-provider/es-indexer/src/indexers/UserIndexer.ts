@@ -157,7 +157,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     const idList = Array.from(userIds).join(',')
     const q = `
       select 
-        track_id, owner_id, genre, mood, tags, title, length, created_at
+        track_id, owner_id, genre, mood, tags, title, created_at
       from tracks 
       where 
         is_current

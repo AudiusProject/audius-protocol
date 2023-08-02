@@ -572,7 +572,6 @@ export interface TrackRow {
   is_unlisted?: boolean
   isrc?: string | null
   iswc?: string | null
-  length?: number | null
   license?: string | null
   metadata_multihash?: string | null
   mood?: string | null

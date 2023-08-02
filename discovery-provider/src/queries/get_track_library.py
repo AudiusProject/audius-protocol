@@ -65,8 +65,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
 
     # This query doesn't support all sort methods
     if (
-        sort_method == SortMethod.length
-        or sort_method == SortMethod.last_listen_date
+        sort_method == SortMethod.last_listen_date
         or sort_method == SortMethod.most_listens_by_user
     ):
         raise ValueError(f"Invalid sort method {sort_method}")

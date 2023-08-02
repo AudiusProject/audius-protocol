@@ -41,7 +41,6 @@ def test_index_valid_track(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
             "tags": "realmagic,rickyreed,theroom",
@@ -94,7 +93,6 @@ def test_index_valid_track(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid-2",
             "title": "track 2",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
             "tags": None,
@@ -128,13 +126,12 @@ def test_index_valid_track(app, mocker):
             "isrc": "",
             "iswc": "",
             "is_playlist_upload": True,
-            "duration": 200
+            "duration": 200,
         },
         "QmCreateTrack3": {
             "owner_id": 1,
             "track_cid": "some-track-cid-3",
             "title": "track 3",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
             "tags": None,
@@ -173,7 +170,6 @@ def test_index_valid_track(app, mocker):
             "owner_id": 2,
             "track_cid": "some-track-cid-4",
             "title": "track 4",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
             "tags": None,
@@ -208,13 +204,8 @@ def test_index_valid_track(app, mocker):
             "iswc": "",
             "is_playlist_upload": False,
         },
-        "QmUpdateTrack1": {
-            "title": "track 1 2",
-            "description": "updated description"
-        },
-        "QmUpdateTrack2": {
-            "is_unlisted": False
-        },
+        "QmUpdateTrack1": {"title": "track 1 2", "description": "updated description"},
+        "QmUpdateTrack2": {"is_unlisted": False},
     }
 
     create_track1_json = json.dumps(test_metadata["QmCreateTrack1"])
@@ -473,7 +464,6 @@ def test_index_invalid_tracks(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1 2",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
             "tags": "realmagic,rickyreed,theroom",
@@ -521,17 +511,14 @@ def test_index_invalid_tracks(app, mocker):
             "is_playlist_upload": False,
             "ai_attribution_user_id": 2,
         },
-        "QmInvalidUnlistTrack1Update": {
-            "is_unlisted": True
-        },
-        "InvalidTrackIdUpdate": {
-            "track_id": 1234,
-            "bogus_field": "bogus"
-        }
+        "QmInvalidUnlistTrack1Update": {"is_unlisted": True},
+        "InvalidTrackIdUpdate": {"track_id": 1234, "bogus_field": "bogus"},
     }
     invalid_metadata_json = json.dumps(test_metadata["QmAIDisabled"])
     invalid_update_track1_json = json.dumps(test_metadata["QmInvalidUpdateTrack1"])
-    invalid_unlist_track1_json = json.dumps(test_metadata["QmInvalidUnlistTrack1Update"])
+    invalid_unlist_track1_json = json.dumps(
+        test_metadata["QmInvalidUnlistTrack1Update"]
+    )
     invalid_track_id_update = json.dumps(test_metadata["InvalidTrackIdUpdate"])
 
     tx_receipts = {
@@ -899,9 +886,11 @@ def test_index_invalid_tracks(app, mocker):
         )
 
         # validate db records
-        all_tracks: List[Track] = session.query(Track).all()        
+        all_tracks: List[Track] = session.query(Track).all()
         assert len(all_tracks) == 2
-        current_track: List[Track] = session.query(Track).filter(Track.is_current == True).first()      
+        current_track: List[Track] = (
+            session.query(Track).filter(Track.is_current == True).first()
+        )
         assert current_track.track_id == TRACK_ID_OFFSET
 
 
@@ -917,7 +906,6 @@ def test_invalid_track_description(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid",
             "title": "track 1",
-            "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
             "tags": "realmagic,rickyreed,theroom",
