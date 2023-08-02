@@ -3,6 +3,7 @@ import React, { useCallback, useRef } from 'react'
 import {
   accountSelectors,
   collectionsSocialActions,
+  createChatModalActions,
   FeatureFlags,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
@@ -16,12 +17,15 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
+import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import IconSnapchat from 'app/assets/images/iconSnapchat.svg'
 import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
+import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -39,6 +43,7 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
+const { setState: setCreateChatModalState } = createChatModalActions
 
 export const shareToastTimeout = 1500
 
@@ -81,6 +86,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ShareDrawer = () => {
   const styles = useStyles()
   const viewShotRef = useRef() as React.RefObject<ViewShot>
+  const navigation = useNavigation<AppTabScreenParamList>()
 
   const { isEnabled: isShareSoundToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
@@ -99,6 +105,17 @@ export const ShareDrawer = () => {
   const shareType = content?.type ?? 'track'
 
   const isPremiumTrack = content?.type === 'track' && content.track.is_premium
+
+  const handleShareToDirectMessage = useCallback(async () => {
+    if (!content) return
+    navigation.navigate('ChatUserList')
+    dispatch(
+      setCreateChatModalState({
+        // Just care about the link
+        presetMessage: getContentUrl(content)
+      })
+    )
+  }, [content, dispatch, navigation])
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return
@@ -166,6 +183,12 @@ export const ShareDrawer = () => {
   )
 
   const getRows = useCallback(() => {
+    const shareToChatAction = {
+      icon: <IconMessage fill={secondary} height={26} width={26} />,
+      text: messages.directMessage,
+      callback: handleShareToDirectMessage
+    }
+
     const shareToTwitterAction = {
       icon: <IconTwitterBird fill={secondary} height={20} width={26} />,
       text: messages.twitter,
@@ -185,13 +208,13 @@ export const ShareDrawer = () => {
     }
 
     const copyLinkAction = {
-      text: messages.copyLink(shareType),
+      text: messages.copyLink,
       icon: <IconLink height={26} width={26} fill={secondary} />,
       callback: handleCopyLink
     }
 
     const shareSheetAction = {
-      text: messages.shareSheet(shareType),
+      text: messages.shareSheet,
       icon: <IconShare height={26} width={26} fill={secondary} />,
       callback: handleOpenShareSheet
     }
@@ -213,7 +236,7 @@ export const ShareDrawer = () => {
       icon: React.ReactElement
       style?: Record<string, string>
       callback: (() => void) | (() => Promise<void>)
-    }[] = [shareToTwitterAction]
+    }[] = [shareToChatAction, shareToTwitterAction]
 
     if (shouldIncludeTikTokSoundAction) {
       result.push(shareSoundToTiktokAction)
@@ -221,8 +244,8 @@ export const ShareDrawer = () => {
 
     if (isShareableTrack) {
       result.push(shareToInstagramStoriesAction)
-      result.push(shareToSnapchatAction)
       result.push(shareVideoToTiktokAction)
+      result.push(shareToSnapchatAction)
     }
 
     result.push(copyLinkAction, shareSheetAction)
@@ -231,7 +254,6 @@ export const ShareDrawer = () => {
   }, [
     handleShareToTwitter,
     handleShareSoundToTikTok,
-    shareType,
     secondary,
     handleCopyLink,
     handleOpenShareSheet,
@@ -239,7 +261,8 @@ export const ShareDrawer = () => {
     handleShareToInstagramStory,
     shouldIncludeTikTokSoundAction,
     isShareableTrack,
-    handleShareVideoToTiktok
+    handleShareVideoToTiktok,
+    handleShareToDirectMessage
   ])
 
   return (
