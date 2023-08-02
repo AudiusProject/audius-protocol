@@ -128,7 +128,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
   return (
-    <Modal isOpen={isVisible} onClose={handleCancel}>
+    <Modal isOpen={isVisible} onClose={handleClose}>
       <ModalHeader onClose={handleCancel}>
         <ModalTitle iconClassName={styles.icon} {...titleProps}></ModalTitle>
       </ModalHeader>

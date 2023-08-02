@@ -56,6 +56,7 @@ export const ShareModal = () => {
 
   const handleShareToDirectMessage = useCallback(async () => {
     if (!content) return
+    onClose()
     dispatch(setVisibility({ modal: 'CreateChat', visible: true }))
     dispatch(
       setCreateChatModalState({
@@ -64,7 +65,6 @@ export const ShareModal = () => {
         onCancelAction: setVisibility({ modal: 'Share', visible: true })
       })
     )
-    onClose()
   }, [dispatch, onClose, content])
 
   const handleShareToTwitter = useCallback(async () => {
