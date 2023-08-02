@@ -341,13 +341,13 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                     | Default value | Required? | Notes                                                           |
-| :------------- | :------------------------------------------------------- | :------------ | :-------- | :-------------------------------------------------------------- |
-| `coverArtFile` | `File`                                                   | N/A           | Yes       |                                                                 |
-| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | N/A           | Yes       | See [here](/developers/UploadTrackMetadata) for full interface. |
-| `onProgress`   | `(progress: number) => void`                             | `undefined`   | No        |                                                                 |
-| `trackFile`    | `File`                                                   | N/A           | Yes       |                                                                 |
-| `userId`       | `string`                                                 | N/A           | Yes       |                                                                 |
+| Name           | Type                                                     | Description                                                             | Required?    |
+| :------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
+| `coverArtFile` | `File`                                                   | A file that will be used as the cover art for the track                 | _Optional_   |
+| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | An object containing the details of the track                           | **Required** |
+| `onProgress`   | `(progress: number) => void`                             | A function that will be called with progress events as the files upload | _Optional_   |
+| `trackFile`    | `File`                                                   | The audio file of the track                                             | **Required** |
+| `userId`       | `string`                                                 | The ID of the user                                                      | **Required** |
 
 #### `advancedOptions`
 
@@ -404,13 +404,13 @@ const { trackId } = await audiusSdk.tracks.updateTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                  | Default value | Required? | Notes                    |
-| :------------- | :-------------------------------------------------------------------- | :------------ | :-------- | ------------------------ |
-| `trackId`      | `string`                                                              | N/A           | Yes       |                          |
-| `userId`       | `string`                                                              | N/A           | Yes       |                          |
-| `coverArtFile` | `string`                                                              | `undefined`   | No        |                          |
-| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | N/A           | Yes       | All fields are optional. |
-| `onProgress`   | `(progress: number) => void`                                          | `undefined`   | No        |                          |
+| Name           | Type                                                                  | Description                                                                   | Required?    |
+| :------------- | :-------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `trackId`      | `string`                                                              | The ID of the track                                                           | **Required** |
+| `userId`       | `string`                                                              | The ID of the user                                                            | **Required** |
+| `coverArtFile` | `File`                                                                | A file that will be used as the cover art for the track                       | _Optional_   |
+| `metadata`     | `Partial<`[`UploadTrackMetadata`](/developers/UploadTrackMetadata)`>` | An object containing the details of the track                                 | **Required** |
+| `onProgress`   | `(progress: number) => void`                                          | A function that will be called with progress events as the image file uploads | _Optional_   |
 
 #### `advancedOptions`
 
@@ -450,10 +450,10 @@ await audiusSdk.tracks.deleteTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `trackId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
 
 #### `advancedOptions`
 
@@ -493,11 +493,11 @@ await audiusSdk.tracks.favoriteTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                     | Default value                          | Required? | Notes                                                                |
-| :--------- | :--------------------------------------- | :------------------------------------- | :-------- | -------------------------------------------------------------------- |
-| `trackId`  | `string`                                 | N/A                                    | Yes       |                                                                      |
-| `userId`   | `string`                                 | N/A                                    | Yes       |                                                                      |
-| `metadata` | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted track. |
+| Name       | Type                                                         | Description                                                          | Required?    |
+| :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                                                     | The ID of the track                                                  | **Required** |
+| `userId`   | `string`                                                     | The ID of the user                                                   | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
 
 #### `advancedOptions`
 
@@ -537,10 +537,10 @@ await audiusSdk.tracks.unfavoriteTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `trackId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
 
 #### `advancedOptions`
 
@@ -580,11 +580,11 @@ await audiusSdk.tracks.repostTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                     | Default value                          | Required? | Notes                                                                 |
-| :--------- | :--------------------------------------- | :------------------------------------- | :-------- | --------------------------------------------------------------------- |
-| `trackId`  | `string`                                 | N/A                                    | Yes       |                                                                       |
-| `userId`   | `string`                                 | N/A                                    | Yes       |                                                                       |
-| `metadata` | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted track. |
+| Name       | Type                                                           | Description                                                           | Required?    |
+| :--------- | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                                                       | The ID of the track                                                   | **Required** |
+| `userId`   | `string`                                                       | The ID of the user                                                    | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
 
 #### `advancedOptions`
 
@@ -624,10 +624,10 @@ await audiusSdk.tracks.unrepostTrack({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `trackId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
 
 #### `advancedOptions`
 
