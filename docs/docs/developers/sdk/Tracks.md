@@ -182,6 +182,32 @@ Promise<{
 >
 ```
 
+### getTrendingTracks
+
+#### getTrendingTracks(`params`)
+
+Get the top 100 trending (most popular) tracks on Audius.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.tracks.getTrendingTracks();
+console.log(tracks);
+```
+
+#### Params
+
+Optionally create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name    | Type                                                             | Description                                                                                               | Required?  |
+| :------ | :--------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- | :--------- |
+| `genre` | `Genre` (can be imported from `@audius/sdk`)                     | If provided, the top 100 trending tracks of the genre will be returned                                    | _Optional_ |
+| `time`  | `GetTrendingTracksTimeEnum` (can be imported from `@audius/sdk`) | A time range for which to return the trending track. Default value is `GetTrendingTracksTimeEnum.AllTime` | _Optional_ |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](#getbulktracks)
+
 ### uploadTrack
 
 #### uploadTrack(`parameters`, `advancedOptions?`)
