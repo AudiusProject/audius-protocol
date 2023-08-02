@@ -234,6 +234,33 @@ Optionally create an object with the following fields and pass it as the first a
 
 The return type is the same as [`getBulkTracks`](#getbulktracks)
 
+### searchTracks
+
+#### searchTracks(`params`)
+
+Search for tracks.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.tracks.searchTracks({
+  query: "skrillex",
+});
+console.log(tracks);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name    | Type     | Description             | Required?    |
+| :------ | :------- | :---------------------- | :----------- |
+| `query` | `string` | The query to search for | **Required** |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](#getbulktracks)
+
 ### uploadTrack
 
 #### uploadTrack(`parameters`, `advancedOptions?`)
