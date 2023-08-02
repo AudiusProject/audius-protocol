@@ -44,27 +44,28 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
-	Env                 string
-	Self                Peer
-	Peers               []Peer
-	Signers             []Peer
-	ReplicationFactor   int
-	Dir                 string `default:"/tmp/mediorum"`
-	BlobStoreDSN        string `json:"-"`
-	PostgresDSN         string `json:"-"`
-	LegacyFSRoot        string `json:"-"`
-	PrivateKey          string `json:"-"`
-	ListenPort          string
-	TrustedNotifierID   int
-	SPID                int
-	SPOwnerWallet       string
-	GitSHA              string
-	AudiusDockerCompose string
-	AutoUpgradeEnabled  bool
-	WalletIsRegistered  bool
-	StoreAll            bool
-	VersionJson         VersionJson
-	MigrateQmCidIters   int
+	Env                  string
+	Self                 Peer
+	Peers                []Peer
+	Signers              []Peer
+	ReplicationFactor    int
+	Dir                  string `default:"/tmp/mediorum"`
+	BlobStoreDSN         string `json:"-"`
+	MoveFromBlobStoreDSN string `json:"-"`
+	PostgresDSN          string `json:"-"`
+	LegacyFSRoot         string `json:"-"`
+	PrivateKey           string `json:"-"`
+	ListenPort           string
+	TrustedNotifierID    int
+	SPID                 int
+	SPOwnerWallet        string
+	GitSHA               string
+	AudiusDockerCompose  string
+	AutoUpgradeEnabled   bool
+	WalletIsRegistered   bool
+	StoreAll             bool
+	VersionJson          VersionJson
+	MigrateQmCidIters    int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -147,6 +148,21 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
 		return nil, err
+	}
+
+	// bucket to move all files from
+	if config.MoveFromBlobStoreDSN != "" {
+		bucketToMoveFrom, err := persistence.Open(config.MoveFromBlobStoreDSN)
+		if err != nil {
+			log.Fatal("failed to open bucket to move from; please fix AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM env var - it's the driver to move data from, or empty", "err", err)
+			return nil, err
+		}
+
+		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
+		if err != nil {
+			log.Fatal("failed to move files from old bucket; double check AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM env var - it's the driver to move data from, or empty", "err", err)
+			return nil, err
+		}
 	}
 
 	// logger
