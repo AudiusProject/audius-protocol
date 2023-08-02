@@ -547,6 +547,36 @@ The return type is the same as [`getUser`](#getuser)
 
 ---
 
+### searchUsers
+
+#### searchUsers(`params`)
+
+Search for users.
+
+Example:
+
+```typescript
+const { data: users } = await audiusSdk.users.searchUsers({
+  query: "skrillex",
+});
+
+console.log(users);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name    | Type     | Description                   | Required?    |
+| :------ | :------- | :---------------------------- | :----------- |
+| `query` | `string` | The query for which to search | **Required** |
+
+#### Returns
+
+The return type is the same as [`getFollowers`](#getfollowers)
+
+---
+
 ### updateProfile
 
 #### updateProfile(`params`, `advancedOptions?`)
