@@ -39,6 +39,49 @@ Promise<{
 
 ---
 
+### getDeveloperApps
+
+#### getDeveloperApps(`params`)
+
+Get the developer apps a user owns.
+
+Example:
+
+```typescript
+const { data: developerApps } = await audiusSdk.users.getDeveloperApps({
+  id: "eAZl3",
+});
+
+console.log(developerApps);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name | Type     | Description        | Required?    |
+| :--- | :------- | :----------------- | :----------- |
+| `id` | `string` | The ID of the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an obect containing information about the developer apps as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    address: string;
+    description?: string;
+    name: string;
+    userId: string;
+  }[];
+}>;
+```
+
+---
+
 ### getFavorites
 
 #### getFavorites(`params`)
