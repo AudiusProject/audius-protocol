@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -34,6 +35,26 @@ func init() {
 	}()
 }
 
+func waitForPostgresConnection(db *sql.DB) {
+	var err error
+	maxRetries := 10
+	for i := 0; i < maxRetries; i++ {
+		err = db.Ping()
+		if err == nil {
+			log.Println("Connected to DB.")
+			return
+		}
+
+		log.Printf("Could not connect to DB: %v", err)
+
+		waitTime := time.Duration(i*i) * time.Second
+		log.Printf("Sleeping for %v seconds", waitTime.Seconds())
+		time.Sleep(waitTime)
+	}
+
+	log.Fatalf("Could not connect to DB after %d attempts, last error: %v", maxRetries, err)
+}
+
 func newMediorumClient() (*mediorumClient, error) {
 
 	dbUrl := os.Getenv("dbUrl")
@@ -45,6 +66,8 @@ func newMediorumClient() (*mediorumClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	waitForPostgresConnection(db)
 
 	return &mediorumClient{
 		db: db,
