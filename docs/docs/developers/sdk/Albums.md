@@ -1,6 +1,6 @@
 ### uploadAlbum
 
-#### uploadAlbum(`requestParameters`, `advancedOptions?`)
+#### uploadAlbum(`params`, `advancedOptions?`)
 
 Upload an album.
 
@@ -57,18 +57,18 @@ const { albumId } = await audiusSdk.albums.uploadTrack({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type                                                                                                                                                                                  | Default value | Required? | Notes                                                                                                                                                  |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------ | :-------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `coverArtFile`   | `File`                                                                                                                                                                                | N/A           | Yes       |                                                                                                                                                        |
-| `metadata`       | <code>{ genre: Genre; albumName: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |                                                                                                                                                        |
-| `onProgress`     | `(progress: number) => void`                                                                                                                                                          | `undefined`   | No        |                                                                                                                                                        |
-| `trackFiles`     | `Array<File>`                                                                                                                                                                         | `[]`          | No        |                                                                                                                                                        |
-| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                          | `[]`          | No        | See [here](/developers/UploadTrackMetadata) for full `UploadTrackMetadata` interface. Mood, genre, and tags are inherited from the album if not given. |
-| `userId`         | `string`                                                                                                                                                                              | N/A           | Yes       |                                                                                                                                                        |
+| Name             | Type                                                                                                                                                                                                                                                                                             | Description                                                                   | Required?    |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `coverArtFile`   | `File`                                                                                                                                                                                                                                                                                           | A file that will be used as the cover art for the album                       | _Optional_   |
+| `metadata`       | <code>{ <br/>&nbsp;&nbsp;genre: Genre;<br/>&nbsp;&nbsp;albumName: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;license?: string; <br/>&nbsp;&nbsp;mood?: Mood; <br/>&nbsp;&nbsp;releaseDate?: Date; <br/>&nbsp;&nbsp;tags?: string; <br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the album                                 | **Required** |
+| `onProgress`     | `(progress: number) => void`                                                                                                                                                                                                                                                                     | A function that will be called with progress events as the image file uploads | _Optional_   |
+| `trackFiles`     | `Array<File>`                                                                                                                                                                                                                                                                                    | An array of track audio files                                                 | **Required** |
+| `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                                                                                                                                     | An array of track files                                                       | _Optional_   |
+| `userId`         | `string`                                                                                                                                                                                                                                                                                         | The ID of the user                                                            | **Required** |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -80,13 +80,19 @@ Returns a `Promise` containing an object with the new album's ID (`albumId`), as
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; albumId: string } >`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+  albumId: string;
+}>;
+```
 
 ---
 
 ### updateAlbum
 
-#### updateAlbum(`requestParameters`, `advancedOptions?`)
+#### updateAlbum(`params`, `advancedOptions?`)
 
 Update an album. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -113,17 +119,17 @@ const { albumId } = await audiusSdk.albums.updateAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                                                                                                                                     | Default value | Required? |
-| :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------ | :-------- |
-| `albumId`      | `string`                                                                                                                                                                 | N/A           | Yes       |
-| `userId`       | `string`                                                                                                                                                                 | N/A           | Yes       |
-| `coverArtFile` | `string`                                                                                                                                                                 | `undefined`   | No        |
-| `metadata`     | <code>{ albumName?: string; description?: string; isrc?: string; iswc?: string; license?: string; mood?: Mood; releaseDate?: Date; tags?: string; upc?: string; }</code> | N/A           | Yes       |
-| `onProgress`   | `(progress: number) => void`                                                                                                                                             | `undefined`   | No        |
+| Name           | Type                                                                                                                                                                                                                                                                                                                              | Description                                                                   | Required?    |
+| :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `albumId`      | `string`                                                                                                                                                                                                                                                                                                                          | The ID of the album                                                           | **Required** |
+| `userId`       | `string`                                                                                                                                                                                                                                                                                                                          | The ID of the User                                                            | **Required** |
+| `coverArtFile` | `string`                                                                                                                                                                                                                                                                                                                          | A file that will be used as the cover art for the album                       | _Optional_   |
+| `metadata`     | <code>{<br/>&nbsp;&nbsp;albumName?: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;albumContents?: {trackId: string, time: number}[],<br/>&nbsp;&nbsp;license?: string;<br/>&nbsp;&nbsp;mood?: Mood;<br/>&nbsp;&nbsp;releaseDate?: Date;<br/>&nbsp;&nbsp;tags?: string;<br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the album                                 | **Required** |
+| `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                                                                                                                      | A function that will be called with progress events as the image file uploads | _Optional_   |
 
 #### `advancedOptions` parameters (advanced)
 
@@ -135,13 +141,18 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
 ### deleteAlbum
 
-#### deleteAlbum(`requestParameters`, `advancedOptions?`)
+#### deleteAlbum(`params`, `advancedOptions?`)
 
 Delete an album
 
@@ -154,16 +165,16 @@ await audiusSdk.albums.deleteAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `albumId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `albumId` | `string` | The ID of the album | **Required** |
+| `userId`  | `string` | The ID of the User  | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -173,13 +184,18 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
 ### favoriteAlbum
 
-#### favoriteAlbum(`requestParameters`, `advancedOptions?`)
+#### favoriteAlbum(`params`, `advancedOptions?`)
 
 Favorite an album
 
@@ -192,17 +208,17 @@ await audiusSdk.albums.favoriteAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                     | Default value                          | Required? | Notes                                                                |
-| :--------- | :--------------------------------------- | :------------------------------------- | :-------- | -------------------------------------------------------------------- |
-| `albumId`  | `string`                                 | N/A                                    | Yes       |                                                                      |
-| `userId`   | `string`                                 | N/A                                    | Yes       |                                                                      |
-| `metadata` | <code>{ isSaveOfRepost: boolean }</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isSaveOfRepost` to true if you are favoriting a reposted album. |
+| Name       | Type                                                         | Description                                     | Required?    |
+| :--------- | :----------------------------------------------------------- | :---------------------------------------------- | :----------- |
+| `albumId`  | `string`                                                     | The ID of the album                             | **Required** |
+| `userId`   | `string`                                                     | The ID of the User                              | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | An object containing details about the favorite | _Optional_   |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -212,13 +228,18 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
 ### unfavoriteAlbum
 
-#### unfavoriteAlbum(`requestParameters`, `advancedOptions?`)
+#### unfavoriteAlbum(`params`, `advancedOptions?`)
 
 Unfavorite an album
 
@@ -231,16 +252,16 @@ await audiusSdk.albums.unfavoriteAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `albumId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `albumId` | `string` | The ID of the album | **Required** |
+| `userId`  | `string` | The ID of the User  | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -250,13 +271,18 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
 ### repostAlbum
 
-#### repostAlbum(`requestParameters`, `advancedOptions?`)
+#### repostAlbum(`params`, `advancedOptions?`)
 
 Repost a album
 
@@ -269,17 +295,17 @@ await audiusSdk.albums.repostAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name       | Type                                     | Default value                          | Required? | Notes                                                                 |
-| :--------- | :--------------------------------------- | :------------------------------------- | :-------- | --------------------------------------------------------------------- |
-| `albumId`  | `string`                                 | N/A                                    | Yes       |                                                                       |
-| `userId`   | `string`                                 | N/A                                    | Yes       |                                                                       |
-| `metadata` | <code>{isRepostOfRepost: boolean}</code> | <code>{ isSaveOfRepost: false }</code> | No        | Set `isRepostOfRepost` to true if you are reposting a reposted album. |
+| Name       | Type                                                           | Description                                   | Required?    |
+| :--------- | :------------------------------------------------------------- | :-------------------------------------------- | :----------- |
+| `albumId`  | `string`                                                       | The ID of the album                           | **Required** |
+| `userId`   | `string`                                                       | The ID of the User                            | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | An object containing details about the repost | _Optional_   |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -289,13 +315,18 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---
 
 ### unrepostAlbum
 
-#### unrepostAlbum(`requestParameters`, `advancedOptions?`)
+#### unrepostAlbum(`params`, `advancedOptions?`)
 
 Unrepost an album
 
@@ -308,16 +339,16 @@ await audiusSdk.albums.unrepostAlbum({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Default value | Required? |
-| :-------- | :------- | :------------ | :-------- |
-| `albumId` | `string` | N/A           | Yes       |
-| `userId`  | `string` | N/A           | Yes       |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `albumId` | `string` | The ID of the album | **Required** |
+| `userId`  | `string` | The ID of the User  | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -327,6 +358,11 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
 
 ---

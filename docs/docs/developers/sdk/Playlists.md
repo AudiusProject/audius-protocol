@@ -1,6 +1,6 @@
 ### createPlaylist
 
-#### createPlaylist(`requestParameters`, `advancedOptions?`)
+#### createPlaylist(`params`, `advancedOptions?`)
 
 Create a playlist from existing tracks
 
@@ -29,7 +29,7 @@ const { playlistId } = await audiusSdk.playlists.createPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -41,7 +41,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackIds`     | `Array<string>`                                                                                                                                   | An array of track IDs to be included in the playlist                          | **Required** |
 | `userId`       | `string`                                                                                                                                          | The ID of the user                                                            | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -57,7 +57,7 @@ Return type:
 
 ### uploadPlaylist
 
-#### uploadPlaylist(`requestParameters`, `advancedOptions?`)
+#### uploadPlaylist(`params`, `advancedOptions?`)
 
 Upload the specified tracks and combine them into a new playlist.
 
@@ -117,7 +117,7 @@ const { playlistId } = await audiusSdk.playlists.uploadPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -130,7 +130,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `trackMetadatas` | [`UploadTrackMetadata`](/developers/UploadTrackMetadata)`[]`                                                                                                                                                                                                                                        | An array of track files                                                       | _Optional_   |
 | `userId`         | `string`                                                                                                                                                                                                                                                                                            | The ID of the user                                                            | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -152,7 +152,7 @@ Promise<{
 
 ### addTrackToPlaylist
 
-#### addTrackToPlaylist(`requestParameters`, `advancedOptions?`)
+#### addTrackToPlaylist(`params`, `advancedOptions?`)
 
 Add a single track to the end of a playlist. For more control, use [updatePlaylist](#updateplaylist).
 
@@ -167,7 +167,7 @@ await audiusSdk.playlists.addTrackToPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -177,7 +177,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string` | N/A           | Yes       |
 | `trackId`    | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -199,7 +199,7 @@ Promise<{
 
 ### removeTrackFromPlaylist
 
-#### removeTrackFromPlaylist(`requestParameters`, `advancedOptions?`)
+#### removeTrackFromPlaylist(`params`, `advancedOptions?`)
 
 Removes a single track at the given index of playlist. For more control, use [updatePlaylist](#updatePlaylist).
 
@@ -213,7 +213,7 @@ await audiusSdk.playlists.removeTrackFromPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -223,7 +223,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string` | N/A           | Yes       |
 | `trackId`    | `string` | N/A           | Yes       |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -244,7 +244,7 @@ Promise<{
 
 ### updatePlaylist
 
-#### updatePlaylist(`requestParameters`, `advancedOptions?`)
+#### updatePlaylist(`params`, `advancedOptions?`)
 
 Update a playlist. If cover art or any metadata fields are not provided, their values will be kept the same as before.
 
@@ -281,7 +281,7 @@ const { playlistId } = await audiusSdk.playlists.updatePlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -293,7 +293,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `metadata`     | <code>{<br/>&nbsp;&nbsp;playlistName?: string;<br/>&nbsp;&nbsp;description?: string;<br/>&nbsp;&nbsp;playlistContents?: {trackId: string, time: number}[],<br/>&nbsp;&nbsp;license?: string;<br/>&nbsp;&nbsp;mood?: Mood;<br/>&nbsp;&nbsp;releaseDate?: Date;<br/>&nbsp;&nbsp;tags?: string;<br/>&nbsp;&nbsp;upc?: string;<br/>}</code> | An object containing the details of the playlist                              | **Required** |
 | `onProgress`   | `(progress: number) => void`                                                                                                                                                                                                                                                                                                            | A function that will be called with progress events as the image file uploads | _Optional_   |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -314,7 +314,7 @@ Promise<{
 
 ### deletePlaylist
 
-#### deletePlaylist(`requestParameters`, `advancedOptions?`)
+#### deletePlaylist(`params`, `advancedOptions?`)
 
 Delete a playlist
 
@@ -327,7 +327,7 @@ await audiusSdk.playlists.deletePlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -336,7 +336,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | The ID of the playlist | **Required** |
 | `userId`     | `string` | The ID of the User     | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -357,7 +357,7 @@ Promise<{
 
 ### favoritePlaylist
 
-#### favoritePlaylist(`requestParameters`, `advancedOptions?`)
+#### favoritePlaylist(`params`, `advancedOptions?`)
 
 Favorites a playlist
 
@@ -370,7 +370,7 @@ await audiusSdk.playlists.favoritePlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -380,7 +380,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string`                                                     | The ID of the User                              | **Required** |
 | `metadata`   | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | An object containing details about the favorite | _Optional_   |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -401,7 +401,7 @@ Promise<{
 
 ### unfavoritePlaylist
 
-#### unfavoritePlaylist(`requestParameters`, `advancedOptions?`)
+#### unfavoritePlaylist(`params`, `advancedOptions?`)
 
 Unfavorite a playlist
 
@@ -414,7 +414,7 @@ await audiusSdk.playlists.unfavoritePlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -423,7 +423,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | The ID of the playlist | **Required** |
 | `userId`     | `string` | The ID of the User     | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -444,7 +444,7 @@ Promise<{
 
 ### repostPlaylist
 
-#### repostPlaylist(`requestParameters`, `advancedOptions?`)
+#### repostPlaylist(`params`, `advancedOptions?`)
 
 Repost a playlist
 
@@ -457,7 +457,7 @@ await audiusSdk.playlists.repostPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -467,7 +467,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `userId`     | `string`                                                       | The ID of the User                            | **Required** |
 | `metadata`   | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | An object containing details about the repost | _Optional_   |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -488,7 +488,7 @@ Promise<{
 
 ### unrepostPlaylist
 
-#### unrepostPlaylist(`requestParameters`, `advancedOptions?`)
+#### unrepostPlaylist(`params`, `advancedOptions?`)
 
 Unrepost a playlist
 
@@ -501,7 +501,7 @@ await audiusSdk.playlists.unrepostPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -510,7 +510,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | The ID of the playlist | **Required** |
 | `userId`     | `string` | The ID of the User     | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 
@@ -531,7 +531,7 @@ Promise<{
 
 ### publishPlaylist
 
-#### publishPlaylist(`requestParameters`, `advancedOptions?`)
+#### publishPlaylist(`params`, `advancedOptions?`)
 
 Changes a playlist from hidden (private) to public.
 
@@ -544,7 +544,7 @@ await audiusSdk.playlists.publishPlaylist({
 });
 ```
 
-#### `requestParameters` parameters
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -553,7 +553,7 @@ Create an object with the following fields and pass it as the first argument, as
 | `playlistId` | `string` | The ID of the playlist | **Required** |
 | `userId`     | `string` | The ID of the User     | **Required** |
 
-#### `advancedOptions` parameters (advanced)
+#### `advancedOptions`
 
 You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
 

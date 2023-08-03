@@ -305,7 +305,7 @@ Promise<string>;
 
 ### uploadTrack
 
-#### uploadTrack(`parameters`, `advancedOptions?`)
+#### uploadTrack(`params`, `advancedOptions?`)
 
 Upload a track.
 
@@ -337,7 +337,7 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 });
 ```
 
-#### `parameters`
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
