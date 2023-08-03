@@ -125,7 +125,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	if config.BlobStoreDSN == "" {
-		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
+		config.BlobStoreDSN = "file://" + config.Dir + "/blobs?no_tmp_dir=true"
 	}
 
 	if pk, err := ethcontracts.ParsePrivateKeyHex(config.PrivateKey); err != nil {

@@ -94,17 +94,17 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		}
 
 		// clean up .tmp files left behind by fileblob driver
+		// see https://github.com/google/go-cloud/issues/3286 for original issue
+		// and https://github.com/google/go-cloud/issues/3294 for why it's not truly fixed
 		err := filepath.WalkDir(uri, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
 			if !d.IsDir() && strings.HasSuffix(d.Name(), ".tmp") {
-				if err := os.Remove(path); err != nil {
-					return err
-				}
+				err = os.Remove(path)
 			}
-			return nil
+			return err
 		})
 		if err != nil {
 			log.Println("failed to clean up temp files: " + err.Error())
