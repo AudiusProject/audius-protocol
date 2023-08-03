@@ -1,9 +1,12 @@
+import logging
 import os
 import subprocess
 
 from integration_tests.utils import populate_mock_db
 from src.queries.search_es import search_tags_es
 from src.utils.db_session import get_db
+
+logger = logging.getLogger(__name__)
 
 
 def test_search_track_tags(app_module):
@@ -43,7 +46,7 @@ def test_search_track_tags(app_module):
 
     populate_mock_db(db, test_entities)
 
-    subprocess.run(
+    logs = subprocess.run(
         ["npm", "run", "catchup:ci"],
         env=os.environ,
         capture_output=True,
@@ -51,6 +54,7 @@ def test_search_track_tags(app_module):
         cwd="es-indexer",
         timeout=30,
     )
+    logger.info(logs)
 
     result = search_tags_es("pop", kind="tracks")
     tracks = result["tracks"]

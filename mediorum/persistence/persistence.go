@@ -4,6 +4,8 @@ package persistence
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,6 +17,7 @@ import (
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/s3blob"
 	"golang.org/x/exp/maps"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -113,7 +116,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		googleAppCredentials := os.Getenv(GOOGLE_APPLICATION_CREDENTIALS)
 
 		if googleAppCredentials == "" {
-			return errors.New("Missing credentials required for persistent GS backing (i.e. GOOGLE_APPLICATION_CREDENTIALS)")
+			return errors.New("missing credentials required for persistent GS backing (i.e. GOOGLE_APPLICATION_CREDENTIALS)")
 		}
 
 		return nil
@@ -122,7 +125,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		azureStorageKey := os.Getenv(AZURE_STORAGE_KEY)
 
 		if azureStorageAccount == "" || azureStorageKey == "" {
-			return errors.New("Missing credentials required for persistent Azure backing (i.e. AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY)")
+			return errors.New("missing credentials required for persistent Azure backing (i.e. AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY)")
 		}
 
 		return nil
@@ -135,12 +138,97 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		region := os.Getenv(AWS_REGION)
 
 		if accessKey == "" || secretKey == "" || region == "" {
-			return errors.New("Missing credentials required for persistent S3 backing (i.e. AWS_REGION, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY)")
+			return errors.New("missing credentials required for persistent S3 backing (i.e. AWS_REGION, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY)")
 		}
 
 		// check for s3 env vars
 		return nil
 	}
 
-	return errors.New("Unknown presistent storage type")
+	return errors.New("unknown presistent storage type")
+}
+
+func MoveAllFiles(from, to *blob.Bucket) error {
+	ctx := context.Background()
+
+	keys, err := getKeys(from, ctx)
+	if err != nil {
+		return fmt.Errorf("error listing keys in bucket to move files from: %v", err)
+	}
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(20)
+
+	for _, key := range keys {
+		k := key
+		g.Go(func() error {
+			return moveFile(from, to, k, ctx)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("error moving files from old to new bucket: %v", err)
+	}
+
+	return nil
+}
+
+func getKeys(bucket *blob.Bucket, ctx context.Context) ([]string, error) {
+	keys := []string{}
+	iter := bucket.List(nil)
+	for {
+		obj, err := iter.Next(ctx)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		// ignore .tmp files from old fileblob driver bug https://github.com/google/go-cloud/issues/3286
+		if !strings.HasSuffix(obj.Key, ".tmp") {
+			keys = append(keys, obj.Key)
+		}
+	}
+
+	return keys, nil
+}
+
+func moveFile(from, to *blob.Bucket, key string, ctx context.Context) error {
+	attrs, err := from.Attributes(ctx, key)
+	if err != nil {
+		return fmt.Errorf("error getting attributes for key %s: %v", key, err)
+	}
+
+	r, err := from.NewReader(ctx, key, nil)
+	if err != nil {
+		return fmt.Errorf("error getting reader for key %s: %v", key, err)
+	}
+
+	w, err := to.NewWriter(ctx, key, &blob.WriterOptions{
+		ContentType: attrs.ContentType,
+		ContentMD5:  attrs.MD5,
+		Metadata:    attrs.Metadata,
+	})
+	if err != nil {
+		r.Close()
+		return fmt.Errorf("error getting writer for key %s: %v", key, err)
+	}
+
+	_, err = io.Copy(w, r)
+	if err != nil {
+		r.Close()
+		return fmt.Errorf("error copying data for key %s: %v", key, err)
+	}
+
+	if err := w.Close(); err != nil {
+		r.Close()
+		return fmt.Errorf("error closing writer for key %s: %v", key, err)
+	}
+
+	r.Close()
+	if err := from.Delete(ctx, key); err != nil {
+		return fmt.Errorf("error deleting key %s from old bucket: %v", key, err)
+	}
+
+	return nil
 }

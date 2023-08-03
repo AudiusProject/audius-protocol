@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mediorum/ethcontracts"
 	"mediorum/server/signature"
+	"strings"
 	"time"
 
 	"github.com/gowebpki/jcs"
@@ -47,18 +48,13 @@ type healthCheckResponseData struct {
 	Signers                   []Peer                     `json:"signers"`
 	ReplicationFactor         int                        `json:"replicationFactor"`
 	Dir                       string                     `json:"dir"`
-	BlobStoreDSN              string                     `json:"blobStoreDSN"`
+	BlobStorePrefix           string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
 	ListenPort                string                     `json:"listenPort"`
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
 	CidCursors                []cidCursor                `json:"cidCursors"`
 	PeerHealths               map[string]time.Time       `json:"peerHealths"`
 	StoreAll                  bool                       `json:"storeAll"`
-}
-
-type legacyHealth struct {
-	Version                   string `json:"version"`
-	Service                   string `json:"service"`
-	SelectedDiscoveryProvider string `json:"selectedDiscoveryProvider"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -67,6 +63,15 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
 	if ss.Config.WalletIsRegistered && (ss.isSeeding || ss.isSeedingLegacy) {
 		healthy = false
+	}
+
+	blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
+	if !foundBlobStore {
+		blobStorePrefix = ""
+	}
+	blobStoreMoveFromPrefix, _, foundBlobStoreMoveFrom := strings.Cut(ss.Config.MoveFromBlobStoreDSN, "://")
+	if !foundBlobStoreMoveFrom {
+		blobStoreMoveFromPrefix = ""
 	}
 
 	var err error
@@ -93,7 +98,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
 		TrustedNotifier:           ss.trustedNotifier,
 		Dir:                       ss.Config.Dir,
-		BlobStoreDSN:              ss.Config.BlobStoreDSN,
+		BlobStorePrefix:           blobStorePrefix,
+		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
 		ListenPort:                ss.Config.ListenPort,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
