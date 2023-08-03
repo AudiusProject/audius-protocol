@@ -31,12 +31,12 @@ Return type:
 ```ts
 Promise<{
   data: {
-    createdAt: string
-    favoriteItemId: string // The ID of the track, playlist, or album
-    favoriteType: string // The type of favorite ("track", "playlist", or "album")
-    userId: string
-  }[]
->
+    createdAt: string;
+    favoriteItemId: string; // The ID of the track, playlist, or album
+    favoriteType: string; // The type of favorite ("track", "playlist", or "album")
+    userId: string;
+  }[];
+}>;
 ```
 
 ---
@@ -76,38 +76,38 @@ Return type:
 ```ts
 Promise<{
   data: {
-      albumCount: number
-      artistPickTrackId?: string
-      bio?: string
-      coverPhoto?: {
-        "_2000"?: string
-        "_640"?: string
-      }
-      doesFollowCurrentUser?: boolean
-      ercWallet: string
-      followeeCount: number
-      followerCount: number
-      handle: string
-      id: string
-      isAvailable: boolean
-      isDeactivated: boolean
-      isVerified: boolean
-      location?: string
-      name: string
-      playlistCount: number
-      profilePicture?: {
-        "_1000x1000"?: string
-        "_150x150"?: string
-        "_480x480"?: string
-      }
-      repostCount: number
-      splWallet: string
-      supporterCount: number
-      supportingCount: number
-      totalAudioBalance: number
-      trackCount: number
-    }[]
->
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  }[];
+}>;
 ```
 
 ---
@@ -178,12 +178,12 @@ Return type:
 Promise<{
   data: {
     item?: {
-      id: string
-    } // The entire item is returned, always contains id
-    itemType?: string // The type of the item ("track", "playlist", or "album")
-    timestamp?: string
-  }[]
->
+      id: string;
+    }; // The entire item is returned, always contains id
+    itemType?: string; // The type of the item ("track", "playlist", or "album")
+    timestamp?: string;
+  }[];
+}>;
 ```
 
 ---
@@ -257,42 +257,42 @@ Return type:
 ```ts
 Promise<{
   data: {
-      amount: string
-      rank: number
-      sender: {
-        albumCount: number
-        artistPickTrackId?: string
-        bio?: string
-        coverPhoto?: {
-          "_2000"?: string
-          "_640"?: string
-        }
-        doesFollowCurrentUser?: boolean
-        ercWallet: string
-        followeeCount: number
-        followerCount: number
-        handle: string
-        id: string
-        isAvailable: boolean
-        isDeactivated: boolean
-        isVerified: boolean
-        location?: string
-        name: string
-        playlistCount: number
-        profilePicture?: {
-          "_1000x1000"?: string
-          "_150x150"?: string
-          "_480x480"?: string
-        }
-        repostCount: number
-        splWallet: string
-        supporterCount: number
-        supportingCount: number
-        totalAudioBalance: number
-        trackCount: number
-      }
-    }[]
->
+    amount: string;
+    rank: number;
+    sender: {
+      albumCount: number;
+      artistPickTrackId?: string;
+      bio?: string;
+      coverPhoto?: {
+        _2000?: string;
+        _640?: string;
+      };
+      doesFollowCurrentUser?: boolean;
+      ercWallet: string;
+      followeeCount: number;
+      followerCount: number;
+      handle: string;
+      id: string;
+      isAvailable: boolean;
+      isDeactivated: boolean;
+      isVerified: boolean;
+      location?: string;
+      name: string;
+      playlistCount: number;
+      profilePicture?: {
+        _1000x1000?: string;
+        _150x150?: string;
+        _480x480?: string;
+      };
+      repostCount: number;
+      splWallet: string;
+      supporterCount: number;
+      supportingCount: number;
+      totalAudioBalance: number;
+      trackCount: number;
+    };
+  }[];
+}>;
 ```
 
 ---
@@ -332,42 +332,42 @@ Return type:
 ```ts
 Promise<{
   data: {
-      amount: string
-      rank: number
-      receiver: {
-        albumCount: number
-        artistPickTrackId?: string
-        bio?: string
-        coverPhoto?: {
-          "_2000"?: string
-          "_640"?: string
-        }
-        doesFollowCurrentUser?: boolean
-        ercWallet: string
-        followeeCount: number
-        followerCount: number
-        handle: string
-        id: string
-        isAvailable: boolean
-        isDeactivated: boolean
-        isVerified: boolean
-        location?: string
-        name: string
-        playlistCount: number
-        profilePicture?: {
-          "_1000x1000"?: string
-          "_150x150"?: string
-          "_480x480"?: string
-        }
-        repostCount: number
-        splWallet: string
-        supporterCount: number
-        supportingCount: number
-        totalAudioBalance: number
-        trackCount: number
-      }
-    }[]
->
+    amount: string;
+    rank: number;
+    receiver: {
+      albumCount: number;
+      artistPickTrackId?: string;
+      bio?: string;
+      coverPhoto?: {
+        _2000?: string;
+        _640?: string;
+      };
+      doesFollowCurrentUser?: boolean;
+      ercWallet: string;
+      followeeCount: number;
+      followerCount: number;
+      handle: string;
+      id: string;
+      isAvailable: boolean;
+      isDeactivated: boolean;
+      isVerified: boolean;
+      location?: string;
+      name: string;
+      playlistCount: number;
+      profilePicture?: {
+        _1000x1000?: string;
+        _150x150?: string;
+        _480x480?: string;
+      };
+      repostCount: number;
+      splWallet: string;
+      supporterCount: number;
+      supportingCount: number;
+      totalAudioBalance: number;
+      trackCount: number;
+    };
+  }[];
+}>;
 ```
 
 ---
@@ -481,38 +481,38 @@ Return type:
 ```ts
 Promise<{
   data: {
-    albumCount: number
-    artistPickTrackId?: string
-    bio?: string
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
     coverPhoto?: {
-      "_2000"?: string
-      "_640"?: string
-    }
-    doesFollowCurrentUser?: boolean
-    ercWallet: string
-    followeeCount: number
-    followerCount: number
-    handle: string
-    id: string
-    isAvailable: boolean
-    isDeactivated: boolean
-    isVerified: boolean
-    location?: string
-    name: string
-    playlistCount: number
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
     profilePicture?: {
-      "_1000x1000"?: string
-      "_150x150"?: string
-      "_480x480"?: string
-    }
-    repostCount: number
-    splWallet: string
-    supporterCount: number
-    supportingCount: number
-    totalAudioBalance: number
-    trackCount: number
-    }
->
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}>;
 ```
 
 ---

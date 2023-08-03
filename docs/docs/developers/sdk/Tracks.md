@@ -32,62 +32,62 @@ Return type:
 Promise<{
   data: {
     artwork?: {
-      "_1000x1000"?: string
-      "_150x150"?: string
-      "_480x480"?: string
-    }
-    description?: string
-    downloadable?: boolean
-    duration: number
-    favoriteCount: number
-    genre?: string
-    id: string
-    isStreamable?: string
-    mood?: string
-    permalink?: string
-    playCount: number
-    releaseDate: string
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    description?: string;
+    downloadable?: boolean;
+    duration: number;
+    favoriteCount: number;
+    genre?: string;
+    id: string;
+    isStreamable?: string;
+    mood?: string;
+    permalink?: string;
+    playCount: number;
+    releaseDate: string;
     remixOf?: {
-      tracks: { parentTrackId: string }[]
-    }
-    repostCount: number
-    tags?: string[]
-    title: string
-    trackCid?: string
+      tracks: { parentTrackId: string }[];
+    };
+    repostCount: number;
+    tags?: string[];
+    title: string;
+    trackCid?: string;
     user: {
-      albumCount: number
-      artistPickTrackId?: string
-      bio?: string
+      albumCount: number;
+      artistPickTrackId?: string;
+      bio?: string;
       coverPhoto?: {
-        "_2000"?: string
-        "_640"?: string
-      }
-      doesFollowCurrentUser?: boolean
-      ercWallet: string
-      followeeCount: number
-      followerCount: number
-      handle: string
-      id: string
-      isAvailable: boolean
-      isDeactivated: boolean
-      isVerified: boolean
-      location?: string
-      name: string
-      playlistCount: number
+        _2000?: string;
+        _640?: string;
+      };
+      doesFollowCurrentUser?: boolean;
+      ercWallet: string;
+      followeeCount: number;
+      followerCount: number;
+      handle: string;
+      id: string;
+      isAvailable: boolean;
+      isDeactivated: boolean;
+      isVerified: boolean;
+      location?: string;
+      name: string;
+      playlistCount: number;
       profilePicture?: {
-        "_1000x1000"?: string
-        "_150x150"?: string
-        "_480x480"?: string
-      }
-      repostCount: number
-      splWallet: string
-      supporterCount: number
-      supportingCount: number
-      totalAudioBalance: number
-      trackCount: number
-    },
-  }[]
->
+        _1000x1000?: string;
+        _150x150?: string;
+        _480x480?: string;
+      };
+      repostCount: number;
+      splWallet: string;
+      supporterCount: number;
+      supportingCount: number;
+      totalAudioBalance: number;
+      trackCount: number;
+    };
+  }[];
+}>;
 ```
 
 ---
@@ -126,62 +126,62 @@ Return type:
 Promise<{
   data: {
     artwork?: {
-      "_1000x1000"?: string
-      "_150x150"?: string
-      "_480x480"?: string
-    }
-    description?: string
-    downloadable?: boolean
-    duration: number
-    favoriteCount: number
-    genre?: string
-    id: string
-    isStreamable?: string
-    mood?: string
-    permalink?: string
-    playCount: number
-    releaseDate: string
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    description?: string;
+    downloadable?: boolean;
+    duration: number;
+    favoriteCount: number;
+    genre?: string;
+    id: string;
+    isStreamable?: string;
+    mood?: string;
+    permalink?: string;
+    playCount: number;
+    releaseDate: string;
     remixOf?: {
-      tracks: { parentTrackId: string }[]
-    }
-    repostCount: number
-    tags?: string[]
-    title: string
-    trackCid?: string
+      tracks: { parentTrackId: string }[];
+    };
+    repostCount: number;
+    tags?: string[];
+    title: string;
+    trackCid?: string;
     user: {
-      albumCount: number
-      artistPickTrackId?: string
-      bio?: string
+      albumCount: number;
+      artistPickTrackId?: string;
+      bio?: string;
       coverPhoto?: {
-        "_2000"?: string
-        "_640"?: string
-      }
-      doesFollowCurrentUser?: boolean
-      ercWallet: string
-      followeeCount: number
-      followerCount: number
-      handle: string
-      id: string
-      isAvailable: boolean
-      isDeactivated: boolean
-      isVerified: boolean
-      location?: string
-      name: string
-      playlistCount: number
+        _2000?: string;
+        _640?: string;
+      };
+      doesFollowCurrentUser?: boolean;
+      ercWallet: string;
+      followeeCount: number;
+      followerCount: number;
+      handle: string;
+      id: string;
+      isAvailable: boolean;
+      isDeactivated: boolean;
+      isVerified: boolean;
+      location?: string;
+      name: string;
+      playlistCount: number;
       profilePicture?: {
-        "_1000x1000"?: string
-        "_150x150"?: string
-        "_480x480"?: string
-      }
-      repostCount: number
-      splWallet: string
-      supporterCount: number
-      supportingCount: number
-      totalAudioBalance: number
-      trackCount: number
-    },
-  }
->
+        _1000x1000?: string;
+        _150x150?: string;
+        _480x480?: string;
+      };
+      repostCount: number;
+      splWallet: string;
+      supporterCount: number;
+      supportingCount: number;
+      totalAudioBalance: number;
+      trackCount: number;
+    };
+  };
+}>;
 ```
 
 ---
