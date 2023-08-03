@@ -745,6 +745,46 @@ The return type is the same as [`getUser`](#getuser)
 
 ---
 
+### getUserIdByWallet
+
+#### getUserIdByWallet(`params`)
+
+Get a user ID by an associated wallet address.
+
+Example:
+
+```typescript
+const { data: userId } = await audiusSdk.users.getUserIdByWallet({
+  associatedWallet: "6f229f7e8462f198e5be9139175a0b460a9fa35b",
+});
+
+console.log(userId);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name               | Type     | Description                               | Required?    |
+| :----------------- | :------- | :---------------------------------------- | :----------- |
+| `associatedWallet` | `string` | A wallet address associated with the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an object containing the user id as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    userId: string;
+  };
+}>;
+```
+
+---
+
 ### searchUsers
 
 #### searchUsers(`params`)
