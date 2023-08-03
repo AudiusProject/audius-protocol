@@ -1,3 +1,72 @@
+### getUser
+
+#### getUser(`params`)
+
+Get a user.
+
+Example:
+
+```typescript
+const { data: user } = await audiusSdk.users.getUser({
+  id: "eAZl3",
+});
+
+console.log(user);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name | Type     | Description        | Required?    |
+| :--- | :------- | :----------------- | :----------- |
+| `id` | `string` | The ID of the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` contains information about the user as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}>;
+```
+
+---
+
 ### getAIAttributedTracksByUserHandle
 
 #### getAIAttributedTracksByUserHandle(`params`)
@@ -643,75 +712,6 @@ Create an object with the following fields and pass it as the first argument, as
 #### Returns
 
 The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
-
----
-
-### getUser
-
-#### getUser(`params`)
-
-Get a user.
-
-Example:
-
-```typescript
-const { data: user } = await audiusSdk.users.getUser({
-  id: "eAZl3",
-});
-
-console.log(user);
-```
-
-#### Params
-
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
-
-| Name | Type     | Description        | Required?    |
-| :--- | :------- | :----------------- | :----------- |
-| `id` | `string` | The ID of the user | **Required** |
-
-#### Returns
-
-Returns a `Promise` containing an object with a `data` field. `data` contains information about the user as described below.
-
-Return type:
-
-```ts
-Promise<{
-  data: {
-    albumCount: number;
-    artistPickTrackId?: string;
-    bio?: string;
-    coverPhoto?: {
-      _2000?: string;
-      _640?: string;
-    };
-    doesFollowCurrentUser?: boolean;
-    ercWallet: string;
-    followeeCount: number;
-    followerCount: number;
-    handle: string;
-    id: string;
-    isAvailable: boolean;
-    isDeactivated: boolean;
-    isVerified: boolean;
-    location?: string;
-    name: string;
-    playlistCount: number;
-    profilePicture?: {
-      _1000x1000?: string;
-      _150x150?: string;
-      _480x480?: string;
-    };
-    repostCount: number;
-    splWallet: string;
-    supporterCount: number;
-    supportingCount: number;
-    totalAudioBalance: number;
-    trackCount: number;
-  };
-}>;
-```
 
 ---
 
