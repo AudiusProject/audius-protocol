@@ -140,7 +140,7 @@ describe('Staking tests', () => {
       }
 
       if (testServiceType === 'discovery-provider') {
-        path = '/health_check'
+        path = '/health_check?allow_unregistered=true'
         response = { data: { ...response } }
       }
 
@@ -267,7 +267,7 @@ describe('Staking tests', () => {
       }
 
       if (testServiceType === 'discovery-provider') {
-        path = '/health_check'
+        path = '/health_check?allow_unregistered=true'
         response = { data: { ...response } }
       }
 
