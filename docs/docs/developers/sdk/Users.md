@@ -1,3 +1,40 @@
+### getAIAttributedTracksByUserHandle
+
+#### getAIAttributedTracksByUserHandle(`params`)
+
+Get the AI generated tracks attributed to a user using the user's handle.
+
+Example:
+
+```typescript
+const { data: tracks } =
+  await audiusSdk.users.getAIAttributedTracksByUserHandle({
+    handle: "skrillex",
+  });
+
+console.log(tracks);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name            | Type                                                                                               | Description                                                                                                                     | Required?    |
+| :-------------- | :------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ | :----------- |
+| `handle`        | `string`                                                                                           | The handle of the user                                                                                                          | **Required** |
+| `limit`         | `number`                                                                                           | The maximum number of tracks to return. Default value is **10**                                                                 | _Optional_   |
+| `offset`        | `number`                                                                                           | The offset to apply to the list of results. Default value is **0**                                                              | _Optional_   |
+| `filterTracks`  | `GetAIAttributedTracksByUserHandleFilterTracksEnum` (can be imported from `@audius/sdk`)           | A filter to apply to the returned tracks. Default value is **GetAIAttributableTracksByUserHandleFilterTracksEnum.All**          | _Optional_   |
+| `query`         | `string`                                                                                           | A query to search for in a user's tracks                                                                                        | _Optional_   |
+| `sortDirection` | `GetAIAttributedTracksByUserHandleSortDirectionEnum` (can be imported from `@audius/sdk`)          | A sort direction to apply to the returned tracks. Default value is **GetAIAttributableTracksByUserHandleSortDirectionEnum.Asc** | _Optional_   |
+| `sortMethod`    | `GetAIAttributedTracksByUserTracksByUserHandleSortMethodEnum` (can be imported from `@audius/sdk`) | A sort method to apply to the returned tracks                                                                                   | _Optional_   |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
+
+---
+
 ### getConnectedWallets
 
 #### getConnectedWallets(`params`)
@@ -551,7 +588,7 @@ Create an object with the following fields and pass it as the first argument, as
 | Name            | Type                                                                    | Description                                                                                                 | Required?    |
 | :-------------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- | :----------- |
 | `id`            | `string`                                                                | The ID of the user                                                                                          | **Required** |
-| `limit`         | `number`                                                                | The maximum number of users to return. Default value is **10**                                              | _Optional_   |
+| `limit`         | `number`                                                                | The maximum number of tracks to return. Default value is **10**                                             | _Optional_   |
 | `offset`        | `number`                                                                | The offset to apply to the list of results. Default value is **0**                                          | _Optional_   |
 | `filterTracks`  | `GetTracksByUserFilterTracksEnum` (can be imported from `@audius/sdk`)  | A filter to apply to the returned tracks. Default value is **GetTracksByUserFilterTracksEnum.All**          | _Optional_   |
 | `query`         | `string`                                                                | A query to search for in a user's tracks                                                                    | _Optional_   |
