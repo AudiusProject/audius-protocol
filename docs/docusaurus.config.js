@@ -32,30 +32,30 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
         }),
       ],
     ],
-    i18n: {
-      defaultLocale: "en",
-      locales: [
-        "en",
-        "es",
-        "fr",
-        // "zh"
-      ],
-      // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
-      localeConfigs: {
-        en: {
-          label: "English",
-        },
-        es: {
-          label: "Español",
-        },
-        // zh: {
-        //   label: "中文",
-        // },
-        fr: {
-          label: "Français",
-        },
-      },
-    },
+    // i18n: {
+    //   defaultLocale: "en",
+    //   locales: [
+    //     "en",
+    //     "es",
+    //     "fr",
+    //     // "zh"
+    //   ],
+    //   // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
+    //   localeConfigs: {
+    //     en: {
+    //       label: "English",
+    //     },
+    //     es: {
+    //       label: "Español",
+    //     },
+    //     // zh: {
+    //     //   label: "中文",
+    //     // },
+    //     fr: {
+    //       label: "Français",
+    //     },
+    //   },
+    // },
     themeConfig:
       /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
       ({
@@ -85,10 +85,6 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
               label: "Developers",
               to: "/category/developers",
               position: "left",
-            },
-            {
-              type: "localeDropdown",
-              position: "right",
             },
             {
               href: "https://discord.com/invite/audius",
