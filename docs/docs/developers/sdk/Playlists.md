@@ -90,6 +90,36 @@ Promise<{
 
 ---
 
+### getPlaylistTracks
+
+#### getPlaylistTracks(`params`)
+
+Get the tracks in a playlist.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.playlists.getPlaylistTracks({
+  playlistId: "D7KyD",
+});
+
+console.log(tracks);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name         | Type     | Description            | Required?    |
+| :----------- | :------- | :--------------------- | :----------- |
+| `playlistId` | `string` | The ID of the playlist | **Required** |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
+
+---
+
 ### createPlaylist
 
 #### createPlaylist(`params`, `advancedOptions?`)
