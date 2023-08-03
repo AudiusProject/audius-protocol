@@ -3,7 +3,11 @@ import { useField } from 'formik'
 const getFieldName = (base: string, index: number, path: string) =>
   `${base}.${index}.${path}`
 
-const useIndexedField = <T>(base: string, index: number, path: string) => {
+export const useIndexedField = <T>(
+  base: string,
+  index: number,
+  path: string
+) => {
   return useField<T>(getFieldName(base, index, path))
 }
 

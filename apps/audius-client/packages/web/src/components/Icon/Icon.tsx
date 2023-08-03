@@ -6,6 +6,7 @@ import cn from 'classnames'
 import styles from './Icon.module.css'
 
 type IconSize =
+  | 'xxSmall' // 12
   | 'xSmall' // 14
   | 'small' // 16
   | 'medium' // 20

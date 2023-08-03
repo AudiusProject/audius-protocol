@@ -9,7 +9,8 @@ export enum HarmonyButtonType {
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
   DESTRUCTIVE = 'destructive',
-  GHOST = 'ghost'
+  GHOST = 'ghost',
+  PLAIN = 'plain'
 }
 
 export enum HarmonyButtonSize {

@@ -39,7 +39,7 @@
   align-items: center;
   align-self: stretch;
   border-radius: 2px;
-  border: 1px solid var(--neutral-light-7);
+  border: 1px solid var(--border-strong);
   background-color: var(--neutral-light-8);
 
   color: var(--neutral);

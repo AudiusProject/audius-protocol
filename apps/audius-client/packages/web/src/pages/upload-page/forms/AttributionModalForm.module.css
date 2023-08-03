@@ -23,8 +23,8 @@
   gap: var(--unit-2);
   padding: var(--unit-4);
   border-radius: 8px;
-  border: 1px solid var(--neutral-light-8);
-  background: var(--neutral-light-10);
+  border: 1px solid var(--border-strong);
+  background: var(--background-surface-1);
   text-transform: capitalize;
 }
 

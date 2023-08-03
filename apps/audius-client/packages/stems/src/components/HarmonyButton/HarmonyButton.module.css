@@ -212,6 +212,17 @@
   --text-color: var(--background-white);
 }
 
+/* Plain */
+.plain {
+  --button-color: transparent;
+  --text-color: var(--neutral);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  height: 100%;
+}
+
 .secondary.disabled,
 .tertiary.disabled,
 .destructive.disabled,
