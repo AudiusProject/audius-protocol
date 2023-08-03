@@ -422,7 +422,6 @@ export class ChatsApi
 
     const chatId = [userId, ...invitedUserIds].sort().join(':')
     const chatSecret = secp.utils.randomPrivateKey()
-    this.chatSecrets[chatId] = chatSecret
     const invites = await this.createInvites(userId, invitedUserIds, chatSecret)
 
     return await this.sendRpc({
