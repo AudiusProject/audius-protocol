@@ -35,6 +35,51 @@ The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
 
 ---
 
+### getAuthorizedApps
+
+#### getAuthorizedApps(`params`)
+
+Get the apps that a user has authorized to write to their account.
+
+Example:
+
+```typescript
+const { data: apps } = await audiusSdk.users.getAuthorizedApps({
+  id: "eAZl3",
+});
+
+console.log(apps);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name | Type     | Description        | Required?    |
+| :--- | :------- | :----------------- | :----------- |
+| `id` | `string` | The ID of the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the authorized apps as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    address: string;
+    description?: string;
+    grantCreatedAt: string;
+    grantUpdatedAt: string;
+    grantorUserId: string;
+    name: string;
+  }[];
+}>;
+```
+
+---
+
 ### getConnectedWallets
 
 #### getConnectedWallets(`params`)
@@ -61,7 +106,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an obect containing information about the wallets as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an object containing information about the wallets as described below.
 
 Return type:
 
@@ -102,7 +147,7 @@ Create an object with the following fields and pass it as the first argument, as
 
 #### Returns
 
-Returns a `Promise` containing an object with a `data` field. `data` is an obect containing information about the developer apps as described below.
+Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the developer apps as described below.
 
 Return type:
 
