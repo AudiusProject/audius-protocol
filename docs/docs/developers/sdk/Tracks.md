@@ -1,90 +1,3 @@
-### deleteTrack
-
-#### deleteTrack(`params`, `advancedOptions?`)
-
-Delete a track
-
-Example:
-
-```typescript
-await audiusSdk.tracks.deleteTrack({
-  trackId: "h5pJ3Bz",
-  userId: "7eP5n",
-});
-```
-
-#### `params`
-
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
-
-| Name      | Type     | Description         | Required?    |
-| :-------- | :------- | :------------------ | :----------- |
-| `trackId` | `string` | The ID of the track | **Required** |
-| `userId`  | `string` | The ID of the user  | **Required** |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
-
-#### Returns
-
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
-
-Return type:
-
-```ts
-Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
-```
-
----
-
-### favoriteTrack
-
-#### favoriteTrack(`params`, `advancedOptions?`)
-
-Favorite a track
-
-Example:
-
-```typescript
-await audiusSdk.tracks.favoriteTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
-
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
-
-| Name       | Type                                                         | Description                                                          | Required?    |
-| :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------- | :----------- |
-| `trackId`  | `string`                                                     | The ID of the track                                                  | **Required** |
-| `userId`   | `string`                                                     | The ID of the user                                                   | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
-
-#### Returns
-
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
-
-Return type:
-
-```ts
-Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
-```
-
----
-
 ### getBulkTracks
 
 #### getBulkTracks(`params`)
@@ -327,50 +240,6 @@ The return type is the same as [`getBulkTracks`](#getbulktracks)
 
 ---
 
-### repostTrack
-
-#### repostTrack(`params`, `advancedOptions?`)
-
-Repost a track
-
-Example:
-
-```typescript
-await audiusSdk.tracks.repostTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
-
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
-
-| Name       | Type                                                           | Description                                                           | Required?    |
-| :--------- | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :----------- |
-| `trackId`  | `string`                                                       | The ID of the track                                                   | **Required** |
-| `userId`   | `string`                                                       | The ID of the user                                                    | **Required** |
-| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
-
-#### Returns
-
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
-
-Return type:
-
-```ts
-Promise<{
-  blockHash: string;
-  blockNumber: number;
-}>;
-```
-
----
-
 ### searchTracks
 
 #### searchTracks(`params`)
@@ -438,29 +307,51 @@ Promise<string>;
 
 ---
 
-### unfavoriteTrack
+### uploadTrack
 
-#### unfavoriteTrack(`params`, `advancedOptions?`)
+#### uploadTrack(`params`, `advancedOptions?`)
 
-Unfavorite a track
+Upload a track.
 
 Example:
 
 ```typescript
-await audiusSdk.tracks.unfavoriteTrack({
-  trackId: 'x5pJ3Az'
+import { Mood, Genre } from "@audius/sdk";
+import fs from "fs";
+
+const coverArtBuffer = fs.readFileSync("path/to/cover-art.png");
+const trackBuffer = fs.readFileSync("path/to/track.mp3");
+
+const { trackId } = await audiusSdk.tracks.uploadTrack({
   userId: "7eP5n",
+  coverArtFile: {
+    buffer: Buffer.from(coverArtBuffer),
+    name: "coverArt",
+  },
+  metadata: {
+    title: "Monstera",
+    description: "Dedicated to my favorite plant",
+    genre: Genre.METAL,
+    mood: Mood.DEVOTIONAL,
+  },
+  trackFile: {
+    buffer: Buffer.from(trackArtBuffer),
+    name: "monsteraAudio",
+  },
 });
 ```
 
-#### `params`
+#### `parameters`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name      | Type     | Description         | Required?    |
-| :-------- | :------- | :------------------ | :----------- |
-| `trackId` | `string` | The ID of the track | **Required** |
-| `userId`  | `string` | The ID of the user  | **Required** |
+| Name           | Type                                                     | Description                                                             | Required?    |
+| :------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
+| `coverArtFile` | `File`                                                   | A file that will be used as the cover art for the track                 | _Optional_   |
+| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | An object containing the details of the track                           | **Required** |
+| `onProgress`   | `(progress: number) => void`                             | A function that will be called with progress events as the files upload | _Optional_   |
+| `trackFile`    | `File`                                                   | The audio file of the track                                             | **Required** |
+| `userId`       | `string`                                                 | The ID of the user                                                      | **Required** |
 
 #### `advancedOptions`
 
@@ -468,7 +359,7 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 #### Returns
 
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
 Return type:
 
@@ -476,49 +367,7 @@ Return type:
 Promise<{
   blockHash: string;
   blockNumber: number;
-}>;
-```
-
----
-
-### unrepostTrack
-
-#### unrepostTrack(`params`, `advancedOptions?`)
-
-Unrepost a track
-
-Example:
-
-```typescript
-await audiusSdk.tracks.unrepostTrack({
-  trackId: 'x5pJ3Az'
-  userId: "7eP5n",
-});
-```
-
-#### `params`
-
-Create an object with the following fields and pass it as the first argument, as shown in the example above.
-
-| Name      | Type     | Description         | Required?    |
-| :-------- | :------- | :------------------ | :----------- |
-| `trackId` | `string` | The ID of the track | **Required** |
-| `userId`  | `string` | The ID of the user  | **Required** |
-
-#### `advancedOptions`
-
-You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
-
-#### Returns
-
-Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
-
-Return type:
-
-```ts
-Promise<{
-  blockHash: string;
-  blockNumber: number;
+  trackId: string;
 }>;
 ```
 
@@ -586,51 +435,29 @@ Promise<{
 
 ---
 
-### uploadTrack
+### deleteTrack
 
-#### uploadTrack(`params`, `advancedOptions?`)
+#### deleteTrack(`params`, `advancedOptions?`)
 
-Upload a track.
+Delete a track
 
 Example:
 
 ```typescript
-import { Mood, Genre } from "@audius/sdk";
-import fs from "fs";
-
-const coverArtBuffer = fs.readFileSync("path/to/cover-art.png");
-const trackBuffer = fs.readFileSync("path/to/track.mp3");
-
-const { trackId } = await audiusSdk.tracks.uploadTrack({
+await audiusSdk.tracks.deleteTrack({
+  trackId: "h5pJ3Bz",
   userId: "7eP5n",
-  coverArtFile: {
-    buffer: Buffer.from(coverArtBuffer),
-    name: "coverArt",
-  },
-  metadata: {
-    title: "Monstera",
-    description: "Dedicated to my favorite plant",
-    genre: Genre.METAL,
-    mood: Mood.DEVOTIONAL,
-  },
-  trackFile: {
-    buffer: Buffer.from(trackArtBuffer),
-    name: "monsteraAudio",
-  },
 });
 ```
 
-#### `parameters`
+#### `params`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name           | Type                                                     | Description                                                             | Required?    |
-| :------------- | :------------------------------------------------------- | :---------------------------------------------------------------------- | :----------- |
-| `coverArtFile` | `File`                                                   | A file that will be used as the cover art for the track                 | _Optional_   |
-| `metadata`     | [`UploadTrackMetadata`](/developers/UploadTrackMetadata) | An object containing the details of the track                           | **Required** |
-| `onProgress`   | `(progress: number) => void`                             | A function that will be called with progress events as the files upload | _Optional_   |
-| `trackFile`    | `File`                                                   | The audio file of the track                                             | **Required** |
-| `userId`       | `string`                                                 | The ID of the user                                                      | **Required** |
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
 
 #### `advancedOptions`
 
@@ -638,7 +465,7 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 #### Returns
 
-Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
 Return type:
 
@@ -646,7 +473,180 @@ Return type:
 Promise<{
   blockHash: string;
   blockNumber: number;
-  trackId: string;
+}>;
+```
+
+---
+
+### favoriteTrack
+
+#### favoriteTrack(`params`, `advancedOptions?`)
+
+Favorite a track
+
+Example:
+
+```typescript
+await audiusSdk.tracks.favoriteTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+#### `params`
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name       | Type                                                         | Description                                                          | Required?    |
+| :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                                                     | The ID of the track                                                  | **Required** |
+| `userId`   | `string`                                                     | The ID of the user                                                   | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isSaveOfRepost: boolean<br/>}</code> | Set `isSaveOfRepost` to true if you are favoriting a reposted track. | _Optional_   |
+
+#### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+
+#### Returns
+
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+
+Return type:
+
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
+
+---
+
+### unfavoriteTrack
+
+#### unfavoriteTrack(`params`, `advancedOptions?`)
+
+Unfavorite a track
+
+Example:
+
+```typescript
+await audiusSdk.tracks.unfavoriteTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+#### `params`
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
+
+#### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+
+#### Returns
+
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+
+Return type:
+
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
+
+---
+
+### repostTrack
+
+#### repostTrack(`params`, `advancedOptions?`)
+
+Repost a track
+
+Example:
+
+```typescript
+await audiusSdk.tracks.repostTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+#### `params`
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name       | Type                                                           | Description                                                           | Required?    |
+| :--------- | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :----------- |
+| `trackId`  | `string`                                                       | The ID of the track                                                   | **Required** |
+| `userId`   | `string`                                                       | The ID of the user                                                    | **Required** |
+| `metadata` | <code>{<br/>&nbsp;&nbsp;isRepostOfRepost: boolean<br/>}</code> | Set `isRepostOfRepost` to true if you are reposting a reposted track. | _Optional_   |
+
+#### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+
+#### Returns
+
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+
+Return type:
+
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
+```
+
+---
+
+### unrepostTrack
+
+#### unrepostTrack(`params`, `advancedOptions?`)
+
+Unrepost a track
+
+Example:
+
+```typescript
+await audiusSdk.tracks.unrepostTrack({
+  trackId: 'x5pJ3Az'
+  userId: "7eP5n",
+});
+```
+
+#### `params`
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `trackId` | `string` | The ID of the track | **Required** |
+| `userId`  | `string` | The ID of the user  | **Required** |
+
+#### `advancedOptions`
+
+You can pass an optional [`advancedOptions`](/developers/advancedOptions) object as the second argument.
+
+#### Returns
+
+Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
+
+Return type:
+
+```ts
+Promise<{
+  blockHash: string;
+  blockNumber: number;
 }>;
 ```
 
