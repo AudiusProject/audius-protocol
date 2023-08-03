@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mediorum/ethcontracts"
 	"mediorum/server/signature"
+	"strconv"
 	"strings"
 	"time"
 
@@ -59,6 +60,11 @@ type healthCheckResponseData struct {
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	healthy := ss.databaseSize > 0
+
+	allowUnregistered, _ := strconv.ParseBool(c.QueryParam("allow_unregistered"))
+	if !allowUnregistered && !ss.Config.WalletIsRegistered {
+		healthy = false
+	}
 
 	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
 	if ss.Config.WalletIsRegistered && (ss.isSeeding || ss.isSeedingLegacy) {
@@ -131,7 +137,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	status := 200
 	if !healthy {
-		status = 503
+		if !allowUnregistered && !ss.Config.WalletIsRegistered {
+			status = 506
+		} else {
+			status = 503
+		}
 	}
 
 	return c.JSON(status, healthCheckResponse{
@@ -144,19 +154,18 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
 		dbHealthy := ss.databaseSize > 0
 		if !dbHealthy {
 			return c.JSON(503, "database not healthy")
 		}
-
-		// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-		if ss.Config.WalletIsRegistered {
-			if ss.isSeeding {
-				return c.JSON(503, "seeding")
-			}
-			if ss.isSeedingLegacy {
-				return c.JSON(503, "seeding legacy")
-			}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
 		}
 
 		return next(c)
