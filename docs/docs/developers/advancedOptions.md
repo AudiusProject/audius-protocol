@@ -1,10 +1,10 @@
 ---
-title: "Interface: WriteOptions"
+title: "AdvancedOptions"
 ---
 
-# **`interface`** WriteOptions
+# AdvancedOptions
 
-You can pass a `WriteOptions` object to any SDK write method for further control of its behavior.
+You can pass a `AdvancedOptions` object to any SDK write method for further control of its behavior.
 
 ## Examples
 
