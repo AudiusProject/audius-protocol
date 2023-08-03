@@ -3,8 +3,8 @@
   flex-wrap: wrap;
   gap: var(--unit-2) var(--unit-6);
   padding: var(--unit-4);
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-7);
+  background: var(--background-surface-1);
+  border: 1px solid var(--border-strong);
   border-radius: var(--unit-2);
   font-size: var(--font-l);
   font-weight: var(--font-demi-bold);
