@@ -608,13 +608,13 @@ await audiusSdk.users.updateProfile({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name                 | Type                                                                                                       | Default value | Required? | Notes                                                                                                                                                                     |
-| :------------------- | :--------------------------------------------------------------------------------------------------------- | :------------ | :-------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `profilePictureFile` | `File`                                                                                                     | `undefined`   | No        |                                                                                                                                                                           |
-| `coverArtFile`       | `File`                                                                                                     | `undefined`   | No        |                                                                                                                                                                           |
-| `metadata`           | `{ name?: string; bio?: string; location?: string; isDeactivated?: boolean; artistPickTrackId?: string; }` | N/A           | Yes       |                                                                                                                                                                           |
-| `onProgress`         | `(progress: number) => void`                                                                               | `undefined`   | No        | Callback for receiving updates on the progress of the profile pic and/or cover art upload. Not relevant if neither `coverArtFile` nor `profilePictureFile` are specified. |
-| `userId`             | `string`                                                                                                   | N/A           | Yes       |                                                                                                                                                                           |
+| Name                 | Type                                                                                                                                                                                                       | Description                                                                   | Required?    |
+| :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- | :----------- |
+| `profilePictureFile` | `File`                                                                                                                                                                                                     | A file to be used as the profile picture                                      | _Optional_   |
+| `coverArtFile`       | `File`                                                                                                                                                                                                     | A file to be used as the cover art. This is the header on a profile page      | _Optional_   |
+| `metadata`           | <code>{<br/>&nbsp;&nbsp;name?: string;<br/>&nbsp;&nbsp;bio?: string;<br/>&nbsp;&nbsp;location?: string;<br/>&nbsp;&nbsp;isDeactivated?: boolean;<br/>&nbsp;&nbsp;artistPickTrackId?: string; <br/>}</code> | An object with details about the user                                         | **Required** |
+| `onProgress`         | `(progress: number) => void`                                                                                                                                                                               | A function that will be called with progress events as the image files upload | _Optional_   |
+| `userId`             | `string`                                                                                                                                                                                                   | The ID of the user                                                            | **Required** |
 
 #### `advancedOptions`
 
@@ -626,7 +626,9 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{ blockHash: string; blockNumber: number }>;
+```
 
 ---
 
@@ -649,10 +651,10 @@ await audiusSdk.users.followUser({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type     | Default value | Required? |
-| :--------------- | :------- | :------------ | :-------- |
-| `userId`         | `string` | N/A           | Yes       |
-| `followeeUserId` | `string` | N/A           | Yes       |
+| Name             | Type     | Description                  | Required?    |
+| :--------------- | :------- | :--------------------------- | :----------- |
+| `userId`         | `string` | The ID of the user           | **Required** |
+| `followeeUserId` | `string` | The ID of the user to follow | **Required** |
 
 #### `advancedOptions`
 
@@ -664,7 +666,9 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{ blockHash: string; blockNumber: number }>;
+```
 
 ---
 
@@ -687,10 +691,10 @@ await audiusSdk.users.unfollowUser({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name             | Type     | Default value | Required? |
-| :--------------- | :------- | :------------ | :-------- |
-| `userId`         | `string` | N/A           | Yes       |
-| `followeeUserId` | `string` | N/A           | Yes       |
+| Name             | Type     | Description                    | Required?    |
+| :--------------- | :------- | :----------------------------- | :----------- |
+| `userId`         | `string` | The ID of the user             | **Required** |
+| `followeeUserId` | `string` | The ID of the user to unfollow | **Required** |
 
 #### `advancedOptions`
 
@@ -702,7 +706,9 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{ blockHash: string; blockNumber: number }>;
+```
 
 ---
 
@@ -725,10 +731,10 @@ await audiusSdk.users.subscribeToUser({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name               | Type     | Default value | Required? |
-| :----------------- | :------- | :------------ | :-------- |
-| `userId`           | `string` | N/A           | Yes       |
-| `subscribeeUserId` | `string` | N/A           | Yes       |
+| Name               | Type     | Description                        | Required?    |
+| :----------------- | :------- | :--------------------------------- | :----------- |
+| `userId`           | `string` | The ID of the user                 | **Required** |
+| `subscribeeUserId` | `string` | The ID of the user to subscribe to | **Required** |
 
 #### `advancedOptions
 
@@ -740,7 +746,9 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{ blockHash: string; blockNumber: number }>;
+```
 
 ---
 
@@ -763,10 +771,10 @@ await audiusSdk.users.unsubscribeFromUser({
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
-| Name               | Type     | Default value | Required? |
-| :----------------- | :------- | :------------ | :-------- |
-| `userId`           | `string` | N/A           | Yes       |
-| `subscribeeUserId` | `string` | N/A           | Yes       |
+| Name               | Type     | Description                            | Required?    |
+| :----------------- | :------- | :------------------------------------- | :----------- |
+| `userId`           | `string` | The ID of the user                     | **Required** |
+| `subscribeeUserId` | `string` | The ID of the user to unsubscribe from | **Required** |
 
 #### `advancedOptions`
 
@@ -778,4 +786,6 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 
 Return type:
 
-`Promise<{ blockHash: string; blockNumber: number; }>`
+```ts
+Promise<{ blockHash: string; blockNumber: number }>;
+```
