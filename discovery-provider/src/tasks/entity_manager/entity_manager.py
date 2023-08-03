@@ -5,8 +5,6 @@ from typing import Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
-from web3.types import TxReceipt
-
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
@@ -77,6 +75,7 @@ from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
+from web3.types import TxReceipt
 
 logger = StructuredLogger(__name__)
 
@@ -660,7 +659,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 def get_entity_manager_events_tx(update_task, tx_receipt):
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
-    )().processReceipt(tx_receipt)
+    )().process_receipt(tx_receipt)
 
 
 def create_and_raise_indexing_error(err, redis, session):

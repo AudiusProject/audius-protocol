@@ -21,6 +21,7 @@ import "./edit-track.mjs";
 import "./mint-audio.mjs";
 import "./tip-audio.mjs";
 import "./auth-headers.mjs";
+import "./get-audio-balance.mjs";
 
 async function main() {
   program.parseAsync(process.argv);

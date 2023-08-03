@@ -121,7 +121,7 @@ def update_playlist_routes_table(
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
-    return getattr(update_task.playlist_contract.events, event_type)().processReceipt(
+    return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
         tx_receipt
     )
 

@@ -19,10 +19,6 @@
           "type": ["string", "null"],
           "default": null
         },
-        "length": {
-          "type": ["integer", "null"],
-          "default": null
-        },
         "preview_start_seconds": {
           "type": ["float", "null"],
           "default": null
@@ -327,18 +323,18 @@
           "enum": ["ERC721", "ERC1155"]
         },
         "name": {
-            "type": "string"
+          "type": "string"
         },
         "slug": {
-            "type": "string"
+          "type": "string"
         },
-        "imageUrl":  {
-            "type": ["string", "null"],
-            "default": null
+        "imageUrl": {
+          "type": ["string", "null"],
+          "default": null
         },
         "externalLink": {
-            "type": ["string", "null"],
-            "default": null
+          "type": ["string", "null"],
+          "default": null
         }
       },
       "required": ["chain", "address", "standard", "name", "slug"],
@@ -356,15 +352,15 @@
           "type": "string"
         },
         "name": {
-            "type": "string"
+          "type": "string"
         },
-        "imageUrl":  {
-            "type": ["string", "null"],
-            "default": null
+        "imageUrl": {
+          "type": ["string", "null"],
+          "default": null
         },
         "externalLink": {
-            "type": ["string", "null"],
-            "default": null
+          "type": ["string", "null"],
+          "default": null
         }
       },
       "required": ["chain", "address", "name"],

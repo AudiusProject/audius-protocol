@@ -1,7 +1,6 @@
 import logging
 
 import requests
-
 from src.queries.get_skipped_transactions import set_indexing_error
 from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 
@@ -20,6 +19,9 @@ def confirm_indexing_transaction_error(
     given a blocknumber, blockhash, and transactionhash
     """
     all_other_nodes = get_all_other_discovery_nodes_cached(redis)
+    if not all_other_nodes:
+        return False
+
     num_other_nodes = len(all_other_nodes)
     num_transaction_failures = 0
     for node in all_other_nodes:
