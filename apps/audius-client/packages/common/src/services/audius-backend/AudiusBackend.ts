@@ -3241,7 +3241,7 @@ export const audiusBackend = ({
       const tx = await getCreateAssociatedTokenAccountTransaction({
         feePayerKey: SolanaUtils.newPublicKeyNullable(phantomWallet),
         solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
-        mintKey: audiusLibs.solanaWeb3Manager.mintKey,
+        mintKey: audiusLibs.solanaWeb3Manager.mints.audio,
         solanaTokenProgramKey: audiusLibs.solanaWeb3Manager.solanaTokenKey,
         connection: audiusLibs.solanaWeb3Manager.connection
       })
