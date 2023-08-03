@@ -89,6 +89,36 @@ Promise<{
 
 ---
 
+### getAlbumTracks
+
+#### getAlbumTracks(`params`)
+
+Get the tracks in an album.
+
+Example:
+
+```typescript
+const { data: tracks } = await audiusSdk.albums.getAlbumTracks({
+  albumId: "D7KyD",
+});
+
+console.log(tracks);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name      | Type     | Description         | Required?    |
+| :-------- | :------- | :------------------ | :----------- |
+| `albumId` | `string` | The ID of the album | **Required** |
+
+#### Returns
+
+The return type is the same as [`getBulkTracks`](Tracks#getbulktracks)
+
+---
+
 ### uploadAlbum
 
 #### uploadAlbum(`params`, `advancedOptions?`)
