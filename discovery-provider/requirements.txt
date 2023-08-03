@@ -28,7 +28,7 @@ pytest-cov==2.6.0
 pytest-dotenv==0.5.2
 elasticsearch==8.1.2
 flask-cors==4.0.0
-gunicorn==20.0.4
+gunicorn==21.2.0
 jsonschema==4.4.0
 flask-restx==0.4.0
 hashids==1.2.0
