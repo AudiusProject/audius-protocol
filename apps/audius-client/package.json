@@ -9,6 +9,8 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
+    "clean": "rm -rf packages/web/build* && cd packages/mobile && npm run clean:auto && cd ../..",
+    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "WEB========================================": "",
     "web:dev": "cd packages/web && npm run start:dev",
     "web:stage": "cd packages/web && npm run start:stage",
