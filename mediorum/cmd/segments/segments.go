@@ -1,13 +1,12 @@
 package segments
 
 import (
-	"bufio"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,8 +18,17 @@ const (
 )
 
 type mediorumClient struct {
-	db     *sql.DB
+	db           *sql.DB
+	isTest       bool
+	delete       bool
+	dbNumFound   int64
+	diskNumFound int64
+	mu           sync.Mutex
+}
+
+type MediorumClientConfig struct {
 	isTest bool
+	Delete bool
 }
 
 func init() {
@@ -55,7 +63,7 @@ func waitForPostgresConnection(db *sql.DB) {
 	log.Fatalf("Could not connect to DB after %d attempts, last error: %v", maxRetries, err)
 }
 
-func newMediorumClient() (*mediorumClient, error) {
+func newMediorumClient(c *MediorumClientConfig) (*mediorumClient, error) {
 
 	dbUrl := os.Getenv("dbUrl")
 	if dbUrl == "" {
@@ -70,7 +78,11 @@ func newMediorumClient() (*mediorumClient, error) {
 	waitForPostgresConnection(db)
 
 	return &mediorumClient{
-		db: db,
+		db:           db,
+		isTest:       c.isTest,
+		delete:       c.Delete,
+		dbNumFound:   0,
+		diskNumFound: 0,
 	}, nil
 }
 
@@ -85,98 +97,61 @@ func (m *mediorumClient) close() error {
 	return nil
 }
 
-func (m *mediorumClient) scanForSegments() (string, error) {
-
-	fmt.Println("scanForSegments")
-
+func (m *mediorumClient) scanForSegments(storagePathChan chan<- string) error {
 	tableName := "Files"
 	if m.isTest {
 		tableName = "FilesTest"
 	}
-	rows, err := m.db.Query(fmt.Sprintf(`SELECT "storagePath" FROM "%s" where "type" = 'track';`, tableName))
+
+	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" = 'track';`, tableName)
+	fmt.Printf("\nPerforming sql: %s\n", sql)
+
+	rows, err := m.db.Query(sql)
 	if err != nil {
-		log.Fatalf("Failed to execute query: %v", err)
+		return err
 	}
 	defer rows.Close()
 
-	outfileName := "segments-output.txt"
-	if m.isTest {
-		outfileName = "segments_test-output.txt"
-	}
-	outfile, err := os.Create(outfileName)
-	if err != nil {
-		log.Fatalf("Failed to create output file: %v", err)
-	}
-
-	writer := bufio.NewWriter(outfile)
-
 	batch := make([]string, 0, batchSize)
 	for rows.Next() {
+		m.dbNumFound++
 		var fileLocation string
 		if err := rows.Scan(&fileLocation); err != nil {
-			log.Fatalf("Failed to scan row: %v", err)
+			return err
 		}
 
 		batch = append(batch, fileLocation)
 		if len(batch) >= batchSize {
-			m.processBatch(batch, writer)
+			m.processBatch(batch, storagePathChan)
 			batch = batch[:0]
 		}
 	}
 
 	if err := rows.Err(); err != nil {
-		log.Fatalf("Rows iteration error: %v", err)
+		return err
 	}
 
-	// process remaining batch if any
+	// Process remaining batch if any
 	if len(batch) > 0 {
-		m.processBatch(batch, writer)
+		m.processBatch(batch, storagePathChan)
 	}
 
-	path, err := filepath.Abs(outfile.Name())
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-
-	if err = writer.Flush(); err != nil {
-		return path, err
-	}
-
-	if err = outfile.Close(); err != nil {
-		return path, err
-	}
-
-	fmt.Println()
-
-	return path, nil
+	return nil
 }
 
-func (m *mediorumClient) processBatch(batch []string, writer *bufio.Writer) {
+func (m *mediorumClient) processBatch(batch []string, storagePathChan chan<- string) {
 	fmt.Printf(".")
 	for _, fileLocation := range batch {
 		if _, err := os.Stat(fileLocation); err == nil {
-			if _, err := fmt.Fprintln(writer, fileLocation); err != nil {
-				log.Fatalf("Failed to write to output file: %v", err)
-			}
+			storagePathChan <- fileLocation
 		}
 	}
 }
 
-func (m *mediorumClient) deleteSegmentsAndRows(filepath string) error {
-	fmt.Println("deleteSegmentsAndRows")
-
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
+func (m *mediorumClient) processSegments(storagePathChan <-chan string) error {
 	var batch []string
-	for scanner.Scan() {
-		batch = append(batch, scanner.Text())
+	for fileLocation := range storagePathChan {
+		batch = append(batch, fileLocation)
 		if len(batch) >= batchSize {
 			if err := m.deleteBatch(batch); err != nil {
 				return err
@@ -191,74 +166,96 @@ func (m *mediorumClient) deleteSegmentsAndRows(filepath string) error {
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	fmt.Println()
-
 	return nil
 }
 
 func (m *mediorumClient) deleteBatch(batch []string) error {
-	fmt.Printf(".")
-	tx, err := m.db.Begin()
-	if err != nil {
-		return err
-	}
-
-	tableName := "Files"
-	if m.isTest {
-		tableName = "FilesTest"
-	}
-	stmt, err := tx.Prepare(fmt.Sprintf(`DELETE FROM "%s" WHERE "storagePath" = $1`, tableName))
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
 	for _, path := range batch {
 		if _, err := os.Stat(path); err == nil {
-			if err := os.Remove(path); err != nil {
-				tx.Rollback()
-				return err
+			if m.delete {
+				if err := os.Remove(path); err != nil {
+					if os.IsNotExist(err) {
+						continue
+					} else {
+						return err
+					}
+				}
 			}
-
-			if _, err := stmt.Exec(path); err != nil {
-				tx.Rollback()
-				return err
-			}
+			m.mu.Lock()
+			m.diskNumFound++
+			m.mu.Unlock()
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }
 
-func Run(delete bool) {
+func Run(c *MediorumClientConfig) {
 	var (
-		err            error
-		m              *mediorumClient
-		outputFilepath string
+		err error
+		m   *mediorumClient
+		wg  sync.WaitGroup
 	)
 
-	if !delete {
+	m, err = newMediorumClient(c)
+	defer m.close()
+
+	if !m.delete {
 		fmt.Println("Performing dry run. Use `--delete` to remove segment files and rows.")
 	}
 
-	m, err = newMediorumClient()
-	defer m.close()
+	storagePathChan := make(chan string, batchSize)
 
-	outputFilepath, err = m.scanForSegments()
-	if err != nil {
-		log.Fatalf("Failed to call segments.Run(): %v", err)
+	wg.Add(1)
+	go func() {
+		err = m.scanForSegments(storagePathChan)
+		defer close(storagePathChan) // signal when no more work to be done
+		if err != nil {
+			log.Fatalf("Failed to call segments.Run(): %v", err)
+		}
+		wg.Done()
+	}()
+
+	numWorkers := 5
+	wg.Add(numWorkers)
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			err = m.processSegments(storagePathChan)
+			if err != nil {
+				log.Fatalf("Failed to delete segments and rows: %v", err)
+			}
+			wg.Done()
+		}()
 	}
 
-	if delete {
-		err = m.deleteSegmentsAndRows(outputFilepath)
-		if err != nil {
-			log.Fatalf("Failed to delete segments and rows: %v", err)
+	wg.Wait()
+
+	fmt.Printf("\nFound  : %d rows  of type 'track' in the db.\n", m.dbNumFound)
+	fmt.Printf("Found  : %d files of type 'track' on disk.\n", m.diskNumFound)
+
+	// cleanup db in a single op. non spammy
+	if m.delete {
+		tableName := "Files"
+		if m.isTest {
+			tableName = "FilesTest"
 		}
 
-		fmt.Println("Completed deletion of segments and rows.")
+		sql := fmt.Sprintf(`DELETE FROM "%s" WHERE "type" = 'track'`, tableName)
+		fmt.Printf("\nPerforming sql: %s\n", sql)
+
+		res, err := m.db.Exec(sql)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		rowCount, err := res.RowsAffected()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("Deleted: %d rows  of type 'track' from '%s' table.\n", rowCount, tableName)
+		fmt.Printf("Deleted: %d files of type 'track' on disk.\n", m.diskNumFound)
 	}
+
+	fmt.Println("\nDONE.")
 }

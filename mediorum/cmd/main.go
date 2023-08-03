@@ -76,7 +76,12 @@ func main() {
 		segmentsCmd := flag.NewFlagSet("segments", flag.ExitOnError)
 		segmentsCmdDelete := segmentsCmd.Bool("delete", false, "Delete files and corresponding database rows if set to true")
 		segmentsCmd.Parse(os.Args[2:])
-		segments.Run(*segmentsCmdDelete)
+
+		c := &segments.MediorumClientConfig{
+			Delete: *segmentsCmdDelete,
+		}
+
+		segments.Run(c)
 	default:
 		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments>`")
 	}

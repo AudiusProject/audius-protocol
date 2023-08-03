@@ -26,8 +26,8 @@ build::
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-cmd-linux-amd64 cmd/main.go
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t endliine/mediorum:latest
-	docker push endliine/mediorum:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
+	docker push audius/mediorum:latest
 
 psql::
 	docker compose up -d --wait

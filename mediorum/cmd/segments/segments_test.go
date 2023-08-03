@@ -1,7 +1,7 @@
 package segments
 
 import (
-	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,16 +13,16 @@ type FileRow struct {
 	Type        string
 }
 
-func newMediorumTestClient() (*mediorumClient, error) {
-	m, err := newMediorumClient()
-	if err != nil {
-		return m, err
-	}
-	m.isTest = true
+func generateTestFixtures(m *mediorumClient) {
+
+	var err error
 
 	baseDir := "/tmp/mediorum_test"
-	directories := []string{"111", "222", "333", "444"}
-	files := []string{"Qmaaa-segment", "Qmbbb-segment", "Qmccc-copy320"}
+	directories := []string{"111", "222", "333", "444", "555", "666", "777"}
+	files := []string{"Qmaaa", "Qmbbb", "Qmccc"}
+	types := []string{"track", "track", "copy320"}
+
+	data := []FileRow{}
 
 	for _, dir := range directories {
 		dirPath := filepath.Join(baseDir, dir)
@@ -32,12 +32,15 @@ func newMediorumTestClient() (*mediorumClient, error) {
 			log.Fatal(err)
 		}
 
-		for _, fileName := range files {
-			file, err := os.Create(filepath.Join(dirPath, fileName))
+		for i, fileName := range files {
+			absPath := filepath.Join(dirPath, fmt.Sprintf("%s-%s", fileName, types[i]))
+			file, err := os.Create(absPath)
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer file.Close()
+
+			data = append(data, FileRow{StoragePath: absPath, Type: types[i]})
 		}
 	}
 
@@ -53,75 +56,39 @@ func newMediorumTestClient() (*mediorumClient, error) {
 		log.Fatal("Failed to create table: ", err)
 	}
 
-	data := []FileRow{
-		{StoragePath: filepath.Join(baseDir, "111/Qmaaa-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "111/Qmbbb-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "111/Qmccc-copy320"), Type: "copy320"},
-		{StoragePath: filepath.Join(baseDir, "222/Qmaaa-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "222/Qmbbb-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "222/Qmccc-copy320"), Type: "copy320"},
-		{StoragePath: filepath.Join(baseDir, "333/Qmaaa-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "333/Qmbbb-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "333/Qmccc-copy320"), Type: "copy320"},
-		{StoragePath: filepath.Join(baseDir, "444/Qmaaa-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "444/Qmbbb-segment"), Type: "track"},
-		{StoragePath: filepath.Join(baseDir, "444/Qmccc-copy320"), Type: "copy320"},
-	}
-
 	for _, row := range data {
 		_, err := m.db.Exec(`INSERT INTO "FilesTest" ("storagePath", "type") VALUES ($1, $2)`, row.StoragePath, row.Type)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-
-	return m, nil
 }
 
 func TestDropSegments(t *testing.T) {
 
-	NUM_FIXTURES := 12
-	NUM_SEGMENTS := 8
+	NUM_FIXTURES := 21
+	NUM_SEGMENTS := 14
 
 	var (
-		err            error
-		m              *mediorumClient
-		outputFilepath string
-		actual         int
+		err error
+		m   *mediorumClient
 	)
 
-	m, err = newMediorumTestClient()
+	c := &MediorumClientConfig{
+		Delete: true,
+		isTest: true,
+	}
+
+	m, err = newMediorumClient(c)
+	if err != nil {
+		log.Fatalf("Failed to create mediorumClient: %v", err)
+	}
+	m.isTest = true
 	defer m.close()
 
-	outputFilepath, err = m.scanForSegments()
-	if err != nil {
-		t.Errorf("scanForSegments fail: %v", err)
-	}
+	generateTestFixtures(m)
 
-	file, err := os.Open(outputFilepath)
-	if err != nil {
-		t.Fatalf("Failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	actual = 0
-	for scanner.Scan() {
-		actual++
-	}
-
-	if err := scanner.Err(); err != nil {
-		t.Fatalf("Failed to read file: %v", err)
-	}
-
-	if actual != NUM_SEGMENTS {
-		t.Errorf("Expected line count to be %d, but got %d", NUM_SEGMENTS, actual)
-	}
-
-	m.deleteSegmentsAndRows(outputFilepath)
-	if err != nil {
-		log.Fatalf("Failed to delete segments and rows: %v", err)
-	}
+	Run(c)
 
 	var count int
 	err = m.db.QueryRow(`SELECT COUNT(*) FROM "FilesTest"`).Scan(&count)
