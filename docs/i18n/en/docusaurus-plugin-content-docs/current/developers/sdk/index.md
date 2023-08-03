@@ -64,18 +64,18 @@ If you plan to write data to Audius (e.g. upload a track, favorite a playlist, e
 ### Node.js example
 
 ```js title="In Node.js environment"
-import { sdk } from '@audius/sdk'
+import { sdk } from "@audius/sdk";
 
 const audiusSdk = sdk({
-  apiKey: 'Your API Key goes here',
-  apiSecret: 'Your API Secret goes here'
-})
+  apiKey: "Your API Key goes here",
+  apiSecret: "Your API Secret goes here",
+});
 ```
 
 ### HTML + JS example
 
 ```js title="In web page"
-const audiusSdk = window.audiusSdk({ apiKey: 'Your API key goes here' })
+const audiusSdk = window.audiusSdk({ apiKey: "Your API key goes here" });
 ```
 
 :::warning
@@ -96,46 +96,46 @@ If you included your API secret in the previous step, you'll be able do both rea
 
 ```js
 // Fetch your first track!
-const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
-console.log(track, 'Track fetched!')
+const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
+console.log(track, "Track fetched!");
 
 // If you initialized the SDK with your API secret, you can write data as well.
 // For example, to favorite the track above:
 const userId = (
   await audiusSdk.users.getUserByHandle({
-    handle: 'Your Audius handle goes here'
+    handle: "Your Audius handle goes here",
   })
-).data?.id
+).data?.id;
 const track = await audiusSdk.tracks.favoriteTrack({
-  trackId: 'D7KyD',
-  userId
-})
+  trackId: "D7KyD",
+  userId,
+});
 ```
 
 ## Full Node.js example
 
 ```js title="app.js" showLineNumbers
-import { sdk } from '@audius/sdk'
+import { sdk } from "@audius/sdk";
 
 const audiusSdk = sdk({
-  apiKey: 'Your API Key goes here',
-  apiSecret: 'Your API Secret goes here'
-})
+  apiKey: "Your API Key goes here",
+  apiSecret: "Your API Secret goes here",
+});
 
-const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
-console.log(track, 'Track fetched!')
+const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
+console.log(track, "Track fetched!");
 
 const userId = (
   await audiusSdk.users.getUserByHandle({
-    handle: 'Your Audius handle goes here'
+    handle: "Your Audius handle goes here",
   })
-).data?.id
+).data?.id;
 
 const track = await audiusSdk.tracks.favoriteTrack({
-  trackId: 'D7KyD',
-  userId
-})
-console.log('Track favorited!')
+  trackId: "D7KyD",
+  userId,
+});
+console.log("Track favorited!");
 ```
 
 :::note
@@ -149,8 +149,8 @@ Writing data (such as uploading or favoriting a track) is only possible if you p
 If you are using the sdk in a browser environment you will need to do:
 
 ```js
-import Web3 from 'web3'
-window.Web3 = Web3
+import Web3 from "web3";
+window.Web3 = Web3;
 ```
 
 :::
@@ -172,13 +172,13 @@ If your bundler doesn't automatically polyfill node libraries (like when using c
     <script>
       const fn = async () => {
         const audiusSdk = window.audiusSdk({
-          apiKey: 'Your API Key goes here'
-        })
-        const track = await audiusSdk.tracks.getTrack({ trackId: 'D7KyD' })
-        console.log(track, 'Track fetched!')
-      }
+          apiKey: "Your API Key goes here",
+        });
+        const track = await audiusSdk.tracks.getTrack({ trackId: "D7KyD" });
+        console.log(track, "Track fetched!");
+      };
 
-      fn()
+      fn();
     </script>
   </head>
   <body>
