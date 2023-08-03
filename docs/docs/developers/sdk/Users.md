@@ -627,7 +627,10 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{ blockHash: string; blockNumber: number }>;
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
 ```
 
 ---
@@ -667,7 +670,10 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{ blockHash: string; blockNumber: number }>;
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
 ```
 
 ---
@@ -707,7 +713,10 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{ blockHash: string; blockNumber: number }>;
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
 ```
 
 ---
@@ -747,7 +756,10 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{ blockHash: string; blockNumber: number }>;
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
 ```
 
 ---
@@ -787,5 +799,8 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{ blockHash: string; blockNumber: number }>;
+Promise<{
+  blockHash: string;
+  blockNumber: number;
+}>;
 ```
