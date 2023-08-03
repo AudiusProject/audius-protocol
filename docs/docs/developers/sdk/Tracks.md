@@ -238,6 +238,8 @@ Optionally create an object with the following fields and pass it as the first a
 
 The return type is the same as [`getBulkTracks`](#getbulktracks)
 
+---
+
 ### searchTracks
 
 #### searchTracks(`params`)
@@ -264,6 +266,8 @@ Create an object with the following fields and pass it as the first argument, as
 #### Returns
 
 The return type is the same as [`getBulkTracks`](#getbulktracks)
+
+---
 
 ### streamTrack
 
@@ -337,7 +341,7 @@ const { trackId } = await audiusSdk.tracks.uploadTrack({
 });
 ```
 
-#### `params`
+#### `parameters`
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
