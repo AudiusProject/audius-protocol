@@ -5,6 +5,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.sql.functions import coalesce
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType

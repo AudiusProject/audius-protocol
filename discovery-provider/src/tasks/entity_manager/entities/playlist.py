@@ -1,6 +1,5 @@
-from collections import defaultdict
 from datetime import datetime
-from typing import Dict, Set, cast
+from typing import cast
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -210,7 +209,9 @@ def create_playlist(params: ManageEntityParameters):
     last_added_to = None
     for track in tracks:
         if "track" not in track or "time" not in track:
-            raise IndexingValidationError(f"Cannot add {track} to playlist {playlist_id}")
+            raise IndexingValidationError(
+                f"Cannot add {track} to playlist {playlist_id}"
+            )
 
         tracks_with_index_time.append(
             {
@@ -323,7 +324,9 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for previous_track in previous_playlist_tracks:
             previous_track_id = previous_track["track"]
-            previous_track_time = previous_track.get("metadata_time") or previous_track["time"]
+            previous_track_time = (
+                previous_track.get("metadata_time") or previous_track["time"]
+            )
             if previous_track_id == track_id and previous_track_time == metadata_time:
                 index_time = previous_track_time
 

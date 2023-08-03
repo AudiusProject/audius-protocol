@@ -4,6 +4,9 @@ from datetime import datetime
 from typing import List
 
 import pytest
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -15,8 +18,6 @@ from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
