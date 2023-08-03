@@ -27,9 +27,9 @@ Create an object with the following fields and pass it as the first argument, as
 Returns a `Promise` containing an object with a `data` field. `data` is an object representing the resolved resource as described below.
 
 ```ts
-Promise<{
+{
   data: Track | Playlist | Album;
-}>;
+}
 ```
 
 ---

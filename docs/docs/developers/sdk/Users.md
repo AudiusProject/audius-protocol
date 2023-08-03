@@ -26,43 +26,39 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` contains information about the user as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    albumCount: number;
-    artistPickTrackId?: string;
-    bio?: string;
-    coverPhoto?: {
-      _2000?: string;
-      _640?: string;
-    };
-    doesFollowCurrentUser?: boolean;
-    ercWallet: string;
-    followeeCount: number;
-    followerCount: number;
-    handle: string;
-    id: string;
-    isAvailable: boolean;
-    isDeactivated: boolean;
-    isVerified: boolean;
-    location?: string;
-    name: string;
-    playlistCount: number;
-    profilePicture?: {
-      _1000x1000?: string;
-      _150x150?: string;
-      _480x480?: string;
-    };
-    repostCount: number;
-    splWallet: string;
-    supporterCount: number;
-    supportingCount: number;
-    totalAudioBalance: number;
-    trackCount: number;
+{
+  albumCount: number;
+  artistPickTrackId?: string;
+  bio?: string;
+  coverPhoto?: {
+    _2000?: string;
+    _640?: string;
   };
-}>;
+  doesFollowCurrentUser?: boolean;
+  ercWallet: string;
+  followeeCount: number;
+  followerCount: number;
+  handle: string;
+  id: string;
+  isAvailable: boolean;
+  isDeactivated: boolean;
+  isVerified: boolean;
+  location?: string;
+  name: string;
+  playlistCount: number;
+  profilePicture?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  repostCount: number;
+  splWallet: string;
+  supporterCount: number;
+  supportingCount: number;
+  totalAudioBalance: number;
+  trackCount: number;
+};
 ```
 
 ---
@@ -132,19 +128,15 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the authorized apps as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    address: string;
-    description?: string;
-    grantCreatedAt: string;
-    grantUpdatedAt: string;
-    grantorUserId: string;
-    name: string;
-  }[];
-}>;
+{
+  address: string;
+  description?: string;
+  grantCreatedAt: string;
+  grantUpdatedAt: string;
+  grantorUserId: string;
+  name: string;
+}[];
 ```
 
 ---
@@ -177,15 +169,11 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an object containing information about the wallets as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    ercWallets: string[];
-    splWallets: string[];
-  };
-}>;
+{
+  ercWallets: string[];
+  splWallets: string[];
+};
 ```
 
 ---
@@ -218,17 +206,13 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the developer apps as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    address: string;
-    description?: string;
-    name: string;
-    userId: string;
-  }[];
-}>;
+{
+  address: string;
+  description?: string;
+  name: string;
+  userId: string;
+}[];
 ```
 
 ---
@@ -261,17 +245,14 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the favorites as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    createdAt: string;
-    favoriteItemId: string; // The ID of the track, playlist, or album
-    favoriteType: string; // The type of favorite ("track", "playlist", or "album")
-    userId: string;
-  }[];
-}>;
+{
+  createdAt: string;
+  favoriteItemId: string; // The ID of the track, playlist, or album
+  favoriteType: string; // The type of favorite ("track", "playlist", or "album")
+  userId: string;
+}
+[];
 ```
 
 ---
@@ -306,43 +287,39 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the followers as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    albumCount: number;
-    artistPickTrackId?: string;
-    bio?: string;
-    coverPhoto?: {
-      _2000?: string;
-      _640?: string;
-    };
-    doesFollowCurrentUser?: boolean;
-    ercWallet: string;
-    followeeCount: number;
-    followerCount: number;
-    handle: string;
-    id: string;
-    isAvailable: boolean;
-    isDeactivated: boolean;
-    isVerified: boolean;
-    location?: string;
-    name: string;
-    playlistCount: number;
-    profilePicture?: {
-      _1000x1000?: string;
-      _150x150?: string;
-      _480x480?: string;
-    };
-    repostCount: number;
-    splWallet: string;
-    supporterCount: number;
-    supportingCount: number;
-    totalAudioBalance: number;
-    trackCount: number;
-  }[];
-}>;
+{
+  albumCount: number;
+  artistPickTrackId?: string;
+  bio?: string;
+  coverPhoto?: {
+    _2000?: string;
+    _640?: string;
+  };
+  doesFollowCurrentUser?: boolean;
+  ercWallet: string;
+  followeeCount: number;
+  followerCount: number;
+  handle: string;
+  id: string;
+  isAvailable: boolean;
+  isDeactivated: boolean;
+  isVerified: boolean;
+  location?: string;
+  name: string;
+  playlistCount: number;
+  profilePicture?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  repostCount: number;
+  splWallet: string;
+  supporterCount: number;
+  supportingCount: number;
+  totalAudioBalance: number;
+  trackCount: number;
+}[];
 ```
 
 ---
@@ -442,15 +419,13 @@ Returns a `Promise` containing an object with a `data` field. `data` is an array
 Return type:
 
 ```ts
-Promise<{
-  data: {
-    item?: {
-      id: string;
-    }; // The entire item is returned, always contains id
-    itemType?: string; // The type of the item ("track", "playlist", or "album")
-    timestamp?: string;
-  }[];
-}>;
+{
+  item?: {
+    id: string;
+  }; // The entire item is returned, always contains id
+  itemType?: string; // The type of the item ("track", "playlist", or "album")
+  timestamp?: string;
+}[];
 ```
 
 ---
@@ -519,47 +494,43 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supporters as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    amount: string;
-    rank: number;
-    sender: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
-      coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
-      profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
+{
+  amount: string;
+  rank: number;
+  sender: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
     };
-  }[];
-}>;
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
 ```
 
 ---
@@ -594,47 +565,43 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the supportings as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    amount: string;
-    rank: number;
-    receiver: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
-      coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
-      profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
+{
+  amount: string;
+  rank: number;
+  receiver: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
     };
-  }[];
-}>;
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
+      _1000x1000?: string;
+      _150x150?: string;
+      _480x480?: string;
+    };
+    repostCount: number;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
 ```
 
 ---
@@ -669,12 +636,8 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of strings representing the tags
 
-Return type:
-
 ```ts
-Promise<{
-  data: string[]
->
+string[]
 ```
 
 ---
@@ -773,14 +736,10 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an object containing the user id as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    userId: string;
-  };
-}>;
+{
+  userId: string;
+}
 ```
 
 ---
@@ -862,13 +821,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -905,13 +862,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -948,13 +903,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -991,13 +944,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -1034,11 +985,9 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```

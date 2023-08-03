@@ -26,68 +26,64 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` contains information about the track as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    artwork?: {
+{
+  artwork?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  description?: string;
+  downloadable?: boolean;
+  duration: number;
+  favoriteCount: number;
+  genre?: string;
+  id: string;
+  isStreamable?: string;
+  mood?: string;
+  permalink?: string;
+  playCount: number;
+  releaseDate: string;
+  remixOf?: {
+    tracks: { parentTrackId: string }[];
+  };
+  repostCount: number;
+  tags?: string[];
+  title: string;
+  trackCid?: string;
+  user: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
       _1000x1000?: string;
       _150x150?: string;
       _480x480?: string;
     };
-    description?: string;
-    downloadable?: boolean;
-    duration: number;
-    favoriteCount: number;
-    genre?: string;
-    id: string;
-    isStreamable?: string;
-    mood?: string;
-    permalink?: string;
-    playCount: number;
-    releaseDate: string;
-    remixOf?: {
-      tracks: { parentTrackId: string }[];
-    };
     repostCount: number;
-    tags?: string[];
-    title: string;
-    trackCid?: string;
-    user: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
-      coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
-      profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
-    };
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
   };
-}>;
+};
 ```
 
 ---
@@ -120,68 +116,64 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing an object with a `data` field. `data` is an array of items containing information about the tracks as described below.
 
-Return type:
-
 ```ts
-Promise<{
-  data: {
-    artwork?: {
+{
+  artwork?: {
+    _1000x1000?: string;
+    _150x150?: string;
+    _480x480?: string;
+  };
+  description?: string;
+  downloadable?: boolean;
+  duration: number;
+  favoriteCount: number;
+  genre?: string;
+  id: string;
+  isStreamable?: string;
+  mood?: string;
+  permalink?: string;
+  playCount: number;
+  releaseDate: string;
+  remixOf?: {
+    tracks: { parentTrackId: string }[];
+  };
+  repostCount: number;
+  tags?: string[];
+  title: string;
+  trackCid?: string;
+  user: {
+    albumCount: number;
+    artistPickTrackId?: string;
+    bio?: string;
+    coverPhoto?: {
+      _2000?: string;
+      _640?: string;
+    };
+    doesFollowCurrentUser?: boolean;
+    ercWallet: string;
+    followeeCount: number;
+    followerCount: number;
+    handle: string;
+    id: string;
+    isAvailable: boolean;
+    isDeactivated: boolean;
+    isVerified: boolean;
+    location?: string;
+    name: string;
+    playlistCount: number;
+    profilePicture?: {
       _1000x1000?: string;
       _150x150?: string;
       _480x480?: string;
     };
-    description?: string;
-    downloadable?: boolean;
-    duration: number;
-    favoriteCount: number;
-    genre?: string;
-    id: string;
-    isStreamable?: string;
-    mood?: string;
-    permalink?: string;
-    playCount: number;
-    releaseDate: string;
-    remixOf?: {
-      tracks: { parentTrackId: string }[];
-    };
     repostCount: number;
-    tags?: string[];
-    title: string;
-    trackCid?: string;
-    user: {
-      albumCount: number;
-      artistPickTrackId?: string;
-      bio?: string;
-      coverPhoto?: {
-        _2000?: string;
-        _640?: string;
-      };
-      doesFollowCurrentUser?: boolean;
-      ercWallet: string;
-      followeeCount: number;
-      followerCount: number;
-      handle: string;
-      id: string;
-      isAvailable: boolean;
-      isDeactivated: boolean;
-      isVerified: boolean;
-      location?: string;
-      name: string;
-      playlistCount: number;
-      profilePicture?: {
-        _1000x1000?: string;
-        _150x150?: string;
-        _480x480?: string;
-      };
-      repostCount: number;
-      splWallet: string;
-      supporterCount: number;
-      supportingCount: number;
-      totalAudioBalance: number;
-      trackCount: number;
-    };
-  }[];
-}>;
+    splWallet: string;
+    supporterCount: number;
+    supportingCount: number;
+    totalAudioBalance: number;
+    trackCount: number;
+  };
+}[];
 ```
 
 ---
@@ -297,12 +289,6 @@ Create an object with the following fields and pass it as the first argument, as
 
 Returns a `Promise` containing a `string` url which can be used to stream the track.
 
-Return type:
-
-```ts
-Promise<string>;
-```
-
 ---
 
 ### uploadTrack
@@ -359,14 +345,12 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the new track's ID (`trackId`), as well as the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
   trackId: string;
-}>;
+}
 ```
 
 ---
@@ -422,13 +406,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -465,13 +447,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -509,13 +489,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -552,13 +530,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -599,10 +575,10 @@ Returns a `Promise` containing an object with the block hash (`blockHash`) and b
 Return type:
 
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
@@ -639,13 +615,11 @@ You can pass an optional [`advancedOptions`](/developers/advancedOptions) object
 
 Returns a `Promise` containing an object with the block hash (`blockHash`) and block number (`blockNumber`) for the transaction.
 
-Return type:
-
 ```ts
-Promise<{
+{
   blockHash: string;
   blockNumber: number;
-}>;
+}
 ```
 
 ---
