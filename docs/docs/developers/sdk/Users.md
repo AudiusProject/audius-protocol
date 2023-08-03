@@ -1,3 +1,44 @@
+### getConnectedWallets
+
+#### getConnectedWallets(`params`)
+
+Get a user's connected ERC and SPL wallets.
+
+Example:
+
+```typescript
+const { data: wallets } = await audiusSdk.users.getConnectedWallets({
+  id: "eAZl3",
+});
+
+console.log(wallets);
+```
+
+#### Params
+
+Create an object with the following fields and pass it as the first argument, as shown in the example above.
+
+| Name | Type     | Description        | Required?    |
+| :--- | :------- | :----------------- | :----------- |
+| `id` | `string` | The ID of the user | **Required** |
+
+#### Returns
+
+Returns a `Promise` containing an object with a `data` field. `data` is an obect containing information about the wallets as described below.
+
+Return type:
+
+```ts
+Promise<{
+  data: {
+    ercWallets: string[];
+    splWallets: string[];
+  };
+}>;
+```
+
+---
+
 ### getFavorites
 
 #### getFavorites(`params`)
