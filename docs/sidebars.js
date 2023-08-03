@@ -85,6 +85,10 @@ module.exports = {
             },
             {
               type: "doc",
+              id: "developers/sdk/Resolve",
+            },
+            {
+              type: "doc",
               id: "developers/sdk-oauth-methods",
             },
           ],
