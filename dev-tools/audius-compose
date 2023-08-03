@@ -100,7 +100,7 @@ def generate_env(
 
     for name, secret_key in config.get("solana-accounts", {}).items():
         keypair = solders.keypair.Keypair.from_bytes(bytes(secret_key))
-        env[f"{name}_SECRET_KEY"] = json.dumps(list(keypair.secret()))
+        env[f"{name}_SECRET_KEY"] = json.dumps(list(bytes(keypair)))
         env[f"{name}_PUBLIC_KEY"] = str(keypair.pubkey())
 
     eth_relayer_wallets = []
