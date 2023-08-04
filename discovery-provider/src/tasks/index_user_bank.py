@@ -5,8 +5,6 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, Union
 
-from discovery-provider.src.exceptions import SolanaTransactionFetchError
-
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
@@ -14,6 +12,7 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
