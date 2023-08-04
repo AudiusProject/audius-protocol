@@ -77,23 +77,33 @@ export const relayTransaction = async (
   log("signed and sent");
 
   // query chain until tx is mined
-  const receipt = await confirm(web3, submit.hash)
+  const receipt = await confirm(web3, submit.hash);
   return { receipt, transaction };
 };
 
-const confirm = async (web3: ethers.providers.JsonRpcProvider, txHash: string): Promise<TransactionReceipt> => {
-  const result = await Promise.race([confirmIndefinitely(web3, txHash), delay(6000)])
-  if (result === undefined) throw new Error(`txhash ${txHash} could not be confirmed`)
-  return result as TransactionReceipt
-}
+const confirm = async (
+  web3: ethers.providers.JsonRpcProvider,
+  txHash: string
+): Promise<TransactionReceipt> => {
+  const result = await Promise.race([
+    confirmIndefinitely(web3, txHash),
+    delay(6000),
+  ]);
+  if (result === undefined)
+    throw new Error(`txhash ${txHash} could not be confirmed`);
+  return result as TransactionReceipt;
+};
 
-const confirmIndefinitely = async (web3: ethers.providers.JsonRpcProvider, txHash: string): Promise<TransactionReceipt> => {
-  const receipt = await web3.getTransactionReceipt(txHash)
-  if (receipt !== null) return receipt
-  await delay(500)
-  return confirmIndefinitely(web3, txHash)
-}
+const confirmIndefinitely = async (
+  web3: ethers.providers.JsonRpcProvider,
+  txHash: string
+): Promise<TransactionReceipt> => {
+  const receipt = await web3.getTransactionReceipt(txHash);
+  if (receipt !== null) return receipt;
+  await delay(500);
+  return confirmIndefinitely(web3, txHash);
+};
 
 const delay = (ms: number) => {
-  return new Promise( resolve => setTimeout(resolve, ms) );
-}
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

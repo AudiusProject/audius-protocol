@@ -1,10 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { logger } from "../logger";
 import { RelayRequestType } from "../types/relay";
-import {
-  RelayRateLimiter,
-  ValidLimits,
-} from "./rateLimitConfig";
+import { RelayRateLimiter, ValidLimits } from "./rateLimitConfig";
 import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
@@ -21,7 +18,7 @@ export const relayRateLimiter = async (
     body: { encodedABI },
   } = req;
 
-  logger.info({ config })
+  logger.info({ config });
 
   const operation = getEntityManagerActionKey(encodedABI);
   const signer = AudiusABIDecoder.recoverSigner({
@@ -31,8 +28,8 @@ export const relayRateLimiter = async (
   });
 
   const discoveryDb = app.getDnDb();
-  const limit = await determineLimit(discoveryDb, [], signer)
-  logger.info({ limit })
+  const limit = await determineLimit(discoveryDb, [], signer);
+  logger.info({ limit });
 
   try {
     const res = await globalRateLimiter.consume({
@@ -84,15 +81,15 @@ const insertReplyHeaders = (rep: FastifyReply, data: RateLimiterRes) => {
 const determineLimit = async (
   discoveryDb: Knex,
   allowlist: string[],
-  signer: string,
+  signer: string
 ): Promise<ValidLimits> => {
-    const isAllowed = allowlist.includes(signer)
-    if (isAllowed) return "whitelist"
-    const user = await discoveryDb<Users>(Table.Users)
-        .where('wallet', '=', signer)
-        .andWhere('is_current', '=', true)
-        .first()
-    logger.info({ user, signer })
-    if (user !== undefined) return "owner"
-    return "app"
+  const isAllowed = allowlist.includes(signer);
+  if (isAllowed) return "whitelist";
+  const user = await discoveryDb<Users>(Table.Users)
+    .where("wallet", "=", signer)
+    .andWhere("is_current", "=", true)
+    .first();
+  logger.info({ user, signer });
+  if (user !== undefined) return "owner";
+  return "app";
 };

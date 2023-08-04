@@ -50,6 +50,6 @@ const relayPostConfig = {
       200: RelayResponse,
     },
   },
-  //
+  // middlewares
   preHandler: [relayRateLimiter],
 };

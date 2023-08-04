@@ -19,9 +19,10 @@ export type Config = {
 };
 
 export const readConfig = (): Config => {
-  dotenv.config();
+  const environment = process.env.environment || "local";
+  logger.info(`running on ${environment} network`);
+  dotenv.config({ path: `${environment}.env` });
   const entityManagerContractAddress = (): string => {
-    const environment = process.env.environment || "stage"
     switch (environment) {
       case "prod":
         return productionConfig.entityManagerContractAddress;
@@ -31,12 +32,12 @@ export const readConfig = (): Config => {
         return developmentConfig.entityManagerContractAddress;
     }
   };
-  logger.info(`running on ${process.env.ENVIRONMENT} network`);
+  if (process.env.acdcChainId === undefined)
+    throw new Error("acdcChainId not configured");
   return {
-    environment: process.env.environment || "dev",
-    rpcEndpoint:
-      process.env.rpcEndpoint || "https://poa-gateway.staging.audius.co",
-    acdcChainId: process.env.acdcChainId || "1056801",
+    environment,
+    rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
+    acdcChainId: process.env.acdcChainId,
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
     requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
@@ -55,9 +56,10 @@ export type AntiAbuseConfig = {
 };
 
 export const newAntiAbuseConfig = (): AntiAbuseConfig => {
+  if (process.env.antiAbuseOracle === undefined)
+    throw new Error("antiAbuseOracle not defined");
   return {
-    antiAbuseOracleUrl:
-      process.env.antiAbuseOracle || "https://antiabuseoracle.audius.co",
+    antiAbuseOracleUrl: process.env.antiAbuseOracle,
     allowRules: new Set([14, 17]),
     blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
