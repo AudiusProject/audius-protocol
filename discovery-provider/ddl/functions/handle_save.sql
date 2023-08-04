@@ -57,7 +57,7 @@ begin
         insert into action_log
           (actor_user_id, verb, track_id, user_id, created_at, blocknumber)
         values
-          (new.user_id, 'heart', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
+          (new.user_id, 'save', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
         on conflict do nothing;
       end if;
 	  end if;
@@ -77,7 +77,7 @@ begin
         insert into action_log
           (actor_user_id, verb, playlist_id, user_id, created_at, blocknumber)
         values
-          (new.user_id, 'heart', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
+          (new.user_id, 'save', new.save_item_id, owner_user_id, new.created_at, new.blocknumber)
         on conflict do nothing;
       end if;
 	  end if;

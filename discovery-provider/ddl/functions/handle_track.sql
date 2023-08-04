@@ -58,9 +58,9 @@ begin
 
       -- action_log: post track
       insert into action_log
-        (actor_user_id, verb, track_id, created_at, blocknumber)
+        (actor_user_id, verb, user_id, track_id, created_at, blocknumber)
       values
-        (new.owner_id, 'post', new.track_id, new.created_at, new.blocknumber)
+        (new.owner_id, 'post', new.owner_id, new.track_id, new.created_at, new.blocknumber)
       on conflict do nothing;
 
       select array(
