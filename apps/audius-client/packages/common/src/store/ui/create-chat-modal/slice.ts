@@ -7,6 +7,9 @@ export type CreateChatModalState = {
 
 const initialState: CreateChatModalState = {}
 
+// This is only really relevant on Web, where we don't have the ability to route the URL to the modal
+// On mobile, the ChatUserListScreen is a screen and we can pass the presetMessage in as a param,
+// and navigation is handled nicely, no need for a cancel action.
 const slice = createSlice({
   name: 'application/ui/createChatModal',
   initialState,

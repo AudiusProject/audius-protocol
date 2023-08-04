@@ -108,9 +108,14 @@ export type AppTabScreenParamList = {
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined
-  ChatUserList: undefined
+  ChatUserList:
+    | {
+        presetMessage?: string
+      }
+    | undefined
   Chat: {
     chatId: string
+    presetMessage?: string
   }
   StripeOnrampEmbed: { clientSecret: string }
 }

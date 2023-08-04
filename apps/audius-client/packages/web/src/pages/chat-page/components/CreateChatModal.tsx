@@ -28,7 +28,7 @@ const messages = {
 
 const { getAccountUser } = accountSelectors
 const { fetchBlockers } = chatActions
-const { getOnCancelAction } = createChatModalSelectors
+const { getOnCancelAction, getPresetMessage } = createChatModalSelectors
 const { setState } = createChatModalActions
 
 const CREATE_CHAT_MODAL = 'CreateChat'
@@ -38,6 +38,7 @@ export const CreateChatModal = () => {
   const currentUser = useSelector(getAccountUser)
   const [isVisible, setIsVisible] = useModalState(CREATE_CHAT_MODAL)
   const onCancelAction = useSelector(getOnCancelAction)
+  const presetMessage = useSelector(getPresetMessage)
   const [user, setUser] = useState<User>()
   const [showInboxUnavailableModal, setShowInboxUnavailableModal] =
     useState(false)
@@ -45,6 +46,10 @@ export const CreateChatModal = () => {
   const { userIds, loading, hasMore } = useSelector(
     followersUserListSelectors.getUserList
   )
+
+  const handleClose = useCallback(() => {
+    dispatch(setState({}))
+  }, [dispatch])
 
   const handleCancel = useCallback(() => {
     if (onCancelAction) {
@@ -104,9 +109,11 @@ export const CreateChatModal = () => {
             user={user}
             openInboxUnavailableModal={handleOpenInboxUnavailableModal}
             closeParentModal={closeParentModal}
+            presetMessage={presetMessage}
           />
         )}
         renderEmpty={() => <CreateChatEmptyResults />}
+        onClose={handleClose}
         onCancel={handleCancel}
       />
       {user ? (

@@ -25,6 +25,7 @@ import IconSearch from 'app/assets/images/iconSearch.svg'
 import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
 import { Screen, ScreenContent, Text, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { ChatUserListItem } from './ChatUserListItem'
@@ -187,7 +188,8 @@ export const ChatUserListScreen = () => {
   const [query, setQuery] = useState('')
   const [inputValue, setInputValue] = useState('')
   const dispatch = useDispatch()
-
+  const { params } = useRoute<'ChatUserList'>()
+  const presetMessage = params?.presetMessage
   const defaultUserList = useDefaultUserList()
   const queryUserList = useQueryUserList(query)
 
@@ -284,7 +286,10 @@ export const ChatUserListScreen = () => {
               maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               data={users}
               renderItem={({ item }) => (
-                <ChatUserListItem userId={item.user_id} />
+                <ChatUserListItem
+                  userId={item.user_id}
+                  presetMessage={presetMessage}
+                />
               )}
               keyExtractor={(user: User) => user.handle}
               contentContainerStyle={styles.flatListContainer}

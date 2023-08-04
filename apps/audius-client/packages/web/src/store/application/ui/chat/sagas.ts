@@ -10,12 +10,12 @@ const { goToChat } = chatActions
 function* watchGoToChat() {
   yield takeLatest(goToChat, function* (action: ReturnType<typeof goToChat>) {
     const {
-      payload: { chatId }
+      payload: { chatId, presetMessage }
     } = action
     if (!chatId) {
       yield* put(pushRoute(CHATS_PAGE))
     } else {
-      yield* put(pushRoute(chatPage(chatId)))
+      yield* put(pushRoute(chatPage(chatId), { presetMessage }))
     }
   })
 }
