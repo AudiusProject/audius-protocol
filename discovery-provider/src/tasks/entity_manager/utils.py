@@ -394,6 +394,8 @@ def validate_signer(params: ManageEntityParameters):
                     f"Signer is not authorized to perform action for user {params.user_id}"
                 )
             params.logger.set_context("isApp", "true")
+            params.logger.set_context("appName", params.existing_records[EntityType.DEVELOPER_APP][signer].name)
+            params.logger.set_context("userHandle", params.existing_records[EntityType.USER][params.user_id].handle)
         else:
             raise IndexingValidationError(
                 f"Signer does not match user {params.user_id} or an authorized wallet"
