@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
+
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import (

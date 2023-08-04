@@ -1,6 +1,5 @@
 import concurrent.futures
 import datetime
-import json
 import logging
 import time
 from decimal import Decimal
@@ -13,6 +12,7 @@ from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
 from solders.transaction import Transaction
+
 from src.exceptions import SolanaTransactionFetchError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain

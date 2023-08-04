@@ -4,6 +4,7 @@ from typing import Optional, TypedDict
 
 from redis import Redis
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+
 from src.solana.solana_client_manager import SolanaClientManager
 
 logger = logging.getLogger(__name__)

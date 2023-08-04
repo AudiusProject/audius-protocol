@@ -5,6 +5,9 @@ from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
@@ -32,8 +35,6 @@ from src.tasks.metadata import (
 from src.utils import helpers
 from src.utils.eth_manager import EthManager
 from src.utils.structured_logger import StructuredLogger
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 utils_logger = StructuredLogger(__name__)
 

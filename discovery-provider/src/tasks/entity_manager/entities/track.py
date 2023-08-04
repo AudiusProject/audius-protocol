@@ -4,6 +4,7 @@ from typing import Dict, Union
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import null
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
