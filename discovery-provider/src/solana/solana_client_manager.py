@@ -48,7 +48,9 @@ class SolanaClientManager:
             while num_retries > 0:
                 try:
                     tx_info: GetTransactionResp = client.get_transaction(
-                        Signature.from_string(tx_sig), encoding
+                        Signature.from_string(tx_sig),
+                        encoding,
+                        max_supported_transaction_version=0,
                     )
                     _check_error(tx_info, tx_sig)
                     if tx_info.value is not None:
