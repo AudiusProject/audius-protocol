@@ -155,7 +155,6 @@ class ManageEntityParameters:
         event: AttributeDict,
         new_records: RecordDict,
         existing_records: ExistingRecordDict,
-        revert_blocks: List[RevertBlock],
         pending_track_routes: List[TrackRoute],
         pending_playlist_routes: List[PlaylistRoute],
         eth_manager: EthManager,
@@ -191,7 +190,6 @@ class ManageEntityParameters:
         self.txhash = txhash
         self.new_records = new_records
         self.existing_records = existing_records
-        self.revert_blocks = revert_blocks
         self.logger = logger  # passed in with EM context
 
     def add_record(self, key, record, record_type=None):

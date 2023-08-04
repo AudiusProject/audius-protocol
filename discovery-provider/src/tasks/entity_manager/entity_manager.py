@@ -154,7 +154,6 @@ def entity_manager_update(
         # cid -> metadata
         cid_metadata: Dict[str, Dict] = {}
 
-        revert_blocks: List[RevertBlock] = []
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -170,7 +169,6 @@ def entity_manager_update(
                         event,
                         new_records,  # actions below populate these records
                         existing_records,
-                        revert_blocks,
                         pending_track_routes,
                         pending_playlist_routes,
                         update_task.eth_manager,
@@ -385,9 +383,6 @@ def get_records_to_save(
         blocknumber=params.block_number, prev_records=prev_records
     )
     records_to_save.append(revert_block)
-
-    # add EM logs to save
-    records_to_save.extend(params.revert_blocks)
     return records_to_save
 
 
