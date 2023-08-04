@@ -4,7 +4,6 @@ from typing import Optional, TypedDict
 
 from redis import Redis
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
-
 from src.solana.solana_client_manager import SolanaClientManager
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ def cache_latest_sol_play_program_tx(
         timestamp = tx.block_time
         redis.set(
             cache_key,
-            json.dumps({"signature": sig, "slot": slot, "timestamp": timestamp}),
+            json.dumps({"signature": str(sig), "slot": slot, "timestamp": timestamp}),
         )
     except Exception as e:
         logger.error(
