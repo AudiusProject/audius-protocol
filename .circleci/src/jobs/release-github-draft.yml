@@ -23,13 +23,6 @@ steps:
         generate-changelog() {
           service="$1"
           start_commit=$(git show-ref --hash "refs/tags/@audius/$service@$OLD_VERSION")
-          printf "Full Changelog:\n"
-          git log --pretty='[%h] - %s' --abbrev-commit "$start_commit..HEAD" "$service"
-        }
-
-        generate-changelog() {
-          service="$1"
-          start_commit=$(git show-ref --hash "refs/tags/@audius/$service@$OLD_VERSION")
           
           # Determine the directory based on the service
           case "$service" in
