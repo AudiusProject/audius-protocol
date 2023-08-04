@@ -3,7 +3,7 @@ import re
 import time
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, List, Optional, Tuple, TypedDict, Union, cast
+from typing import List, Optional, Tuple, TypedDict, Union, cast
 
 import base58
 from redis import Redis
@@ -14,7 +14,6 @@ from solders.transaction import Transaction
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
-
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.tracks.track_price_history import TrackPriceHistory
@@ -782,17 +781,17 @@ def process_user_bank_txs() -> None:
             else:
                 # Current batch of transactions
                 transaction_signature_batch = []
-                for tx_info in transactions_array:
-                    tx_sig = str(tx_info.signature)
-                    tx_slot = tx_info.slot
+                for transaction_with_signature in transactions_array:
+                    tx_sig = str(transaction_with_signature.signature)
+                    tx_slot = transaction_with_signature.slot
                     logger.debug(
                         f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if tx_info.slot > latest_processed_slot:
+                    if transaction_with_signature.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif (
-                        tx_info.slot <= latest_processed_slot
-                        and tx_info.slot > MIN_SLOT
+                        transaction_with_signature.slot <= latest_processed_slot
+                        and transaction_with_signature.slot > MIN_SLOT
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
@@ -809,8 +808,7 @@ def process_user_bank_txs() -> None:
                         transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
-                last_tx: Any = transactions_array[-1]
-                last_tx_signature = last_tx.signature
+                last_tx_signature = transactions_array[-1].signature
 
                 # Append batch of processed signatures
                 if transaction_signature_batch:
@@ -864,12 +862,12 @@ def process_user_bank_txs() -> None:
             # we process them.
             tx_infos.sort(key=lambda info: info[0].value.slot if info[0].value else 0)
 
-            for tx_info2, tx_sig2 in tx_infos:
-                if tx_info2 and last_tx_sig and last_tx_sig == tx_sig2:
-                    last_tx = tx_info2.value
+            for tx_info, tx_sig in tx_infos:
+                if tx_info and last_tx_sig and last_tx_sig == tx_sig:
+                    last_tx = tx_info.value
                 num_txs_processed += 1
 
-                tx_value = tx_info2.value
+                tx_value = tx_info.value
                 if tx_value is None:
                     break
 
@@ -879,15 +877,15 @@ def process_user_bank_txs() -> None:
 
                 logger.debug(
                     f"index_user_bank.py | parse_user_bank_transaction |\
-                {tx_slot2}, {tx_sig2} | {tx_info2} | {parsed_timestamp}"
+                {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
                 )
 
                 process_user_bank_tx_details(
-                    session, redis, tx_info2, tx_sig2, parsed_timestamp, challenge_bus
+                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
                 )
                 session.add(
                     UserBankTx(
-                        signature=str(tx_sig2),
+                        signature=str(tx_sig),
                         slot=tx_slot2,
                         created_at=parsed_timestamp,
                     )
@@ -904,12 +902,12 @@ def process_user_bank_txs() -> None:
             redis,
             {
                 "signature": last_tx_sig,
-                "slot": last_tx["slot"],
-                "timestamp": last_tx["blockTime"],
+                "slot": last_tx.slot,
+                "timestamp": last_tx.block_time,
             },
         )
     if last_tx:
-        redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+        redis.set(latest_sol_user_bank_slot_key, last_tx.slot)
     elif latest_global_slot is not None:
         redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
 

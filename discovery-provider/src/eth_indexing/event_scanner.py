@@ -147,14 +147,20 @@ class EventScanner:
         # One transaction may contain multiple events
         # and each one of those gets their own log index
 
-        log_index = event.get("logIndex")  # Log index within the block
-        txhash = event.get("transactionHash")  # Transaction hash
-        if txhash is not None:
-            txhash_hex = txhash.hex()
+        log_index = event["logIndex"]  # Log index within the block
+        if not log_index:
+            raise Exception(f"logIndex not found on event {log_index}")
+        txhash = event["transactionHash"]  # Transaction hash
+        if not txhash:
+            raise Exception(f"transactionHash not found on event {txhash.decode()}")
+        args = event["args"]
+        if not args:
+            raise Exception(f"args not found on event {event}")
+
+        txhash_hex = txhash.hex()
         block_number = event.get("blockNumber")
 
         # Convert ERC-20 Transfer event to our internal format
-        args = event.get("args", {})
         transfer = {
             "from": args["from"],
             "to": args["to"],
@@ -367,7 +373,8 @@ def _retry_web3_call(
     """
     for i in range(retries):
         try:
-            return end_block, func(start_block, end_block)
+            res = func(start_block, end_block)
+            break
         except Exception as e:
             # Assume this is HTTPConnectionPool(host='localhost', port=8545): Read timed out. (read timeout=10)
             # from Go Ethereum. This translates to the error "context was cancelled" on the server side:
@@ -389,7 +396,7 @@ def _retry_web3_call(
                 continue
             logger.warning("event_scanner.py | Out of retries")
             raise e
-    raise
+    return end_block, res
 
 
 def _fetch_events_for_all_contracts(
