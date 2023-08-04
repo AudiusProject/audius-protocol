@@ -716,7 +716,7 @@ def get_sol_tx_info(
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
-        return (None, None)
+        return None
 
 
 def process_user_bank_txs() -> None:
@@ -844,6 +844,9 @@ def process_user_bank_txs() -> None:
                 }
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
+                        tx_info = future.result()
+                        if not tx_info:
+                            continue
                         tx_infos.append(future.result())
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
