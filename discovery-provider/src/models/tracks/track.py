@@ -38,7 +38,6 @@ class Track(Base, RepresentableMixin):
     )  # todo: after backfill, add nullable=False, both here and in a db migration
     title = Column(Text)
     duration = Column(Integer)
-    length = Column(Integer)
     preview_start_seconds = Column(Float)
     cover_art = Column(String)
     tags = Column(String)

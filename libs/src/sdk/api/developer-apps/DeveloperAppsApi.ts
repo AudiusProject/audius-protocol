@@ -9,10 +9,10 @@ import type { AuthService, EntityManagerService } from '../../services'
 import {
   Action,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
 
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseParams } from '../../utils/parseParams'
 import {
   CreateDeveloperAppRequest,
   CreateDeveloperAppSchema,
@@ -37,13 +37,13 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
    * Create a developer app
    */
   async createDeveloperApp(
-    requestParameters: CreateDeveloperAppRequest,
-    writeOptions?: WriteOptions
+    params: CreateDeveloperAppRequest,
+    advancedOptions?: AdvancedOptions
   ) {
-    const { name, userId, description } = await parseRequestParameters(
+    const { name, userId, description } = await parseParams(
       'createDeveloperApp',
       CreateDeveloperAppSchema
-    )(requestParameters)
+    )(params)
 
     const wallet = this.web3.eth.accounts.create()
     const privateKey = wallet.privateKey
@@ -67,7 +67,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
         }
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
 
     const apiKey = address.slice(2).toLowerCase()
@@ -82,11 +82,11 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
   /**
    * Delete a developer app
    */
-  async deleteDeveloperApp(requestParameters: DeleteDeveloperAppRequest) {
-    const { userId, appApiKey } = await parseRequestParameters(
+  async deleteDeveloperApp(params: DeleteDeveloperAppRequest) {
+    const { userId, appApiKey } = await parseParams(
       'deleteDeveloperApp',
       DeleteDeveloperAppSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,

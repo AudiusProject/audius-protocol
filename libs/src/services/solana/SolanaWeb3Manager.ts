@@ -2,12 +2,13 @@ import solanaWeb3, {
   Connection,
   Keypair,
   PublicKey,
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL,
+  TransactionInstruction
 } from '@solana/web3.js'
-import type BN from 'bn.js'
+import BN from 'bn.js'
 import splToken from '@solana/spl-token'
 
-import { transferWAudioBalance } from './transfer'
+import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import {
   createAssociatedTokenAccount,
@@ -59,6 +60,11 @@ type CreateSenderParams = Omit<
 > & { feePayerOverride: Nullable<string> }
 
 type MintName = 'usdc' | 'audio'
+const DEFAULT_MINT: MintName = 'audio'
+
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+)
 
 // Somewhat arbitrary close-to-zero number of Sol. For context, creating a UserBank costs ~0.002 SOL.
 // Without this padding, we could reach some low non-zero number of SOL where transactions would fail
@@ -225,29 +231,38 @@ export class SolanaWeb3Manager {
     )
   }
 
-  async doesUserbankExist(sourceEthAddress?: string) {
-    const userbank = await this.deriveUserBank(sourceEthAddress)
-    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
+  async doesUserbankExist({
+    ethAddress,
+    mint = DEFAULT_MINT
+  }: {
+    ethAddress?: string
+    mint?: MintName
+  } = {}) {
+    const userbank = await this.deriveUserBank({ ethAddress, mint })
+    const tokenAccount = await this.getTokenAccountInfo(userbank.toString(), mint)
     return !!tokenAccount
   }
 
   /**
-   * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
+   * Creates a solana bank account, either for optional `ethAddress` or from the web3 provider's eth address
    */
-  async createUserBank(
-    feePayerOverride: string,
-    recipientEthAddress?: string,
-    mint: MintName = 'audio'
-  ) {
+  async createUserBank({
+    feePayerOverride,
+    ethAddress,
+    mint = DEFAULT_MINT
+  }: {
+    feePayerOverride: string
+    ethAddress?: string
+    mint: MintName
+  }) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
 
-    const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
-      ethAddress: recipientEthAddress ?? ethAddress,
+      ethAddress: ethAddress ?? this.web3Manager.getWalletAddress(),
       claimableTokenPDAKey: this.claimableTokenPDAs[mint],
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
@@ -262,22 +277,28 @@ export class SolanaWeb3Manager {
    * Creates a userbank if needed.
    * Returns the userbank address as `userbank` if it was created or already existed, or `error` if it failed to create.
    */
-  async createUserBankIfNeeded(
-    feePayerOverride: string,
-    sourceEthAddress?: string
-  ): Promise<
+  async createUserBankIfNeeded({
+    feePayerOverride,
+    ethAddress,
+    mint = DEFAULT_MINT
+  }: {
+    feePayerOverride: string
+    ethAddress?: string
+    mint?: MintName
+  }): Promise<
     | { error: string; errorCode: string | number | null }
     | {
         didExist: boolean
         userbank: solanaWeb3.PublicKey
       }
   > {
-    const didExist = await this.doesUserbankExist(sourceEthAddress)
+    const didExist = await this.doesUserbankExist({ ethAddress, mint })
     if (!didExist) {
-      const response = await this.createUserBank(
+      const response = await this.createUserBank({
         feePayerOverride,
-        sourceEthAddress
-      )
+        ethAddress,
+        mint
+      })
       if (response.error) {
         return {
           error: response.error,
@@ -286,7 +307,7 @@ export class SolanaWeb3Manager {
       }
     }
 
-    const derived = await this.deriveUserBank(sourceEthAddress)
+    const derived = await this.deriveUserBank({ ethAddress, mint })
     return { userbank: derived, didExist }
   }
 
@@ -296,7 +317,7 @@ export class SolanaWeb3Manager {
    */
   async createAssociatedTokenAccount(
     solanaAddress: string,
-    mint: MintName = 'audio'
+    mint: MintName = DEFAULT_MINT
   ) {
     await createAssociatedTokenAccount({
       feePayerKey: this.feePayerKey,
@@ -314,7 +335,7 @@ export class SolanaWeb3Manager {
    */
   async findAssociatedTokenAddress(
     solanaAddress: string,
-    mint: MintName = 'audio'
+    mint: MintName = DEFAULT_MINT
   ) {
     return await findAssociatedTokenAddress({
       solanaWalletKey: new PublicKey(solanaAddress),
@@ -324,9 +345,15 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
+   * Gets a solana bank account from `ethAddress` or the current web3 provider's eth address.
    */
-  async deriveUserBank(sourceEthAddress?: string, mint: MintName = 'audio') {
+  async deriveUserBank({
+    ethAddress,
+    mint = DEFAULT_MINT
+  }: {
+    ethAddress?: string
+    mint?: MintName
+  } = {}) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -334,7 +361,7 @@ export class SolanaWeb3Manager {
     }
 
     const derivationSourceAddress =
-      sourceEthAddress ?? this.web3Manager.getWalletAddress()
+      ethAddress ?? this.web3Manager.getWalletAddress()
 
     const bank = await getBankAccountAddress(
       derivationSourceAddress,
@@ -348,7 +375,10 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(solanaAddress: string, mint: MintName = 'audio') {
+  async getTokenAccountInfo(
+    solanaAddress: string,
+    mint: MintName = DEFAULT_MINT
+  ) {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
@@ -463,6 +493,81 @@ export class SolanaWeb3Manager {
       connection: this.connection,
       mintKey: this.mints.audio,
       transactionHandler: this.transactionHandler
+    })
+  }
+
+  /**
+   * Purchases USDC gated content
+   * @param params.id the id of the content, eg. the track ID
+   * @param params.type the type of the content, eg. "track"
+   * @param params.blocknumber the blocknumber the content was last updated
+   * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @returns the transaction signature and/or an error
+   */
+  async purchaseContent({
+    id,
+    type,
+    blocknumber,
+    splits
+  }: {
+    id: number
+    type: 'track'
+    splits: Record<string, number | BN>
+    blocknumber: number
+  }) {
+    if (!this.web3Manager) {
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
+    }
+    if (Object.values(splits).length !== 1) {
+      throw new Error(
+        'Purchasing content only supports a single split. Specifying more splits coming soon!'
+      )
+    }
+
+    const totalAmount = Object.values(splits).reduce<BN>(
+      (sum, split) => (split instanceof BN ? sum.add(split) : sum.addn(split)),
+      new BN(0)
+    )
+
+    const senderEthAddress = this.web3Manager.getWalletAddress()
+    const senderSolanaAddress = await getBankAccountAddress(
+      senderEthAddress,
+      this.claimableTokenPDAs.usdc,
+      this.solanaTokenKey
+    )
+
+    const instructions = await createTransferInstructions({
+      amount: totalAmount,
+      feePayerKey: this.feePayerKey,
+      senderEthAddress,
+      senderEthPrivateKey:
+        this.web3Manager.getOwnerWalletPrivateKey() as unknown as string,
+      senderSolanaAddress,
+      recipientSolanaAddress: Object.keys(splits)[0]!,
+      claimableTokenPDA: this.claimableTokenPDAs.usdc,
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      mintKey: this.mints.usdc
+    })
+
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: new PublicKey(this.feePayerKey),
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(`${type}:${id}:${blocknumber}`)
+    })
+    return await this.transactionHandler.handleTransaction({
+      instructions: [...instructions, memoInstruction],
+      skipPreflight: true,
+      feePayerOverride: this.feePayerKey
     })
   }
 

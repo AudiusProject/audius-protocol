@@ -1,20 +1,10 @@
 when: << pipeline.parameters.run-creator-workflow >>
 jobs:
   - push-docker-image:
-      name: push-creator-node
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
-  - push-docker-image:
       name: push-mediorum
       context: [GCP, dockerhub]
       instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
-  - test:
-      name: test-creator-node
-      context: GCP
-      instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
   - test:
       name: test-mediorum
       context: GCP
@@ -25,7 +15,6 @@ jobs:
   - deploy-prod-creator-node-trigger:
       requires:
         - test-mediorum
-        - push-creator-node
         - push-mediorum
       filters:
         branches:
@@ -50,7 +39,6 @@ jobs:
       name: deploy-stage-creator-node
       requires:
         - test-mediorum
-        - push-creator-node
         - push-mediorum
       filters:
         branches:

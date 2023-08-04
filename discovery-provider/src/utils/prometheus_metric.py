@@ -88,8 +88,7 @@ class PrometheusMetricNames:
     Ultimate Suffixes:
     * `_total`, when accumulating a count, in addition to above suffixes if applicable
 
-    See the following resources for related information:
-    * [Creator Node's docs](https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/services/prometheusMonitoring/README.md)
+    See the following resource for related information:
     * [Official docs](https://prometheus.io/docs/practices/naming)
     """
 

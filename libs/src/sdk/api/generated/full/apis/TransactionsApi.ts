@@ -48,41 +48,41 @@ export class TransactionsApi extends runtime.BaseAPI {
     /** @hidden
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryRaw(requestParameters: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
-        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
+    async getAudioTransactionHistoryRaw(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
         }
 
-        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getAudioTransactionHistory.');
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistory.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.sortMethod !== undefined) {
-            queryParameters['sort_method'] = requestParameters.sortMethod;
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
         }
 
-        if (requestParameters.sortDirection !== undefined) {
-            queryParameters['sort_direction'] = requestParameters.sortDirection;
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
         }
 
-        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
         }
 
         const response = await this.request({
@@ -98,33 +98,33 @@ export class TransactionsApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistory(requestParameters: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
-        const response = await this.getAudioTransactionHistoryRaw(requestParameters, initOverrides);
+    async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getAudioTransactionHistoryRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCountRaw(requestParameters: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
-        if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
+    async getAudioTransactionHistoryCountRaw(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
         }
 
-        if (requestParameters.encodedDataSignature === null || requestParameters.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter requestParameters.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
         }
 
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters.encodedDataMessage !== undefined && requestParameters.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(requestParameters.encodedDataMessage);
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
         }
 
-        if (requestParameters.encodedDataSignature !== undefined && requestParameters.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
         }
 
         const response = await this.request({
@@ -140,8 +140,8 @@ export class TransactionsApi extends runtime.BaseAPI {
     /**
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCount(requestParameters: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
-        const response = await this.getAudioTransactionHistoryCountRaw(requestParameters, initOverrides);
+    async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getAudioTransactionHistoryCountRaw(params, initOverrides);
         return await response.value();
     }
 

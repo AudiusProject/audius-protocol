@@ -44,47 +44,47 @@ export class TipsApi extends runtime.BaseAPI {
     /** @hidden
      * Gets the most recent tips on the network
      */
-    async getTipsRaw(requestParameters: GetTipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetTipsResponse>> {
+    async getTipsRaw(params: GetTipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetTipsResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.receiverMinFollowers !== undefined) {
-            queryParameters['receiver_min_followers'] = requestParameters.receiverMinFollowers;
+        if (params.receiverMinFollowers !== undefined) {
+            queryParameters['receiver_min_followers'] = params.receiverMinFollowers;
         }
 
-        if (requestParameters.receiverIsVerified !== undefined) {
-            queryParameters['receiver_is_verified'] = requestParameters.receiverIsVerified;
+        if (params.receiverIsVerified !== undefined) {
+            queryParameters['receiver_is_verified'] = params.receiverIsVerified;
         }
 
-        if (requestParameters.currentUserFollows !== undefined) {
-            queryParameters['current_user_follows'] = requestParameters.currentUserFollows;
+        if (params.currentUserFollows !== undefined) {
+            queryParameters['current_user_follows'] = params.currentUserFollows;
         }
 
-        if (requestParameters.uniqueBy !== undefined) {
-            queryParameters['unique_by'] = requestParameters.uniqueBy;
+        if (params.uniqueBy !== undefined) {
+            queryParameters['unique_by'] = params.uniqueBy;
         }
 
-        if (requestParameters.minSlot !== undefined) {
-            queryParameters['min_slot'] = requestParameters.minSlot;
+        if (params.minSlot !== undefined) {
+            queryParameters['min_slot'] = params.minSlot;
         }
 
-        if (requestParameters.maxSlot !== undefined) {
-            queryParameters['max_slot'] = requestParameters.maxSlot;
+        if (params.maxSlot !== undefined) {
+            queryParameters['max_slot'] = params.maxSlot;
         }
 
-        if (requestParameters.txSignatures) {
-            queryParameters['tx_signatures'] = requestParameters.txSignatures.join(runtime.COLLECTION_FORMATS["csv"]);
+        if (params.txSignatures) {
+            queryParameters['tx_signatures'] = params.txSignatures.join(runtime.COLLECTION_FORMATS["csv"]);
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -102,8 +102,8 @@ export class TipsApi extends runtime.BaseAPI {
     /**
      * Gets the most recent tips on the network
      */
-    async getTips(requestParameters: GetTipsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetTipsResponse> {
-        const response = await this.getTipsRaw(requestParameters, initOverrides);
+    async getTips(params: GetTipsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetTipsResponse> {
+        const response = await this.getTipsRaw(params, initOverrides);
         return await response.value();
     }
 

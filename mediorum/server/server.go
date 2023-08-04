@@ -3,12 +3,12 @@ package server
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"log"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -45,28 +45,28 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
-	Env                 string
-	Self                Peer
-	Peers               []Peer
-	Signers             []Peer
-	ReplicationFactor   int
-	Dir                 string `default:"/tmp/mediorum"`
-	BlobStoreDSN        string `json:"-"`
-	PostgresDSN         string `json:"-"`
-	LegacyFSRoot        string `json:"-"`
-	PrivateKey          string `json:"-"`
-	ListenPort          string
-	UpstreamCN          string
-	TrustedNotifierID   int
-	SPID                int
-	SPOwnerWallet       string
-	GitSHA              string
-	AudiusDockerCompose string
-	AutoUpgradeEnabled  bool
-	WalletIsRegistered  bool
-	IsV2Only            bool
-	StoreAll            bool
-	VersionJson         VersionJson
+	Env                  string
+	Self                 Peer
+	Peers                []Peer
+	Signers              []Peer
+	ReplicationFactor    int
+	Dir                  string `default:"/tmp/mediorum"`
+	BlobStoreDSN         string `json:"-"`
+	MoveFromBlobStoreDSN string `json:"-"`
+	PostgresDSN          string `json:"-"`
+	LegacyFSRoot         string `json:"-"`
+	PrivateKey           string `json:"-"`
+	ListenPort           string
+	TrustedNotifierID    int
+	SPID                 int
+	SPOwnerWallet        string
+	GitSHA               string
+	AudiusDockerCompose  string
+	AutoUpgradeEnabled   bool
+	WalletIsRegistered   bool
+	StoreAll             bool
+	VersionJson          VersionJson
+	MigrateQmCidIters    int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -107,8 +107,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.Env = env
 	}
 
-	if config.IsV2Only && config.VersionJson == (VersionJson{}) {
-		log.Fatal(".version.json is required for v2-only nodes")
+	if config.VersionJson == (VersionJson{}) {
+		log.Fatal(".version.json is required to be bundled with the mediorum binary")
 	}
 
 	// validate host config
@@ -151,8 +151,28 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return nil, err
 	}
 
-	// logger
 	logger := slog.With("self", config.Self.Host)
+
+	// bucket to move all files from
+	if config.MoveFromBlobStoreDSN != "" {
+		if config.MoveFromBlobStoreDSN == config.BlobStoreDSN {
+			log.Fatal("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+		}
+		bucketToMoveFrom, err := persistence.Open(config.MoveFromBlobStoreDSN)
+		if err != nil {
+			log.Fatalf("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			return nil, err
+		}
+
+		logger.Info(fmt.Sprintf("Moving all files from %s to %s. This may take a few hours...", config.MoveFromBlobStoreDSN, config.BlobStoreDSN))
+		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
+		if err != nil {
+			log.Fatalf("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			return nil, err
+		}
+
+		logger.Info("Finished moving files between buckets. Please remove AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM from your environment and restart the server.")
+	}
 
 	// db
 	db := dbMustDial(config.PostgresDSN)
@@ -283,8 +303,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// old info routes
-	// TODO: remove
+	// old info routes (but we need them because some migrated ":cid" keys are really like "Qm.../150x150.jpg" which would mess up the path param)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 
@@ -299,12 +318,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
 
-	// reverse proxy fallback to legacy CN (NodeJS server container)
-	if !config.IsV2Only {
-		upstream, _ := url.Parse(config.UpstreamCN)
-		proxy := httputil.NewSingleHostReverseProxy(upstream)
-		echoServer.Any("*", echo.WrapHandler(proxy))
-	}
+	// Qm CID migration
+	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
+	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
 
 	return ss, nil
 
@@ -352,6 +368,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorDiskAndDbStatus()
 
 	go ss.monitorCidCursors()
+
+	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

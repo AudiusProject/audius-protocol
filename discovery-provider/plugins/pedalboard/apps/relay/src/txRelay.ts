@@ -1,6 +1,6 @@
 import { App } from "basekit/src/index";
 import { SharedData } from ".";
-import { RelayRequestType } from "./types/relay";
+import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
 import {
   TransactionReceipt,
   TransactionRequest,
@@ -8,6 +8,10 @@ import {
 import { validateSupportedContract, validateTransactionData } from "./validate";
 import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
+import { detectAbuse } from "./antiAbuse";
+import { AudiusABIDecoder } from "@audius/sdk";
+import { FastifyReply } from "fastify";
+import { errorResponseForbidden } from "./error";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -16,7 +20,9 @@ export type RelayedTransaction = {
 
 export const relayTransaction = async (
   app: App<SharedData>,
-  req: RelayRequestType
+  headers: RelayRequestHeaders,
+  req: RelayRequestType,
+  rep: FastifyReply
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
@@ -25,9 +31,23 @@ export const relayTransaction = async (
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
+    acdcChainId,
     requiredConfirmations,
+    aao,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
+  const { reqIp } = headers;
+
+  const discoveryDb = app.getDnDb();
+  const sender = AudiusABIDecoder.recoverSigner({
+    encodedAbi: encodedABI,
+    entityManagerAddress: entityManagerContractAddress,
+    chainId: acdcChainId,
+  });
+  const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
+  if (isBlockedFromRelay) {
+    errorResponseForbidden(rep);
+  }
 
   log({ msg: "new relay request", req });
 

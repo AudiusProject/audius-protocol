@@ -23,10 +23,15 @@ module.exports = function (app) {
   app.post(
     '/stripe/session',
     handleResponse(async (req) => {
-      const { destinationWallet, amount } = req.body
+      const { destinationWallet, amount, destinationCurrency } = req.body
 
-      if (!destinationWallet || !amount) {
-        return errorResponseBadRequest('Missing destinationWallet or amount')
+      if (!destinationWallet || !amount || !destinationCurrency) {
+        return errorResponseBadRequest('Missing input param')
+      }
+      if (destinationCurrency !== 'sol' && destinationCurrency !== 'usdc') {
+        return errorResponseBadRequest(
+          'Invalid destination currency: only support sol and usdc'
+        )
       }
 
       const urlEncodedData = new URLSearchParams({
@@ -35,10 +40,14 @@ module.exports = function (app) {
         'transaction_details[supported_destination_networks][]': 'solana',
         'transaction_details[supported_destination_currencies][]': 'sol',
         'transaction_details[destination_network]': 'solana',
-        'transaction_details[destination_currency]': 'sol',
+        'transaction_details[destination_currency]': destinationCurrency,
         'transaction_details[destination_exchange_amount]': amount,
         customer_ip_address: getIP(req)
       })
+      urlEncodedData.append(
+        'transaction_details[supported_destination_currencies[]',
+        'usdc'
+      )
 
       try {
         const req = {

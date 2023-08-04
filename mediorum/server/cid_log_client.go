@@ -26,7 +26,7 @@ func (ss *MediorumServer) startCidBeamClient() {
 				slog.Info("beam OK", "result", result)
 			}
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(time.Minute * 10)
 	}
 }
 

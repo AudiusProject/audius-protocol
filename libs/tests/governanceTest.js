@@ -46,7 +46,7 @@ const setupAccounts = async () => {
   for (const lib of inittedLibs) {
     const testEndpoint = getRandomLocalhost()
     nock(testEndpoint)
-      .get('/health_check')
+      .get('/health_check?allow_unregistered=true')
       .reply(200, {
         data: {
           service: testServiceType,

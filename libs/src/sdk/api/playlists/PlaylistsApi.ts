@@ -6,9 +6,9 @@ import {
   Action,
   EntityManagerService,
   EntityType,
-  WriteOptions
+  AdvancedOptions
 } from '../../services/EntityManager/types'
-import { parseRequestParameters } from '../../utils/parseRequestParameters'
+import { parseParams } from '../../utils/parseParams'
 import {
   Configuration,
   PlaylistsApi as GeneratedPlaylistsApi
@@ -65,15 +65,12 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Create a playlist from existing tracks
    */
   async createPlaylist(
-    requestParameters: CreatePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: CreatePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
     const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      await parseRequestParameters(
-        'createPlaylist',
-        CreatePlaylistSchema
-      )(requestParameters)
+      await parseParams('createPlaylist', CreatePlaylistSchema)(params)
 
     // Upload cover art to storage node
     const coverArtResponse =
@@ -118,7 +115,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
 
     return {
@@ -132,17 +129,17 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Uploads the specified tracks and combines them into a playlist
    */
   async uploadPlaylist(
-    requestParameters: UploadPlaylistRequest,
-    writeOptions?: WriteOptions
+    params: UploadPlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseRequestParameters(
+    const parsedParameters = await parseParams(
       'uploadPlaylist',
       createUploadPlaylistSchema()
-    )(requestParameters)
+    )(params)
 
     // Call uploadPlaylistInternal with parsed inputs
-    return await this.uploadPlaylistInternal(parsedParameters, writeOptions)
+    return await this.uploadPlaylistInternal(parsedParameters, advancedOptions)
   }
 
   /** @hidden
@@ -150,25 +147,22 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Changes a playlist from private to public
    */
   async publishPlaylist(
-    requestParameters: PublishPlaylistRequest,
-    writeOptions?: WriteOptions
+    params: PublishPlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    await parseRequestParameters(
-      'publishPlaylist',
-      PublishPlaylistSchema
-    )(requestParameters)
+    await parseParams('publishPlaylist', PublishPlaylistSchema)(params)
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => ({
           ...playlist,
           isPrivate: false
         })
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -177,33 +171,30 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * For more control use updatePlaylist
    */
   async addTrackToPlaylist(
-    requestParameters: AddTrackToPlaylistRequest,
-    writeOptions?: WriteOptions
+    params: AddTrackToPlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    await parseRequestParameters(
-      'addTrackToPlaylist',
-      AddTrackToPlaylistSchema
-    )(requestParameters)
+    await parseParams('addTrackToPlaylist', AddTrackToPlaylistSchema)(params)
 
     const currentBlock = await this.entityManager.getCurrentBlock()
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => ({
           ...playlist,
           playlistContents: [
             ...(playlist.playlistContents ?? []),
             {
-              trackId: requestParameters.trackId,
+              trackId: params.trackId,
               timestamp: currentBlock.timestamp
             }
           ]
         })
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -212,19 +203,19 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * For more control use updatePlaylist
    */
   async removeTrackFromPlaylist(
-    requestParameters: RemoveTrackFromPlaylistRequest,
-    writeOptions?: WriteOptions
+    params: RemoveTrackFromPlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { trackIndex } = await parseRequestParameters(
+    const { trackIndex } = await parseParams(
       'removeTrackFromPlaylist',
       RemoveTrackFromPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.fetchAndUpdatePlaylist(
       {
-        userId: requestParameters.userId,
-        playlistId: requestParameters.playlistId,
+        userId: params.userId,
+        playlistId: params.playlistId,
         updateMetadata: (playlist) => {
           if (
             !playlist.playlistContents ||
@@ -239,7 +230,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           }
         }
       },
-      writeOptions
+      advancedOptions
     )
   }
 
@@ -247,31 +238,31 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Update a playlist
    */
   async updatePlaylist(
-    requestParameters: UpdatePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: UpdatePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const parsedParameters = await parseRequestParameters(
+    const parsedParameters = await parseParams(
       'updatePlaylist',
       createUpdatePlaylistSchema()
-    )(requestParameters)
+    )(params)
 
     // Call updatePlaylistInternal with parsed inputs
-    return await this.updatePlaylistInternal(parsedParameters, writeOptions)
+    return await this.updatePlaylistInternal(parsedParameters, advancedOptions)
   }
 
   /** @hidden
    * Delete a playlist
    */
   async deletePlaylist(
-    requestParameters: DeletePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: DeletePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseParams(
       'deletePlaylist',
       DeletePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -279,7 +270,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.DELETE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -287,14 +278,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Favorite a playlist
    */
   async favoritePlaylist(
-    requestParameters: FavoritePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: FavoritePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseParams(
       'favoritePlaylist',
       FavoritePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -303,7 +294,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -311,14 +302,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unfavorite a playlist
    */
   async unfavoritePlaylist(
-    requestParameters: UnfavoritePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: UnfavoritePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseParams(
       'unfavoritePlaylist',
       UnfavoritePlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -326,7 +317,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.UNSAVE,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -334,14 +325,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Repost a playlist
    */
   async repostPlaylist(
-    requestParameters: RepostPlaylistRequest,
-    writeOptions?: WriteOptions
+    params: RepostPlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId, metadata } = await parseRequestParameters(
+    const { userId, playlistId, metadata } = await parseParams(
       'respostPlaylist',
       RepostPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -350,7 +341,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -358,14 +349,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
    * Unrepost a playlist
    */
   async unrepostPlaylist(
-    requestParameters: FavoritePlaylistRequest,
-    writeOptions?: WriteOptions
+    params: FavoritePlaylistRequest,
+    advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, playlistId } = await parseRequestParameters(
+    const { userId, playlistId } = await parseParams(
       'unrepostPlaylist',
       UnrepostPlaylistSchema
-    )(requestParameters)
+    )(params)
 
     return await this.entityManager.manageEntity({
       userId,
@@ -373,7 +364,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.UNREPOST,
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 
@@ -421,7 +412,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         fetchedMetadata: UpdatePlaylistRequest['metadata']
       ) => UpdatePlaylistRequest['metadata']
     },
-    writeOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Fetch playlist
     const playlistResponse = await this.getPlaylist({
@@ -444,11 +435,11 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         playlistId,
         metadata: updateMetadata(pick(playlist, supportedUpdateFields))
       },
-      writeOptions
+      advancedOptions
     )
   }
 
-  /**
+  /** @internal
    * Method to upload a playlist with already parsed inputs
    * This is used for both playlists and albums
    */
@@ -463,7 +454,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }: z.infer<ReturnType<typeof createUploadPlaylistSchema>> & {
       metadata: Metadata
     },
-    writeOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Upload track audio and cover art to storage node
     const [coverArtResponse, ...audioResponses] = await Promise.all([
@@ -532,7 +523,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             data: snakecaseKeys(updatedMetadata)
           }),
           auth: this.auth,
-          ...writeOptions
+          ...advancedOptions
         })
 
         return trackId
@@ -568,7 +559,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
     return {
       ...response,
@@ -576,7 +567,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
   }
 
-  /**
+  /** @internal
    * Method to update a playlist with already parsed inputs
    * This is used for both playlists and albums
    */
@@ -592,7 +583,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>> & {
       metadata: Metadata
     },
-    writeOptions?: WriteOptions
+    advancedOptions?: AdvancedOptions
   ) {
     // Upload cover art to storage node
     const coverArtResponse =
@@ -640,7 +631,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
-      ...writeOptions
+      ...advancedOptions
     })
   }
 }

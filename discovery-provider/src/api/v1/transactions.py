@@ -4,6 +4,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
+    add_auth_headers_to_parser,
     extend_transaction_details,
     make_full_response,
     pagination_parser,
@@ -14,7 +15,7 @@ from src.queries.get_audio_transactions_history import (
     get_audio_transactions_history_count,
 )
 from src.queries.query_helpers import SortDirection, TransactionSortMethod
-from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER, auth_middleware
+from src.utils.auth_middleware import auth_middleware
 
 from .models.transactions import transaction_details
 
@@ -48,18 +49,7 @@ transaction_history_parser.add_argument(
     choices=SortDirection._member_names_,
     default=SortDirection.desc,
 )
-transaction_history_parser.add_argument(
-    MESSAGE_HEADER,
-    required=True,
-    description="The data that was signed by the user for signature recovery",
-    location="headers",
-)
-transaction_history_parser.add_argument(
-    SIGNATURE_HEADER,
-    required=True,
-    description="The signature of data, used for signature recovery",
-    location="headers",
-)
+add_auth_headers_to_parser(transaction_history_parser)
 
 
 @full_ns.route("")
@@ -94,18 +84,7 @@ transaction_history_count_response = make_full_response(
 transaction_history_count_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )
-transaction_history_count_parser.add_argument(
-    MESSAGE_HEADER,
-    required=True,
-    description="The data that was signed by the user for signature recovery",
-    location="headers",
-)
-transaction_history_count_parser.add_argument(
-    SIGNATURE_HEADER,
-    required=True,
-    description="The signature of data, used for signature recovery",
-    location="headers",
-)
+add_auth_headers_to_parser(transaction_history_count_parser)
 
 
 @full_ns.route("/count")
