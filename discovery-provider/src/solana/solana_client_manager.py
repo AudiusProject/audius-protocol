@@ -5,12 +5,11 @@ import time
 from contextlib import contextmanager
 from typing import Optional
 
+from solana.rpc.api import Client, Commitment
+from solana.rpc.types import TokenAccountOpts
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetSignaturesForAddressResp, GetTransactionResp
 from solders.signature import Signature
-
-from solana.rpc.api import Client, Commitment
-from solana.rpc.types import TokenAccountOpts
 from src.exceptions import SolanaTransactionFetchError
 from src.solana.solana_helpers import SPL_TOKEN_ID_PK
 
@@ -81,8 +80,8 @@ class SolanaClientManager:
     def get_signatures_for_address(
         self,
         account: str,
-        before: Optional[str] = None,
-        until: Optional[str] = None,
+        before: Optional[Signature] = None,
+        until: Optional[Signature] = None,
         limit: Optional[int] = None,
         retries: int = DEFAULT_MAX_RETRIES,
     ) -> GetSignaturesForAddressResp:
@@ -105,8 +104,8 @@ class SolanaClientManager:
                     transactions: GetSignaturesForAddressResp = (
                         client.get_signatures_for_address(
                             Pubkey.from_string(account),
-                            Signature.from_string(before) if before else None,
-                            Signature.from_string(until) if until else None,
+                            before,
+                            until,
                             limit,
                             Commitment("finalized"),
                         )

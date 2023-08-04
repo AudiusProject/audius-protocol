@@ -11,7 +11,6 @@ from solders.pubkey import Pubkey
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
 from solders.transaction import Transaction
 from sqlalchemy import desc
-
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
@@ -155,7 +154,10 @@ def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
 
 
 def is_valid_tx(account_keys):
-    if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
+    if (
+        Pubkey.from_string(SECP_PROGRAM) in account_keys
+        and Pubkey.from_string(SIGNER_GROUP) in account_keys
+    ):
         return True
     logger.error(
         f"index_solana_plays.py | Failed to find {SECP_PROGRAM} or {SIGNER_GROUP} in {account_keys}"

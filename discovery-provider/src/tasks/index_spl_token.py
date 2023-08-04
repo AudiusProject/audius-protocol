@@ -13,7 +13,6 @@ from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
 from solders.transaction import Transaction
-
 from src.exceptions import SolanaTransactionFetchError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
@@ -436,7 +435,7 @@ def split_list(l: List[T], n: int):
 # Push to head of array containing seen transactions
 # Used to avoid re-traversal from chain tail when slot diff > certain number
 def cache_traversed_tx(redis: Redis, tx: RpcConfirmedTransactionStatusWithSignature):
-    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(tx))
+    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, tx.to_json())
 
 
 # Fetch the cached transaction from redis queue
@@ -448,8 +447,8 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: Optional[int]):
     while not cached_offset_tx_found:
         last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
         if last_cached_tx_raw:
-            last_cached_tx: RpcConfirmedTransactionStatusWithSignature = json.loads(
-                last_cached_tx_raw[0]
+            last_cached_tx = RpcConfirmedTransactionStatusWithSignature.from_json(
+                last_cached_tx_raw[0].decode()
             )
             redis.ltrim(REDIS_TX_CACHE_QUEUE_PREFIX, 1, -1)
             # If a single element is remaining, clear the list to avoid dupe processing
