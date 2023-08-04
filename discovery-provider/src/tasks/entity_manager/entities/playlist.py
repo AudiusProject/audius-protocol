@@ -43,12 +43,8 @@ def update_playlist_routes_table(
 
     # Then query the DB if necessary
     prev_playlist_route_record = params.existing_records[EntityType.PLAYLIST_ROUTE].get(playlist_record.playlist_id)
-    print(f"asdf playlist id {playlist_record.playlist_id}")
-    print(f"asdf playlist name {playlist_record.playlist_name}")
-    print(f"asdf new_playlist_slug_title {new_playlist_slug_title}")
 
     if prev_playlist_route_record:
-        print(f"asdf prev_playlist_route_record.title_slug {prev_playlist_route_record.title_slug}")
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
             params.logger.info(f"not changing for {playlist_record.playlist_id}")

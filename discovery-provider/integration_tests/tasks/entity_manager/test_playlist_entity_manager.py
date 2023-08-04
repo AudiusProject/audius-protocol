@@ -405,7 +405,6 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
 
         # validate db records
         playlist_routes = session.query(PlaylistRoute).all()
-        print(f"asdf playlist_routes {[(playlist.playlist_id, playlist.slug, playlist.is_current) for playlist in playlist_routes]}")
         assert len(playlist_routes) == 11
 
         expected_routes = [
@@ -505,8 +504,6 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
         sorted_routes = sorted(playlist_routes, key=sort_key)
         sorted_expected_routes = sorted(expected_routes, key=sort_key)
         for i in range(len(sorted_routes)):
-            print(f"asdf sorted_routes[i] {sorted_routes[i]}")
-            print(f"asdf sorted_expected_routes[i] {sorted_expected_routes[i]}")
             assert_playlist_route(sorted_routes[i], sorted_expected_routes[i])
 
 

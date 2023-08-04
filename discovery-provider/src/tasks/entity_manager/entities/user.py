@@ -322,7 +322,6 @@ def update_user_metadata(user_record: User, metadata: Dict, params):
             "sol",
             params,
         )
-    print(f"asdf update_user_metadata {metadata['events']}")
     if "events" in metadata and metadata["events"]:
         update_user_events(user_record, metadata["events"], challenge_event_bus, params)
 
@@ -392,7 +391,6 @@ def update_user_events(
             referrer=existing_referrer,
             is_mobile_user=existing_mobile_user,
         )
-        print(f"asdf events {events}")
         for event, value in events.items():
             if (
                 event == "referrer"
