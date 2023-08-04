@@ -426,7 +426,7 @@ def revert_block(session: Session, block_to_revert: Block):
     logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0
-    if revert_block.parenthash == default_padded_start_hash:
+    if block_to_revert.parenthash == default_padded_start_hash:
         parent_hash = default_config_start_hash
 
     # Update newly current block row and outdated row (indicated by current block's parent hash)
@@ -443,7 +443,7 @@ def revert_block(session: Session, block_to_revert: Block):
     # aggregate all transactions in current block
     revert_block = session.query(RevertBlock).filter(RevertBlock.blocknumber == revert_block_number).first()
     if not revert_block:
-        logger.info("No records to revert")
+        logger.info("No reverts to apply")
         return
     
     revert_records = []

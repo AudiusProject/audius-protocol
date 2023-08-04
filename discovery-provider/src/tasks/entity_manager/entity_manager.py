@@ -98,7 +98,7 @@ entity_type_table_mapping = {
     "Save": Save.__tablename__,
     "Repost": Repost.__tablename__,
     "Follow": Follow.__tablename__,
-    "subscription": Subscription.__tablename__,
+    "Subscription": Subscription.__tablename__,
     "Playlist": Playlist.__tablename__,
     "Track": Track.__tablename__,
     "User": User.__tablename__,
@@ -398,10 +398,11 @@ def get_records_to_save(
     # prev records may contain records that did not change
     # how do i handle conflicts?
     # may need to modify existing_records_in_json keys
-    revert_block = RevertBlock(
-        blocknumber=params.block_number, prev_records=prev_records
-    )
-    records_to_save.append(revert_block)
+    if prev_records:
+        revert_block = RevertBlock(
+            blocknumber=params.block_number, prev_records=prev_records
+        )
+        records_to_save.append(revert_block)
     return records_to_save
 
 
