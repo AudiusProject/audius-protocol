@@ -88,7 +88,7 @@ def update_track_routes_table(
 
     # Find the current route for the track
     # Check the pending track route updates first
-    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE][track_record.track_id]
+    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE].get(track_record.track_id)
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:

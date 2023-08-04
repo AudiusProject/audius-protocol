@@ -141,7 +141,8 @@ def entity_manager_update(
         existing_records, existing_records_in_json = fetch_existing_entities(
             session, entities_to_fetch
         )
-
+        print(f"asdf existing_records {existing_records}")
+        print(f"asdf existing_records_in_json {existing_records_in_json}")
         # copy original record since existing_records will be modified
         original_records = copy_original_records(existing_records)
 
@@ -375,7 +376,8 @@ def get_records_to_save(
                 and original_records[record_type][entity_id].is_current
             ):                    
                 original_records[record_type][entity_id].is_current = False
-
+                print(f"asdf original_records[record_type] {original_records[record_type]}")
+                print(f"asdf existing_records_in_json[record_type] {existing_records_in_json[record_type]}")
                 # add the json record for revert blocks
                 prev_records[record_type].append(existing_records_in_json[
                     record_type
@@ -550,12 +552,14 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities_in_json[EntityType.TRACK] = {
             track_json["track_id"]: track_json for _, track_json in tracks
         }
+        print(f"asdf existing_entities[EntityType.TRACK] {existing_entities[EntityType.TRACK]} ")
+        print(f"asdf existing_entities_in_json[EntityType.TRACK] {existing_entities_in_json[EntityType.TRACK]} ")
 
     if entities_to_fetch[EntityType.TRACK_ROUTE]:
         track_routes: List[TrackRoute] = (
             session.query(TrackRoute, literal_column(f"row_to_json({TrackRoute.__tablename__})"))
             .filter(
-                TrackRoute.track_id.in_(entities_to_fetch[EntityType.TRACK]),
+                TrackRoute.track_id.in_(entities_to_fetch[EntityType.TRACK_ROUTE]),
                 TrackRoute.is_current == True,
             )
             .all()
@@ -563,7 +567,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.TRACK_ROUTE] = {
             track_route.track_id: track_route for track_route, _ in track_routes
         }
-        existing_entities_in_json[EntityType.TRACK] = {
+        existing_entities_in_json[EntityType.TRACK_ROUTE] = {
             track_route_json["track_id"]: track_route_json for _, track_route_json in track_routes
         }
 
