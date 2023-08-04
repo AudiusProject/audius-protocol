@@ -9,6 +9,10 @@ from typing import List, Sequence, Tuple, TypedDict, cast
 from hexbytes import HexBytes
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+from web3.exceptions import BlockNotFound
+from web3.types import BlockData, HexStr, TxReceipt
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
@@ -38,9 +42,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
-from web3 import Web3
-from web3.exceptions import BlockNotFound
-from web3.types import BlockData, HexStr, TxReceipt
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 

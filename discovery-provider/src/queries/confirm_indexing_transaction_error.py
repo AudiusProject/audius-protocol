@@ -1,6 +1,7 @@
 import logging
 
 import requests
+
 from src.queries.get_skipped_transactions import set_indexing_error
 from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 

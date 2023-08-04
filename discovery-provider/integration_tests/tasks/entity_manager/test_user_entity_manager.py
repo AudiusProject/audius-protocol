@@ -3,9 +3,12 @@ from datetime import datetime
 from typing import List
 from unittest import mock
 
+from sqlalchemy import asc
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
@@ -18,8 +21,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 
 def set_patches(mocker):

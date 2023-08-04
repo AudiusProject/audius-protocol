@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Union
 
 from sqlalchemy.orm.session import Session
+
 from src.models.social.follow import Follow
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase

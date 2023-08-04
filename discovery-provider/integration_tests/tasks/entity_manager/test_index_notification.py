@@ -1,13 +1,14 @@
 from typing import List
 
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import NotificationSeen
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 
 def test_index_notification_view(app, mocker):

@@ -1,14 +1,15 @@
 import logging  # pylint: disable=C0302
 from typing import List
 
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.notifications.notification import Notification
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 

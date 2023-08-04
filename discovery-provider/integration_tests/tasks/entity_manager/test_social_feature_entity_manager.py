@@ -3,6 +3,9 @@ import logging
 from typing import List
 from unittest import mock
 
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
@@ -17,8 +20,6 @@ from src.models.social.subscription import Subscription
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
