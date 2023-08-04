@@ -522,7 +522,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.PLAYLIST] = {
             playlist.playlist_id: playlist for playlist, _ in playlists
         }
-        existing_entities_in_json[EntityType.PLAYLIST] = {
+        existing_entities_in_json["playlists"] = {
             playlist_json["playlist_id"]: playlist_json for _, playlist_json in playlists
         }
 
@@ -539,7 +539,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.TRACK] = {
             track.track_id: track for track, _ in tracks
         }
-        existing_entities_in_json[EntityType.TRACK] = {
+        existing_entities_in_json["tracks"] = {
             track_json["track_id"]: track_json for _, track_json in tracks
         }
 
@@ -555,7 +555,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.TRACK_ROUTE] = {
             track_route.track_id: track_route for track_route, _ in track_routes
         }
-        existing_entities_in_json[EntityType.TRACK_ROUTE] = {
+        existing_entities_in_json["track_routes"] = {
             track_route_json["track_id"]: track_route_json for _, track_route_json in track_routes
         }
 
@@ -571,7 +571,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.PLAYLIST_ROUTE] = {
             playlist_route.playlist_id: playlist_route for playlist_route, _ in playlist_routes
         }
-        existing_entities_in_json[EntityType.PLAYLIST_ROUTE] = {
+        existing_entities_in_json["playlist_routes"] = {
             playlist_route_json["playlist_id"]: playlist_route_json for _, playlist_route_json in playlist_routes
         }
 
@@ -586,7 +586,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.USER] = {user.user_id: user for user, _ in users}
-        existing_entities_in_json[EntityType.USER] = {
+        existing_entities_in_json["users"] = {
             user_json["user_id"]: user_json for _, user_json in users
         }
 
@@ -604,7 +604,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.USER_EVENT] = {
             user_event.user_id: user_event for user_event, _ in user_events
         }
-        existing_entities_in_json[EntityType.USER_EVENT] = {
+        existing_entities_in_json["user_events"] = {
             user_event_json["user_id"]: user_event_json for _, user_event_json in user_events
         }
 
@@ -625,7 +625,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.ASSOCIATED_WALLET] = {
             (wallet.user_id, wallet.chain): wallet for wallet, _ in associated_wallets
         }
-        existing_entities_in_json[EntityType.ASSOCIATED_WALLET] = {
+        existing_entities_in_json["associated_wallets"] = {
             (wallet_json["user_id"], wallet_json["chain"]): wallet_json
             for _, wallet_json in associated_wallets
         }
@@ -658,7 +658,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             ): follow
             for follow, _ in follows
         }
-        existing_entities_in_json[EntityType.FOLLOW] = {
+        existing_entities_in_json["follow"] = {
             get_record_key(
                 follow_json["follower_user_id"], EntityType.USER, follow_json["followee_user_id"]
             ): follow_json
@@ -690,7 +690,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             get_record_key(save.user_id, save.save_type, save.save_item_id): save
             for save, _ in saves
         }
-        existing_entities_in_json[EntityType.SAVE] = {
+        existing_entities_in_json["saves"] = {
             get_record_key(save_json["user_id"], save_json["save_type"], save_json["save_item_id"]): save_json
             for _, save_json in saves
         }
@@ -724,7 +724,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             ): repost
             for repost, _ in reposts
         }
-        existing_entities_in_json[EntityType.REPOST] = {
+        existing_entities_in_json["reposts"] = {
             get_record_key(
                 respost_json["user_id"], respost_json["repost_type"], respost_json["repost_item_id"]
             ): respost_json
@@ -760,7 +760,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             ): subscription
             for subscription, _ in subscriptions
         }
-        existing_entities_in_json[EntityType.SUBSCRIPTION] = {
+        existing_entities_in_json["subscriptions"] = {
             get_record_key(
                 sub_json["subscriber_id"], EntityType.USER, sub_json["user_id"]
             ): sub_json
@@ -794,7 +794,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             (playlist_seen.user_id, playlist_seen.playlist_id): playlist_seen
             for playlist_seen, _ in playlist_seens
         }
-        existing_entities_in_json[EntityType.PLAYLIST_SEEN] = {
+        existing_entities_in_json["playlist_seen"] = {
             (seen_json["user_id"], seen_json["playlist_id"]): seen_json
             for _, seen_json in playlist_seens
         }
@@ -822,7 +822,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.GRANT] = {
             (grant.grantee_address.lower(), grant.user_id): grant for grant, _ in grants
         }
-        existing_entities_in_json[EntityType.GRANT] = {
+        existing_entities_in_json["grants"] = {
             (grant_json["grantee_address"].lower(), grant_json["user_id"]): grant_json for _, grant_json in grants
         }
         for grant, _ in grants:
@@ -849,7 +849,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             developer_app.address.lower(): developer_app
             for developer_app, _ in developer_apps
         }
-        existing_entities_in_json[EntityType.DEVELOPER_APP] = {
+        existing_entities_in_json["developer_apps"] = {
             app_json["address"].lower(): app_json
             for _, app_json in developer_apps
         }

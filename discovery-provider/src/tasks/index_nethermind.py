@@ -3,6 +3,7 @@ import concurrent.futures
 import os
 from datetime import datetime
 from operator import itemgetter, or_
+from src.models.indexing.revert_block import RevertBlock
 
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
@@ -65,6 +66,23 @@ default_config_start_hash = "0x0"
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
 
+model_mapping = {
+    Save.__tablename__: Save,
+    Repost.__tablename__: Repost,
+    Follow.__tablename__: Follow,
+    Subscription.__tablename__: Subscription,
+    Playlist.__tablename__: Playlist,
+    Track.__tablename__: Track,
+    User.__tablename__: User,
+    AssociatedWallet.__tablename__: AssociatedWallet,
+    UserEvent.__tablename__: UserEvent,
+    TrackRoute.__tablename__: TrackRoute,
+    PlaylistRoute.__tablename__: PlaylistRoute,
+    NotificationSeen.__tablename__: NotificationSeen,
+    PlaylistSeen.__tablename__: PlaylistSeen,
+    DeveloperApp.__tablename__: DeveloperApp,
+    Grant.__tablename__: Grant,
+}
 
 def fetch_tx_receipt(tx_hash: HexBytes):
     receipt = web3.eth.get_transaction_receipt(tx_hash)
@@ -427,327 +445,18 @@ def revert_block(session: Session, revert_block: Block):
     revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
-    revert_save_entries = (
-        session.query(Save).filter(Save.blocknumber == revert_block_number).all()
-    )
-    revert_repost_entries = (
-        session.query(Repost).filter(Repost.blocknumber == revert_block_number).all()
-    )
-    revert_follow_entries = (
-        session.query(Follow).filter(Follow.blocknumber == revert_block_number).all()
-    )
-    revert_subscription_entries = (
-        session.query(Subscription)
-        .filter(Subscription.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_playlist_entries = (
-        session.query(Playlist)
-        .filter(Playlist.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_track_entries = (
-        session.query(Track).filter(Track.blocknumber == revert_block_number).all()
-    )
-    revert_user_entries = (
-        session.query(User).filter(User.blocknumber == revert_block_number).all()
-    )
-    revert_ursm_content_node_entries = (
-        session.query(UrsmContentNode)
-        .filter(UrsmContentNode.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_associated_wallets = (
-        session.query(AssociatedWallet)
-        .filter(AssociatedWallet.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_user_events_entries = (
-        session.query(UserEvent)
-        .filter(UserEvent.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_track_routes = (
-        session.query(TrackRoute)
-        .filter(TrackRoute.blocknumber == revert_block_number)
-        .all()
-    )
-    revert_playlist_routes = (
-        session.query(PlaylistRoute)
-        .filter(PlaylistRoute.blocknumber == revert_block_number)
-        .all()
-    )
-
-    revert_notification_seen = (
-        session.query(NotificationSeen)
-        .filter(NotificationSeen.blocknumber == revert_block_number)
-        .all()
-    )
-
-    revert_playlist_seen = (
-        session.query(PlaylistSeen)
-        .filter(PlaylistSeen.blocknumber == revert_block_number)
-        .all()
-    )
-
-    revert_developer_apps = (
-        session.query(DeveloperApp)
-        .filter(DeveloperApp.blocknumber == revert_block_number)
-        .all()
-    )
-
-    revert_grants = (
-        session.query(Grant).filter(Grant.blocknumber == revert_block_number).all()
-    )
-
-    # Revert all of above transactions
-    for save_to_revert in revert_save_entries:
-        save_item_id = save_to_revert.save_item_id
-        save_user_id = save_to_revert.user_id
-        save_type = save_to_revert.save_type
-        previous_save_entry = (
-            session.query(Save)
-            .filter(Save.user_id == save_user_id)
-            .filter(Save.save_item_id == save_item_id)
-            .filter(Save.save_type == save_type)
-            .order_by(Save.blocknumber.desc())
-            .first()
-        )
-        if previous_save_entry:
-            previous_save_entry.is_current = True
-        logger.info(f"Reverting save: {save_to_revert}")
-        # Remove outdated save item entry
-        session.delete(save_to_revert)
-
-    for repost_to_revert in revert_repost_entries:
-        repost_user_id = repost_to_revert.user_id
-        repost_item_id = repost_to_revert.repost_item_id
-        repost_type = repost_to_revert.repost_type
-        previous_repost_entry = (
-            session.query(Repost)
-            .filter(Repost.user_id == repost_user_id)
-            .filter(Repost.repost_item_id == repost_item_id)
-            .filter(Repost.repost_type == repost_type)
-            .order_by(Repost.blocknumber.desc())
-            .first()
-        )
-        # Update prev repost row (is_delete) to is_current == True
-        if previous_repost_entry:
-            previous_repost_entry.is_current = True
-        # Remove outdated repost entry
-        logger.info(f"Reverting repost: {repost_to_revert}")
-        session.delete(repost_to_revert)
-
-    for follow_to_revert in revert_follow_entries:
-        previous_follow_entry = (
-            session.query(Follow)
-            .filter(Follow.follower_user_id == follow_to_revert.follower_user_id)
-            .filter(Follow.followee_user_id == follow_to_revert.followee_user_id)
-            .order_by(Follow.blocknumber.desc())
-            .first()
-        )
-        # update prev follow row (is_delete) to is_current = true
-        if previous_follow_entry:
-            previous_follow_entry.is_current = True
-        # remove outdated follow entry
-        logger.info(f"Reverting follow: {follow_to_revert}")
-        session.delete(follow_to_revert)
-
-    for subscription_to_revert in revert_subscription_entries:
-        previous_subscription_entry = (
-            session.query(Subscription)
-            .filter(Subscription.subscriber_id == subscription_to_revert.subscriber_id)
-            .filter(Subscription.user_id == subscription_to_revert.user_id)
-            .filter(Subscription.blocknumber < revert_block_number)
-            .order_by(Subscription.blocknumber.desc())
-            .first()
-        )
-        if previous_subscription_entry:
-            previous_subscription_entry.is_current = True
-        logger.info(f"Reverting subscription: {subscription_to_revert}")
-        session.delete(subscription_to_revert)
-
-    for playlist_to_revert in revert_playlist_entries:
-        playlist_id = playlist_to_revert.playlist_id
-        previous_playlist_entry = (
-            session.query(Playlist)
-            .filter(Playlist.playlist_id == playlist_id)
-            .filter(Playlist.blocknumber < revert_block_number)
-            .order_by(Playlist.blocknumber.desc())
-            .first()
-        )
-        if previous_playlist_entry:
-            previous_playlist_entry.is_current = True
-        logger.info(f"Reverting playlist: {playlist_to_revert}")
-        # Remove outdated playlist entry
-        session.delete(playlist_to_revert)
-
-    for track_to_revert in revert_track_entries:
-        track_id = track_to_revert.track_id
-        previous_track_entry = (
-            session.query(Track)
-            .filter(Track.track_id == track_id)
-            .filter(Track.blocknumber < revert_block_number)
-            .order_by(Track.blocknumber.desc())
-            .first()
-        )
-        if previous_track_entry:
-            # First element in descending order is new current track item
-            previous_track_entry.is_current = True
-        # Remove track entries
-        logger.info(f"Reverting track: {track_to_revert}")
-        session.delete(track_to_revert)
-
-    for ursm_content_node_to_revert in revert_ursm_content_node_entries:
-        cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
-        previous_ursm_content_node_entry = (
-            session.query(UrsmContentNode)
-            .filter(UrsmContentNode.cnode_sp_id == cnode_sp_id)
-            .filter(UrsmContentNode.blocknumber < revert_block_number)
-            .order_by(UrsmContentNode.blocknumber.desc())
-            .first()
-        )
-        if previous_ursm_content_node_entry:
-            previous_ursm_content_node_entry.is_current = True
-        # Remove previous ursm Content Node entires
-        logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
-        session.delete(ursm_content_node_to_revert)
-
-    # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
-    for user_to_revert in revert_user_entries:
-        user_id = user_to_revert.user_id
-        previous_user_entry = (
-            session.query(User)
-            .filter(
-                User.user_id == user_id,
-                User.blocknumber < revert_block_number,
-                # Or both possibilities to allow use of composite index
-                # on user, block, is_current
-                or_(User.is_current == True, User.is_current == False),
-            )
-            .order_by(User.blocknumber.desc())
-            .first()
-        )
-        if previous_user_entry:
-            # Update previous user row, setting is_current to true
-            previous_user_entry.is_current = True
-        # Remove outdated user entries
-        logger.info(f"Reverting user: {user_to_revert}")
-        session.delete(user_to_revert)
-
-    for associated_wallets_to_revert in revert_associated_wallets:
-        user_id = associated_wallets_to_revert.user_id
-        previous_associated_wallet_entry = (
-            session.query(AssociatedWallet)
-            .filter(AssociatedWallet.user_id == user_id)
-            .filter(AssociatedWallet.blocknumber < revert_block_number)
-            .order_by(AssociatedWallet.blocknumber.desc())
-            .first()
-        )
-        if previous_associated_wallet_entry:
-            session.query(AssociatedWallet).filter(
-                AssociatedWallet.user_id == user_id
-            ).filter(
-                AssociatedWallet.blocknumber
-                == previous_associated_wallet_entry.blocknumber
-            ).update(
-                {"is_current": True}
-            )
-        # Remove outdated associated wallets
-        logger.info(f"Reverting associated Wallet: {user_id}")
-        session.delete(associated_wallets_to_revert)
-
-    revert_user_events(session, revert_user_events_entries, revert_block_number)
-
-    for track_route_to_revert in revert_track_routes:
-        track_id = track_route_to_revert.track_id
-        previous_track_route_entry = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.track_id == track_id,
-                TrackRoute.blocknumber < revert_block_number,
-            )
-            .order_by(TrackRoute.blocknumber.desc(), TrackRoute.slug.asc())
-            .first()
-        )
-        if previous_track_route_entry:
-            previous_track_route_entry.is_current = True
-        logger.info(f"Reverting track route {track_route_to_revert}")
-        session.delete(track_route_to_revert)
-
-    for playlist_route_to_revert in revert_playlist_routes:
-        playlist_id = playlist_route_to_revert.playlist_id
-        previous_playlist_route_entry = (
-            session.query(PlaylistRoute)
-            .filter(
-                PlaylistRoute.playlist_id == playlist_id,
-                PlaylistRoute.blocknumber < revert_block_number,
-            )
-            .order_by(PlaylistRoute.blocknumber.desc(), PlaylistRoute.slug.asc())
-            .first()
-        )
-        if previous_playlist_route_entry:
-            previous_playlist_route_entry.is_current = True
-        logger.info(f"Reverting playlist route {playlist_route_to_revert}")
-        session.delete(playlist_route_to_revert)
-
-    for notification_seen_to_revert in revert_notification_seen:
-        session.delete(notification_seen_to_revert)
-        # NOTE: There is no need mark previous as is_current for notification seen
-
-    for playlist_seen_to_revert in revert_playlist_seen:
-        previous_playlist_seen_entry = (
-            session.query(PlaylistSeen)
-            .filter(
-                PlaylistSeen.playlist_id == playlist_seen_to_revert.playlist_id,
-                PlaylistSeen.user_id == playlist_seen_to_revert.user_id,
-                PlaylistSeen.blocknumber < revert_block_number,
-            )
-            .order_by(PlaylistSeen.blocknumber.desc())
-            .first()
-        )
-        if previous_playlist_seen_entry:
-            previous_playlist_seen_entry.is_current = True
-        logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
-        session.delete(playlist_seen_to_revert)
-
-    for developer_app_to_revert in revert_developer_apps:
-        previous_developer_app_entry = (
-            session.query(DeveloperApp)
-            .filter(
-                DeveloperApp.address == developer_app_to_revert.address,
-                DeveloperApp.blocknumber < revert_block_number,
-            )
-            .order_by(DeveloperApp.blocknumber.desc())
-            .first()
-        )
-        if previous_developer_app_entry:
-            previous_developer_app_entry.is_current = True
-        logger.info(f"Reverting developer app {developer_app_to_revert}")
-        session.delete(developer_app_to_revert)
-
-    for grant_to_revert in revert_grants:
-        previous_grant_entry = (
-            session.query(Grant)
-            .filter(
-                Grant.grantee_address == grant_to_revert.grantee_address,
-                Grant.user_id == grant_to_revert.user_id,
-                Grant.blocknumber < revert_block_number,
-            )
-            .order_by(Grant.blocknumber.desc())
-            .first()
-        )
-        if previous_grant_entry:
-            previous_grant_entry.is_current = True
-        logger.info(f"Reverting grant {grant_to_revert}")
-        session.delete(grant_to_revert)
-
+    revert_block = session.query(RevertBlock).filter(RevertBlock.blocknumber == revert_block_number).first()
+    revert_records = []
+    # apply reverts
+    for record_type, json_records in revert_block.prev_records:
+        for json_record in json_records:
+            Model = model_mapping[record_type]
+            revert_records.append(Model(**json_record))
+            
     # Remove outdated block entry
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
+    session.add_all(revert_records)
 
-    rebuild_playlist_index = rebuild_playlist_index or bool(revert_playlist_entries)
-    rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
-    rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     logger.info(
         f"Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
     )
