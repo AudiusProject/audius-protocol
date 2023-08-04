@@ -416,17 +416,13 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
 
 
 @log_duration(logger)
-def revert_block(session: Session, revert_block: Block):
+def revert_block(session: Session, block_to_revert: Block):
     start_time = datetime.now()
 
-    rebuild_playlist_index = False
-    rebuild_track_index = False
-    rebuild_user_index = False
-
     # Cache relevant information about current block
-    revert_hash = revert_block.blockhash
-    revert_block_number = revert_block.number
-    parent_hash = revert_block.parenthash
+    revert_hash = block_to_revert.blockhash
+    revert_block_number = block_to_revert.number
+    parent_hash = block_to_revert.parenthash
     logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0
@@ -446,12 +442,20 @@ def revert_block(session: Session, revert_block: Block):
 
     # aggregate all transactions in current block
     revert_block = session.query(RevertBlock).filter(RevertBlock.blocknumber == revert_block_number).first()
+    if not revert_block:
+        logger.info("No records to revert")
+        return
+    
     revert_records = []
     # apply reverts
-    for record_type, json_records in revert_block.prev_records:
-        for json_record in json_records:
+    for record_type in revert_block.prev_records:
+        for json_record in revert_block.prev_records[record_type]:
             Model = model_mapping[record_type]
-            revert_records.append(Model(**json_record))
+
+            # filter out unnecessary keys
+            filtered_json_record = {k: v for k, v in json_record.items() if k in Model.__table__.columns}
+
+            revert_records.append(Model(**filtered_json_record))
             
     # Remove outdated block entry
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
