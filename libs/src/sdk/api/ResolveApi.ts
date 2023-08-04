@@ -18,18 +18,18 @@ export class ResolveApi extends BaseAPI {
   /**
    * Resolves a provided Audius app URL to the API resource it represents
    */
-  async resolveRaw(requestParameters: ResolveRequest) {
-    if (requestParameters.url === null || requestParameters.url === undefined) {
+  async resolveRaw(params: ResolveRequest) {
+    if (params.url === null || params.url === undefined) {
       throw new RequiredError(
         'url',
-        'Required parameter requestParameters.url was null or undefined when calling resolve.'
+        'Required parameter params.url was null or undefined when calling resolve.'
       )
     }
 
     const queryParameters: any = {}
 
-    if (requestParameters.url !== undefined) {
-      queryParameters.url = requestParameters.url
+    if (params.url !== undefined) {
+      queryParameters.url = params.url
     }
 
     const headerParameters: HTTPHeaders = {}
@@ -51,7 +51,7 @@ export class ResolveApi extends BaseAPI {
     })
   }
 
-  async resolve(requestParameters: ResolveRequest) {
-    return await (await this.resolveRaw(requestParameters)).value()
+  async resolve(params: ResolveRequest) {
+    return await (await this.resolveRaw(params)).value()
   }
 }

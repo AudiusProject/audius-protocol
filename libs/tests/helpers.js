@@ -96,7 +96,7 @@ const deregisterSPEndpoint = async (libs, account, type) => {
   }
 
   if (type === 'discovery-provider') {
-    path = '/health_check'
+    path = '/health_check?allow_unregistered=true'
     response = { data: { ...response } }
   }
 

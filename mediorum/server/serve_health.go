@@ -4,11 +4,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mediorum/ethcontracts"
 	"mediorum/server/signature"
-	"net/http"
-	"net/url"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gowebpki/jcs"
@@ -50,64 +49,51 @@ type healthCheckResponseData struct {
 	Signers                   []Peer                     `json:"signers"`
 	ReplicationFactor         int                        `json:"replicationFactor"`
 	Dir                       string                     `json:"dir"`
-	BlobStoreDSN              string                     `json:"blobStoreDSN"`
+	BlobStorePrefix           string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
 	ListenPort                string                     `json:"listenPort"`
-	UpstreamCN                string                     `json:"upstreamCN"`
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
 	CidCursors                []cidCursor                `json:"cidCursors"`
 	PeerHealths               map[string]time.Time       `json:"peerHealths"`
-	IsV2Only                  bool                       `json:"isV2Only"`
 	StoreAll                  bool                       `json:"storeAll"`
-}
-
-type legacyHealth struct {
-	Version                   string `json:"version"`
-	Service                   string `json:"service"`
-	SelectedDiscoveryProvider string `json:"selectedDiscoveryProvider"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	healthy := ss.databaseSize > 0
+
+	allowUnregistered, _ := strconv.ParseBool(c.QueryParam("allow_unregistered"))
+	if !allowUnregistered && !ss.Config.WalletIsRegistered {
+		healthy = false
+	}
 
 	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
 	if ss.Config.WalletIsRegistered && (ss.isSeeding || ss.isSeedingLegacy) {
 		healthy = false
 	}
 
-	var err error
-	var version string
-	var service string
-	var selectedDiscoveryProvider string
-	if ss.Config.IsV2Only {
-		version = ss.Config.VersionJson.Version
-		service = ss.Config.VersionJson.Service
-		selectedDiscoveryProvider = "<none - v2 only>"
-	} else {
-		var legacyHealth legacyHealth
-		legacyHealth, err = ss.fetchCreatorNodeHealth()
-		if err == nil {
-			version = legacyHealth.Version
-			service = legacyHealth.Service
-			selectedDiscoveryProvider = legacyHealth.SelectedDiscoveryProvider
-		} else if ss.Config.Env == "stage" || ss.Config.Env == "prod" {
-			// if we're in stage or prod, return healthy=false if we can't connect to the legacy CN
-			healthy = false
-		}
+	blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
+	if !foundBlobStore {
+		blobStorePrefix = ""
+	}
+	blobStoreMoveFromPrefix, _, foundBlobStoreMoveFrom := strings.Cut(ss.Config.MoveFromBlobStoreDSN, "://")
+	if !foundBlobStoreMoveFrom {
+		blobStoreMoveFromPrefix = ""
 	}
 
+	var err error
 	// since we're using peerHealth
 	ss.peerHealthMutex.RLock()
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
 		Healthy:                   healthy,
-		Version:                   version,
-		Service:                   service,
+		Version:                   ss.Config.VersionJson.Version,
+		Service:                   ss.Config.VersionJson.Service,
 		IsSeeding:                 ss.isSeeding,
 		IsSeedingLegacy:           ss.isSeedingLegacy,
 		BuiltAt:                   vcsBuildTime,
 		StartedAt:                 ss.StartedAt,
-		SelectedDiscoveryProvider: selectedDiscoveryProvider,
+		SelectedDiscoveryProvider: "<none - v2 only>",
 		SPID:                      ss.Config.SPID,
 		SPOwnerWallet:             ss.Config.SPOwnerWallet,
 		Git:                       ss.Config.GitSHA,
@@ -118,9 +104,9 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
 		TrustedNotifier:           ss.trustedNotifier,
 		Dir:                       ss.Config.Dir,
-		BlobStoreDSN:              ss.Config.BlobStoreDSN,
+		BlobStorePrefix:           blobStorePrefix,
+		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
 		ListenPort:                ss.Config.ListenPort,
-		UpstreamCN:                ss.Config.UpstreamCN,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
 		Self:                      ss.Config.Self,
@@ -129,7 +115,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		CidCursors:                ss.cachedCidCursors,
 		PeerHealths:               ss.peerHealth,
 		Signers:                   ss.Config.Signers,
-		IsV2Only:                  ss.Config.IsV2Only,
 		StoreAll:                  ss.Config.StoreAll,
 	}
 
@@ -152,7 +137,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	status := 200
 	if !healthy {
-		status = 503
+		if !allowUnregistered && !ss.Config.WalletIsRegistered {
+			status = 506
+		} else {
+			status = 503
+		}
 	}
 
 	return c.JSON(status, healthCheckResponse{
@@ -163,52 +152,20 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) fetchCreatorNodeHealth() (legacyHealth, error) {
-	legacyHealth := legacyHealth{}
-	upstream, err := url.Parse(ss.Config.UpstreamCN)
-	if err != nil {
-		return legacyHealth, err
-	}
-
-	httpClient := http.Client{
-		Timeout: time.Second,
-	}
-
-	req, err := http.NewRequest("GET", upstream.JoinPath("/health_check").String(), nil)
-	if err != nil {
-		return legacyHealth, err
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return legacyHealth, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return legacyHealth, err
-	}
-
-	err = json.Unmarshal(body, &legacyHealth)
-	return legacyHealth, err
-}
-
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
 		dbHealthy := ss.databaseSize > 0
 		if !dbHealthy {
 			return c.JSON(503, "database not healthy")
 		}
-
-		// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-		if ss.Config.WalletIsRegistered {
-			if ss.isSeeding {
-				return c.JSON(503, "seeding")
-			}
-			if ss.isSeedingLegacy {
-				return c.JSON(503, "seeding legacy")
-			}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
 		}
 
 		return next(c)

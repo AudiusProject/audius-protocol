@@ -24,7 +24,13 @@ export const webServer = async (app: App<SharedData>) => {
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
     "/relay",
     relayPostConfig,
-    async ({ body }, _rep) => await relayHandler(app, body)
+    async (req, rep) =>
+      await relayHandler(
+        app,
+        { reqIp: req.socket.remoteAddress! },
+        req.body,
+        rep
+      )
   );
 
   try {

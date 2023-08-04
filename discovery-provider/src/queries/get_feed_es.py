@@ -71,7 +71,7 @@ def get_feed_es(args, limit=10, offset=0):
                             "must_not": [{"exists": {"field": "stem_of"}}],
                         }
                     },
-                    "size": limit,
+                    "size": offset + limit,
                     "sort": {"created_at": "desc"},
                 },
                 {"index": ES_PLAYLISTS},
@@ -87,7 +87,7 @@ def get_feed_es(args, limit=10, offset=0):
                             ]
                         }
                     },
-                    "size": limit,
+                    "size": offset + limit,
                     "sort": {"created_at": "desc"},
                 },
             ]
@@ -154,7 +154,7 @@ def get_feed_es(args, limit=10, offset=0):
 
     # take a "soft limit" here.  Some tracks / reposts might get filtered out below
     # if is_delete, or if track is collectible gated
-    sorted_with_reposts = sorted_with_reposts[0 : limit * 2]
+    sorted_with_reposts = sorted_with_reposts[0 : (offset + limit) * 2]
 
     mget_reposts = []
     keyed_reposts = {}

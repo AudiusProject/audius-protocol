@@ -22,14 +22,14 @@ const appData = {
 };
 
 export const app = new App<SharedData>(appData)
-    .tick({ minutes: 5 }, async (app) => {
-      /** TODO: update and cache health check */
-    })
-    .tick({ seconds: 10 }, async (app) => {
-      /** TODO: check health of local node */
-    })
-    .tick({ hours: 6 }, regenerateWallets)
-    .task(webServer)
+  .tick({ minutes: 5 }, async (app) => {
+    /** TODO: update and cache health check */
+  })
+  .tick({ seconds: 10 }, async (app) => {
+    /** TODO: check health of local node */
+  })
+  .tick({ hours: 6 }, regenerateWallets)
+  .task(webServer);
 
 const main = async () => {
   await app.run();

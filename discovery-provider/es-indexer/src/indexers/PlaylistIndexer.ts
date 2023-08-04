@@ -232,7 +232,6 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         mood,
         tags,
         title,
-        length,
         created_at,
         coalesce(aggregate_track.repost_count, 0) as repost_count,
         coalesce(aggregate_track.save_count, 0) as save_count,

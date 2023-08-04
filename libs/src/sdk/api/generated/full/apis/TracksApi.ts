@@ -214,19 +214,19 @@ export class TracksApi extends runtime.BaseAPI {
     /** @hidden
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getBulkTracksRaw(params: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.permalink) {
-            queryParameters['permalink'] = requestParameters.permalink;
+        if (params.permalink) {
+            queryParameters['permalink'] = params.permalink;
         }
 
-        if (requestParameters.id) {
-            queryParameters['id'] = requestParameters.id;
+        if (params.id) {
+            queryParameters['id'] = params.id;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -244,31 +244,31 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getBulkTracksRaw(requestParameters, initOverrides);
+    async getBulkTracks(params: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getBulkTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets random tracks found on the \"Feeling Lucky\" smart playlist
      */
-    async getFeelingLuckyTracksRaw(requestParameters: GetFeelingLuckyTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getFeelingLuckyTracksRaw(params: GetFeelingLuckyTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.withUsers !== undefined) {
-            queryParameters['with_users'] = requestParameters.withUsers;
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
         }
 
-        if (requestParameters.minFollowers !== undefined) {
-            queryParameters['min_followers'] = requestParameters.minFollowers;
+        if (params.minFollowers !== undefined) {
+            queryParameters['min_followers'] = params.minFollowers;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -286,27 +286,27 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets random tracks found on the \"Feeling Lucky\" smart playlist
      */
-    async getFeelingLuckyTracks(requestParameters: GetFeelingLuckyTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getFeelingLuckyTracksRaw(requestParameters, initOverrides);
+    async getFeelingLuckyTracks(params: GetFeelingLuckyTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getFeelingLuckyTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
-    async getMostLovedTracksRaw(requestParameters: GetMostLovedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getMostLovedTracksRaw(params: GetMostLovedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.withUsers !== undefined) {
-            queryParameters['with_users'] = requestParameters.withUsers;
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -324,33 +324,33 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Most Loved\" smart playlist
      */
-    async getMostLovedTracks(requestParameters: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getMostLovedTracksRaw(requestParameters, initOverrides);
+    async getMostLovedTracks(params: GetMostLovedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getMostLovedTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets premium track signatures for passed in premium track ids
      */
-    async getPremiumTrackSignaturesRaw(requestParameters: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        if (requestParameters.userId === null || requestParameters.userId === undefined) {
-            throw new runtime.RequiredError('userId','Required parameter requestParameters.userId was null or undefined when calling getPremiumTrackSignatures.');
+    async getPremiumTrackSignaturesRaw(params: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.userId === null || params.userId === undefined) {
+            throw new runtime.RequiredError('userId','Required parameter params.userId was null or undefined when calling getPremiumTrackSignatures.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.trackIds) {
-            queryParameters['track_ids'] = requestParameters.trackIds;
+        if (params.trackIds) {
+            queryParameters['track_ids'] = params.trackIds;
         }
 
-        if (requestParameters.tokenIds) {
-            queryParameters['token_ids'] = requestParameters.tokenIds;
+        if (params.tokenIds) {
+            queryParameters['token_ids'] = params.tokenIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(requestParameters.userId))),
+            path: `/tracks/{user_id}/nft-gated-signatures`.replace(`{${"user_id"}}`, encodeURIComponent(String(params.userId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -362,34 +362,34 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets premium track signatures for passed in premium track ids
      */
-    async getPremiumTrackSignatures(requestParameters: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getPremiumTrackSignaturesRaw(requestParameters, initOverrides);
+    async getPremiumTrackSignatures(params: GetPremiumTrackSignaturesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.getPremiumTrackSignaturesRaw(params, initOverrides);
     }
 
     /** @hidden
      * Get recommended tracks
      */
-    async getRecommendedTracksRaw(requestParameters: GetRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getRecommendedTracksRaw(params: GetRecommendedTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
-        if (requestParameters.exclusionList) {
-            queryParameters['exclusion_list'] = requestParameters.exclusionList;
+        if (params.exclusionList) {
+            queryParameters['exclusion_list'] = params.exclusionList;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -407,45 +407,45 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get recommended tracks
      */
-    async getRecommendedTracks(requestParameters: GetRecommendedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getRecommendedTracksRaw(requestParameters, initOverrides);
+    async getRecommendedTracks(params: GetRecommendedTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getRecommendedTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get recommended tracks using the given trending strategy version
      */
-    async getRecommendedTracksWithVersionRaw(requestParameters: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getRecommendedTracksWithVersion.');
+    async getRecommendedTracksWithVersionRaw(params: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getRecommendedTracksWithVersion.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
-        if (requestParameters.exclusionList) {
-            queryParameters['exclusion_list'] = requestParameters.exclusionList;
+        if (params.exclusionList) {
+            queryParameters['exclusion_list'] = params.exclusionList;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/recommended/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            path: `/tracks/recommended/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -457,27 +457,27 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get recommended tracks using the given trending strategy version
      */
-    async getRecommendedTracksWithVersion(requestParameters: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getRecommendedTracksWithVersionRaw(requestParameters, initOverrides);
+    async getRecommendedTracksWithVersion(params: GetRecommendedTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getRecommendedTracksWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a list of tracks that have stems available for remixing
      */
-    async getRemixableTracksRaw(requestParameters: GetRemixableTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
+    async getRemixableTracksRaw(params: GetRemixableTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.withUsers !== undefined) {
-            queryParameters['with_users'] = requestParameters.withUsers;
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -495,41 +495,41 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a list of tracks that have stems available for remixing
      */
-    async getRemixableTracks(requestParameters: GetRemixableTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
-        const response = await this.getRemixableTracksRaw(requestParameters, initOverrides);
+    async getRemixableTracks(params: GetRemixableTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
+        const response = await this.getRemixableTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
      */
-    async getTrackRaw(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrack.');
+    async getTrackRaw(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrackResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrack.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.handle !== undefined) {
-            queryParameters['handle'] = requestParameters.handle;
+        if (params.handle !== undefined) {
+            queryParameters['handle'] = params.handle;
         }
 
-        if (requestParameters.urlTitle !== undefined) {
-            queryParameters['url_title'] = requestParameters.urlTitle;
+        if (params.urlTitle !== undefined) {
+            queryParameters['url_title'] = params.urlTitle;
         }
 
-        if (requestParameters.showUnlisted !== undefined) {
-            queryParameters['show_unlisted'] = requestParameters.showUnlisted;
+        if (params.showUnlisted !== undefined) {
+            queryParameters['show_unlisted'] = params.showUnlisted;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -541,37 +541,37 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a track by ID. If `show_unlisted` is true, then `handle` and `url_title` are required.
      */
-    async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
-        const response = await this.getTrackRaw(requestParameters, initOverrides);
+    async getTrack(params: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrackResponse> {
+        const response = await this.getTrackRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets all the tracks that the given track remixes
      */
-    async getTrackRemixParentsRaw(requestParameters: GetTrackRemixParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixingResponse>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackRemixParents.');
+    async getTrackRemixParentsRaw(params: GetTrackRemixParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixingResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackRemixParents.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/remixing`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}/remixing`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -583,37 +583,37 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets all the tracks that the given track remixes
      */
-    async getTrackRemixParents(requestParameters: GetTrackRemixParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixingResponse> {
-        const response = await this.getTrackRemixParentsRaw(requestParameters, initOverrides);
+    async getTrackRemixParents(params: GetTrackRemixParentsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixingResponse> {
+        const response = await this.getTrackRemixParentsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get all tracks that remix the given track
      */
-    async getTrackRemixesRaw(requestParameters: GetTrackRemixesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixesResponseFull>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackRemixes.');
+    async getTrackRemixesRaw(params: GetTrackRemixesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RemixesResponseFull>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackRemixes.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/remixes`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}/remixes`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -625,17 +625,17 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get all tracks that remix the given track
      */
-    async getTrackRemixes(requestParameters: GetTrackRemixesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixesResponseFull> {
-        const response = await this.getTrackRemixesRaw(requestParameters, initOverrides);
+    async getTrackRemixes(params: GetTrackRemixesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RemixesResponseFull> {
+        const response = await this.getTrackRemixesRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get the remixable stems of a track
      */
-    async getTrackStemsRaw(requestParameters: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StemsResponse>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrackStems.');
+    async getTrackStemsRaw(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StemsResponse>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getTrackStems.');
         }
 
         const queryParameters: any = {};
@@ -643,7 +643,7 @@ export class TracksApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/stems`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}/stems`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -655,19 +655,19 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the remixable stems of a track
      */
-    async getTrackStems(requestParameters: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
-        const response = await this.getTrackStemsRaw(requestParameters, initOverrides);
+    async getTrackStems(params: GetTrackStemsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StemsResponse> {
+        const response = await this.getTrackStemsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the track IDs of the top trending tracks on Audius
      */
-    async getTrendingTrackIDsRaw(requestParameters: GetTrendingTrackIDsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
+    async getTrendingTrackIDsRaw(params: GetTrendingTrackIDsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -685,35 +685,35 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the track IDs of the top trending tracks on Audius
      */
-    async getTrendingTrackIDs(requestParameters: GetTrendingTrackIDsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrendingIdsResponse> {
-        const response = await this.getTrendingTrackIDsRaw(requestParameters, initOverrides);
+    async getTrendingTrackIDs(params: GetTrendingTrackIDsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrendingIdsResponse> {
+        const response = await this.getTrendingTrackIDsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the top 100 trending (most popular) tracks on Audius
      */
-    async getTrendingTracksRaw(requestParameters: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getTrendingTracksRaw(params: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -731,29 +731,29 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
      */
-    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getTrendingTracksRaw(requestParameters, initOverrides);
+    async getTrendingTracks(params: GetTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getTrendingTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version
      */
-    async getTrendingTracksIDsWithVersionRaw(requestParameters: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingTracksIDsWithVersion.');
+    async getTrendingTracksIDsWithVersionRaw(params: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrendingIdsResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getTrendingTracksIDsWithVersion.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/trending/ids/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            path: `/tracks/trending/ids/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -765,45 +765,45 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the track IDs of the top trending tracks on Audius based on the given trending strategy version
      */
-    async getTrendingTracksIDsWithVersion(requestParameters: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrendingIdsResponse> {
-        const response = await this.getTrendingTracksIDsWithVersionRaw(requestParameters, initOverrides);
+    async getTrendingTracksIDsWithVersion(params: GetTrendingTracksIDsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrendingIdsResponse> {
+        const response = await this.getTrendingTracksIDsWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
      */
-    async getTrendingTracksWithVersionRaw(requestParameters: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingTracksWithVersion.');
+    async getTrendingTracksWithVersionRaw(params: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getTrendingTracksWithVersion.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.genre !== undefined) {
-            queryParameters['genre'] = requestParameters.genre;
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            path: `/tracks/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -815,39 +815,39 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
      */
-    async getTrendingTracksWithVersion(requestParameters: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getTrendingTracksWithVersionRaw(requestParameters, initOverrides);
+    async getTrendingTracksWithVersion(params: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getTrendingTracksWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the tracks found on the \"Under the Radar\" smart playlist
      */
-    async getUnderTheRadarTracksRaw(requestParameters: GetUnderTheRadarTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getUnderTheRadarTracksRaw(params: GetUnderTheRadarTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.filter !== undefined) {
-            queryParameters['filter'] = requestParameters.filter;
+        if (params.filter !== undefined) {
+            queryParameters['filter'] = params.filter;
         }
 
-        if (requestParameters.tracksOnly !== undefined) {
-            queryParameters['tracks_only'] = requestParameters.tracksOnly;
+        if (params.tracksOnly !== undefined) {
+            queryParameters['tracks_only'] = params.tracksOnly;
         }
 
-        if (requestParameters.withUsers !== undefined) {
-            queryParameters['with_users'] = requestParameters.withUsers;
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -865,27 +865,27 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Under the Radar\" smart playlist
      */
-    async getUnderTheRadarTracks(requestParameters: GetUnderTheRadarTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getUnderTheRadarTracksRaw(requestParameters, initOverrides);
+    async getUnderTheRadarTracks(params: GetUnderTheRadarTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getUnderTheRadarTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the top 100 trending underground tracks on Audius
      */
-    async getUndergroundTrendingTracksRaw(requestParameters: GetUndergroundTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getUndergroundTrendingTracksRaw(params: GetUndergroundTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -903,37 +903,37 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending underground tracks on Audius
      */
-    async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getUndergroundTrendingTracksRaw(requestParameters, initOverrides);
+    async getUndergroundTrendingTracks(params: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getUndergroundTrendingTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
      */
-    async getUndergroundTrendingTracksWithVersionRaw(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
+    async getUndergroundTrendingTracksWithVersionRaw(params: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/trending/underground/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            path: `/tracks/trending/underground/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -945,37 +945,37 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
      */
-    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.getUndergroundTrendingTracksWithVersionRaw(requestParameters, initOverrides);
+    async getUndergroundTrendingTracksWithVersion(params: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getUndergroundTrendingTracksWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get users that favorited a track
      */
-    async getUsersFromFavoritesRaw(requestParameters: GetUsersFromFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackFavoritesResponseFull>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getUsersFromFavorites.');
+    async getUsersFromFavoritesRaw(params: GetUsersFromFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackFavoritesResponseFull>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getUsersFromFavorites.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/favorites`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}/favorites`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -987,37 +987,37 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get users that favorited a track
      */
-    async getUsersFromFavorites(requestParameters: GetUsersFromFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackFavoritesResponseFull> {
-        const response = await this.getUsersFromFavoritesRaw(requestParameters, initOverrides);
+    async getUsersFromFavorites(params: GetUsersFromFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackFavoritesResponseFull> {
+        const response = await this.getUsersFromFavoritesRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get the users that reposted a track
      */
-    async getUsersFromRepostsRaw(requestParameters: GetUsersFromRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackRepostsResponseFull>> {
-        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
-            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getUsersFromReposts.');
+    async getUsersFromRepostsRaw(params: GetUsersFromRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackRepostsResponseFull>> {
+        if (params.trackId === null || params.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter params.trackId was null or undefined when calling getUsersFromReposts.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/tracks/{track_id}/reposts`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            path: `/tracks/{track_id}/reposts`.replace(`{${"track_id"}}`, encodeURIComponent(String(params.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1029,8 +1029,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Get the users that reposted a track
      */
-    async getUsersFromReposts(requestParameters: GetUsersFromRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackRepostsResponseFull> {
-        const response = await this.getUsersFromRepostsRaw(requestParameters, initOverrides);
+    async getUsersFromReposts(params: GetUsersFromRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackRepostsResponseFull> {
+        const response = await this.getUsersFromRepostsRaw(params, initOverrides);
         return await response.value();
     }
 

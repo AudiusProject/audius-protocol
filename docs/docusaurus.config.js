@@ -9,7 +9,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
     tagline: "",
     url: "https://docs.audius.org",
     baseUrl: "/",
-    onBrokenLinks: "throw",
+    onBrokenLinks: "warn",
     onBrokenMarkdownLinks: "warn",
     favicon: "img/favicon.ico",
     organizationName: "AudiusProject", // Usually your GitHub org/user name.
@@ -32,48 +32,30 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
         }),
       ],
     ],
-    plugins: [
-      [
-        "docusaurus-plugin-typedoc",
-
-        // Plugin / TypeDoc options
-        {
-          plugin: ["typedoc-plugin-audius-theme"],
-          out: "./developers/sdk",
-          entryPoints: ["./node_modules/@audius/sdk/src/sdk/index.ts"],
-          tsconfig: "./node_modules/@audius/sdk/tsconfig.docs.json",
-          excludeInternal: true,
-          cleanOutputDir: true,
-          disableSources: true,
-          hideMembersSymbol: true,
-          watch: process.env.TYPEDOC_WATCH,
-        },
-      ],
-    ],
-    i18n: {
-      defaultLocale: "en",
-      locales: [
-        "en",
-        "es",
-        "fr",
-        // "zh"
-      ],
-      // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
-      localeConfigs: {
-        en: {
-          label: "English",
-        },
-        es: {
-          label: "Español",
-        },
-        // zh: {
-        //   label: "中文",
-        // },
-        fr: {
-          label: "Français",
-        },
-      },
-    },
+    // i18n: {
+    //   defaultLocale: "en",
+    //   locales: [
+    //     "en",
+    //     "es",
+    //     "fr",
+    //     // "zh"
+    //   ],
+    //   // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
+    //   localeConfigs: {
+    //     en: {
+    //       label: "English",
+    //     },
+    //     es: {
+    //       label: "Español",
+    //     },
+    //     // zh: {
+    //     //   label: "中文",
+    //     // },
+    //     fr: {
+    //       label: "Français",
+    //     },
+    //   },
+    // },
     themeConfig:
       /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
       ({
@@ -103,10 +85,6 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
               label: "Developers",
               to: "/category/developers",
               position: "left",
-            },
-            {
-              type: "localeDropdown",
-              position: "right",
             },
             {
               href: "https://discord.com/invite/audius",
