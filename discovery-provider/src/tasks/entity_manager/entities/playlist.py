@@ -40,33 +40,19 @@ def update_playlist_routes_table(
 
     # Find the current route for the playlist
     # Check the pending playlist route updates first
-    prev_playlist_route_record = next(
-        (
-            route
-            for route in pending_playlist_routes
-            if route.is_current and route.playlist_id == playlist_record.playlist_id
-        ),
-        None,
-    )
 
     # Then query the DB if necessary
-    if prev_playlist_route_record is None:
-        prev_playlist_route_record = (
-            session.query(PlaylistRoute)
-            .filter(
-                PlaylistRoute.playlist_id == playlist_record.playlist_id,
-                PlaylistRoute.is_current == True,
-            )  # noqa: E712
-            .one_or_none()
-        )
+    prev_playlist_route_record = params.existing_records[EntityType.PLAYLIST_ROUTE].get(playlist_record.playlist_id)
+    print(f"asdf playlist id {playlist_record.playlist_id}")
+    print(f"asdf playlist name {playlist_record.playlist_name}")
+    print(f"asdf new_playlist_slug_title {new_playlist_slug_title}")
 
     if prev_playlist_route_record:
+        print(f"asdf prev_playlist_route_record.title_slug {prev_playlist_route_record.title_slug}")
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
             params.logger.info(f"not changing for {playlist_record.playlist_id}")
             return
-        # The new route will be current
-        prev_playlist_route_record.is_current = False
 
     new_playlist_slug, new_collision_id = generate_slug_and_collision_id(
         session,
@@ -90,7 +76,6 @@ def update_playlist_routes_table(
     new_playlist_route.blockhash = playlist_record.blockhash
     new_playlist_route.blocknumber = playlist_record.blocknumber
     new_playlist_route.txhash = playlist_record.txhash
-    session.add(new_playlist_route)
 
     if is_create:
         # playlist-name-<id>
@@ -111,7 +96,9 @@ def update_playlist_routes_table(
         migration_playlist_route.blockhash = playlist_record.blockhash
         migration_playlist_route.blocknumber = playlist_record.blocknumber
         migration_playlist_route.txhash = playlist_record.txhash
-        session.add(migration_playlist_route)
+        params.add_record(migration_playlist_route.playlist_id, migration_playlist_route, EntityType.PLAYLIST_ROUTE)
+
+    params.add_record(new_playlist_route.playlist_id, new_playlist_route, EntityType.PLAYLIST_ROUTE)
 
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)

@@ -20,6 +20,7 @@ from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 from web3 import Web3
 from web3.datastructures import AttributeDict
+from src.tasks.entity_manager.utils import ManageEntityParameters
 
 
 def set_patches(mocker):
@@ -987,7 +988,7 @@ def test_invalid_user_bio(app, mocker):
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
-def test_self_referrals(bus_mock: mock.MagicMock, app):
+def test_self_referrals(bus_mock: mock.MagicMock, app, mocker):
     """Test that users can't refer themselves"""
     block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
     with app.app_context():
@@ -997,7 +998,8 @@ def test_self_referrals(bus_mock: mock.MagicMock, app):
     with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
         events: UserEventMetadata = {"referrer": 1}
-        update_user_events(session, user, events, bus_mock)
+        params = mocker.Mock()
+        update_user_events(user, events, bus_mock, params)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
         )

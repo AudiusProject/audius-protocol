@@ -1,8 +1,10 @@
+from collections import defaultdict
 import json
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 from src.models.indexing.revert_block import RevertBlock
+from sqlalchemy import literal_column
 
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
@@ -85,6 +87,10 @@ class EntityType(str, Enum):
     GRANT = "Grant"
     ASSOCIATED_WALLET = "AssociatedWallet"
     USER_EVENT = "UserEvent"
+    STEM = "Stem"
+    REMIX = "Remix"
+    TRACK_ROUTE = "TrackRoute"
+    PLAYLIST_ROUTE = "PlaylistRoute"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -195,7 +201,6 @@ class ManageEntityParameters:
         self.new_records[record_type][key].append(record)  # type: ignore
 
         # overwrite the current version of this record
-        prev_record = self.existing_records[record_type].get(key)
         self.existing_records[record_type][key] = record  # type: ignore
 
 
