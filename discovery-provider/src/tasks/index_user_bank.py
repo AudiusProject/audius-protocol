@@ -847,7 +847,7 @@ def process_user_bank_txs() -> None:
                         tx_info = future.result()
                         if not tx_info:
                             continue
-                        tx_infos.append(future.result())
+                        tx_infos.append(tx_info)
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
                         raise
