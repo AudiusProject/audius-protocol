@@ -1,8 +1,5 @@
 from typing import List
 
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -10,6 +7,8 @@ from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 from src.utils.eth_manager import EthManager
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 
 def set_patches(mocker):
@@ -57,7 +56,7 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
     }
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -99,7 +98,7 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:
@@ -122,7 +121,7 @@ def test_index_update_user_replica_set(app, mocker):
     set_patches(mocker)
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -181,7 +180,7 @@ def test_index_update_user_replica_set(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:

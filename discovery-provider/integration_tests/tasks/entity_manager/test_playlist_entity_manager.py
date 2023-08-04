@@ -4,9 +4,6 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -18,6 +15,8 @@ from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -376,7 +375,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts_update_routes[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts_update_routes[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -401,7 +400,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -524,7 +523,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -578,7 +577,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -903,7 +902,7 @@ def test_index_invalid_playlists(app, mocker):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -934,7 +933,7 @@ def test_index_invalid_playlists(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -1005,7 +1004,7 @@ def test_invalid_playlist_description(app, mocker):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -1030,7 +1029,7 @@ def test_invalid_playlist_description(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         assert total_changes == 0

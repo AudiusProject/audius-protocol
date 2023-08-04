@@ -3,12 +3,9 @@ from datetime import datetime
 from typing import List
 from unittest import mock
 
-from sqlalchemy import asc
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
@@ -21,6 +18,8 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 
 def set_patches(mocker):
@@ -351,7 +350,7 @@ def test_index_valid_user(app, mocker):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -420,7 +419,7 @@ def test_index_valid_user(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:
@@ -789,7 +788,7 @@ def test_index_invalid_users(app, mocker):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -822,7 +821,7 @@ def test_index_invalid_users(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -888,7 +887,7 @@ def test_index_verify_users(app, mocker):
         ]
 
         def get_events_side_effect(_, tx_receipt):
-            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+            return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
         mocker.patch(
             "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -911,7 +910,7 @@ def test_index_verify_users(app, mocker):
                 entity_manager_txs,
                 block_number=0,
                 block_timestamp=1585336422,
-                block_hash=0,
+                block_hash=hex(0),
             )
             # validate db records
             all_users: List[User] = (
@@ -966,7 +965,7 @@ def test_invalid_user_bio(app, mocker):
         ]
 
         def get_events_side_effect(_, tx_receipt):
-            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+            return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
         mocker.patch(
             "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -981,7 +980,7 @@ def test_invalid_user_bio(app, mocker):
                 entity_manager_txs,
                 block_number=0,
                 block_timestamp=1585336422,
-                block_hash=0,
+                block_hash=hex(0),
             )
 
             assert total_changes == 0
@@ -1154,7 +1153,7 @@ def test_index_empty_bio(app, mocker):
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -1190,7 +1189,7 @@ def test_index_empty_bio(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:

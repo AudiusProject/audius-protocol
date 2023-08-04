@@ -1,14 +1,13 @@
 import logging  # pylint: disable=C0302
 from typing import List
 
-from web3 import Web3
-from web3.datastructures import AttributeDict
-
 from integration_tests.challenges.index_helpers import UpdateTask
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
+from web3 import Web3
+from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ def test_skip_tx(app, mocker):
     )
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -84,7 +83,7 @@ def test_skip_tx(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
         skipped_transactions: List[SkippedTransaction] = session.query(
             SkippedTransaction
