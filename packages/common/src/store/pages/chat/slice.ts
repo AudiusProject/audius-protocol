@@ -128,7 +128,11 @@ const slice = createSlice({
   reducers: {
     createChat: (
       _state,
-      _action: PayloadAction<{ userIds: ID[]; skipNavigation?: boolean }>
+      _action: PayloadAction<{
+        userIds: ID[]
+        skipNavigation?: boolean
+        presetMessage?: string
+      }>
     ) => {
       // triggers saga
     },
@@ -153,7 +157,10 @@ const slice = createSlice({
       delete state.optimisticUnreadMessagesCount
     },
     fetchUnreadMessagesCountFailed: (_state) => {},
-    goToChat: (_state, _action: PayloadAction<{ chatId?: string }>) => {
+    goToChat: (
+      _state,
+      _action: PayloadAction<{ chatId?: string; presetMessage?: string }>
+    ) => {
       // triggers saga
     },
     fetchLatestChats: (state) => {

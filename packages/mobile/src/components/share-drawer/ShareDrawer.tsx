@@ -3,7 +3,6 @@ import React, { useCallback, useRef } from 'react'
 import {
   accountSelectors,
   collectionsSocialActions,
-  createChatModalActions,
   FeatureFlags,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
@@ -43,7 +42,6 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
-const { setState: setCreateChatModalState } = createChatModalActions
 
 export const shareToastTimeout = 1500
 
@@ -108,14 +106,10 @@ export const ShareDrawer = () => {
 
   const handleShareToDirectMessage = useCallback(async () => {
     if (!content) return
-    navigation.navigate('ChatUserList')
-    dispatch(
-      setCreateChatModalState({
-        // Just care about the link
-        presetMessage: getContentUrl(content)
-      })
-    )
-  }, [content, dispatch, navigation])
+    navigation.navigate('ChatUserList', {
+      presetMessage: getContentUrl(content)
+    })
+  }, [content, navigation])
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return

@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  chatActions,
-  createChatModalSelectors,
-  playerSelectors
-} from '@audius/common'
+import { chatActions, playerSelectors } from '@audius/common'
 import { Platform, Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -17,7 +13,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 const { sendMessage } = chatActions
 const { getHasTrack } = playerSelectors
-const { getPresetMessage } = createChatModalSelectors
 
 const messages = {
   startNewMessage: ' Start a New Message'
@@ -54,18 +49,19 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 type ChatTextInputProps = {
   chatId: string
+  presetMessage?: string
   onMessageSent: () => void
 }
 
 export const ChatTextInput = ({
   chatId,
+  presetMessage,
   onMessageSent
 }: ChatTextInputProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const { primary, primaryDark2 } = useThemeColors()
 
-  const presetMessage = useSelector(getPresetMessage)
   const [inputMessage, setInputMessage] = useState(presetMessage ?? '')
   const hasLength = inputMessage.length > 0
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)

@@ -30,7 +30,13 @@ const messages = {
   messages: 'Messages'
 }
 
-export const ChatPage = ({ currentChatId }: { currentChatId?: string }) => {
+export const ChatPage = ({
+  currentChatId,
+  presetMessage
+}: {
+  currentChatId?: string
+  presetMessage?: string
+}) => {
   const dispatch = useDispatch()
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const { firstOtherUser, canSendMessage } = useCanSendMessage(currentChatId)
@@ -113,6 +119,7 @@ export const ChatPage = ({ currentChatId }: { currentChatId?: string }) => {
                 <ChatComposer
                   chatId={currentChatId}
                   onMessageSent={handleMessageSent}
+                  presetMessage={presetMessage}
                 />
               ) : null}
             </>

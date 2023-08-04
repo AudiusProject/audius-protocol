@@ -44,6 +44,7 @@ type UserResultComposeProps = {
   user: User
   closeParentModal: () => void
   openInboxUnavailableModal: (user: User) => void
+  presetMessage?: string
 }
 
 const { getUserId } = accountSelectors
@@ -93,7 +94,8 @@ const renderCustomChip = (callToAction: ChatPermissionAction) => {
 
 export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const dispatch = useDispatch()
-  const { user, closeParentModal, openInboxUnavailableModal } = props
+  const { user, closeParentModal, openInboxUnavailableModal, presetMessage } =
+    props
   const currentUserId = useSelector(getUserId)
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportersMap = useSelector(getOptimisticSupporters)
@@ -107,7 +109,7 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const handleComposeClicked = useCallback(() => {
     if (canCreateChat) {
       closeParentModal()
-      dispatch(createChat({ userIds: [user.user_id] }))
+      dispatch(createChat({ userIds: [user.user_id], presetMessage }))
     } else {
       openInboxUnavailableModal(user)
     }
@@ -116,7 +118,8 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
     user,
     canCreateChat,
     openInboxUnavailableModal,
-    closeParentModal
+    closeParentModal,
+    presetMessage
   ])
 
   const handleVisitClicked = useCallback(() => {

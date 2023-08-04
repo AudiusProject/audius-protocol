@@ -244,7 +244,7 @@ export const ChatScreen = () => {
   const navigation = useNavigation<AppTabScreenParamList>()
 
   const { params } = useRoute<'Chat'>()
-  const { chatId } = params
+  const { chatId, presetMessage } = params
   const url = `/chat/${encodeUrlName(chatId ?? '')}`
 
   const hasScrolledToUnreadTag = useRef(false)
@@ -686,6 +686,7 @@ export const ChatScreen = () => {
                 <View style={styles.whiteBackground} />
                 <ChatTextInput
                   chatId={chatId}
+                  presetMessage={presetMessage}
                   onMessageSent={handleMessageSent}
                 />
               </View>

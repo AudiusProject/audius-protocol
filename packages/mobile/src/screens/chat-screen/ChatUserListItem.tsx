@@ -144,9 +144,13 @@ const ctaToTextMap: Record<ChatPermissionAction, string> = {
 
 type ChatUserListItemProps = {
   userId: number
+  presetMessage?: string
 }
 
-export const ChatUserListItem = ({ userId }: ChatUserListItemProps) => {
+export const ChatUserListItem = ({
+  userId,
+  presetMessage
+}: ChatUserListItemProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const user = useSelector((state) => getUser(state, { id: userId }))
@@ -158,9 +162,9 @@ export const ChatUserListItem = ({ userId }: ChatUserListItemProps) => {
   const handlePress = useCallback(() => {
     if (user?.user_id) {
       Keyboard.dismiss()
-      dispatch(createChat({ userIds: [user.user_id] }))
+      dispatch(createChat({ userIds: [user.user_id], presetMessage }))
     }
-  }, [dispatch, user?.user_id])
+  }, [dispatch, presetMessage, user?.user_id])
 
   const handleNotPermittedPress = useCallback(() => {
     if (user?.user_id) {

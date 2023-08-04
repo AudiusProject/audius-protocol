@@ -8,18 +8,16 @@ import {
   useEffect
 } from 'react'
 
-import { chatActions, createChatModalSelectors } from '@audius/common'
+import { chatActions } from '@audius/common'
 import { IconButton, IconSend } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { TextAreaV2 } from 'components/data-entry/TextAreaV2'
-import { useSelector } from 'utils/reducer'
 
 import styles from './ChatComposer.module.css'
 
 const { sendMessage } = chatActions
-const { getPresetMessage } = createChatModalSelectors
 
 const messages = {
   sendMessage: 'Send Message',
@@ -30,6 +28,7 @@ const ENTER_KEY = 'Enter'
 
 export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
+  presetMessage?: string
   onMessageSent: () => void
 }
 
@@ -50,10 +49,9 @@ export const ChatSendButton = ({ disabled }: ChatSendButtonProps) => {
 }
 
 export const ChatComposer = (props: ChatComposerProps) => {
-  const { chatId, onMessageSent } = props
+  const { chatId, presetMessage, onMessageSent } = props
   const dispatch = useDispatch()
-  const presetMessage = useSelector(getPresetMessage)
-  const [value, setValue] = useState(presetMessage)
+  const [value, setValue] = useState(presetMessage ?? '')
   const ref = useRef<HTMLTextAreaElement>(null)
   const chatIdRef = useRef(chatId)
 
