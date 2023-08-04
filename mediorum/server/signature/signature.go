@@ -29,6 +29,7 @@ type SignatureData struct {
 }
 
 type RecoveredSignature struct {
+	DataHash     common.Hash
 	Data         SignatureData
 	SignerWallet string
 }
@@ -76,6 +77,7 @@ func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) 
 	}
 
 	recovered := &RecoveredSignature{
+		DataHash:     hash,
 		Data:         data,
 		SignerWallet: recoveredAddress.String(),
 	}
