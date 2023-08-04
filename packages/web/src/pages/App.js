@@ -21,7 +21,6 @@ import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
-import { getWeb3Error } from 'common/store/backend/selectors'
 import {
   openSignOn,
   updateRouteOnCompletion as updateRouteOnSignUpCompletion
@@ -30,12 +29,9 @@ import { getStatus as getSignOnStatus } from 'common/store/pages/signon/selector
 import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
-import MobileDesktopBanner from 'components/banner/CTABanner'
-import UpdateAppBanner from 'components/banner/UpdateAppBanner'
-import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
+import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
-import { DesktopHeaderContext } from 'components/header/desktop/HeaderGutter'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
 import Navigator from 'components/nav/Navigator'
@@ -154,6 +150,10 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
+import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
+import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
+import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
+import { Web3ErrorBanner } from '../components/banner/Web3ErrorBanner'
 import { ChatListener } from '../components/chat-listener/ChatListener'
 import TopLevelPage from '../components/nav/mobile/TopLevelPage'
 import Notice from '../components/notice/Notice'
@@ -178,8 +178,6 @@ const { getTheme } = themeSelectors
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
 
-const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
-
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazyWithPreload(
@@ -203,9 +201,6 @@ initializeSentry()
 class App extends Component {
   state = {
     mainContent: null,
-
-    showCTABanner: false,
-    showWeb3ErrorBanner: null,
 
     // A patch version update of the web app is available
     showWebUpdateBanner: false,
@@ -241,13 +236,6 @@ class App extends Component {
         })
       }
     )
-
-    if (
-      !window.localStorage.getItem(MOBILE_BANNER_LOCAL_STORAGE_KEY) &&
-      client === Client.DESKTOP
-    ) {
-      this.setState({ showCTABanner: true })
-    }
 
     if (client === Client.ELECTRON) {
       this.ipc = window.require('electron').ipcRenderer
@@ -359,10 +347,6 @@ class App extends Component {
       }
     }
 
-    if (this.props.web3Error && this.state.showWeb3ErrorBanner === null) {
-      this.setState({ showWeb3ErrorBanner: true })
-    }
-
     if (prevProps.theme !== this.props.theme) {
       this.handleTheme()
     }
@@ -396,11 +380,6 @@ class App extends Component {
     }
   }
 
-  dismissCTABanner = () => {
-    this.setState({ showCTABanner: false })
-    window.localStorage.setItem(MOBILE_BANNER_LOCAL_STORAGE_KEY, 'true')
-  }
-
   acceptUpdateApp = () => {
     this.setState({ isUpdating: true })
     this.ipc.send('update')
@@ -429,17 +408,11 @@ class App extends Component {
     this.props.showAppCTAModal()
   }
 
-  dismissWeb3ErrorBanner = () => {
-    this.setState({ showWeb3ErrorBanner: false })
-  }
-
   render() {
     const { theme, incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
-      showCTABanner,
       showWebUpdateBanner,
-      showWeb3ErrorBanner,
       isUpdating,
       showRequiresUpdate,
       showRequiresWebUpdate,
@@ -466,52 +439,36 @@ class App extends Component {
         />
       )
 
-    const showBanner = !!(
-      showCTABanner ||
-      showWeb3ErrorBanner ||
-      showWebUpdateBanner
-    )
-
     const SwitchComponent = isMobile() ? AnimatedSwitch : Switch
     const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
 
     return (
-      <DesktopHeaderContext.Provider value={{ offsetForBanner: showBanner }}>
-        {this.props.isChatEnabled ? <ChatListener /> : null}
-        <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
-          {showCTABanner ? (
-            <MobileDesktopBanner
-              onClose={this.dismissCTABanner}
-              onAccept={this.showDownloadAppModal}
-            />
-          ) : null}
-          {showWeb3ErrorBanner ? (
-            <Web3ErrorBanner
-              alert
-              isElectron={client === Client.ELECTRON}
-              onClose={this.dismissWeb3ErrorBanner}
-            />
-          ) : null}
+      <div className={styles.root}>
+        <AppBannerWrapper>
+          <DownloadAppBanner />
+          <DirectMessagesBanner />
+          <Web3ErrorBanner />
+          {/* Other banners' logic is self-contained, but since this one uses the IPC 
+            and can result in either required or optional updates, keeping the visibility 
+            controlled from this parent for now */}
           {showWebUpdateBanner ? (
             <UpdateAppBanner
               onAccept={this.acceptWebUpdate}
               onClose={this.dismissUpdateWebAppBanner}
             />
           ) : null}
+        </AppBannerWrapper>
+        {this.props.isChatEnabled ? <ChatListener /> : null}
+        <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
-          <Notice shouldPadTop={showBanner} />
-          <Navigator
-            className={cn({
-              [styles.bannerMargin]: showBanner && client !== Client.ELECTRON
-            })}
-          />
+          <Notice />
+          <Navigator />
           <div className={styles.draggableArea} />
           <div
             ref={this.props.mainContentRef}
             id={MAIN_CONTENT_ID}
             role='main'
             className={cn(styles.mainContentWrapper, {
-              [styles.bannerMargin]: showBanner,
               [styles.mainContentWrapperMobile]: isMobileClient,
               [styles.noScroll]: noScroll
             })}
@@ -850,7 +807,7 @@ class App extends Component {
                 Define profile page sub-routes before profile page itself.
                 The rules for sub-routes would lose in a precedence fight with
                 the rule for track page if defined below.
-               */}
+                */}
                 <Route
                   exact
                   path={[
@@ -981,7 +938,7 @@ class App extends Component {
             />
           ) : null}
         </div>
-      </DesktopHeaderContext.Provider>
+      </div>
     )
   }
 }
@@ -992,7 +949,6 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  web3Error: getWeb3Error(state),
   theme: getTheme(state),
   showCookieBanner: getShowCookieBanner(state),
   isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)

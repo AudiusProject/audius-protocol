@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react'
 import cn from 'classnames'
 import { ParallaxProvider } from 'react-scroll-parallax'
 
-import FanburstBanner from 'components/banner/FanburstBanner'
+import { FanburstBanner } from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'components/public-site/Footer'
 import NavBanner from 'components/public-site/NavBanner'
