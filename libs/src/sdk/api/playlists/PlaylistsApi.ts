@@ -439,7 +439,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     )
   }
 
-  /**
+  /** @internal
    * Method to upload a playlist with already parsed inputs
    * This is used for both playlists and albums
    */
@@ -567,7 +567,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
   }
 
-  /**
+  /** @internal
    * Method to update a playlist with already parsed inputs
    * This is used for both playlists and albums
    */

@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from datetime import datetime
@@ -13,6 +14,8 @@ from src.models.users.user import User
 from src.models.users.user_balance import UserBalance
 from src.queries.search_es import search_es_full
 from src.utils.db_session import get_db
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -240,7 +243,7 @@ def setup_search(app_module):
             session.add(balance)
             session.flush()
 
-    subprocess.run(
+    logs = subprocess.run(
         ["npm", "run", "catchup:ci"],
         env=os.environ,
         capture_output=True,
@@ -248,6 +251,7 @@ def setup_search(app_module):
         cwd="es-indexer",
         timeout=30,
     )
+    logger.info(logs)
 
 
 def test_get_tracks_external(app_module):

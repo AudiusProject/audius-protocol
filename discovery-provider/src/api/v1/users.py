@@ -43,7 +43,12 @@ from src.api.v1.helpers import (
     user_tracks_route_parser,
     verify_token_parser,
 )
-from src.api.v1.models.activities import activity_model, activity_model_full
+from src.api.v1.models.activities import (
+    activity_model,
+    activity_model_full,
+    collection_activity_model_full,
+    track_activity_model_full,
+)
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
 from src.api.v1.models.support import (
@@ -733,8 +738,16 @@ class MostUsedTags(Resource):
 favorites_response = make_response(
     "favorites_response", ns, fields.List(fields.Nested(favorite))
 )
-favorites_full_response = make_full_response(
-    "favorites_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
+track_library_full_response = make_full_response(
+    "track_library_response_full",
+    full_ns,
+    fields.List(fields.Nested(track_activity_model_full)),
+)
+
+collection_library_full_response = make_full_response(
+    "collection_library_response_full",
+    full_ns,
+    fields.List(fields.Nested(collection_activity_model_full)),
 )
 
 
@@ -772,7 +785,7 @@ class UserTracksLibraryFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_tracks_library_parser)
-    @full_ns.marshal_with(favorites_full_response)
+    @full_ns.marshal_with(track_library_full_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
@@ -843,12 +856,12 @@ class UserPlaylistsLibraryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="Get User Library Playlists",
-        description="",
+        description="Gets a user's saved/reposted/purchased/all playlists",
         params={"id": "A user ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
-    @full_ns.marshal_with(favorites_full_response)
+    @full_ns.marshal_with(collection_library_full_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
@@ -861,12 +874,12 @@ class UserAlbumsLibraryFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="Get User Library Albums",
-        description="",
+        description="Gets a user's saved/reposted/purchased/all albums",
         params={"id": "A user ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_collections_library_parser)
-    @full_ns.marshal_with(favorites_full_response)
+    @full_ns.marshal_with(collection_library_full_response)
     @auth_middleware()
     @cache(ttl_sec=5)
     def get(self, id: str, authed_user_id: Optional[int] = None):
@@ -914,7 +927,7 @@ class UserFavoritedTracksFull(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.expect(user_favorited_tracks_parser)
-    @full_ns.marshal_with(favorites_full_response)
+    @full_ns.marshal_with(track_library_full_response)
     def get(self, id):
         return self._get(id)
 

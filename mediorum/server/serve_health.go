@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"mediorum/ethcontracts"
 	"mediorum/server/signature"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gowebpki/jcs"
@@ -47,7 +49,8 @@ type healthCheckResponseData struct {
 	Signers                   []Peer                     `json:"signers"`
 	ReplicationFactor         int                        `json:"replicationFactor"`
 	Dir                       string                     `json:"dir"`
-	BlobStoreDSN              string                     `json:"blobStoreDSN"`
+	BlobStorePrefix           string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
 	ListenPort                string                     `json:"listenPort"`
 	TrustedNotifierID         int                        `json:"trustedNotifierId"`
 	CidCursors                []cidCursor                `json:"cidCursors"`
@@ -55,18 +58,26 @@ type healthCheckResponseData struct {
 	StoreAll                  bool                       `json:"storeAll"`
 }
 
-type legacyHealth struct {
-	Version                   string `json:"version"`
-	Service                   string `json:"service"`
-	SelectedDiscoveryProvider string `json:"selectedDiscoveryProvider"`
-}
-
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	healthy := ss.databaseSize > 0
+
+	allowUnregistered, _ := strconv.ParseBool(c.QueryParam("allow_unregistered"))
+	if !allowUnregistered && !ss.Config.WalletIsRegistered {
+		healthy = false
+	}
 
 	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
 	if ss.Config.WalletIsRegistered && (ss.isSeeding || ss.isSeedingLegacy) {
 		healthy = false
+	}
+
+	blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
+	if !foundBlobStore {
+		blobStorePrefix = ""
+	}
+	blobStoreMoveFromPrefix, _, foundBlobStoreMoveFrom := strings.Cut(ss.Config.MoveFromBlobStoreDSN, "://")
+	if !foundBlobStoreMoveFrom {
+		blobStoreMoveFromPrefix = ""
 	}
 
 	var err error
@@ -93,7 +104,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
 		TrustedNotifier:           ss.trustedNotifier,
 		Dir:                       ss.Config.Dir,
-		BlobStoreDSN:              ss.Config.BlobStoreDSN,
+		BlobStorePrefix:           blobStorePrefix,
+		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
 		ListenPort:                ss.Config.ListenPort,
 		ReplicationFactor:         ss.Config.ReplicationFactor,
 		Env:                       ss.Config.Env,
@@ -125,7 +137,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	status := 200
 	if !healthy {
-		status = 503
+		if !allowUnregistered && !ss.Config.WalletIsRegistered {
+			status = 506
+		} else {
+			status = 503
+		}
 	}
 
 	return c.JSON(status, healthCheckResponse{
@@ -138,19 +154,18 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		if !ss.Config.WalletIsRegistered {
+			return c.JSON(506, "wallet not registered")
+		}
 		dbHealthy := ss.databaseSize > 0
 		if !dbHealthy {
 			return c.JSON(503, "database not healthy")
 		}
-
-		// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-		if ss.Config.WalletIsRegistered {
-			if ss.isSeeding {
-				return c.JSON(503, "seeding")
-			}
-			if ss.isSeedingLegacy {
-				return c.JSON(503, "seeding legacy")
-			}
+		if ss.isSeeding {
+			return c.JSON(503, "seeding")
+		}
+		if ss.isSeedingLegacy {
+			return c.JSON(503, "seeding legacy")
 		}
 
 		return next(c)
