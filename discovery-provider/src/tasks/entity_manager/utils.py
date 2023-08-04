@@ -146,6 +146,7 @@ class ManageEntityParameters:
     existing_records: a view of current records relevant to this block
 
     """
+
     def __init__(
         self,
         session,
@@ -192,17 +193,15 @@ class ManageEntityParameters:
         self.existing_records = existing_records
         self.revert_blocks = revert_blocks
         self.logger = logger  # passed in with EM context
-    
+
     def add_record(self, key, record, record_type=None):
         if not record_type:
             record_type = self.entity_type
         # add to new records to insert
-        # TODO replace with updates instead of new rows
         self.new_records[record_type][key].append(record)  # type: ignore
 
         # overwrite the current version of this record
         self.existing_records[record_type][key] = record  # type: ignore
-
 
     def add_notification_seen_record(
         self,
