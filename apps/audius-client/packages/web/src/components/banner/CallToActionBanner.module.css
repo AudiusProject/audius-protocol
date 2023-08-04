@@ -5,13 +5,18 @@
   cursor: pointer;
   display: flex;
   justify-content: center;
-  background: linear-gradient(358.41deg, #c049f9 0.17%, #8200e8 100%);
 }
 
 .ctaBanner .content {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--unit-4);
+  padding: var(--unit-4) 0;
+}
+
+.ctaBanner.isMobile .content {
+  gap: var(--unit-2);
 }
 
 .ctaBanner .contentSelection {
@@ -20,6 +25,7 @@
   justify-content: center;
   transition: all ease-in-out 0.07s;
   border-bottom: 1px solid rgba(0, 0, 0, 0);
+  gap: var(--unit-2);
 }
 
 .ctaBanner:hover .contentSelection {
@@ -27,8 +33,8 @@
 }
 
 .pill {
+  pointer-events: none;
   background-color: rgba(255, 255, 255, 0.4);
-  margin-right: 24px;
 }
 
 .pill .pillText {
@@ -39,19 +45,25 @@
 
 .text {
   color: var(--static-white);
-  font-size: var(--font-m);
+  font-size: var(--font-l);
   font-weight: var(--font-bold);
+  line-height: 130%;
   text-align: center;
 }
 
-.celebration {
-  padding-right: 8px;
+.isMobile .text {
+  font-size: var(--font-s);
 }
 
 .arrow {
-  padding-left: 8px;
-  height: 20px;
-  width: 20px;
+  height: var(--unit-5);
+  width: var(--unit-5);
+  flex-shrink: 0;
+}
+
+.isMobile .arrow {
+  height: var(--unit-4);
+  width: var(--unit-4);
 }
 
 .arrow g path {

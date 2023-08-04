@@ -31,6 +31,8 @@ export const usePortal = ({ container }: { container?: HTMLElement }) => {
       const el = document.createElement('div')
       document.body.appendChild(el)
       setPortalContainer(el)
+    } else {
+      setPortalContainer(container)
     }
   }, [container, setPortalContainer])
 

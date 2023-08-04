@@ -20,11 +20,13 @@ const Navigator = ({ className }: NavigatorProps) => {
   const client = getClient()
 
   const isMobile = client === Client.MOBILE
+  const isElectron = client === Client.ELECTRON
 
   return (
     <div
       className={cn(styles.navWrapper, className, {
-        [styles.leftNavWrapper]: !isMobile
+        [styles.leftNavWrapper]: !isMobile,
+        [styles.isElectron]: isElectron
       })}
     >
       {isMobile ? (

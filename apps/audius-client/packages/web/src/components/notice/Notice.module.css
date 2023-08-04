@@ -4,7 +4,7 @@
   pointer-events: none;
   justify-content: center;
   z-index: 10000;
-  position: fixed;
+  position: absolute;
   top: 0;
   opacity: 0;
   transition: all 0.17s ease-in-out;

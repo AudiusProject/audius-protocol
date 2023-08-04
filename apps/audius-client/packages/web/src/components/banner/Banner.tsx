@@ -1,19 +1,25 @@
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
 import styles from './Banner.module.css'
 
-const Banner = (props) => {
+export type BannerProps = {
+  className?: string
+  onClose: () => void
+  isElectron?: boolean
+  isMobile?: boolean
+  children: React.ReactNode
+}
+
+export const Banner = (props: BannerProps) => {
   return (
     <div
       className={cn(
         styles.banner,
         {
           [styles.isElectron]: props.isElectron,
-          [styles.isMobile]: props.isMobile,
-          [styles.alert]: props.alert
+          [styles.isMobile]: props.isMobile
         },
         props.className
       )}
@@ -23,17 +29,3 @@ const Banner = (props) => {
     </div>
   )
 }
-
-Banner.propTypes = {
-  className: PropTypes.string,
-  onClose: PropTypes.func,
-  isElectron: PropTypes.bool,
-  isMobile: PropTypes.bool,
-  alert: PropTypes.bool
-}
-
-Banner.defaultProps = {
-  alert: false
-}
-
-export default Banner

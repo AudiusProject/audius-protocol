@@ -1,19 +1,14 @@
-import { useContext, createContext } from 'react'
+import { useContext } from 'react'
 
 import cn from 'classnames'
 
 import { usePortal } from 'hooks/usePortal'
+import { MainContentContext } from 'pages/MainContentContext'
 
 import styles from './HeaderGutter.module.css'
 
 const BACKGROUND_ELEMENT_HEIGHT_PX = 161
 export const BACKGROUND_ELEMENT_ID = 'headerPadding'
-
-export const DesktopHeaderContext = createContext<{ offsetForBanner: boolean }>(
-  {
-    offsetForBanner: false
-  }
-)
 
 type HeaderGutterProps = {
   isChromeOrSafari?: boolean
@@ -32,8 +27,11 @@ export const HeaderGutter = ({
   scrollBarWidth,
   className
 }: HeaderGutterProps) => {
-  const Portal = usePortal({ container: document.body })
-  const { offsetForBanner } = useContext(DesktopHeaderContext)
+  const { mainContentRef } = useContext(MainContentContext)
+  // Portal to the main content parent, which is the app (not body, to account for banners)
+  const Portal = usePortal({
+    container: mainContentRef.current?.parentElement ?? undefined
+  })
 
   // Not all browsers support backdrop-filter: blur (at least at time this was intially implemented)
   // so treat it with a different gradient in those cases.
@@ -65,11 +63,7 @@ export const HeaderGutter = ({
       <div
         id={BACKGROUND_ELEMENT_ID}
         style={style}
-        className={cn(
-          styles.gutter,
-          { [styles.bannerMargin]: offsetForBanner },
-          className
-        )}
+        className={cn(styles.gutter, className)}
       />
     </Portal>
   )
