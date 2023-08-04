@@ -136,9 +136,9 @@ const getHealthCheckData = async (
   if (!data) {
     throw new Error('data')
   }
-  // if (!comms) {
-  //   throw new Error('comms')
-  // }
+  if (!comms) {
+    throw new Error('comms')
+  }
   return { data, comms }
 }
 
@@ -166,7 +166,8 @@ export const parseHealthStatusReason = ({
 
   if (!comms?.healthy) {
     return {
-      health: HealthCheckStatus.HEALTHY
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: 'comms'
     }
   }
 
