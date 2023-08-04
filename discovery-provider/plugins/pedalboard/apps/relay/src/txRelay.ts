@@ -83,25 +83,17 @@ export const relayTransaction = async (
 
 const confirm = async (
   web3: ethers.providers.JsonRpcProvider,
-  txHash: string
+  txHash: string,
+  retries = 12,
 ): Promise<TransactionReceipt> => {
-  const result = await Promise.race([
-    confirmIndefinitely(web3, txHash),
-    delay(6000),
-  ]);
-  if (result === undefined)
-    throw new Error(`txhash ${txHash} could not be confirmed`);
-  return result as TransactionReceipt;
-};
-
-const confirmIndefinitely = async (
-  web3: ethers.providers.JsonRpcProvider,
-  txHash: string
-): Promise<TransactionReceipt> => {
-  const receipt = await web3.getTransactionReceipt(txHash);
-  if (receipt !== null) return receipt;
-  await delay(500);
-  return confirmIndefinitely(web3, txHash);
+  let tries = 0
+  while (tries !== retries) {
+    const receipt = await web3.getTransactionReceipt(txHash);
+    if (receipt !== null) return receipt;
+    await delay(500);
+    tries += 1
+  }
+  throw new Error(`transaction ${txHash} could not be confirmed`)
 };
 
 const delay = (ms: number) => {
