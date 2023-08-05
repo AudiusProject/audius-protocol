@@ -28,6 +28,8 @@ from src.solana.solana_helpers import MEMO_PROGRAM_ID
 
 from . import multihash
 
+logger = logging.getLogger(__name__)
+
 
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
@@ -487,10 +489,15 @@ def get_valid_instruction(
     """
     account_keys = tx_message.account_keys
     instructions: List[CompiledInstruction] = tx_message.instructions
-    program_index = list(map(lambda x: str(x), account_keys)).index(program_address)
-    for instruction in instructions:
-        if instruction.program_id_index == program_index:
-            return instruction
+    try:
+        program_index = list(map(lambda x: str(x), account_keys)).index(program_address)
+        for instruction in instructions:
+            if instruction.program_id_index == program_index:
+                return instruction
+    except ValueError as e:
+        logger.info(
+            f"No {program_address} found in instruction account keys {account_keys}, {e}"
+        )
 
     return None
 
