@@ -3,20 +3,17 @@ import { program } from "commander";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { mintTo } from "@solana/spl-token";
 
-import { parseSplWallet } from "./utils.mjs"
+import { parseSplWallet, initializeAudiusLibs } from "./utils.mjs"
 
 program.command("get-audio-balance")
-  .description("Mint $AUDIO tokens")
+  .description("Get $AUDIO balance")
   .argument("<account>", "The account to mint tokens for; can be a @handle, #userId, or splWallet")
   .action(async (account, amount) => {
-    if (!process.env.SOLANA_ENDPOINT) {
-      program.error("SOLANA_ENDPOINT environment variable not set");
-    }
-
+    const audiusLibs = await initializeAudiusLibs();
     const splWallet = await parseSplWallet(account);
-    const connection = new Connection(process.env.SOLANA_ENDPOINT);
-    const balance = await connection.getTokenAccountBalance(splWallet)
-    console.log(balance.value.uiAmountString);
+
+    const balance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(splWallet);
+    console.log(chalk.green(`Balance: ${balance}`));
 
     process.exit(0);
   });

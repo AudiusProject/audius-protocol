@@ -82,6 +82,7 @@ def fetch_tx_receipt(tx_hash: HexBytes) -> TxReceiptAndHash:
 
 @log_duration(logger)
 def fetch_tx_receipts(block: BlockData):
+    # We fetch HexBytes rather than full TxData
     block_transactions = cast(Sequence[HexBytes], block["transactions"])
     block_tx_with_receipts: dict[str, TxReceipt] = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -344,10 +345,10 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
-            if cast(int, next_block["number"]) % 100 == 0:
+            if next_block["number"] % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
-                    session, cast(int, next_block["timestamp"])
+                    session, next_block["timestamp"]
                 )
                 if should_update:
                     celery.send_task(
@@ -361,7 +362,7 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
-            if cast(int, next_block["number"]) % 100 == 0:
+            if next_block["number"] % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
                     kwargs={"current_block_timestamp": next_block["timestamp"]},

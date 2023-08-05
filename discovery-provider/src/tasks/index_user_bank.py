@@ -8,9 +8,9 @@ from typing import List, Optional, Tuple, TypedDict, Union, cast
 import base58
 from redis import Redis
 from solders.instruction import CompiledInstruction
+from solders.message import Message
 from solders.pubkey import Pubkey
 from solders.rpc.responses import GetTransactionResp
-from solders.transaction import Transaction
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
@@ -670,17 +670,17 @@ def process_user_bank_tx_details(
         return
     error = meta.err
     if error:
-        logger.info(
+        logger.error(
             f"index_user_bank.py | Skipping error transaction from chain {tx_info}"
         )
         return
-    account_keys = list(
-        map(
-            lambda x: str(x),
-            cast(Transaction, result.transaction.transaction).message.account_keys,
-        )
-    )
-    tx_message = cast(Transaction, result.transaction.transaction).message
+    transaction = result.transaction.transaction
+    if not hasattr(transaction, "message"):
+        logger.error(f"index_user_bank.py | No transaction message found {transaction}")
+        return
+
+    account_keys = list(map(lambda x: str(x), transaction.message.account_keys))
+    tx_message = cast(Message, transaction.message)
 
     # Check for valid instruction
     has_create_token_instruction = has_log(

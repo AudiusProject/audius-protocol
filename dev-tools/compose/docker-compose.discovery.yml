@@ -96,7 +96,7 @@ services:
       audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
 
       audius_discprov_dev_mode: "true"
-      audius_discprov_loglevel: "info"
+      audius_discprov_loglevel: "debug"
     volumes:
       - ${PROJECT_ROOT}/discovery-provider/alembic:/audius-discovery-provider/alembic
       - ${PROJECT_ROOT}/discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser

@@ -295,7 +295,7 @@ def _get_metadata_account(mint_address: str):
         [
             b"metadata",
             bytes(METADATA_PROGRAM_ID_PK),
-            bytes(Pubkey(mint_address)),  # type: ignore
+            bytes(Pubkey.from_string(mint_address)),
         ],
         METADATA_PROGRAM_ID_PK,
     )[0]
