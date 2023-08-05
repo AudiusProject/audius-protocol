@@ -102,9 +102,9 @@ def _get_tracks(track_ids: List[int], session: Session):
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     return list(
         filter(
-            lambda track: track.is_premium  # type: ignore
-            and track.premium_conditions != None  # type: ignore
-            and "nft_collection" in track.premium_conditions,  # type: ignore
+            lambda track: track.is_premium
+            and track.premium_conditions != None
+            and "nft_collection" in track.premium_conditions,
             _get_tracks(track_ids, session),
         )
     )

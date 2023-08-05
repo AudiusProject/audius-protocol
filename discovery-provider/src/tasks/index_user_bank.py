@@ -662,11 +662,11 @@ def process_user_bank_tx_details(
 ):
     result = tx_info.value
     if not result:
-        logger.info("index_user_bank.py | No result")
+        logger.error("index_user_bank.py | No result")
         return
     meta = result.transaction.meta
     if not meta:
-        logger.info("index_user_bank.py | No result meta")
+        logger.error("index_user_bank.py | No result meta")
         return
     error = meta.err
     if error:
@@ -870,9 +870,9 @@ def process_user_bank_txs() -> None:
 
                 tx_value = tx_info.value
                 if tx_value is None:
-                    break
+                    raise Exception(f"No txinfo value {tx_info}")
 
-                tx_slot2 = tx_value.slot
+                tx_slot = tx_value.slot
                 timestamp = float(tx_value.block_time or 0)
                 parsed_timestamp = datetime.utcfromtimestamp(timestamp)
 
@@ -887,7 +887,7 @@ def process_user_bank_txs() -> None:
                 session.add(
                     UserBankTx(
                         signature=str(tx_sig),
-                        slot=tx_slot2,
+                        slot=tx_slot,
                         created_at=parsed_timestamp,
                     )
                 )

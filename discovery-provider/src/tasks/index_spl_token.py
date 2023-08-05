@@ -155,11 +155,11 @@ def parse_spl_token_transaction(
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         result = tx_info.value
         if not result:
-            return None
+            raise Exception(f"No txinfo value {tx_info}")
 
         meta = result.transaction.meta
         if not meta:
-            return None
+            raise Exception(f"No transaction meta {meta}")
 
         if meta.err:
             return None
@@ -332,7 +332,11 @@ def parse_sol_tx_batch(
             for future in concurrent.futures.as_completed(
                 parse_sol_tx_futures, timeout=45
             ):
-                tx_info = future.result()
+                try:
+                    tx_info = future.result()
+                except Exception as e:
+                    logger.error(f"index_spl_token.py | {e}")
+                    continue
                 if not tx_info:
                     continue
                 updated_root_accounts.update(tx_info["root_accounts"])
