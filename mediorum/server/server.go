@@ -87,7 +87,6 @@ type MediorumServer struct {
 	storagePathSize uint64
 	databaseSize    uint64
 	isSeeding       bool
-	isSeedingLegacy bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -231,7 +230,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
-		isSeedingLegacy: config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 
@@ -252,7 +250,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
-	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
@@ -282,19 +279,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
-
-	// TODO: remove after all nodes upgrade to v0.3.98
-	routes.GET("/status", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	// responds to polling requests in peer_health
-	// should do no real work
-	internalApi.GET("/ok", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	internalApi.GET("/beam/files", ss.servePgBeam)
 
 	internalApi.GET("/cuckoo", ss.serveCuckoo)
 	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
@@ -351,8 +335,6 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startRepairer()
 
 		ss.crud.StartClients()
-
-		go ss.startCidBeamClient()
 
 		go ss.startPollingDelistStatuses()
 

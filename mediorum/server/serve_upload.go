@@ -19,12 +19,6 @@ var (
 	filesFormFieldName = "files"
 )
 
-func (ss *MediorumServer) getUploads(c echo.Context) error {
-	uploads := []*Upload{}
-	ss.crud.DB.Order("created_at desc").Find(&uploads)
-	return c.JSON(200, uploads)
-}
-
 func (ss *MediorumServer) getUpload(c echo.Context) error {
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error

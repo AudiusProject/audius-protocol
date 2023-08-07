@@ -166,7 +166,7 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: time.Second,
 	}
-	u := apiPath(host, "internal/blobs/info", url.PathEscape(key)) // TODO(theo): switch to /internal/blobs/:pathEscapedKey/info
+	u := apiPath(host, fmt.Sprintf("internal/blobs/%s/info", url.PathEscape(key)))
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false
