@@ -48,7 +48,6 @@ from src.queries.get_track_repost_intersection_users import (
 )
 from src.queries.get_tracks import get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_user_history import get_user_history
 from src.queries.get_users import get_users
 from src.queries.get_users_account import get_users_account
