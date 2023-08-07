@@ -15,6 +15,11 @@ begin
     values
         (1, 'track', 101, true, false, now());
 
+    insert into saves
+        (user_id, save_type, save_item_id, is_current, is_delete, created_at)
+    values
+        (2, 'track', 101, true, false, now());
+
 
     assert (select count(*) from aggregate_user) = 2;
     assert (select count(*) from aggregate_track) = 1;
@@ -23,14 +28,33 @@ begin
     assert agg_user.follower_count = 0;
     assert agg_user.following_count = 1;
     assert agg_user.repost_count = 1;
+    assert agg_user.track_save_count = 0;
 
     select * from aggregate_user into agg_user where user_id = 2;
     assert agg_user.follower_count = 1;
     assert agg_user.following_count = 0;
     assert agg_user.repost_count = 0;
+    assert agg_user.track_save_count = 1;
 
     select * from aggregate_track into agg_track where track_id = 101;
     assert agg_track.repost_count = 1;
+
+    -- simulate revert...
+    delete from follows;
+    delete from reposts;
+    delete from saves;
+
+    select * from aggregate_user into agg_user where user_id = 1;
+    assert agg_user.follower_count = 0;
+    assert agg_user.following_count = 0;
+    assert agg_user.repost_count = 0;
+    assert agg_user.track_save_count = 0;
+
+    select * from aggregate_user into agg_user where user_id = 2;
+    assert agg_user.follower_count = 0;
+    assert agg_user.following_count = 0;
+    assert agg_user.repost_count = 0;
+    assert agg_user.track_save_count = 0;
 
 end; $$ LANGUAGE plpgsql;
 rollback;
