@@ -22,6 +22,7 @@ const CollectionPage = (props: CollectionPageProps) => {
       isMobile={isMobileClient}
       smartCollection={smartCollection}
       type={type}
+      playlistByPermalinkEnabled={true}
     >
       {content}
     </CollectionPageProvider>

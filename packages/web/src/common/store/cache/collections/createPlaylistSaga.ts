@@ -26,7 +26,7 @@ import { call, put, select, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
-import { playlistPage } from 'utils/route'
+import { collectionPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { reformat } from './utils'
@@ -97,7 +97,11 @@ function* optimisticallySavePlaylist(
       : []
   }
   playlist.track_count = initTrack ? 1 : 0
-  playlist.permalink = playlistPage(handle, playlist.playlist_name, playlistId)
+  playlist.permalink = collectionPage(
+    handle,
+    playlist.playlist_name,
+    playlistId
+  )
   if (playlist.artwork) {
     playlist._cover_art_sizes = {
       ...playlist._cover_art_sizes,
@@ -128,7 +132,8 @@ function* optimisticallySavePlaylist(
       id: playlistId,
       name: playlist.playlist_name as string,
       is_album: false,
-      user: { id: user_id, handle }
+      user: { id: user_id, handle },
+      permalink: playlist?.permalink
     })
   )
 

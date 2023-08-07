@@ -28,9 +28,8 @@ import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
 import {
-  albumPage,
   collectibleDetailsPage,
-  playlistPage,
+  collectionPage,
   profilePage
 } from 'utils/route'
 
@@ -81,6 +80,7 @@ const ConnectedMobileOverflowModal = ({
   artistName,
   title,
   permalink,
+  collectionPermalink,
   isAlbum,
   shareCollection,
   repostTrack,
@@ -99,7 +99,6 @@ const ConnectedMobileOverflowModal = ({
   visitArtistPage,
   visitCollectiblePage,
   visitPlaylistPage,
-  visitAlbumPage,
   follow,
   unfollow,
   shareUser
@@ -170,10 +169,12 @@ const ConnectedMobileOverflowModal = ({
           onShare: () => shareCollection(id as ID),
           onVisitArtistPage: () => visitArtistPage(handle),
           onVisitCollectionPage: () =>
-            (isAlbum ? visitAlbumPage : visitPlaylistPage)(
+            visitPlaylistPage(
               id as ID,
               handle,
-              title
+              title,
+              collectionPermalink || '',
+              isAlbum
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
@@ -239,6 +240,7 @@ const getAdditionalInfo = ({
   isAlbum?: boolean
   notification?: Notification
   ownerId?: ID
+  collectionPermalink?: string
 } => {
   if (!id) return {}
 
@@ -280,7 +282,8 @@ const getAdditionalInfo = ({
         handle: user.handle,
         artistName: user.name,
         title: col.playlist_name,
-        isAlbum: col.is_album
+        isAlbum: col.is_album,
+        collectionPermalink: col.permalink
       }
     }
     case OverflowSource.PROFILE: {
@@ -363,10 +366,15 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     visitPlaylistPage: (
       playlistId: ID,
       handle: string,
-      playlistTitle: string
-    ) => dispatch(pushRoute(playlistPage(handle, playlistTitle, playlistId))),
-    visitAlbumPage: (albumId: ID, handle: string, albumTitle: string) =>
-      dispatch(pushRoute(albumPage(handle, albumTitle, albumId)))
+      playlistTitle: string,
+      permalink: string,
+      isAlbum: boolean
+    ) =>
+      dispatch(
+        pushRoute(
+          collectionPage(handle, playlistTitle, playlistId, permalink, isAlbum)
+        )
+      )
   }
 }
 

@@ -18,10 +18,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
 import {
-  albumPage,
-  fullAlbumPage,
-  playlistPage,
-  fullPlaylistPage,
+  collectionPage,
+  fullCollectionPage,
   profilePage,
   fullSearchResultsPage,
   NOT_FOUND_PAGE
@@ -174,10 +172,12 @@ class SearchPageContent extends Component {
       const toastId = `playlist-${playlist.playlist_id}`
       const onClick = () => {
         goToRoute(
-          playlistPage(
+          collectionPage(
             playlist.user.handle,
             playlist.playlist_name,
-            playlist.playlist_id
+            playlist.playlist_id,
+            playlist.permalink,
+            playlist.is_album
           )
         )
         recordSearchResultClick({
@@ -200,10 +200,12 @@ class SearchPageContent extends Component {
           fillParent={false}
           playlistId={playlist.playlist_id}
           isAlbum={playlist.is_album}
-          link={fullPlaylistPage(
+          link={fullCollectionPage(
             playlist.user.handle,
             playlist.playlist_name,
-            playlist.playlist_id
+            playlist.playlist_id,
+            playlist.permalink,
+            playlist.is_album
           )}
           primaryText={playlist.playlist_name}
           firesOnClick={false}
@@ -241,7 +243,13 @@ class SearchPageContent extends Component {
       const toastId = `album-${album.playlist_id}`
       const onClick = () => {
         goToRoute(
-          albumPage(album.user.handle, album.playlist_name, album.playlist_id)
+          collectionPage(
+            album.user.handle,
+            album.playlist_name,
+            album.playlist_id,
+            album.permalink,
+            true
+          )
         )
         recordSearchResultClick({
           term: searchText,
@@ -263,10 +271,12 @@ class SearchPageContent extends Component {
           fillParent={false}
           playlistId={album.playlist_id}
           isAlbum={album.is_album}
-          link={fullAlbumPage(
+          link={fullCollectionPage(
             album.user.handle,
             album.playlist_name,
-            album.playlist_id
+            album.playlist_id,
+            album.permalink,
+            album.is_album
           )}
           primaryText={album.playlist_name}
           firesOnClick={false}

@@ -9,7 +9,7 @@ import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/store/context'
-import { playlistPage, albumPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
+import { collectionPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'
 
@@ -51,21 +51,15 @@ const ExplorePage = ({
         onClickFavorites={() => onClickFavorites(playlist.playlist_id)}
         onClick={(e) => {
           e.preventDefault()
-          playlist.is_album
-            ? goToRoute(
-                albumPage(
-                  playlist.user.handle,
-                  playlist.playlist_name,
-                  playlist.playlist_id
-                )
-              )
-            : goToRoute(
-                playlistPage(
-                  playlist.user.handle,
-                  playlist.playlist_name,
-                  playlist.playlist_id
-                )
-              )
+          goToRoute(
+            collectionPage(
+              playlist.user.handle,
+              playlist.playlist_name,
+              playlist.playlist_id,
+              playlist.permalink,
+              playlist.is_album
+            )
+          )
         }}
       />
     )

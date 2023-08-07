@@ -20,7 +20,7 @@ import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { dropdownRows as stemRows } from 'components/source-files-modal/SourceFilesModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
-import { playlistPage, albumPage, profilePage } from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 
 import styles from './UploadPage.module.css'
 import EditPage from './components/EditPage'
@@ -305,7 +305,7 @@ class Upload extends Component {
         }
         case UploadType.PLAYLIST: {
           const playlistName = upload.metadata.playlist_name
-          route = playlistPage(
+          route = collectionPage(
             account.handle,
             playlistName,
             upload.completionId
@@ -315,7 +315,13 @@ class Upload extends Component {
         }
         case UploadType.ALBUM: {
           const albumName = upload.metadata.playlist_name
-          route = albumPage(account.handle, albumName, upload.completionId)
+          route = collectionPage(
+            account.handle,
+            albumName,
+            upload.completionId,
+            null,
+            true
+          )
           uploadType = 'album'
           break
         }
