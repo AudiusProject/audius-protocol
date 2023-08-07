@@ -62,9 +62,6 @@ const errorResponseRateLimited = (rep: FastifyReply) => {
   rep.code(429).send("Too many requests, please try again later");
 };
 
-const errorResponseBadRequest = (rep: FastifyReply) => {
-  rep.code(400).send();
-};
 
 const errorResponseInternal = (rep: FastifyReply) => {
   rep.code(500).send();
@@ -80,11 +77,11 @@ const insertReplyHeaders = (rep: FastifyReply, data: RateLimiterRes) => {
 
 const determineLimit = async (
   discoveryDb: Knex,
-  allowlist: string[],
+  allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
-  const isAllowed = allowlist.includes(signer);
-  if (isAllowed) return "whitelist";
+  const isAllowed = allowList.includes(signer);
+  if (isAllowed) return "allowlist";
   const user = await discoveryDb<Users>(Table.Users)
     .where("wallet", "=", signer)
     .andWhere("is_current", "=", true)

@@ -2,6 +2,8 @@ import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import lcm from "compute-lcm";
 import { logger } from "../logger";
 
+const DEFAULT_EXPIRY = 60 * 60
+
 // type alias for ease
 export type RelayRateLimits = Map<string, RelayRateLimitConfig>;
 
@@ -10,8 +12,8 @@ export type RelayRateLimitConfig = {
   owner: number;
   // how many times the official app is limited to
   app: number;
-  // how many times the whitelisted users are limited to
-  whitelist: number;
+  // how many times the allowlisted users are limited to
+  allowlist: number;
 };
 
 export type RateLimiterKey = {
@@ -22,7 +24,7 @@ export type RateLimiterKey = {
 
 // so code is easier to follow
 export type Operation = string;
-export type ValidLimits = "owner" | "app" | "whitelist";
+export type ValidLimits = "owner" | "app" | "allowlist";
 // operation -> in mem rate limiter
 export type RateLimiters = Map<Operation, RateLimiterMemory>;
 
@@ -31,9 +33,9 @@ export class RelayRateLimiter {
   private rateLimiters: RateLimiters;
   private readonly keySeparator = ":";
 
-  constructor() {
+  constructor(rateLimitExpiration = DEFAULT_EXPIRY) {
     this.rateLimits = this.readRelayRateLimits();
-    this.rateLimiters = this.initRateLimiters(this.rateLimits);
+    this.rateLimiters = this.initRateLimiters(this.rateLimits, rateLimitExpiration);
   }
 
   /** Initializing methods */
@@ -44,13 +46,17 @@ export class RelayRateLimiter {
     }, new Map());
   }
 
-  private initRateLimiters(rateLimits: RelayRateLimits): RateLimiters {
+  private initRateLimiters(rateLimits: RelayRateLimits, duration: number): RateLimiters {
     const rateLimiters = new Map<string, RateLimiterMemory>();
-    for (const [operation, { owner, app, whitelist }] of rateLimits) {
-      const leastCommonMultiple = lcm([owner, app, whitelist]);
+    for (const [operation, { owner, app, allowlist }] of rateLimits) {
+      // rate limiter finds least common multiple of all types in config
+      // rate limiter then consumes points at different rates per type
+      // so each type gets the amount of calls specified in the config
+      const leastCommonMultiple = lcm([owner, app, allowlist]);
       if (leastCommonMultiple === null)
-        throw new Error(`no LCM for ${owner} ${app} ${whitelist}`);
-      const opts = { points: leastCommonMultiple, duration: 60 };
+        throw new Error(`no LCM for ${owner} ${app} ${allowlist}`);
+      // duration is in seconds
+      const opts = { points: leastCommonMultiple, duration };
       const rateLimiter = new RateLimiterMemory(opts);
       rateLimiters.set(operation, rateLimiter);
     }
@@ -96,146 +102,146 @@ const RELAY_RATE_LIMITS = {
   CreateUser: {
     owner: 10,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UpdateUser: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   VerifyUser: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UpdateUserReplicaSet: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   CreateTrack: {
     owner: 100,
     app: 20,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UpdateTrack: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   DeleteTrack: {
     owner: 100,
     app: 20,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   CreatePlaylist: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UpdatePlaylist: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   DeletePlaylist: {
     owner: 100,
     app: 5,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   FollowUser: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnfollowUser: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   SubscribeUser: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnsubscribeUser: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   SaveTrack: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnsaveTrack: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   RepostTrack: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnrepostTrack: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   SavePlaylist: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnsavePlaylist: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   RepostPlaylist: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   UnrepostPlaylist: {
     owner: 2000,
     app: 10,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   CreateNotification: {
     owner: 0,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   ViewNotification: {
     owner: 100,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   ViewPlaylistNotification: {
     owner: 100,
     app: 100,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   CreateDeveloperApp: {
     owner: 3,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   DeleteDeveloperApp: {
     owner: 3,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   CreateGrant: {
     owner: 5,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
   DeleteGrant: {
     owner: 5,
     app: 0,
-    whitelist: 1000,
+    allowlist: 1000,
   },
 };
