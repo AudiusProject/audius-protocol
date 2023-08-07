@@ -68,6 +68,9 @@ delete from developer_apps where is_current = false;
 alter table grants
 drop constraint delegations_blocknumber_fkey;
 alter table grants
+drop constraint delegations_blockhash_fkey;
+
+alter table grants
 add constraint delegations_blocknumber_fkey
 foreign key (blocknumber)
 references blocks(number)

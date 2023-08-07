@@ -499,6 +499,7 @@ def index_nethermind(self):
                 return
 
             if in_valid_state:
+                logger.info(f"asdf latest_database_block {latest_database_block} next_block {next_block} ")
                 index_next_block(session, latest_database_block, next_block)
             else:
                 revert_block(session, latest_database_block)
