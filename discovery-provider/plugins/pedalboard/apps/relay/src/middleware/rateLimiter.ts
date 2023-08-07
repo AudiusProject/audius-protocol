@@ -28,7 +28,7 @@ export const relayRateLimiter = async (
   });
 
   const discoveryDb = app.getDnDb();
-  const limit = await determineLimit(discoveryDb, [], signer);
+  const limit = await determineLimit(discoveryDb, config.rateLimitAllowList, signer);
   logger.info({ limit });
 
   try {
