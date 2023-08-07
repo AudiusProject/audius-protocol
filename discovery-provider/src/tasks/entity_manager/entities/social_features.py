@@ -281,7 +281,7 @@ def validate_social_feature(params: ManageEntityParameters):
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
         if params.entity_type == EntityType.PLAYLIST:
-            assert isinstance(Playlist, target_entity)
+            assert isinstance(target_entity, Playlist)
             owner_id = target_entity.playlist_owner_id
         else:
             if hasattr(target_entity, "owner_id"):
