@@ -458,7 +458,7 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=2,
             block_timestamp=timestamp,
             block_hash=0,
         )
@@ -539,7 +539,7 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=1,
+            block_number=3,
             block_timestamp=timestamp,
             block_hash=0,
         )
@@ -577,7 +577,7 @@ def test_index_app(app, mocker):
                 "is_personal_access", False
             )
             assert old.is_delete == False and updated.is_delete == True
-            assert old.blocknumber == 0 and updated.blocknumber == 1
+            assert old.blocknumber == 0 and updated.blocknumber == 3
 
     # Test valid create again
     tx_receipts = {
@@ -608,7 +608,7 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=2,
+            block_number=4,
             block_timestamp=1000000003,
             block_hash=0,
         )
@@ -632,4 +632,4 @@ def test_index_app(app, mocker):
             assert res.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )
-            assert res.blocknumber == 2
+            assert res.blocknumber == 4

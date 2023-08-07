@@ -2,6 +2,9 @@ import json
 import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
+from src.models.indexing.revert_block import RevertBlock
+from sqlalchemy import text
+from sqlalchemy import literal_column
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
@@ -11,6 +14,8 @@ from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.notifications.notification import PlaylistSeen
+from src.models.notifications.notification import NotificationSeen
+
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -18,7 +23,13 @@ from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
+from src.models.tracks.remix import Remix
+from src.models.tracks.stem import Stem
 from src.models.tracks.track_route import TrackRoute
+
+from src.models.tracks.track_route import TrackRoute
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user_events import UserEvent
 from src.models.users.user import User
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
@@ -83,6 +94,24 @@ logger = StructuredLogger(__name__)
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
 
+entity_type_table_mapping = {
+    "Save": Save.__tablename__,
+    "Repost": Repost.__tablename__,
+    "Follow": Follow.__tablename__,
+    "Subscription": Subscription.__tablename__,
+    "Playlist": Playlist.__tablename__,
+    "Track": Track.__tablename__,
+    "User": User.__tablename__,
+    "AssociatedWallet": AssociatedWallet.__tablename__,
+    "UserEvent": UserEvent.__tablename__,
+    "TrackRoute": TrackRoute.__tablename__,
+    "PlaylistRoute": PlaylistRoute.__tablename__,
+    "NotificationSeen": NotificationSeen.__tablename__,
+    "PlaylistSeen": PlaylistSeen.__tablename__,
+    "DeveloperApp": DeveloperApp.__tablename__,
+    "Grant": Grant.__tablename__,
+}
+
 
 def get_record_columns(record) -> List[str]:
     columns = [str(m.key) for m in record.__table__.columns]
@@ -97,6 +126,16 @@ def entity_manager_update(
     block_timestamp,
     block_hash: str,
 ) -> Tuple[int, Dict[str, Set[(int)]]]:
+    """
+    Process a block of EM transactions.
+
+    1. Fetch relevant entities for all transactions.
+    2. Process transactions based on type and action.
+    3. Validate transaction.
+    4. Create new database record based on a transaction.
+    5. Bulk insert new records.
+    """
+
     try:
         update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
@@ -119,10 +158,9 @@ def entity_manager_update(
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
 
         # fetch existing tracks and playlists
-        existing_records: ExistingRecordDict = fetch_existing_entities(
+        existing_records, existing_records_in_json = fetch_existing_entities(
             session, entities_to_fetch
         )
-
         # copy original record since existing_records will be modified
         original_records = copy_original_records(existing_records)
 
@@ -284,35 +322,13 @@ def entity_manager_update(
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
-        records_to_save = []
-        for record_type, record_dict in new_records.items():
-            for entity_id, records in record_dict.items():
-                if not records:
-                    continue
-                # invalidate all new records except the last
-                for record in records:
-                    if "is_current" in get_record_columns(record):
-                        record.is_current = False
-
-                    if "updated_at" in get_record_columns(record):
-                        record.updated_at = params.block_datetime
-                if "is_current" in get_record_columns(records[-1]):
-                    records[-1].is_current = True
-                records_to_save.extend(records)
-
-                # invalidate original record if it already existed in the DB
-                if (
-                    record_type in original_records
-                    and entity_id in original_records[record_type]
-                    and "is_current"
-                    in get_record_columns(original_records[record_type][entity_id])
-                ):
-                    original_records[record_type][entity_id].is_current = False
+        records_to_save = get_records_to_save(
+            params, new_records, original_records, existing_records_in_json
+        )
 
         # insert/update all tracks, playlist records in this block
         session.add_all(records_to_save)
-        num_total_changes += len(records_to_save)
-
+        num_total_changes += len(new_records)
         # update metrics
         metric_latency.save_time(
             {"scope": "entity_manager_update"},
@@ -346,6 +362,51 @@ def entity_manager_update(
     return num_total_changes, changed_entity_ids
 
 
+def get_records_to_save(
+    params, new_records, original_records, existing_records_in_json
+):
+    records_to_save = []
+    prev_records: Dict[EntityType, List] = defaultdict(list)
+    for record_type, record_dict in new_records.items():
+        for entity_id, records in record_dict.items():
+            if not records:
+                continue
+            # invalidate all new records except the last
+            for record in records:
+                if "is_current" in get_record_columns(record):
+                    record.is_current = False
+
+                if "updated_at" in get_record_columns(record):
+                    record.updated_at = params.block_datetime
+            if "is_current" in get_record_columns(records[-1]):
+                records[-1].is_current = True
+            records_to_save.extend(records)
+            # invalidate original record if it already existed in the DB
+            # also add revert_blocks
+            if (
+                record_type in original_records
+                and entity_id in original_records[record_type]
+                and "is_current"
+                in get_record_columns(original_records[record_type][entity_id])
+                and original_records[record_type][entity_id].is_current
+            ):
+                original_records[record_type][entity_id].is_current = False
+                # add the json record for revert blocks
+                prev_records[entity_type_table_mapping[record_type]].append(
+                    existing_records_in_json[record_type][entity_id]
+                )
+
+    # prev records may contain records that did not change
+    # how do i handle conflicts?
+    # may need to modify existing_records_in_json keys
+    if prev_records:
+        revert_block = RevertBlock(
+            blocknumber=params.block_number, prev_records=prev_records
+        )
+        records_to_save.append(revert_block)
+    return records_to_save
+
+
 def copy_original_records(existing_records):
     original_records = {}
     for entity_type in existing_records:
@@ -373,6 +434,13 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
+            if entity_type == EntityType.USER:
+                entities_to_fetch[EntityType.USER_EVENT].add(user_id)
+                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
+            if entity_type == EntityType.TRACK:
+                entities_to_fetch[EntityType.TRACK_ROUTE].add(entity_id)
+            if entity_type == EntityType.PLAYLIST:
+                entities_to_fetch[EntityType.PLAYLIST_ROUTE].add(entity_id)
             if (
                 entity_type == EntityType.NOTIFICATION
                 and action == Action.VIEW_PLAYLIST
@@ -460,11 +528,14 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
 def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetchDict):
     existing_entities: ExistingRecordDict = defaultdict(dict)
+    existing_entities_in_json: Dict[EntityType, Dict] = defaultdict(dict)
 
     # PLAYLISTS
     if entities_to_fetch[EntityType.PLAYLIST]:
         playlists: List[Playlist] = (
-            session.query(Playlist)
+            session.query(
+                Playlist, literal_column(f"row_to_json({Playlist.__tablename__})")
+            )
             .filter(
                 Playlist.playlist_id.in_(entities_to_fetch[EntityType.PLAYLIST]),
                 Playlist.is_current == True,
@@ -472,13 +543,17 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.PLAYLIST] = {
-            playlist.playlist_id: playlist for playlist in playlists
+            playlist.playlist_id: playlist for playlist, _ in playlists
+        }
+        existing_entities_in_json[EntityType.PLAYLIST] = {
+            playlist_json["playlist_id"]: playlist_json
+            for _, playlist_json in playlists
         }
 
     # TRACKS
     if entities_to_fetch[EntityType.TRACK]:
         tracks: List[Track] = (
-            session.query(Track)
+            session.query(Track, literal_column(f"row_to_json({Track.__tablename__})"))
             .filter(
                 Track.track_id.in_(entities_to_fetch[EntityType.TRACK]),
                 Track.is_current == True,
@@ -486,20 +561,109 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.TRACK] = {
-            track.track_id: track for track in tracks
+            track.track_id: track for track, _ in tracks
+        }
+        existing_entities_in_json[EntityType.TRACK] = {
+            track_json["track_id"]: track_json for _, track_json in tracks
+        }
+
+    if entities_to_fetch[EntityType.TRACK_ROUTE]:
+        track_routes: List[TrackRoute] = (
+            session.query(
+                TrackRoute, literal_column(f"row_to_json({TrackRoute.__tablename__})")
+            )
+            .filter(
+                TrackRoute.track_id.in_(entities_to_fetch[EntityType.TRACK_ROUTE]),
+                TrackRoute.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.TRACK_ROUTE] = {
+            track_route.track_id: track_route for track_route, _ in track_routes
+        }
+        existing_entities_in_json[EntityType.TRACK_ROUTE] = {
+            track_route_json["track_id"]: track_route_json
+            for _, track_route_json in track_routes
+        }
+
+    if entities_to_fetch[EntityType.PLAYLIST_ROUTE]:
+        playlist_routes: List[PlaylistRoute] = (
+            session.query(
+                PlaylistRoute,
+                literal_column(f"row_to_json({PlaylistRoute.__tablename__})"),
+            )
+            .filter(
+                PlaylistRoute.owner_id.in_(
+                    entities_to_fetch[EntityType.PLAYLIST_ROUTE]
+                ),
+                PlaylistRoute.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.PLAYLIST_ROUTE] = {
+            playlist_route.playlist_id: playlist_route
+            for playlist_route, _ in playlist_routes
+        }
+        existing_entities_in_json[EntityType.PLAYLIST_ROUTE] = {
+            playlist_route_json["playlist_id"]: playlist_route_json
+            for _, playlist_route_json in playlist_routes
         }
 
     # USERS
     if entities_to_fetch[EntityType.USER]:
         users: List[User] = (
-            session.query(User)
+            session.query(User, literal_column(f"row_to_json({User.__tablename__})"))
             .filter(
                 User.user_id.in_(entities_to_fetch[EntityType.USER]),
                 User.is_current == True,
             )
             .all()
         )
-        existing_entities[EntityType.USER] = {user.user_id: user for user in users}
+        existing_entities[EntityType.USER] = {user.user_id: user for user, _ in users}
+        existing_entities_in_json[EntityType.USER] = {
+            user_json["user_id"]: user_json for _, user_json in users
+        }
+
+    if entities_to_fetch[EntityType.USER_EVENT]:
+        user_events: List[UserEvent] = (
+            session.query(
+                UserEvent, literal_column(f"row_to_json({UserEvent.__tablename__})")
+            )
+            .filter(
+                UserEvent.user_id.in_(entities_to_fetch[EntityType.USER_EVENT]),
+                UserEvent.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.USER_EVENT] = {
+            user_event.user_id: user_event for user_event, _ in user_events
+        }
+        existing_entities_in_json[EntityType.USER_EVENT] = {
+            user_event_json["user_id"]: user_event_json
+            for _, user_event_json in user_events
+        }
+
+    if entities_to_fetch[EntityType.ASSOCIATED_WALLET]:
+        associated_wallets: List[AssociatedWallet] = (
+            session.query(
+                AssociatedWallet,
+                literal_column(f"row_to_json({AssociatedWallet.__tablename__})"),
+            )
+            .filter(
+                AssociatedWallet.user_id.in_(
+                    entities_to_fetch[EntityType.ASSOCIATED_WALLET]
+                ),
+                AssociatedWallet.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.ASSOCIATED_WALLET] = {
+            (wallet.user_id, wallet.chain): wallet for wallet, _ in associated_wallets
+        }
+        existing_entities_in_json[EntityType.ASSOCIATED_WALLET] = {
+            (wallet_json["user_id"], wallet_json["chain"]): wallet_json
+            for _, wallet_json in associated_wallets
+        }
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:
@@ -516,12 +680,26 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                     Follow.is_current == True,
                 )
             )
-        follows: List[Follow] = session.query(Follow).filter(or_(*and_queries)).all()
+        follows: List[Follow] = (
+            session.query(
+                Follow, literal_column(f"row_to_json({Follow.__tablename__})")
+            )
+            .filter(or_(*and_queries))
+            .all()
+        )
         existing_entities[EntityType.FOLLOW] = {
             get_record_key(
                 follow.follower_user_id, EntityType.USER, follow.followee_user_id
             ): follow
-            for follow in follows
+            for follow, _ in follows
+        }
+        existing_entities_in_json[EntityType.FOLLOW] = {
+            get_record_key(
+                follow_json["follower_user_id"],
+                EntityType.USER,
+                follow_json["followee_user_id"],
+            ): follow_json
+            for _, follow_json in follows
         }
 
     # SAVES
@@ -540,10 +718,20 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                     Save.is_current == True,
                 )
             )
-        saves: List[Save] = session.query(Save).filter(or_(*and_queries)).all()
+        saves: List[Save] = (
+            session.query(Save, literal_column(f"row_to_json({Save.__tablename__})"))
+            .filter(or_(*and_queries))
+            .all()
+        )
         existing_entities[EntityType.SAVE] = {
             get_record_key(save.user_id, save.save_type, save.save_item_id): save
-            for save in saves
+            for save, _ in saves
+        }
+        existing_entities_in_json[EntityType.SAVE] = {
+            get_record_key(
+                save_json["user_id"], save_json["save_type"], save_json["save_item_id"]
+            ): save_json
+            for _, save_json in saves
         }
 
     # REPOSTS
@@ -562,12 +750,26 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                     Repost.is_current == True,
                 )
             )
-        reposts: List[Repost] = session.query(Repost).filter(or_(*and_queries)).all()
+        reposts: List[Repost] = (
+            session.query(
+                Repost, literal_column(f"row_to_json({Repost.__tablename__})")
+            )
+            .filter(or_(*and_queries))
+            .all()
+        )
         existing_entities[EntityType.REPOST] = {
             get_record_key(
                 repost.user_id, repost.repost_type, repost.repost_item_id
             ): repost
-            for repost in reposts
+            for repost, _ in reposts
+        }
+        existing_entities_in_json[EntityType.REPOST] = {
+            get_record_key(
+                respost_json["user_id"],
+                respost_json["repost_type"],
+                respost_json["repost_item_id"],
+            ): respost_json
+            for _, respost_json in reposts
         }
 
     # SUBSCRIPTIONS
@@ -586,13 +788,24 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 )
             )
         subscriptions: List[Subscription] = (
-            session.query(Subscription).filter(or_(*and_queries)).all()
+            session.query(
+                Subscription,
+                literal_column(f"row_to_json({Subscription.__tablename__})"),
+            )
+            .filter(or_(*and_queries))
+            .all()
         )
         existing_entities[EntityType.SUBSCRIPTION] = {
             get_record_key(
                 subscription.subscriber_id, EntityType.USER, subscription.user_id
             ): subscription
-            for subscription in subscriptions
+            for subscription, _ in subscriptions
+        }
+        existing_entities_in_json[EntityType.SUBSCRIPTION] = {
+            get_record_key(
+                sub_json["subscriber_id"], EntityType.USER, sub_json["user_id"]
+            ): sub_json
+            for _, sub_json in subscriptions
         }
 
     # PLAYLIST SEEN
@@ -611,11 +824,20 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             )
 
         playlist_seens: List[PlaylistSeen] = (
-            session.query(PlaylistSeen).filter(or_(*and_queries)).all()
+            session.query(
+                PlaylistSeen,
+                literal_column(f"row_to_json({PlaylistSeen.__tablename__})"),
+            )
+            .filter(or_(*and_queries))
+            .all()
         )
         existing_entities[EntityType.PLAYLIST_SEEN] = {
             (playlist_seen.user_id, playlist_seen.playlist_id): playlist_seen
-            for playlist_seen in playlist_seens
+            for playlist_seen, _ in playlist_seens
+        }
+        existing_entities_in_json[EntityType.PLAYLIST_SEEN] = {
+            (seen_json["user_id"], seen_json["playlist_id"]): seen_json
+            for _, seen_json in playlist_seens
         }
 
     # GRANTS
@@ -633,11 +855,19 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 )
             )
 
-        grants: List[Grant] = session.query(Grant).filter(or_(*and_queries)).all()
+        grants: List[Tuple[Grant, Dict]] = (
+            session.query(Grant, literal_column(f"row_to_json({Grant.__tablename__})"))
+            .filter(or_(*and_queries))
+            .all()
+        )
         existing_entities[EntityType.GRANT] = {
-            (grant.grantee_address.lower(), grant.user_id): grant for grant in grants
+            (grant.grantee_address.lower(), grant.user_id): grant for grant, _ in grants
         }
-        for grant in grants:
+        existing_entities_in_json[EntityType.GRANT] = {
+            (grant_json["grantee_address"].lower(), grant_json["user_id"]): grant_json
+            for _, grant_json in grants
+        }
+        for grant, _ in grants:
             entities_to_fetch[EntityType.DEVELOPER_APP].add(
                 grant.grantee_address.lower()
             )
@@ -645,7 +875,10 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     # APP DEVELOPER APPS
     if entities_to_fetch[EntityType.DEVELOPER_APP]:
         developer_apps: List[DeveloperApp] = (
-            session.query(DeveloperApp)
+            session.query(
+                DeveloperApp,
+                literal_column(f"row_to_json({DeveloperApp.__tablename__})"),
+            )
             .filter(
                 func.lower(DeveloperApp.address).in_(
                     entities_to_fetch[EntityType.DEVELOPER_APP]
@@ -656,10 +889,13 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         )
         existing_entities[EntityType.DEVELOPER_APP] = {
             developer_app.address.lower(): developer_app
-            for developer_app in developer_apps
+            for developer_app, _ in developer_apps
+        }
+        existing_entities_in_json[EntityType.DEVELOPER_APP] = {
+            app_json["address"].lower(): app_json for _, app_json in developer_apps
         }
 
-    return existing_entities
+    return existing_entities, existing_entities_in_json
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt):

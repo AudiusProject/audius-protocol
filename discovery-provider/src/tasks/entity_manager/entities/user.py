@@ -200,15 +200,7 @@ def create_user(
             user_metadata,
         )
 
-        user_record = update_user_metadata(
-            params.session,
-            params.redis,
-            user_record,
-            user_metadata,
-            params.web3,
-            params.challenge_bus,
-            params.action
-        )
+        user_record = update_user_metadata(user_record, user_metadata, params)
         metadata_type, _ = get_metadata_type_and_format(params.entity_type)
         cid_type[metadata_cid] = metadata_type
         cid_metadata[metadata_cid] = user_metadata
@@ -230,7 +222,7 @@ def create_user(
         user_record.creator_node_endpoint = creator_node_endpoint_str
 
     user_record = validate_user_record(user_record)
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     return user_record
 
 
@@ -263,15 +255,7 @@ def update_user(
         params.metadata,
     )
 
-    user_record = update_user_metadata(
-        params.session,
-        params.redis,
-        user_record,
-        params.metadata,
-        params.web3,
-        params.challenge_bus,
-        params.action
-    )
+    user_record = update_user_metadata(user_record, params.metadata, params)
 
     updated_metadata, updated_metadata_cid = merge_metadata(
         params, user_record, cid_metadata
@@ -283,8 +267,7 @@ def update_user(
 
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
-
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.profile_update,
         params.block_number,
@@ -294,15 +277,12 @@ def update_user(
     return user_record
 
 
-def update_user_metadata(
-    session,
-    redis,
-    user_record: User,
-    metadata: Dict,
-    web3: Web3,
-    challenge_event_bus: ChallengeEventBus,
-    action
-):
+def update_user_metadata(user_record: User, metadata: Dict, params):
+    session = params.session
+    redis = params.redis
+    web3 = params.web3
+    challenge_event_bus = params.challenge_bus
+    action = params.action
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
     for key, _ in user_record_attributes.items():
@@ -332,6 +312,7 @@ def update_user_metadata(
             user_record,
             metadata["associated_wallets"],
             "eth",
+            params,
         )
 
     if "associated_sol_wallets" in metadata:
@@ -342,15 +323,10 @@ def update_user_metadata(
             user_record,
             metadata["associated_sol_wallets"],
             "sol",
+            params,
         )
-
     if "events" in metadata and metadata["events"]:
-        update_user_events(
-            session,
-            user_record,
-            metadata["events"],
-            challenge_event_bus,
-        )
+        update_user_events(user_record, metadata["events"], challenge_event_bus, params)
 
     return user_record
 
@@ -379,9 +355,7 @@ def merge_metadata(
     updated_metadata = prev_cid_metadata | params.metadata
 
     # generate a cid
-    updated_metadata_cid = str(
-        generate_metadata_cid_v1(json.dumps(updated_metadata))
-    )
+    updated_metadata_cid = str(generate_metadata_cid_v1(json.dumps(updated_metadata)))
 
     return updated_metadata, updated_metadata_cid
 
@@ -392,23 +366,20 @@ class UserEventMetadata(TypedDict, total=False):
 
 
 def update_user_events(
-    session: Session,
-    user_record: User,
-    events: UserEventMetadata,
-    bus: ChallengeEventBus,
+    user_record: User, events: UserEventMetadata, bus: ChallengeEventBus, params
 ) -> None:
     """Updates the user events table"""
     try:
         if not isinstance(events, dict) or not user_record.blocknumber:
             # There is something wrong with events, don't process it
             return
-
         # Get existing UserEvent entry
-        existing_user_events = (
-            session.query(UserEvent)
-            .filter_by(user_id=user_record.user_id, is_current=True)
-            .one_or_none()
-        )
+        existing_user_events: UserEvent | None = None
+        if existing_user_events and EntityType.USER_EVENT in existing_user_events:
+            existing_user_events = params.existing_records[EntityType.USER_EVENT][
+                user_record.user_id
+            ]
+
         existing_referrer = (
             existing_user_events.referrer if existing_user_events else None
         )
@@ -460,21 +431,18 @@ def update_user_events(
             or user_events.is_mobile_user != existing_mobile_user
             or user_events.referrer != existing_referrer
         ):
-            # Mark existing UserEvent entries as not current
-            session.query(UserEvent).filter_by(
-                user_id=user_record.user_id, is_current=True
-            ).update({"is_current": False})
-            session.add(user_events)
+            params.add_record(user_record.user_id, user_events, EntityType.USER_EVENT)
 
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal updating user events while indexing {e}",
             exc_info=True,
         )
+        raise e
 
 
 def update_user_associated_wallets(
-    session, web3, redis, user_record, associated_wallets, chain
+    session, web3, redis, user_record, associated_wallets, chain, params
 ):
     """Updates the user associated wallets table"""
     try:
@@ -542,7 +510,11 @@ def update_user_associated_wallets(
                         blocknumber=user_record.blocknumber,
                         blockhash=user_record.blockhash,
                     )
-                    session.add(associated_wallet_entry)
+                    params.add_record(
+                        (associated_wallet_entry.user_id, chain),
+                        associated_wallet_entry,
+                        EntityType.ASSOCIATED_WALLET,
+                    )
 
         # Mark the previously associated wallets as deleted
         for previously_associated_wallet in previous_wallets:
@@ -556,7 +528,11 @@ def update_user_associated_wallets(
                     blocknumber=user_record.blocknumber,
                     blockhash=user_record.blockhash,
                 )
-                session.add(associated_wallet_entry)
+                params.add_record(
+                    (associated_wallet_entry.user_id, chain),
+                    associated_wallet_entry,
+                    EntityType.ASSOCIATED_WALLET,
+                )
 
         is_updated_wallets = set(previous_wallets) != added_associated_wallets
         if is_updated_wallets:
@@ -646,7 +622,7 @@ def verify_user(params: ManageEntityParameters):
 
     user_record = validate_user_record(user_record)
     user_record.is_verified = True
-    params.add_user_record(user_id, user_record)
+    params.add_record(user_id, user_record)
     params.challenge_bus.dispatch(
         ChallengeEvent.connect_verified,
         params.block_number,
