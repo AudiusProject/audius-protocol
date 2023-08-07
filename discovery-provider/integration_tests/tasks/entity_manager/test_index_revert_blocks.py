@@ -155,8 +155,8 @@ def test_index_revert_blocks(app, mocker):
         assert len(revert_blocks) == 1
         assert revert_blocks[0].blocknumber == 0
         assert len(revert_blocks[0].prev_records) == 1
-        assert len(revert_blocks[0].prev_records[EntityType.USER]) == 1
-        user_2_json = revert_blocks[0].prev_records[EntityType.USER][0]      
+        assert len(revert_blocks[0].prev_records["users"]) == 1
+        user_2_json = revert_blocks[0].prev_records["users"][0]      
         prev_user_2 = User(**user_2_json)
         session.add(prev_user_2)
 
