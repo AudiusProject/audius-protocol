@@ -62,7 +62,6 @@ const errorResponseRateLimited = (rep: FastifyReply) => {
   rep.code(429).send("Too many requests, please try again later");
 };
 
-
 const errorResponseInternal = (rep: FastifyReply) => {
   rep.code(500).send();
 };

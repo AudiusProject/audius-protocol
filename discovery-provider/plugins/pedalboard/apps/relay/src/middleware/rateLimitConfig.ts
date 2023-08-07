@@ -2,7 +2,7 @@ import { RateLimiterMemory, RateLimiterRes } from "rate-limiter-flexible";
 import lcm from "compute-lcm";
 import { logger } from "../logger";
 
-const DEFAULT_EXPIRY = 60 * 60
+const DEFAULT_EXPIRY = 60 * 60;
 
 // type alias for ease
 export type RelayRateLimits = Map<string, RelayRateLimitConfig>;
@@ -35,7 +35,10 @@ export class RelayRateLimiter {
 
   constructor(rateLimitExpiration = DEFAULT_EXPIRY) {
     this.rateLimits = this.readRelayRateLimits();
-    this.rateLimiters = this.initRateLimiters(this.rateLimits, rateLimitExpiration);
+    this.rateLimiters = this.initRateLimiters(
+      this.rateLimits,
+      rateLimitExpiration
+    );
   }
 
   /** Initializing methods */
@@ -46,7 +49,10 @@ export class RelayRateLimiter {
     }, new Map());
   }
 
-  private initRateLimiters(rateLimits: RelayRateLimits, duration: number): RateLimiters {
+  private initRateLimiters(
+    rateLimits: RelayRateLimits,
+    duration: number
+  ): RateLimiters {
     const rateLimiters = new Map<string, RateLimiterMemory>();
     for (const [operation, { owner, app, allowlist }] of rateLimits) {
       // rate limiter finds least common multiple of all types in config
