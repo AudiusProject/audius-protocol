@@ -92,6 +92,23 @@ logger = StructuredLogger(__name__)
 # Please toggle below variable to true for development
 ENABLE_DEVELOPMENT_FEATURES = True
 
+entity_type_table_mapping = {
+    "Save": Save.__tablename__,
+    "Repost": Repost.__tablename__,
+    "Follow": Follow.__tablename__,
+    "Subscription": Subscription.__tablename__,
+    "Playlist": Playlist.__tablename__,
+    "Track": Track.__tablename__,
+    "User": User.__tablename__,
+    "AssociatedWallet": AssociatedWallet.__tablename__,
+    "UserEvent": UserEvent.__tablename__,
+    "TrackRoute": TrackRoute.__tablename__,
+    "PlaylistRoute": PlaylistRoute.__tablename__,
+    "NotificationSeen": NotificationSeen.__tablename__,
+    "PlaylistSeen": PlaylistSeen.__tablename__,
+    "DeveloperApp": DeveloperApp.__tablename__,
+    "Grant": Grant.__tablename__,
+}
 
 def get_record_columns(record) -> List[str]:
     columns = [str(m.key) for m in record.__table__.columns]
@@ -372,17 +389,18 @@ def get_records_to_save(
             ):                    
                 original_records[record_type][entity_id].is_current = False
                 # add the json record for revert blocks
-                prev_records[record_type].append(existing_records_in_json[
+                prev_records[entity_type_table_mapping[record_type]].append(existing_records_in_json[
                     record_type
                 ][entity_id])
 
     # prev records may contain records that did not change
     # how do i handle conflicts?
     # may need to modify existing_records_in_json keys
-    revert_block = RevertBlock(
-        blocknumber=params.block_number, prev_records=prev_records
-    )
-    records_to_save.append(revert_block)
+    if prev_records:
+        revert_block = RevertBlock(
+            blocknumber=params.block_number, prev_records=prev_records
+        )
+        records_to_save.append(revert_block)
     return records_to_save
 
 
