@@ -617,18 +617,6 @@ def get_previously_private_playlists_route():
         return api_helpers.error_response(str(e), 400)
 
 
-# Get the list of content nodes registered on UserReplicaSetManager
-@bp.route("/ursm_content_nodes", methods=("GET",))
-def get_ursm_content_nodes():
-    try:
-        # Assign value only if not None or empty string
-        owner_wallet = request.args.get("owner_wallet") or None
-        cnodes = get_ursm_cnodes(owner_wallet)
-        return api_helpers.success_response(cnodes)
-    except exceptions.ArgumentError as e:
-        return api_helpers.error_response(str(e), 400)
-
-
 # Get details for a single play written to Solana
 @bp.route("/get_sol_play", methods=("GET",))
 def get_sol_play_tx():
