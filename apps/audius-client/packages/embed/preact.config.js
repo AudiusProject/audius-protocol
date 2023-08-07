@@ -1,6 +1,8 @@
 import { resolve } from 'path'
-import preactSVGLoader from 'preact-cli-svg-loader'
+
 import envVars from 'preact-cli-plugin-env-vars'
+import preactSVGLoader from 'preact-cli-svg-loader'
+
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 export default function (config, env, helpers) {
@@ -12,6 +14,10 @@ export default function (config, env, helpers) {
     'src',
     'index'
   )
+  config.resolve.alias = {
+    ...config.resolve.alias,
+    fs: resolve(__dirname, './src/util/empty.js')
+  }
 
   // Inject env vars
   envVars(config, env, helpers)

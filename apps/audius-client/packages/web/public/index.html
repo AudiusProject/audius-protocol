@@ -82,21 +82,17 @@
         console.error(e)
       }
     </script>
+
     <!-- start Google Analytics -->
-    <script async src="%PUBLIC_URL%/analytics/gtag.js?id=%REACT_APP_GA_MEASUREMENT_ID%"></script>
-    <script async>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GA_MEASUREMENT_ID%"></script>
+    <script>
       const nodeEnv = '%NODE_ENV%'
       const reactEnv = '%REACT_APP_ENVIRONMENT%'
       if (nodeEnv === 'production' && reactEnv === 'production') {
-        try {
-          window.dataLayer = window.dataLayer || [];
-          // Stolen from https://github.com/gatsbyjs/gatsby/issues/11431
-          function gtag(){window.dataLayer && window.dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '%REACT_APP_GA_MEASUREMENT_ID%');
-        } catch (e) {
-          console.error(e)
-        }
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '%REACT_APP_GA_MEASUREMENT_ID%');
       }
     </script>
     <!-- end Google Analytics -->
