@@ -4,12 +4,28 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"path/filepath"
 	"strings"
 
 	"github.com/ipfs/go-cid"
+	"github.com/labstack/echo/v4"
 	"github.com/multiformats/go-multihash"
 )
+
+func UnescapeCidParam(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cid := c.Param("cid")
+		unescapedCid, err := url.PathUnescape(cid)
+		if err != nil {
+			return err
+		}
+		c.SetParamNames("cid")
+		c.SetParamValues(unescapedCid)
+
+		return next(c)
+	}
+}
 
 func ComputeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
 	f, err := fh.Open()
