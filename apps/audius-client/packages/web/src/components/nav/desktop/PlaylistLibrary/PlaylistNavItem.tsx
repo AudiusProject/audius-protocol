@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
-import { playlistPage } from 'utils/route'
+import { collectionPage } from 'utils/route'
 
 import { CollectionNavItem } from './CollectionNavItem'
 
@@ -34,9 +34,9 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const playlistUrl = useSelector((state) => {
     const playlist = state.account.collections[playlistId]
     if (!playlist) return null
-    const { name, user } = playlist
+    const { name, user, permalink } = playlist
     const { handle } = user
-    return playlistPage(handle, name, playlistId)
+    return collectionPage(handle, name, playlistId, permalink)
   })
 
   const hasPlaylistUpdate = useSelector(

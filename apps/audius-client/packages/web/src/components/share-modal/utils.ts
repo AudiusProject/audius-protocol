@@ -2,8 +2,7 @@ import { ShareToTwitter, ShareModalContent } from '@audius/common'
 
 import { getTwitterHandleByUserHandle } from 'components/notification/Notification/utils'
 import {
-  fullAlbumPage,
-  fullPlaylistPage,
+  fullCollectionPage,
   fullProfilePage,
   fullTrackPage,
   fullAudioNftPlaylistPage
@@ -47,27 +46,39 @@ export const getTwitterShareText = async (
     }
     case 'album': {
       const {
-        album: { playlist_name, playlist_id },
+        album: { playlist_name, playlist_id, permalink },
         artist: { handle }
       } = content
       twitterText = messages.albumShareText(
         playlist_name,
         await getShareHandle(handle)
       )
-      link = fullAlbumPage(handle, playlist_name, playlist_id)
+      link = fullCollectionPage(
+        handle,
+        playlist_name,
+        playlist_id,
+        permalink,
+        true
+      )
       analyticsEvent = { kind: 'album', id: playlist_id, url: link }
       break
     }
     case 'playlist': {
       const {
-        playlist: { playlist_name, playlist_id },
+        playlist: { playlist_name, playlist_id, permalink, is_album },
         creator: { handle }
       } = content
       twitterText = messages.playlistShareText(
         playlist_name,
         await getShareHandle(handle)
       )
-      link = fullPlaylistPage(handle, playlist_name, playlist_id)
+      link = fullCollectionPage(
+        handle,
+        playlist_name,
+        playlist_id,
+        permalink,
+        is_album
+      )
       analyticsEvent = { kind: 'playlist', id: playlist_id, url: link }
       break
     }

@@ -16,6 +16,7 @@ import { Dispatch } from 'redux'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import RepostFavoritesStats, {
@@ -31,7 +32,7 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
-import { playlistPage, albumPage, profilePage } from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './CollectionArtCard.module.css'
@@ -84,7 +85,8 @@ const CollectionArtCard = g(
       has_current_user_reposted,
       has_current_user_saved,
       repost_count,
-      save_count
+      save_count,
+      permalink
     } = collection
     const { user_id, name, handle } = user
 
@@ -92,9 +94,13 @@ const CollectionArtCard = g(
 
     const goToCollection = useCallback(() => {
       if (isPerspectiveDisabled) return
-      const link = is_album
-        ? albumPage(handle, playlist_name, playlist_id)
-        : playlistPage(handle, playlist_name, playlist_id)
+      const link = collectionPage(
+        handle,
+        playlist_name,
+        playlist_id,
+        permalink,
+        is_album
+      )
       goToRoute(link)
     }, [
       is_album,
@@ -102,7 +108,8 @@ const CollectionArtCard = g(
       playlist_name,
       playlist_id,
       goToRoute,
-      isPerspectiveDisabled
+      isPerspectiveDisabled,
+      permalink
     ])
 
     const goToProfile = useCallback(() => {
@@ -144,8 +151,9 @@ const CollectionArtCard = g(
       isFavorited: has_current_user_saved,
       isReposted: has_current_user_reposted,
       metadata: collection,
-      name: playlist_name
-    }
+      name: playlist_name,
+      permalink: permalink || null
+    } as unknown as CollectionMenuProps
 
     return (
       <div className={cn(styles.card, className)}>

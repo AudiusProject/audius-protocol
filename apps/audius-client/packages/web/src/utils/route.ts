@@ -80,6 +80,7 @@ export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:query?'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const PLAYLIST_BY_PERMALINK_PAGE = '/:handle/playlist/:slug'
+export const ALBUM_BY_PERMALINK_PAGE = '/:handle/album/:slug'
 export const ALBUM_PAGE = '/:handle/album/:albumName'
 export const TRACK_PAGE = '/:handle/:slug'
 export const TRACK_REMIXES_PAGE = '/:handle/:slug/remixes'
@@ -277,17 +278,19 @@ export const fullAlbumPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${albumPage(handle, title, id)}`
 }
 
-export const playlistPage = (
+export const collectionPage = (
   handle: string,
   playlistName?: string | null,
   playlistId?: ID | null,
-  permalink?: string | null
+  permalink?: string | null,
+  isAlbum?: boolean
 ) => {
   // Prioritize permalink if available. If not, default to legacy routing
   if (permalink) {
     return permalink
   } else if (playlistName && playlistId) {
-    return `/${encodeUrlName(handle)}/playlist/${encodeUrlName(
+    const collectionType = isAlbum ? 'album' : 'playlist'
+    return `/${encodeUrlName(handle)}/${collectionType}/${encodeUrlName(
       playlistName
     )}-${playlistId}`
   } else {
@@ -295,17 +298,19 @@ export const playlistPage = (
     return ''
   }
 }
-export const fullPlaylistPage = (
+export const fullCollectionPage = (
   handle: string,
   playlistName?: string | null,
   playlistId?: ID | null,
-  permalink?: string | null
+  permalink?: string | null,
+  isAlbum?: boolean
 ) => {
-  return `${BASE_URL}${playlistPage(
+  return `${BASE_URL}${collectionPage(
     handle,
     playlistName,
     playlistId,
-    permalink
+    permalink,
+    isAlbum
   )}`
 }
 

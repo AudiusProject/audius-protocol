@@ -58,6 +58,7 @@ export const getCollectionWithFallback = (collection: Collection | null) => {
       is_private: true,
       is_album: false,
       is_delete: false,
+      permalink: '',
       activity_timestamp: '',
       _co_sign: undefined,
       playlist_owner_id: -1,

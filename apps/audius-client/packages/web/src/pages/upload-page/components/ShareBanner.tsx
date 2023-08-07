@@ -22,13 +22,11 @@ import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import {
-  fullAlbumPage,
-  fullPlaylistPage,
+  fullCollectionPage,
   fullProfilePage,
   fullTrackPage,
   profilePage,
-  albumPage,
-  playlistPage
+  collectionPage
 } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
 
@@ -115,9 +113,9 @@ const getShareTextUrl = async (
       const { metadata, completionId } = upload
       if (!metadata || !completionId) return { text: '', url: '' }
 
-      const { playlist_name: title } = metadata
-      const getPage = fullUrl ? fullAlbumPage : albumPage
-      const url = getPage(user.handle, title, completionId)
+      const { playlist_name: title, permalink, is_album } = metadata
+      const getPage = fullUrl ? fullCollectionPage : collectionPage
+      const url = getPage(user.handle, title, completionId, permalink, is_album)
       return {
         text: `Check out my new album, ${title} on @AudiusProject #Audius`,
         url
@@ -127,9 +125,9 @@ const getShareTextUrl = async (
       const { metadata, completionId } = upload
       if (!metadata || !completionId) return { text: '', url: '' }
 
-      const { playlist_name: title } = metadata
-      const getPage = fullUrl ? fullPlaylistPage : playlistPage
-      const url = getPage(user.handle, title, completionId)
+      const { playlist_name: title, permalink, is_album } = metadata
+      const getPage = fullUrl ? fullCollectionPage : collectionPage
+      const url = getPage(user.handle, title, completionId, permalink, is_album)
       return {
         text: `Check out my new playlist, ${title} on @AudiusProject #Audius`,
         url

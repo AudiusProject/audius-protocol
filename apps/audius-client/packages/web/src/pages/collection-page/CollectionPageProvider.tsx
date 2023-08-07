@@ -66,8 +66,7 @@ import {
   NOT_FOUND_PAGE,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
-  playlistPage,
-  albumPage,
+  collectionPage,
   getPathname
 } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
@@ -112,6 +111,7 @@ type OwnProps = {
 
   // Smart collection props
   smartCollection?: SmartCollection
+  playlistByPermalinkEnabled?: boolean
 }
 
 type CollectionPageProps = OwnProps &
@@ -182,15 +182,16 @@ class CollectionPage extends Component<
       fetchCollectionSucceeded,
       type,
       playlistUpdates,
-      updatePlaylistLastViewedAt
+      updatePlaylistLastViewedAt,
+      playlistByPermalinkEnabled
     } = this.props
 
     if (
       type === 'playlist' &&
-      this.state.playlistId &&
-      playlistUpdates.includes(this.state.playlistId)
+      this.props.playlistId &&
+      playlistUpdates.includes(this.props.playlistId)
     ) {
-      updatePlaylistLastViewedAt(this.state.playlistId)
+      updatePlaylistLastViewedAt(this.props.playlistId)
     }
 
     if (!prevProps.smartCollection && smartCollection) {
@@ -218,13 +219,13 @@ class CollectionPage extends Component<
       })
     }
 
-    const params = parseCollectionRoute(pathname)
+    const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
 
     if (!params) return
     if (status === Status.ERROR) {
       if (
         params &&
-        params.collectionId === this.state.playlistId &&
+        params.collectionId === this.props.playlistId &&
         metadata?.playlist_owner_id !== this.props.userId
       ) {
         // Only route to not found page if still on the collection page and
@@ -268,7 +269,7 @@ class CollectionPage extends Component<
 
     const { collection: prevMetadata } = prevProps
     if (metadata) {
-      const params = parseCollectionRoute(pathname)
+      const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
       if (params) {
         const { collectionId, title, collectionType, handle, permalink } =
           params
@@ -280,10 +281,13 @@ class CollectionPage extends Component<
           user
         if (routeLacksCollectionInfo) {
           // Check if we are coming from a non-canonical route and replace route if necessary.
-          const newPath =
-            metadata.is_album && collectionId
-              ? albumPage(user!.handle, metadata.playlist_name, collectionId)
-              : playlistPage(user!.handle, metadata.playlist_name, collectionId)
+          const newPath = collectionPage(
+            user!.handle,
+            metadata.playlist_name,
+            collectionId,
+            metadata.permalink,
+            metadata.is_album
+          )
           this.props.replaceRoute(newPath)
         } else {
           // Id matches or temp id matches
@@ -354,22 +358,23 @@ class CollectionPage extends Component<
   }
 
   fetchCollection = (pathname: string, forceFetch = false) => {
-    const params = parseCollectionRoute(pathname)
+    const { playlistByPermalinkEnabled } = this.props
+    const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
+
+    if (params?.permalink) {
+      const { permalink, collectionId } = params
+      if (forceFetch || params.permalink) {
+        this.props.setCollectionPermalink(permalink)
+        this.props.fetchCollection(collectionId, permalink)
+        this.props.fetchTracks()
+      }
+    }
 
     if (params?.collectionId) {
       const { collectionId } = params
       if (forceFetch || collectionId !== this.state.playlistId) {
         this.setState({ playlistId: collectionId as number })
         this.props.fetchCollection(collectionId as number)
-        this.props.fetchTracks()
-      }
-    }
-
-    if (params?.permalink) {
-      const { permalink, collectionId } = params
-      if (forceFetch) {
-        this.props.setCollectionPermalink(permalink)
-        this.props.fetchCollection(collectionId, permalink)
         this.props.fetchTracks()
       }
     }
@@ -384,6 +389,7 @@ class CollectionPage extends Component<
 
   resetCollection = () => {
     const { collectionUid, userUid } = this.props
+    this.props.setCollectionPermalink('')
     this.props.resetCollection(collectionUid, userUid)
   }
 
@@ -517,7 +523,7 @@ class CollectionPage extends Component<
     uid: string,
     timestamp: number
   ) => {
-    const { playlistId } = this.state
+    const { playlistId } = this.props
     this.props.removeTrackFromPlaylist(
       trackId,
       playlistId as number,
@@ -610,11 +616,11 @@ class CollectionPage extends Component<
 
     this.props.updateLineupOrder(newOrder)
     this.setState({ initialOrder: newOrder })
-    this.props.orderPlaylist(this.state.playlistId!, trackIdAndTimes, newOrder)
+    this.props.orderPlaylist(this.props.playlistId!, trackIdAndTimes, newOrder)
   }
 
   onPublish = () => {
-    this.props.publishPlaylist(this.state.playlistId!)
+    this.props.publishPlaylist(this.props.playlistId!)
   }
 
   onSavePlaylist = (isSaved: boolean, playlistId: number) => {
@@ -652,18 +658,18 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackEdit = () => {
-    if (this.state.playlistId)
-      this.props.onEditCollection(this.state.playlistId)
+    if (this.props.playlistId)
+      this.props.onEditCollection(this.props.playlistId)
   }
 
   onHeroTrackShare = () => {
-    const { playlistId } = this.state
+    const { playlistId } = this.props
     this.onSharePlaylist(playlistId!)
   }
 
   onHeroTrackSave = () => {
     const { userPlaylists, collection: metadata, smartCollection } = this.props
-    const { playlistId } = this.state
+    const { playlistId } = this.props
     const isSaved =
       (metadata && playlistId
         ? metadata.has_current_user_saved || playlistId in userPlaylists
@@ -679,7 +685,7 @@ class CollectionPage extends Component<
 
   onHeroTrackRepost = () => {
     const { collection: metadata } = this.props
-    const { playlistId } = this.state
+    const { playlistId } = this.props
     const isReposted = metadata ? metadata.has_current_user_reposted : false
     this.onRepostPlaylist(isReposted, playlistId!)
   }
@@ -745,8 +751,8 @@ class CollectionPage extends Component<
       smartCollection,
       onClickDescriptionInternalLink
     } = this.props
-
-    const { playlistId, allowReordering } = this.state
+    const { allowReordering } = this.state
+    const { playlistId } = this.props
 
     const {
       title = '',
@@ -758,7 +764,8 @@ class CollectionPage extends Component<
       playlistId: metadata?.playlist_id,
       userName: user?.name,
       userHandle: user?.handle,
-      isAlbum: metadata?.is_album
+      isAlbum: metadata?.is_album,
+      permalink: metadata?.permalink
     })
 
     const childProps = {
@@ -850,6 +857,7 @@ function makeMapStateToProps() {
       status: getCollectionStatus(state) || '',
       order: getLineupOrder(state),
       userId: getUserId(state),
+      playlistId: (getCollection(state) as Collection)?.playlist_id,
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),

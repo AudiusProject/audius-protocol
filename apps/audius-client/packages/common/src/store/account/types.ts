@@ -8,6 +8,7 @@ export type AccountCollection = {
   name: string
   is_album: boolean
   user: { id: ID; handle: string }
+  permalink: string
 }
 
 type AccountPayload<Profile> = {

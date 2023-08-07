@@ -47,7 +47,7 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
-import { TRENDING_PAGE, albumPage, playlistPage } from 'utils/route'
+import { TRENDING_PAGE, collectionPage } from 'utils/route'
 
 import { formatCardSecondaryText } from '../utils'
 
@@ -218,7 +218,15 @@ const AlbumCard = ({ albumId }: AlbumCardProps) => {
 
   const handleClick = useCallback(() => {
     if (album && ownerHandle) {
-      goToRoute(albumPage(ownerHandle, album.playlist_name, album.playlist_id))
+      goToRoute(
+        collectionPage(
+          ownerHandle,
+          album.playlist_name,
+          album.playlist_id,
+          album.permalink,
+          true
+        )
+      )
     }
   }, [album, ownerHandle, goToRoute])
 
@@ -355,10 +363,12 @@ const PlaylistCardLineup = ({
         )}
         onClick={() => {
           goToRoute(
-            playlistPage(
+            collectionPage(
               playlist.ownerHandle,
               playlist.playlist_name,
-              playlist.playlist_id
+              playlist.playlist_id,
+              playlist.permalink,
+              playlist.is_album
             )
           )
           updatePlaylistLastViewedAt(playlist.playlist_id)

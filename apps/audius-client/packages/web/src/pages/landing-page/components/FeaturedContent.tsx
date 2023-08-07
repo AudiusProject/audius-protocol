@@ -23,7 +23,7 @@ import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { playlistPage } from 'utils/route'
+import { collectionPage } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
 
@@ -197,10 +197,12 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                       storageNodeSelector
                     )}
                     onClick={handleClickRoute(
-                      playlistPage(
+                      collectionPage(
                         p.user.handle,
                         p.playlist_name,
-                        p.playlist_id
+                        p.playlist_id,
+                        p.permalink,
+                        p.is_album
                       ),
                       props.setRenderPublicSite
                     )}
@@ -251,10 +253,12 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                       storageNodeSelector
                     )}
                     onClick={handleClickRoute(
-                      playlistPage(
+                      collectionPage(
                         p.user.handle,
                         p.playlist_name,
-                        p.playlist_id
+                        p.playlist_id,
+                        p.permalink,
+                        p.is_album
                       ),
                       props.setRenderPublicSite
                     )}

@@ -1,7 +1,13 @@
 import { ID, decodeHashId } from '@audius/common'
 import { matchPath } from 'react-router-dom'
 
-import { PLAYLIST_PAGE, ALBUM_PAGE, PLAYLIST_ID_PAGE } from 'utils/route'
+import {
+  PLAYLIST_PAGE,
+  ALBUM_PAGE,
+  PLAYLIST_ID_PAGE,
+  PLAYLIST_BY_PERMALINK_PAGE,
+  ALBUM_BY_PERMALINK_PAGE
+} from 'utils/route'
 
 type CollectionRouteParams =
   | {
@@ -32,7 +38,51 @@ type CollectionRouteParams =
  * If the route is a hash id route, title, handle, and type are not returned
  * @param route
  */
-export const parseCollectionRoute = (route: string): CollectionRouteParams => {
+export const parseCollectionRoute = (
+  route: string,
+  playlistByPermalinkEnabled?: boolean
+): CollectionRouteParams => {
+  if (playlistByPermalinkEnabled) {
+    const playlistByPermalinkMatch = matchPath<{
+      handle: string
+      slug: string
+    }>(route, {
+      path: PLAYLIST_BY_PERMALINK_PAGE,
+      exact: true
+    })
+
+    if (playlistByPermalinkMatch) {
+      const { handle, slug } = playlistByPermalinkMatch.params
+      const permalink = `/${handle}/playlist/${slug}`
+      return {
+        title: null,
+        collectionId: null,
+        permalink,
+        handle: null,
+        collectionType: 'playlist'
+      }
+    }
+    const albumByPermalinkMatch = matchPath<{
+      handle: string
+      slug: string
+    }>(route, {
+      path: ALBUM_BY_PERMALINK_PAGE,
+      exact: true
+    })
+
+    if (albumByPermalinkMatch) {
+      const { handle, slug } = albumByPermalinkMatch.params
+      const permalink = `/${handle}/album/${slug}`
+      return {
+        title: null,
+        collectionId: null,
+        permalink,
+        handle: null,
+        collectionType: 'album'
+      }
+    }
+  }
+
   const collectionIdPageMatch = matchPath<{ id: string }>(route, {
     path: PLAYLIST_ID_PAGE,
     exact: true
@@ -42,26 +92,6 @@ export const parseCollectionRoute = (route: string): CollectionRouteParams => {
     if (collectionId === null) return null
     return { collectionId, handle: null, collectionType: null, title: null }
   }
-
-  // const playlistByPermalinkMatch = matchPath<{
-  //   handle: string
-  //   slug: string
-  // }>(route, {
-  //   path: PLAYLIST_BY_PERMALINK_PAGE,
-  //   exact: true
-  // })
-  // if (playlistByPermalinkMatch) {
-  //   const { handle, slug } = playlistByPermalinkMatch.params
-  //   const permalink = `${handle}/playlist/${slug}`
-  //   console.log('matched to permalink route')
-  //   return {
-  //     title: null,
-  //     collectionId: null,
-  //     permalink,
-  //     handle: null,
-  //     collectionType: 'playlist'
-  //   }
-  // }
 
   const playlistPageMatch = matchPath<{
     handle: string

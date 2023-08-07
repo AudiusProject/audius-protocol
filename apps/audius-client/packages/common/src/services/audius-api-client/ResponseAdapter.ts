@@ -370,7 +370,6 @@ export const makePlaylist = (
     track_count,
     total_play_count,
     playlist_contents: playlistContents,
-    permalink: 'response-adapter-permalink',
 
     // Fields to prune
     id: undefined,
