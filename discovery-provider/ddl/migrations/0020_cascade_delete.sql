@@ -2,6 +2,7 @@
 -- use a fkey constraint that cascades delete
 -- delete is_current false
 begin;
+
 CREATE OR REPLACE FUNCTION drop_fk_constraints(_ref_table_name text)
 RETURNS VOID AS
 $$
@@ -24,7 +25,7 @@ SELECT drop_fk_constraints('blocks');
 
 
 
-CREATE OR REPLACE FUNCTION add_fk_constraints_and_delete_rows(_ref_table_name text, _ref_column_name text, _table_names text[])
+CREATE OR REPLACE FUNCTION add_fk_constraints_and_delete_rows(_table_names text[])
 RETURNS VOID AS
 $$
 DECLARE
@@ -32,18 +33,56 @@ DECLARE
 BEGIN
    FOREACH _table_name IN ARRAY _table_names
    LOOP
-      EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s) ON DELETE CASCADE', 
-                     quote_ident(_table_name), 
-                     quote_ident(_table_name || '_' || _ref_column_name || '_fkey'),
-                     quote_ident(_ref_column_name),
-                     quote_ident(_ref_table_name),
-                     quote_ident(_ref_column_name));
+      -- Logging the deletion
+      RAISE NOTICE 'Deleting rows from table % where is_current is false', _table_name;
 
       EXECUTE format('DELETE FROM %s WHERE is_current = false', 
                      quote_ident(_table_name));
+      -- Logging the action
+      RAISE NOTICE 'Adding foreign key constraint to table %', _table_name;
+      
+      EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (blocknumber) REFERENCES blocks (number) ON DELETE CASCADE', 
+                     quote_ident(_table_name), 
+                     quote_ident(_table_name || '_blocknumber_fkey'));
+                     
    END LOOP;
 END
 $$ LANGUAGE plpgsql;
 
-SELECT add_fk_constraints_and_delete_rows('blocks', 'blocknumber', ARRAY['app_delegates', 'delegations', 'developer_apps', 'grants', 'users', 'tracks', 'playlists', 'follows', 'saves', 'reposts', 'subscriptions', 'track_price_history']);
+SELECT add_fk_constraints_and_delete_rows(ARRAY[
+    'associated_wallets', 
+    'developer_apps', 
+    'follows', 
+    'grants', 
+    'playlist_routes', 
+    'playlists', 
+    'playlist_seen', 
+    'reposts', 
+    'saves', 
+    'subscriptions', 
+    'track_routes', 
+    'tracks', 
+    'user_events', 
+    'users'
+]
+);
 
+SELECT * FROM get_primary_keys(ARRAY[
+    'associated_wallets', 
+    'developer_apps', 
+    'follows', 
+    'grants', 
+    'playlist_routes', 
+    'playlists', 
+    'playlist_seen', 
+    'reposts', 
+    'saves', 
+    'subscriptions', 
+    'track_routes', 
+    'tracks', 
+    'user_events', 
+    'users'
+]);
+
+
+commit;
