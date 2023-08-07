@@ -171,6 +171,7 @@ func (m *mediorumClient) processSegments(storagePathChan <-chan string) error {
 
 func (m *mediorumClient) deleteBatch(batch []string) error {
 	for _, path := range batch {
+		time.Sleep(time.Millisecond * 2) // be kind to i/o
 		if _, err := os.Stat(path); err == nil {
 			if m.delete {
 				if err := os.Remove(path); err != nil {
