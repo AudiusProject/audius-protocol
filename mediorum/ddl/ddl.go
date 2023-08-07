@@ -33,7 +33,7 @@ var mediorumMigrationTable = `
 
 func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
-	runMigration(db, cidLookupDDL)
+	runMigration(db, cidLookupDDL) // TODO: Remove after every node migrates Qm CIDs to CDK (i.e., when /internal/qm/unmigrated/count/Qm is 0 for every node)
 	runMigration(db, delistStatusesDDL)
 
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
