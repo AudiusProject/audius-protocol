@@ -10,6 +10,7 @@ import (
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -138,7 +139,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}()
 
 	req := signature.SignedPost(
-		peer+"/internal/blobs?cid="+fileName,
+		peer+"/internal/blobs",
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey,
@@ -165,7 +166,7 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: time.Second,
 	}
-	u := apiPath(host, "internal/blobs/info", key)
+	u := apiPath(host, fmt.Sprintf("internal/blobs/%s/info", url.PathEscape(key)))
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false
@@ -186,7 +187,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	u := apiPath(host, "internal/blobs", cid)
+	u := apiPath(host, "internal/blobs", url.PathEscape(cid))
 
 	req, err := signature.SignedGet(u, ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {

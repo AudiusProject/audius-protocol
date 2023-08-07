@@ -5,6 +5,7 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
+from integration_tests.utils import populate_mock_db_blocks
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.utils.db_session import get_db
@@ -74,6 +75,7 @@ def test_skip_tx(app, mocker):
         AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
+    populate_mock_db_blocks(db, 0, 1)
 
     "Tests valid batch of tracks create/update/delete actions"
     with db.scoped_session() as session:

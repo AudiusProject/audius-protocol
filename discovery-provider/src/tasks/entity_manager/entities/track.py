@@ -145,7 +145,7 @@ def update_track_price_history(
 
 @helpers.time_method
 def update_track_routes_table(
-    session, track_record, track_metadata, pending_track_routes
+    params, track_record, track_metadata, pending_track_routes
 ):
     """Creates the route for the given track"""
 
@@ -162,25 +162,9 @@ def update_track_routes_table(
 
     # Find the current route for the track
     # Check the pending track route updates first
-    prev_track_route_record = next(
-        (
-            route
-            for route in pending_track_routes
-            if route.is_current and route.track_id == track_record.track_id
-        ),
-        None,
+    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE].get(
+        track_record.track_id
     )
-
-    # Then query the DB if necessary
-    if prev_track_route_record is None:
-        prev_track_route_record = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.track_id == track_record.track_id,
-                TrackRoute.is_current == True,
-            )  # noqa: E712
-            .one_or_none()
-        )
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
@@ -190,7 +174,7 @@ def update_track_routes_table(
         prev_track_route_record.is_current = False
 
     new_track_slug, new_collision_id = generate_slug_and_collision_id(
-        session,
+        params.session,
         TrackRoute,
         track_record.track_id,
         track_metadata["title"],
@@ -211,7 +195,7 @@ def update_track_routes_table(
     new_track_route.blockhash = track_record.blockhash
     new_track_route.blocknumber = track_record.blocknumber
     new_track_route.txhash = track_record.txhash
-    session.add(new_track_route)
+    params.add_record(track_record.track_id, new_track_route, EntityType.TRACK_ROUTE)
 
     # Add to pending track routes so we don't add the same route twice
     pending_track_routes.append(new_track_route)
@@ -388,7 +372,7 @@ def create_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, track_record, params.metadata, params.pending_track_routes
+        params, track_record, params.metadata, params.pending_track_routes
     )
 
     update_track_record(params, track_record, params.metadata, handle)
@@ -406,7 +390,7 @@ def create_track(params: ManageEntityParameters):
         params.challenge_bus, params.block_number, track_record
     )
 
-    params.add_track_record(track_id, track_record)
+    params.add_record(track_id, track_record)
 
 
 def update_track(params: ManageEntityParameters):
@@ -429,7 +413,7 @@ def update_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, track_record, params.metadata, params.pending_track_routes
+        params, track_record, params.metadata, params.pending_track_routes
     )
     update_track_price_history(
         params.session,
@@ -441,7 +425,7 @@ def update_track(params: ManageEntityParameters):
     update_track_record(params, track_record, params.metadata, handle)
     update_remixes_table(params.session, track_record, params.metadata)
 
-    params.add_track_record(track_id, track_record)
+    params.add_record(track_id, track_record)
 
 
 def delete_track(params: ManageEntityParameters):
@@ -465,4 +449,7 @@ def delete_track(params: ManageEntityParameters):
     deleted_track.remix_of = null()
     deleted_track.premium_conditions = null()
 
-    params.add_track_record(track_id, deleted_track)
+    # delete stems record
+    params.session.query(Stem).filter_by(child_track_id=track_id).delete()
+
+    params.add_record(track_id, deleted_track)

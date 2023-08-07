@@ -231,4 +231,4 @@ def update_user_replica_set(params: ManageEntityParameters):
     )
     updated_user.creator_node_endpoint = creator_node_endpoint_str
 
-    params.add_user_record(user_id, updated_user)
+    params.add_record(user_id, updated_user, record_type=EntityType.USER)

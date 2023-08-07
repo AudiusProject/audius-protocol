@@ -17,6 +17,7 @@ from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.users.audio_transactions_history import (
     AudioTransactionsHistory,
@@ -724,8 +725,11 @@ def get_sol_tx_info(
     solana_client_manager: SolanaClientManager,
     tx_sig: str,
 ):
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-    return (tx_info, tx_sig)
+    try:
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        return (tx_info, tx_sig)
+    except SolanaTransactionFetchError:
+        return None
 
 
 def process_user_bank_txs() -> None:
@@ -852,7 +856,10 @@ def process_user_bank_txs() -> None:
                 }
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
-                        tx_infos.append(future.result())
+                        tx_info = future.result()
+                        if not tx_info:
+                            continue
+                        tx_infos.append(tx_info)
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
                         raise

@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log"
+	"mediorum/cidutil"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
@@ -86,7 +87,6 @@ type MediorumServer struct {
 	storagePathSize uint64
 	databaseSize    uint64
 	isSeeding       bool
-	isSeedingLegacy bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -230,7 +230,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
-		isSeedingLegacy: config.Env == "stage" || config.Env == "prod",
 
 		peerHealth: map[string]time.Time{},
 
@@ -251,7 +250,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
-	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
@@ -282,19 +280,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal
 	internalApi := routes.Group("/internal")
 
-	// TODO: remove after all nodes upgrade to v0.3.98
-	routes.GET("/status", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	// responds to polling requests in peer_health
-	// should do no real work
-	internalApi.GET("/ok", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	internalApi.GET("/beam/files", ss.servePgBeam)
-
 	internalApi.GET("/cuckoo", ss.serveCuckoo)
 	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
 	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
@@ -303,16 +288,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// old info routes (but we need them because some migrated ":cid" keys are really like "Qm.../150x150.jpg" which would mess up the path param)
+	// TODO: Remove these 2 old info routes
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
 
 	// new info routes
-	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)
-	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
+	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
 	// internal: blobs between peers
-	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
@@ -350,8 +335,6 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startRepairer()
 
 		ss.crud.StartClients()
-
-		go ss.startCidBeamClient()
 
 		go ss.startPollingDelistStatuses()
 

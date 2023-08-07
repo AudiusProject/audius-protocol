@@ -4,7 +4,7 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
-from integration_tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.models.grants.grant import Grant
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
@@ -101,6 +101,7 @@ def test_index_grant(app, mocker):
         ],
     }
     populate_mock_db(db, entities)
+    populate_mock_db_blocks(db, 5, 10)
 
     with db.scoped_session() as session:
         # index transactions
@@ -108,7 +109,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=5,
             block_timestamp=1000000000,
             block_hash=hex(0),
         )
@@ -127,7 +128,7 @@ def test_index_grant(app, mocker):
             assert len(found_matches) == 1
             res = found_matches[0]
             assert res.is_current == True
-            assert res.blocknumber == 0
+            assert res.blocknumber == 5
 
     # Test invalid create grant txs
     tx_receipts = {
@@ -205,7 +206,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=6,
             block_timestamp=timestamp,
             block_hash=hex(0),
         )
@@ -274,7 +275,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=7,
             block_timestamp=timestamp,
             block_hash=hex(0),
         )
@@ -326,7 +327,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=8,
             block_timestamp=1000000000,
             block_hash=hex(0),
         )
@@ -349,7 +350,7 @@ def test_index_grant(app, mocker):
             assert res.is_current == True
             assert res.grantee_address == expected_grant["grantee_address"].lower()
             assert res.is_revoked == True
-            assert res.blocknumber == 0
+            assert res.blocknumber == 8
 
     # Duplicate delete - should fail
     tx_receipts = {
@@ -380,7 +381,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=9,
             block_timestamp=1000000000,
             block_hash=hex(0),
         )
@@ -419,7 +420,7 @@ def test_index_grant(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=10,
             block_timestamp=1000000000,
             block_hash=hex(0),
         )
@@ -441,4 +442,4 @@ def test_index_grant(app, mocker):
         assert res.is_current == True
         assert res.grantee_address == expected_grant["grantee_address"].lower()
         assert res.is_revoked == False
-        assert res.blocknumber == 0
+        assert res.blocknumber == 10

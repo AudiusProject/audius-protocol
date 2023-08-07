@@ -258,7 +258,7 @@ def create_developer_app(params: ManageEntityParameters):
     )
 
     validate_developer_app_record(developer_app_record)
-    params.add_developer_app_record(address, developer_app_record)
+    params.add_record(address, developer_app_record)
     return developer_app_record
 
 
@@ -284,7 +284,7 @@ def delete_developer_app(params: ManageEntityParameters):
     revoked_developer_app.is_delete = True
 
     validate_developer_app_record(revoked_developer_app)
-    params.add_developer_app_record(address, revoked_developer_app)
+    params.add_record(address, revoked_developer_app)
     return revoked_developer_app
 
 

@@ -157,7 +157,7 @@ def test_index_playlist_view(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=3,
+            block_number=1,
             block_timestamp=timestamp,
             block_hash=hex(0),
         )
@@ -168,5 +168,5 @@ def test_index_playlist_view(app, mocker):
         prev_playlist_seen[0].is_current == False
         prev_playlist_seen[0].user_id == 1
         prev_playlist_seen[0].playlist_id == 1
-        prev_playlist_seen[0].blocknumber == 0
+        prev_playlist_seen[0].blocknumber == 1
         prev_playlist_seen[0].seen_at == timestamp

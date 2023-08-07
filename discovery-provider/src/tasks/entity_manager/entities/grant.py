@@ -165,7 +165,7 @@ def create_grant(params: ManageEntityParameters):
     )
 
     validate_grant_record(grant_record)
-    params.add_grant_record(grant_key, grant_record)
+    params.add_record(grant_key, grant_record)
     return grant_record
 
 
@@ -191,5 +191,5 @@ def revoke_grant(params: ManageEntityParameters):
     revoked_grant.is_revoked = True
 
     validate_grant_record(revoked_grant)
-    params.add_grant_record(grant_key, revoked_grant)
+    params.add_record(grant_key, revoked_grant)
     return revoked_grant

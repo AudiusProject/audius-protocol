@@ -83,6 +83,12 @@ class EntityType(str, Enum):
     PLAYLIST_SEEN = "PlaylistSeen"
     DEVELOPER_APP = "DeveloperApp"
     GRANT = "Grant"
+    ASSOCIATED_WALLET = "AssociatedWallet"
+    USER_EVENT = "UserEvent"
+    STEM = "Stem"
+    REMIX = "Remix"
+    TRACK_ROUTE = "TrackRoute"
+    PLAYLIST_ROUTE = "PlaylistRoute"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -128,6 +134,8 @@ class ExistingRecordDict(TypedDict):
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
     DeveloperApp: Dict[str, DeveloperApp]
     Grant: Dict[Tuple, Grant]
+    TrackRoute: Dict[int, TrackRoute]
+    PlaylistRoute: Dict[int, PlaylistRoute]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -141,12 +149,26 @@ class EntitiesToFetchDict(TypedDict):
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
     DeveloperApp: Set[str]
+    TrackRoute: Set[int]
+    PlaylistRoute: Set[int]
+    UserEvent: Set[int]
+    AssociatedWallet: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
 
 
 class ManageEntityParameters:
+    """
+    A set of parameters for processing a single transactions.
+
+    Most importantly,
+    event: the decoded transaction
+    new_records: compiles new records based on all transactions in this block
+    existing_records: a view of current records relevant to this block
+
+    """
+
     def __init__(
         self,
         session,
@@ -192,43 +214,21 @@ class ManageEntityParameters:
         self.existing_records = existing_records
         self.logger = logger  # passed in with EM context
 
-    def add_playlist_record(self, playlist_id: int, playlist: Playlist):
-        self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
-        self.existing_records[EntityType.PLAYLIST][playlist_id] = playlist  # type: ignore
-
-    def add_developer_app_record(self, address: str, developer_app: DeveloperApp):
-        self.new_records[EntityType.DEVELOPER_APP][address].append(developer_app)  # type: ignore
-        self.existing_records[EntityType.DEVELOPER_APP][address] = developer_app  # type: ignore
-
-    def add_grant_record(self, grant_key: Tuple[str, int], grant: Grant):
-        self.new_records[EntityType.GRANT][grant_key].append(grant)  # type: ignore
-        self.existing_records[EntityType.GRANT][grant_key] = grant  # type: ignore
-
-    def add_track_record(self, track_id: int, track: Track):
-        self.new_records[EntityType.TRACK][track_id].append(track)  # type: ignore
-        self.existing_records[EntityType.TRACK][track_id] = track  # type: ignore
-
-    def add_social_feature_record(
-        self,
-        user_id: int,
-        entity_type: EntityTypeLiteral,
-        entity_id: int,
-        record_type: EntityType,
-        record,
-    ):
-        key = get_record_key(user_id, entity_type, entity_id)
+    def add_record(self, key, record, record_type=None):
+        if not record_type:
+            record_type = self.entity_type
+        # add to new records to insert
         self.new_records[record_type][key].append(record)  # type: ignore
-        self.existing_records[record_type][key] = record  # type: ignore
 
-    def add_user_record(self, user_id: int, user: User):
-        self.new_records[EntityType.USER][user_id].append(user)  # type: ignore
-        self.existing_records[EntityType.USER][user_id] = user  # type: ignore
+        # overwrite the current version of this record
+        self.existing_records[record_type][key] = record  # type: ignore
 
     def add_notification_seen_record(
         self,
         key: Tuple[int, datetime],
         record: NotificationSeen,
     ):
+        # notification_seen does not have is_current
         if key not in self.new_records[EntityType.NOTIFICATION_SEEN]:  # type: ignore
             self.new_records[EntityType.NOTIFICATION_SEEN][key].append(record)  # type: ignore
         # If key exists, do nothing
@@ -413,6 +413,14 @@ def validate_signer(params: ManageEntityParameters):
                     f"Signer is not authorized to perform action for user {params.user_id}"
                 )
             params.logger.set_context("isApp", "true")
+            params.logger.set_context(
+                "appName",
+                params.existing_records["DeveloperApp"][signer].name,
+            )
+            params.logger.set_context(
+                "userHandle",
+                params.existing_records["User"][params.user_id].handle,
+            )
         else:
             raise IndexingValidationError(
                 f"Signer does not match user {params.user_id} or an authorized wallet"
