@@ -26,36 +26,34 @@ type healthCheckResponse struct {
 	Timestamp time.Time               `json:"timestamp"`
 }
 type healthCheckResponseData struct {
-	Healthy                   bool                       `json:"healthy"`
-	Version                   string                     `json:"version"`
-	Service                   string                     `json:"service"` // used by registerWithDelegate()
-	IsSeeding                 bool                       `json:"isSeeding"`
-	IsSeedingLegacy           bool                       `json:"isSeedingLegacy"`
-	BuiltAt                   string                     `json:"builtAt"`
-	StartedAt                 time.Time                  `json:"startedAt"`
-	SPID                      int                        `json:"spID"`
-	SPOwnerWallet             string                     `json:"spOwnerWallet"`
-	Git                       string                     `json:"git"`
-	AudiusDockerCompose       string                     `json:"audiusDockerCompose"`
-	StoragePathUsed           uint64                     `json:"storagePathUsed"` // bytes
-	StoragePathSize           uint64                     `json:"storagePathSize"` // bytes
-	DatabaseSize              uint64                     `json:"databaseSize"`    // bytes
-	AutoUpgradeEnabled        bool                       `json:"autoUpgradeEnabled"`
-	SelectedDiscoveryProvider string                     `json:"selectedDiscoveryProvider"`
-	TrustedNotifier           *ethcontracts.NotifierInfo `json:"trustedNotifier"`
-	Env                       string                     `json:"env"`
-	Self                      Peer                       `json:"self"`
-	WalletIsRegistered        bool                       `json:"wallet_is_registered"`
-	Signers                   []Peer                     `json:"signers"`
-	ReplicationFactor         int                        `json:"replicationFactor"`
-	Dir                       string                     `json:"dir"`
-	BlobStorePrefix           string                     `json:"blobStorePrefix"`
-	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
-	ListenPort                string                     `json:"listenPort"`
-	TrustedNotifierID         int                        `json:"trustedNotifierId"`
-	CidCursors                []cidCursor                `json:"cidCursors"`
-	PeerHealths               map[string]time.Time       `json:"peerHealths"`
-	StoreAll                  bool                       `json:"storeAll"`
+	Healthy                 bool                       `json:"healthy"`
+	Version                 string                     `json:"version"`
+	Service                 string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding               bool                       `json:"isSeeding"`
+	BuiltAt                 string                     `json:"builtAt"`
+	StartedAt               time.Time                  `json:"startedAt"`
+	SPID                    int                        `json:"spID"`
+	SPOwnerWallet           string                     `json:"spOwnerWallet"`
+	Git                     string                     `json:"git"`
+	AudiusDockerCompose     string                     `json:"audiusDockerCompose"`
+	StoragePathUsed         uint64                     `json:"storagePathUsed"` // bytes
+	StoragePathSize         uint64                     `json:"storagePathSize"` // bytes
+	DatabaseSize            uint64                     `json:"databaseSize"`    // bytes
+	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
+	TrustedNotifier         *ethcontracts.NotifierInfo `json:"trustedNotifier"`
+	Env                     string                     `json:"env"`
+	Self                    Peer                       `json:"self"`
+	WalletIsRegistered      bool                       `json:"wallet_is_registered"`
+	Signers                 []Peer                     `json:"signers"`
+	ReplicationFactor       int                        `json:"replicationFactor"`
+	Dir                     string                     `json:"dir"`
+	BlobStorePrefix         string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix string                     `json:"moveFromBlobStorePrefix"`
+	ListenPort              string                     `json:"listenPort"`
+	TrustedNotifierID       int                        `json:"trustedNotifierId"`
+	CidCursors              []cidCursor                `json:"cidCursors"`
+	PeerHealths             map[string]time.Time       `json:"peerHealths"`
+	StoreAll                bool                       `json:"storeAll"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -67,7 +65,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	}
 
 	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-	if ss.Config.WalletIsRegistered && (ss.isSeeding || ss.isSeedingLegacy) {
+	if ss.Config.WalletIsRegistered && ss.isSeeding {
 		healthy = false
 	}
 
@@ -86,36 +84,34 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	defer ss.peerHealthMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                   healthy,
-		Version:                   ss.Config.VersionJson.Version,
-		Service:                   ss.Config.VersionJson.Service,
-		IsSeeding:                 ss.isSeeding,
-		IsSeedingLegacy:           ss.isSeedingLegacy,
-		BuiltAt:                   vcsBuildTime,
-		StartedAt:                 ss.StartedAt,
-		SelectedDiscoveryProvider: "<none - v2 only>",
-		SPID:                      ss.Config.SPID,
-		SPOwnerWallet:             ss.Config.SPOwnerWallet,
-		Git:                       ss.Config.GitSHA,
-		AudiusDockerCompose:       ss.Config.AudiusDockerCompose,
-		StoragePathUsed:           ss.storagePathUsed,
-		StoragePathSize:           ss.storagePathSize,
-		DatabaseSize:              ss.databaseSize,
-		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
-		TrustedNotifier:           ss.trustedNotifier,
-		Dir:                       ss.Config.Dir,
-		BlobStorePrefix:           blobStorePrefix,
-		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
-		ListenPort:                ss.Config.ListenPort,
-		ReplicationFactor:         ss.Config.ReplicationFactor,
-		Env:                       ss.Config.Env,
-		Self:                      ss.Config.Self,
-		WalletIsRegistered:        ss.Config.WalletIsRegistered,
-		TrustedNotifierID:         ss.Config.TrustedNotifierID,
-		CidCursors:                ss.cachedCidCursors,
-		PeerHealths:               ss.peerHealth,
-		Signers:                   ss.Config.Signers,
-		StoreAll:                  ss.Config.StoreAll,
+		Healthy:                 healthy,
+		Version:                 ss.Config.VersionJson.Version,
+		Service:                 ss.Config.VersionJson.Service,
+		IsSeeding:               ss.isSeeding,
+		BuiltAt:                 vcsBuildTime,
+		StartedAt:               ss.StartedAt,
+		SPID:                    ss.Config.SPID,
+		SPOwnerWallet:           ss.Config.SPOwnerWallet,
+		Git:                     ss.Config.GitSHA,
+		AudiusDockerCompose:     ss.Config.AudiusDockerCompose,
+		StoragePathUsed:         ss.storagePathUsed,
+		StoragePathSize:         ss.storagePathSize,
+		DatabaseSize:            ss.databaseSize,
+		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,
+		TrustedNotifier:         ss.trustedNotifier,
+		Dir:                     ss.Config.Dir,
+		BlobStorePrefix:         blobStorePrefix,
+		MoveFromBlobStorePrefix: blobStoreMoveFromPrefix,
+		ListenPort:              ss.Config.ListenPort,
+		ReplicationFactor:       ss.Config.ReplicationFactor,
+		Env:                     ss.Config.Env,
+		Self:                    ss.Config.Self,
+		WalletIsRegistered:      ss.Config.WalletIsRegistered,
+		TrustedNotifierID:       ss.Config.TrustedNotifierID,
+		CidCursors:              ss.cachedCidCursors,
+		PeerHealths:             ss.peerHealth,
+		Signers:                 ss.Config.Signers,
+		StoreAll:                ss.Config.StoreAll,
 	}
 
 	dataBytes, err := json.Marshal(data)
@@ -163,9 +159,6 @@ func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc
 		}
 		if ss.isSeeding {
 			return c.JSON(503, "seeding")
-		}
-		if ss.isSeedingLegacy {
-			return c.JSON(503, "seeding legacy")
 		}
 
 		return next(c)
