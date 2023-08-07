@@ -1,8 +1,7 @@
-from typing import Optional, TypedDict, cast
+from typing import Optional, Type, TypedDict, cast
 
 from sqlalchemy import asc, desc, func, or_, text
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.sql.functions import coalesce
 
@@ -137,8 +136,12 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         .distinct(TrackWithAggregates.track_id)
         .order_by(TrackWithAggregates.track_id)
     ).subquery()
-    TrackWithAggregatesAlias = aliased(TrackWithAggregates, subquery)
-    TracksTable: AliasedClass | type[TrackWithAggregates] = TrackWithAggregatesAlias
+
+    # Alias needs a type hint
+    TrackWithAggregatesAlias = cast(
+        Type[TrackWithAggregates], aliased(TrackWithAggregates, subquery)
+    )
+
     all_base = session.query(
         TrackWithAggregatesAlias,
         subquery.c.item_created_at.label("item_created_at"),
@@ -155,7 +158,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     # Depending on whether this is 'all' or not,
     # subsequent query building either needs to reference TrackWithAggregates or the aliased TrackWithAggregatesAlias
     # to avoid accidental join.
-    TracksTable = (
+    TracksTable: Type[TrackWithAggregates] = (
         TrackWithAggregatesAlias
         if filter_type == LibraryFilterType.all
         else TrackWithAggregates
@@ -214,22 +217,22 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         if filter_type == LibraryFilterType.favorite:
             base_query = base_query.order_by(
                 sort_fn(Save.created_at),
-                desc(cast(ColumnElement, TracksTable.track_id)),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.repost:
             base_query = base_query.order_by(
                 sort_fn(Repost.created_at),
-                desc(cast(ColumnElement, TracksTable.track_id)),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.purchase:
             base_query = base_query.order_by(
                 sort_fn(USDCPurchase.created_at),
-                desc(cast(ColumnElement, TracksTable.track_id)),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.all:
             base_query = base_query.order_by(
                 sort_fn(cast(ColumnElement, text("item_created_at"))),
-                desc(cast(ColumnElement, TracksTable.track_id)),
+                desc(TracksTable.track_id),
             )
 
     query_results = add_query_pagination(base_query, limit, offset).all()

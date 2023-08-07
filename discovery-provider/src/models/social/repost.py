@@ -9,6 +9,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     text,
 )
 from sqlalchemy.orm import relationship
@@ -30,8 +31,10 @@ class Repost(Base, RepresentableMixin):
         Index("repost_user_id_idx", "user_id", "repost_type"),
     )
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(
+        Integer, ForeignKey("blocks.number"), index=True, nullable=False
+    )
     user_id = Column(Integer, primary_key=True, nullable=False)
     repost_item_id = Column(Integer, primary_key=True, nullable=False)
     repost_type = Column(

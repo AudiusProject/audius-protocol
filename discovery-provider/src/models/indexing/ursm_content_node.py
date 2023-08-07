@@ -6,6 +6,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     text,
 )
 from sqlalchemy.orm import relationship
@@ -17,8 +18,8 @@ from src.models.model_utils import RepresentableMixin
 class UrsmContentNode(Base, RepresentableMixin):
     __tablename__ = "ursm_content_nodes"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"))  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     created_at = Column(DateTime, nullable=False)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     cnode_sp_id = Column(Integer, primary_key=True, nullable=False)

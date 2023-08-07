@@ -228,7 +228,7 @@ def is_block_on_chain(web3: Web3, block: Block):
     Determines if the provided block is valid on chain by fetching its hash.
     """
     try:
-        block_from_chain = web3.eth.get_block(cast(HexStr, block.blockhash))
+        block_from_chain = web3.eth.get_block(HexStr(block.blockhash))
         return block_from_chain
     except BlockNotFound:
         return False
@@ -244,9 +244,8 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
         next_block = web3.eth.get_block(next_block_number)
-        next_block_mut = dict(next_block)
-        next_block_mut["number"] = next_block_mut["number"] + final_poa_block
-        return cast(BlockData, next_block_mut)
+        next_block["number"] = next_block["number"] + final_poa_block
+        return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
         # Return early because we've likely indexed up to the head of the chain

@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict, Union
+from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
 
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
@@ -88,6 +88,20 @@ class EntityType(str, Enum):
         return str.__str__(self)
 
 
+EntityTypeLiteral = Literal[
+    "Playlist",
+    "Track",
+    "User",
+    "Follow",
+    "Save",
+    "Repost",
+    "Subscription",
+    "PlaylistSeen",
+    "DeveloperApp",
+    "Grant",
+]
+
+
 class RecordDict(TypedDict):
     Playlist: Dict[int, List[Playlist]]
     Track: Dict[int, List[Track]]
@@ -153,7 +167,7 @@ class ManageEntityParameters:
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
-        self.entity_type = helpers.get_tx_arg(event, "_entityType")
+        self.entity_type: EntityTypeLiteral = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
         self.signer = helpers.get_tx_arg(event, "_signer")
         self.block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -197,7 +211,7 @@ class ManageEntityParameters:
     def add_social_feature_record(
         self,
         user_id: int,
-        entity_type: EntityType,
+        entity_type: EntityTypeLiteral,
         entity_id: int,
         record_type: EntityType,
         record,

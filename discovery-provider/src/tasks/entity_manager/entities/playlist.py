@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import cast
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -86,8 +85,8 @@ def update_playlist_routes_table(
     new_playlist_route.owner_id = playlist_record.playlist_owner_id
     new_playlist_route.playlist_id = playlist_record.playlist_id
     new_playlist_route.is_current = True
-    new_playlist_route.blockhash = cast(str, playlist_record.blockhash)
-    new_playlist_route.blocknumber = cast(int, playlist_record.blocknumber)
+    new_playlist_route.blockhash = playlist_record.blockhash
+    new_playlist_route.blocknumber = playlist_record.blocknumber
     new_playlist_route.txhash = playlist_record.txhash
     session.add(new_playlist_route)
 
@@ -107,8 +106,8 @@ def update_playlist_routes_table(
         migration_playlist_route.owner_id = playlist_record.playlist_owner_id
         migration_playlist_route.playlist_id = playlist_record.playlist_id
         migration_playlist_route.is_current = False
-        migration_playlist_route.blockhash = cast(str, playlist_record.blockhash)
-        migration_playlist_route.blocknumber = cast(int, playlist_record.blocknumber)
+        migration_playlist_route.blockhash = playlist_record.blockhash
+        migration_playlist_route.blocknumber = playlist_record.blocknumber
         migration_playlist_route.txhash = playlist_record.txhash
         session.add(migration_playlist_route)
 
