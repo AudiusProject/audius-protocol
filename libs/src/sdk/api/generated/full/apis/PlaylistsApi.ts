@@ -84,21 +84,21 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /** @hidden
      * Get a playlist by ID
      */
-    async getPlaylistRaw(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylist.');
+    async getPlaylistRaw(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
+        if (params.playlistId === null || params.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter params.playlistId was null or undefined when calling getPlaylist.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/{playlist_id}`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            path: `/playlists/{playlist_id}`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(params.playlistId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -110,33 +110,33 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by ID
      */
-    async getPlaylist(requestParameters: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
-        const response = await this.getPlaylistRaw(requestParameters, initOverrides);
+    async getPlaylist(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
+        const response = await this.getPlaylistRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get a playlist by handle and slug
      */
-    async getPlaylistByHandleAndSlugRaw(requestParameters: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
-        if (requestParameters.handle === null || requestParameters.handle === undefined) {
-            throw new runtime.RequiredError('handle','Required parameter requestParameters.handle was null or undefined when calling getPlaylistByHandleAndSlug.');
+    async getPlaylistByHandleAndSlugRaw(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getPlaylistByHandleAndSlug.');
         }
 
-        if (requestParameters.slug === null || requestParameters.slug === undefined) {
-            throw new runtime.RequiredError('slug','Required parameter requestParameters.slug was null or undefined when calling getPlaylistByHandleAndSlug.');
+        if (params.slug === null || params.slug === undefined) {
+            throw new runtime.RequiredError('slug','Required parameter params.slug was null or undefined when calling getPlaylistByHandleAndSlug.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/by_permalink/{handle}/{slug}`.replace(`{${"handle"}}`, encodeURIComponent(String(requestParameters.handle))).replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters.slug))),
+            path: `/playlists/by_permalink/{handle}/{slug}`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))).replace(`{${"slug"}}`, encodeURIComponent(String(params.slug))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -148,17 +148,17 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get a playlist by handle and slug
      */
-    async getPlaylistByHandleAndSlug(requestParameters: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
-        const response = await this.getPlaylistByHandleAndSlugRaw(requestParameters, initOverrides);
+    async getPlaylistByHandleAndSlug(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistResponse> {
+        const response = await this.getPlaylistByHandleAndSlugRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Fetch tracks within a playlist.
      */
-    async getPlaylistTracksRaw(requestParameters: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistTracksResponse>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getPlaylistTracks.');
+    async getPlaylistTracksRaw(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistTracksResponse>> {
+        if (params.playlistId === null || params.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter params.playlistId was null or undefined when calling getPlaylistTracks.');
         }
 
         const queryParameters: any = {};
@@ -166,7 +166,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/{playlist_id}/tracks`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            path: `/playlists/{playlist_id}/tracks`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(params.playlistId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -178,31 +178,31 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Fetch tracks within a playlist.
      */
-    async getPlaylistTracks(requestParameters: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistTracksResponse> {
-        const response = await this.getPlaylistTracksRaw(requestParameters, initOverrides);
+    async getPlaylistTracks(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullPlaylistTracksResponse> {
+        const response = await this.getPlaylistTracksRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Returns trending playlists for a time period
      */
-    async getTrendingPlaylistsRaw(requestParameters: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
+    async getTrendingPlaylistsRaw(params: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -220,41 +220,41 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Returns trending playlists for a time period
      */
-    async getTrendingPlaylists(requestParameters: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
-        const response = await this.getTrendingPlaylistsRaw(requestParameters, initOverrides);
+    async getTrendingPlaylists(params: GetTrendingPlaylistsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
+        const response = await this.getTrendingPlaylistsRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Returns trending playlists for a time period based on the given trending version
      */
-    async getTrendingPlaylistsWithVersionRaw(requestParameters: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
-        if (requestParameters.version === null || requestParameters.version === undefined) {
-            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getTrendingPlaylistsWithVersion.');
+    async getTrendingPlaylistsWithVersionRaw(params: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getTrendingPlaylistsWithVersion.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
-        if (requestParameters.time !== undefined) {
-            queryParameters['time'] = requestParameters.time;
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            path: `/playlists/trending/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -266,37 +266,37 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Returns trending playlists for a time period based on the given trending version
      */
-    async getTrendingPlaylistsWithVersion(requestParameters: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
-        const response = await this.getTrendingPlaylistsWithVersionRaw(requestParameters, initOverrides);
+    async getTrendingPlaylistsWithVersion(params: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTrendingPlaylistsResponse> {
+        const response = await this.getTrendingPlaylistsWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get users that favorited a playlist
      */
-    async getUsersFromPlaylistFavoritesRaw(requestParameters: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistFavorites.');
+    async getUsersFromPlaylistFavoritesRaw(params: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
+        if (params.playlistId === null || params.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter params.playlistId was null or undefined when calling getUsersFromPlaylistFavorites.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/{playlist_id}/favorites`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            path: `/playlists/{playlist_id}/favorites`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(params.playlistId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -308,37 +308,37 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get users that favorited a playlist
      */
-    async getUsersFromPlaylistFavorites(requestParameters: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
-        const response = await this.getUsersFromPlaylistFavoritesRaw(requestParameters, initOverrides);
+    async getUsersFromPlaylistFavorites(params: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
+        const response = await this.getUsersFromPlaylistFavoritesRaw(params, initOverrides);
         return await response.value();
     }
 
     /** @hidden
      * Get users that reposted a playlist
      */
-    async getUsersFromPlaylistRepostsRaw(requestParameters: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
-        if (requestParameters.playlistId === null || requestParameters.playlistId === undefined) {
-            throw new runtime.RequiredError('playlistId','Required parameter requestParameters.playlistId was null or undefined when calling getUsersFromPlaylistReposts.');
+    async getUsersFromPlaylistRepostsRaw(params: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
+        if (params.playlistId === null || params.playlistId === undefined) {
+            throw new runtime.RequiredError('playlistId','Required parameter params.playlistId was null or undefined when calling getUsersFromPlaylistReposts.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.offset !== undefined) {
-            queryParameters['offset'] = requestParameters.offset;
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
         }
 
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
         }
 
-        if (requestParameters.userId !== undefined) {
-            queryParameters['user_id'] = requestParameters.userId;
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/playlists/{playlist_id}/reposts`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(requestParameters.playlistId))),
+            path: `/playlists/{playlist_id}/reposts`.replace(`{${"playlist_id"}}`, encodeURIComponent(String(params.playlistId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -350,8 +350,8 @@ export class PlaylistsApi extends runtime.BaseAPI {
     /**
      * Get users that reposted a playlist
      */
-    async getUsersFromPlaylistReposts(requestParameters: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
-        const response = await this.getUsersFromPlaylistRepostsRaw(requestParameters, initOverrides);
+    async getUsersFromPlaylistReposts(params: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponse> {
+        const response = await this.getUsersFromPlaylistRepostsRaw(params, initOverrides);
         return await response.value();
     }
 

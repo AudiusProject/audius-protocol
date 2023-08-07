@@ -6,6 +6,7 @@ import type { AuthService } from '../Auth'
 import type {
   StorageNode,
   StorageNodeSelectorConfig,
+  StorageNodeSelectorConfigInternal,
   StorageNodeSelectorService
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
@@ -15,7 +16,7 @@ import type { LoggerService } from '../Logger'
 const DISCOVERY_RESPONSE_TIMEOUT = 15000
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
-  private readonly config: StorageNodeSelectorConfig
+  private readonly config: StorageNodeSelectorConfigInternal
   private readonly auth: AuthService
   private readonly logger: LoggerService
   private nodes: StorageNode[]

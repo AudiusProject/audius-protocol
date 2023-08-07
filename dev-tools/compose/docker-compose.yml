@@ -108,23 +108,6 @@ services:
       service: comms
     <<: *common
 
-  # Creator node (legacy)
-
-  # Only CI, which expects a service called `creator-node` (see .circleci/jobs/push-docker-image.yml)
-  creator-node:
-    extends:
-      file: docker-compose.creator.yml
-      service: creator-node
-    <<: *common
-    profiles:
-      - circle_ci_push
-
-  creator-node-container:
-    extends:
-      file: docker-compose.creator.yml
-      service: creator-node
-    <<: *common
-
   # Pedalboard (plugins)
   trending-challenge-rewards:
     extends:

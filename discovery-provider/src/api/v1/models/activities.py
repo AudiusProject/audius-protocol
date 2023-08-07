@@ -55,3 +55,15 @@ activity_model_full = ns.model(
         "item": FullActivityItem,
     },
 )
+
+track_activity_model_full = ns.clone(
+    "track_activity_full",
+    activity_model_full,
+    {"item": fields.Nested(track_full)},
+)
+
+collection_activity_model_full = ns.clone(
+    "collection_activity_full",
+    activity_model_full,
+    {"item": fields.Nested(full_playlist_model)},
+)

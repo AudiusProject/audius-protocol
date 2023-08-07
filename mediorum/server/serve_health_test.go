@@ -32,13 +32,12 @@ func TestHealthCheck(t *testing.T) {
 		Signers:           []Peer{{Host: "test2.com", Wallet: "0xtest2"}},
 		ReplicationFactor: 3,
 		Dir:               "/dir",
-		BlobStoreDSN:      "files:///temp/blobs",
+		BlobStorePrefix:   "file",
 		ListenPort:        "1991",
-		UpstreamCN:        "4001",
 		TrustedNotifierID: 1,
 	}
 
-	expected := `{"audiusDockerCompose":"123456","autoUpgradeEnabled":true,"blobStoreDSN":"files:///temp/blobs","builtAt":"","cidCursors":null,"databaseSize":99999,"dir":"/dir","env":"DEV","git":"123456","healthy":true,"isSeeding":false,"isSeedingLegacy":false,"isV2Only":false,"listenPort":"1991","peerHealths":null,"replicationFactor":3,"selectedDiscoveryProvider":"","self":{"host":"test1.com","wallet":"0xtest1"},"service":"content-node","signers":[{"host":"test2.com","wallet":"0xtest2"}],"spID":1,"spOwnerWallet":"0xtest1","startedAt":"2023-06-07T08:25:30Z","storagePathSize":999999999,"storagePathUsed":99999,"storeAll":false,"trustedNotifier":{"email":"dmca@notifier.com","endpoint":"http://notifier.com","wallet":"0xnotifier"},"trustedNotifierId":1,"upstreamCN":"4001","version":"1.0.0","wallet_is_registered":false}`
+	expected := `{"audiusDockerCompose":"123456","autoUpgradeEnabled":true,"blobStorePrefix":"file","builtAt":"","cidCursors":null,"databaseSize":99999,"dir":"/dir","env":"DEV","git":"123456","healthy":true,"isSeeding":false,"isSeedingLegacy":false,"listenPort":"1991","moveFromBlobStorePrefix":"","peerHealths":null,"replicationFactor":3,"selectedDiscoveryProvider":"","self":{"host":"test1.com","wallet":"0xtest1"},"service":"content-node","signers":[{"host":"test2.com","wallet":"0xtest2"}],"spID":1,"spOwnerWallet":"0xtest1","startedAt":"2023-06-07T08:25:30Z","storagePathSize":999999999,"storagePathUsed":99999,"storeAll":false,"trustedNotifier":{"email":"dmca@notifier.com","endpoint":"http://notifier.com","wallet":"0xnotifier"},"trustedNotifierId":1,"version":"1.0.0","wallet_is_registered":false}`
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		t.Error(err)

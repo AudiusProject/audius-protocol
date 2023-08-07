@@ -10,8 +10,14 @@ from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
-from src.queries.query_helpers import LibraryFilterType, SortDirection, SortMethod
+from src.queries.query_helpers import (
+    CollectionLibrarySortMethod,
+    LibraryFilterType,
+    SortDirection,
+    SortMethod,
+)
 from src.queries.reactions import ReactionResponse
+from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
 from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
@@ -499,6 +505,23 @@ class DescriptiveArgument(reqparse.Argument):
         return param
 
 
+# Helper to allow consumer to pass message and signature headers as request params
+def add_auth_headers_to_parser(parser):
+    parser.add_argument(
+        MESSAGE_HEADER,
+        required=True,
+        description="The data that was signed by the user for signature recovery",
+        location="headers",
+    )
+    parser.add_argument(
+        SIGNATURE_HEADER,
+        required=True,
+        description="The signature of data, used for signature recovery",
+        location="headers",
+    )
+    return parser
+
+
 current_user_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 current_user_parser.add_argument(
     "user_id", required=False, description="The user ID of the user making the request"
@@ -566,12 +589,22 @@ user_tracks_library_parser.remove_argument("current_user")
 user_tracks_library_parser.add_argument(
     "type",
     required=False,
-    description="The type of tracks to return: favorited, reposted, purchased, or all. Defaults to favorite",
+    description="The type of entity to return: favorited, reposted, purchased, or all. Defaults to favorite",
     type=str,
     choices=LibraryFilterType._member_names_,
     default=LibraryFilterType.favorite,
 )
+add_auth_headers_to_parser(user_tracks_library_parser)
 
+user_collections_library_parser = user_tracks_library_parser.copy()
+# Replace just the sort method args with the CollectionLibrarySortMethod version
+user_collections_library_parser.replace_argument(
+    "sort_method",
+    required=False,
+    description="The sort method",
+    type=str,
+    choices=CollectionLibrarySortMethod._member_names_,
+)
 user_track_listen_count_route_parser = reqparse.RequestParser(
     argument_class=DescriptiveArgument
 )

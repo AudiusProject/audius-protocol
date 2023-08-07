@@ -23,16 +23,31 @@ steps:
         generate-changelog() {
           service="$1"
           start_commit=$(git show-ref --hash "refs/tags/@audius/$service@$OLD_VERSION")
+          
+          # Determine the directory based on the service
+          case "$service" in
+            "creator-node")
+              directories="mediorum"
+              ;;
+            "discovery-provider")
+              directories="discovery-provider comms"
+              ;;
+            *)
+              directories="$service"
+              ;;
+          esac
+          
           printf "Full Changelog:\n"
-          git log --pretty='[%h] - %s' --abbrev-commit "$start_commit..HEAD" "$service"
+          git log --pretty='[%h] - %s' --abbrev-commit "$start_commit..HEAD" -- $directories
         }
+
 
         generate-changelog creator-node | tee /tmp/creator-node-changelog
         generate-changelog discovery-provider | tee /tmp/discovery-provider-changelog
   - run:
       name: Make github draft release
       command: |
-        CN_VERSION="$(jq -r .version creator-node/.version.json)"
+        CN_VERSION="$(jq -r .version mediorum/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
         gh release create -d --target "$CIRCLE_SHA1" -F /tmp/creator-node-changelog "@audius/creator-node@$CN_VERSION"
         gh release create -d --target "$CIRCLE_SHA1" -F /tmp/discovery-provider-changelog "@audius/discovery-provider@$DP_VERSION"

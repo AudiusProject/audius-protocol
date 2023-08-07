@@ -75,7 +75,7 @@ describe('Add track to playlist notification', () => {
         title: 'Your track got on a playlist! 💿',
         body: `user_2 added title_track to their playlist title_of_playlist`,
         data: {
-          id: 'timestamp:1589373217:group_id:track_added_to_playlist:playlist_id:55:track_id:10:blocknumber:1',
+          id: 'timestamp:1589373217:group_id:track_added_to_playlist:playlist_id:55:track_id:10',
           playlistId: 55,
           type: 'AddTrackToPlaylist'
         }

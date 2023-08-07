@@ -6,10 +6,10 @@ jobs:
       instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
   - push-docker-image:
-      name: push-creator-node
+      name: push-mediorum
       context: [GCP, dockerhub]
-      instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
+      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
   - push-docker-image:
       name: push-identity-service
       context: [GCP, dockerhub]
@@ -47,7 +47,7 @@ jobs:
 
   - release-audius-docker-compose-trigger:
       requires:
-        - push-creator-node
+        - push-mediorum
         - push-discovery-provider
         - push-identity-service
       filters:

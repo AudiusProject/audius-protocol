@@ -1,7 +1,7 @@
 export const indexNames = {
-  playlists: 'playlists14',
+  playlists: 'playlists16',
   reposts: 'reposts13',
   saves: 'saves13',
-  tracks: 'tracks14',
-  users: 'users14',
+  tracks: 'tracks15',
+  users: 'users15',
 }

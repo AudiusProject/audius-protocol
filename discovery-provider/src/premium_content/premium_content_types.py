@@ -8,7 +8,9 @@ PremiumContentType = Literal["track"]
 # will be gated.
 # They should match the PremiumConditions property in the track schema
 # in src/schemas/track_schema.json
-PremiumContentConditions = Literal["nft_collection", "follow_user_id", "tip_user_id"]
+PremiumContentConditions = Literal[
+    "nft_collection", "follow_user_id", "tip_user_id", "usdc_purchase"
+]
 
 # This is for when we support the combination of different conditions
 # for premium content access based on AND'ing / OR'ing them together.
