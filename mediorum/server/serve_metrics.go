@@ -13,11 +13,7 @@ type Metrics struct {
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	m := Metrics{}
 	m.Host = ss.Config.Self.Host
-
-	var ucount int64
-	ss.crud.DB.Model(&Upload{}).Count(&ucount)
 	m.Uploads = ss.uploadsCount
-
 	m.OutboxSizes = ss.crud.GetOutboxSizes()
 
 	return c.JSON(200, m)
