@@ -1,4 +1,3 @@
-from collections import defaultdict
 import json
 from datetime import datetime
 from enum import Enum

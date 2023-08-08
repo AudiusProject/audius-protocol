@@ -3,8 +3,7 @@ import concurrent.futures
 import copy
 import os
 from datetime import datetime
-from operator import itemgetter, or_
-from src.models.indexing.revert_block import RevertBlock
+from typing import List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
 from redis import Redis
@@ -18,6 +17,7 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
+from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -85,6 +85,7 @@ model_mapping = {
     DeveloperApp.__tablename__: DeveloperApp,
     Grant.__tablename__: Grant,
 }
+
 
 class TxReceiptAndHash(TypedDict):
     tx_receipt: TxReceipt
@@ -454,11 +455,15 @@ def revert_block(session: Session, block_to_revert: Block):
     revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
-    revert_block = session.query(RevertBlock).filter(RevertBlock.blocknumber == revert_block_number).first()
+    revert_block = (
+        session.query(RevertBlock)
+        .filter(RevertBlock.blocknumber == revert_block_number)
+        .first()
+    )
     if not revert_block:
         logger.info("No reverts to apply")
         return
-    
+
     revert_records = []
     # apply reverts
     for record_type in revert_block.prev_records:
@@ -466,10 +471,12 @@ def revert_block(session: Session, block_to_revert: Block):
             Model = model_mapping[record_type]
 
             # filter out unnecessary keys
-            filtered_json_record = {k: v for k, v in json_record.items() if k in Model.__table__.columns}
+            filtered_json_record = {
+                k: v for k, v in json_record.items() if k in Model.__table__.columns
+            }
 
             revert_records.append(Model(**filtered_json_record))
-            
+
     # Remove outdated block entry
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
     session.add_all(revert_records)
@@ -512,7 +519,9 @@ def index_nethermind(self):
                 return
 
             if in_valid_state:
-                logger.info(f"asdf latest_database_block {latest_database_block} next_block {next_block} ")
+                logger.info(
+                    f"asdf latest_database_block {latest_database_block} next_block {next_block} "
+                )
                 index_next_block(session, latest_database_block, next_block)
             else:
                 revert_block(session, latest_database_block)

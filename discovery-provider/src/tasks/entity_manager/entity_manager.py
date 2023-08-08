@@ -21,8 +21,6 @@ from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
-from src.models.tracks.remix import Remix
-from src.models.tracks.stem import Stem
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -104,6 +102,7 @@ entity_type_table_mapping = {
     "DeveloperApp": DeveloperApp.__tablename__,
     "Grant": Grant.__tablename__,
 }
+
 
 def get_record_columns(record) -> List[str]:
     columns = [str(m.key) for m in record.__table__.columns]

@@ -3,8 +3,6 @@ from datetime import datetime
 from typing import List
 from unittest import mock
 
-from integration_tests.challenges.index_helpers import UpdateTask
-from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from sqlalchemy import asc
 from web3 import Web3
 from web3.datastructures import AttributeDict
@@ -23,9 +21,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from src.tasks.entity_manager.utils import ManageEntityParameters
 
 
 def set_patches(mocker):

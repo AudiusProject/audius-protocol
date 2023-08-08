@@ -1,17 +1,15 @@
 import logging  # pylint: disable=C0302
 from typing import List
-from integration_tests.challenges.index_helpers import UpdateTask
-from src.tasks.entity_manager.entity_manager import (
-    entity_manager_update,
-)
-from src.utils.db_session import get_db
+
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db_blocks
 from src.models.indexing.skipped_transaction import SkippedTransaction
-from integration_tests.utils import populate_mock_db_blocks
+from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
