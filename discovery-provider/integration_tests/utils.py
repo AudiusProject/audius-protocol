@@ -5,7 +5,6 @@ from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.cid_data import CIDData
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
-from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
