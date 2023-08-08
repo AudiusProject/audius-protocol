@@ -85,8 +85,14 @@ type MediorumServer struct {
 	trustedNotifier *ethcontracts.NotifierInfo
 	storagePathUsed uint64
 	storagePathSize uint64
-	databaseSize    uint64
-	isSeeding       bool
+
+	databaseSize uint64
+	dbSizeErr    string
+
+	uploadsCount    int64
+	uploadsCountErr string
+
+	isSeeding bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time

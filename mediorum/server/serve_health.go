@@ -39,6 +39,9 @@ type healthCheckResponseData struct {
 	StoragePathUsed         uint64                     `json:"storagePathUsed"` // bytes
 	StoragePathSize         uint64                     `json:"storagePathSize"` // bytes
 	DatabaseSize            uint64                     `json:"databaseSize"`    // bytes
+	DbSizeErr               string                     `json:"dbSizeErr"`
+	UploadsCount            int64                      `json:"uploadsCount"`
+	UploadsCountErr         string                     `json:"uploadsCountErr"`
 	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
 	TrustedNotifier         *ethcontracts.NotifierInfo `json:"trustedNotifier"`
 	Env                     string                     `json:"env"`
@@ -57,7 +60,7 @@ type healthCheckResponseData struct {
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
-	healthy := ss.databaseSize > 0
+	healthy := ss.databaseSize > 0 && ss.dbSizeErr == "" && ss.uploadsCountErr == ""
 
 	allowUnregistered, _ := strconv.ParseBool(c.QueryParam("allow_unregistered"))
 	if !allowUnregistered && !ss.Config.WalletIsRegistered {
@@ -97,6 +100,9 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		StoragePathUsed:         ss.storagePathUsed,
 		StoragePathSize:         ss.storagePathSize,
 		DatabaseSize:            ss.databaseSize,
+		DbSizeErr:               ss.dbSizeErr,
+		UploadsCount:            ss.uploadsCount,
+		UploadsCountErr:         ss.uploadsCountErr,
 		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,
 		TrustedNotifier:         ss.trustedNotifier,
 		Dir:                     ss.Config.Dir,
@@ -153,7 +159,7 @@ func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc
 		if !ss.Config.WalletIsRegistered {
 			return c.JSON(506, "wallet not registered")
 		}
-		dbHealthy := ss.databaseSize > 0
+		dbHealthy := ss.databaseSize > 0 && ss.dbSizeErr == "" && ss.uploadsCountErr == ""
 		if !dbHealthy {
 			return c.JSON(503, "database not healthy")
 		}
