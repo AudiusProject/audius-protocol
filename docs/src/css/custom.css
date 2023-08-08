@@ -34,9 +34,9 @@ footer {
   --ifm-footer-background-color: #35364f !important;
   --ifm-code-background: var(--neutral-light-9);
   --docsearch-searchbox-background: var(--white);
-  --ifm-color-danger-contrast-background: #d0021b;
+  --ifm-color-danger-contrast-background: var(--accent-red);
   --ifm-color-danger-contrast-foreground: var(--static-white);
-  --ifm-color-success-contrast-background: #0f9e48;
+  --ifm-color-success-contrast-background: var(--accent-green);
   --ifm-color-success-contrast-foreground: var(--static-white);
 }
 
@@ -85,9 +85,9 @@ html[data-theme="dark"] {
   --ifm-background-color: var(--white);
   --ifm-code-background: var(--neutral-light-9);
 
-  --ifm-color-danger-contrast-background: #d0021b;
+  --ifm-color-danger-contrast-background: var(--accent-red);
   --ifm-color-danger-contrast-foreground: var(--static-white);
-  --ifm-color-success-contrast-background: #0f9e48;
+  --ifm-color-success-contrast-background: var(--accent-green);
   --ifm-color-success-contrast-foreground: var(--static-white);
 }
 
@@ -154,6 +154,7 @@ footer .text--center {
   color: var(--ifm-color-primary-dark);
 }
 
-.alert h5 {
+.alert--danger h5,
+.alert--success h5 {
   color: var(--static-white);
 }
