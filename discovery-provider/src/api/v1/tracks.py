@@ -5,6 +5,8 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
+import requests
+
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
@@ -472,7 +474,7 @@ class TrackStream(Resource):
         rendezvous = RendezvousHash(
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
-        content_node = rendezvous.get(cid)
+        content_nodes = rendezvous.get_n(5, cid)
 
         request_args = stream_parser.parse_args()
 
@@ -503,8 +505,16 @@ class TrackStream(Resource):
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
 
-        stream_url = urljoin(content_node, path)
-        return stream_url
+        for content_node in content_nodes:
+            stream_url = urljoin(content_node, path)
+            headers = {"Range": "bytes=0-1"}
+            try:
+                response = requests.get(stream_url + "&skip_play_count=True", headers=headers, timeout=.5)
+                if response.status_code == 206:
+                    return stream_url
+            except:
+                pass
+        abort_not_found(track_id, ns)
 
 
 track_search_result = make_response(
