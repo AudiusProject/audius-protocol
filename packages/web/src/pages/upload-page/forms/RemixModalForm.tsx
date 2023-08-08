@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   Track,
@@ -10,20 +10,20 @@ import {
   useGetTrackByPermalink,
   SquareSizes,
   accountSelectors,
-  FieldVisibility
+  FieldVisibility,
+  encodeHashId
 } from '@audius/common'
 import { Formik, useField } from 'formik'
 import { get, set } from 'lodash'
 import { useSelector } from 'react-redux'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ReactComponent as IconRemix } from 'assets/img/iconRemixGray.svg'
-import {
-  InputV2,
-  InputV2Size,
-  InputV2Variant
-} from 'components/data-entry/InputV2'
+import { InputV2Size, InputV2Variant } from 'components/data-entry/InputV2'
 import { Divider } from 'components/divider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { TextField } from 'components/form-fields'
 import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -53,7 +53,8 @@ const messages = {
     description:
       "Paste the original Audius track link if yours is a remix. Your remix will typically appear on the original track's page.",
     linkLabel: 'Link to Remix'
-  }
+  },
+  remixLinkError: 'Must provide valid remix link'
 }
 
 export type RemixOfField = Nullable<{ tracks: { parent_track_id: ID }[] }>
@@ -64,12 +65,21 @@ export const SHOW_REMIXES = `field_visibility.remixes`
 
 const IS_REMIX = 'is_remix'
 const REMIX_LINK = 'remix_of_link'
+const IS_VALID_REMIX_LINK = 'is_valid_remix_link'
 
-export type RemixFormValues = {
-  [SHOW_REMIXES]: boolean
-  [IS_REMIX]: boolean
-  [REMIX_LINK]: string | null
-}
+const RemixFormSchema = z
+  .object({
+    [SHOW_REMIXES]: z.optional(z.boolean()),
+    [IS_REMIX]: z.boolean(),
+    [REMIX_LINK]: z.optional(z.string()),
+    [IS_VALID_REMIX_LINK]: z.boolean()
+  })
+  .refine((form) => !form[IS_REMIX] || form[IS_VALID_REMIX_LINK], {
+    message: messages.remixLinkError,
+    path: [REMIX_LINK]
+  })
+
+export type RemixFormValues = z.input<typeof RemixFormSchema>
 
 /**
  * This is a subform that expects to exist within a parent TrackEdit form.
@@ -90,7 +100,7 @@ export const RemixModalForm = () => {
 
   const remixLink = initialRemixedTrack?.permalink
     ? fullTrackPage(initialRemixedTrack?.permalink)
-    : null
+    : ''
 
   const initialValues = useMemo(() => {
     const initialValues = {}
@@ -101,6 +111,7 @@ export const RemixModalForm = () => {
       !!remixOfValue?.tracks.some((track) => !!track)
     )
     set(initialValues, REMIX_LINK, remixLink)
+    set(initialValues, IS_VALID_REMIX_LINK, false)
     return initialValues as RemixFormValues
   }, [showRemixesValue, remixOfValue?.tracks, remixLink])
 
@@ -114,20 +125,22 @@ export const RemixModalForm = () => {
 
   const onSubmit = useCallback(
     (values: RemixFormValues) => {
-      setShowRemixesValue(get(values, SHOW_REMIXES))
+      setShowRemixesValue(get(values, SHOW_REMIXES) ?? showRemixesValue)
       if (get(values, IS_REMIX) && get(values, REMIX_LINK)) {
         // TODO: handle undefined linkedTrack with form validation
         setRemixOfValue({
           tracks: [
             {
               // @ts-ignore only the track_id is required for the form
-              parent_track_id: linkedTrack?.track_id
+              parent_track_id: linkedTrack
+                ? encodeHashId(linkedTrack?.track_id)
+                : undefined
             }
           ]
         })
       }
     },
-    [setShowRemixesValue, setRemixOfValue, linkedTrack?.track_id]
+    [setShowRemixesValue, showRemixesValue, setRemixOfValue, linkedTrack]
   )
 
   const preview = (
@@ -145,15 +158,20 @@ export const RemixModalForm = () => {
     <Formik<RemixFormValues>
       initialValues={initialValues}
       onSubmit={onSubmit}
+      validationSchema={toFormikValidationSchema(RemixFormSchema)}
       enableReinitialize
     >
-      <ModalField
-        title={messages.title}
-        icon={<IconRemix className={styles.titleIcon} />}
-        preview={preview}
-      >
-        <RemixModalFields setUrl={setUrl} />
-      </ModalField>
+      {() => {
+        return (
+          <ModalField
+            title={messages.title}
+            icon={<IconRemix className={styles.titleIcon} />}
+            preview={preview}
+          >
+            <RemixModalFields setUrl={setUrl} />
+          </ModalField>
+        )
+      }}
     </Formik>
   )
 }
@@ -165,6 +183,7 @@ type RemixModalFieldsProps = {
 const RemixModalFields = (props: RemixModalFieldsProps) => {
   const { setUrl } = props
   const [{ onChange: onLinkFieldChange, ...linkField }] = useField(REMIX_LINK)
+  const [, , { setValue: setIsValidRemixLink }] = useField(IS_VALID_REMIX_LINK)
   const permalink = getPathFromTrackUrl(linkField.value)
   const currentUserId = useSelector(getUserId)
   const { data: track } = useGetTrackByPermalink(
@@ -174,6 +193,10 @@ const RemixModalFields = (props: RemixModalFieldsProps) => {
     },
     { disabled: !permalink }
   )
+
+  useEffect(() => {
+    setIsValidRemixLink(!!track)
+  }, [setIsValidRemixLink, track])
 
   return (
     <div className={styles.fields}>
@@ -189,7 +212,7 @@ const RemixModalFields = (props: RemixModalFieldsProps) => {
         header={messages.remixOf.header}
         description={messages.remixOf.description}
       >
-        <InputV2
+        <TextField
           id='remix_of_input'
           variant={InputV2Variant.ELEVATED_PLACEHOLDER}
           label={messages.remixOf.linkLabel}

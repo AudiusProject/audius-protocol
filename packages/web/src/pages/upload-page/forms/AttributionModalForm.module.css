@@ -31,3 +31,8 @@
 .licenseIcons {
   gap: 6px;
 }
+
+.textFieldContainer {
+  flex: 1 1 0;
+  align-self: flex-start;
+}

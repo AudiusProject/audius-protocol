@@ -5,6 +5,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
+import { HelperText } from 'components/data-entry/HelperText'
 
 import styles from './DropdownInput.module.css'
 
@@ -37,6 +38,7 @@ class DropdownInput extends Component {
       labelStyle,
       dropdownStyle,
       dropdownInputStyle,
+      helperText,
       layout,
       size,
       variant,
@@ -155,6 +157,9 @@ class DropdownInput extends Component {
           </Select>
           <IconCaretDown className={styles.arrow} />
         </div>
+        {helperText ? (
+          <HelperText error={error}>{helperText}</HelperText>
+        ) : null}
       </div>
     )
   }
