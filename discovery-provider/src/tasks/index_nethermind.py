@@ -243,7 +243,9 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
-        next_block = web3.eth.get_block(next_block_number)
+        next_block_immutable = web3.eth.get_block(next_block_number)
+        # Copy the immutable attribute dict to a mutable dict
+        next_block: BlockData = cast(BlockData, dict(next_block_immutable))
         next_block["number"] = next_block["number"] + final_poa_block
         return next_block
     except BlockNotFound:
