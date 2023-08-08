@@ -18,14 +18,15 @@ export const relayRateLimiter = async (
     body: { encodedABI },
   } = req;
 
-  logger.info({ config });
-
   const operation = getEntityManagerActionKey(encodedABI);
   const signer = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
     chainId: config.acdcChainId,
     entityManagerAddress: config.entityManagerContractAddress,
   });
+
+  const isBlockedFromRelay = config.rateLimitBlockList.includes(signer)
+  if (isBlockedFromRelay) errorResponseUnauthorized(rep)
 
   const discoveryDb = app.getDnDb();
   const limit = await determineLimit(discoveryDb, config.rateLimitAllowList, signer);
@@ -57,6 +58,10 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
     throw new Error("entityType not defined in encodedABI");
   return action + entityType;
 };
+
+const errorResponseUnauthorized = (rep: FastifyReply) => {
+  rep.code(403).send()
+}
 
 const errorResponseRateLimited = (rep: FastifyReply) => {
   rep.code(429).send("Too many requests, please try again later");

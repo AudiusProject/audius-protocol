@@ -16,7 +16,8 @@ export type Config = {
   serverHost: string;
   serverPort: number;
   aao: AntiAbuseConfig;
-  rateLimitAllowList: string[]
+  rateLimitAllowList: string[];
+  rateLimitBlockList: string[];
 };
 
 export const readConfig = (): Config => {
@@ -45,7 +46,8 @@ export const readConfig = (): Config => {
     serverHost: process.env.serverHost || "0.0.0.0",
     serverPort: parseInt(process.env.serverPort || "6001"),
     aao: newAntiAbuseConfig(),
-    rateLimitAllowList: allowListPublicKeys()
+    rateLimitAllowList: allowListPublicKeys(),
+    rateLimitBlockList: blockListPublicKeys()
   };
 };
 
@@ -74,3 +76,10 @@ const allowListPublicKeys = (): string[] => {
   if (allowlistPublicKeyFromRelay === undefined) return []
   return allowlistPublicKeyFromRelay.split(",")
 }
+
+const blockListPublicKeys = (): string[] => {
+  const blocklistPublicKeyFromRelay = process.env.blocklistPublicKeyFromRelay
+  if (blocklistPublicKeyFromRelay === undefined) return []
+  return blocklistPublicKeyFromRelay.split(",")
+}
+
