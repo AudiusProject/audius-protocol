@@ -1,15 +1,23 @@
 import { useCallback, useMemo } from 'react'
 
-import { Nullable, creativeCommons } from '@audius/common'
+import {
+  Nullable,
+  creativeCommons,
+  encodeHashId,
+  decodeHashId
+} from '@audius/common'
 import { SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useField } from 'formik'
 import { get, set } from 'lodash'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ReactComponent as IconCreativeCommons } from 'assets/img/iconCreativeCommons.svg'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
-import { InputV2, InputV2Variant } from 'components/data-entry/InputV2'
+import { InputV2Variant } from 'components/data-entry/InputV2'
 import { Divider } from 'components/divider'
+import { TextField } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
@@ -30,15 +38,18 @@ const messages = {
     header: 'Mark this track as AI generated',
     description:
       'If your AI generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
-    placeholder: 'Search for Users'
+    placeholder: 'Search for Users',
+    requiredError: 'Valid user must be selected'
   },
   isrc: {
     header: 'ISRC',
-    placeholder: 'CC-XXX-YY-NNNNN'
+    placeholder: 'CC-XXX-YY-NNNNN',
+    validError: 'Must be valid ISRC format'
   },
   iswc: {
     header: 'ISWC',
-    placeholder: 'T-345246800-1'
+    placeholder: 'T-345246800-1',
+    validError: 'Must be valid ISWC format'
   },
   licenseType: 'License Type',
   allowAttribution: {
@@ -67,6 +78,7 @@ const messages = {
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const AI_USER_ID = 'ai_attribution_user_id'
+const AI_USER_NUM_ID = 'ai_attribution_user_num_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
 const LICENSE_TYPE = 'licenseType'
@@ -93,19 +105,39 @@ const derivativeWorksValues = [
   { key: null, text: messages.derivativeWorks.options.null }
 ]
 
-type AttributionFormValues = {
-  [IS_AI_ATTRIBUTED]: boolean
-  [AI_USER_ID]?: number
-  [ISRC]: string
-  [ISWC]: string
-  [ALLOW_ATTRIBUTION]: boolean
-  [COMMERCIAL_USE]: boolean
-  [DERIVATIVE_WORKS]: Nullable<boolean>
-}
+const isrcRegex = /^[A-Z]{2}-[A-Z\d]{3}-\d{2}-\d{5}$/i
+const iswcRegex = /^T-\d{9}-\d$/i
+
+const AttributionFormSchema = z
+  .object({
+    [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
+    [AI_USER_ID]: z.optional(z.string().nullable()),
+    [AI_USER_NUM_ID]: z.optional(z.number().nullable()),
+    [ISRC]: z.optional(z.string().nullable()),
+    [ISWC]: z.optional(z.string().nullable()),
+    [ALLOW_ATTRIBUTION]: z.optional(z.boolean()),
+    [COMMERCIAL_USE]: z.optional(z.boolean()),
+    [DERIVATIVE_WORKS]: z.optional(z.boolean().nullable())
+  })
+  .refine((form) => !form[IS_AI_ATTRIBUTED] || form[AI_USER_ID], {
+    message: messages.aiGenerated.requiredError,
+    path: [AI_USER_ID]
+  })
+  .refine((form) => !form[ISRC] || isrcRegex.test(form[ISRC]), {
+    message: messages.isrc.validError,
+    path: [ISRC]
+  })
+  .refine((form) => !form[ISWC] || iswcRegex.test(form[ISWC]), {
+    message: messages.iswc.validError,
+    path: [ISWC]
+  })
+
+export type AttributionFormValues = z.input<typeof AttributionFormSchema>
 
 export const AttributionModalForm = () => {
-  const [{ value: aiUserId }, , { setValue: setAiUserId }] =
-    useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
+  const [{ value: aiUserId }, , { setValue: setAiUserId }] = useTrackField<
+    string | undefined
+  >(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
@@ -126,6 +158,11 @@ export const AttributionModalForm = () => {
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
+    set(
+      initialValues,
+      AI_USER_NUM_ID,
+      aiUserId ? decodeHashId(aiUserId) : undefined
+    )
     if (aiUserId) {
       set(initialValues, IS_AI_ATTRIBUTED, true)
     }
@@ -147,22 +184,28 @@ export const AttributionModalForm = () => {
   const onSubmit = useCallback(
     (values: AttributionFormValues) => {
       if (get(values, IS_AI_ATTRIBUTED)) {
-        setAiUserId(get(values, AI_USER_ID))
+        setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
         setAiUserId(undefined)
       }
-      setIsrc(get(values, ISRC))
-      setIswc(get(values, ISWC))
-      setAllowAttribution(get(values, ALLOW_ATTRIBUTION))
+      setIsrc(get(values, ISRC) ?? isrcValue)
+      setIswc(get(values, ISWC) ?? iswcValue)
+      setAllowAttribution(get(values, ALLOW_ATTRIBUTION) ?? allowAttribution)
       if (get(values, ALLOW_ATTRIBUTION)) {
-        setCommercialUse(get(values, COMMERCIAL_USE))
-        setDerivateWorks(get(values, DERIVATIVE_WORKS))
+        setCommercialUse(get(values, COMMERCIAL_USE) ?? commercialUse)
+        setDerivateWorks(get(values, DERIVATIVE_WORKS) ?? derivativeWorks)
       } else {
         setCommercialUse(false)
         setDerivateWorks(false)
       }
     },
     [
+      aiUserId,
+      allowAttribution,
+      commercialUse,
+      derivativeWorks,
+      isrcValue,
+      iswcValue,
       setAiUserId,
       setAllowAttribution,
       setCommercialUse,
@@ -185,11 +228,12 @@ export const AttributionModalForm = () => {
     <Formik<AttributionFormValues>
       initialValues={initialValues}
       onSubmit={onSubmit}
+      validationSchema={toFormikValidationSchema(AttributionFormSchema)}
       enableReinitialize
     >
       <ModalField
         title={messages.title}
-        icon={<IconCreativeCommons className={styles.titleIcon} />}
+        icon={<IconCreativeCommons />}
         preview={preview}
       >
         <AttributionModalFields />
@@ -199,9 +243,13 @@ export const AttributionModalForm = () => {
 }
 
 const AttributionModalFields = () => {
-  const [aiUserIdField, , { setValue: setAiUserId }] = useField({
-    name: AI_USER_ID,
-    type: 'select'
+  const [aiUserIdField, aiUserHelperFields, { setValue: setAiUserId }] =
+    useField({
+      name: AI_USER_ID,
+      type: 'select'
+    })
+  const [aiUserNumIdField, , { setValue: setAiUserNumId }] = useField({
+    name: AI_USER_NUM_ID
   })
   const [isrcField] = useField(ISRC)
   const [iswcField] = useField(ISWC)
@@ -225,6 +273,9 @@ const AttributionModalFields = () => {
     derivativeWorks
   )
 
+  const dropdownHasError =
+    aiUserHelperFields.touched && aiUserHelperFields.error
+
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       <SwitchRowField
@@ -234,9 +285,14 @@ const AttributionModalFields = () => {
       >
         <AiAttributionDropdown
           {...aiUserIdField}
-          onSelect={(value: AttributionFormValues[typeof AI_USER_ID]) =>
-            setAiUserId(value)
-          }
+          {...aiUserHelperFields}
+          error={dropdownHasError}
+          helperText={dropdownHasError && aiUserHelperFields.error}
+          value={aiUserNumIdField.value}
+          onSelect={(value: SingleTrackEditValues[typeof AI_USER_ID]) => {
+            setAiUserId(value ? encodeHashId(value) : null)
+            setAiUserNumId(value ?? null)
+          }}
         />
       </SwitchRowField>
       <Divider />
@@ -245,18 +301,22 @@ const AttributionModalFields = () => {
           {`${messages.isrc.header} / ${messages.iswc.header}`}
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
-          <InputV2
-            {...isrcField}
-            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
-            label={messages.isrc.header}
-            placeholder={messages.isrc.placeholder}
-          />
-          <InputV2
-            {...iswcField}
-            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
-            label={messages.iswc.header}
-            placeholder={messages.iswc.placeholder}
-          />
+          <div className={styles.textFieldContainer}>
+            <TextField
+              {...isrcField}
+              variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+              label={messages.isrc.header}
+              placeholder={messages.isrc.placeholder}
+            />
+          </div>
+          <div className={styles.textFieldContainer}>
+            <TextField
+              {...iswcField}
+              variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+              label={messages.iswc.header}
+              placeholder={messages.iswc.placeholder}
+            />
+          </div>
         </span>
       </div>
       <Divider />

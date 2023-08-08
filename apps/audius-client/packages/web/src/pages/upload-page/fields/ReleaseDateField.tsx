@@ -37,7 +37,9 @@ export const ReleaseDateField = () => {
 
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      setValue(values[RELEASE_DATE])
+      const date = new Date(values[RELEASE_DATE].toString())
+      // @ts-ignore - There are slight differences in the sdk and common track metadata types
+      setValue(date)
     },
     [setValue]
   )

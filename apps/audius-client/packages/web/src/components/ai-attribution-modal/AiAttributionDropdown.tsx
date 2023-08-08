@@ -47,7 +47,10 @@ const selectSearchResults = createSelector(getSearchResults, (results) => {
   return { items }
 })
 
-type AiAttributionDropdownProps = SelectProps
+type AiAttributionDropdownProps = SelectProps & {
+  error?: string | false
+  helperText?: string | false
+}
 
 export const AiAttributionDropdown = (props: AiAttributionDropdownProps) => {
   const dispatch = useDispatch()
@@ -69,6 +72,7 @@ export const AiAttributionDropdown = (props: AiAttributionDropdownProps) => {
       size='large'
       input={searchInput}
       onSearch={handleSearch}
+      layout='vertical'
       {...props}
     />
   )

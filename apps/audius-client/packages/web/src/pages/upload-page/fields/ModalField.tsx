@@ -1,8 +1,8 @@
-import React, { PropsWithChildren, ReactElement, useState } from 'react'
+import { PropsWithChildren, ReactElement, useState } from 'react'
 
 import {
-  Button,
-  ButtonType,
+  HarmonyButton,
+  HarmonyButtonType,
   IconCaretRight,
   Modal,
   ModalContent,
@@ -11,6 +11,7 @@ import {
   ModalTitle
 } from '@audius/stems'
 import { useFormikContext } from 'formik'
+import { isEmpty } from 'lodash'
 
 import styles from './ModalField.module.css'
 
@@ -27,7 +28,7 @@ type ModalFieldProps = PropsWithChildren & {
 export const ModalField = (props: ModalFieldProps) => {
   const { children, title, icon, preview } = props
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { submitForm, resetForm } = useFormikContext()
+  const { submitForm, resetForm, errors } = useFormikContext()
 
   const open = () => setIsModalOpen(true)
   const close = () => setIsModalOpen(false)
@@ -45,14 +46,14 @@ export const ModalField = (props: ModalFieldProps) => {
       </ModalHeader>
       <ModalContent>{children}</ModalContent>
       <ModalFooter>
-        <Button
-          type={ButtonType.PRIMARY}
+        <HarmonyButton
+          variant={HarmonyButtonType.PRIMARY}
           text={messages.save}
           onClick={() => {
             submitForm()
-            close()
+            isEmpty(errors) && close()
           }}
-          buttonType='submit'
+          type='submit'
         />
       </ModalFooter>
     </Modal>
