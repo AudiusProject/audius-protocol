@@ -9,6 +9,8 @@ from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
+from src.models.users.user_events import UserEvent
+
 from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
@@ -469,6 +471,11 @@ def test_index_valid_user(app, mocker):
             mock.call.dispatch(ChallengeEvent.mobile_install, 1, USER_ID_OFFSET),
         ]
         bus_mock.assert_has_calls(calls, any_order=True)
+
+        all_user_events: List[UserEvent] = session.query(UserEvent).all()
+        assert len(all_user_events) == 1
+        assert all_user_events[0].user_id == USER_ID_OFFSET
+        assert all_user_events[0].is_mobile_user == True
 
 
 def test_index_invalid_users(app, mocker):
@@ -999,6 +1006,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app, mocker):
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
         events: UserEventMetadata = {"referrer": 1}
         params = mocker.Mock()
+        params.existing_records = {}
         update_user_events(user, events, bus_mock, params)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}

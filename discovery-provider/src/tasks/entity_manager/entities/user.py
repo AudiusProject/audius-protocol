@@ -375,7 +375,10 @@ def update_user_events(
             return
         # Get existing UserEvent entry
         existing_user_events: UserEvent | None = None
-        if existing_user_events and EntityType.USER_EVENT in existing_user_events:
+        if (
+            EntityType.USER_EVENT in params.existing_records
+            and user_record.user_id in params.existing_records[EntityType.USER_EVENT]
+        ):
             existing_user_events = params.existing_records[EntityType.USER_EVENT][
                 user_record.user_id
             ]
