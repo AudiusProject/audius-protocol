@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 
 UPDATE_INDEXING_CHECKPOINTS_QUERY = """

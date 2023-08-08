@@ -6,6 +6,7 @@ import tempfile
 from itertools import islice
 
 import requests
+
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.utils import save_cid_metadata
 from src.utils import redis_connection

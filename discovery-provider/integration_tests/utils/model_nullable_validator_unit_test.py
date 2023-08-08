@@ -2,6 +2,7 @@ from typing import Any
 
 from sqlalchemy import Boolean, Column, Integer, PrimaryKeyConstraint, String
 from sqlalchemy.ext.declarative import declarative_base
+
 from src.utils.model_nullable_validator import all_required_fields_present
 
 Base: Any = declarative_base()

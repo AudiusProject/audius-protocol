@@ -1,13 +1,13 @@
-from collections import defaultdict
 import json
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Set, Tuple, TypedDict, Union
-from src.models.indexing.revert_block import RevertBlock
-from sqlalchemy import literal_column
+from typing import Dict, List, Literal, Set, Tuple, TypedDict, Union
 
 from multiformats import CID, multihash
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
@@ -35,8 +35,6 @@ from src.tasks.metadata import (
 from src.utils import helpers
 from src.utils.eth_manager import EthManager
 from src.utils.structured_logger import StructuredLogger
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 utils_logger = StructuredLogger(__name__)
 
@@ -96,6 +94,20 @@ class EntityType(str, Enum):
         return str.__str__(self)
 
 
+EntityTypeLiteral = Literal[
+    "Playlist",
+    "Track",
+    "User",
+    "Follow",
+    "Save",
+    "Repost",
+    "Subscription",
+    "PlaylistSeen",
+    "DeveloperApp",
+    "Grant",
+]
+
+
 class RecordDict(TypedDict):
     Playlist: Dict[int, List[Playlist]]
     Track: Dict[int, List[Track]]
@@ -107,6 +119,8 @@ class RecordDict(TypedDict):
     NotificationSeen: Dict[Tuple, List[NotificationSeen]]
     Notification: Dict[Tuple, List[Notification]]
     PlaylistSeen: Dict[Tuple, List[PlaylistSeen]]
+    DeveloperApp: Dict[str, List[DeveloperApp]]
+    Grant: Dict[Tuple, List[Grant]]
 
 
 class ExistingRecordDict(TypedDict):
@@ -115,10 +129,13 @@ class ExistingRecordDict(TypedDict):
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
+    Repost: Dict[Tuple, Repost]
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
     DeveloperApp: Dict[str, DeveloperApp]
     Grant: Dict[Tuple, Grant]
+    TrackRoute: Dict[int, TrackRoute]
+    PlaylistRoute: Dict[int, PlaylistRoute]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -127,10 +144,15 @@ class EntitiesToFetchDict(TypedDict):
     User: Set[int]
     Follow: Set[Tuple]
     Save: Set[Tuple]
+    Repost: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
     Grant: Set[Tuple]
     DeveloperApp: Set[str]
+    TrackRoute: Set[int]
+    PlaylistRoute: Set[int]
+    UserEvent: Set[int]
+    AssociatedWallet: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -167,7 +189,7 @@ class ManageEntityParameters:
     ):
         self.user_id = helpers.get_tx_arg(event, "_userId")
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
-        self.entity_type = helpers.get_tx_arg(event, "_entityType")
+        self.entity_type: EntityTypeLiteral = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
         self.signer = helpers.get_tx_arg(event, "_signer")
         self.block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -346,7 +368,7 @@ def get_record_key(user_id: int, entity_type: str, entity_id: int):
 
 
 def copy_record(
-    old_record: Union[User, Track, Playlist],
+    old_record: Union[User, Track, Playlist, DeveloperApp, Grant],
     block_number: int,
     event_blockhash: str,
     txhash: str,
@@ -372,9 +394,9 @@ def copy_record(
 
 def validate_signer(params: ManageEntityParameters):
     # Ensure the signer is either the user or authorized to perform action for the user
-    if params.user_id not in params.existing_records[EntityType.USER]:
+    if params.user_id not in params.existing_records["User"]:
         raise IndexingValidationError(f"User {params.user_id} does not exist")
-    wallet = params.existing_records[EntityType.USER][params.user_id].wallet
+    wallet = params.existing_records["User"][params.user_id].wallet
     signer = params.signer.lower()
     signer_matches_user = wallet and wallet.lower() == signer
     if signer_matches_user:
@@ -382,17 +404,23 @@ def validate_signer(params: ManageEntityParameters):
     else:
         params.logger.set_context("isApp", "unknown")
         grant_key = (signer, params.user_id)
-        is_signer_authorized = grant_key in params.existing_records[EntityType.GRANT]
+        is_signer_authorized = grant_key in params.existing_records["Grant"]
         if is_signer_authorized:
-            grant = params.existing_records[EntityType.GRANT][grant_key]
-            developer_app = params.existing_records[EntityType.DEVELOPER_APP][signer]
+            grant = params.existing_records["Grant"][grant_key]
+            developer_app = params.existing_records["DeveloperApp"][signer]
             if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
                 raise IndexingValidationError(
                     f"Signer is not authorized to perform action for user {params.user_id}"
                 )
             params.logger.set_context("isApp", "true")
-            params.logger.set_context("appName", params.existing_records[EntityType.DEVELOPER_APP][signer].name)
-            params.logger.set_context("userHandle", params.existing_records[EntityType.USER][params.user_id].handle)
+            params.logger.set_context(
+                "appName",
+                params.existing_records["DeveloperApp"][signer].name,
+            )
+            params.logger.set_context(
+                "userHandle",
+                params.existing_records["User"][params.user_id].handle,
+            )
         else:
             raise IndexingValidationError(
                 f"Signer does not match user {params.user_id} or an authorized wallet"

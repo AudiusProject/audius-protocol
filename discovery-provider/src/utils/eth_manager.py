@@ -3,6 +3,8 @@ from enum import Enum
 from typing import Any, TypedDict
 
 from redis import Redis
+from web3 import Web3
+
 from src.utils.helpers import load_eth_abi_values
 from src.utils.redis_cache import (
     get_cn_sp_id_key,
@@ -10,7 +12,6 @@ from src.utils.redis_cache import (
     get_json_cached_key,
     set_json_cached_key,
 )
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 eth_abi_values = load_eth_abi_values()

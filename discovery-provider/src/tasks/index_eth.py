@@ -4,26 +4,16 @@ import time
 from src.eth_indexing.event_scanner import EventScanner
 from src.tasks.cache_user_balance import get_token_address
 from src.tasks.celery_app import celery
-from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import index_eth_last_completion_redis_key
-from web3 import Web3
-from web3.providers.rpc import HTTPProvider
+from src.utils.web3_provider import get_eth_web3
 
 logger = logging.getLogger(__name__)
 
 CHAIN_REORG_SAFETY_BLOCKS = 10
 
-
-provider = HTTPProvider(shared_config["web3"]["eth_provider_url"])  # type: ignore
-
-# Remove the default JSON-RPC retry middleware
-# as it correctly cannot handle eth_getLogs block range
-# throttle down.
-provider.middlewares.clear()  # type: ignore
-
-web3 = Web3(provider)
+web3 = get_eth_web3()
 
 # Prepare stub ERC-20 contract object
 eth_abi_values = load_eth_abi_values()

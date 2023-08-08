@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse
 
 from flask.helpers import url_for
+
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.tracks import ns as tracks_ns

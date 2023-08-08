@@ -5,6 +5,7 @@ from typing import List, Tuple, TypedDict, Union, cast
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Query, aliased
 from sqlalchemy.orm.session import Session
+
 from src.models.social.follow import Follow
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.aggregate_user_tips import AggregateUserTip
@@ -41,9 +42,14 @@ class TipResult(TypedDict):
     tx_signature: str
 
 
-class PopulatedTipResult(TipResult):
+class PopulatedTipResult(TypedDict):
+    amount: int
     sender: User
     receiver: User
+    slot: int
+    created_at: datetime
+    followee_supporters: List[str]
+    tx_signature: str
 
 
 # Example of query with inputs:

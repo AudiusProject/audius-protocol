@@ -1,4 +1,5 @@
 from sqlalchemy import desc, text
+
 from src import exceptions
 from src.models.social.follow import Follow
 from src.models.tracks.aggregate_track import AggregateTrack

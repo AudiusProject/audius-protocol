@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from dateutil.parser import parse
+
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,

@@ -5,6 +5,7 @@ from typing import List, Tuple
 from lxml import etree
 from sqlalchemy import asc, func
 from sqlalchemy.orm.session import Session
+
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track

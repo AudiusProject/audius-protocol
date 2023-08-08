@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import func
+
 from src.models.social.aggregate_plays import AggregatePlay
 
 logger = logging.getLogger(__name__)

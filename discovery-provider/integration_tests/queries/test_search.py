@@ -4,6 +4,7 @@ import subprocess
 from datetime import datetime
 
 import pytest
+
 from src.models.indexing.block import Block
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow

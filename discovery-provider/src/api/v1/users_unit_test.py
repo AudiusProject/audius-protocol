@@ -2,6 +2,7 @@ import datetime
 from unittest.mock import ANY, patch
 
 from flask import Flask
+
 from src.api.v1.users import UserTrackListenCountsMonthly
 
 app = Flask(__name__)

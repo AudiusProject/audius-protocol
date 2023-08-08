@@ -3,6 +3,7 @@ from typing import Optional, TypedDict
 from sqlalchemy import desc, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import not_, or_
+
 from src.models.tracks.track import Track
 from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.premium_content.premium_content_constants import (
@@ -222,7 +223,7 @@ def make_generate_unpopulated_trending(
     session: Session,
     genre: Optional[str],
     time_range: str,
-    strategy: str,
+    strategy: BaseTrendingStrategy,
     exclude_premium: bool,
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which

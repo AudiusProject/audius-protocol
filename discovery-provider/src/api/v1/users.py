@@ -1,10 +1,11 @@
 import base64
 import json
-from typing import Optional, Union
+from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
+
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,

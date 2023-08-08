@@ -1,6 +1,7 @@
 from typing import TypedDict
 
 from sqlalchemy.orm.session import Session
+
 from src.models.social.aggregate_monthly_plays import AggregateMonthlyPlay
 from src.models.tracks.track import Track
 from src.utils.db_session import get_db_read_replica
