@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List, Optional
 
 from sqlalchemy import asc, func, text
+
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.utils import db_session

@@ -4,6 +4,7 @@ from typing import Dict, Union
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import null
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
@@ -161,7 +162,9 @@ def update_track_routes_table(
 
     # Find the current route for the track
     # Check the pending track route updates first
-    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE].get(track_record.track_id)
+    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE].get(
+        track_record.track_id
+    )
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
@@ -273,7 +276,7 @@ def validate_track_tx(params: ManageEntityParameters):
         )
 
     if params.action == Action.CREATE:
-        if track_id in params.existing_records[EntityType.TRACK]:
+        if track_id in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
@@ -297,9 +300,9 @@ def validate_track_tx(params: ManageEntityParameters):
             )
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
-        if track_id not in params.existing_records[EntityType.TRACK]:
+        if track_id not in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
-        existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
+        existing_track: Track = params.existing_records["Track"][track_id]
         if existing_track.owner_id != params.user_id:
             raise IndexingValidationError(
                 f"Existing track {track_id} does not match user"
@@ -315,7 +318,7 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][
+            ai_attribution_user = params.existing_records["User"][
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
@@ -395,11 +398,11 @@ def update_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
+    existing_track = params.existing_records["Track"][track_id]
     if (
-        track_id in params.new_records[EntityType.TRACK]
+        track_id in params.new_records["Track"]
     ):  # override with last updated track is in this block
-        existing_track = params.new_records[EntityType.TRACK][track_id][-1]
+        existing_track = params.new_records["Track"][track_id][-1]
 
     track_record = copy_record(
         existing_track,
@@ -429,10 +432,10 @@ def delete_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
-    if params.entity_id in params.new_records[EntityType.TRACK]:
+    existing_track = params.existing_records["Track"][track_id]
+    if params.entity_id in params.new_records["Track"]:
         # override with last updated playlist is in this block
-        existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
+        existing_track = params.new_records["Track"][params.entity_id][-1]
 
     deleted_track = copy_record(
         existing_track,

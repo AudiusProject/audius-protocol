@@ -1,18 +1,17 @@
 import logging
 
-import redis
 from sqlalchemy import func
+
 from src.models.indexing.block import Block
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from src.utils import db_session, helpers
-from src.utils.config import shared_config
 from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
+from src.utils.redis_connection import get_redis
 
 # The maximum number of skipped transactions allowed
 MAX_SKIPPED_TX = 20
 
-REDIS_URL = shared_config["redis"]["url"]
-REDIS = redis.Redis.from_url(url=REDIS_URL)
+REDIS = get_redis()
 
 INDEXING_ERROR_KEY = "indexing:error"
 logger = logging.getLogger(__name__)
@@ -133,17 +132,20 @@ def clear_indexing_error(redis_instance):
 
 
 def save_and_get_skip_tx_hash(session, redis):
-    """Fetch if there is a tx_hash to be skipped because of continuous errors
-    """
+    """Fetch if there is a tx_hash to be skipped because of continuous errors"""
     indexing_error = get_indexing_error(redis)
-    if isinstance(indexing_error, dict) and 'has_consensus' in indexing_error and indexing_error['has_consensus']:
+    if (
+        isinstance(indexing_error, dict)
+        and "has_consensus" in indexing_error
+        and indexing_error["has_consensus"]
+    ):
         num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
         if num_skipped_tx >= MAX_SKIPPED_TX:
             return None
         skipped_tx = SkippedTransaction(
-            blocknumber=indexing_error['blocknumber'],
-            blockhash=indexing_error['blockhash'],
-            txhash=indexing_error['txhash']
+            blocknumber=indexing_error["blocknumber"],
+            blockhash=indexing_error["blockhash"],
+            txhash=indexing_error["txhash"],
         )
         session.add(skipped_tx)
-        return indexing_error['txhash']
+        return indexing_error["txhash"]

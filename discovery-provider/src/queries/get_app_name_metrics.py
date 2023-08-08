@@ -2,6 +2,7 @@ import logging
 from datetime import date, timedelta
 
 from sqlalchemy import asc, desc, func
+
 from src import exceptions
 from src.models.metrics.aggregate_daily_app_name_metrics import (
     AggregateDailyAppNameMetric,

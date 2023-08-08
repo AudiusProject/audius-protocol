@@ -1,20 +1,26 @@
 {
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
-  "python.formatting.provider": "black",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingModuleSource": "none"
+  },
   "python.languageServer": "Pylance",
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": ["--config", "discovery-provider/setup.cfg"],
   "python.linting.lintOnSave": true,
   "python.linting.mypyEnabled": true,
+  "isort.args": ["--settings-path", "discovery-provider/setup.cfg"],
+  "mypy.configFile": "discovery-provider/setup.cfg",
+  "mypy.runUsingActiveInterpreter": true,
   "python.analysis.indexing": true,
   "python.testing.pytestEnabled": true,
   "python.testing.unittestEnabled": false,
-  "isort.args": ["--profile", "black"],
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
-    }
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.find.addExtraSpaceOnTop": false
 }

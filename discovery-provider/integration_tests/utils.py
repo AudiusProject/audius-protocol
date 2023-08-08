@@ -5,7 +5,6 @@ from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
 from src.models.indexing.cid_data import CIDData
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
-from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -67,7 +66,7 @@ def query_creator_by_name(app, creator_name=None):
             return return_list
 
 
-def toBytes(val, length=32):
+def to_bytes(val, length=32):
     val = val[:length]
     return bytes(val, "utf-8")
 
@@ -135,7 +134,6 @@ def populate_mock_db(db, entities, block_offset=None):
         hourly_play_counts = entities.get("hourly_play_counts", [])
         user_bank_accounts = entities.get("user_bank_accounts", [])
         associated_wallets = entities.get("associated_wallets", [])
-        ursm_content_nodes = entities.get("ursm_content_nodes", [])
         reactions = entities.get("reactions", [])
         user_bank_txs = entities.get("user_bank_txs", [])
         user_tips = entities.get("user_tips", [])
@@ -530,38 +528,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 chain=associated_wallet.get("chain", WalletChain.sol),
             )
             session.add(wallet)
-        for i, ursm_content_node in enumerate(ursm_content_nodes):
-            node = UrsmContentNode(
-                blockhash=ursm_content_node.get("blockhash", hex(i + block_offset)),
-                blocknumber=ursm_content_node.get("blocknumber", i + block_offset),
-                slot=ursm_content_node.get("slot", i + 1),
-                txhash=ursm_content_node.get("txhash", str(i + block_offset)),
-                is_current=ursm_content_node.get("is_current", True),
-                cnode_sp_id=ursm_content_node.get("cnode_sp_id", i + 1),
-                delegate_owner_wallet=ursm_content_node.get(
-                    "delegate_owner_wallet",
-                    "delegate_owner_wallet_" + str(i + block_offset),
-                ),
-                owner_wallet=ursm_content_node.get(
-                    "owner_wallet", "owner_wallet" + str(i + block_offset)
-                ),
-                proposer_sp_ids=ursm_content_node.get("proposer_sp_ids", [0, 0, 0]),
-                proposer_1_delegate_owner_wallet=ursm_content_node.get(
-                    "proposer_1_delegate_owner_wallet",
-                    "proposer_1_delegate_owner_wallet_" + str(i + block_offset),
-                ),
-                proposer_2_delegate_owner_wallet=ursm_content_node.get(
-                    "proposer_2_delegate_owner_wallet",
-                    "proposer_2_delegate_owner_wallet_" + str(i + block_offset),
-                ),
-                proposer_3_delegate_owner_wallet=ursm_content_node.get(
-                    "proposer_3_delegate_owner_wallet",
-                    "proposer_3_delegate_owner_wallet_" + str(i + block_offset),
-                ),
-                endpoint=ursm_content_node.get("endpoint", f"www.content_node{i}.com"),
-                created_at=ursm_content_node.get("created_at", datetime.now()),
-            )
-            session.add(node)
         for i, reaction in enumerate(reactions):
             reaction = Reaction(
                 id=reaction.get("id", i),

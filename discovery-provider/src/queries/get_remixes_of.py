@@ -1,5 +1,6 @@
 from flask.globals import request
 from sqlalchemy import and_, case, desc, func
+
 from src import exceptions
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType

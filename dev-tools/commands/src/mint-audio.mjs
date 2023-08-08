@@ -31,4 +31,4 @@ program.command("mint-audio")
 
     process.exit(0);
   });
-  
+

@@ -1,0 +1,36 @@
+lint-discovery-provider:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.11
+  steps:
+    - checkout
+
+    - restore_cache:
+        key: python-requirements-{{ checksum "discovery-provider/requirements.txt" }}
+
+    - run:
+        name: Install Python dependencies
+        command: |
+          cd discovery-provider
+          pip install -r requirements.txt
+
+    - save_cache:
+        key: python-requirements-{{ checksum "discovery-provider/requirements.txt" }}
+        paths:
+          - "~/.cache/pip"
+          - "/usr/local/lib/python3.11/site-packages"
+          - "/usr/local/lib/site-python"
+
+    - run:
+        name: Lint
+        command: |
+          cd discovery-provider
+          isort .
+          flake8 .
+          black .
+
+    - run:
+        name: Typecheck
+        command: |
+          cd discovery-provider
+          mypy .

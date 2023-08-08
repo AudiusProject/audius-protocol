@@ -3,17 +3,20 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Dict, Tuple, TypedDict, Union
+from typing import Dict, Tuple, TypedDict, Union, cast
 
 import base58
 from redis import Redis
+from solders.pubkey import Pubkey
+from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+from solders.transaction import Transaction
 from sqlalchemy import desc
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
@@ -152,7 +155,10 @@ def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
 
 
 def is_valid_tx(account_keys):
-    if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
+    if (
+        Pubkey.from_string(SECP_PROGRAM) in account_keys
+        and Pubkey.from_string(SIGNER_GROUP) in account_keys
+    ):
         return True
     logger.error(
         f"index_solana_plays.py | Failed to find {SECP_PROGRAM} or {SIGNER_GROUP} in {account_keys}"
@@ -169,30 +175,38 @@ def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_si
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} in {fetch_time}"
         )
-        meta = tx_info["result"]["meta"]
-        error = meta["err"]
+        if not tx_info.value:
+            return None
+        transaction = tx_info.value.transaction
+        if not transaction:
+            return None
+        meta = transaction.meta
+        if not meta:
+            return None
+        error = meta.err
 
         if error:
             logger.info(
                 f"index_solana_plays.py | Skipping error transaction from chain {tx_info}"
             )
             return None
-        if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
-            audius_program_index = tx_info["result"]["transaction"]["message"][
-                "accountKeys"
-            ].index(TRACK_LISTEN_PROGRAM)
-            for instruction in tx_info["result"]["transaction"]["message"][
-                "instructions"
-            ]:
-                if instruction["programIdIndex"] == audius_program_index:
-                    slot = tx_info["result"]["slot"]
+
+        tx_message = cast(Transaction, transaction.transaction).message
+        account_keys = tx_message.account_keys
+        if is_valid_tx(account_keys):
+            audius_program_index = account_keys.index(
+                Pubkey.from_string(TRACK_LISTEN_PROGRAM)
+            )
+            for instruction in tx_message.instructions:
+                if instruction.program_id_index == audius_program_index:
+                    slot = tx_info.value.slot
                     (
                         user_id,
                         track_id,
                         source,
                         location,
                         timestamp,
-                    ) = parse_instruction_data(instruction["data"])
+                    ) = parse_instruction_data(instruction.data)
                     created_at = datetime.utcfromtimestamp(timestamp)
 
                     logger.info(
@@ -501,8 +515,8 @@ def parse_sol_tx_batch(
 
 # Push to head of array containing seen transactions
 # Used to avoid re-traversal from chain tail when slot diff > certain number
-def cache_traversed_tx(redis: Redis, tx: ConfirmedSignatureForAddressResult):
-    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, json.dumps(tx))
+def cache_traversed_tx(redis: Redis, tx: RpcConfirmedTransactionStatusWithSignature):
+    redis.lpush(REDIS_TX_CACHE_QUEUE_PREFIX, tx.to_json())
 
 
 # Fetch the cached transaction from redis queue
@@ -512,8 +526,8 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
     while not cached_offset_tx_found:
         last_cached_tx_raw = redis.lrange(REDIS_TX_CACHE_QUEUE_PREFIX, 0, 1)
         if last_cached_tx_raw:
-            last_cached_tx: ConfirmedSignatureForAddressResult = json.loads(
-                last_cached_tx_raw[0]
+            last_cached_tx = RpcConfirmedTransactionStatusWithSignature.from_json(
+                last_cached_tx_raw[0].decode()
             )
             logger.info(
                 f"index_solana_plays.py | processing cached tx = {last_cached_tx}, latest_db_slot = {latest_db_slot}"
@@ -523,9 +537,9 @@ def fetch_traversed_tx_from_cache(redis: Redis, latest_db_slot: int):
             if redis.llen(REDIS_TX_CACHE_QUEUE_PREFIX) == 1:
                 redis.delete(REDIS_TX_CACHE_QUEUE_PREFIX)
             # Return if a valid signature is found
-            if last_cached_tx["slot"] > latest_db_slot:
+            if last_cached_tx.slot > latest_db_slot:
                 cached_offset_tx_found = True
-                last_tx_signature = last_cached_tx["signature"]
+                last_tx_signature = last_cached_tx.signature
                 return last_tx_signature
         else:
             break
@@ -591,7 +605,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
             TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=fetch_size
         )
         is_initial_fetch = False
-        transactions_array = transactions_history["result"]
+        transactions_array = transactions_history.value
         if not transactions_array:
             # This is considered an 'intersection' since there are no further transactions to process but
             # really represents the end of known history for this ProgramId
@@ -602,11 +616,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         else:
             with db.scoped_session() as read_session:
                 for tx in transactions_array:
-                    tx_sig = tx["signature"]
-                    slot = tx["slot"]
-                    if tx["slot"] > latest_processed_slot:
+                    tx_sig = str(tx.signature)
+                    slot = tx.slot
+                    if tx.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx["slot"] <= latest_processed_slot:
+                    elif tx.slot <= latest_processed_slot:
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
                         logger.info(
@@ -627,10 +641,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 
                 # get latest play slot from the first fetch
                 if transaction_signature_batch and not latest_play_slot:
-                    latest_play_slot = transactions_array[0]["slot"]
+                    latest_play_slot = transactions_array[0].slot
 
                 last_tx = transactions_array[-1]
-                last_tx_signature = last_tx["signature"]
+                last_tx_signature = last_tx.signature
 
                 # Append to recently seen cache
                 cache_traversed_tx(redis, last_tx)

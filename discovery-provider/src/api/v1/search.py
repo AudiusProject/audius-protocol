@@ -1,6 +1,7 @@
 import logging
 
 from flask_restx import Namespace, Resource, fields
+
 from src.api.v1.helpers import (
     format_limit,
     format_offset,

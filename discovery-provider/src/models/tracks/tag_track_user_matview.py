@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Index, Integer, Table, Text
+
 from src.models.base import Base
 
 # Materialized view

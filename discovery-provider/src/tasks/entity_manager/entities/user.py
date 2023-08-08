@@ -7,7 +7,7 @@ import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
-from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
@@ -38,7 +38,6 @@ from src.utils.config import shared_config
 from src.utils.hardcoded_data import genres_lower, moods_lower, reserved_handles_lower
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +80,7 @@ def validate_user_tx(params: ManageEntityParameters):
             )
 
     if params.action == Action.CREATE:
-        if user_id in params.existing_records[EntityType.USER]:
+        if user_id in params.existing_records["User"]:
             raise IndexingValidationError(
                 f"Invalid User Transaction, user {user_id} already exists"
             )
@@ -234,12 +233,11 @@ def update_user(
     validate_user_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
     if (
-        user_id in params.new_records[EntityType.USER]
-        and params.new_records[EntityType.USER][user_id]
+        user_id in params.new_records["User"] and params.new_records["User"][user_id]
     ):  # override with last updated user is in this block
-        existing_user = params.new_records[EntityType.USER][user_id][-1]
+        existing_user = params.new_records["User"][user_id][-1]
 
     user_record = copy_record(
         existing_user,
@@ -568,7 +566,7 @@ def validate_signature(
 
 def recover_user_id_hash(web3, user_id, signature):
     message_hash = defunct_hash_message(text=f"AudiusUserID:{user_id}")
-    wallet_address: str = web3.eth.account.recoverHash(
+    wallet_address: str = web3.eth.account._recover_hash(
         message_hash, signature=signature
     )
     return wallet_address
@@ -611,7 +609,7 @@ def verify_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
     user_record = copy_record(
         existing_user,
         params.block_number,

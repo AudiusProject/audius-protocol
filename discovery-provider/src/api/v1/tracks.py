@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
+
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -303,7 +304,6 @@ class BulkTracks(Resource):
             tracks = [extend_track(track) for track in tracks]
             response, status = success_response(tracks)
             return marshal(response, tracks_response), status
-
 
 
 @full_ns.route("")

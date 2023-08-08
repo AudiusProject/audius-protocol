@@ -74,7 +74,6 @@ def test_index_user_listening_history_populate_play_count(app):
 
         assert results[0].user_id == 1
         assert len(results[0].listening_history) == 2
-        print("history", results[0].listening_history)
         assert results[0].listening_history[0]["track_id"] == 3
         assert results[0].listening_history[0]["timestamp"] == str(TIMESTAMP_5)
         assert results[0].listening_history[0]["play_count"] == 1
@@ -163,7 +162,6 @@ def test_index_user_listening_history_update_play_count(app):
 
         assert results[0].user_id == 1
         assert len(results[0].listening_history) == 3
-        print("history isss ", results[0].listening_history)
         assert results[0].listening_history[0]["track_id"] == 1
         assert results[0].listening_history[0]["timestamp"] == str(TIMESTAMP_4)
         assert results[0].listening_history[0]["play_count"] == 3

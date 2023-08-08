@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, TypedDict
 
 from sqlalchemy.sql import text
+
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)

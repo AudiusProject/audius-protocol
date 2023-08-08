@@ -1,6 +1,6 @@
-import redis
 from src.queries.get_skipped_transactions import get_indexing_error, set_indexing_error
 from src.utils.config import shared_config
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 
@@ -8,7 +8,7 @@ REDIS_URL = shared_config["redis"]["url"]
 def test_get_and_set_indexing_error(app):
     """Tests settings and getting the indexing error"""
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     blocknumber = 12
     blockhash = "0x123"

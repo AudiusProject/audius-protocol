@@ -3,6 +3,7 @@ from typing import Optional, TypedDict, cast
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_, or_
+
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import SaveType

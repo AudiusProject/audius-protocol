@@ -6,8 +6,8 @@ import uuid
 from pip._internal.req import parse_requirements
 from setuptools import find_packages, setup
 
-install_reqs = parse_requirements("requirements.txt", session=uuid.uuid1())
-requirements = [str(ir.req) for ir in install_reqs]
+install_reqs = parse_requirements("requirements.txt", session=uuid.uuid1())  # type: ignore
+requirements = [str(ir.requirement) for ir in install_reqs]
 
 config = {
     "description": "Audius Discovery Provider",

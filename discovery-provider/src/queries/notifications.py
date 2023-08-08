@@ -6,6 +6,7 @@ from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
 from src import api_helpers
 from src.models.indexing.block import Block
 from src.models.notifications.milestone import Milestone, MilestoneName

@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import asc, desc, func
+
 from src.models.social.follow import Follow
 from src.models.tracks.track import Track
 from src.models.users.user import User

@@ -7,8 +7,9 @@ from src.tasks.entity_manager.entity_manager import (
 from src.utils.db_session import get_db
 from web3 import Web3
 from web3.datastructures import AttributeDict
-from src.utils.config import shared_config
-from src.utils.redis_connection import get_redis
+
+from integration_tests.challenges.index_helpers import UpdateTask
+from integration_tests.utils import populate_mock_db_blocks
 from src.models.indexing.skipped_transaction import SkippedTransaction
 from integration_tests.utils import populate_mock_db_blocks
 
@@ -23,7 +24,7 @@ def test_skip_tx(app, mocker):
     )
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -73,11 +74,10 @@ def test_skip_tx(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
     populate_mock_db_blocks(db, 0, 1)
-    
     "Tests valid batch of tracks create/update/delete actions"
     with db.scoped_session() as session:
         # index transactions
@@ -87,7 +87,7 @@ def test_skip_tx(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
         skipped_transactions: List[SkippedTransaction] = session.query(
             SkippedTransaction

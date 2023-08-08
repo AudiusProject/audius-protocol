@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import unquote
 
 from sqlalchemy import desc, func
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
 from src.models.social.play import Play

@@ -1,12 +1,13 @@
 # pylint: disable=too-many-lines
 import enum
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
+
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
@@ -949,7 +950,7 @@ def get_karma(
     session: Session,
     ids: Tuple[int],
     strategy: TrendingVersion,
-    time: str = None,
+    time: Optional[str] = None,
     is_playlist: bool = False,
     xf: bool = False,
 ):

@@ -1,4 +1,5 @@
 from sqlalchemy import Column, DateTime, Integer, String, func
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

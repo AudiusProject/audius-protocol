@@ -27,6 +27,8 @@ def health_check(discprov_url):
 
 def main():
     w3 = web3.Web3(web3.Web3.HTTPProvider(os.getenv("audius_web3_eth_provider_url")))
+    w3.strict_bytes_type_checking = False
+
     w3.eth.default_account = os.getenv("audius_delegate_owner_wallet")
 
     registry = w3.eth.contract(

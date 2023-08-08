@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 
 from sqlalchemy import asc, tuple_
+
 from src.models.notifications.notification import Notification
 from src.models.social.repost import Repost
 from src.models.social.save import Save

@@ -9,6 +9,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects import postgresql
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

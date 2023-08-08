@@ -3,6 +3,7 @@ from typing import Optional, TypedDict
 from sqlalchemy import asc, desc, func, or_
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import coalesce
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_with_aggregates import TrackWithAggregates

@@ -1,4 +1,5 @@
 from sqlalchemy.orm import relationship
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
