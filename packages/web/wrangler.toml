@@ -21,3 +21,9 @@ vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co",
 [env.production]
 name = "audius"
 vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", SITEMAP = "http://audius.co.s3-website-us-west-1.amazonaws.com" }
+
+# Test environment, replace `test` with subdomain
+# Invoke with npx wrangler preview --watch --env test
+[env.test]
+name = "test"
+vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", SITEMAP = "http://audius.co.s3-website-us-west-1.amazonaws.com" }

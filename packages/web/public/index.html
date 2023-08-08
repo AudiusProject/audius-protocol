@@ -21,22 +21,13 @@
 
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
 
-    <!-- SEO -->
-    <meta name="description" content="Audius is a music streaming and sharing platform that puts power back into the hands of content creators." data-react-helmet="true">
-
-    <!-- Social -->
-    <meta property="og:title" content="Audius - Empowering Creators">
+    <meta name="application-name" content="Audius">
     <meta property="og:site_name" content="Audius">
-    <meta property="og:description" content="Audius is a music streaming and sharing platform that puts power back into the hands of content creators.">
-    <meta property="og:image" content="%PUBLIC_URL%/ogImage.jpg">
     <meta property="fb:app_id" content="123553997750078" />
-
-    <meta name="twitter:title" content="Audius - Empowering Creators">
-    <meta name="twitter:description" content="Audius is a music streaming and sharing platform that puts power back into the hands of content creators.">
-    <meta name="twitter:image" content="%PUBLIC_URL%/ogImage.jpg">
-    <meta name="twitter:image:alt" content="The Audius Platform">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@AudiusProject">
+    <meta property="twitter:app:name:iphone" content="Audius Music">
+    <meta property="twitter:app:name:googleplay" content="Audius Music">
 
     <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
 
@@ -45,8 +36,6 @@
       onLoad="window.web3Loaded = true; window.dispatchEvent(new CustomEvent('WEB3_LOADED'))"
       src="%PUBLIC_URL%/scripts/web3.min.js"
     ></script>
-
-    <title>Audius</title>
 
     <script async type="text/javascript">
       // Account recovery
@@ -98,7 +87,7 @@
     <!-- end Google Analytics -->
 
     <!-- start Adroll -->
-    <script type="text/javascript">
+    <script async type="text/javascript">
       const adroll_adv_id = '%REACT_APP_ADROLL_AVD_ID%';
       const adroll_pix_id = '%REACT_APP_ADROLL_PIX_ID%';
       const adroll_version = "2.0";
