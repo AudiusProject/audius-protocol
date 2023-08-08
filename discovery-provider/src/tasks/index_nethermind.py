@@ -11,7 +11,6 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
-from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -452,11 +451,6 @@ def revert_block(session: Session, revert_block: Block):
     revert_user_entries = (
         session.query(User).filter(User.blocknumber == revert_block_number).all()
     )
-    revert_ursm_content_node_entries = (
-        session.query(UrsmContentNode)
-        .filter(UrsmContentNode.blocknumber == revert_block_number)
-        .all()
-    )
     revert_associated_wallets = (
         session.query(AssociatedWallet)
         .filter(AssociatedWallet.blocknumber == revert_block_number)
@@ -597,21 +591,6 @@ def revert_block(session: Session, revert_block: Block):
         # Remove track entries
         logger.info(f"Reverting track: {track_to_revert}")
         session.delete(track_to_revert)
-
-    for ursm_content_node_to_revert in revert_ursm_content_node_entries:
-        cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
-        previous_ursm_content_node_entry = (
-            session.query(UrsmContentNode)
-            .filter(UrsmContentNode.cnode_sp_id == cnode_sp_id)
-            .filter(UrsmContentNode.blocknumber < revert_block_number)
-            .order_by(UrsmContentNode.blocknumber.desc())
-            .first()
-        )
-        if previous_ursm_content_node_entry:
-            previous_ursm_content_node_entry.is_current = True
-        # Remove previous ursm Content Node entires
-        logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
-        session.delete(ursm_content_node_to_revert)
 
     # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
     for user_to_revert in revert_user_entries:
