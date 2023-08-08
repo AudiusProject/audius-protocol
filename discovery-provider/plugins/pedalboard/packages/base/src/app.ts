@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import { Knex, knex } from "knex";
 import { setIntervalAsync } from "set-interval-async";
-import { Table } from "storage/src/index";
+import { Table } from "@pedalboard/database";
 
 dayjs.extend(duration);
 
