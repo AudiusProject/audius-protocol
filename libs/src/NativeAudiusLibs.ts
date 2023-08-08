@@ -538,6 +538,7 @@ export class AudiusLibs {
       this.creatorNode = new CreatorNode(
         this.web3Manager,
         creatorNodeEndpoint,
+        this.creatorNodeConfig.storageNodeSelector,
         this.isServer,
         this.userStateManager,
         this.schemas,

@@ -65,6 +65,7 @@ export class CreatorNode {
 
   web3Manager: Nullable<Web3Manager>
   creatorNodeEndpoint: string
+  storageNodeSelector: StorageNodeSelectorService
   isServer: boolean
   userStateManager: UserStateManager
   schemas: Schemas | undefined
@@ -79,6 +80,7 @@ export class CreatorNode {
   constructor(
     web3Manager: Nullable<Web3Manager>,
     creatorNodeEndpoint: string,
+    storageNodeSelector: StorageNodeSelectorService,
     isServer: boolean,
     userStateManager: UserStateManager,
     schemas: Schemas | undefined,
@@ -89,6 +91,7 @@ export class CreatorNode {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
     this.creatorNodeEndpoint = creatorNodeEndpoint
+    this.storageNodeSelector = storageNodeSelector
     this.isServer = isServer
     this.userStateManager = userStateManager
     this.schemas = schemas
@@ -356,9 +359,12 @@ export class CreatorNode {
    * @return response body
    */
   async _makeRequestV2(axiosRequestObj: AxiosRequestConfig) {
-    // TODO: This might want to have other error handling, request UUIDs, etc...
-    //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
-    axiosRequestObj.baseURL = this.creatorNodeEndpoint
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+    if (!contentNodeEndpoint) {
+      throw new Error('No content node available for upload')
+    }
+    axiosRequestObj.baseURL = contentNodeEndpoint
+
     try {
       return await axios(axiosRequestObj)
     } catch (e: any) {
