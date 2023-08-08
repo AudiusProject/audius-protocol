@@ -5,6 +5,16 @@
     "releaseSHA": "0f1ff121e2321dfa4c1a90c57425b7e29cb49bf4"
   },
   "description": "Audius SDK",
+  "keywords": [
+    "audius",
+    "sdk",
+    "api",
+    "music",
+    "audio",
+    "web3",
+    "decentralized",
+    "blockchain"
+  ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
