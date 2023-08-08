@@ -473,7 +473,6 @@ def test_index_valid_user(app, mocker):
         bus_mock.assert_has_calls(calls, any_order=True)
 
         all_user_events: List[UserEvent] = session.query(UserEvent).all()
-        print(f"asdf all_user_events {all_user_events}")
         assert len(all_user_events) == 1
         assert all_user_events[0].user_id == USER_ID_OFFSET
         assert all_user_events[0].is_mobile_user == True
