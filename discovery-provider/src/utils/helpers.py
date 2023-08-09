@@ -230,7 +230,7 @@ def configure_flask_app_logging(app, loglevel_str):
         if request_user_id:
             log_params["request_user_id"] = request_user_id
         
-        request_app_name = request.args.get('app_name')
+        request_app_name = request.args.get("app_name")
         if request_app_name:
             log_params["appName"] = request_app_name
             logger.info("handle read via developer app", extra=log_params)
