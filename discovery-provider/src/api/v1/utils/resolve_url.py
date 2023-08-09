@@ -39,7 +39,7 @@ def resolve_url(session, url):
         slug = match.group("slug")
         handle = match.group("handle")
         return ns_url_for(
-            playlists_ns, "full_playlist_by_handle_and_slug", slug=slug, handle=handle
+            playlists_ns, "playlist_by_handle_and_slug", slug=slug, handle=handle
         )
 
     match = user_url_regex.match(path)
