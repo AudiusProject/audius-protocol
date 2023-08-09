@@ -229,7 +229,7 @@ def configure_flask_app_logging(app, loglevel_str):
         request_user_id = request.headers.get("X-User-ID")
         if request_user_id:
             log_params["request_user_id"] = request_user_id
-        
+
         request_app_name = request.args.get("app_name")
         if request_app_name:
             log_params["appName"] = request_app_name
