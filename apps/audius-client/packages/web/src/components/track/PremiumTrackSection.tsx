@@ -710,6 +710,7 @@ export const PremiumTrackSection = ({
           <UserBadges
             userId={entity.user_id}
             className={styles.badgeIcon}
+            noContentClassName={styles.noContentBadgeIcon}
             badgeSize={14}
             useSVGTiers
           />
