@@ -355,10 +355,13 @@ def entity_manager_update(
 
 
 def get_records_to_save(
-    params: ManageEntityParameters, new_records, original_records, existing_records_in_json
+    params: ManageEntityParameters,
+    new_records,
+    original_records,
+    existing_records_in_json,
 ):
     records_to_save = []
-    prev_records: Dict[EntityType, List] = defaultdict(list)
+    prev_records: Dict[str, List] = defaultdict(list)
     for record_type, record_dict in new_records.items():
         for entity_id, records in record_dict.items():
             if not records:

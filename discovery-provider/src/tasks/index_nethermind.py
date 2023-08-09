@@ -3,9 +3,7 @@ import concurrent.futures
 import copy
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Sequence, Tuple, TypedDict, cast
-from sqlalchemy import Table
-from sqlalchemy.ext.declarative.api import DeclarativeMeta
+from typing import Dict, List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
 from redis import Redis
