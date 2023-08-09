@@ -1210,6 +1210,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     },
     onMessage: (userId: ID) => {
       dispatch(createChat({ userIds: [userId] }))
+      dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'profile' }))
     },
     onBlock: (userId: ID) => {
       dispatch(blockUser({ userId }))

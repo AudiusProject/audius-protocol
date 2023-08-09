@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
 
-import { Client, accountSelectors } from '@audius/common'
+import { Client, Name, accountSelectors } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
+import { make } from 'common/store/analytics/actions'
 import { getClient } from 'utils/clientUtil'
 import { CHATS_PAGE } from 'utils/route'
 
@@ -43,6 +44,7 @@ export const DirectMessagesBanner = () => {
   }, [])
 
   const handleAccept = useCallback(() => {
+    dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'banner' }))
     dispatch(pushRoute(CHATS_PAGE))
     handleClose()
   }, [dispatch, handleClose])

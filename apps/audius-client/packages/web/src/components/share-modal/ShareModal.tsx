@@ -65,6 +65,7 @@ export const ShareModal = () => {
         onCancelAction: setVisibility({ modal: 'Share', visible: true })
       })
     )
+    dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'share' }))
   }, [dispatch, onClose, content])
 
   const handleShareToTwitter = useCallback(async () => {
