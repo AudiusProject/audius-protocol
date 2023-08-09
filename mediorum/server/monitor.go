@@ -25,7 +25,7 @@ func (ss *MediorumServer) monitorCidCursors() {
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()
-	ticker := time.NewTicker(2 * time.Minute)
+	ticker := time.NewTicker(3 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
 	}
@@ -77,12 +77,12 @@ func getDatabaseSize(p *pgxpool.Pool) (size uint64, errStr string) {
 }
 
 func getUploadsCount(db *gorm.DB) (count int64, errStr string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := db.WithContext(ctx).Model(&Upload{}).Count(&count).Error; err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			errStr = "timeout getting uploads count within 2s: " + err.Error()
+			errStr = "timeout getting uploads count within 30s: " + err.Error()
 		} else {
 			errStr = "error getting uploads count: " + err.Error()
 		}
