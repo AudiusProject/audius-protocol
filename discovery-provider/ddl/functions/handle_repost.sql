@@ -17,7 +17,6 @@ begin
 
     entity_type := 'track';
   else
-    raise notice 'inserting';
     insert into aggregate_playlist (playlist_id, is_album)
     select p.playlist_id, p.is_album
     from playlists p
