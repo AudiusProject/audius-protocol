@@ -6,7 +6,6 @@ from typing import List
 from urllib.parse import urljoin
 
 import requests
-
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
@@ -509,7 +508,9 @@ class TrackStream(Resource):
             stream_url = urljoin(content_node, path)
             headers = {"Range": "bytes=0-1"}
             try:
-                response = requests.get(stream_url + "&skip_play_count=True", headers=headers, timeout=.5)
+                response = requests.get(
+                    stream_url + "&skip_play_count=True", headers=headers, timeout=0.5
+                )
                 if response.status_code == 206:
                     return stream_url
             except:
