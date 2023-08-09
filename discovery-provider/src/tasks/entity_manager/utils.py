@@ -171,7 +171,7 @@ class ManageEntityParameters:
 
     def __init__(
         self,
-        session,
+        session: Session,
         redis,
         challenge_bus: ChallengeEventBus,
         event: AttributeDict,

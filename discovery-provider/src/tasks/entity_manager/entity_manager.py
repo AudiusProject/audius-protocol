@@ -355,7 +355,7 @@ def entity_manager_update(
 
 
 def get_records_to_save(
-    params, new_records, original_records, existing_records_in_json
+    params: ManageEntityParameters, new_records, original_records, existing_records_in_json
 ):
     records_to_save = []
     prev_records: Dict[EntityType, List] = defaultdict(list)
@@ -364,15 +364,14 @@ def get_records_to_save(
             if not records:
                 continue
             # invalidate all new records except the last
-            for record in records:
-                if "is_current" in get_record_columns(record):
-                    record.is_current = False
-
-                if "updated_at" in get_record_columns(record):
-                    record.updated_at = params.block_datetime
-            if "is_current" in get_record_columns(records[-1]):
-                records[-1].is_current = True
-            records_to_save.extend(records)
+            for record in records[:-1]:
+                params.session.delete(record)
+            new_record = records[-1]
+            if "updated_at" in get_record_columns(new_record):
+                new_record.updated_at = params.block_datetime
+            if "is_current" in get_record_columns(new_record):
+                new_record.is_current = True
+            records_to_save.append(new_record)
             # invalidate original record if it already existed in the DB
             # also add revert_blocks
             if (
@@ -382,7 +381,6 @@ def get_records_to_save(
                 in get_record_columns(original_records[record_type][entity_id])
                 and original_records[record_type][entity_id].is_current
             ):
-                original_records[record_type][entity_id].is_current = False
                 # add the json record for revert blocks
                 prev_records[entity_type_table_mapping[record_type]].append(
                     existing_records_in_json[record_type][entity_id]

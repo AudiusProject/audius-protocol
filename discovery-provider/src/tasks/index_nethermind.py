@@ -3,7 +3,9 @@ import concurrent.futures
 import copy
 import os
 from datetime import datetime
-from typing import List, Sequence, Tuple, TypedDict, cast
+from typing import Any, Dict, List, Sequence, Tuple, TypedDict, cast
+from sqlalchemy import Table
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 from hexbytes import HexBytes
 from redis import Redis
@@ -256,6 +258,7 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     if latest_database_block.number is None:
         logger.info(f"Block number invalid {latest_database_block}, returning early")
         return False
+    logger.info(f"asdf get_next_block latest_database_block {latest_database_block}")
 
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
@@ -264,6 +267,7 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         # Copy the immutable attribute dict to a mutable dict
         next_block: BlockData = cast(BlockData, dict(next_block_immutable))
         next_block["number"] = next_block["number"] + final_poa_block
+        logger.info(f"asdf get_next_block next_block {next_block}")
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -465,16 +469,15 @@ def revert_block(session: Session, block_to_revert: Block):
         return
 
     revert_records = []
+    prev_records: Dict[str, List[Dict]] = dict(revert_block.prev_records)
     # apply reverts
-    for record_type in revert_block.prev_records:
-        for json_record in revert_block.prev_records[record_type]:
+    for record_type in prev_records:
+        for json_record in prev_records[record_type]:
             Model = model_mapping[record_type]
-
             # filter out unnecessary keys
             filtered_json_record = {
-                k: v for k, v in json_record.items() if k in Model.__table__.columns
+                k: v for k, v in json_record.items() if k in Model.__table__.columns  # type: ignore
             }
-
             revert_records.append(Model(**filtered_json_record))
 
     # Remove outdated block entry
@@ -518,6 +521,12 @@ def index_nethermind(self):
                 celery.send_task("index_nethermind", countdown=0.5)
                 return
 
+            # if in_valid_state:
+            #     logger.info(
+            #         f"asdf latest_database_block {latest_database_block} next_block {next_block} "
+            #     )
+            #     index_next_block(session, latest_database_block, next_block)
+            # else:
             revert_block(session, latest_database_block)
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
