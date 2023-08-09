@@ -26,16 +26,23 @@ jobs:
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
 
+  - lint-discovery-provider:
+      name: lint-discovery-provider
+
   - test:
       name: test-discovery-provider
       context: GCP
       instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
+      requires:
+        - lint-discovery-provider
   - test:
       name: test-discovery-provider-notifications
       context: GCP
       instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
+      requires:
+        - lint-discovery-provider
 
   # Release
   - deploy-prod-discovery-provider-trigger:

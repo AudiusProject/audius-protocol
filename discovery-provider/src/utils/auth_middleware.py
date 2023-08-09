@@ -3,6 +3,7 @@ import logging
 
 from eth_account.messages import encode_defunct
 from flask.globals import request
+
 from src.models.users.user import User
 from src.utils import db_session, web3_provider
 

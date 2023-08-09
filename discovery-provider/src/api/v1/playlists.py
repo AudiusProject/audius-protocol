@@ -3,6 +3,7 @@ import logging
 from flask import Blueprint, Response
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields
+
 from src.api.v1.helpers import (
     abort_bad_path_param,
     abort_bad_request_param,
@@ -173,6 +174,35 @@ class FullPlaylist(Resource):
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
         return response
+
+
+@ns.route("/by_permalink/<string:handle>/<string:slug>")
+class PlaylistByHandleAndSlug(Resource):
+    @ns.doc(
+        id="""Get Playlist By Handle and Slug""",
+        description="""Get a playlist by handle and slug""",
+        params={"handle": "playlist owner handle", "slug": "playlist slug"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, handle, slug):
+        args = current_user_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+
+        route = {
+            "handle": handle,
+            "slug": slug,
+        }
+
+        playlist = get_playlist(current_user_id=current_user_id, route=route)
+        return_response = []
+        if playlist:
+            tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
+            playlist["tracks"] = tracks
+            return_response = [playlist]
+
+        return success_response(return_response)
 
 
 @full_ns.route("/by_permalink/<string:handle>/<string:slug>")

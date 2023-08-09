@@ -1,10 +1,10 @@
 import logging
 from typing import Dict, List, Optional
 
-import redis
+from sqlalchemy.orm.session import Session
+
 from integration_tests.queries.test_get_challenges import DefaultUpdater
 from integration_tests.utils import populate_mock_db_blocks
-from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
@@ -18,6 +18,7 @@ from src.queries.get_challenges import get_challenges
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.helpers import model_to_dictionary
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
@@ -256,7 +257,7 @@ def test_aggregates(app):
     with app.app_context():
         db = get_db()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
@@ -329,7 +330,7 @@ def test_in_memory_queue(app):
     with app.app_context():
         db = get_db()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     bus = ChallengeEventBus(redis_conn)
     with db.scoped_session() as session, bus.use_scoped_dispatch_queue():
@@ -361,7 +362,7 @@ def test_in_memory_queue(app):
     agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
     assert agg_chal["is_complete"] == False
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
 
 def test_inactive_challenge(app):
@@ -369,7 +370,7 @@ def test_inactive_challenge(app):
     with app.app_context():
         db = get_db()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     bus = ChallengeEventBus(redis_conn)
     with db.scoped_session() as session:
@@ -390,7 +391,7 @@ def test_rejects_invalid_events(app):
     with app.app_context():
         db = get_db()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     bus = ChallengeEventBus(redis_conn)
     with db.scoped_session() as session:
@@ -420,7 +421,7 @@ def test_catches_exceptions_in_single_processor(app):
     with app.app_context():
         db = get_db()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     bus = ChallengeEventBus(redis_conn)
     with db.scoped_session() as session:

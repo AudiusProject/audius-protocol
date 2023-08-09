@@ -1,10 +1,20 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.3",
+  "version": "3.0.4-beta.1",
   "audius": {
-    "releaseSHA": "b2c9c71fe0138471b7e777fbb23cc943c21602b8"
+    "releaseSHA": "7a6cf8aa2097418cbf695a15f28aba17b61ff68a"
   },
   "description": "Audius SDK",
+  "keywords": [
+    "audius",
+    "sdk",
+    "api",
+    "music",
+    "audio",
+    "web3",
+    "decentralized",
+    "blockchain"
+  ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",

@@ -1,7 +1,5 @@
-# requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 AS contracts
-
-FROM alpine:3.14
+FROM alpine:3.18
 
 ENV INSTALL_PATH /audius-discovery-provider
 WORKDIR $INSTALL_PATH
@@ -14,35 +12,38 @@ RUN mkdir -p ${PROMETHEUS_MULTIPROC_DIR}
 COPY scripts/wait /wait
 
 RUN apk update && \
-    apk add \
+    apk add --no-cache \
         alpine-sdk \
         bash \
         curl \
         docker \
         libffi-dev \
         libseccomp-dev \
+        libxml2-dev \
+        libxslt-dev \
         linux-headers \
         nodejs \
         npm \
+        python3=3.11.4-r0 \
+        python3-dev=3.11.4-r0 \
         py3-numpy \
         py3-pip \
         py3-scipy \
         py3-wheel \
-        python3 \
-        python3-dev \
         redis \
         rsyslog \
         sudo \
         gcc \
         musl-dev \
-        openblas-dev \
-        gfortran
+        gfortran \
+        openblas-dev
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
-    source /etc/os-release && \
-    MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
-    echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
+    echo "http://openresty.org/package/alpine/v3.15/main" | tee -a /etc/apk/repositories && \
     apk update && \
     apk add openresty=1.19.9.1-r0 openresty-opm && \
     opm get spacewander/lua-resty-rsa && \
@@ -60,15 +61,16 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         postgresql-libs=11.12-r0 \
         postgresql=11.12-r0
 
-
-# Upgrade pip first to accomodate anchor.py installation
-COPY requirements.txt requirements.txt
-RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
+RUN python3 -m pip install --upgrade pip
 
 COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
+
+COPY requirements.txt requirements.txt
+RUN --mount=type=cache,target=/root/.cache \
+    python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build

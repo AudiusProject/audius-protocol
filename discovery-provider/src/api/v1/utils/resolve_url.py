@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse
 
 from flask.helpers import url_for
+
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.tracks import ns as tracks_ns
@@ -10,9 +11,7 @@ from src.models.users.user import User
 from src.utils.helpers import encode_int_id
 
 track_url_regex = re.compile(r"^/(?P<handle>[^/]*)/(?P<slug>[^/]*)$")
-playlist_url_regex = re.compile(
-    r"/(?P<handle>[^/]*)/(playlist|album)/(?P<track>[^/]*)(?=-)-(?P<id>[0-9]*)$"
-)
+playlist_url_regex = re.compile(r"/(?P<handle>[^/]*)/(playlist|album)/(?P<slug>[^/]*)$")
 user_url_regex = re.compile(r"^/(?P<handle>[^/]*)$")
 
 
@@ -37,9 +36,11 @@ def resolve_url(session, url):
 
     match = playlist_url_regex.match(path)
     if match:
-        playlist_id = match.group("id")
-        hashed_id = encode_int_id(int(playlist_id))
-        return ns_url_for(playlists_ns, "playlist", playlist_id=hashed_id)
+        slug = match.group("slug")
+        handle = match.group("handle")
+        return ns_url_for(
+            playlists_ns, "playlist_by_handle_and_slug", slug=slug, handle=handle
+        )
 
     match = user_url_regex.match(path)
     if match:

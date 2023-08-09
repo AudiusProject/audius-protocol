@@ -1,6 +1,4 @@
-from collections import defaultdict
 from datetime import datetime
-from typing import Dict, Set
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -42,7 +40,9 @@ def update_playlist_routes_table(
     # Check the pending playlist route updates first
 
     # Then query the DB if necessary
-    prev_playlist_route_record = params.existing_records[EntityType.PLAYLIST_ROUTE].get(playlist_record.playlist_id)
+    prev_playlist_route_record = params.existing_records["PlaylistRoute"].get(
+        playlist_record.playlist_id
+    )
 
     if prev_playlist_route_record:
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
@@ -92,9 +92,15 @@ def update_playlist_routes_table(
         migration_playlist_route.blockhash = playlist_record.blockhash
         migration_playlist_route.blocknumber = playlist_record.blocknumber
         migration_playlist_route.txhash = playlist_record.txhash
-        params.add_record(migration_playlist_route.playlist_id, migration_playlist_route, EntityType.PLAYLIST_ROUTE)
+        params.add_record(
+            migration_playlist_route.playlist_id,
+            migration_playlist_route,
+            EntityType.PLAYLIST_ROUTE,
+        )
 
-    params.add_record(new_playlist_route.playlist_id, new_playlist_route, EntityType.PLAYLIST_ROUTE)
+    params.add_record(
+        new_playlist_route.playlist_id, new_playlist_route, EntityType.PLAYLIST_ROUTE
+    )
 
     # Add to pending playlist routes so we don't add the same route twice
     pending_playlist_routes.append(new_playlist_route)
@@ -105,7 +111,7 @@ def update_playlist_routes_table(
 
 
 def get_playlist_events_tx(update_task, event_type, tx_receipt):
-    return getattr(update_task.playlist_contract.events, event_type)().processReceipt(
+    return getattr(update_task.playlist_contract.events, event_type)().process_receipt(
         tx_receipt
     )
 
@@ -124,14 +130,14 @@ def validate_playlist_tx(params: ManageEntityParameters):
     premium_tracks = list(
         filter(
             lambda track: track.is_premium,
-            params.existing_records[EntityType.TRACK].values(),
+            params.existing_records["Track"].values(),
         )
     )
     if premium_tracks:
         raise IndexingValidationError("Cannot add premium tracks to playlist")
 
     if params.action == Action.CREATE:
-        if playlist_id in params.existing_records[EntityType.PLAYLIST]:
+        if playlist_id in params.existing_records["Playlist"]:
             raise IndexingValidationError(
                 f"Cannot create playlist {playlist_id} that already exists"
             )
@@ -140,13 +146,11 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Cannot create playlist {playlist_id} below the offset"
             )
     else:
-        if playlist_id not in params.existing_records[EntityType.PLAYLIST]:
+        if playlist_id not in params.existing_records["Playlist"]:
             raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not exist"
             )
-        existing_playlist: Playlist = params.existing_records[EntityType.PLAYLIST][
-            playlist_id
-        ]
+        existing_playlist: Playlist = params.existing_records["Playlist"][playlist_id]
         if existing_playlist.playlist_owner_id != user_id:
             raise IndexingValidationError(
                 f"Cannot update playlist {playlist_id} that does not belong to user {user_id}"
@@ -165,7 +169,10 @@ def validate_playlist_tx(params: ManageEntityParameters):
                 f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
             )
         if params.metadata.get("playlist_contents"):
-            if "playlist_contents" not in params.metadata or "track_ids" not in params.metadata["playlist_contents"]:
+            if (
+                "playlist_contents" not in params.metadata
+                or "track_ids" not in params.metadata["playlist_contents"]
+            ):
                 raise IndexingValidationError("playlist contents requires track_ids")
             playlist_track_count = len(
                 params.metadata["playlist_contents"]["track_ids"]
@@ -175,7 +182,11 @@ def validate_playlist_tx(params: ManageEntityParameters):
                     f"Playlist {playlist_id} exceeds track limit {PLAYLIST_TRACK_LIMIT}"
                 )
 
-        if params.action == Action.UPDATE and not existing_playlist.is_private and params.metadata.get("is_private"):
+        if (
+            params.action == Action.UPDATE
+            and not existing_playlist.is_private
+            and params.metadata.get("is_private")
+        ):
             raise IndexingValidationError(f"Cannot unlist playlist {playlist_id}")
 
 
@@ -188,7 +199,9 @@ def create_playlist(params: ManageEntityParameters):
     last_added_to = None
     for track in tracks:
         if "track" not in track or "time" not in track:
-            raise IndexingValidationError(f"Cannot add {track} to playlist {playlist_id}")
+            raise IndexingValidationError(
+                f"Cannot add {track} to playlist {playlist_id}"
+            )
 
         tracks_with_index_time.append(
             {
@@ -246,11 +259,11 @@ def update_playlist(params: ManageEntityParameters):
     # TODO ignore updates on deleted playlists?
 
     playlist_id = params.entity_id
-    existing_playlist = params.existing_records[EntityType.PLAYLIST][playlist_id]
+    existing_playlist = params.existing_records["Playlist"][playlist_id]
     if (
-        playlist_id in params.new_records[EntityType.PLAYLIST]
+        playlist_id in params.new_records["Playlist"]
     ):  # override with last updated playlist is in this block
-        existing_playlist = params.new_records[EntityType.PLAYLIST][playlist_id][-1]
+        existing_playlist = params.new_records["Playlist"][playlist_id][-1]
 
     playlist_record = copy_record(
         existing_playlist,
@@ -274,12 +287,10 @@ def update_playlist(params: ManageEntityParameters):
 def delete_playlist(params: ManageEntityParameters):
     validate_playlist_tx(params)
 
-    existing_playlist = params.existing_records[EntityType.PLAYLIST][params.entity_id]
-    if params.entity_id in params.new_records[EntityType.PLAYLIST]:
+    existing_playlist = params.existing_records["Playlist"][params.entity_id]
+    if params.entity_id in params.new_records["Playlist"]:
         # override with last updated playlist is in this block
-        existing_playlist = params.new_records[EntityType.PLAYLIST][params.entity_id][
-            -1
-        ]
+        existing_playlist = params.new_records["Playlist"][params.entity_id][-1]
 
     deleted_playlist = copy_record(
         existing_playlist,
@@ -303,7 +314,9 @@ def process_playlist_contents(playlist_record, playlist_metadata, block_integer_
         previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for previous_track in previous_playlist_tracks:
             previous_track_id = previous_track["track"]
-            previous_track_time = previous_track.get("metadata_time") or previous_track["time"]
+            previous_track_time = (
+                previous_track.get("metadata_time") or previous_track["time"]
+            )
             if previous_track_id == track_id and previous_track_time == metadata_time:
                 index_time = previous_track_time
 

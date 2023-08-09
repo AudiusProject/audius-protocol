@@ -4,7 +4,6 @@ from integration_tests.utils import populate_mock_db
 from src.queries.get_track_library import (
     GetTrackLibraryArgs,
     LibraryFilterType,
-    SortDirection,
     SortMethod,
     _get_track_library,
 )

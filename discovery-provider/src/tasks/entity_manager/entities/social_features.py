@@ -1,8 +1,9 @@
 import json
-from typing import Union
+from typing import Union, cast
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.exceptions import IndexingValidationError
+from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -275,11 +276,12 @@ def validate_social_feature(params: ManageEntityParameters):
             )
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
-        owner_id = (
-            target_entity.playlist_owner_id
-            if params.entity_type == EntityType.PLAYLIST
-            else target_entity.owner_id
-        )
+        if params.entity_type == EntityType.PLAYLIST:
+            assert isinstance(target_entity, Playlist)
+            owner_id = target_entity.playlist_owner_id
+        else:
+            if hasattr(target_entity, "owner_id"):
+                owner_id = target_entity.owner_id
         if params.user_id == owner_id:
             raise IndexingValidationError(
                 f"User {params.user_id} cannot {params.action} themself"
@@ -292,7 +294,7 @@ def validate_duplicate_social_feature(
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
-    existing_record = params.existing_records.get(record_type, {}).get(key)
+    existing_record = cast(dict, params.existing_records.get(record_type, {})).get(key)
 
     if existing_record:
         duplicate_create = (

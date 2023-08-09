@@ -1,9 +1,10 @@
-from typing import Optional, TypedDict
+from typing import Optional, Type, TypedDict, cast
 
 from sqlalchemy import asc, desc, func, or_, text
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import aliased, contains_eager
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.sql.functions import coalesce
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -135,7 +136,12 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         .distinct(TrackWithAggregates.track_id)
         .order_by(TrackWithAggregates.track_id)
     ).subquery()
-    TrackWithAggregatesAlias = aliased(TrackWithAggregates, subquery)
+
+    # Alias needs a type hint
+    TrackWithAggregatesAlias = cast(
+        Type[TrackWithAggregates], aliased(TrackWithAggregates, subquery)
+    )
+
     all_base = session.query(
         TrackWithAggregatesAlias,
         subquery.c.item_created_at.label("item_created_at"),
@@ -152,7 +158,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
     # Depending on whether this is 'all' or not,
     # subsequent query building either needs to reference TrackWithAggregates or the aliased TrackWithAggregatesAlias
     # to avoid accidental join.
-    TracksTable = (
+    TracksTable: Type[TrackWithAggregates] = (
         TrackWithAggregatesAlias
         if filter_type == LibraryFilterType.all
         else TrackWithAggregates
@@ -168,14 +174,16 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
             raise ValueError("Library filter type 'all' does not support query yet")
         base_query = base_query.join(TracksTable.user, aliased=True).filter(
             or_(
-                TracksTable.title.ilike(f"%{query.lower()}%"),
+                cast(ColumnElement, TracksTable.title).ilike(f"%{query.lower()}%"),
                 User.name.ilike(f"%{query.lower()}%"),
             )
         )
 
     # Set sort methods
     if sort_method == SortMethod.title:
-        base_query = base_query.order_by(sort_fn(TracksTable.title))
+        base_query = base_query.order_by(
+            sort_fn(cast(ColumnElement, TracksTable.title))
+        )
     elif sort_method == SortMethod.artist_name:
         base_query = base_query.join(TracksTable.user, aliased=True).order_by(
             sort_fn(User.name)
@@ -208,19 +216,22 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
         # This branch covers added_date, or any other sort method
         if filter_type == LibraryFilterType.favorite:
             base_query = base_query.order_by(
-                sort_fn(Save.created_at), desc(TracksTable.track_id)
+                sort_fn(Save.created_at),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.repost:
             base_query = base_query.order_by(
-                sort_fn(Repost.created_at), desc(TracksTable.track_id)
+                sort_fn(Repost.created_at),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.purchase:
             base_query = base_query.order_by(
-                sort_fn(USDCPurchase.created_at), desc(TracksTable.track_id)
+                sort_fn(USDCPurchase.created_at),
+                desc(TracksTable.track_id),
             )
         elif filter_type == LibraryFilterType.all:
             base_query = base_query.order_by(
-                sort_fn(text("item_created_at")),
+                sort_fn(cast(ColumnElement, text("item_created_at"))),
                 desc(TracksTable.track_id),
             )
 

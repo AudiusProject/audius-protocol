@@ -1,8 +1,9 @@
 import enum
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, or_, text
+from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import aliased, contains_eager
+
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import Repost, RepostType
@@ -145,7 +146,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     # Set sort methods
     if sort_method == CollectionLibrarySortMethod.added_date:
         base_query = base_query.order_by(
-            sort_fn(text("item_created_at")), desc(PlaylistAlias.playlist_id)
+            sort_fn("item_created_at"), desc(PlaylistAlias.playlist_id)
         )
     elif sort_method == CollectionLibrarySortMethod.reposts:
         base_query = base_query.join(

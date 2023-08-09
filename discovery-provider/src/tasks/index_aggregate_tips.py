@@ -6,6 +6,7 @@ from typing import List, TypedDict
 from redis import Redis
 from sqlalchemy import func, text
 from sqlalchemy.orm.session import Session
+
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import init_task_and_acquire_lock, update_aggregate_table

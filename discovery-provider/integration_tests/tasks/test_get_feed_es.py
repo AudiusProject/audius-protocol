@@ -3,6 +3,7 @@ import os
 import subprocess
 
 from elasticsearch import Elasticsearch
+
 from integration_tests.utils import populate_mock_db
 from src.queries.get_feed_es import get_feed_es
 from src.utils.db_session import get_db

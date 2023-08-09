@@ -2,8 +2,9 @@ import logging
 import math
 from typing import List
 
-from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import desc
+
+from integration_tests.utils import populate_mock_db
 from src.models.users.related_artist import RelatedArtist
 from src.queries.get_related_artists_minhash import update_related_artist_minhash
 from src.utils.config import shared_config

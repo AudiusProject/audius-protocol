@@ -2,6 +2,7 @@ import logging
 
 from flask import redirect
 from flask_restx import Namespace, Resource, reqparse
+
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,

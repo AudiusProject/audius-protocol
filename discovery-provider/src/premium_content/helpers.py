@@ -1,14 +1,23 @@
 import logging
+from typing import Dict, Union
 
 from sqlalchemy.orm.session import Session
+
 from src.models.social.follow import Follow
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase
+from src.premium_content.premium_content_types import PremiumContentType
 
 logger = logging.getLogger(__name__)
 
 
-def does_user_have_nft_collection(**kwargs):
+def does_user_have_nft_collection(
+    session: Session,
+    user_id: int,
+    content_id: int,
+    content_type: PremiumContentType,
+    condition_options: Union[Dict, int],
+):
     # Return False here as we want to avoid this check here, in favor of
     # calling the /tracks/<user-id>/nft-gated-signatures endpoint to check
     # whether a user has access to nft-gated tracks.
@@ -16,7 +25,11 @@ def does_user_have_nft_collection(**kwargs):
 
 
 def does_user_follow_artist(
-    session: Session, user_id: int, condition_options: int, **kwargs
+    session: Session,
+    user_id: int,
+    content_id: int,
+    content_type: PremiumContentType,
+    condition_options: Union[Dict, int],
 ):
     follow_user_id = condition_options
     result = (
@@ -31,7 +44,11 @@ def does_user_follow_artist(
 
 
 def does_user_support_artist(
-    session: Session, user_id: int, condition_options: int, **kwargs
+    session: Session,
+    user_id: int,
+    content_id: int,
+    content_type: PremiumContentType,
+    condition_options: Union[Dict, int],
 ):
     supporting_user_id = condition_options
     result = (
@@ -48,8 +65,8 @@ def has_user_purchased_content(
     session: Session,
     user_id: int,
     content_id: int,
-    content_type: str,
-    **kwargs,
+    content_type: PremiumContentType,
+    condition_options: Union[Dict, int],
 ):
     result = (
         session.query(USDCPurchase)

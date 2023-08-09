@@ -1,9 +1,10 @@
 from celery import Task
 from redis import Redis
+from web3.contract import Contract
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.eth_manager import EthManager
 from src.utils.session_manager import SessionManager
-from web3.contract import Contract
 
 
 class DatabaseTask(Task):

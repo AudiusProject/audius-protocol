@@ -2,6 +2,7 @@ import copy
 import os
 
 from elasticsearch import Elasticsearch, logger, logging
+
 from src.utils.spl_audio import to_wei
 
 logger.setLevel(logging.WARNING)

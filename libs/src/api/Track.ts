@@ -10,7 +10,6 @@ import {
 const TRACK_PROPS = [
   'owner_id',
   'title',
-  'length',
   'cover_art_sizes',
   'tags',
   'genre',

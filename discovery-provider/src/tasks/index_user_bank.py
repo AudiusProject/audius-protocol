@@ -3,13 +3,18 @@ import re
 import time
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional, Tuple, TypedDict, Union
+from typing import List, Optional, Tuple, TypedDict, Union, cast
 
 import base58
 from redis import Redis
-from solana.publickey import PublicKey
+from solders.instruction import CompiledInstruction
+from solders.message import Message
+from solders.pubkey import Pubkey
+from solders.rpc.responses import GetTransactionResp
+from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
@@ -45,12 +50,6 @@ from src.solana.solana_parser import (
     SolanaInstructionType,
     parse_instruction_data,
 )
-from src.solana.solana_transaction_types import (
-    ConfirmedTransaction,
-    ResultMeta,
-    TransactionInfoResult,
-    TransactionMessageInstruction,
-)
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     cache_latest_sol_db_tx,
@@ -79,9 +78,9 @@ logger = StructuredLogger(__name__)
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
-USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
-USDC_MINT_PUBKEY = PublicKey(USDC_MINT) if USDC_MINT else None
+USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
+USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 
 # Transfer instructions don't have a mint acc arg but do have userbank authority.
 # So re-derive the claimable token PDAs for each mint here to help us determine mint later.
@@ -175,12 +174,12 @@ create_token_account_instr: List[InstructionFormat] = [
 
 def process_create_userbank_instruction(
     session: Session,
-    instruction: TransactionMessageInstruction,
+    instruction: CompiledInstruction,
     account_keys: List[str],
     tx_sig: str,
     timestamp: datetime,
 ):
-    tx_data = instruction["data"]
+    tx_data = str(instruction.data)
     parsed_token_data = parse_create_token_data(tx_data)
     eth_addr = parsed_token_data["eth_address"]
     decoded = base58.b58decode(tx_data)[1:]
@@ -189,7 +188,10 @@ def process_create_userbank_instruction(
         get_account_index(instruction, CREATE_MINT_ACCOUNT_INDEX)
     ]
     _, derived_address = get_address_pair(
-        PublicKey(mint_address), public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+        Pubkey.from_string(mint_address),
+        public_key_bytes,
+        USER_BANK_KEY,
+        SPL_TOKEN_ID_PK,
     )
     bank_acct = str(derived_address[0])
     try:
@@ -327,7 +329,7 @@ def validate_purchase(
 
 def index_purchase(
     session: Session,
-    receiver_user_id: Union[int, None],
+    receiver_user_id: int,
     receiver_account: str,
     sender_user_id: int,
     sender_account: str,
@@ -383,7 +385,7 @@ def index_purchase(
 
 def validate_and_index_purchase(
     session: Session,
-    receiver_user_id: Union[int, None],
+    receiver_user_id: int,
     receiver_account: str,
     sender_user_id: int,
     sender_account: str,
@@ -498,10 +500,10 @@ def index_user_tip(
 def process_transfer_instruction(
     session: Session,
     redis: Redis,
-    instruction: TransactionMessageInstruction,
+    instruction: CompiledInstruction,
     memos: List[str],
     account_keys: List[str],
-    meta: ResultMeta,
+    meta: UiTransactionStatusMeta,
     tx_sig: str,
     slot: int,
     challenge_event_bus: ChallengeEventBus,
@@ -654,21 +656,32 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
 def process_user_bank_tx_details(
     session: Session,
     redis: Redis,
-    tx_info: ConfirmedTransaction,
+    tx_info: GetTransactionResp,
     tx_sig,
     timestamp,
     challenge_event_bus: ChallengeEventBus,
 ):
-    result: TransactionInfoResult = tx_info["result"]
-    meta = result["meta"]
-    error = meta["err"]
+    result = tx_info.value
+    if not result:
+        logger.error("index_user_bank.py | No result")
+        return
+    meta = result.transaction.meta
+    if not meta:
+        logger.error("index_user_bank.py | No result meta")
+        return
+    error = meta.err
     if error:
-        logger.info(
+        logger.error(
             f"index_user_bank.py | Skipping error transaction from chain {tx_info}"
         )
         return
-    account_keys = tx_info["result"]["transaction"]["message"]["accountKeys"]
-    tx_message = result["transaction"]["message"]
+    transaction = result.transaction.transaction
+    if not hasattr(transaction, "message"):
+        logger.error(f"index_user_bank.py | No transaction message found {transaction}")
+        return
+
+    account_keys = list(map(lambda x: str(x), transaction.message.account_keys))
+    tx_message = cast(Message, transaction.message)
 
     # Check for valid instruction
     has_create_token_instruction = has_log(
@@ -702,7 +715,7 @@ def process_user_bank_tx_details(
             account_keys=account_keys,
             meta=meta,
             tx_sig=tx_sig,
-            slot=result["slot"],
+            slot=result.slot,
             challenge_event_bus=challenge_event_bus,
             timestamp=timestamp,
         )
@@ -764,7 +777,7 @@ def process_user_bank_txs() -> None:
                 USER_BANK_ADDRESS, before=last_tx_signature, limit=fetch_size
             )
             is_initial_fetch = False
-            transactions_array = transactions_history["result"]
+            transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
                 logger.info(
@@ -773,17 +786,17 @@ def process_user_bank_txs() -> None:
             else:
                 # Current batch of transactions
                 transaction_signature_batch = []
-                for tx_info in transactions_array:
-                    tx_sig = tx_info["signature"]
-                    tx_slot = tx_info["slot"]
+                for transaction_with_signature in transactions_array:
+                    tx_sig = str(transaction_with_signature.signature)
+                    tx_slot = transaction_with_signature.slot
                     logger.debug(
                         f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if tx_info["slot"] > latest_processed_slot:
+                    if transaction_with_signature.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif (
-                        tx_info["slot"] <= latest_processed_slot
-                        and tx_info["slot"] > MIN_SLOT
+                        transaction_with_signature.slot <= latest_processed_slot
+                        and transaction_with_signature.slot > MIN_SLOT
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
@@ -800,8 +813,7 @@ def process_user_bank_txs() -> None:
                         transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
-                last_tx = transactions_array[-1]
-                last_tx_signature = last_tx["signature"]
+                last_tx_signature = transactions_array[-1].signature
 
                 # Append batch of processed signatures
                 if transaction_signature_batch:
@@ -832,13 +844,13 @@ def process_user_bank_txs() -> None:
             logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
             batch_start_time = time.time()
 
-            tx_infos: List[Tuple[ConfirmedTransaction, str]] = []
+            tx_infos: List[Tuple[GetTransactionResp, str]] = []
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
                         get_sol_tx_info,
                         solana_client_manager,
-                        tx_sig,
+                        str(tx_sig),
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
@@ -856,15 +868,19 @@ def process_user_bank_txs() -> None:
             # Note: while it's possible (even likely) to have multiple tx in the same slot,
             # these transactions can't be dependent on one another, so we don't care which order
             # we process them.
-            tx_infos.sort(key=lambda info: info[0]["result"]["slot"])
+            tx_infos.sort(key=lambda info: info[0].value.slot if info[0].value else 0)
 
             for tx_info, tx_sig in tx_infos:
                 if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                    last_tx = tx_info["result"]
+                    last_tx = tx_info.value
                 num_txs_processed += 1
 
-                tx_slot = tx_info["result"]["slot"]
-                timestamp = tx_info["result"]["blockTime"]
+                tx_value = tx_info.value
+                if tx_value is None:
+                    raise Exception(f"No txinfo value {tx_info}")
+
+                tx_slot = tx_value.slot
+                timestamp = float(tx_value.block_time or 0)
                 parsed_timestamp = datetime.utcfromtimestamp(timestamp)
 
                 logger.debug(
@@ -877,7 +893,9 @@ def process_user_bank_txs() -> None:
                 )
                 session.add(
                     UserBankTx(
-                        signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp
+                        signature=str(tx_sig),
+                        slot=tx_slot,
+                        created_at=parsed_timestamp,
                     )
                 )
 
@@ -892,12 +910,12 @@ def process_user_bank_txs() -> None:
             redis,
             {
                 "signature": last_tx_sig,
-                "slot": last_tx["slot"],
-                "timestamp": last_tx["blockTime"],
+                "slot": last_tx.slot,
+                "timestamp": last_tx.block_time,
             },
         )
     if last_tx:
-        redis.set(latest_sol_user_bank_slot_key, last_tx["slot"])
+        redis.set(latest_sol_user_bank_slot_key, last_tx.slot)
     elif latest_global_slot is not None:
         redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
 

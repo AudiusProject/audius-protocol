@@ -1,11 +1,18 @@
 # pylint: disable=C0302
 import concurrent.futures
+import copy
 import os
 from datetime import datetime
-from operator import itemgetter, or_
+from operator import or_
+from typing import List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
+from redis import Redis
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+from web3.exceptions import BlockNotFound
+from web3.types import BlockData, HexStr, TxReceipt
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
@@ -34,9 +41,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from web3.exceptions import BlockNotFound
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -65,21 +69,25 @@ default_config_start_hash = "0x0"
 zero_address = "0x0000000000000000000000000000000000000000"
 
 
-def fetch_tx_receipt(tx_hash: HexBytes):
+class TxReceiptAndHash(TypedDict):
+    tx_receipt: TxReceipt
+    tx_hash: str
+
+
+def fetch_tx_receipt(tx_hash: HexBytes) -> TxReceiptAndHash:
     receipt = web3.eth.get_transaction_receipt(tx_hash)
-    response = {}
-    response["tx_receipt"] = receipt
-    response["tx_hash"] = tx_hash.hex()
-    return response
+    return {"tx_receipt": receipt, "tx_hash": tx_hash.hex()}
 
 
 @log_duration(logger)
-def fetch_tx_receipts(block):
-    block_transactions = block.transactions
-    block_tx_with_receipts = {}
+def fetch_tx_receipts(block: BlockData):
+    # We fetch HexBytes rather than full TxData
+    block_transactions = cast(Sequence[HexBytes], block["transactions"])
+    block_tx_with_receipts: dict[str, TxReceipt] = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_tx_receipt = {
-            executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
+            executor.submit(fetch_tx_receipt, tx): tx
+            for tx in (block_transactions or [])
         }
         for future in concurrent.futures.as_completed(future_to_tx_receipt):
             tx = future_to_tx_receipt[future]
@@ -89,7 +97,7 @@ def fetch_tx_receipts(block):
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
                 logger.error(
-                    f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}"
+                    f"index_nethermind.py | fetch_tx_receipts {tx.hex()} generated {exc}"
                 )
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
@@ -106,7 +114,7 @@ def fetch_tx_receipts(block):
 def get_entity_manager_events_tx(index_nethermind, event_type, tx_receipt):
     return getattr(
         index_nethermind.entity_manager_contract.events, event_type
-    )().processReceipt(tx_receipt)
+    )().process_receipt(tx_receipt)
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
@@ -131,12 +139,12 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(
-    session: Session, next_block: AttributeDict, current_block: Block
+    session: Session, next_block: BlockData, current_block: Block
 ):
     block_model = Block(
-        blockhash=web3.toHex(next_block.hash),
-        parenthash=web3.toHex(next_block.parentHash),
-        number=next_block.number,
+        blockhash=web3.to_hex(next_block["hash"]),
+        parenthash=web3.to_hex(next_block["parentHash"]),
+        number=next_block["number"],
         is_current=True,
     )
 
@@ -144,19 +152,19 @@ def add_indexed_block_to_db(
     session.add(block_model)
 
 
-def add_indexed_block_to_redis(block, redis):
-    redis.set(most_recent_indexed_block_redis_key, block.number)
-    redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+def add_indexed_block_to_redis(block: BlockData, redis: Redis):
+    redis.set(most_recent_indexed_block_redis_key, block["number"])
+    redis.set(most_recent_indexed_block_hash_redis_key, block["hash"].hex())
 
 
 def process_state_changes(
-    session,
-    tx_type_to_grouped_lists_map,
-    block,
+    session: Session,
+    tx_type_to_grouped_lists_map: dict[str, List[TxReceipt]],
+    block: BlockData,
 ):
-    block_number, block_hash, block_timestamp = itemgetter(
-        "number", "hash", "timestamp"
-    )(block)
+    block_number = block["number"]
+    block_hash = block["hash"].hex()
+    block_timestamp = block["timestamp"]
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -219,7 +227,7 @@ def is_block_on_chain(web3: Web3, block: Block):
     Determines if the provided block is valid on chain by fetching its hash.
     """
     try:
-        block_from_chain = web3.eth.get_block(block.blockhash)
+        block_from_chain = web3.eth.get_block(HexStr(block.blockhash))
         return block_from_chain
     except BlockNotFound:
         return False
@@ -227,13 +235,17 @@ def is_block_on_chain(web3: Web3, block: Block):
 
 
 def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
+    if latest_database_block.number is None:
+        logger.info(f"Block number invalid {latest_database_block}, returning early")
+        return False
+
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
-        next_block = web3.eth.get_block(next_block_number)
-        next_block = AttributeDict(
-            next_block, number=next_block.number + final_poa_block
-        )
+        next_block_immutable = web3.eth.get_block(next_block_number)
+        # Copy the immutable attribute dict to a mutable dict
+        next_block: BlockData = cast(BlockData, dict(next_block_immutable))
+        next_block["number"] = next_block["number"] + final_poa_block
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -241,7 +253,9 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         return False
 
 
-def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_block=0):
+def get_relevant_blocks(
+    web3: Web3, latest_database_block: Block, final_poa_block=0
+) -> Tuple[BlockData | bool, BlockData | bool]:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         is_block_on_chain_future = executor.submit(
             is_block_on_chain, web3, latest_database_block
@@ -255,7 +269,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
         if (
             next_block
-            and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            and web3.to_hex(next_block["parentHash"]) != latest_database_block.blockhash
             and latest_database_block.number != 0
         ):
             block_on_chain = False
@@ -265,15 +279,14 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
 @log_duration(logger)
 def index_next_block(
-    session: Session, latest_database_block: Block, next_block: AttributeDict
+    session: Session, latest_database_block: Block, next_block: BlockData
 ):
     """
     Given the latest block in the database, index forward one block.
     """
     redis = index_nethermind.redis
     shared_config = index_nethermind.shared_config
-
-    next_block_number = next_block.number
+    next_block_number = next_block["number"]
     logger.set_context("block", next_block_number)
 
     indexing_transaction_index_sort_order_start_block = (
@@ -283,7 +296,7 @@ def index_next_block(
 
     challenge_bus: ChallengeEventBus = index_nethermind.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
-        txs_grouped_by_type = {
+        txs_grouped_by_type: dict[str, List[TxReceipt]] = {
             ENTITY_MANAGER: [],
         }
         try:
@@ -304,7 +317,7 @@ def index_next_block(
 
             # Parse tx events in each block
             for tx in sorted_txs:
-                tx_hash = tx.transactionHash.hex()
+                tx_hash = tx["transactionHash"].hex()
                 tx_receipt = tx_receipt_dict[tx_hash]
                 contract_type = get_contract_type_for_tx(
                     txs_grouped_by_type, tx, tx_receipt
@@ -332,10 +345,10 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
-            if next_block.number % 100 == 0:
+            if next_block["number"] % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
-                    session, next_block.timestamp
+                    session, next_block["timestamp"]
                 )
                 if should_update:
                     celery.send_task(
@@ -349,10 +362,10 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
-            if next_block.number % 100 == 0:
+            if next_block["number"] % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
-                    kwargs={"current_block_timestamp": next_block.timestamp},
+                    kwargs={"current_block_timestamp": next_block["timestamp"]},
                 )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
@@ -368,7 +381,7 @@ def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
     try:
         adjusted_blocknumber = blocknumber - (final_poa_block or 0)
         block = web3.eth.get_block(adjusted_blocknumber)
-        block = AttributeDict(block)
+        block = copy.deepcopy(block)
         return block
     except BlockNotFound:
         logger.info(f"Block not found {adjusted_blocknumber}")
@@ -381,7 +394,7 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
         .filter(Block.blockhash == revert_block_parent_hash)
         .first()
     )
-    if not parent_number_results:
+    if not parent_number_results or parent_number_results[0] is None:
         return
     parent_number = parent_number_results[0]
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -408,6 +421,10 @@ def revert_block(session: Session, revert_block: Block):
     revert_hash = revert_block.blockhash
     revert_block_number = revert_block.number
     parent_hash = revert_block.parenthash
+
+    if not parent_hash:
+        return
+
     logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0

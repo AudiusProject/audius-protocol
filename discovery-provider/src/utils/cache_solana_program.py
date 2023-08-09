@@ -3,8 +3,9 @@ import logging
 from typing import Optional, TypedDict
 
 from redis import Redis
+from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def fetch_and_cache_latest_program_tx_redis(
     transactions_history = solana_client_manager.get_signatures_for_address(
         program, before=None, limit=1
     )
-    transactions_array = transactions_history["result"]
+    transactions_array = transactions_history.value
     if transactions_array:
         # Cache latest transaction from chain
         cache_latest_sol_play_program_tx(
@@ -62,15 +63,18 @@ def fetch_and_cache_latest_program_tx_redis(
 # Cache the latest chain tx value in redis
 # Represents most recently seen value from the sol program
 def cache_latest_sol_play_program_tx(
-    redis: Redis, program: str, cache_key: str, tx: ConfirmedSignatureForAddressResult
+    redis: Redis,
+    program: str,
+    cache_key: str,
+    tx: RpcConfirmedTransactionStatusWithSignature,
 ):
     try:
-        sig = tx["signature"]
-        slot = tx["slot"]
-        timestamp = tx["blockTime"]
+        sig = tx.signature
+        slot = tx.slot
+        timestamp = tx.block_time
         redis.set(
             cache_key,
-            json.dumps({"signature": sig, "slot": slot, "timestamp": timestamp}),
+            json.dumps({"signature": str(sig), "slot": slot, "timestamp": timestamp}),
         )
     except Exception as e:
         logger.error(

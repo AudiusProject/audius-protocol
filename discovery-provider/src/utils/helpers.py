@@ -16,17 +16,19 @@ import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
+from solders.instruction import CompiledInstruction
+from solders.message import Message
+from solders.pubkey import Pubkey
+from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import inspect
-from src import exceptions
-from src.solana.solana_helpers import MEMO_PROGRAM_ID
-from src.solana.solana_transaction_types import (
-    ResultMeta,
-    TransactionMessage,
-    TransactionMessageInstruction,
-)
 from web3 import Web3
 
+from src import exceptions
+from src.solana.solana_helpers import MEMO_PROGRAM_ID
+
 from . import multihash
+
+logger = logging.getLogger(__name__)
 
 
 def get_ip(request_obj):
@@ -227,6 +229,11 @@ def configure_flask_app_logging(app, loglevel_str):
         request_user_id = request.headers.get("X-User-ID")
         if request_user_id:
             log_params["request_user_id"] = request_user_id
+        
+        request_app_name = request.args.get('app_name')
+        if request_app_name:
+            log_params["appName"] = request_app_name
+            logger.info("handle read via developer app", extra=log_params)
 
         parts = []
         for name, value in log_params.items():
@@ -422,24 +429,26 @@ class BalanceChange(TypedDict):
     change: int
 
 
-def get_solana_tx_token_balance_changes(account_keys: List[str], meta: ResultMeta):
+def get_solana_tx_token_balance_changes(
+    account_keys: List[str], meta: UiTransactionStatusMeta
+):
     """Extracts the pre and post balances and determines change for a solana transaction metadata object"""
     balance_changes: dict[str, BalanceChange] = {}
-    for pre_balance_dict in meta["preTokenBalances"]:
+    for pre_balance_dict in meta.pre_token_balances or []:
         post_balance_dict = next(
             (
                 balance
-                for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == pre_balance_dict["accountIndex"]
+                for balance in (meta.post_token_balances or [])
+                if balance.account_index == pre_balance_dict.account_index
             ),
             None,
         )
         if post_balance_dict is None:
             continue
 
-        account_key = account_keys[pre_balance_dict["accountIndex"]]
-        pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
-        post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
+        account_key = account_keys[pre_balance_dict.account_index]
+        pre_balance = int(pre_balance_dict.ui_token_amount.amount)
+        post_balance = int(post_balance_dict.ui_token_amount.amount)
         change = post_balance - pre_balance
         balance_changes[account_key] = {
             "pre_balance": pre_balance,
@@ -449,50 +458,59 @@ def get_solana_tx_token_balance_changes(account_keys: List[str], meta: ResultMet
     return balance_changes
 
 
-def decode_all_solana_memos(tx_message: TransactionMessage):
+def decode_all_solana_memos(tx_message: Message):
     """Finds all memo instructions in a transaction and base58 decodes their instruction data as a string"""
     try:
-        memo_program_index = tx_message["accountKeys"].index(MEMO_PROGRAM_ID)
+        memo_program_index = tx_message.account_keys.index(
+            Pubkey.from_string(MEMO_PROGRAM_ID)
+        )
         return [
-            base58.b58decode(instruction["data"]).decode("utf8")
-            for instruction in tx_message["instructions"]
-            if instruction["programIdIndex"] == memo_program_index
+            base58.b58decode(instruction.data).decode("utf8")
+            for instruction in tx_message.instructions
+            if instruction.program_id_index == memo_program_index
         ]
     except:
         # Do nothing, there's no memos
         return []
 
 
-def get_solana_tx_owner(meta, idx) -> str:
+def get_solana_tx_owner(meta: UiTransactionStatusMeta, idx: int) -> str:
     return next(
         (
-            balance["owner"]
-            for balance in meta["preTokenBalances"]
-            if balance["accountIndex"] == idx
+            str(balance.owner)
+            for balance in (meta.pre_token_balances or [])
+            if balance.account_index == idx
         ),
         "",
     )
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta, program_address: str
-) -> Optional[TransactionMessageInstruction]:
+    tx_message: Message, meta: UiTransactionStatusMeta, program_address: str
+) -> Optional[CompiledInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
     checks accounts keys for claimable token program
     """
-    account_keys = tx_message["accountKeys"]
-    instructions = tx_message["instructions"]
-    program_index = account_keys.index(program_address)
-    for instruction in instructions:
-        if instruction["programIdIndex"] == program_index:
-            return instruction
+    account_keys = tx_message.account_keys
+    instructions: List[CompiledInstruction] = tx_message.instructions
+    try:
+        program_index = list(map(lambda x: str(x), account_keys)).index(program_address)
+        for instruction in instructions:
+            if instruction.program_id_index == program_index:
+                return instruction
+    except ValueError as e:
+        logger.info(
+            f"No {program_address} found in instruction account keys {account_keys}, {e}"
+        )
 
     return None
 
 
-def has_log(meta: ResultMeta, instruction: str):
-    return any(log == instruction for log in meta["logMessages"])
+def has_log(meta: UiTransactionStatusMeta, instruction: str):
+    if meta is None:
+        return False
+    return any(log == instruction for log in (meta.log_messages or []))
 
 
 # The transaction might list sender/receiver in a different order in the pubKeys.
@@ -537,8 +555,8 @@ def has_log(meta: ResultMeta, instruction: str):
 #       ],
 #       "indexToProgramIds": {}
 #     },
-def get_account_index(instruction: TransactionMessageInstruction, index: int):
-    return instruction["accounts"][index]
+def get_account_index(instruction: CompiledInstruction, index: int):
+    return instruction.accounts[index]
 
 
 # get block number with a final POA block offset
@@ -558,5 +576,5 @@ def get_final_poa_block() -> int:
     return final_poa_block
 
 
-def format_total_audio_balance(balance: str) -> str:
+def format_total_audio_balance(balance: str) -> int:
     return int(int(balance) / 1e18)

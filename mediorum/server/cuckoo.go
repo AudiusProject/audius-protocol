@@ -162,12 +162,11 @@ func (ss *MediorumServer) buildCuckoo() error {
 
 	cf := cuckoo.NewScalableCuckooFilter()
 
+	// TODO: blobs table would probably eventually change to something like: 1 table for all CIDs I have, and 1 table for all CIDs in the entire network (for repair.go)
 	rows, err := conn.Query(ctx, `
-	select distinct multihash from "Files" where type != 'track'
-	union all
-	select distinct "dirMultihash" from "Files" where "dirMultihash" is not null
+	select distinct key from blobs where host = $1
 	order by 1
-	`)
+	`, ss.Config.Self.Host)
 	if err != nil {
 		return err
 	}

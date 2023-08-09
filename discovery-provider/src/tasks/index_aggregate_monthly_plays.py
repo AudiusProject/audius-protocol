@@ -2,6 +2,7 @@ import logging
 import time
 
 from sqlalchemy import func, text
+
 from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric

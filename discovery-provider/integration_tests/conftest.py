@@ -5,11 +5,12 @@ import subprocess
 from contextlib import contextmanager
 
 import pytest
-import src
 from pytest_postgresql import factories
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
+
+import src
 from src.app import create_app, create_celery
 from src.models.base import Base
 from src.utils import helpers

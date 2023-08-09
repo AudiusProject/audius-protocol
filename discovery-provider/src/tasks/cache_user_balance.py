@@ -3,12 +3,14 @@ import time
 from typing import Dict, List, Optional, Set, Tuple, TypedDict
 
 from redis import Redis
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
-from solana.rpc.api import Client
+from solders.keypair import Keypair
+from solders.pubkey import Pubkey
 from spl.token.client import Token
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
+from solana.rpc.api import Client
 from src.app import get_eth_abi_values
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
@@ -37,7 +39,7 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
+WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
@@ -224,7 +226,7 @@ def refresh_user_ids(
         for user_id, wallets in user_id_metadata.items():
             try:
                 owner_wallet = wallets["owner_wallet"]
-                owner_wallet = eth_web3.toChecksumAddress(owner_wallet)
+                owner_wallet = Web3.to_checksum_address(owner_wallet)
                 owner_wallet_balance = token_contract.functions.balanceOf(
                     owner_wallet
                 ).call()
@@ -234,7 +236,7 @@ def refresh_user_ids(
 
                 if "associated_wallets" in wallets:
                     for wallet in wallets["associated_wallets"]["eth"]:
-                        wallet = eth_web3.toChecksumAddress(wallet)
+                        wallet = Web3.to_checksum_address(wallet)
                         balance = token_contract.functions.balanceOf(wallet).call()
                         delegation_balance = (
                             delegate_manager_contract.functions.getTotalDelegatorStake(
@@ -250,8 +252,8 @@ def refresh_user_ids(
                     if waudio_token is not None:
                         for wallet in wallets["associated_wallets"]["sol"]:
                             try:
-                                root_sol_account = PublicKey(wallet)
-                                derived_account, _ = PublicKey.find_program_address(
+                                root_sol_account = Pubkey.from_string(wallet)
+                                derived_account, _ = Pubkey.find_program_address(
                                     [
                                         bytes(root_sol_account),
                                         bytes(SPL_TOKEN_ID_PK),
@@ -293,7 +295,7 @@ def refresh_user_ids(
                         )
                     else:
                         bal_info = waudio_token.get_balance(
-                            PublicKey(wallets["bank_account"])
+                            Pubkey.from_string(wallets["bank_account"])
                         )
                         waudio_balance = bal_info["result"]["value"]["amount"]
 
@@ -396,7 +398,7 @@ def refresh_user_ids(
 
 
 def get_token_address(eth_web3):
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
 
@@ -422,7 +424,7 @@ def get_token_contract(eth_web3):
 
 
 def get_delegate_manager_contract(eth_web3):
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
 
@@ -443,7 +445,7 @@ def get_delegate_manager_contract(eth_web3):
 
 
 def get_staking_contract(eth_web3):
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
 
@@ -462,7 +464,9 @@ def get_staking_contract(eth_web3):
     return staking_instance
 
 
-SPL_TOKEN_PROGRAM_ID_PUBKEY = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+SPL_TOKEN_PROGRAM_ID_PUBKEY = Pubkey.from_string(
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+)
 
 
 def get_audio_token(solana_client: Client):
@@ -473,7 +477,7 @@ def get_audio_token(solana_client: Client):
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
         program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
-        payer=Keypair.generate(),  # not making any txs so payer is not required
+        payer=Keypair(),
     )
     return waudio_token
 

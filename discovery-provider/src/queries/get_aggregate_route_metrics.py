@@ -3,6 +3,7 @@ import logging
 from datetime import date, timedelta
 
 from sqlalchemy import asc, func
+
 from src import exceptions
 from src.models.metrics.aggregate_daily_total_users_metrics import (
     AggregateDailyTotalUsersMetrics,

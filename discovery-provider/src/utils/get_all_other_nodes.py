@@ -3,6 +3,8 @@ import logging
 from typing import Dict, List, Optional, Tuple
 
 import aiohttp
+from web3 import Web3
+
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import is_fqdn, load_eth_abi_values
@@ -12,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
-SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
+SP_FACTORY_REGISTRY_KEY = "ServiceProviderFactory".encode("utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
-CONTENT_NODE_SERVICE_TYPE = bytes("content-node", "utf-8")
+CONTENT_NODE_SERVICE_TYPE = "content-node".encode("utf-8")
 ALL_DISCOVERY_NODES_CACHE_KEY = "all-discovery-nodes"
 ALL_DISCOVERY_NODES_WALLETS_CACHE_KEY = "all-discovery-nodes-wallets"
 ALL_CONTENT_NODES_CACHE_KEY = "all-content-nodes"
@@ -23,7 +25,7 @@ ALL_HEALTHY_CONTENT_NODES_CACHE_KEY = "all-healthy-content-nodes"
 
 eth_web3 = web3_provider.get_eth_web3()
 
-eth_registry_address = eth_web3.toChecksumAddress(
+eth_registry_address = Web3.to_checksum_address(
     shared_config["eth_contracts"]["registry"]
 )
 eth_registry_instance = eth_web3.eth.contract(
