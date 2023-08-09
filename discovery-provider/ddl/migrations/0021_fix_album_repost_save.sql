@@ -5,7 +5,7 @@ update saves
 set
     save_type = 'playlist'
 where
-    save_type = 'album';
+    save_type = 'album'
     and (
         is_current = false
         or is_current = true
@@ -15,8 +15,11 @@ update reposts
 set
     repost_type = 'playlist'
 where
-    repost_type = 'album';
-
+    repost_type = 'album'
+    and (
+        is_current = false
+        or is_current = true
+    );
 -- remove dupes
 -- pick most recent row with is_current and delete others 
 with
