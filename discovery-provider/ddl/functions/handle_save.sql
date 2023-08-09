@@ -20,7 +20,7 @@ begin
     insert into aggregate_playlist (playlist_id, is_album)
     select p.playlist_id, p.is_album
     from playlists p
-    where p.playlist_id = new.repost_item_id
+    where p.playlist_id = new.save_item_id
     and p.is_current
     on conflict do nothing;
     
