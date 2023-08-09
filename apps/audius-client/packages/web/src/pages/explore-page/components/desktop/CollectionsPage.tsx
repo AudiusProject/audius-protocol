@@ -63,7 +63,10 @@ const CollectionsPage = ({
       <ArtistPopover handle={playlist.user.handle}>
         <span
           className={styles.userName}
-          onClick={(e: MouseEvent) => goToProfilePage(e, playlist.user.handle)}
+          onClick={(e: MouseEvent) => {
+            e.preventDefault()
+            goToProfilePage(e, playlist.user.handle)
+          }}
         >
           {playlist.user.name}
         </span>
