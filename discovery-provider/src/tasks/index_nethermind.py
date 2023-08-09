@@ -519,13 +519,10 @@ def index_nethermind(self):
                 celery.send_task("index_nethermind", countdown=0.5)
                 return
 
-            # if in_valid_state:
-            #     logger.info(
-            #         f"asdf latest_database_block {latest_database_block} next_block {next_block} "
-            #     )
-            #     index_next_block(session, latest_database_block, next_block)
-            # else:
-            revert_block(session, latest_database_block)
+            if in_valid_state:
+                index_next_block(session, latest_database_block, next_block)
+            else:
+                revert_block(session, latest_database_block)
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
     update_lock.release()
