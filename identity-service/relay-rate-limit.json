@@ -110,13 +110,13 @@
     "whitelist": 1000
   },
   "CreateNotification": {
-    "owner": 0,
-    "app": 0,
+    "owner": -1,
+    "app": -1,
     "whitelist": 1000
   },
   "ViewNotification": {
     "owner": 100,
-    "app": 0,
+    "app": -1,
     "whitelist": 1000
   },
   "ViewPlaylistNotification": {
@@ -126,22 +126,22 @@
   },
   "CreateDeveloperApp": {
     "owner": 3,
-    "app": 0,
+    "app": -1,
     "whitelist": 1000
   },
   "DeleteDeveloperApp": {
     "owner": 3,
-    "app": 0,
+    "app": -1,
     "whitelist": 1000
   },
   "CreateGrant": {
     "owner": 5,
-    "app": 0,
+    "app": -1,
     "whitelist": 1000
   },
   "DeleteGrant": {
     "owner": 5,
-    "app": 0,
+    "app": -1,
     "whitelist": 1000
   }
 }
