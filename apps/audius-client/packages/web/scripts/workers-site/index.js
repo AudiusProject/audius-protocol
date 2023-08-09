@@ -136,7 +136,7 @@ class HeadElementHandler {
   async element(element) {
     const { metadata, name } = await getMetadata(self.pathname)
 
-    if (!metadata || !name) {
+    if (!metadata || !name || !metadata.data || metadata.data.length === 0) {
       // We didn't parse this to anything we have custom tags for, so just return the default tags
       const tags = `<meta property="og:title" content="Audius - Empowering Creators">
       <meta name="description" content="Audius is a music streaming and sharing platform that puts power back into the hands of content creators." data-react-helmet="true">
@@ -153,7 +153,7 @@ class HeadElementHandler {
     let title, description, ogDescription, image, permalink
     switch (name) {
       case 'user': {
-        title = `Stream ${metadata.data.name} on Audius`
+        title = `${metadata.data.name} • Audius`
         description = `Play ${metadata.data.name} on Audius and discover followers on Audius`
         ogDescription = metadata.data.bio || description
         image = metadata.data.profile_picture
@@ -163,7 +163,7 @@ class HeadElementHandler {
         break
       }
       case 'track': {
-        title = `${metadata.data.title} | Stream ${metadata.data.user.name}`
+        title = `${metadata.data.title} by ${metadata.data.user.name} • Audius`
         description = `Stream ${metadata.data.title} by ${metadata.data.user.name} on Audius | Stream similar artists to ${metadata.data.user.name} on desktop and mobile`
         ogDescription = metadata.data.description || description
         image = metadata.data.artwork ? metadata.data.artwork['480x480'] : ''
@@ -171,7 +171,7 @@ class HeadElementHandler {
         break
       }
       case 'playlist': {
-        title = `${metadata.data[0].playlist_name} | Playlist by ${metadata.data[0].user.name}`
+        title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
         description = `Listen to ${metadata.data[0].playlist_name}, a playlist curated by ${metadata.data[0].user.name} on Audius`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
@@ -181,7 +181,7 @@ class HeadElementHandler {
         break
       }
       case 'album': {
-        title = `${metadata.data[0].playlist_name} | Album by ${metadata.data[0].user.name}`
+        title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
         description = `Listen to ${metadata.data[0].playlist_name}, an album by ${metadata.data[0].user.name} on Audius`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
