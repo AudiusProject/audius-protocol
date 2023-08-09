@@ -2,7 +2,8 @@ import {
   removeNullable,
   accountSelectors,
   FeatureFlags,
-  chatSelectors
+  chatSelectors,
+  Name
 } from '@audius/common'
 import {
   IconCrown,
@@ -14,8 +15,10 @@ import {
   PopupPosition
 } from '@audius/stems'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
+import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { NotificationDot } from 'components/notification-dot'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -44,6 +47,7 @@ const useAccountHasTracks = () => {
 }
 
 const NavPopupMenu = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const hasTracks = useAccountHasTracks()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
@@ -62,7 +66,10 @@ const NavPopupMenu = () => {
     isChatEnabled
       ? {
           text: messagesItemText,
-          onClick: () => navigate(CHATS_PAGE),
+          onClick: () => {
+            navigate(CHATS_PAGE)
+            dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
+          },
           icon: <IconMessage />,
           iconClassName: styles.menuItemIcon
         }

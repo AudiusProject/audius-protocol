@@ -44,6 +44,7 @@ type LeftNavLinkProps<Screen extends keyof AppTabScreenParamList> = {
   label: string
   labelProps?: TextProps
   children?: ReactNode
+  onPress?: () => void
 }
 
 export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
@@ -56,7 +57,8 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
     params,
     label,
     labelProps,
-    children
+    children,
+    onPress
   } = props
   const styles = useStyles()
   const { neutral } = useThemeColors()
@@ -67,7 +69,8 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
     // @ts-expect-error navigation not smart enough here
     navigation.navigate(to, { fromAppDrawer: true, ...params })
     drawerHelpers.closeDrawer()
-  }, [navigation, to, params, drawerHelpers])
+    onPress?.()
+  }, [navigation, to, params, drawerHelpers, onPress])
 
   return (
     <TouchableOpacity style={styles.accountListItem} onPress={handlePress}>

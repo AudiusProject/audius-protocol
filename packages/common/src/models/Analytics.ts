@@ -347,7 +347,8 @@ export enum Name {
   MESSAGE_UNFURL_TRACK = 'Message Unfurl: Track',
   MESSAGE_UNFURL_PLAYLIST = 'Message Unfurl: Playlist',
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
-  CHAT_REPORT_USER = 'Report User: Chat'
+  CHAT_REPORT_USER = 'Report User: Chat',
+  CHAT_ENTRY_POINT = 'Chat Entry Point'
 }
 
 type PageView = {
@@ -1647,6 +1648,11 @@ type ChatReportUser = {
   reportedUserId: ID
 }
 
+type ChatEntryPoint = {
+  eventName: Name.CHAT_ENTRY_POINT
+  source: 'banner' | 'navmenu' | 'share' | 'profile'
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1871,3 +1877,4 @@ export type AllTrackingEvents =
   | DeveloperAppCreateError
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
+  | ChatEntryPoint

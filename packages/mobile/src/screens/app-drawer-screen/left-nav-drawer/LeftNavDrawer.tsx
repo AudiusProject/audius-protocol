@@ -4,7 +4,8 @@ import {
   StringKeys,
   accountSelectors,
   useAccountHasClaimableRewards,
-  chatSelectors
+  chatSelectors,
+  Name
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
@@ -18,6 +19,7 @@ import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
@@ -88,6 +90,9 @@ const WrappedLeftNavDrawer = () => {
           label={'Messages'}
           to='ChatList'
           params={{}}
+          onPress={() => {
+            track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'navmenu' }))
+          }}
         >
           {hasUnreadMessages ? (
             <View style={styles.notificationBubble} />
