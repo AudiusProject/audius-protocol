@@ -7,7 +7,6 @@ export function* optimisticUpdateCollection(collection: Collection) {
     const { artwork } = optimisticCollection
     const { url } = artwork
     optimisticCollection.artwork = artwork
-    optimisticCollection.cover_art_sizes = url!
     const coverArtSizes = optimisticCollection._cover_art_sizes ?? {}
     coverArtSizes.OVERRIDE = url
     optimisticCollection._cover_art_sizes = coverArtSizes

@@ -125,8 +125,8 @@ function* editTrackAsync(action) {
   const track = { ...action.formFields }
   track.track_id = action.trackId
   if (track.artwork?.file) {
-    track.cover_art_sizes = track.artwork.url
     track._cover_art_sizes = {
+      ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
     }
   }

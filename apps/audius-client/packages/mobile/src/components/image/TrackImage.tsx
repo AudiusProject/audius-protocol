@@ -1,4 +1,11 @@
-import type { Track, Nullable, SquareSizes, ID, Maybe } from '@audius/common'
+import type {
+  Track,
+  Nullable,
+  SquareSizes,
+  ID,
+  Maybe,
+  SearchTrack
+} from '@audius/common'
 import { reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -18,7 +25,12 @@ export const DEFAULT_IMAGE_URL =
 const { getIsReachable } = reachabilitySelectors
 
 type UseTrackImageOptions = {
-  track: Nullable<Pick<Track, 'track_id' | 'cover_art_sizes' | 'cover_art'>>
+  track: Nullable<
+    Pick<
+      Track | SearchTrack,
+      'track_id' | 'cover_art_sizes' | 'cover_art' | '_cover_art_sizes'
+    >
+  >
   size: SquareSizes
 }
 
@@ -41,14 +53,16 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
 
 export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
   const cid = track ? track.cover_art_sizes || track.cover_art : null
+  const optimisticCoverArt = track?._cover_art_sizes?.OVERRIDE
 
   const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
+  const localSourceUri = optimisticCoverArt || localTrackImageUri
 
   const contentNodeSource = useContentNodeImage({
     cid,
     size,
     fallbackImageSource: imageEmpty,
-    localSource: localTrackImageUri ? { uri: localTrackImageUri } : null
+    localSource: localSourceUri ? { uri: localSourceUri } : null
   })
 
   return contentNodeSource
