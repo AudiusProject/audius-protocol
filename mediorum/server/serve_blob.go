@@ -159,8 +159,16 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
-	var blobs []Blob
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+	for _, host := range ss.cuckooLookup(key) {
+		if slices.Contains(healthyHosts, host) && ss.hostHasBlob(host, key) {
+			return host, nil
+		}
+	}
+
+	// TODO: remove this blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
+	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
+	var blobs []Blob
 	err := ss.crud.DB.
 		Where("key = ? and host in ?", key, healthyHosts).
 		Find(&blobs).Error
