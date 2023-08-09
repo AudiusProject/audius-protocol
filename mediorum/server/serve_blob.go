@@ -45,7 +45,7 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	}
 
 	// since this is called before redirecting, make sure this node can actually serve the blob (it needs to check db for delisted status)
-	dbHealthy := ss.databaseSize > 0
+	dbHealthy := ss.databaseSize > 0 && ss.dbSizeErr == "" && ss.uploadsCountErr == ""
 	if !dbHealthy {
 		return c.String(500, "database connection issue")
 	}

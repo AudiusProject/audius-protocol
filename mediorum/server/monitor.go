@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"errors"
 	"syscall"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/exp/slog"
+	"gorm.io/gorm"
 )
 
 func (ss *MediorumServer) monitorCidCursors() {
@@ -23,7 +25,7 @@ func (ss *MediorumServer) monitorCidCursors() {
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()
-	ticker := time.NewTicker(2 * time.Minute)
+	ticker := time.NewTicker(3 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
 	}
@@ -38,13 +40,13 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		slog.Error("Error getting disk status", "err", err)
 	}
 
-	dbSize, err := getDatabaseSize(ss.pgPool)
-	if err == nil {
-		ss.databaseSize = dbSize
-	} else {
-		ss.databaseSize = 0
-		slog.Error("Error getting database size", "err", err)
-	}
+	dbSize, errStr := getDatabaseSize(ss.pgPool)
+	ss.databaseSize = dbSize
+	ss.dbSizeErr = errStr
+
+	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
+	ss.uploadsCount = uploadsCount
+	ss.uploadsCountErr = errStr
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
@@ -59,13 +61,32 @@ func getDiskStatus(path string) (total uint64, free uint64, err error) {
 	return
 }
 
-func getDatabaseSize(p *pgxpool.Pool) (uint64, error) {
-	var size uint64
-	err := p.QueryRow(context.Background(), `SELECT pg_database_size(current_database())`).Scan(&size)
+func getDatabaseSize(p *pgxpool.Pool) (size uint64, errStr string) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
 
-	if err != nil {
-		return 0, err
+	if err := p.QueryRow(ctx, `SELECT pg_database_size(current_database())`).Scan(&size); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errStr = "timeout getting database size within 1s: " + err.Error()
+		} else {
+			errStr = "error getting database size: " + err.Error()
+		}
 	}
 
-	return size, nil
+	return
+}
+
+func getUploadsCount(db *gorm.DB) (count int64, errStr string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := db.WithContext(ctx).Model(&Upload{}).Count(&count).Error; err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errStr = "timeout getting uploads count within 30s: " + err.Error()
+		} else {
+			errStr = "error getting uploads count: " + err.Error()
+		}
+	}
+
+	return
 }
