@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
@@ -159,11 +161,36 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(3)
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	for _, host := range ss.cuckooLookup(key) {
-		if slices.Contains(healthyHosts, host) && ss.hostHasBlob(host, key) {
-			return host, nil
-		}
+	hostsWithKey := ss.cuckooLookupSubset(key, healthyHosts)
+	hostWithKeyCh := make(chan string, 1)
+
+	// race to find a healthy host with the key instead of sequentially waiting for a 1s timeout from each host
+	for _, host := range hostsWithKey {
+		h := host
+		g.Go(func() error {
+			if ss.hostHasBlob(h, key) {
+				select {
+				case hostWithKeyCh <- h:
+					cancel() // cancel the context on the first success
+				default:
+				}
+				return nil
+			}
+			return nil
+		})
+	}
+
+	g.Wait()
+	select {
+	case host := <-hostWithKeyCh:
+		return host, nil
+	default:
+		break
 	}
 
 	// TODO: remove this blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
