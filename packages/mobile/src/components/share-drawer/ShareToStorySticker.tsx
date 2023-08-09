@@ -20,7 +20,12 @@ const messages = {
 type ShareToStoryStickerProps = {
   track: Pick<
     Track,
-    'cover_art_sizes' | 'cover_art' | 'owner_id' | 'title' | 'track_id'
+    | 'cover_art_sizes'
+    | 'cover_art'
+    | 'owner_id'
+    | 'title'
+    | 'track_id'
+    | '_cover_art_sizes'
   >
   user?: Pick<User, 'creator_node_endpoint'>
   artist: Pick<User, 'user_id' | 'name' | 'is_verified'>
