@@ -67,22 +67,5 @@ SELECT add_fk_constraints_and_delete_rows(ARRAY[
 ]
 );
 
-SELECT * FROM get_primary_keys(ARRAY[
-    'associated_wallets', 
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlist_routes', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'track_routes', 
-    'tracks', 
-    'user_events', 
-    'users'
-]);
-
 
 commit;
