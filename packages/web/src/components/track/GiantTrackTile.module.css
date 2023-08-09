@@ -320,6 +320,10 @@
   margin-right: 0px !important; /* to override the !important in UserBadges */
 }
 
+.noContentBadgeIcon {
+  margin-left: 0;
+}
+
 .badgeAi {
   background: linear-gradient(
       180deg,
