@@ -160,29 +160,27 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	for _, host := range ss.cuckooLookup(key) {
-		if slices.Contains(healthyHosts, host) && ss.hostHasBlob(host, key) {
-			return host, nil
-		}
+	hostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
+	hostWithBlob := ss.raceHostHasBlob(key, hostsWithBlob)
+	if hostWithBlob != "" {
+		return hostWithBlob, nil
 	}
 
-	// TODO: remove this blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
+	// TODO: remove this fallback blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
 	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
 	var blobs []Blob
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
+		Where("key = ? and host in ?", key, diff(healthyHosts, hostsWithBlob)).
 		Find(&blobs).Error
 	if err != nil {
 		return "", err
 	}
-
+	fallbackHealthyHosts := []string{}
 	for _, blob := range blobs {
-		if ss.hostHasBlob(blob.Host, key) {
-			return blob.Host, nil
-		}
+		fallbackHealthyHosts = append(fallbackHealthyHosts, blob.Host)
 	}
-
-	return "", nil
+	fallbackHostWithBlob := ss.raceHostHasBlob(key, fallbackHealthyHosts)
+	return fallbackHostWithBlob, nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
@@ -355,4 +353,14 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 	}
 
 	return c.JSON(200, "ok")
+}
+
+func diff[S ~[]E, E comparable](sliceA, sliceB S) S {
+	diff := S{}
+	for _, a := range sliceA {
+		if !slices.Contains(sliceB, a) {
+			diff = append(diff, a)
+		}
+	}
+	return diff
 }
