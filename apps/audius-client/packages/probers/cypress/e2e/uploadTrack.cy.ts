@@ -72,7 +72,8 @@ describe('Upload Track', () => {
 
     cy.findByRole('heading', { name: /track/i, level: 1 }).should('exist')
   })
-  it.only('should upload a track with a subgenre', () => {
+
+  it('should upload a track with a subgenre', () => {
     const base64Entropy = Buffer.from(user.entropy).toString('base64')
     cy.visit(`trending?login=${base64Entropy}`)
     cy.findByText(user.name, { timeout: 20000 }).should('exist')
