@@ -3,8 +3,14 @@ import duration from "dayjs/plugin/duration";
 import { Knex, knex } from "knex";
 import { setIntervalAsync } from "set-interval-async";
 import { Table } from "storage/src/index";
+import { initializeDiscoveryDb, initializeIdentityDb } from "./db";
 
 dayjs.extend(duration);
+
+export interface AppParams {
+  discoveryDb: string,
+  identityDb: string
+}
 
 export default class App<AppData> {
   // database connections
@@ -28,23 +34,10 @@ export default class App<AppData> {
 
   private appData: AppData;
 
-  constructor(appData: AppData) {
-    this.discoveryDb = knex({
-      client: "pg",
-      connection: {
-        connectionString:
-          process.env.discoveryDb ||
-          "postgresql://postgres:postgres@localhost:5432/audius_discovery",
-      },
-    });
-    if (process.env.identityDb !== undefined) {
-      this.identityDb = knex({
-        client: "pg",
-        connection: {
-          connectionString: process.env.identityDb,
-        },
-      });
-    }
+  constructor(appData: AppData, params: Partial<AppParams>) {
+    const { discoveryDb, identityDb } = params
+    this.discoveryDb = initializeDiscoveryDb(discoveryDb);
+    this.identityDb = initializeIdentityDb(identityDb)
     this.listeners = new Map();
     this.scans = new Map();
     this.tickers = [];
