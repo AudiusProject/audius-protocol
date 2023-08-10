@@ -225,12 +225,10 @@ function* claimChallengeRewardAsync(
     )
     return
   }
-  yield* call(
-    createUserBankIfNeeded,
-    track,
-    audiusBackendInstance,
+  yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+    recordAnalytics: track,
     feePayerOverride
-  )
+  })
 
   // When endpoints is unset, `submitAndEvaluateAttestations` picks for us
   const endpoints =

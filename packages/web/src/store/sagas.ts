@@ -1,15 +1,18 @@
 import {
+  buyUSDCSagas,
   castSagas,
   playerSagas as commonPlayerSagas,
   playbackPositionSagas,
   chatSagas,
   premiumContentSagas,
+  purchaseContentSagas,
   remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
+  stripeModalUISagas as stripeModalSagas,
   toastSagas,
   vipDiscordModalSagas,
   reachabilitySagas as commonReachabilitySagas,
@@ -185,6 +188,7 @@ export default function* rootSaga() {
     repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),
+    stripeModalSagas(),
     overflowMenuSagas(),
     toastSagas(),
     shareSoundToTikTokModalSagas(),
@@ -210,6 +214,8 @@ export default function* rootSaga() {
 
     // Premium content
     premiumContentSagas(),
+    buyUSDCSagas(),
+    purchaseContentSagas(),
 
     // Error
     errorSagas()

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { PremiumConditions, User } from '@audius/common'
 import {
-  formatUSDCWeiToUSDString,
+  formatPrice,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
@@ -15,7 +15,7 @@ import { View } from 'react-native'
 import IconCart from 'app/assets/images/iconCart.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
-import { useLink, Text, LockedStatusBadge } from 'app/components/core'
+import { LockedStatusBadge, Text, useLink } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -153,7 +153,7 @@ const DetailsTileOwnerSection = ({
           <Text>
             <Text style={styles.description}>
               {messages.ownerUSDCPurchase(
-                formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+                formatPrice(premiumConditions.usdc_purchase.price)
               )}
             </Text>
           </Text>

@@ -109,12 +109,15 @@ function* sendAsync({
     // Ensure user has userbank
 
     const audiusBackend = yield* getContext('audiusBackendInstance')
-    const feePayer = yield* select(getFeePayer)
-    if (!feePayer) {
+    const feePayerOverride = yield* select(getFeePayer)
+    if (!feePayerOverride) {
       console.error(`sendAsync: unexpectedly no fee payer`)
       return
     }
-    yield* call(createUserBankIfNeeded, track, audiusBackend, feePayer)
+    yield* call(createUserBankIfNeeded, audiusBackend, {
+      recordAnalytics: track,
+      feePayerOverride
+    })
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio

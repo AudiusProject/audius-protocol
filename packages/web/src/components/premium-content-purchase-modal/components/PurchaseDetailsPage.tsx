@@ -1,21 +1,31 @@
 import { useCallback } from 'react'
 
 import {
-  formatUSDCWeiToUSDString,
+  ContentType,
+  formatPrice,
   isPremiumContentUSDCPurchaseGated,
+  purchaseContentActions,
+  purchaseContentSelectors,
+  PurchaseContentStage,
   Track,
   UserTrackMetadata
 } from '@audius/common'
 import { HarmonyButton } from '@audius/stems'
+import { useDispatch, useSelector } from 'react-redux'
 
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseDetailsPage.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
+const { startPurchaseContentFlow } = purchaseContentActions
+const { getPurchaseContentFlowStage } = purchaseContentSelectors
+
 const messages = {
-  buy: (price: string) => `Buy $${price}`
+  buy: (price: string) => `Buy $${price}`,
+  purchasing: 'Purchasing'
 }
 
 export const PurchaseDetailsPage = ({
@@ -23,9 +33,24 @@ export const PurchaseDetailsPage = ({
 }: {
   track: UserTrackMetadata
 }) => {
+  const dispatch = useDispatch()
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const isUnlocking = [
+    PurchaseContentStage.BUY_USDC,
+    PurchaseContentStage.PURCHASING,
+    PurchaseContentStage.CONFIRMING_PURCHASE
+  ].includes(stage)
+
   const onClickBuy = useCallback(() => {
-    console.log('buy!')
-  }, [])
+    if (isUnlocking) return
+
+    dispatch(
+      startPurchaseContentFlow({
+        contentId: track.track_id,
+        contentType: ContentType.TRACK
+      })
+    )
+  }, [isUnlocking, dispatch, track.track_id])
 
   if (!isPremiumContentUSDCPurchaseGated(track.premium_conditions)) {
     console.error(
@@ -35,6 +60,16 @@ export const PurchaseDetailsPage = ({
   }
 
   const { price } = track.premium_conditions.usdc_purchase
+
+  const textContent = isUnlocking ? (
+    <div className={styles.purchaseButtonText}>
+      <LoadingSpinner className={styles.purchaseButtonSpinner} />
+      <span>{messages.purchasing}</span>
+    </div>
+  ) : (
+    messages.buy(formatPrice(price))
+  )
+
   return (
     <div className={styles.container}>
       <LockedTrackDetailsTile
@@ -50,9 +85,10 @@ export const PurchaseDetailsPage = ({
       />
       <PayToUnlockInfo />
       <HarmonyButton
+        disabled={isUnlocking}
         color='specialLightGreen'
         onClick={onClickBuy}
-        text={messages.buy(formatUSDCWeiToUSDString(price))}
+        text={textContent}
         fullWidth
       />
     </div>

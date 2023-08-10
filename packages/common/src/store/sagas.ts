@@ -7,11 +7,13 @@
 // import signOutSagas from 'common/store/sign-out/sagas'
 
 import { accountSagas } from 'store/account'
+import { buyUSDCSagas } from 'store/buy-usdc'
 import { sagas as castSagas } from 'store/cast/sagas'
 import { chatSagas } from 'store/pages/chat'
 import { playbackPositionSagas } from 'store/playback-position'
 import { playerSagas } from 'store/player'
 import { premiumContentSagas } from 'store/premium-content'
+import { purchaseContentSagas } from 'store/purchase-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
 import {
   searchUsersModalSagas,
@@ -20,7 +22,8 @@ import {
   duplicateAddConfirmationModalUISagas,
   publishPlaylistConfirmationModalUISagas,
   mobileOverflowMenuUISagas,
-  shareModalUISagas
+  shareModalUISagas,
+  stripeModalUISagas
 } from 'store/ui'
 
 import { playlistUpdatesSagas } from './playlist-updates'
@@ -40,13 +43,16 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // tracks: tracksSagas,
   // users: usersSagas,
   account: accountSagas,
+  buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
   premiumContent: premiumContentSagas,
+  purchaseContent: purchaseContentSagas,
   chat: chatSagas,
   searchUsers: searchUsersModalSagas,
   toast: toastSagas,
   shareModalUI: shareModalUISagas,
+  stripeModalUI: stripeModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,

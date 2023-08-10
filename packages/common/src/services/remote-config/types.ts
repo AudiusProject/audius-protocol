@@ -130,14 +130,14 @@ export enum IntKeys {
   MAX_AUDIO_PURCHASE_AMOUNT = 'MAX_AUDIO_PURCHASE_AMOUNT',
 
   /**
-   * The time to delay between polls of the user wallet when performing a purchase of $AUDIO
+   * The time to delay between polls of the user wallet when performing a purchase of $AUDIO/$USDC
    */
-  BUY_AUDIO_WALLET_POLL_DELAY_MS = 'BUY_AUDIO_WALLET_POLL_DELAY_MS',
+  BUY_TOKEN_WALLET_POLL_DELAY_MS = 'BUY_TOKEN_WALLET_POLL_DELAY_MS',
 
   /**
-   * The maximum amount of times to poll the user wallet before giving up on an $AUDIO purchase
+   * The maximum amount of times to poll the user wallet before giving up on an $AUDIO/$USDC purchase
    */
-  BUY_AUDIO_WALLET_POLL_MAX_RETRIES = 'BUY_AUDIO_WALLET_POLL_MAX_RETRIES',
+  BUY_TOKEN_WALLET_POLL_MAX_RETRIES = 'BUY_TOKEN_WALLET_POLL_MAX_RETRIES',
 
   /**
    * The allowed slippage percentage/padding percentage for the BuyAudio Modal

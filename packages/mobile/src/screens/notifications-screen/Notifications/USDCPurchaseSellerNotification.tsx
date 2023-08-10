@@ -2,26 +2,22 @@ import { useCallback } from 'react'
 
 import type {
   Nullable,
-  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType,
   TrackEntity,
-  StringUSDC
+  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
-import {
-  notificationsSelectors,
-  formatUSDCWeiToUSDString
-} from '@audius/common'
+import { formatPrice, notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 
 import {
-  NotificationTile,
+  EntityLink,
   NotificationHeader,
   NotificationText,
+  NotificationTile,
   NotificationTitle,
-  UserNameLink,
-  EntityLink
+  UserNameLink
 } from '../Notification'
 
 const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
@@ -67,7 +63,7 @@ export const USDCPurchaseSellerNotification = (
       <NotificationText>
         {messages.congrats} <UserNameLink user={buyerUser} />{' '}
         {messages.justBoughtYourTrack} <EntityLink entity={track} /> for $
-        {formatUSDCWeiToUSDString(amount.toString() as StringUSDC)}
+        {formatPrice(amount)}
         {messages.exclamation}
       </NotificationText>
     </NotificationTile>

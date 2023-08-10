@@ -125,12 +125,10 @@ function* onSignedIn({ payload: { account } }) {
   const feePayerOverride = yield select(getFeePayer)
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
   if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
-    yield call(
-      createUserBankIfNeeded,
-      analytics.track,
-      audiusBackendInstance,
+    yield call(createUserBankIfNeeded, audiusBackendInstance, {
+      recordAnalytics: analytics.track,
       feePayerOverride
-    )
+    })
   }
 
   // Repair users from flare-101 that were impacted and lost connected wallets

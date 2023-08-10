@@ -1,4 +1,4 @@
-import { formatUSDCWeiToUSDString, StringUSDC } from '@audius/common'
+import { formatPrice } from '@audius/common'
 
 import { Text } from 'components/typography'
 
@@ -16,10 +16,10 @@ const messages = {
 }
 
 export type PurchaseSummaryTableProps = {
-  amountDue: StringUSDC
-  artistCut: StringUSDC
-  basePrice: StringUSDC
-  existingBalance?: StringUSDC
+  amountDue: number
+  artistCut: number
+  basePrice: number
+  existingBalance?: number
 }
 
 export const PurchaseSummaryTable = ({
@@ -35,7 +35,7 @@ export const PurchaseSummaryTable = ({
       </Text>
       <div className={styles.row}>
         <span>{messages.artistCut}</span>
-        <span>{messages.price(formatUSDCWeiToUSDString(artistCut))}</span>
+        <span>{messages.price(formatPrice(artistCut))}</span>
       </div>
       <div className={styles.row}>
         <span>{messages.audiusCut}</span>
@@ -44,9 +44,7 @@ export const PurchaseSummaryTable = ({
       {existingBalance ? (
         <div className={styles.row}>
           <span>{messages.existingBalance}</span>
-          <span>{`-${messages.price(
-            formatUSDCWeiToUSDString(existingBalance)
-          )}`}</span>
+          <span>{`-${messages.price(formatPrice(existingBalance))}`}</span>
         </div>
       ) : null}
       <Text className={styles.row} variant='title'>
@@ -54,11 +52,11 @@ export const PurchaseSummaryTable = ({
         <span className={styles.finalPrice}>
           {existingBalance ? (
             <>
-              <s>{messages.price(formatUSDCWeiToUSDString(basePrice))}</s>
-              {messages.price(formatUSDCWeiToUSDString(amountDue))}
+              <del>{messages.price(formatPrice(basePrice))}</del>
+              <ins>{messages.price(formatPrice(amountDue))}</ins>
             </>
           ) : (
-            messages.price(formatUSDCWeiToUSDString(amountDue))
+            messages.price(formatPrice(amountDue))
           )}
         </span>
       </Text>

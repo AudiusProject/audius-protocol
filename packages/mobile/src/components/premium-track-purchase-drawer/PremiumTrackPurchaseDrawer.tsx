@@ -1,5 +1,5 @@
 import {
-  formatUSDCWeiToUSDString,
+  formatPrice,
   isPremiumContentUSDCPurchaseGated,
   useGetTrackById
 } from '@audius/common'
@@ -9,7 +9,7 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { makeStyles, flexRowCentered } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
 import { TrackDetailsTile } from '../track-details-tile'
@@ -101,7 +101,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const { premium_conditions: premiumConditions } = track ?? {}
   if (!track || !isPremiumContentUSDCPurchaseGated(premiumConditions))
     return null
-  const price = formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+  const price = formatPrice(premiumConditions.usdc_purchase.price)
 
   return (
     <NativeDrawer drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}>

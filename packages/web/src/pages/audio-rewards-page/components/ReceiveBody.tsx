@@ -62,7 +62,10 @@ const useCreateUserbankIfNeeded = () => {
 
   useEffect(() => {
     if (!feePayerOverride) return
-    createUserBankIfNeeded(track, audiusBackendInstance, feePayerOverride)
+    createUserBankIfNeeded(audiusBackendInstance, {
+      recordAnalytics: track,
+      feePayerOverride
+    })
   }, [feePayerOverride])
 }
 

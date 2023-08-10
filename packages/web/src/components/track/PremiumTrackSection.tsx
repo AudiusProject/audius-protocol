@@ -1,24 +1,24 @@
 import { useCallback } from 'react'
 
 import {
-  PremiumConditions,
-  cacheUsersSelectors,
-  User,
-  ID,
-  Nullable,
-  Chain,
-  usersSocialActions as socialActions,
-  FollowSource,
-  tippingActions,
-  premiumContentActions,
-  premiumContentSelectors,
   accountSelectors,
-  removeNullable,
-  isPremiumContentFollowGated,
+  cacheUsersSelectors,
+  Chain,
+  FollowSource,
+  formatPrice,
+  ID,
   isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated,
-  formatUSDCWeiToUSDString
+  Nullable,
+  PremiumConditions,
+  premiumContentActions,
+  premiumContentSelectors,
+  removeNullable,
+  tippingActions,
+  User,
+  usersSocialActions as socialActions
 } from '@audius/common'
 import {
   Button,
@@ -330,7 +330,7 @@ const LockedPremiumTrackSection = ({
         <Button
           color='specialLightGreen'
           text={messages.buy(
-            formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+            formatPrice(premiumConditions.usdc_purchase.price)
           )}
           onClick={handlePurchase}
           type={ButtonType.PRIMARY}
@@ -538,7 +538,7 @@ const UnlockedPremiumTrackSection = ({
         <div>
           <span>
             {messages.usersCanPurchase(
-              formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+              formatPrice(premiumConditions.usdc_purchase.price)
             )}
           </span>
         </div>
