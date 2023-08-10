@@ -43,8 +43,21 @@ def update_playlist_routes_table(
     prev_playlist_route_record = params.existing_records["PlaylistRoute"].get(
         playlist_record.playlist_id
     )
+    params.logger.info(
+        "index.py | playlists.py | update_playlist_routes_table,"
+        + "prev playlist route record is ",
+        prev_playlist_route_record,
+    )
 
     if prev_playlist_route_record:
+        params.logger.info(
+            "index.py | playlists.py | update_playlist_routes_table prev title slug is ",
+            prev_playlist_route_record.title_slug,
+        )
+        params.logger.info(
+            "index.py | playlists.py | update_playlist_routes_table curr title slg is ",
+            prev_playlist_route_record.title_slug,
+        )
         if prev_playlist_route_record.title_slug == new_playlist_slug_title:
             # If the title slug hasn't changed, we have no work to do
             params.logger.info(f"not changing for {playlist_record.playlist_id}")
