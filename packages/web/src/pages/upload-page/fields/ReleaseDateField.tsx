@@ -10,8 +10,8 @@ import {
 } from 'components/data-entry/ContextualMenu'
 import { Text } from 'components/typography'
 
-import { SingleTrackEditValues } from '../forms/types'
-import { useTrackField } from '../forms/utils'
+import { useTrackField } from '../hooks'
+import { SingleTrackEditValues } from '../types'
 
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
@@ -44,7 +44,7 @@ export const ReleaseDateField = () => {
     [setValue]
   )
 
-  const renderValue = useCallback((value: ReleaseDateValue) => {
+  const renderValue = useCallback(() => {
     return (
       <SelectedValue
         label={moment(value).calendar().split(' at')[0]}
@@ -59,11 +59,10 @@ export const ReleaseDateField = () => {
         />
       </SelectedValue>
     )
-  }, [])
+  }, [value])
 
   return (
     <ContextualMenu
-      value={value}
       label={messages.title}
       description={messages.description}
       icon={<IconCalendar className={styles.titleIcon} />}

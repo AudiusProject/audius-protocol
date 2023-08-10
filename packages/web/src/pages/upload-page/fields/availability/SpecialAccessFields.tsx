@@ -9,9 +9,9 @@ import { useSelector } from 'react-redux'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import {
-  PREMIUM_CONDITIONS,
-  TrackAvailabilityFormValues
-} from '../../forms/TrackAvailabilityModalForm'
+  AccessAndSaleFormValues,
+  PREMIUM_CONDITIONS
+} from '../AccessAndSaleField'
 
 import styles from './SpecialAccessFields.module.css'
 
@@ -42,7 +42,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   })
 
   const [, , { setValue: setPremiumConditionsValue }] =
-    useField<TrackAvailabilityFormValues[typeof PREMIUM_CONDITIONS]>(
+    useField<AccessAndSaleFormValues[typeof PREMIUM_CONDITIONS]>(
       PREMIUM_CONDITIONS
     )
 

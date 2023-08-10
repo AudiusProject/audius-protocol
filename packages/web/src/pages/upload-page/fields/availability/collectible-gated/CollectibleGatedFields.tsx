@@ -13,10 +13,10 @@ import DropdownInput from 'components/data-entry/DropdownInput'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
+  AccessAndSaleFormValues,
   AVAILABILITY_TYPE,
-  PREMIUM_CONDITIONS,
-  TrackAvailabilityFormValues
-} from '../../../forms/TrackAvailabilityModalForm'
+  PREMIUM_CONDITIONS
+} from '../../AccessAndSaleField'
 
 import styles from './CollectibleGatedFields.module.css'
 
@@ -45,7 +45,7 @@ export const CollectibleGatedFields = ({
     ,
     { setValue: setPremiumConditionsValue }
   ] =
-    useField<TrackAvailabilityFormValues[typeof PREMIUM_CONDITIONS]>(
+    useField<AccessAndSaleFormValues[typeof PREMIUM_CONDITIONS]>(
       PREMIUM_CONDITIONS
     )
 

@@ -25,13 +25,17 @@ import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 import PreviewButton from 'components/upload/PreviewButton'
 
+import { AccessAndSaleField } from '../fields/AccessAndSaleField'
+import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
+import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { RemixSettingsField } from '../fields/RemixSettingsField'
+import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
-import { TrackEditFormValues } from '../forms/types'
+import { TrackEditFormValues } from '../types'
 
 import styles from './EditPageNew.module.css'
-import { TrackModalArray } from './TrackModalArray'
 import { TrackForUpload } from './types'
 
 const messages = {
@@ -172,7 +176,8 @@ export const EditPageNew = (props: EditPageProps) => {
           allowAttribution: null,
           commercialUse: null,
           derivativeWorks: null
-        }
+        },
+        stems: []
       }))
     }),
     [tracks]
@@ -212,8 +217,14 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         <div className={styles.formContainer}>
           {isMultiTrack ? <MultiTrackHeader /> : null}
           <div className={styles.trackEditForm}>
-            <TrackMetadataFields playing={false} />
-            <TrackModalArray />
+            <TrackMetadataFields />
+            <div className={styles.additionalFields}>
+              <ReleaseDateField />
+              <RemixSettingsField />
+              <SourceFilesField />
+              <AccessAndSaleField />
+              <AttributionField />
+            </div>
             <PreviewButton playing={false} onClick={() => {}} />
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}

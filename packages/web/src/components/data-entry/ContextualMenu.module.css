@@ -1,5 +1,5 @@
 .root {
-  gap: var(--unit-2);
+  gap: var(--unit-4);
   padding: var(--unit-4) var(--unit-6);
   flex-direction: column;
 }
@@ -28,6 +28,7 @@
 .value {
   display: inline-flex;
   flex-shrink: 1;
+  gap: var(--unit-2);
 }
 
 .selectedValue {

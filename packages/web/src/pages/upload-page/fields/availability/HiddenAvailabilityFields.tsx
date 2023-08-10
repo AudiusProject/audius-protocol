@@ -1,7 +1,7 @@
 import { Switch } from '@audius/stems'
 import { useField } from 'formik'
 
-import { FIELD_VISIBILITY } from '../../forms/TrackAvailabilityModalForm'
+import { FIELD_VISIBILITY } from '../AccessAndSaleField'
 
 import styles from './HiddenAvailabilityFields.module.css'
 
