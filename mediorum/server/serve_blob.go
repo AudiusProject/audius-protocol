@@ -2,7 +2,6 @@ package server
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,7 +17,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
-	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
@@ -161,55 +159,28 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(3)
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	hostsWithKey := ss.cuckooLookupSubset(key, healthyHosts)
-	hostWithKeyCh := make(chan string, 1)
-
-	// race to find a healthy host with the key instead of sequentially waiting for a 1s timeout from each host
-	for _, host := range hostsWithKey {
-		h := host
-		g.Go(func() error {
-			if ss.hostHasBlob(h, key) {
-				select {
-				case hostWithKeyCh <- h:
-					cancel() // cancel the context on the first success
-				default:
-				}
-				return nil
-			}
-			return nil
-		})
+	hostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
+	hostWithBlob := ss.raceHostHasBlob(key, hostsWithBlob)
+	if hostWithBlob != "" {
+		return hostWithBlob, nil
 	}
 
-	g.Wait()
-	select {
-	case host := <-hostWithKeyCh:
-		return host, nil
-	default:
-		break
-	}
-
-	// TODO: remove this blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
+	// TODO: remove this fallback blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
 	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
 	var blobs []Blob
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
+		Where("key = ? and host in ?", key, diff(healthyHosts, hostsWithBlob)).
 		Find(&blobs).Error
 	if err != nil {
 		return "", err
 	}
-
+	fallbackHealthyHosts := []string{}
 	for _, blob := range blobs {
-		if ss.hostHasBlob(blob.Host, key) {
-			return blob.Host, nil
-		}
+		fallbackHealthyHosts = append(fallbackHealthyHosts, blob.Host)
 	}
-
-	return "", nil
+	fallbackHostWithBlob := ss.raceHostHasBlob(key, fallbackHealthyHosts)
+	return fallbackHostWithBlob, nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
@@ -382,4 +353,14 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 	}
 
 	return c.JSON(200, "ok")
+}
+
+func diff[S ~[]E, E comparable](sliceA, sliceB S) S {
+	diff := S{}
+	for _, a := range sliceA {
+		if !slices.Contains(sliceB, a) {
+			diff = append(diff, a)
+		}
+	}
+	return diff
 }
