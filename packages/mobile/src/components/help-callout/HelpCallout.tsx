@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
@@ -6,13 +6,15 @@ import { View } from 'react-native'
 import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import type { SvgProps } from 'app/types/svg'
 import { useColor } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing(2),
+    gap: spacing(4),
+    paddingVertical: spacing(3),
     paddingHorizontal: spacing(4),
     borderWidth: 1,
     borderColor: palette.neutralLight7,
@@ -22,26 +24,26 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   text: {
     flex: 1,
     flexWrap: 'wrap'
-  },
-  questionIcon: {
-    marginRight: spacing(4),
-    width: spacing(5),
-    height: spacing(5)
   }
 }))
 
 type HelpCalloutProps = {
   content: ReactNode
   style?: ViewStyle
+  icon?: ComponentType<SvgProps>
 }
 
-export const HelpCallout = ({ content, style }: HelpCalloutProps) => {
+/**
+ * @todo Rename to Hint
+ */
+export const HelpCallout = (props: HelpCalloutProps) => {
+  const { style, content, icon: Icon = IconQuestionCircle } = props
   const styles = useStyles()
   const neutral = useColor('neutral')
 
   return (
     <View style={[styles.root, style]}>
-      <IconQuestionCircle style={styles.questionIcon} fill={neutral} />
+      <Icon fill={neutral} />
       <Text style={styles.text}>{content}</Text>
     </View>
   )

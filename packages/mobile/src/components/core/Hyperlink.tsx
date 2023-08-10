@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { isAudiusUrl, useLeavingAudiusModal } from '@audius/common'
 import type { Match } from 'autolinker/dist/es2015'
 import type { LayoutRectangle, TextStyle } from 'react-native'
 import { Text, View } from 'react-native'
@@ -42,6 +43,7 @@ export type HyperlinkProps = ComponentProps<typeof Autolink> & {
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
   styles?: StylesProp<{ root: TextStyle; link: TextStyle }>
+  warnExternal?: boolean
 }
 
 export const Hyperlink = (props: HyperlinkProps) => {
@@ -50,6 +52,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
     source,
     styles: stylesProp,
     style,
+    warnExternal,
     ...other
   } = props
   const styles = useStyles()
@@ -91,7 +94,19 @@ export const Hyperlink = (props: HyperlinkProps) => {
     }
   }, [links, linkRefs, linkContainerRef])
 
-  const handlePress = useOnOpenLink(source)
+  const openLink = useOnOpenLink(source)
+  const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
+
+  const handlePress = useCallback(
+    (url) => {
+      if (warnExternal && !isAudiusUrl(url)) {
+        openLeavingAudiusModal({ link: url })
+      } else {
+        openLink(url)
+      }
+    },
+    [openLink, warnExternal, openLeavingAudiusModal]
+  )
 
   const renderLink = useCallback(
     (text, match, index) => (

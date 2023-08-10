@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import type {
@@ -19,6 +19,7 @@ import type { Edge } from 'react-native-safe-area-context'
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
 
 import { makeStyles } from 'app/styles'
+import type { SvgProps } from 'app/types/svg'
 import { attachToDy } from 'app/utils/animation'
 
 import { DrawerHeader } from './DrawerHeader'
@@ -114,7 +115,11 @@ export type DrawerProps = {
   /**
    * Icon to display in the header next to the title (must also include title)
    */
-  titleIcon?: ImageSourcePropType
+  titleIcon?: ComponentType<SvgProps>
+  /**
+   * Icon (as image source) to display in the header next to the title (must also include title)
+   */
+  titleImage?: ImageSourcePropType
   /**
    * Whether or not this is a fullscreen drawer with a dismiss button
    */
@@ -237,7 +242,7 @@ export const springToValue = ({
 // Only allow titleIcon with title
 type DrawerComponent = {
   (props: DrawerProps & { title: string }): React.ReactElement
-  (props: Omit<DrawerProps, 'titleIcon'>): React.ReactElement
+  (props: Omit<DrawerProps, 'titleIcon' | 'titleImage'>): React.ReactElement
 }
 export const Drawer: DrawerComponent = ({
   isOpen,
@@ -247,6 +252,7 @@ export const Drawer: DrawerComponent = ({
   onOpen,
   title,
   titleIcon,
+  titleImage,
   isFullscreen,
   shouldBackgroundDim = true,
   isGestureSupported = true,
@@ -652,6 +658,7 @@ export const Drawer: DrawerComponent = ({
           onClose={onClose}
           title={title}
           titleIcon={titleIcon}
+          titleImage={titleImage}
           isFullscreen={isFullscreen}
         />
         {children}

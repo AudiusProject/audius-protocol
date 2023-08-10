@@ -247,7 +247,7 @@ export const ChallengeRewardsDrawer = ({
       isFullscreen
       isGestureSupported={false}
       title={title}
-      titleIcon={titleIcon}
+      titleImage={titleIcon}
     >
       <View style={styles.content}>
         <View style={styles.task}>

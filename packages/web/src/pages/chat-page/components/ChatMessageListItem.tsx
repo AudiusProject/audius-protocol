@@ -15,7 +15,8 @@ import {
   isCollectionUrl,
   ChatMessageWithExtras,
   Status,
-  useCanSendMessage
+  useCanSendMessage,
+  useLeavingAudiusModal
 } from '@audius/common'
 import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
@@ -58,6 +59,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   // State
   const [isReactionPopupVisible, setReactionPopupVisible] = useState(false)
   const [emptyUnfurl, setEmptyUnfurl] = useState(false)
+  const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
 
   // Selectors
   const userId = useSelector(getUserId)
@@ -113,6 +115,12 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       dispatch(pushRoute(url))
     },
     [dispatch]
+  )
+  const onClickExternalLink = useCallback(
+    (url: string) => {
+      openLeavingAudiusModal({ link: url })
+    },
+    [openLeavingAudiusModal]
   )
 
   const handleResendClicked = useCallback(() => {
@@ -223,11 +231,12 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                   attributes: {
                     onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
                       const url = event.currentTarget.href
-
+                      event.nativeEvent.preventDefault()
                       if (isAudiusUrl(url)) {
                         const path = getPathFromAudiusUrl(url)
-                        event.nativeEvent.preventDefault()
                         onClickInternalLink(path ?? '/')
+                      } else {
+                        onClickExternalLink(url)
                       }
                     }
                   },
