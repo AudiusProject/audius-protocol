@@ -8,8 +8,8 @@ staking_bridge = "HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
-wallet = "/Users/saliou/.config/solana/id.json"
+cluster = "devnet"
+wallet = "id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
