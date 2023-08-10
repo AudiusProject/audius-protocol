@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
 import {
-  Nullable,
-  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType,
-  TrackEntity,
-  formatUSDCWeiToUSDString,
-  StringUSDC,
   Entity,
-  notificationsSelectors
+  formatPrice,
+  notificationsSelectors,
+  Nullable,
+  TrackEntity,
+  USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -66,7 +65,7 @@ export const USDCPurchaseSellerNotification = (
         <UserNameLink user={buyerUser} notification={notification} />{' '}
         {messages.justBoughtYourTrack}{' '}
         <EntityLink entity={track} entityType={Entity.Track} /> for $
-        {formatUSDCWeiToUSDString(amount.toString() as StringUSDC)}
+        {formatPrice(amount)}
         {messages.exclamation}
       </NotificationBody>
     </NotificationTile>

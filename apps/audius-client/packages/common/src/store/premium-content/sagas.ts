@@ -31,18 +31,12 @@ import { getContext } from 'store/effects'
 import { musicConfettiActions } from 'store/music-confetti'
 import { usersSocialActions } from 'store/social'
 import { tippingActions } from 'store/tipping'
-import { parseTrackRouteFromPermalink } from 'utils'
 import { Nullable } from 'utils/typeUtils'
 
 import * as premiumContentSelectors from './selectors'
 import { actions as premiumContentActions } from './slice'
 
 const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
-
-type TrackRouteParams =
-  | { slug: string; trackId: null; handle: string }
-  | { slug: null; trackId: ID; handle: null }
-  | null
 
 const {
   updatePremiumContentSignatures,
@@ -222,7 +216,6 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
   const tippedUserIds = yield* select(getTippedUserIds)
 
   const statusMap: { [id: ID]: PremiumTrackStatus } = {}
-  const trackParamsMap: { [id: ID]: TrackRouteParams } = {}
 
   const tracksThatNeedSignature = Object.values(tracks).filter((track) => {
     const {
@@ -248,7 +241,6 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
 
     if (hasNoSignature && shouldHaveSignature) {
       statusMap[trackId] = 'UNLOCKING'
-      trackParamsMap[trackId] = parseTrackRouteFromPermalink(permalink)
       return true
     }
     return false
@@ -256,21 +248,12 @@ function* handleSpecialAccessTrackSubscriptions(tracks: Track[]) {
 
   yield* put(updatePremiumTrackStatuses(statusMap))
 
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  yield* call(remoteConfigInstance.waitForRemoteConfig)
-  const gatedTrackPollIntervalMs = remoteConfigInstance.getRemoteVar(
-    IntKeys.GATED_TRACK_POLL_INTERVAL_MS
-  )
-
   yield* all(
     tracksThatNeedSignature.map((track) => {
       const trackId = track.track_id
       return call(pollPremiumTrack, {
         trackId,
         currentUserId,
-        trackParams: trackParamsMap[trackId],
-        frequency:
-          gatedTrackPollIntervalMs || DEFAULT_GATED_TRACK_POLL_INTERVAL_MS,
         isSourceTrack: false
       })
     })
@@ -436,24 +419,22 @@ function* updateGatedTrackAccess(
   yield* call(updateCollectibleGatedTracks, trackMap)
 }
 
-function* pollPremiumTrack({
+export function* pollPremiumTrack({
   trackId,
   currentUserId,
-  trackParams,
-  frequency,
   isSourceTrack
 }: {
   trackId: ID
   currentUserId: number
-  trackParams: TrackRouteParams
-  frequency: number
   isSourceTrack: boolean
 }) {
-  const { slug, handle } = trackParams ?? {}
-  if (!slug || !handle) return
-
   const analytics = yield* getContext('analytics')
   const apiClient = yield* getContext('apiClient')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
+  const frequency =
+    remoteConfigInstance.getRemoteVar(IntKeys.GATED_TRACK_POLL_INTERVAL_MS) ??
+    DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
 
   while (true) {
     const track = yield* call([apiClient, 'getTrack'], {
@@ -525,45 +506,32 @@ function* updateSpecialAccessTracks(
     yield* put(addTippedUserId({ id: trackOwnerId }))
   }
 
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  yield* call(remoteConfigInstance.waitForRemoteConfig)
-  const gatedTrackPollIntervalMs = remoteConfigInstance.getRemoteVar(
-    IntKeys.GATED_TRACK_POLL_INTERVAL_MS
-  )
-
   const statusMap: { [id: ID]: PremiumTrackStatus } = {}
-  const trackParamsMap: { [id: ID]: TrackRouteParams } = {}
+  const tracksToPoll: Set<ID> = new Set()
   const cachedTracks = yield* select(getTracks, {})
 
   Object.keys(cachedTracks).forEach((trackId) => {
     const id = parseInt(trackId)
-    const {
-      owner_id: ownerId,
-      permalink,
-      premium_conditions: premiumConditions
-    } = cachedTracks[id]
+    const { owner_id: ownerId, premium_conditions: premiumConditions } =
+      cachedTracks[id]
     const isGated =
       gate === 'follow'
         ? isPremiumContentFollowGated(premiumConditions)
         : isPremiumContentTipGated(premiumConditions)
     if (isGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
-      trackParamsMap[id] = parseTrackRouteFromPermalink(permalink)
+      tracksToPoll.add(id)
     }
   })
 
   yield* put(updatePremiumTrackStatuses(statusMap))
 
   yield* all(
-    Object.keys(trackParamsMap).map((trackId) => {
-      const id = parseInt(trackId)
+    Array.from(tracksToPoll).map((trackId) => {
       return call(pollPremiumTrack, {
-        trackId: id,
+        trackId,
         currentUserId,
-        trackParams: trackParamsMap[id],
-        frequency:
-          gatedTrackPollIntervalMs || DEFAULT_GATED_TRACK_POLL_INTERVAL_MS,
-        isSourceTrack: sourceTrackId === id
+        isSourceTrack: sourceTrackId === trackId
       })
     })
   )

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID, PremiumConditions } from '@audius/common'
 import {
-  formatUSDCWeiToUSDString,
+  formatPrice,
   isPremiumContentUSDCPurchaseGated,
   premiumContentSelectors
 } from '@audius/common'
@@ -90,9 +90,7 @@ export const LineupTileAccessStatus = ({
             ? premiumTrackStatus === 'UNLOCKING'
               ? null
               : messages.price(
-                  formatUSDCWeiToUSDString(
-                    premiumConditions.usdc_purchase.price
-                  )
+                  formatPrice(premiumConditions.usdc_purchase.price)
                 )
             : premiumTrackStatus === 'UNLOCKING'
             ? messages.unlocking

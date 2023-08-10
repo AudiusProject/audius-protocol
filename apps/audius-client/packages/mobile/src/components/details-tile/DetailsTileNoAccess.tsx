@@ -1,22 +1,22 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { PremiumConditions, ID, User } from '@audius/common'
+import type { ID, PremiumConditions, User } from '@audius/common'
 import {
   Chain,
   FollowSource,
-  usersSocialActions,
-  tippingActions,
-  usePremiumConditionsEntity,
-  premiumContentSelectors,
-  isPremiumContentUSDCPurchaseGated,
+  formatPrice,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
-  formatUSDCWeiToUSDString
+  isPremiumContentUSDCPurchaseGated,
+  premiumContentSelectors,
+  tippingActions,
+  usePremiumConditionsEntity,
+  usersSocialActions
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
-import { View, Text, Image } from 'react-native'
+import { Image, Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
@@ -354,7 +354,7 @@ export const DetailsTileNoAccess = ({
             style={[styles.mainButton, styles.buyButton]}
             styles={{ icon: { width: spacing(4), height: spacing(4) } }}
             title={messages.buy(
-              formatUSDCWeiToUSDString(premiumConditions.usdc_purchase.price)
+              formatPrice(premiumConditions.usdc_purchase.price)
             )}
             size='large'
             onPress={handlePurchasePress}

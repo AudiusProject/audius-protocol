@@ -294,13 +294,15 @@ function* sendTipAsync() {
 
   // Gross cast here bc of broken saga types with `yield* all`
   const [selfUserBank, recipientUserBank] = yield* all([
-    createUserBankIfNeeded(track, audiusBackendInstance, feePayerOverride),
-    createUserBankIfNeeded(
-      track,
-      audiusBackendInstance,
+    createUserBankIfNeeded(audiusBackendInstance, {
+      recordAnalytics: track,
+      feePayerOverride
+    }),
+    createUserBankIfNeeded(audiusBackendInstance, {
+      recordAnalytics: track,
       feePayerOverride,
-      recipientERCWallet
-    )
+      ethAddress: recipientERCWallet
+    })
   ]) as unknown as (SolanaWalletAddress | null)[]
 
   if (!selfUserBank || !recipientUserBank) {

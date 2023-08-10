@@ -10,7 +10,6 @@ import { Repost } from './Repost'
 import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
 import { User, UserMetadata } from './User'
-import { StringUSDC } from './Wallet'
 
 type EpochTimeStamp = number
 
@@ -92,8 +91,8 @@ export type PremiumConditionsTipGated = { tip_user_id: number }
 
 export type PremiumConditionsUSDCPurchase = {
   usdc_purchase: {
-    price: StringUSDC
-    slot: number
+    price: number
+    splits: Record<ID, number>
   }
 }
 

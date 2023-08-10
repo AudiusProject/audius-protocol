@@ -3,3 +3,18 @@
   flex-direction: column;
   gap: var(--unit-6);
 }
+
+.purchaseButtonText {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--unit-2);
+}
+
+.purchaseButtonSpinner {
+  width: var(--unit-5);
+  height: var(--unit-5);
+}
+
+.purchaseButtonSpinner g path {
+  stroke: currentColor;
+}

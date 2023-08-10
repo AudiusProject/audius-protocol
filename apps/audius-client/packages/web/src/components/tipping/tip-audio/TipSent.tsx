@@ -47,8 +47,12 @@ export const TipSent = () => {
       openTwitterLink(null, message)
 
       const [senderWallet, recipientWallet] = await Promise.all([
-        deriveUserBankAddress(audiusBackendInstance, account.erc_wallet),
-        deriveUserBankAddress(audiusBackendInstance, recipient.erc_wallet)
+        deriveUserBankAddress(audiusBackendInstance, {
+          ethAddress: account.erc_wallet
+        }),
+        deriveUserBankAddress(audiusBackendInstance, {
+          ethAddress: recipient.erc_wallet
+        })
       ])
 
       record(
