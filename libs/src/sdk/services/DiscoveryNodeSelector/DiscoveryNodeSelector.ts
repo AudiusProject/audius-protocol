@@ -420,7 +420,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           this.logger.debug('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.UNHEALTHY) {
           this.unhealthyServices.add(endpoint)
-          this.logger.warn('health_check', endpoint, health, reason)
+          this.logger.debug('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.BEHIND) {
           this.unhealthyServices.add(endpoint)
           if (data) {
