@@ -2,35 +2,29 @@ import json
 import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
-from src.models.indexing.revert_block import RevertBlock
-from sqlalchemy import text
-from sqlalchemy import literal_column
 
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, func, literal_column, or_, text
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
-from src.models.notifications.notification import PlaylistSeen
-from src.models.notifications.notification import NotificationSeen
-
+from src.models.indexing.revert_block import RevertBlock
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
-from src.models.tracks.track import Track
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
-from src.models.tracks.track_route import TrackRoute
-
+from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
-from src.models.users.user_events import UserEvent
 from src.models.users.user import User
+from src.models.users.user_events import UserEvent
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
@@ -593,9 +587,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 literal_column(f"row_to_json({PlaylistRoute.__tablename__})"),
             )
             .filter(
-                PlaylistRoute.owner_id.in_(
-                    entities_to_fetch[EntityType.PLAYLIST_ROUTE]
-                ),
+                PlaylistRoute.playlist_id.in_(entities_to_fetch["PlaylistRoute"]),
                 PlaylistRoute.is_current == True,
             )
             .all()
