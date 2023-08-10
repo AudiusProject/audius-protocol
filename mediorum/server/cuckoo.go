@@ -81,6 +81,22 @@ func (ss *MediorumServer) cuckooLookup(cid string) []string {
 	return hosts
 }
 
+func (ss *MediorumServer) cuckooLookupSubset(cid string, hostSubset []string) []string {
+	hosts := []string{}
+	cidBytes := []byte(cid)
+	cuckooMu.RLock()
+	for _, host := range hostSubset {
+		filter, ok := cuckooMap[host]
+		if ok && filter.Lookup(cidBytes) {
+			hosts = append(hosts, host)
+		} else if !ok {
+			ss.logger.Warn("cuckoo lookup subset: host not found", "host", host)
+		}
+	}
+	cuckooMu.RUnlock()
+	return hosts
+}
+
 func (ss *MediorumServer) startCuckooFetcher() error {
 	for {
 		for _, peer := range ss.Config.Peers {
