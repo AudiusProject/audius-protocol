@@ -585,7 +585,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 literal_column(f"row_to_json({PlaylistRoute.__tablename__})"),
             )
             .filter(
-                PlaylistRoute.owner_id.in_(entities_to_fetch["PlaylistRoute"]),
+                PlaylistRoute.playlist_id.in_(entities_to_fetch["PlaylistRoute"]),
                 PlaylistRoute.is_current == True,
             )
             .all()
