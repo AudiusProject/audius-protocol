@@ -41,8 +41,6 @@ export type ManageEntityCIDMetadata = {
  * Generic management of Audius Data entities
  **/
 export class EntityManagerClient extends ContractClient {
-  override web3Manager!: Web3Manager
-
   static Action = Action
   static EntityType = EntityType
 
@@ -76,7 +74,7 @@ export class EntityManagerClient extends ContractClient {
         }
       )
     } else {
-      sig = await this.web3Manager.signTypedData(signatureData)
+      sig = await (this.web3Manager as Web3Manager).signTypedData(signatureData)
     }
     const method = await this.getMethod(
       'manageEntity',
@@ -131,7 +129,7 @@ export class EntityManagerClient extends ContractClient {
         }
       )
     } else {
-      sig = await this.web3Manager.signTypedData(signatureData)
+      sig = await (this.web3Manager as Web3Manager).signTypedData(signatureData)
     }
     const method = await this.getMethod(
       'manageEntity',
@@ -157,9 +155,9 @@ export class EntityManagerClient extends ContractClient {
           metadata,
           nonce
         )
-      const nethermindSig = await this.web3Manager.signTypedData(
-        nethermindSignatureData
-      )
+      const nethermindSig = await (
+        this.web3Manager as Web3Manager
+      ).signTypedData(nethermindSignatureData)
 
       nethermindMethod = await this.getMethod(
         'manageEntity',

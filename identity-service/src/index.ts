@@ -14,6 +14,12 @@ const { logger } = require('./logging')
 const config = require('./config')
 const App = require('./app')
 
+// Global handler for unhandled promise rejections
+// TODO: We should remove this once we are confident no unhandled rejections are occurring
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 const start = async () => {
   const port = config.get('port')
   const app = new App(port)
