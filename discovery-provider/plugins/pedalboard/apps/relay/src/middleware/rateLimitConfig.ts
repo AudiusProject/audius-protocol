@@ -80,6 +80,13 @@ export class RelayRateLimiter {
     }
     const amountOfAllowedRequests = rateLimits[key.limit];
     const constructedKey = this.constructRateLimiterKey(key);
+    if (amountOfAllowedRequests <=0) {
+      logger.warn(`Blocked action attempted | ${key.operation}`)
+      // blocks this key for eternity
+      const blockedRes = await rateLimiter.block(constructedKey, 0)
+      // throw so calling func knows we hit a limit
+      throw blockedRes
+    }
     const pointsToConsume = rateLimiter.points / amountOfAllowedRequests;
     logger.info({
       constructedKey,
