@@ -358,8 +358,8 @@ export const Drawer: DrawerComponent = ({
         animationStyle,
         finished: ({ finished }) => {
           if (finished) {
-            onClosed?.()
             onFinished?.()
+            onClosed?.()
           }
         },
         velocity
