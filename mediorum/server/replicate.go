@@ -193,20 +193,27 @@ func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) str
 		h := host
 		g.Go(func() error {
 			if ss.hostHasBlob(h, key) {
-				hostWithKeyCh <- h
-				cancel() // cancel the context on the first success
+				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
+				select {
+				case hostWithKeyCh <- h:
+					cancel()
+				case <-ctx.Done():
+				}
 			}
 			return nil
 		})
 	}
 
-	g.Wait()
-	select {
-	case host := <-hostWithKeyCh:
+	go func() {
+		g.Wait()
+		close(hostWithKeyCh)
+	}()
+
+	host, ok := <-hostWithKeyCh
+	if ok {
 		return host
-	default:
-		return ""
 	}
+	return ""
 }
 
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
