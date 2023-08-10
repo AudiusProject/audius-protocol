@@ -15,7 +15,6 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { InputV2Variant } from 'components/data-entry/InputV2'
 import { TextAreaField, TextField } from 'components/form-fields'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useSelector } from 'utils/reducer'
@@ -101,7 +100,6 @@ export const CreateNewAppPage = (props: CreateNewAppPageProps) => {
         <Form className={styles.content}>
           <TextField
             name='name'
-            variant={InputV2Variant.ELEVATED_PLACEHOLDER}
             label={messages.appNameLabel}
             disabled={isSubmitting}
             maxLength={DEVELOPER_APP_NAME_MAX_LENGTH}

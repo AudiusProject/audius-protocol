@@ -1,6 +1,10 @@
 import { useField } from 'formik'
 
-import { InputV2, InputV2Props } from 'components/data-entry/InputV2'
+import {
+  InputV2,
+  InputV2Props,
+  InputV2Variant
+} from 'components/data-entry/InputV2'
 
 type TextFieldProps = InputV2Props & {
   name: string
@@ -14,6 +18,7 @@ export const TextField = (props: TextFieldProps) => {
 
   return (
     <InputV2
+      variant={InputV2Variant.ELEVATED_PLACEHOLDER}
       {...field}
       error={hasError}
       helperText={hasError ? error : undefined}

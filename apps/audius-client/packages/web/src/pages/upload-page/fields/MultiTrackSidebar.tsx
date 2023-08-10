@@ -17,8 +17,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
-import { SingleTrackEditValues, TrackEditFormValues } from '../forms/types'
-import { useIndexedField } from '../forms/utils'
+import { useIndexedField } from '../hooks'
+import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 
 import styles from './MultiTrackSidebar.module.css'
 

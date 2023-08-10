@@ -1,26 +1,3 @@
-.header {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title {
-  line-height: 20px;
-}
-
-.titleIcon {
-  height: 22px;
-  width: 22px;
-}
-
-.preview {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--unit-2);
-}
-
 .fields {
   display: flex;
   flex-direction: column;
@@ -65,4 +42,16 @@
 .artistName {
   display: flex;
   align-items: center;
+}
+
+.selectedValue {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--unit-4);
+}
+
+.remixOfValue {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--unit-2);
 }
