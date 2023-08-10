@@ -129,9 +129,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.backupServices = {}
     this.selectedNode =
       this.config.initialSelectedNode &&
-      (!this.config.allowlist ||
-        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
-      !this.config.blocklist?.has(this.config.initialSelectedNode)
+        (!this.config.allowlist ||
+          this.config.allowlist?.has(this.config.initialSelectedNode)) &&
+        !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
     this.eventEmitter =
@@ -415,12 +415,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         healthCheckThresholds: this.config.healthCheckThresholds
       })
       if (health !== HealthCheckStatus.HEALTHY) {
-        if (reason === 'Aborted') {
+        if (reason.toLowerCase().includes('aborted')) {
           // Ignore aborted requests
           this.logger.debug('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.UNHEALTHY) {
           this.unhealthyServices.add(endpoint)
-          this.logger.debug('health_check', endpoint, health, reason)
+          this.logger.warn('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.BEHIND) {
           this.unhealthyServices.add(endpoint)
           if (data) {
