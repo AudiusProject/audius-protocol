@@ -4,7 +4,10 @@
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
     },
     "dependencies": {
-        "@coral-xyz/anchor": "^0.28.0"
+        "@certusone/wormhole-sdk": "^0.9.22",
+        "@coral-xyz/anchor": "^0.28.0",
+        "@solana/spl-token": "^0.3.8",
+        "bs58": "^5.0.0"
     },
     "devDependencies": {
         "chai": "^4.3.4",
