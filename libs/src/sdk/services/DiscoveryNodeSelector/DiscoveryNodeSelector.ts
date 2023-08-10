@@ -415,7 +415,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         healthCheckThresholds: this.config.healthCheckThresholds
       })
       if (health !== HealthCheckStatus.HEALTHY) {
-        if (reason.toLowerCase().includes('aborted')) {
+        if (reason?.toLowerCase().includes('aborted')) {
           // Ignore aborted requests
           this.logger.debug('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.UNHEALTHY) {
