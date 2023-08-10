@@ -38,7 +38,10 @@ def update_playlist_routes_table(
 
     # Find the current route for the playlist
     # Check the pending playlist route updates first
-
+    params.logger.info(
+        "index.py | playlists.py | update_playlist_routes_table params,",
+        params.existing_records["PlaylistRoute"],
+    )
     # Then query the DB if necessary
     prev_playlist_route_record = params.existing_records["PlaylistRoute"].get(
         playlist_record.playlist_id
