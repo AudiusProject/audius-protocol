@@ -27,9 +27,12 @@ type UploadsCache struct {
 	isBuilt         bool
 	compressedChar  string // char to replace "baeaaaiqse" with because all CIDs we have start with this
 	prefix          string // "baeaaaiqse"
+	mu              *sync.RWMutex
 }
 
 func (uc *UploadsCache) Get(jobId, variant string) (cid string, hasVariant bool) {
+	uc.mu.RLock()
+	defer uc.mu.RUnlock()
 	if !uc.isBuilt {
 		return
 	}
@@ -47,6 +50,8 @@ func (uc *UploadsCache) Get(jobId, variant string) (cid string, hasVariant bool)
 }
 
 func (uc *UploadsCache) Set(jobId string, results map[string]string) {
+	uc.mu.Lock()
+	defer uc.mu.Unlock()
 	compressedResults := make(map[string]string, len(results))
 	for k, v := range results {
 		// we only care about images
@@ -63,15 +68,18 @@ func (uc *UploadsCache) Set(jobId string, results map[string]string) {
 	uc.jobIdToVariants[jobId] = compressedResults
 }
 
-func (ss *MediorumServer) buildUploadsCache() {
-	start := time.Now()
+func createUploadsCache() {
 	uploadsCache = &UploadsCache{
 		jobIdToVariants: make(map[string]map[string]string),
 		isBuilt:         false,
 		compressedChar:  "`", // anything non-base32 will do
 		prefix:          "baeaaaiqse",
+		mu:              &sync.RWMutex{},
 	}
+}
 
+func (ss *MediorumServer) buildUploadsCache() {
+	start := time.Now()
 	ctx := context.Background()
 
 	conn, err := ss.pgPool.Acquire(ctx)
@@ -119,7 +127,9 @@ func (ss *MediorumServer) buildUploadsCache() {
 		}
 	}
 
+	uploadsCache.mu.Lock()
 	uploadsCache.isBuilt = true
+	uploadsCache.mu.Unlock()
 	took := time.Since(start)
 	ss.logger.Info("uploads cache built", "took_minutes", took.Minutes())
 }

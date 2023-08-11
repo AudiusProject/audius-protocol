@@ -468,7 +468,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	if upload.Status == JobStatusBusyRetranscode {
 		// Re-transcode previews off the 320kbps downsample
 		fileHash = upload.TranscodeResults["320"]
-		uploadsCache.Set(upload.ID, upload.TranscodeResults)
 	}
 
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
