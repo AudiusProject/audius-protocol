@@ -71,7 +71,7 @@ def add_track_artwork(track):
     endpoint = get_primary_endpoint(track["user"], cid)
     if not endpoint:
         return track
-    artwork = get_image_urls(track["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
+    artwork = get_image_urls(track["user"], cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
@@ -90,7 +90,7 @@ def add_playlist_artwork(playlist):
     endpoint = get_primary_endpoint(playlist["user"], cid)
     if not endpoint:
         return playlist
-    artwork = get_image_urls(playlist["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
+    artwork = get_image_urls(playlist["user"], cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
@@ -127,7 +127,7 @@ def add_user_artwork(user):
     cover_cid = user.get("cover_photo_sizes")
     cover_endpoint = get_primary_endpoint(user, cover_cid)
     if profile_endpoint and profile_cid:
-        profile = get_image_urls(user, profile_endpoint, profile_cid, ["150x150", "480x480", "1000x1000"])
+        profile = get_image_urls(user, profile_cid, ["150x150", "480x480", "1000x1000"])
         if not profile:
             # Fallback to legacy image url format with dumb endpoint
             profile = {
@@ -137,7 +137,7 @@ def add_user_artwork(user):
             }
         user["profile_picture"] = profile
     if cover_endpoint and cover_cid:
-        cover = get_image_urls(user, cover_endpoint, cover_cid, ["640x", "2000x"])
+        cover = get_image_urls(user, cover_cid, ["640x", "2000x"])
         if not cover:
             # Fallback to legacy image url format with dumb endpoint
             cover = {
@@ -165,8 +165,8 @@ async def race_requests(urls):
 
 
 # Workaround for image load slowness: convert the upload_id to a url with the preferred node
-# and the cid for each image variant, and cache each mapping. This reduces redirects from initially
-# attempting to query the wrong node.
+# and the cid for each image variant. This reduces redirects from initially attempting to
+# query the wrong node. Also cache upload_id -> variant cids to reduce requests to CNs.
 def get_image_urls(user, upload_id, variants):
     try:
         image_urls = {}
@@ -174,11 +174,13 @@ def get_image_urls(user, upload_id, variants):
             # Legacy path - no need to query content nodes for image variant cids
             image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
         else:
-            # Query content for the transcoded cids corr. to this upload id and
-            # cache upload_id -> { variant: cid, ... }
             redis_key = f"image_cids:{upload_id}"
             image_cids = redis.hgetall(redis_key)
-            if not image_cids:
+            if image_cids:
+                image_cids = {variant.decode('utf-8'): cid.decode('utf-8') for variant, cid in image_cids.items()}
+            else:
+                # Query content for the transcoded cids corresponding to this upload id and
+                # cache upload_id -> { variant: cid, ... }
                 endpoints = get_n_primary_endpoints(user, upload_id, 3)
                 urls = list(map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints))
                 resp = asyncio.run(race_requests(urls))
@@ -190,8 +192,6 @@ def get_image_urls(user, upload_id, variants):
                 image_cids = {variant.strip(".jpg"): cid for variant, cid in image_cids.items()}
                 redis.hset(redis_key, mapping=image_cids)
                 redis.expire(redis_key, 86400)  # 24 hour ttl
-            else:
-                image_cids = {variant.decode('utf-8'): cid.decode('utf-8') for variant, cid in image_cids.items()}
 
         for variant, cid in image_cids.items():
             if variant == "original":
