@@ -17,7 +17,7 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  const environment = process.env.environment
+  const environment = process.env.environment || "dev"
   const dotenvConfig = (filename: string) => dotenv.config({ path: `${filename}.env` })
   logger.info(`running on ${environment} network`);
   switch (environment) {

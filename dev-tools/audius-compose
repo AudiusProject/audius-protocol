@@ -21,7 +21,8 @@ audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-cr
 audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
-audius-protocol-poa-ganache-1
+audius-protocol-poa-ganache-1 \
+audius-protocol-pedalboard
 """
 
 
