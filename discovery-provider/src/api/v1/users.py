@@ -47,8 +47,8 @@ from src.api.v1.helpers import (
 from src.api.v1.models.activities import (
     activity_model,
     activity_model_full,
-    collection_activity_model_full,
-    track_activity_model_full,
+    library_collection_activity_model_full,
+    library_track_activity_model_full,
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
@@ -742,13 +742,13 @@ favorites_response = make_response(
 track_library_full_response = make_full_response(
     "track_library_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(library_track_activity_model_full)),
 )
 
 collection_library_full_response = make_full_response(
     "collection_library_response_full",
     full_ns,
-    fields.List(fields.Nested(collection_activity_model_full)),
+    fields.List(fields.Nested(library_collection_activity_model_full)),
 )
 
 
