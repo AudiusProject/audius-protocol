@@ -57,9 +57,9 @@ def add_track_artwork(track):
     endpoint = get_primary_endpoint(track["user"], cid)
     if not endpoint:
         return track
-    artwork = get_image_urls(track["user"], endpoint, cid)
+    artwork = get_image_urls(track["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
-        # Default to legacy image url format
+        # Default to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
@@ -76,9 +76,9 @@ def add_playlist_artwork(playlist):
     endpoint = get_primary_endpoint(playlist["user"], cid)
     if not endpoint:
         return playlist
-    artwork = get_image_urls(playlist["user"], endpoint, cid)
+    artwork = get_image_urls(playlist["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
-        # Default to legacy image url format
+        # Default to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
@@ -113,9 +113,9 @@ def add_user_artwork(user):
     cover_cid = user.get("cover_photo_sizes")
     cover_endpoint = get_primary_endpoint(user, cover_cid)
     if profile_endpoint and profile_cid:
-        profile = get_image_urls(user, profile_endpoint, profile_cid)
+        profile = get_image_urls(user, profile_endpoint, profile_cid, ["150x150", "480x480", "1000x1000"])
         if not profile:
-            # Default to legacy image url format
+            # Default to legacy image url format with dumb endpoint
             profile = {
                 "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
                 "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
@@ -123,9 +123,9 @@ def add_user_artwork(user):
             }
         user["profile_picture"] = profile
     if cover_endpoint and cover_cid:
-        cover = get_image_urls(user, cover_endpoint, cover_cid)
+        cover = get_image_urls(user, cover_endpoint, cover_cid, ["640x", "2000x"])
         if not cover:
-            # Default to legacy image url format
+            # Default to legacy image url format with dumb endpoint
             cover = {
                 "640x": make_image(cover_endpoint, cover_cid, 640),
                 "2000x": make_image(cover_endpoint, cover_cid, 2000),
@@ -140,37 +140,41 @@ def add_user_artwork(user):
 # Workaround for image load slowness: convert the upload_id to a url with the preferred node
 # and the cid for each image variant, and cache each mapping. This reduces redirects from initially
 # attempting to query the wrong node.
-def get_image_urls(user, endpoint, upload_id):
+def get_image_urls(user, endpoint, upload_id, variants):
     try:
         image_urls = {}
-
-        # Cache upload_id -> { variant: cid, ... }
-        redis_key = f"image_cids:{upload_id}"
-        image_cids = redis.hgetall(redis_key)
-        if not image_cids:
-            resp = requests.get(f"{endpoint}/uploads/{upload_id}", timeout=2)
-            resp.raise_for_status()
-            image_cids = resp.json().get("results", {})
-            if not image_cids:
-                return image_urls
-
-            redis.hset(redis_key, mapping=image_cids)
-            redis.expire(redis_key, 86400)  # 24 hour ttl
+        if upload_id.startswith("Qm"):
+            # Legacy path - no need to query content nodes for image variants
+            image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
         else:
-            image_cids = {key.decode('utf-8'): value.decode('utf-8') for key, value in image_cids.items()}
+            # Query content for the transcoded cids corr. to this upload id and
+            # cache upload_id -> { variant: cid, ... }
+            redis_key = f"image_cids:{upload_id}"
+            image_cids = redis.hgetall(redis_key)
+            if not image_cids:
+                resp = requests.get(f"{endpoint}/uploads/{upload_id}", timeout=2)
+                resp.raise_for_status()
+                image_cids = resp.json().get("results", {})
+                if not image_cids:
+                    return image_urls
+
+                image_cids = {variant.strip(".jpg"): cid for variant, cid in image_cids.items()}
+                redis.hset(redis_key, mapping=image_cids)
+                redis.expire(redis_key, 86400)  # 24 hour ttl
+            else:
+                image_cids = {variant.decode('utf-8'): cid.decode('utf-8') for variant, cid in image_cids.items()}
 
         for variant, cid in image_cids.items():
-            key = variant.strip(".jpg")
-            if key == "original":
+            if variant == "original":
                 continue
             primary_endpoint = get_primary_endpoint(user, cid)
             if not primary_endpoint:
                 raise Exception("Could not get primary endpoint for user {user.user_id}, cid {cid}")
-            image_urls[key] = f"{primary_endpoint}/content/{cid}"
+            image_urls[variant] = f"{primary_endpoint}/content/{cid}"
         return image_urls
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         logger.error(
-            f"Exception fetching image upload id: {upload_id}: {e}"
+            f"Exception fetching image upload urls from id: {upload_id}: {e}"
         )
         return {}
 
