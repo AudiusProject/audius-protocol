@@ -35,7 +35,7 @@ export class Storage implements StorageService {
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
-    this.storageNodeSelector = this.config.storageNodeSelector
+    this.storageNodeSelector = config.storageNodeSelector
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
