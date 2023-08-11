@@ -134,7 +134,7 @@ export class Storage implements StorageService {
       url: `${contentNodeEndpoint}/uploads`,
       maxContentLength: Infinity,
       data: formData,
-      headers: {
+      headers: formData.getBoundary ?? {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
       },
       onUploadProgress: (progressEvent) =>
