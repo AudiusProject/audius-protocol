@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"mediorum/cidutil"
 	"mime"
@@ -17,7 +19,110 @@ import (
 
 var (
 	filesFormFieldName = "files"
+	uploadsCache       *UploadsCache
 )
+
+type UploadsCache struct {
+	jobIdToVariants map[string]map[string]string
+	isBuilt         bool
+	compressedChar  string // char to replace "baeaaaiqse" with because all CIDs we have start with this
+	prefix          string // "baeaaaiqse"
+}
+
+func (uc *UploadsCache) Get(jobId, variant string) (cid string, hasVariant bool) {
+	if !uc.isBuilt {
+		return
+	}
+
+	if compressedResults, ok := uc.jobIdToVariants[jobId]; ok {
+		if cid, ok = compressedResults[variant]; ok {
+			if strings.HasPrefix(cid, string(uc.compressedChar)) {
+				cid = uc.prefix + cid[len(uc.compressedChar):]
+			}
+			hasVariant = true
+		}
+	}
+
+	return
+}
+
+func (uc *UploadsCache) Set(jobId string, results map[string]string) {
+	compressedResults := make(map[string]string, len(results))
+	for k, v := range results {
+		// we only care about images
+		if strings.HasPrefix(k, "320") {
+			continue
+		}
+
+		if strings.HasPrefix(v, uc.prefix) {
+			compressedResults[k] = uc.compressedChar + v[len(uc.prefix):]
+		} else {
+			compressedResults[k] = v
+		}
+	}
+	uc.jobIdToVariants[jobId] = compressedResults
+}
+
+func (ss *MediorumServer) buildUploadsCache() {
+	start := time.Now()
+	uploadsCache = &UploadsCache{
+		jobIdToVariants: make(map[string]map[string]string),
+		isBuilt:         false,
+		compressedChar:  "`", // anything non-base32 will do
+		prefix:          "baeaaaiqse",
+	}
+
+	ctx := context.Background()
+
+	conn, err := ss.pgPool.Acquire(ctx)
+	if err != nil {
+		ss.logger.Warn("error acquiring connection from pool to build uploads cache", "err", err)
+		return
+	}
+	defer conn.Release()
+
+	pageSize := 10000
+	lastID := ""
+
+	for {
+		query := `select id, transcode_results from uploads where id > $1 order by id limit $2`
+		rows, err := conn.Query(ctx, query, lastID, pageSize)
+		if err != nil {
+			ss.logger.Warn("error querying uploads table to build cache", "err", err)
+			return
+		}
+
+		var pageEmpty = true
+		for rows.Next() {
+			pageEmpty = false
+			var id string
+			var resultsJSON []byte
+
+			err := rows.Scan(&id, &resultsJSON)
+			if err != nil {
+				ss.logger.Warn("error scanning row while building uploads cache", "err", err)
+				return
+			}
+
+			results := make(map[string]string)
+			if err := json.Unmarshal(resultsJSON, &results); err != nil {
+				ss.logger.Warn("error unmarshaling results while building uploads cache", "err", err)
+				return
+			}
+
+			uploadsCache.Set(id, results)
+			lastID = id
+		}
+
+		if pageEmpty {
+			break
+		}
+	}
+
+	uploadsCache.isBuilt = true
+	took := time.Since(start)
+	ss.logger.Info("uploads cache built", "took_minutes", took.Minutes())
+}
 
 func (ss *MediorumServer) getUpload(c echo.Context) error {
 	var upload *Upload
@@ -211,7 +316,9 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	if cidutil.IsLegacyCID(jobID) {
 		// check if file is migrated first - it would have a single key and no upload object in the db
 		key := jobID + "/" + variant
+		startMigratedExists := time.Now()
 		exists, err := ss.bucket.Exists(c.Request().Context(), key)
+		c.Response().Header().Set("x-migrated-exists", fmt.Sprintf("%.2fs", time.Since(startMigratedExists).Seconds()))
 		if err != nil {
 			ss.logger.Warn("migrated blob exists check failed", "err", err)
 		} else if exists {
@@ -226,50 +333,68 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		}
 
 		// check if file is migrated but on another host
+		startFindNode := time.Now()
 		host, err := ss.findNodeToServeBlob(key)
 		if err != nil {
+			c.Response().Header().Set("x-find-node-err", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets. return `err` instead
 			c.SetParamNames("dirCid", "fileName")
 			c.SetParamValues(jobID, variant)
 			return ss.serveLegacyDirCid(c)
 		} else if host != "" {
+			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			dest := ss.replaceHost(c, host)
 			return c.Redirect(302, dest.String())
 		} else {
+			c.Response().Header().Set("x-find-node-not-found", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets
 			c.SetParamNames("dirCid", "fileName")
 			c.SetParamValues(jobID, variant)
 			return ss.serveLegacyDirCid(c)
 		}
 	} else {
-		var upload *Upload
-		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
-		if err != nil {
-			return err
-		}
-		cid, ok := upload.TranscodeResults[variant]
-		if !ok {
+		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup
+		startCache := time.Now()
+		cid, ok := uploadsCache.Get(jobID, variant)
 
-			// since cultur3stake nodes can't talk to each other
-			// they might not get Upload crudr updates from each other
-			// so if one cultur3stake does transocde... sibiling might not get the updates
-			// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
-			// TODO: crudr should gossip
-			if c.QueryParam("localOnly") != "true" {
-				healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-				for _, host := range healthyHosts {
-					if host == ss.Config.Self.Host {
-						continue
-					}
-					if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
-						return c.Redirect(302, dest)
+		if !ok {
+			c.Response().Header().Set("x-cache-miss", fmt.Sprintf("%.2fs", time.Since(startCache).Seconds()))
+			startDb := time.Now()
+			var upload *Upload
+			err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
+			if err != nil {
+				return err
+			}
+			cid, ok = upload.TranscodeResults[variant]
+			if !ok {
+				c.Response().Header().Set("x-db-miss", fmt.Sprintf("%.2fs", time.Since(startDb).Seconds()))
+
+				// since cultur3stake nodes can't talk to each other
+				// they might not get Upload crudr updates from each other
+				// so if one cultur3stake does transocde... sibiling might not get the updates
+				// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
+				// TODO: crudr should gossip
+				if c.QueryParam("localOnly") != "true" {
+					healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+					for _, host := range healthyHosts {
+						if host == ss.Config.Self.Host {
+							continue
+						}
+						if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
+							return c.Redirect(302, dest)
+						}
 					}
 				}
-			}
 
-			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-			return c.String(400, msg)
+				msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+				return c.String(400, msg)
+			} else {
+				c.Response().Header().Set("x-db-hit", fmt.Sprintf("%.2fs %s", time.Since(startDb).Seconds(), cid))
+			}
+		} else {
+			c.Response().Header().Set("x-cache-hit", fmt.Sprintf("%.2fs %s", time.Since(startCache).Seconds(), cid))
 		}
+
 		c.SetParamNames("cid")
 		c.SetParamValues(cid)
 		return ss.getBlob(c)

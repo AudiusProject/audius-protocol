@@ -330,6 +330,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startCuckooBuilder()
 	go ss.startCuckooFetcher()
+	go ss.buildUploadsCache()
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
