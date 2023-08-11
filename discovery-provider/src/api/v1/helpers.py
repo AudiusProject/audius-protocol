@@ -59,7 +59,7 @@ def add_track_artwork(track):
         return track
     artwork = get_image_urls(track["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
-        # Default to legacy image url format with dumb endpoint
+        # Fallback to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
@@ -78,7 +78,7 @@ def add_playlist_artwork(playlist):
         return playlist
     artwork = get_image_urls(playlist["user"], endpoint, cid, ["150x150", "480x480", "1000x1000"])
     if not artwork:
-        # Default to legacy image url format with dumb endpoint
+        # Fallback to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
@@ -115,7 +115,7 @@ def add_user_artwork(user):
     if profile_endpoint and profile_cid:
         profile = get_image_urls(user, profile_endpoint, profile_cid, ["150x150", "480x480", "1000x1000"])
         if not profile:
-            # Default to legacy image url format with dumb endpoint
+            # Fallback to legacy image url format with dumb endpoint
             profile = {
                 "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
                 "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
@@ -125,7 +125,7 @@ def add_user_artwork(user):
     if cover_endpoint and cover_cid:
         cover = get_image_urls(user, cover_endpoint, cover_cid, ["640x", "2000x"])
         if not cover:
-            # Default to legacy image url format with dumb endpoint
+            # Fallback to legacy image url format with dumb endpoint
             cover = {
                 "640x": make_image(cover_endpoint, cover_cid, 640),
                 "2000x": make_image(cover_endpoint, cover_cid, 2000),
