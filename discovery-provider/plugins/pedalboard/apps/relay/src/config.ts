@@ -39,7 +39,7 @@ export const readConfig = (): Config => {
   return {
     environment,
     rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
-    acdcChainId: process.env.acdcChainId,
+    acdcChainId: process.env.acdcChainId || "1056801",
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
     requiredConfirmations: parseInt(process.env.requiredConfirmations || "1"),
