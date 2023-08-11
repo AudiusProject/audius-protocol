@@ -56,7 +56,7 @@ export const readConfig = (): Config => {
     entityManagerContractRegistryKey: "EntityManager",
     serverHost: env.relay_server_host,
     serverPort: env.relay_server_port,
-    aao: newAntiAbuseConfig(env.aao_endpoint),
+    aao: newAntiAbuseConfig(env.aao_endpoint, env.use_aao),
     rateLimitAllowList: allowListPublicKeys(),
     rateLimitBlockList: blockListPublicKeys()
   };
@@ -68,15 +68,17 @@ export type AntiAbuseConfig = {
   blockRelayAbuseErrorCodes: Set<number>;
   blockNotificationsErrorCodes: Set<number>;
   blockEmailsErrorCodes: Set<number>;
+  useAao: boolean;
 };
 
-export const newAntiAbuseConfig = (url: string): AntiAbuseConfig => {
+export const newAntiAbuseConfig = (url: string, useAao: boolean): AntiAbuseConfig => {
   return {
     antiAbuseOracleUrl: url,
     allowRules: new Set([14, 17]),
     blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
     blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 13, 15]),
+    useAao
   };
 };
 
