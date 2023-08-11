@@ -227,17 +227,15 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
 
         results = []
         for playlist in playlists:
-            # For the BDNxn strategy, filter out playlists with < 3 tracks from other users
-            if strategy.version == TrendingVersion.BDNxn:
-                playlist_owner_id = playlist["playlist_owner_id"]
-                track_owner_ids = list(
-                    filter(
-                        lambda owner_id: owner_id != playlist_owner_id,
-                        map(lambda track: track["owner_id"], playlist["tracks"]),
-                    )
+            playlist_owner_id = playlist["playlist_owner_id"]
+            track_owner_ids = list(
+                filter(
+                    lambda owner_id: owner_id != playlist_owner_id,
+                    map(lambda track: track["owner_id"], playlist["tracks"]),
                 )
-                if len(track_owner_ids) < 3:
-                    continue
+            )
+            if len(track_owner_ids) < 3:
+                continue
             results.append(playlist)
 
         return (results, list(map(lambda playlist: playlist["playlist_id"], results)))
