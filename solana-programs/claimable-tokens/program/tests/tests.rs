@@ -341,7 +341,7 @@ async fn create_account_with_seed_denial() {
         _secp_pubkey,
         mint_account,
         mint_authority,
-        user_token_account,
+        _user_token_account,
         eth_address,
     ) = init_test_variables();
 
@@ -359,7 +359,7 @@ async fn create_account_with_seed_denial() {
     let pair = find_address_pair(&id(), &mint_pubkey, eth_address).unwrap();
     let account_to_create = pair.derive.address;
 
-    // Transfer 1 lamport to to-be-created account to potentially deny its creation
+    // Transfer 1 lamport to account to be created to potentially deny its creation
     let send_lamports_instruction =
         system_instruction::transfer(&program_context.payer.pubkey(), &account_to_create, 1);
     let mut send_lamports_transaction = Transaction::new_with_payer(
