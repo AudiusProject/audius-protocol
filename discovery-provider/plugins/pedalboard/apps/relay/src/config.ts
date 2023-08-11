@@ -34,8 +34,6 @@ export const readConfig = (): Config => {
         return developmentConfig.entityManagerContractAddress;
     }
   };
-  if (process.env.acdcChainId === undefined)
-    throw new Error("acdcChainId not configured");
   return {
     environment,
     rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
