@@ -153,11 +153,11 @@ def get_image_urls(user, endpoint, upload_id):
             image_cids = resp.json().get("results", {})
             if not image_cids:
                 return image_urls
+
             redis.hset(redis_key, mapping=image_cids)
-            logger.info(f"caching image cids for {upload_id}")
             redis.expire(redis_key, 86400)  # 24 hour ttl
         else:
-            logger.info(f"using cached image cids for {upload_id}")  # TODO remove
+            image_cids = {key.decode('utf-8'): value.decode('utf-8') for key, value in image_cids.items()}
 
         for variant, cid in image_cids.items():
             key = variant.strip(".jpg")
