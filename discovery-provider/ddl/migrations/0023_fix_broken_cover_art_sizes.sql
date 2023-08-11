@@ -1,7 +1,14 @@
 WITH cover_art_cte AS (
-  SELECT track_id, owner_id, cover_art_sizes,
-  (
-    SELECT cover_art_sizes FROM tracks WHERE track_id = t1.track_id AND is_current = FALSE ORDER BY blocknumber DESC LIMIT 1
+  SELECT track_id, owner_id, cover_art_sizes, (
+    SELECT
+      cover_art_sizes
+    FROM tracks
+    WHERE
+      track_id = t1.track_id
+      AND is_current = FALSE
+      AND cover_art_sizes NOT LIKE 'blob%' 
+      AND cover_art_sizes NOT LIKE 'file%'
+    ORDER BY blocknumber DESC LIMIT 1
   ) AS old_cover_art_sizes
   FROM tracks AS t1
   WHERE is_current = TRUE
