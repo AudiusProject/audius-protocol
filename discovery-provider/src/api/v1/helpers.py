@@ -5,6 +5,7 @@ from typing import Dict, Union, cast
 
 from flask_restx import reqparse
 
+import requests
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
@@ -56,11 +57,14 @@ def add_track_artwork(track):
     endpoint = get_primary_endpoint(track["user"], cid)
     if not endpoint:
         return track
-    artwork = {
-        "150x150": make_image(endpoint, cid, 150, 150),
-        "480x480": make_image(endpoint, cid, 480, 480),
-        "1000x1000": make_image(endpoint, cid, 1000, 1000),
-    }
+    artwork = get_image_urls(track["user"], endpoint, cid)
+    if not artwork:
+        # Default to legacy image url format
+        artwork = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+        }
     track["artwork"] = artwork
     return track
 
@@ -72,11 +76,14 @@ def add_playlist_artwork(playlist):
     endpoint = get_primary_endpoint(playlist["user"], cid)
     if not endpoint:
         return playlist
-    artwork = {
-        "150x150": make_image(endpoint, cid, 150, 150),
-        "480x480": make_image(endpoint, cid, 480, 480),
-        "1000x1000": make_image(endpoint, cid, 1000, 1000),
-    }
+    artwork = get_image_urls(playlist["user"], endpoint, cid)
+    if not artwork:
+        # Default to legacy image url format
+        artwork = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+        }
     playlist["artwork"] = artwork
     return playlist
 
@@ -106,22 +113,68 @@ def add_user_artwork(user):
     cover_cid = user.get("cover_photo_sizes")
     cover_endpoint = get_primary_endpoint(user, cover_cid)
     if profile_endpoint and profile_cid:
-        profile = {
-            "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
-            "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
-            "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
-        }
+        profile = get_image_urls(user, profile_endpoint, profile_cid)
+        if not profile:
+            # Default to legacy image url format
+            profile = {
+                "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
+                "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
+                "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
+            }
         user["profile_picture"] = profile
     if cover_endpoint and cover_cid:
-        cover = {
-            "640x": make_image(cover_endpoint, cover_cid, 640),
-            "2000x": make_image(cover_endpoint, cover_cid, 2000),
-        }
+        cover = get_image_urls(user, cover_endpoint, cover_cid)
+        if not cover:
+            # Default to legacy image url format
+            cover = {
+                "640x": make_image(cover_endpoint, cover_cid, 640),
+                "2000x": make_image(cover_endpoint, cover_cid, 2000),
+            }
         user["cover_photo"] = cover
     return user
 
 
 # Helpers
+
+
+# Workaround for image load slowness: convert the upload_id to a url with the preferred node
+# and the cid for each image variant, and cache each mapping. This reduces redirects from initially
+# attempting to query the wrong node.
+def get_image_urls(user, endpoint, upload_id):
+    try:
+        image_urls = {}
+
+        # Cache upload_id -> { variant: cid, ... }
+        redis_key = f"image_cids:{upload_id}"
+        image_cids = redis.hgetall(redis_key)
+        if not image_cids:
+            resp = requests.get(f"{endpoint}/uploads/{upload_id}", timeout=2)
+            resp.raise_for_status()
+            image_cids = resp.json().get("results", {})
+            if not image_cids:
+                return image_urls
+            redis.hset(redis_key, mapping=image_cids)
+            logger.info(f"caching image cids for {upload_id}")
+            redis.expire(redis_key, 86400)  # 24 hour ttl
+        else:
+            logger.info(f"using cached image cids for {upload_id}")  # TODO remove
+
+        for variant, cid in image_cids.items():
+            key = variant.strip(".jpg")
+            if key == "original":
+                continue
+            primary_endpoint = get_primary_endpoint(user, cid)
+            if not primary_endpoint:
+                raise Exception("Could not get primary endpoint for user {user.user_id}, cid {cid}")
+            image_urls[key] = f"{primary_endpoint}/content/{cid}"
+        return image_urls
+    except requests.exceptions.RequestException as e:
+        logger.error(
+            f"Exception fetching image upload id: {upload_id}: {e}"
+        )
+        return {}
+
+
 def extend_search(resp):
     if "users" in resp:
         resp["users"] = list(map(extend_user, resp["users"]))
