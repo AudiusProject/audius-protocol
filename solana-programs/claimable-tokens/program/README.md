@@ -20,3 +20,10 @@ $ cargo test
 $ cargo build-bpf
 $ cargo test-bpf
 ```
+
+If the tests hang, install solana 1.10.x (e.g. 1.10.4) by doing:
+```
+solana-install init 1.10.4
+```
+
+Retry building and testing. It should work now.

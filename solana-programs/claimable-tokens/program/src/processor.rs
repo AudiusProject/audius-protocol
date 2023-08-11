@@ -200,19 +200,49 @@ impl Processor {
         // Create user bank account signature and invoke from program
         let signature = &[&mint_key.to_bytes()[..32], &[pair.base.seed]];
 
-        invoke_signed(
-            &system_instruction::create_account_with_seed(
-                funder.key,
-                account_to_create.key,
-                base.key,
-                pair.derive.seed.as_str(),
-                required_lamports,
-                space,
-                &spl_token::id(),
-            ),
-            &[funder.clone(), account_to_create.clone(), base.clone()],
-            &[signature],
-        )
+        let account_to_create_lamports = account_to_create.lamports();
+        let required_lamports_remaining =
+            required_lamports.saturating_sub(account_to_create_lamports);
+
+        // Transfer required lamports from payer to account to create if necessary.
+        if required_lamports_remaining > 0 {
+            invoke(
+                &system_instruction::transfer(
+                    funder.key,
+                    account_to_create.key,
+                    required_lamports_remaining,
+                ),
+                &[funder.clone(), account_to_create.clone()],
+            )?;
+        }
+
+        // If the account to create is empty / doesn't exist yet, create it.
+        let acct_is_empty = account_to_create.try_data_is_empty().unwrap_or(true);
+        if acct_is_empty {
+            invoke_signed(
+                &system_instruction::allocate_with_seed(
+                    account_to_create.key,
+                    base.key,
+                    pair.derive.seed.as_str(),
+                    space,
+                    &spl_token::id(),
+                ),
+                &[account_to_create.clone(), base.clone()],
+                &[signature],
+            )?;
+            invoke_signed(
+                &system_instruction::assign_with_seed(
+                    account_to_create.key,
+                    base.key,
+                    pair.derive.seed.as_str(),
+                    &spl_token::id(),
+                ),
+                &[account_to_create.clone(), base.clone()],
+                &[signature],
+            )?;
+        }
+
+        Ok(())
     }
 
     /// Helper to initialize user token account
@@ -285,7 +315,7 @@ impl Processor {
         rent: &Rent,
     ) -> Result<u64, ProgramError> {
         let index = sysvar::instructions::load_current_index_checked(&instruction_info)
-        .map_err(to_claimable_tokens_error)?;
+            .map_err(to_claimable_tokens_error)?;
 
         // instruction can't be first in transaction
         // because must follow after `new_secp256k1_instruction`
@@ -345,11 +375,12 @@ impl Processor {
         // Transfer required lamports from payer to nonce account if necessary.
         if required_lamports > 0 {
             invoke(
-                &system_instruction::transfer(funder_account_info.key, nonce_account_info.key, required_lamports),
-                &[
-                    funder_account_info.clone(),
-                    nonce_account_info.clone()
-                ],
+                &system_instruction::transfer(
+                    funder_account_info.key,
+                    nonce_account_info.key,
+                    required_lamports,
+                ),
+                &[funder_account_info.clone(), nonce_account_info.clone()],
             )?;
         }
 
