@@ -5,6 +5,7 @@ from typing import Dict, Union, cast
 
 from flask_restx import reqparse
 
+import asyncio
 import requests
 from src import api_helpers
 from src.api.v1.models.common import full_response
@@ -34,7 +35,7 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
-def get_primary_endpoint(user, cid):
+def init_rendezvous(user, cid):
     if not cid:
         return ""
     healthy_nodes = get_all_healthy_content_nodes_cached(redis)
@@ -44,10 +45,23 @@ def get_primary_endpoint(user, cid):
         )
         return ""
 
-    rendezvous = RendezvousHash(
+    return RendezvousHash(
         *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
     )
+
+
+def get_primary_endpoint(user, cid):
+    rendezvous = init_rendezvous(user, cid)
+    if not rendezvous:
+        return ""
     return rendezvous.get(cid)
+
+
+def get_n_primary_endpoints(user, cid, n):
+    rendezvous = init_rendezvous(user, cid)
+    if not rendezvous:
+        return ""
+    return rendezvous.get_n(n, cid)
 
 
 def add_track_artwork(track):
@@ -136,15 +150,28 @@ def add_user_artwork(user):
 
 # Helpers
 
+async def fetch_url(url):
+    loop = asyncio.get_event_loop()
+    future = loop.run_in_executor(None, requests.get, url, {'timeout': 1})
+    response = await future
+    return response
+
+
+async def race_requests(urls):
+    tasks = [fetch_url(url) for url in urls]
+    result = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    for task in result.done:
+        return task.result()
+
 
 # Workaround for image load slowness: convert the upload_id to a url with the preferred node
 # and the cid for each image variant, and cache each mapping. This reduces redirects from initially
 # attempting to query the wrong node.
-def get_image_urls(user, endpoint, upload_id, variants):
+def get_image_urls(user, upload_id, variants):
     try:
         image_urls = {}
         if upload_id.startswith("Qm"):
-            # Legacy path - no need to query content nodes for image variants
+            # Legacy path - no need to query content nodes for image variant cids
             image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
         else:
             # Query content for the transcoded cids corr. to this upload id and
@@ -152,7 +179,9 @@ def get_image_urls(user, endpoint, upload_id, variants):
             redis_key = f"image_cids:{upload_id}"
             image_cids = redis.hgetall(redis_key)
             if not image_cids:
-                resp = requests.get(f"{endpoint}/uploads/{upload_id}", timeout=2)
+                endpoints = get_n_primary_endpoints(user, upload_id, 3)
+                urls = list(map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints))
+                resp = asyncio.run(race_requests(urls))
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
                 if not image_cids:
