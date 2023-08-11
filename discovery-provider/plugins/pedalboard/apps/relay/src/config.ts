@@ -58,10 +58,8 @@ export type AntiAbuseConfig = {
 };
 
 export const newAntiAbuseConfig = (): AntiAbuseConfig => {
-  if (process.env.antiAbuseOracle === undefined)
-    throw new Error("antiAbuseOracle not defined");
   return {
-    antiAbuseOracleUrl: process.env.antiAbuseOracle,
+    antiAbuseOracleUrl: process.env.antiAbuseOracle || "",
     allowRules: new Set([14, 17]),
     blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
