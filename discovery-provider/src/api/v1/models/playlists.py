@@ -63,6 +63,7 @@ full_playlist_model = ns.clone(
         "tracks": fields.List(fields.Nested(track_full), required=True),
         "cover_art": fields.String,
         "cover_art_sizes": fields.String,
+        "cover_art_cids": fields.Nested(playlist_artwork, allow_null=True),
         "track_count": fields.Integer(required=True),
     },
 )

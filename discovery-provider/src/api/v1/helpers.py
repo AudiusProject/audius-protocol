@@ -1,12 +1,12 @@
+import asyncio
 import logging
 import re
 from datetime import datetime
 from typing import Dict, Union, cast
 
+import requests
 from flask_restx import reqparse
 
-import asyncio
-import requests
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
@@ -71,7 +71,10 @@ def add_track_artwork(track):
     endpoint = get_primary_endpoint(track["user"], cid)
     if not endpoint:
         return track
-    artwork = get_image_urls(track["user"], cid, ["150x150", "480x480", "1000x1000"])
+
+    cover_cids = get_image_cids(track["user"], cid, ["150x150", "480x480", "1000x1000"])
+    track["cover_art_cids"] = cover_cids
+    artwork = get_image_urls(track["user"], cover_cids)
     if not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
@@ -90,7 +93,12 @@ def add_playlist_artwork(playlist):
     endpoint = get_primary_endpoint(playlist["user"], cid)
     if not endpoint:
         return playlist
-    artwork = get_image_urls(playlist["user"], cid, ["150x150", "480x480", "1000x1000"])
+
+    cover_cids = get_image_cids(
+        playlist["user"], cid, ["150x150", "480x480", "1000x1000"]
+    )
+    playlist["cover_art_cids"] = cover_cids
+    artwork = get_image_urls(playlist["user"], cover_cids)
     if not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
@@ -127,7 +135,11 @@ def add_user_artwork(user):
     cover_cid = user.get("cover_photo_sizes")
     cover_endpoint = get_primary_endpoint(user, cover_cid)
     if profile_endpoint and profile_cid:
-        profile = get_image_urls(user, profile_cid, ["150x150", "480x480", "1000x1000"])
+        profile_cids = get_image_cids(
+            user, profile_cid, ["150x150", "480x480", "1000x1000"]
+        )
+        user["profile_picture_cids"] = profile_cids
+        profile = get_image_urls(user, profile_cids)
         if not profile:
             # Fallback to legacy image url format with dumb endpoint
             profile = {
@@ -137,7 +149,9 @@ def add_user_artwork(user):
             }
         user["profile_picture"] = profile
     if cover_endpoint and cover_cid:
-        cover = get_image_urls(user, cover_cid, ["640x", "2000x"])
+        cover_cids = get_image_cids(user, cover_cid, ["640x", "2000x"])
+        user["cover_photo_cids"] = cover_cids
+        cover = get_image_urls(user, cover_cids)
         if not cover:
             # Fallback to legacy image url format with dumb endpoint
             cover = {
@@ -150,9 +164,10 @@ def add_user_artwork(user):
 
 # Helpers
 
+
 async def fetch_url(url):
     loop = asyncio.get_event_loop()
-    future = loop.run_in_executor(None, requests.get, url, {'timeout': 1})
+    future = loop.run_in_executor(None, requests.get, url, {"timeout": 1})
     response = await future
     return response
 
@@ -164,12 +179,13 @@ async def race_requests(urls):
         return task.result()
 
 
-# Workaround for image load slowness: convert the upload_id to a url with the preferred node
-# and the cid for each image variant. This reduces redirects from initially attempting to
-# query the wrong node. Also cache upload_id -> variant cids to reduce requests to CNs.
-def get_image_urls(user, upload_id, variants):
+# Get cids corresponding to each transcoded variant for the given upload_id.
+# Cache upload_id -> cids mappings.
+def get_image_cids(user, upload_id, variants):
+    if not upload_id:
+        return {}
     try:
-        image_urls = {}
+        image_cids = {}
         if upload_id.startswith("Qm"):
             # Legacy path - no need to query content nodes for image variant cids
             image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
@@ -177,35 +193,51 @@ def get_image_urls(user, upload_id, variants):
             redis_key = f"image_cids:{upload_id}"
             image_cids = redis.hgetall(redis_key)
             if image_cids:
-                image_cids = {variant.decode('utf-8'): cid.decode('utf-8') for variant, cid in image_cids.items()}
+                image_cids = {
+                    variant.decode("utf-8"): cid.decode("utf-8")
+                    for variant, cid in image_cids.items()
+                }
             else:
                 # Query content for the transcoded cids corresponding to this upload id and
                 # cache upload_id -> { variant: cid, ... }
                 endpoints = get_n_primary_endpoints(user, upload_id, 3)
-                urls = list(map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints))
+                urls = list(
+                    map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
+                )
                 resp = asyncio.run(race_requests(urls))
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
                 if not image_cids:
-                    return image_urls
+                    return image_cids
 
-                image_cids = {variant.strip(".jpg"): cid for variant, cid in image_cids.items()}
+                image_cids = {
+                    variant.strip(".jpg"): cid for variant, cid in image_cids.items()
+                }
                 redis.hset(redis_key, mapping=image_cids)
                 redis.expire(redis_key, 86400)  # 24 hour ttl
-
-        for variant, cid in image_cids.items():
-            if variant == "original":
-                continue
-            primary_endpoint = get_primary_endpoint(user, cid)
-            if not primary_endpoint:
-                raise Exception("Could not get primary endpoint for user {user.user_id}, cid {cid}")
-            image_urls[variant] = f"{primary_endpoint}/content/{cid}"
-        return image_urls
+        return image_cids
     except Exception as e:
-        logger.error(
-            f"Exception fetching image upload urls from id: {upload_id}: {e}"
-        )
+        logger.error(f"Exception fetching image cids for id: {upload_id}: {e}")
         return {}
+
+
+# Map each image cid to a url with its preferred node. This reduces
+# redirects from initially attempting to query the wrong node.
+def get_image_urls(user, image_cids):
+    if not image_cids:
+        return {}
+
+    image_urls = {}
+    for variant, cid in image_cids.items():
+        if variant == "original":
+            continue
+        primary_endpoint = get_primary_endpoint(user, cid)
+        if not primary_endpoint:
+            raise Exception(
+                "Could not get primary endpoint for user {user.user_id}, cid {cid}"
+            )
+        image_urls[variant] = f"{primary_endpoint}/content/{cid}"
+    return image_urls
 
 
 def extend_search(resp):
