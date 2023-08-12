@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { TipSource } from '../../models/Analytics'
 import { ID } from '../../models/Identifiers'
@@ -104,6 +104,8 @@ const slice = createSlice({
         user: User | null
         source: TipSource
         trackId?: ID
+        onSuccessActions?: Action[]
+        onSuccessConfirmedActions?: Action[]
       }>
     ) => {
       if (!action.payload.user) {
@@ -113,6 +115,9 @@ const slice = createSlice({
       state.send.source = action.payload.source
       state.send.user = action.payload.user
       state.send.trackId = action.payload.trackId ?? null
+      state.send.onSuccessActions = action.payload.onSuccessActions
+      state.send.onSuccessConfirmedActions =
+        action.payload.onSuccessConfirmedActions
     },
     sendTip: (state, action: PayloadAction<{ amount: string }>) => {
       if (state.send.status !== 'SEND') {

@@ -272,7 +272,13 @@ function* sendTipAsync() {
   }
 
   const sendTipData = yield* select(getSendTipData)
-  const { user: recipient, amount, source, trackId } = sendTipData
+  const {
+    user: recipient,
+    amount,
+    source,
+    trackId,
+    onSuccessConfirmedActions
+  } = sendTipData
   if (!recipient) {
     return
   }
@@ -385,15 +391,14 @@ function* sendTipAsync() {
       yield* put(
         fetchPermissions({ userIds: [sender.user_id, recipient.user_id] })
       )
+      if (onSuccessConfirmedActions) {
+        // Spread here to unfreeze the action
+        // Redux sagas can't "put" frozen actions
+        for (const action of onSuccessConfirmedActions) {
+          yield* put({ ...action })
+        }
+      }
       if (source === 'inboxUnavailableModal') {
-        console.debug('Creating chat silently...')
-        // Create the chat but don't navigate
-        yield* put(
-          chatActions.createChat({
-            userIds: [recipient.user_id],
-            skipNavigation: true
-          })
-        )
         yield* put(
           make(Name.TIP_UNLOCKED_CHAT, {
             recipientUserId: recipient.user_id

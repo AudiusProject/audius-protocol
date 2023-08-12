@@ -36,7 +36,8 @@ import {
   Nullable,
   chatActions,
   chatSelectors,
-  ChatPermissionAction
+  ChatPermissionAction,
+  inboxUnavailableModalActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -122,7 +123,6 @@ type ProfilePageState = {
   updatedDonation: string | null
   tracksLineupOrder: TracksSortMode
   areArtistRecommendationsVisible: boolean
-  showInboxUnavailableModal: boolean
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
 }
@@ -138,7 +138,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     shouldMaskContent: false,
     tracksLineupOrder: TracksSortMode.RECENT,
     areArtistRecommendationsVisible: false,
-    showInboxUnavailableModal: false,
     showBlockUserConfirmationModal: false,
     showUnblockUserConfirmationModal: false,
     ...INITIAL_UPDATE_FIELDS
@@ -276,10 +275,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   onCloseArtistRecommendations = () => {
     this.setState({ areArtistRecommendationsVisible: false })
-  }
-
-  onCloseInboxUnavailableModal = () => {
-    this.setState({ showInboxUnavailableModal: false })
   }
 
   onCloseBlockUserConfirmationModal = () => {
@@ -743,8 +738,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
     if (this.props.chatPermissions?.canCreateChat) {
       return this.props.onMessage(profile!.user_id)
-    } else {
-      this.setState({ showInboxUnavailableModal: true })
+    } else if (profile) {
+      this.props.onShowInboxUnavailableModal(profile.user_id)
     }
   }
 
@@ -995,8 +990,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         this.props.chatPermissions.canCreateChat ||
         this.props.chatPermissions.callToAction ===
           ChatPermissionAction.SIGN_UP,
-      showInboxUnavailableModal: this.state.showInboxUnavailableModal,
-      onCloseInboxUnavailableModal: this.onCloseInboxUnavailableModal,
       showBlockUserConfirmationModal: this.state.showBlockUserConfirmationModal,
       onCloseBlockUserConfirmationModal: this.onCloseBlockUserConfirmationModal,
       showUnblockUserConfirmationModal:
@@ -1221,6 +1214,9 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     redirectUnauthenticatedAction: () => {
       dispatch(openSignOn())
       dispatch(showRequiresAccountModal())
+    },
+    onShowInboxUnavailableModal: (userId: ID) => {
+      dispatch(inboxUnavailableModalActions.open({ userId }))
     }
   }
 }
