@@ -1,6 +1,6 @@
 {
   "name": "probers",
-  "version": "1.5.36",
+  "version": "1.5.37",
   "description": "Automated client tests",
   "scripts": {
     "cypress:open": "cypress open",
