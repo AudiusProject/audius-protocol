@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   accountSelectors,
@@ -8,17 +8,17 @@ import {
   followersUserListActions,
   followersUserListSelectors,
   User,
-  createChatModalSelectors,
-  createChatModalActions
+  useCreateChatModal,
+  useInboxUnavailableModal,
+  createChatModalActions,
+  searchUsersModalActions
 } from '@audius/common'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import { useModalState } from 'common/hooks/useModalState'
 import { useSelector } from 'common/hooks/useSelector'
-import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { SearchUsersModal } from 'components/search-users-modal/SearchUsersModal'
-import { MessageUserSearchResult } from 'pages/chat-page/components/CreateChatUserResult'
+import { CreateChatUserResult } from 'pages/chat-page/components/CreateChatUserResult'
 
 import { CreateChatEmptyResults } from './CreateChatEmptyResults'
 
@@ -28,34 +28,22 @@ const messages = {
 
 const { getAccountUser } = accountSelectors
 const { fetchBlockers } = chatActions
-const { getOnCancelAction, getPresetMessage } = createChatModalSelectors
-const { setState } = createChatModalActions
-
-const CREATE_CHAT_MODAL = 'CreateChat'
 
 export const CreateChatModal = () => {
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
-  const [isVisible, setIsVisible] = useModalState(CREATE_CHAT_MODAL)
-  const onCancelAction = useSelector(getOnCancelAction)
-  const presetMessage = useSelector(getPresetMessage)
-  const [user, setUser] = useState<User>()
-  const [showInboxUnavailableModal, setShowInboxUnavailableModal] =
-    useState(false)
+  const { isOpen, onClose, onClosed, data } = useCreateChatModal()
+  const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
+  const { onCancelAction, presetMessage } = data
 
   const { userIds, loading, hasMore } = useSelector(
     followersUserListSelectors.getUserList
   )
 
-  const handleClose = useCallback(() => {
-    dispatch(setState({}))
-  }, [dispatch])
-
   const handleCancel = useCallback(() => {
     if (onCancelAction) {
       dispatch(onCancelAction)
     }
-    dispatch(setState({}))
   }, [onCancelAction, dispatch])
 
   const loadMore = useCallback(() => {
@@ -67,35 +55,30 @@ export const CreateChatModal = () => {
 
   const handleOpenInboxUnavailableModal = useCallback(
     (user: User) => {
-      setShowInboxUnavailableModal(true)
-      setUser(user)
-      setIsVisible(false)
+      openInboxUnavailableModal({
+        userId: user.user_id,
+        presetMessage,
+        onSuccessAction: searchUsersModalActions.searchUsers({ query: '' }),
+        onCancelAction: createChatModalActions.open(data)
+      })
+      onClose()
     },
-    [setShowInboxUnavailableModal, setUser, setIsVisible]
+    [data, presetMessage, openInboxUnavailableModal, onClose]
   )
-
-  const handleDismissInboxUnavailableModal = useCallback(() => {
-    setIsVisible(true)
-  }, [setIsVisible])
-
-  const handleCloseInboxUnavailableModal = useCallback(() => {
-    setShowInboxUnavailableModal(false)
-  }, [setShowInboxUnavailableModal])
 
   useEffect(() => {
     loadMore()
   }, [loadMore])
 
   useEffect(() => {
-    if (isVisible) {
+    if (isOpen) {
       dispatch(fetchBlockers())
     }
-  }, [dispatch, isVisible])
+  }, [dispatch, isOpen])
 
   return (
     <>
       <SearchUsersModal
-        modalName={CREATE_CHAT_MODAL}
         titleProps={{ title: messages.title, icon: <IconCompose /> }}
         defaultUserList={{
           userIds,
@@ -104,7 +87,7 @@ export const CreateChatModal = () => {
           hasMore
         }}
         renderUser={(user, closeParentModal) => (
-          <MessageUserSearchResult
+          <CreateChatUserResult
             key={user.user_id}
             user={user}
             openInboxUnavailableModal={handleOpenInboxUnavailableModal}
@@ -113,17 +96,11 @@ export const CreateChatModal = () => {
           />
         )}
         renderEmpty={() => <CreateChatEmptyResults />}
-        onClose={handleClose}
+        isOpen={isOpen}
+        onClose={onClose}
+        onClosed={onClosed}
         onCancel={handleCancel}
       />
-      {user ? (
-        <InboxUnavailableModal
-          user={user}
-          isVisible={showInboxUnavailableModal}
-          onDismiss={handleDismissInboxUnavailableModal}
-          onClose={handleCloseInboxUnavailableModal}
-        />
-      ) : null}
     </>
   )
 }

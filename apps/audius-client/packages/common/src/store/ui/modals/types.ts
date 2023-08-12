@@ -28,7 +28,6 @@ export type Modals =
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
-  | 'CreateChat'
   | 'InboxSettings'
   | 'LockedContent'
   | 'PlaybackRate'

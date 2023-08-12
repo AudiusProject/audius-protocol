@@ -26,7 +26,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/desktop/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import Mask from 'components/mask/Mask'
@@ -92,7 +91,6 @@ export type ProfilePageProps = {
   stats: StatProps[]
   isBlocked: boolean
   canCreateChat: boolean
-  showInboxUnavailableModal: boolean
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
 
@@ -155,7 +153,6 @@ export type ProfilePageProps = {
   onMessage: () => void
   onBlock: () => void
   onUnblock: () => void
-  onCloseInboxUnavailableModal: () => void
   onCloseBlockUserConfirmationModal: () => void
   onCloseUnblockUserConfirmationModal: () => void
 }
@@ -217,8 +214,6 @@ const ProfilePage = ({
   isBlocked,
 
   // Chat modals
-  showInboxUnavailableModal,
-  onCloseInboxUnavailableModal,
   showBlockUserConfirmationModal,
   onCloseBlockUserConfirmationModal,
   showUnblockUserConfirmationModal,
@@ -811,11 +806,6 @@ const ProfilePage = ({
       </div>
       {profile ? (
         <>
-          <InboxUnavailableModal
-            user={profile}
-            isVisible={showInboxUnavailableModal}
-            onClose={onCloseInboxUnavailableModal}
-          />
           <BlockUserConfirmationModal
             user={profile}
             isVisible={showBlockUserConfirmationModal}

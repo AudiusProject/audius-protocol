@@ -1,8 +1,14 @@
-import { ChangeEvent, ReactNode, useCallback, useRef, useState } from 'react'
+import {
+  ChangeEvent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import {
   cacheUsersSelectors,
-  Modals,
   searchUsersModalSelectors,
   searchUsersModalActions,
   useProxySelector,
@@ -16,6 +22,7 @@ import {
   IconSearch,
   Modal,
   ModalHeader,
+  ModalProps,
   ModalTitle,
   ModalTitleProps,
   Scrollbar
@@ -24,7 +31,6 @@ import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
-import { useModalState } from 'common/hooks/useModalState'
 import {
   InputV2,
   InputV2Size,
@@ -41,11 +47,10 @@ const messages = {
 const DEBOUNCE_MS = 100
 
 const { searchUsers } = searchUsersModalActions
-const { getUserList } = searchUsersModalSelectors
+const { getUserList, getLastSearchQuery } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
 
 type SearchUsersModalProps = {
-  modalName: Modals
   titleProps: ModalTitleProps
   debounceMs?: number
   defaultUserList?: {
@@ -57,12 +62,10 @@ type SearchUsersModalProps = {
   renderEmpty?: () => ReactNode
   renderUser: (user: User, closeParentModal: () => void) => ReactNode
   onCancel?: () => void
-  onClose?: () => void
-}
+} & Omit<ModalProps, 'children'>
 
 export const SearchUsersModal = (props: SearchUsersModalProps) => {
   const {
-    modalName,
     titleProps,
     debounceMs = DEBOUNCE_MS,
     defaultUserList = {
@@ -73,23 +76,25 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
     },
     renderUser,
     renderEmpty = () => null,
+    isOpen,
     onClose,
+    onClosed,
     onCancel
   } = props
   const dispatch = useDispatch()
-  const [isVisible, setIsVisible] = useModalState(modalName)
   const [query, setQuery] = useState('')
   const [hasQuery, setHasQuery] = useState(false)
   const scrollParentRef = useRef<HTMLElement | null>(null)
 
   const { userIds, hasMore, status } = useSelector(getUserList)
+  const lastSearchQuery = useSelector(getLastSearchQuery)
   const users = useProxySelector(
     (state) => {
       const ids = hasQuery ? userIds : defaultUserList.userIds
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
     },
-    [hasQuery, userIds, isVisible]
+    [hasQuery, userIds, isOpen]
   )
 
   useDebounce(
@@ -102,10 +107,9 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
   )
 
   const handleClose = useCallback(() => {
-    setIsVisible(false)
     setQuery('')
-    onClose?.()
-  }, [setIsVisible, onClose])
+    onClose()
+  }, [onClose])
 
   const handleCancel = useCallback(() => {
     handleClose()
@@ -130,8 +134,15 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
     }
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
+  // Clear the query if something else resets our search state
+  useEffect(() => {
+    if (!lastSearchQuery) {
+      setQuery('')
+    }
+  }, [lastSearchQuery, setQuery])
+
   return (
-    <Modal isOpen={isVisible} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} onClosed={onClosed}>
       <ModalHeader onClose={handleCancel}>
         <ModalTitle iconClassName={styles.icon} {...titleProps}></ModalTitle>
       </ModalHeader>
