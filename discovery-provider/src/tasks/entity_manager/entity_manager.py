@@ -2,7 +2,7 @@ import json
 import time
 from collections import defaultdict
 from datetime import datetime
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, literal_column, or_, text
 from sqlalchemy.orm.session import Session
