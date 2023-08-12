@@ -7,6 +7,7 @@ pub mod raydium_utils;
 pub mod wormhole_utils;
 
 use crate::raydium_utils::{
+    check_programs,
     check_token_accounts,
     check_raydium_pdas,
     swap
@@ -29,10 +30,14 @@ pub mod staking_bridge {
      * Immediately returns successfully because Anchor handles
      * the PDA creation via the CreatePda struct account macros.
      */
-    pub fn create_pda(ctx: Context<CreatePda>) -> Result<()> {
+    pub fn create_pda(_ctx: Context<CreatePda>) -> Result<()> {
         Ok(())
     }
 
+    /**
+     * Verifies that correct programs, token accounts, PDAs are being used,
+     * and then swaps tokens via the Raydium AMM Program.
+     */
     pub fn raydium_swap(
         ctx: Context<RaydiumSwap>,
         amount_in: u64,
@@ -40,19 +45,19 @@ pub mod staking_bridge {
         vault_nonce: u64,
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
-        // let accounts = ctx.accounts;
-        // // CHECK: check mints and token accounts and owner
-        // check_token_accounts(accounts)?;
-        // check_raydium_pdas(
-        //     accounts,
-        //     vault_nonce
-        // )?;
-        // swap(
-        //     accounts,
-        //     amount_in,
-        //     minimum_amount_out,
-        //     staking_bridge_pda_bump
-        // )?;
+        let accounts = ctx.accounts;
+        check_programs(accounts)?;
+        check_token_accounts(accounts)?;
+        check_raydium_pdas(
+            accounts,
+            vault_nonce
+        )?;
+        swap(
+            accounts,
+            amount_in,
+            minimum_amount_out,
+            staking_bridge_pda_bump
+        )?;
         Ok(())
     }
 
@@ -75,38 +80,36 @@ pub mod staking_bridge {
         fee_collector_bump: u8,
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
-        // let accounts = ctx.accounts;
-        // // CHECK: check mints and token accounts and owner
-        // // CHECK: lock chain, token address, and target address
-        // check_wormhole_pdas(
-        //     accounts,
-        //     config_bump,
-        //     wrapped_mint_bump,
-        //     wrapped_meta_bump,
-        //     authority_signer_bump,
-        //     bridge_config_bump,
-        //     emitter_bump,
-        //     sequence_bump,
-        //     fee_collector_bump,
-        //     token_address,
-        //     token_chain,
-        // )?;
-        // approve_wormhole_transfer(
-        //     from,
-        //     authority_signer,
-        //     from_owner,
-        //     amount,
-        //     staking_bridge_pda_bump
-        // )?;
-        // wormhole_transfer(
-        //     accounts,
-        //     nonce,
-        //     amount,
-        //     fee,
-        //     target_address,
-        //     target_chain,
-        //     staking_bridge_pda_bump
-        // )?;
+        let accounts = ctx.accounts;
+        // CHECK: check mints and token accounts and owner
+        // CHECK: lock chain, token address, and target address
+        check_wormhole_pdas(
+            accounts,
+            config_bump,
+            wrapped_mint_bump,
+            wrapped_meta_bump,
+            authority_signer_bump,
+            bridge_config_bump,
+            emitter_bump,
+            sequence_bump,
+            fee_collector_bump,
+            token_address,
+            token_chain,
+        )?;
+        approve_wormhole_transfer(
+            accounts,
+            amount,
+            staking_bridge_pda_bump
+        )?;
+        wormhole_transfer(
+            accounts,
+            nonce,
+            amount,
+            fee,
+            target_address,
+            target_chain,
+            staking_bridge_pda_bump
+        )?;
         Ok(())
     }
 }

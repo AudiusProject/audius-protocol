@@ -1,2 +1,4 @@
+pub const RAYDIUM_AMM_PROGRAM_ADDRESS: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8";
+pub const SERUM_DEX_PROGRAM_ADDRESS: &str = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
 pub const USDC_TOKEN_ADDRESS: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 pub const AUDIO_TOKEN_ADDRESS: &str = "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM";
