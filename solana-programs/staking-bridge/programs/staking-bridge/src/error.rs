@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum StakingBridgeErrorCode {
-    #[msg("Not calling raydium AMM program.")]
+    #[msg("Not calling Raydium AMM program.")]
     NotCallingRaydiumAmmProgram,
     #[msg("Invalid serum DEX program.")]
     InvalidSerumDexProgram,
@@ -14,4 +14,10 @@ pub enum StakingBridgeErrorCode {
     SourceTokenAccountNotOwnedByPDA,
     #[msg("Destination token account not owned by PDA.")]
     DestinationTokenAccountNotOwnedByPDA,
+    #[msg("Not calling Wormhole Token Bridge program.")]
+    NotCallingWormholeTokenBridgeProgram,
+    #[msg("Invalid Wormhole Core Bridge program.")]
+    InvalidWormholeCoreBridgeProgram,
+    #[msg("Wormhole token account not owned by PDA.")]
+    WormholeTokenAccountNotOwnedByPDA,
 }

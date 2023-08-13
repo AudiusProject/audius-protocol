@@ -7,15 +7,17 @@ pub mod raydium_utils;
 pub mod wormhole_utils;
 
 use crate::raydium_utils::{
-    check_programs,
-    check_token_accounts,
+    check_raydium_programs,
+    check_raydium_token_accounts,
     check_raydium_pdas,
     swap
 };
 use crate::wormhole_utils::{
+    check_wormhole_programs,
+    check_wormhole_token_accounts,
     check_wormhole_pdas,
     approve_wormhole_transfer,
-    wormhole_transfer
+    execute_wormhole_transfer
 };
 
 declare_id!("HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV");
@@ -46,8 +48,8 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_programs(accounts)?;
-        check_token_accounts(accounts)?;
+        check_raydium_programs(accounts)?;
+        check_raydium_token_accounts(accounts)?;
         check_raydium_pdas(
             accounts,
             vault_nonce
@@ -64,12 +66,8 @@ pub mod staking_bridge {
     pub fn post_wormhole_message(
         ctx: Context<PostWormholeMessage>,
         nonce: u32,
-        amount: u64,
-        fee: u64,
-        target_address: [u8; 32],
-        target_chain: u16,
-        token_address: [u8; 32],
-        token_chain: u16,
+        amount: u64, // CHECK: if amount greater than max amount of our PDA, do we send max or do we fail?
+        fee: u64, // CHECK: do we need this? what if someone passes in a huge fee?
         config_bump: u8,
         wrapped_mint_bump: u8,
         wrapped_meta_bump: u8,
@@ -81,8 +79,8 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        // CHECK: check mints and token accounts and owner
-        // CHECK: lock chain, token address, and target address
+        check_wormhole_programs(accounts)?;
+        check_wormhole_token_accounts(accounts)?;
         check_wormhole_pdas(
             accounts,
             config_bump,
@@ -93,21 +91,17 @@ pub mod staking_bridge {
             emitter_bump,
             sequence_bump,
             fee_collector_bump,
-            token_address,
-            token_chain,
         )?;
         approve_wormhole_transfer(
             accounts,
             amount,
             staking_bridge_pda_bump
         )?;
-        wormhole_transfer(
+        execute_wormhole_transfer(
             accounts,
             nonce,
             amount,
             fee,
-            target_address,
-            target_chain,
             staking_bridge_pda_bump
         )?;
         Ok(())
@@ -217,10 +211,6 @@ pub struct PostWormholeMessageData {
     _nonce: u32,
     _amount: u64,
     _fee: u64,
-    _target_address: [u8; 32],
-    _target_chain: u16,
-    _token_address: [u8; 32],
-    _token_chain: u16,
     _config_bump: u8,
     _wrapped_mint_bump: u8,
     _wrapped_meta_bump: u8,
@@ -265,10 +255,10 @@ pub struct PostWormholeMessage<'info> {
     #[account(mut)]
     pub message: Signer<'info>,
     #[account(
+        mut,
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
-    #[account(mut)]
     /// CHECK: This is the PDA initialized in the CreatePDA instruction.
     pub from_owner: AccountInfo<'info>,
     #[account(mut)]
