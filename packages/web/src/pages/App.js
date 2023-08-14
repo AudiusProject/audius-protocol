@@ -164,6 +164,7 @@ import { ChatPageProvider } from './chat-page/ChatPageProvider'
 import { CollectiblesPlaylistPage } from './collectibles-playlist-page'
 import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
+import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
 import SettingsPage from './settings-page/SettingsPage'
@@ -488,6 +489,12 @@ class App extends Component {
                     to={{ pathname: getPathname() }}
                   />
                 ))}
+
+                <Route
+                  exact
+                  path={'/fb/share'}
+                  render={(props) => <FbSharePage />}
+                />
 
                 <Route
                   exact
