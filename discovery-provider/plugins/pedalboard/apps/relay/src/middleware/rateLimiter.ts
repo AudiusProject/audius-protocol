@@ -19,9 +19,9 @@ export const relayRateLimiter = async (
   } = req;
 
   const operation = getEntityManagerActionKey(encodedABI);
-  const chainId = config.acdcChainId
+  const chainId = config.acdcChainId;
   if (chainId === undefined) {
-    throw new Error("chain id not defined")
+    throw new Error("chain id not defined");
   }
   const signer = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,

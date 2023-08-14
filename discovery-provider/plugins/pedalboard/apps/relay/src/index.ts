@@ -13,12 +13,14 @@ export type SharedData = {
   wallets: WalletManager;
 };
 
-export const config = readConfig()
-export const discoveryDb = initializeDiscoveryDb(config.discoveryDbConnectionString)
+export const config = readConfig();
+export const discoveryDb = initializeDiscoveryDb(
+  config.discoveryDbConnectionString
+);
 
 const main = async () => {
-  const { web3, chainId } = await connectWeb3(config)
-  config.acdcChainId = chainId.toString()
+  const { web3, chainId } = await connectWeb3(config);
+  config.acdcChainId = chainId.toString();
 
   const wallets = new WalletManager(web3);
 

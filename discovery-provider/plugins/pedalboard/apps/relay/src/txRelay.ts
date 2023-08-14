@@ -68,7 +68,7 @@ export const relayTransaction = async (
 
   log({ msg: "gathered tx params", nonce });
 
-  const gasLimit = reqGasLimit || 3000000
+  const gasLimit = reqGasLimit || 3000000;
 
   // assemble, sign, and send transaction
   const transaction = { nonce, gasLimit, to, value, data };
