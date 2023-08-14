@@ -34,10 +34,7 @@ from src.queries.query_helpers import (
 )
 from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import (
-    TrendingType,
-    TrendingVersion,
-)
+from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
