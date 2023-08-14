@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
 import {
-  BN_USDC_CENT_WEI,
   BNUSDC,
-  ceilingBNUSDCToNearestCent,
+  getPurchaseSummaryValues,
   ContentType,
   isContentPurchaseInProgress,
   isPremiumContentUSDCPurchaseGated,
@@ -13,7 +12,6 @@ import {
   UserTrackMetadata
 } from '@audius/common'
 import { HarmonyButton, IconError } from '@audius/stems'
-import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
@@ -24,10 +22,7 @@ import { Text } from 'components/typography'
 import { FormatPrice } from './FormatPrice'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseDetailsPage.module.css'
-import {
-  PurchaseSummaryTable,
-  PurchaseSummaryTableProps
-} from './PurchaseSummaryTable'
+import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const { startPurchaseContentFlow } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -37,35 +32,6 @@ const messages = {
   buy: 'Buy',
   purchasing: 'Purchasing',
   error: 'Your purchase was unsuccessful.'
-}
-
-const zeroBalance = () => new BN(0) as BNUSDC
-
-const getPurchaseSummaryValues = (
-  price: number,
-  currentBalance: BNUSDC
-): PurchaseSummaryTableProps => {
-  let amountDue = price
-  let existingBalance
-  const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-
-  if (currentBalance.gte(priceBN)) {
-    amountDue = 0
-    existingBalance = price
-  }
-  // Only count the balance if it's greater than 1 cent
-  else if (currentBalance.gt(BN_USDC_CENT_WEI)) {
-    // Note: Rounding amount due *up* to nearest cent for cases where the balance
-    // is between cents so that we aren't advertising *lower* than what the user
-    // will have to pay.
-    const diff = priceBN.sub(currentBalance)
-    amountDue = ceilingBNUSDCToNearestCent(diff as BNUSDC)
-      .div(BN_USDC_CENT_WEI)
-      .toNumber()
-    existingBalance = price - amountDue
-  }
-
-  return { amountDue, existingBalance, basePrice: price, artistCut: price }
 }
 
 const ContentPurchaseError = () => {
@@ -83,7 +49,7 @@ export type PurchaseDetailsPageProps = {
 }
 
 export const PurchaseDetailsPage = ({
-  currentBalance = zeroBalance(),
+  currentBalance,
   track
 }: PurchaseDetailsPageProps) => {
   const dispatch = useDispatch()

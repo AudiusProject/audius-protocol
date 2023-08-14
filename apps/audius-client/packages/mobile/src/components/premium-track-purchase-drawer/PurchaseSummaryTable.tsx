@@ -1,3 +1,4 @@
+import { formatPrice } from '@audius/common'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
@@ -48,17 +49,22 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 }))
 
 type PurchaseSummaryTableProps = {
-  price: string
+  amountDue: number
+  artistCut: number
+  basePrice: number
+  existingBalance?: number
   isPurchaseSuccessful: boolean
-  existingBalance?: string
 }
 
 export const PurchaseSummaryTable = ({
-  price,
-  isPurchaseSuccessful,
-  existingBalance
+  amountDue,
+  artistCut,
+  basePrice,
+  existingBalance,
+  isPurchaseSuccessful
 }: PurchaseSummaryTableProps) => {
   const styles = useStyles()
+  const amountDueFormatted = formatPrice(amountDue)
 
   return (
     <>
@@ -74,7 +80,7 @@ export const PurchaseSummaryTable = ({
         </View>
         <View style={styles.summaryRow}>
           <Text>{messages.artistCut}</Text>
-          <Text>{messages.price(price)}</Text>
+          <Text>{messages.price(formatPrice(artistCut))}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text>{messages.audiusCut}</Text>
@@ -83,7 +89,7 @@ export const PurchaseSummaryTable = ({
         {existingBalance ? (
           <View style={styles.summaryRow}>
             <Text>{messages.existingBalance}</Text>
-            <Text>{messages.subtractPrice(existingBalance)}</Text>
+            <Text>{messages.subtractPrice(formatPrice(existingBalance))}</Text>
           </View>
         ) : null}
         <View style={[styles.summaryRow, styles.lastRow, styles.greyRow]}>
@@ -98,15 +104,15 @@ export const PurchaseSummaryTable = ({
                   color='secondary'
                   style={styles.strikeThrough}
                 >
-                  {messages.price(price)}
+                  {messages.price(formatPrice(basePrice))}
                 </Text>
                 <Text weight='bold' color='secondary'>
-                  {messages.price('0.50')}
+                  {messages.price(amountDueFormatted)}
                 </Text>
               </>
             ) : (
               <Text weight='bold' color='secondary'>
-                {messages.price(price)}
+                {messages.price(amountDueFormatted)}
               </Text>
             )}
           </View>
