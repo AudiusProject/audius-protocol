@@ -1,8 +1,10 @@
 import { useCallback } from 'react'
 
 import {
+  BN_USDC_CENT_WEI,
+  BNUSDC,
+  ceilingBNUSDCToNearestCent,
   ContentType,
-  formatPrice,
   isContentPurchaseInProgress,
   isPremiumContentUSDCPurchaseGated,
   purchaseContentActions,
@@ -11,6 +13,7 @@ import {
   UserTrackMetadata
 } from '@audius/common'
 import { HarmonyButton, IconError } from '@audius/stems'
+import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
@@ -18,18 +21,51 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
 
+import { FormatPrice } from './FormatPrice'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseDetailsPage.module.css'
-import { PurchaseSummaryTable } from './PurchaseSummaryTable'
+import {
+  PurchaseSummaryTable,
+  PurchaseSummaryTableProps
+} from './PurchaseSummaryTable'
 
 const { startPurchaseContentFlow } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
 const messages = {
-  buy: (price: string) => `Buy $${price}`,
+  buy: 'Buy',
   purchasing: 'Purchasing',
   error: 'Your purchase was unsuccessful.'
+}
+
+const zeroBalance = () => new BN(0) as BNUSDC
+
+const getPurchaseSummaryValues = (
+  price: number,
+  currentBalance: BNUSDC
+): PurchaseSummaryTableProps => {
+  let amountDue = price
+  let existingBalance
+  const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
+
+  if (currentBalance.gte(priceBN)) {
+    amountDue = 0
+    existingBalance = price
+  }
+  // Only count the balance if it's greater than 1 cent
+  else if (currentBalance.gt(BN_USDC_CENT_WEI)) {
+    // Note: Rounding amount due *up* to nearest cent for cases where the balance
+    // is between cents so that we aren't advertising *lower* than what the user
+    // will have to pay.
+    const diff = priceBN.sub(currentBalance)
+    amountDue = ceilingBNUSDCToNearestCent(diff as BNUSDC)
+      .div(BN_USDC_CENT_WEI)
+      .toNumber()
+    existingBalance = price - amountDue
+  }
+
+  return { amountDue, existingBalance, basePrice: price, artistCut: price }
 }
 
 const ContentPurchaseError = () => {
@@ -41,11 +77,15 @@ const ContentPurchaseError = () => {
   )
 }
 
-export const PurchaseDetailsPage = ({
-  track
-}: {
+export type PurchaseDetailsPageProps = {
+  currentBalance?: BNUSDC
   track: UserTrackMetadata
-}) => {
+}
+
+export const PurchaseDetailsPage = ({
+  currentBalance = zeroBalance(),
+  track
+}: PurchaseDetailsPageProps) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
@@ -71,13 +111,21 @@ export const PurchaseDetailsPage = ({
 
   const { price } = track.premium_conditions.usdc_purchase
 
+  const purchaseSummaryValues = getPurchaseSummaryValues(price, currentBalance)
+  const { basePrice, amountDue } = purchaseSummaryValues
+
   const textContent = isUnlocking ? (
     <div className={styles.purchaseButtonText}>
       <LoadingSpinner className={styles.purchaseButtonSpinner} />
       <span>{messages.purchasing}</span>
     </div>
+  ) : amountDue > 0 ? (
+    <div className={styles.purchaseButtonText}>
+      {messages.buy}
+      <FormatPrice basePrice={basePrice} amountDue={amountDue} />
+    </div>
   ) : (
-    messages.buy(formatPrice(price))
+    messages.buy
   )
 
   return (
@@ -88,11 +136,7 @@ export const PurchaseDetailsPage = ({
         track={track as unknown as Track}
         owner={track.user}
       />
-      <PurchaseSummaryTable
-        artistCut={price}
-        amountDue={price}
-        basePrice={price}
-      />
+      <PurchaseSummaryTable {...purchaseSummaryValues} />
       <PayToUnlockInfo />
       <HarmonyButton
         disabled={isUnlocking}

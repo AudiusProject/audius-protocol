@@ -6,6 +6,7 @@ import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
+import { BNUSDC } from 'models/Wallet'
 import {
   getTokenAccountInfo,
   purchaseContent
@@ -23,7 +24,7 @@ import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
 import { setVisibility } from 'store/ui/modals/slice'
-import { BN_USDC_CENT_WEI } from 'utils/wallet'
+import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
 import { updatePremiumTrackStatus } from '../premium-content/slice'
@@ -149,7 +150,7 @@ function* doStartPurchaseContentFlow({
     // get user bank
     const userBank = yield* call(getUSDCUserBank)
 
-    const { amount: initialBalance } = yield* call(
+    const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,
       {
@@ -157,15 +158,26 @@ function* doStartPurchaseContentFlow({
         tokenAccount: userBank
       }
     )
+    if (!tokenAccountInfo) {
+      throw new Error('Failed to fetch USDC token account info')
+    }
+
+    const { amount: initialBalance } = tokenAccountInfo
+
+    const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
+    const balanceNeeded: BNUSDC = priceBN.sub(initialBalance) as BNUSDC
 
     // buy USDC if necessary
-    if (initialBalance.lt(new BN(price).mul(BN_USDC_CENT_WEI))) {
+    if (balanceNeeded.gtn(0)) {
+      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
+        .div(BN_USDC_CENT_WEI)
+        .toNumber()
       yield* put(buyUSDC())
       yield* put(
         onrampOpened({
           provider: USDCOnRampProvider.STRIPE,
           purchaseInfo: {
-            desiredAmount: price
+            desiredAmount: balanceNeededCents
           }
         })
       )

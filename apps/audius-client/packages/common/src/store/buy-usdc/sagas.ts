@@ -67,6 +67,9 @@ function* purchaseStep({
       tokenAccount
     }
   )
+  if (!initialAccountInfo) {
+    throw new Error('Could not get userbank account info')
+  }
   const initialBalance = initialAccountInfo.amount
 
   yield* put(purchaseStarted())
