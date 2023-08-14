@@ -167,16 +167,22 @@ def add_user_artwork(user):
 
 async def fetch_url(url):
     loop = asyncio.get_event_loop()
-    future = loop.run_in_executor(None, requests.get, url, {"timeout": 1})
+    future = loop.run_in_executor(None, requests.get, url)
     response = await future
     return response
 
 
-async def race_requests(urls):
-    tasks = [fetch_url(url) for url in urls]
-    result = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-    for task in result.done:
-        return task.result()
+async def race_requests(urls, timeout):
+    tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
+    done, pending = await asyncio.wait(
+        tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
+    )
+    while len(done) > 0 or len(pending) > 0:
+        for task in done:
+            response = task.result()
+            if response.status_code == 200:
+                return response
+    raise Exception(f"No 200 responses for urls {urls}")
 
 
 # Get cids corresponding to each transcoded variant for the given upload_id.
@@ -204,7 +210,7 @@ def get_image_cids(user, upload_id, variants):
                 urls = list(
                     map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
                 )
-                resp = asyncio.run(race_requests(urls))
+                resp = asyncio.run(race_requests(urls, 1))
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
                 if not image_cids:
