@@ -16,12 +16,15 @@ export type Config = {
   serverHost: string;
   serverPort: number;
   aao: AntiAbuseConfig;
+  rateLimitAllowList: string[];
+  rateLimitBlockList: string[];
 };
 
 export const readConfig = (): Config => {
-  dotenv.config();
+  const environment = process.env.environment || "local";
+  logger.info(`running on ${environment} network`);
+  dotenv.config({ path: `${environment}.env` });
   const entityManagerContractAddress = (): string => {
-    const environment = process.env.environment || "stage";
     switch (environment) {
       case "prod":
         return productionConfig.entityManagerContractAddress;
@@ -31,11 +34,9 @@ export const readConfig = (): Config => {
         return developmentConfig.entityManagerContractAddress;
     }
   };
-  logger.info(`running on ${process.env.ENVIRONMENT} network`);
   return {
-    environment: process.env.environment || "dev",
-    rpcEndpoint:
-      process.env.rpcEndpoint || "https://poa-gateway.staging.audius.co",
+    environment,
+    rpcEndpoint: process.env.rpcEndpoint || "http://chain:8545",
     acdcChainId: process.env.acdcChainId || "1056801",
     entityManagerContractAddress: entityManagerContractAddress(),
     entityManagerContractRegistryKey: "EntityManager",
@@ -43,6 +44,8 @@ export const readConfig = (): Config => {
     serverHost: process.env.serverHost || "0.0.0.0",
     serverPort: parseInt(process.env.serverPort || "6001"),
     aao: newAntiAbuseConfig(),
+    rateLimitAllowList: allowListPublicKeys(),
+    rateLimitBlockList: blockListPublicKeys()
   };
 };
 
@@ -56,11 +59,23 @@ export type AntiAbuseConfig = {
 
 export const newAntiAbuseConfig = (): AntiAbuseConfig => {
   return {
-    antiAbuseOracleUrl:
-      process.env.antiAbuseOracle || "https://antiabuseoracle.audius.co",
+    antiAbuseOracleUrl: process.env.antiAbuseOracle || "",
     allowRules: new Set([14, 17]),
     blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
     blockNotificationsErrorCodes: new Set([7, 9]),
     blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 13, 15]),
   };
 };
+
+const allowListPublicKeys = (): string[] => {
+  const allowlistPublicKeyFromRelay = process.env.allowlistPublicKeyFromRelay
+  if (allowlistPublicKeyFromRelay === undefined) return []
+  return allowlistPublicKeyFromRelay.split(",")
+}
+
+const blockListPublicKeys = (): string[] => {
+  const blocklistPublicKeyFromRelay = process.env.blocklistPublicKeyFromRelay
+  if (blocklistPublicKeyFromRelay === undefined) return []
+  return blocklistPublicKeyFromRelay.split(",")
+}
+

@@ -10,6 +10,7 @@ import {
   RelayResponseType,
 } from "./types/relay";
 import { SharedData } from ".";
+import { relayRateLimiter } from "./middleware/rateLimiter";
 
 export const webServer = async (app: App<SharedData>) => {
   const fastify = Fastify({
@@ -22,14 +23,7 @@ export const webServer = async (app: App<SharedData>) => {
   );
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
     "/relay",
-    {
-      schema: {
-        body: RelayRequest,
-        response: {
-          200: RelayResponse,
-        },
-      },
-    },
+    relayPostConfig,
     async (req, rep) =>
       await relayHandler(
         app,
@@ -47,4 +41,15 @@ export const webServer = async (app: App<SharedData>) => {
   } catch (err) {
     fastify.log.error("fastify server crashed", err);
   }
+};
+
+const relayPostConfig = {
+  schema: {
+    body: RelayRequest,
+    response: {
+      200: RelayResponse,
+    },
+  },
+  // middlewares
+  preHandler: [relayRateLimiter],
 };

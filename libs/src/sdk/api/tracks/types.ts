@@ -4,6 +4,13 @@ import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 
+const messages = {
+  titleRequiredError: 'Your track must have a name',
+  artworkRequiredError: 'Artwork is required',
+  genreRequiredError: 'Genre is required',
+  invalidReleaseDateError: 'Release date should not be in the future'
+}
+
 export const PremiumConditionsEthNFTCollection = z
   .object({
     chain: z.literal('eth'),
@@ -44,66 +51,74 @@ export const PremiumConditionsTipUserId = z
   .strict()
 
 export const createUploadTrackMetadataSchema = () =>
-  z
-    .object({
-      aiAttributionUserId: z.optional(HashId),
-      description: z.optional(z.string().max(1000)),
-      download: z.optional(
-        z
-          .object({
-            cid: z.string(),
-            isDownloadable: z.boolean(),
-            requiresFollow: z.boolean()
-          })
-          .strict()
-      ),
-      fieldVisibility: z.optional(
-        z.object({
-          mood: z.optional(z.boolean()),
-          tags: z.optional(z.boolean()),
-          genre: z.optional(z.boolean()),
-          share: z.optional(z.boolean()),
-          playCount: z.optional(z.boolean()),
-          remixes: z.optional(z.boolean())
+  z.object({
+    aiAttributionUserId: z.optional(HashId),
+    description: z.optional(z.string().max(1000)),
+    download: z.optional(
+      z
+        .object({
+          cid: z.string(),
+          isDownloadable: z.boolean(),
+          requiresFollow: z.boolean()
         })
-      ),
-      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
-      isPremium: z.optional(z.boolean()),
-      isrc: z.optional(z.string()),
-      isUnlisted: z.optional(z.boolean()),
-      iswc: z.optional(z.string()),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-      premiumConditions: z.optional(
-        z.union([
-          PremiumConditionsNFTCollection,
-          PremiumConditionsFollowUserId,
-          PremiumConditionsTipUserId
-        ])
-      ),
-      releaseDate: z.optional(
-        z.date().max(new Date(), { message: 'should not be in the future' })
-      ),
-      remixOf: z.optional(
-        z
-          .object({
-            tracks: z
-              .array(
-                z.object({
-                  parentTrackId: HashId
-                })
-              )
-              .min(1)
-          })
-          .strict()
-      ),
-      tags: z.optional(z.string()),
-      title: z.string(),
-      previewStartSeconds: z.optional(z.number()),
-      audioUploadId: z.optional(z.string()),
-      previewCid: z.optional(z.string())
-    })
-    .strict()
+        .strict()
+        .nullable()
+    ),
+    fieldVisibility: z.optional(
+      z.object({
+        mood: z.optional(z.boolean()),
+        tags: z.optional(z.boolean()),
+        genre: z.optional(z.boolean()),
+        share: z.optional(z.boolean()),
+        playCount: z.optional(z.boolean()),
+        remixes: z.optional(z.boolean())
+      })
+    ),
+    genre: z
+      .enum(Object.values(Genre) as [Genre, ...Genre[]])
+      .nullable()
+      .refine((val) => val !== null, {
+        message: messages.genreRequiredError
+      }),
+    isPremium: z.optional(z.boolean()),
+    isrc: z.optional(z.string().nullable()),
+    isUnlisted: z.optional(z.boolean()),
+    iswc: z.optional(z.string().nullable()),
+    license: z.optional(z.string().nullable()),
+    mood: z
+      .optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]]))
+      .nullable(),
+    premiumConditions: z.optional(
+      z.union([
+        PremiumConditionsNFTCollection,
+        PremiumConditionsFollowUserId,
+        PremiumConditionsTipUserId
+      ])
+    ),
+    releaseDate: z.optional(
+      z.date().max(new Date(), { message: messages.invalidReleaseDateError })
+    ),
+    remixOf: z.optional(
+      z
+        .object({
+          tracks: z
+            .array(
+              z.object({
+                parentTrackId: HashId
+              })
+            )
+            .min(1)
+        })
+        .strict()
+    ),
+    tags: z.optional(z.string()),
+    title: z.string({
+      required_error: messages.titleRequiredError
+    }),
+    previewStartSeconds: z.optional(z.number()),
+    audioUploadId: z.optional(z.string()),
+    previewCid: z.optional(z.string())
+  })
 
 export type TrackMetadata = z.input<
   ReturnType<typeof createUploadTrackMetadataSchema>
@@ -114,7 +129,7 @@ export const createUploadTrackSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: ImageFile,
-      metadata: createUploadTrackMetadataSchema(),
+      metadata: createUploadTrackMetadataSchema().strict(),
       onProgress: z.optional(z.function().args(z.number())),
       trackFile: AudioFile
     })
@@ -134,7 +149,7 @@ export const createUpdateTrackSchema = () =>
     .object({
       userId: HashId,
       trackId: HashId,
-      metadata: createUploadTrackMetadataSchema().partial(),
+      metadata: createUploadTrackMetadataSchema().strict().partial(),
       transcodePreview: z.optional(z.boolean()),
       coverArtFile: z.optional(ImageFile),
       onProgress: z.optional(z.function().args(z.number()))

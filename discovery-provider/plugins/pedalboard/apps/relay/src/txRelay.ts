@@ -12,6 +12,7 @@ import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { FastifyReply } from "fastify";
 import { errorResponseForbidden } from "./error";
+import { ethers } from "ethers";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -59,7 +60,6 @@ export const relayTransaction = async (
   await validateTransactionData(encodedABI);
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
-  logger.info({ senderWallet });
 
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
@@ -76,8 +76,26 @@ export const relayTransaction = async (
 
   log("signed and sent");
 
-  // internally polls until mined
-  const receipt = await submit.wait(requiredConfirmations);
-
+  // query chain until tx is mined
+  const receipt = await confirm(web3, submit.hash);
   return { receipt, transaction };
+};
+
+const confirm = async (
+  web3: ethers.providers.JsonRpcProvider,
+  txHash: string,
+  retries = 12
+): Promise<TransactionReceipt> => {
+  let tries = 0;
+  while (tries !== retries) {
+    const receipt = await web3.getTransactionReceipt(txHash);
+    if (receipt !== null) return receipt;
+    await delay(500);
+    tries += 1;
+  }
+  throw new Error(`transaction ${txHash} could not be confirmed`);
+};
+
+const delay = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

@@ -1,6 +1,7 @@
 import json
 import time
 from collections import defaultdict
+from datetime import datetime
 from typing import Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, literal_column, or_
@@ -172,6 +173,7 @@ def entity_manager_update(
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
+
             for event in entity_manager_event_tx:
                 try:
                     params = ManageEntityParameters(
@@ -315,7 +317,12 @@ def entity_manager_update(
 
         # compile records_to_save
         records_to_save = get_records_to_save(
-            params, new_records, original_records, existing_records_in_json
+            block_timestamp,
+            block_number,
+            new_records,
+            original_records,
+            existing_records_in_json,
+            session
         )
 
         # insert/update all tracks, playlist records in this block
@@ -355,23 +362,25 @@ def entity_manager_update(
 
 
 def get_records_to_save(
-    params: ManageEntityParameters,
-    new_records,
-    original_records,
-    existing_records_in_json,
+    block_timestamp: int,
+    block_number: int,
+    new_records: RecordDict,
+    original_records: dict,
+    existing_records_in_json: dict[str, dict],
+    session: Session
 ):
     records_to_save = []
     prev_records: Dict[str, List] = defaultdict(list)
     for record_type, record_dict in new_records.items():
-        for entity_id, records in record_dict.items():
+        # This is actually a dict, but python has a hard time inferring.
+        casted_record_dict = cast(dict, record_dict)
+        for entity_id, records in casted_record_dict.items():
             if not records:
                 continue
             # invalidate all new records except the last
-            for record in records[:-1]:
-                params.session.delete(record)
             new_record = records[-1]
             if "updated_at" in get_record_columns(new_record):
-                new_record.updated_at = params.block_datetime
+                new_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
             if "is_current" in get_record_columns(new_record):
                 new_record.is_current = True
             records_to_save.append(new_record)
@@ -393,9 +402,7 @@ def get_records_to_save(
     # how do i handle conflicts?
     # may need to modify existing_records_in_json keys
     if prev_records:
-        revert_block = RevertBlock(
-            blocknumber=params.block_number, prev_records=prev_records
-        )
+        revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
         records_to_save.append(revert_block)
     return records_to_save
 
@@ -586,7 +593,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 literal_column(f"row_to_json({PlaylistRoute.__tablename__})"),
             )
             .filter(
-                PlaylistRoute.owner_id.in_(entities_to_fetch["PlaylistRoute"]),
+                PlaylistRoute.playlist_id.in_(entities_to_fetch["PlaylistRoute"]),
                 PlaylistRoute.is_current == True,
             )
             .all()

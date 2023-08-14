@@ -25,6 +25,10 @@ export const detectAbuse = async (
   reqIp: string,
   abbreviated: boolean = false
 ): Promise<boolean> => {
+  if (!aaoConfig.antiAbuseOracleUrl) {
+    logger.warn("antiabuse not configured")
+    return false
+  }
   try {
     const user = await discoveryDb<Users>(Table.Users)
       .where("wallet", "=", senderAddress)

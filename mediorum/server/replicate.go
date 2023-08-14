@@ -13,6 +13,8 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
@@ -160,13 +162,12 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	return <-errChan
 }
 
-// this is a "quick check" that a host has a blob
-// used for checking host has blob before redirecting to it
+// hostHasBlob is a "quick check" that a host has a blob (used for checking host has blob before redirecting to it).
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: time.Second,
 	}
-	u := apiPath(host, fmt.Sprintf("internal/blobs/%s/info", url.PathEscape(key)))
+	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false
@@ -178,6 +179,41 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	}
 	defer has.Body.Close()
 	return has.StatusCode == 200
+}
+
+// raceHostHasBlob tries batches of 5 hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 1s timeout from each host.
+func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) string {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(5)
+	hostWithKeyCh := make(chan string, 1)
+
+	for _, host := range hostsWithKey {
+		h := host
+		g.Go(func() error {
+			if ss.hostHasBlob(h, key) {
+				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
+				select {
+				case hostWithKeyCh <- h:
+					cancel()
+				case <-ctx.Done():
+				}
+			}
+			return nil
+		})
+	}
+
+	go func() {
+		g.Wait()
+		close(hostWithKeyCh)
+	}()
+
+	host, ok := <-hostWithKeyCh
+	if ok {
+		return host
+	}
+	return ""
 }
 
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {

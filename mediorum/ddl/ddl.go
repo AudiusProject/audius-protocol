@@ -24,6 +24,9 @@ var cidLookupDDL string
 //go:embed delist_statuses.sql
 var delistStatusesDDL string
 
+//go:embed clean_up_unfindable_cids.sql
+var cleanUpUnfindableCIDsDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -35,6 +38,7 @@ func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
 	runMigration(db, cidLookupDDL) // TODO: Remove after every node migrates Qm CIDs to CDK (i.e., when /internal/qm/unmigrated/count/Qm is 0 for every node)
 	runMigration(db, delistStatusesDDL)
+	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
 
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)

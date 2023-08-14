@@ -81,6 +81,22 @@ func (ss *MediorumServer) cuckooLookup(cid string) []string {
 	return hosts
 }
 
+func (ss *MediorumServer) cuckooLookupSubset(cid string, hostSubset []string) []string {
+	hosts := []string{}
+	cidBytes := []byte(cid)
+	cuckooMu.RLock()
+	for _, host := range hostSubset {
+		filter, ok := cuckooMap[host]
+		if ok && filter.Lookup(cidBytes) {
+			hosts = append(hosts, host)
+		} else if !ok {
+			ss.logger.Warn("cuckoo lookup subset: host not found", "host", host)
+		}
+	}
+	cuckooMu.RUnlock()
+	return hosts
+}
+
 func (ss *MediorumServer) startCuckooFetcher() error {
 	for {
 		for _, peer := range ss.Config.Peers {
@@ -162,12 +178,11 @@ func (ss *MediorumServer) buildCuckoo() error {
 
 	cf := cuckoo.NewScalableCuckooFilter()
 
+	// TODO: blobs table would probably eventually change to something like: 1 table for all CIDs I have, and 1 table for all CIDs in the entire network (for repair.go)
 	rows, err := conn.Query(ctx, `
-	select distinct multihash from "Files" where type != 'track'
-	union all
-	select distinct "dirMultihash" from "Files" where "dirMultihash" is not null
+	select distinct key from blobs where host = $1
 	order by 1
-	`)
+	`, ss.Config.Self.Host)
 	if err != nil {
 		return err
 	}

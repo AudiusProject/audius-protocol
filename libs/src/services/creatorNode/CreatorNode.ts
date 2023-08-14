@@ -72,6 +72,7 @@ export class CreatorNode {
   blockList: Set<string> | null
   monitoringCallbacks: MonitoringCallbacks
   maxBlockNumber: number
+  storageNodeSelector: StorageNodeSelectorService
 
   /**
    * Constructs a service class for a creator node
@@ -84,7 +85,8 @@ export class CreatorNode {
     schemas: Schemas | undefined,
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
-    monitoringCallbacks: MonitoringCallbacks = {}
+    monitoringCallbacks: MonitoringCallbacks = {},
+    storageNodeSelector: StorageNodeSelectorService
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -98,6 +100,7 @@ export class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
+    this.storageNodeSelector = storageNodeSelector
   }
 
   async init() {
@@ -228,10 +231,7 @@ export class CreatorNode {
     return await this.uploadFileV2(file, onProgress, 'img_backdrop')
   }
 
-  async editFileV2(
-    uploadId: string,
-    data: { [key: string]: string }
-  ) {
+  async editFileV2(uploadId: string, data: { [key: string]: string }) {
     const myPrivateKey = this.web3Manager?.getOwnerWalletPrivateKey()
     if (!myPrivateKey) {
       throw new Error('Missing user private key')
@@ -362,8 +362,20 @@ export class CreatorNode {
     try {
       return await axios(axiosRequestObj)
     } catch (e: any) {
+      const wallet = this.userStateManager.getCurrentUser()?.wallet
+      const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
+
+      for (const storageNode of storageNodes) {
+        try {
+          axiosRequestObj.baseURL = storageNode
+          return await axios(axiosRequestObj)
+        } catch (e) {
+          // continue
+        }
+      }
+
       const requestId = axiosRequestObj.headers['X-Request-ID']
-      const msg = `Error sending storagev2 request for X-Request-ID=${requestId}: ${e}`
+      const msg = `Error sending storagev2 request for X-Request-ID=${requestId}, tried all storage nodes: ${e}`
       console.error(msg)
       throw new Error(msg)
     }

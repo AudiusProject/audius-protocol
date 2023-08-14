@@ -18,19 +18,3 @@
           service: 'audius'
           component: 'monitoring'
           job: 'census'
-
-
-  #####################################################
-  # monitor stage network-monitoring job
-  #####################################################
-
-  - job_name: 'stage-network-monitoring'
-    scheme: 'http'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['monitoring.staging.audius.co']
-        labels:
-          host: 'monitoring.staging.audius.co'
-          environment: 'stage'
-          service: 'audius'
-          component: 'network-monitoring'

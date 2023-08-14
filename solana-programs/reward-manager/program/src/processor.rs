@@ -8,7 +8,7 @@ use crate::{
     },
     state::{
         RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
-        DELETE_SENDER_MESSAGE_PREFIX,
+        DELETE_SENDER_MESSAGE_PREFIX, UNINITIALIZED_VERSION
     },
     utils::*,
 };
@@ -420,7 +420,8 @@ impl Processor {
 
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
 
-        let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+        let mut verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+        assert_initialized(&verified_messages)?;
 
         // Assert the rewards_token_recipient_info is indeed the UserBank
         // derived from the transfer_data.eth_recipient
@@ -491,11 +492,13 @@ impl Processor {
             transfer_data.id.as_ref(),
         ]
         .concat();
-        let (reward_manager_authority, _, bump_seed) = find_derived_pair(
+        let (reward_manager_authority, derived_transfer_account, bump_seed) = find_derived_pair(
             program_id,
             reward_manager_info.key,
             transfer_account_seed.as_ref(),
         );
+
+        assert_account_key(transfer_account_info, &derived_transfer_account)?;
 
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
@@ -516,6 +519,8 @@ impl Processor {
         let payer_lamports = payer_info.lamports();
 
         **verified_messages_info.lamports.borrow_mut() = 0u64;
+        verified_messages.version = UNINITIALIZED_VERSION;
+        VerifiedMessages::pack(verified_messages, *verified_messages_info.data.borrow_mut())?;
         **payer_info.lamports.borrow_mut() = payer_lamports
             .checked_add(verified_messages_lamports)
             .ok_or(AudiusProgramError::MathOverflow)?;

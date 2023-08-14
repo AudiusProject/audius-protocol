@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.4-beta.1",
+  "version": "3.0.4-beta.7",
   "audius": {
-    "releaseSHA": "7a6cf8aa2097418cbf695a15f28aba17b61ff68a"
+    "releaseSHA": "037ee82494a1116074bfc6c8da261dd83dcc26a7"
   },
   "description": "Audius SDK",
   "keywords": [
@@ -129,7 +129,7 @@
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "13.1.3",
     "@rollup/plugin-typescript": "8.3.1",
-    "@tsconfig/node16-strictest": "1.0.0",
+    "@tsconfig/node18-strictest": "1.0.0",
     "@types/async-retry": "1.4.4",
     "@types/bn.js": "5.1.0",
     "@types/bs58": "4.0.1",

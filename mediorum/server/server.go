@@ -85,8 +85,14 @@ type MediorumServer struct {
 	trustedNotifier *ethcontracts.NotifierInfo
 	storagePathUsed uint64
 	storagePathSize uint64
-	databaseSize    uint64
-	isSeeding       bool
+
+	databaseSize uint64
+	dbSizeErr    string
+
+	uploadsCount    int64
+	uploadsCountErr string
+
+	isSeeding bool
 
 	peerHealthMutex  sync.RWMutex
 	peerHealth       map[string]time.Time
@@ -282,17 +288,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	internalApi.GET("/cuckoo", ss.serveCuckoo)
 	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
-	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
+	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup, cidutil.UnescapeCidParam)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// TODO: Remove these 2 old info routes
-	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
-	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
+	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
-	// new info routes
+	// TODO: remove
 	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation, cidutil.UnescapeCidParam)
 	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
@@ -325,6 +330,8 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startCuckooBuilder()
 	go ss.startCuckooFetcher()
+	createUploadsCache()
+	go ss.buildUploadsCache()
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
