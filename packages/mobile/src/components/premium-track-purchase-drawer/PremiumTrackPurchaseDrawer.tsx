@@ -6,7 +6,11 @@ import {
   useGetTrackById,
   purchaseContentSelectors,
   purchaseContentActions,
-  PurchaseContentStage
+  PurchaseContentStage,
+  combineStatuses,
+  useUSDCBalance,
+  getPurchaseSummaryValues,
+  statusIsNotFinalized
 } from '@audius/common'
 import { Linking, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,6 +25,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
+import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import { TrackDetailsTile } from '../track-details-tile'
 
 import { PurchaseSuccess } from './PurchaseSuccess'
@@ -93,6 +98,12 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   errorContainer: {
     ...flexRowCentered(),
     gap: spacing(2)
+  },
+  spinnerContainer: {
+    width: '100%',
+    height: '90%',
+    justifyContent: 'center',
+    ...flexRowCentered()
   }
 }))
 
@@ -100,17 +111,21 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const { neutralLight2, accentRed, secondary } = useThemeColors()
   const dispatch = useDispatch()
+  const isUSDCEnabled = useIsUSDCEnabled()
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
-  const { data: track } = useGetTrackById(
+  const { data: track, status: trackStatus } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
   )
-  const isUSDCEnabled = useIsUSDCEnabled()
+  const { data: currentBalance, status: balanceStatus } = useUSDCBalance()
   const error = useSelector(getPurchaseContentError)
   const stage = useSelector(getPurchaseContentFlowStage)
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
   const { premium_conditions: premiumConditions } = track ?? {}
+  const isLoading = statusIsNotFinalized(
+    combineStatuses([trackStatus, balanceStatus])
+  )
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())
@@ -126,61 +141,73 @@ export const PremiumTrackPurchaseDrawer = () => {
     !isUSDCEnabled
   )
     return null
-  const price = formatPrice(premiumConditions.usdc_purchase.price)
+
+  const price = premiumConditions.usdc_purchase.price
+  const purchaseSummaryValues = getPurchaseSummaryValues(price, currentBalance)
 
   return (
     <NativeDrawer
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
     >
-      <View style={styles.drawer}>
-        <View style={styles.titleContainer}>
-          <IconCart fill={neutralLight2} />
-          <Text style={styles.title}>{messages.title}</Text>
+      {isLoading ? (
+        <View style={styles.spinnerContainer}>
+          <LoadingSpinner />
         </View>
-        <TrackDetailsTile trackId={track.track_id} />
-        <PurchaseSummaryTable
-          price={price}
-          isPurchaseSuccessful={isPurchaseSuccessful}
-        />
-        {isPurchaseSuccessful ? (
-          <PurchaseSuccess />
-        ) : (
-          <>
-            <View>
-              <View style={styles.payToUnlockTitleContainer}>
-                <Text weight='heavy' textTransform='uppercase' fontSize='small'>
-                  {messages.payToUnlock}
-                </Text>
-                <LockedStatusBadge locked />
-              </View>
-              <Text>
-                {messages.disclaimer(
-                  <Text colorValue={secondary} onPress={handleTermsPress}>
-                    {messages.termsOfUse}
+      ) : (
+        <View style={styles.drawer}>
+          <View style={styles.titleContainer}>
+            <IconCart fill={neutralLight2} />
+            <Text style={styles.title}>{messages.title}</Text>
+          </View>
+          <TrackDetailsTile trackId={track.track_id} />
+          <PurchaseSummaryTable
+            {...purchaseSummaryValues}
+            isPurchaseSuccessful={isPurchaseSuccessful}
+          />
+          {isPurchaseSuccessful ? (
+            <PurchaseSuccess />
+          ) : (
+            <>
+              <View>
+                <View style={styles.payToUnlockTitleContainer}>
+                  <Text
+                    weight='heavy'
+                    textTransform='uppercase'
+                    fontSize='small'
+                  >
+                    {messages.payToUnlock}
                   </Text>
-                )}
+                  <LockedStatusBadge locked />
+                </View>
+                <Text>
+                  {messages.disclaimer(
+                    <Text colorValue={secondary} onPress={handleTermsPress}>
+                      {messages.termsOfUse}
+                    </Text>
+                  )}
+                </Text>
+              </View>
+              <StripePurchaseConfirmationButton
+                trackId={track.track_id}
+                price={formatPrice(price)}
+              />
+            </>
+          )}
+          {error ? (
+            <View style={styles.errorContainer}>
+              <IconError
+                fill={accentRed}
+                width={spacing(5)}
+                height={spacing(5)}
+              />
+              <Text weight='medium' colorValue={accentRed}>
+                {messages.error}
               </Text>
             </View>
-            <StripePurchaseConfirmationButton
-              trackId={track.track_id}
-              price={price}
-            />
-          </>
-        )}
-        {error ? (
-          <View style={styles.errorContainer}>
-            <IconError
-              fill={accentRed}
-              width={spacing(5)}
-              height={spacing(5)}
-            />
-            <Text weight='medium' colorValue={accentRed}>
-              {messages.error}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+          ) : null}
+        </View>
+      )}
     </NativeDrawer>
   )
 }
