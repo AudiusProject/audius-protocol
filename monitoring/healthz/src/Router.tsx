@@ -24,9 +24,7 @@ const routeList: RouteObject[] = [
       { path: 'nodes', element: <DiscoveryHealth /> },
       {
         path: 'trending',
-        element: (
-          <DiscoveryTrending trendingEndpoint="/v1/tracks/trending" />
-        ),
+        element: <DiscoveryTrending trendingEndpoint="/v1/tracks/trending" />,
       },
       {
         path: 'trending_underground',
@@ -37,7 +35,7 @@ const routeList: RouteObject[] = [
       {
         path: 'trending_playlists',
         element: (
-          <DiscoveryTrending trendingEndpoint="/v1/playlists/trending/BDNxn" />
+          <DiscoveryTrending trendingEndpoint="/v1/playlists/trending" />
         ),
       },
       { path: 'feed', element: <DiscoveryFeed /> },
@@ -50,7 +48,6 @@ const routeList: RouteObject[] = [
 
       { path: '', element: <DiscoveryHealth /> },
       { path: '*', element: <DiscoveryHealth /> },
-
     ],
   },
 ]
@@ -73,15 +70,17 @@ function Layout() {
   return (
     <div>
       <div style={{ padding: 10, background: 'aliceblue' }}>
-        {routes.filter((route) => route.path !== '*').map((route) => (
-          <Link
-            key={route.path!}
-            to={'/' + route.path}
-            style={{ marginRight: 10 }}
-          >
-            {route.path!}
-          </Link>
-        ))}
+        {routes
+          .filter((route) => route.path !== '*')
+          .map((route) => (
+            <Link
+              key={route.path!}
+              to={'/' + route.path}
+              style={{ marginRight: 10 }}
+            >
+              {route.path!}
+            </Link>
+          ))}
       </div>
       <EnvironmentSelector />
       <Outlet />
