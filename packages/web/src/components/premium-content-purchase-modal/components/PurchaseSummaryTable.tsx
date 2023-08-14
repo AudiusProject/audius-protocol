@@ -2,6 +2,7 @@ import { formatPrice } from '@audius/common'
 
 import { Text } from 'components/typography'
 
+import { FormatPrice } from './FormatPrice'
 import styles from './PurchaseSummaryTable.module.css'
 
 const messages = {
@@ -49,16 +50,11 @@ export const PurchaseSummaryTable = ({
       ) : null}
       <Text className={styles.row} variant='title'>
         <span>{messages.youPay}</span>
-        <span className={styles.finalPrice}>
-          {existingBalance ? (
-            <>
-              <del>{messages.price(formatPrice(basePrice))}</del>
-              <ins>{messages.price(formatPrice(amountDue))}</ins>
-            </>
-          ) : (
-            messages.price(formatPrice(amountDue))
-          )}
-        </span>
+        <FormatPrice
+          className={styles.finalPrice}
+          basePrice={basePrice}
+          amountDue={amountDue}
+        />
       </Text>
     </Text>
   )

@@ -1,5 +1,5 @@
 import { AudiusLibs } from '@audius/sdk'
-import { u64 } from '@solana/spl-token'
+import { AccountInfo, u64 } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -55,7 +55,7 @@ export const getTokenAccountInfo = async (
     mint?: MintName
     tokenAccount: PublicKey
   }
-) => {
+): Promise<AccountInfo | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
   ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), mint)
@@ -104,6 +104,35 @@ function isCreateUserBankIfNeededError(
   res: CreateUserBankIfNeededResult
 ): res is CreateUserBankIfNeededErrorResult {
   return 'error' in res
+}
+
+/**
+ * Returns the userbank account info for the given address and mint. If the
+ * userbank does not exist, returns null.
+ */
+export const getUserbankAccountInfo = async (
+  audiusBackendInstance: AudiusBackend,
+  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+): Promise<AccountInfo | null> => {
+  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
+  const ethAddress =
+    sourceEthAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
+
+  if (!ethAddress) {
+    throw new Error(
+      `getUserbankAccountInfo: unexpected error getting eth address`
+    )
+  }
+
+  const tokenAccount = await deriveUserBankPubkey(audiusBackendInstance, {
+    ethAddress,
+    mint
+  })
+
+  return getTokenAccountInfo(audiusBackendInstance, {
+    tokenAccount,
+    mint
+  })
 }
 
 /**
