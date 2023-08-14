@@ -39,7 +39,7 @@ const slice = createSlice({
       state.stage = PurchaseContentStage.START
       state.error = undefined
       state.contentId = action.payload.contentId
-      state.contentType = action.payload.contentType || ContentType.TRACK
+      state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
     },
     buyUSDC: (state) => {
