@@ -67,7 +67,7 @@ const audiusSdk = sdk({
 ### HTML + JS example
 
 ```js title="In web page"
-const audiusSdk = window.audiusSdk({ appName: 'Your appName goes here' })
+const audiusSdk = window.audiusSdk({ apiKey: 'Your API key goes here' })
 ```
 
 :::warning

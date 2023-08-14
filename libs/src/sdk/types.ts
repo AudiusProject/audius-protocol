@@ -55,7 +55,7 @@ const DevAppSchema = z.object({
   /**
    * API secret, required for writes
    */
-  apiSecret: z.string().min(1)
+  apiSecret: z.optional(z.string().min(1))
 })
 
 const CustomAppSchema = z.object({
@@ -70,11 +70,11 @@ const CustomAppSchema = z.object({
   /**
    * API key, required for writes
    */
-  apiKey: z.optional(z.string()),
+  apiKey: z.optional(z.string().min(1)),
   /**
    * API secret, required for writes
    */
-  apiSecret: z.optional(z.string())
+  apiSecret: z.optional(z.string().min(1))
 })
 
 export const SdkConfigSchema = z.union([DevAppSchema, CustomAppSchema])
