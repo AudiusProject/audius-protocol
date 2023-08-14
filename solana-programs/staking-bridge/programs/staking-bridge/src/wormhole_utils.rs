@@ -216,6 +216,7 @@ pub fn execute_wormhole_transfer(
 
     let mut target_address = [0u8; 32];
     target_address[..32].copy_from_slice(ETH_RECIPIENT_ADDRESS.as_bytes());
+    let target_chain = ETH_CHAIN_ID;
 
     // https://github.com/wormhole-foundation/wormhole/blob/main/solana/modules/token_bridge/program/src/lib.rs#L107
     let instruction_index: u8 = 4;
@@ -224,7 +225,7 @@ pub fn execute_wormhole_transfer(
         amount,
         fee,
         target_address,
-        target_chain: ETH_CHAIN_ID
+        target_chain,
     };
     let instruction = Instruction {
         program_id: program_id.key(),

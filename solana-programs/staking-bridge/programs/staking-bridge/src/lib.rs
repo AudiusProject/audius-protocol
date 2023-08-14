@@ -229,28 +229,28 @@ pub struct PostWormholeMessage<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account()]
-    /// CHECK: This is the config PDA owned by the Token Bridge program_id
+    /// CHECK: This is the config PDA owned by the Token Bridge
     pub config: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the wrapped mint PDA, which also depends on the origin token chain and origin token address, owned by the Token Bridge program_id
+    /// CHECK: This is the wrapped mint PDA, which also depends on the origin token chain and origin token address, owned by the Token Bridge
     pub wrapped_mint: AccountInfo<'info>,
     #[account()]
-    /// CHECK: This is the wrapped meta PDA, which also depends on the wrapped mint, owned by the Token Bridge program_id
+    /// CHECK: This is the wrapped meta PDA, which also depends on the wrapped mint, owned by the Token Bridge
     pub wrapped_meta: AccountInfo<'info>,
     #[account()]
-    /// CHECK: This is the authority signer PDA owned by the Token Bridge program_id
+    /// CHECK: This is the authority signer PDA owned by the Token Bridge
     pub authority_signer: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the bridge PDA owned by the Core Bridge bridge_id
+    /// CHECK: This is the bridge PDA owned by the Core Bridge
     pub bridge_config: AccountInfo<'info>,
     #[account()]
-    /// CHECK: This is the emitter PDA owned by the Token Bridge program_id
+    /// CHECK: This is the emitter PDA owned by the Token Bridge
     pub emitter: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the sequence PDA, which also depends on the emitter, owned by the Core Bridge bridge_id
+    /// CHECK: This is the sequence PDA, which also depends on the emitter, owned by the Core Bridge
     pub sequence: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the fee collector PDA owned by the Core Bridge bridge_id
+    /// CHECK: This is the fee collector PDA owned by the Core Bridge
     pub fee_collector: AccountInfo<'info>,
     #[account(mut)]
     pub message: Signer<'info>,

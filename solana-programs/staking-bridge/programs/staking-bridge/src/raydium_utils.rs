@@ -198,7 +198,7 @@ pub fn swap(
             AccountMeta::new(serum_coin_vault_account.key(), false),
             AccountMeta::new(serum_pc_vault_account.key(), false),
             AccountMeta::new_readonly(serum_vault_signer.key(), false),
-            // user
+            // our pda and its token accounts
             AccountMeta::new(user_source_token_account.key(), false),
             AccountMeta::new(user_destination_token_account.key(), false),
             AccountMeta::new_readonly(user_source_owner.key(), true),
@@ -224,7 +224,7 @@ pub fn swap(
         serum_coin_vault_account.clone(),
         serum_pc_vault_account.clone(),
         serum_vault_signer.clone(),
-        // user
+        // our pda and its token accounts
         user_source_token_account.clone(),
         user_destination_token_account.clone(),
         user_source_owner.to_account_info().clone(),
