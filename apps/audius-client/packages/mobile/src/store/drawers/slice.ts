@@ -28,7 +28,6 @@ export type Drawer =
   | 'BlockMessages'
   | 'DeleteChat'
   | 'SupportersInfo'
-  | 'InboxUnavailable'
   | 'PremiumTrackPurchase'
   | 'StripeOnramp'
 
@@ -98,7 +97,6 @@ const initialState: DrawersState = {
   BlockMessages: false,
   DeleteChat: false,
   SupportersInfo: false,
-  InboxUnavailable: false,
   PremiumTrackPurchase: false,
   StripeOnramp: false,
   data: {}

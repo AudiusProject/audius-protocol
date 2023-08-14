@@ -146,7 +146,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
           canCreateChat ? (
             <MessageButton profile={profile} />
           ) : (
-            <MessageLockedButton profile={profile} />
+            <MessageLockedButton userId={profile.user_id} />
           )
         ) : null}
         {does_current_user_follow ? (
