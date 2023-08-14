@@ -14,6 +14,7 @@ BEGIN
       SELECT conname, conrelid::regclass::text
       FROM   pg_constraint
       WHERE  confrelid = _ref_table_name::regclass
+      AND    conrelid::regclass::text <> 'revert_blocks'
    LOOP
       EXECUTE format('ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s', 
                      quote_ident(_table_name), 
