@@ -42,10 +42,12 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return c.NoContent(200)
 	}
 
+	logger.Info("serving non-image from non-CDK disk", "storagePath", diskPath, "isAudioFile", isAudioFile)
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, cid)
 	}
+	logger.Info("successfully served non-image from non-CDK disk", "storagePath", diskPath, "isAudioFile", isAudioFile)
 
 	// v1 file listen
 	if isAudioFile {
@@ -84,10 +86,12 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		return c.NoContent(200)
 	}
 
+	logger.Info("serving image from non-CDK disk", "fileName", fileName, "storagePath", diskPath)
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, dirCid)
 	}
+	logger.Info("successfully served image from non-CDK disk", "fileName", fileName, "storagePath", diskPath)
 
 	return nil
 }
