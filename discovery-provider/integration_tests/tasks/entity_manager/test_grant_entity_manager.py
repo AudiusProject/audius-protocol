@@ -334,7 +334,7 @@ def test_index_grant(app, mocker):
 
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
-        assert len(all_grants) == 5
+        assert len(all_grants) == 3
 
         for expected_grant in new_grants_data:
             found_matches = [
@@ -389,7 +389,7 @@ def test_index_grant(app, mocker):
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
         # No change
-        assert len(all_grants) == 5
+        assert len(all_grants) == 3
 
     # Reactivate a revoked grant
     tx_receipts = {
@@ -427,7 +427,7 @@ def test_index_grant(app, mocker):
 
         # validate db records
         all_grants: List[Grant] = session.query(Grant).all()
-        assert len(all_grants) == 6
+        assert len(all_grants) == 3
         expected_grant = new_grants_data[1]
         found_matches = [
             item

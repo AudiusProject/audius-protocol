@@ -258,7 +258,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify follows
         all_follows: List[Follow] = session.query(Follow).all()
-        assert len(all_follows) == 3
+        assert len(all_follows) == 2
 
         user_3_follows: List[Follow] = (
             session.query(Follow)
@@ -280,7 +280,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify subscriptions
         all_subscriptions: List[Subscription] = session.query(Subscription).all()
-        assert len(all_subscriptions) == 5
+        assert len(all_subscriptions) == 4
 
         user_1_subscribers: List[Subscription] = (
             session.query(Subscription)
@@ -332,7 +332,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify saves
         all_saves: List[Save] = session.query(Save).all()
-        assert len(all_saves) == 3
+        assert len(all_saves) == 2
 
         current_saves: List[Save] = (
             session.query(Save).filter(Save.is_current == True).all()
@@ -351,7 +351,8 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 4
+        print(f"asdf all_reposts {all_reposts}")
+        assert len(all_reposts) == 2
 
         current_reposts: List[Repost] = (
             session.query(Repost).filter(Repost.is_current == True).all()
@@ -581,6 +582,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist updated",
+            "playlist_owner_id": 10
         }
     }
     update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
@@ -669,12 +671,14 @@ def test_index_entity_update_and_social_feature(app, mocker):
         )
 
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 2
+        print(f"asdf all_playlists {all_playlists}")
+        assert len(all_playlists) == 1
 
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 11
 
         all_notifications: List[Notification] = session.query(Notification).all()
+        print(f"asdf all_notifications {all_notifications}")
         assert len(all_notifications) == 12
 
         all_milestones: List[Milestone] = session.query(Milestone).all()

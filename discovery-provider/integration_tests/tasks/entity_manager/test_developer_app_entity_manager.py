@@ -547,7 +547,7 @@ def test_index_app(app, mocker):
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 9
+        assert len(all_apps) == 5
 
         for expected_app in first_set_new_apps_data:
             found_matches = [
@@ -555,31 +555,19 @@ def test_index_app(app, mocker):
                 for item in all_apps
                 if item.address == expected_app["address"].lower()
             ]
-            assert len(found_matches) == 2
-            old = [item for item in found_matches if item.is_current == False]
-            assert len(old) == 1
+            assert len(found_matches) == 1
             updated = [item for item in found_matches if item.is_current == True]
             assert len(updated) == 1
-            old = old[0]
             updated = updated[0]
-            assert (
-                old.user_id == expected_app["user_id"]
-                and updated.user_id == expected_app["user_id"]
-            )
-            assert (
-                old.name == expected_app["name"]
-                and updated.name == expected_app["name"]
-            )
-            assert old.description == (
-                expected_app.get("description", None) or None
-            ) and updated.description == (expected_app.get("description", None) or None)
-            assert old.is_personal_access == expected_app.get(
-                "is_personal_access", False
-            ) and updated.is_personal_access == expected_app.get(
+            assert updated.user_id == expected_app["user_id"]
+            
+            assert updated.name == expected_app["name"]
+            assert updated.description == (expected_app.get("description", None) or None)
+            assert updated.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )
-            assert old.is_delete == False and updated.is_delete == True
-            assert old.blocknumber == 0 and updated.blocknumber == 3
+            assert updated.is_delete == True
+            assert updated.blocknumber == 3
 
     # Test valid create again
     tx_receipts = {
@@ -617,7 +605,7 @@ def test_index_app(app, mocker):
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 10
+        assert len(all_apps) == 6
         for expected_app in second_set_new_apps_data:
             found_matches = [
                 item

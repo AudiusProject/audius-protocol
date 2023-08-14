@@ -1,4 +1,5 @@
 from typing import List
+from src.models.indexing.revert_block import RevertBlock
 
 from sqlalchemy import desc
 from web3 import Web3
@@ -161,12 +162,14 @@ def test_index_playlist_view(app, mocker):
             block_timestamp=timestamp,
             block_hash=hex(0),
         )
-        prev_playlist_seen: List[PlaylistSeen] = (
-            session.query(PlaylistSeen).filter(PlaylistSeen.is_current == False).all()
+        revert_block: List[RevertBlock] = (
+            session.query(RevertBlock).filter(RevertBlock.blocknumber == 1).first()
         )
-        assert len(prev_playlist_seen) == 1
-        prev_playlist_seen[0].is_current == False
-        prev_playlist_seen[0].user_id == 1
-        prev_playlist_seen[0].playlist_id == 1
-        prev_playlist_seen[0].blocknumber == 1
-        prev_playlist_seen[0].seen_at == timestamp
+        assert len(revert_block.prev_records["playlist_seen"]) == 1
+
+        prev_playlist_seen = PlaylistSeen(**revert_block.prev_records["playlist_seen"][0])
+        prev_playlist_seen.is_current == False
+        prev_playlist_seen.user_id == 1
+        prev_playlist_seen.playlist_id == 1
+        prev_playlist_seen.blocknumber == 1
+        prev_playlist_seen.seen_at == timestamp

@@ -426,7 +426,7 @@ def test_index_valid_user(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 8
+        assert len(all_users) == 5
 
         user_1: User = (
             session.query(User)
@@ -999,6 +999,7 @@ def test_self_referrals(bus_mock: mock.MagicMock, app, mocker):
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
         events: UserEventMetadata = {"referrer": 1}
         params = mocker.Mock()
+        params.existing_records = {}
         update_user_events(user, events, bus_mock, params)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
@@ -1197,7 +1198,7 @@ def test_index_empty_bio(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 5
+        assert len(all_users) == 3
 
         user_2: User = (
             session.query(User)

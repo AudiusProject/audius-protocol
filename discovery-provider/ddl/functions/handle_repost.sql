@@ -9,8 +9,9 @@ declare
   is_remix_cosign boolean;
   delta int;
   entity_type text;
-begin
+  playlist_row record;
 
+begin
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.repost_type = 'track' then
     insert into aggregate_track (track_id) values (new.repost_item_id) on conflict do nothing;
@@ -24,46 +25,90 @@ begin
 
   -- increment or decrement?
   if new.is_delete then
+    raise notice 'decrement';
     delta := -1;
   else
+    raise notice 'increment';
     delta := 1;
   end if;
 
   -- update agg user
   update aggregate_user 
-  set repost_count = repost_count + delta
+  set repost_count = (
+    select count(*)
+    from reposts r
+    where r.is_current IS TRUE
+      AND r.is_delete IS FALSE
+      AND r.user_id = new.user_id
+  )
   where user_id = new.user_id;
 
   -- update agg track or playlist
   if new.repost_type = 'track' then
     milestone_name := 'TRACK_REPOST_COUNT';
     update aggregate_track 
-    set repost_count = repost_count + delta
+    set repost_count = (
+      SELECT count(*)
+      FROM reposts r
+      WHERE
+          r.is_current IS TRUE
+          AND r.is_delete IS FALSE
+          AND r.repost_type = new.repost_type
+          AND r.repost_item_id = new.repost_item_id
+    )
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if new.is_delete IS FALSE then
 		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.repost_item_id;
 	  end if;
   else
+    RAISE LOG 'Trigger fired on playlist';
+
     milestone_name := 'PLAYLIST_REPOST_COUNT';
     update aggregate_playlist
-    set repost_count = repost_count + delta
+    set repost_count = (
+      SELECT count(*)
+      FROM reposts r
+      WHERE
+          r.is_current IS TRUE
+          AND r.is_delete IS FALSE
+          AND r.repost_type = new.repost_type
+          AND r.repost_item_id = new.repost_item_id
+    )    
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
+    RAISE LOG 'Updated repost count to % for playlist_id % is_delete %', new_val, new.repost_item_id, new.is_delete;
+    FOR playlist_row IN SELECT * FROM reposts LOOP
+        -- Log each column value for the current row
+        RAISE LOG 'playlist_row: %', playlist_row;
+
+        -- Repeat the RAISE LOG statement for each column you want to log
+        -- Replace ... with the appropriate column names
+    END LOOP;
 
   	if new.is_delete IS FALSE then
 		  select playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.repost_item_id;
+      FOR playlist_row IN SELECT * FROM playlists LOOP
+          -- Log each column value for the current row
+          RAISE LOG 'playlist_row: %', playlist_row;
+
+          -- Repeat the RAISE LOG statement for each column you want to log
+          -- Replace ... with the appropriate column names
+      END LOOP;
 	  end if;
+    RAISE LOG 'new %', new;
   end if;
 
   -- create a milestone if applicable
   select new_val into milestone where new_val in (10,25,50,100,250,500,1000,2500,5000,10000,25000,50000,100000,250000,500000,1000000);
+  RAISE LOG 'milestone % % %', new.is_delete, milestone, owner_user_id;
   if new.is_delete = false and milestone is not null and owner_user_id is not null then
     insert into milestones 
       (id, name, threshold, blocknumber, slot, timestamp)
     values
       (new.repost_item_id, milestone_name, milestone, new.blocknumber, new.slot, new.created_at)
     on conflict do nothing;
+    RAISE LOG 'insert milestone';
     insert into notification
       (user_ids, type, specifier, group_id, blocknumber, timestamp, data)
       values
