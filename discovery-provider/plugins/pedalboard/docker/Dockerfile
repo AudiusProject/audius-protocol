@@ -13,7 +13,7 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 
 WORKDIR /app
-RUN yarn global add turbo
+RUN npm install turbo --global
 
 COPY . .
 RUN turbo prune "--scope=${APP_NAME}" --docker
@@ -30,7 +30,7 @@ RUN apk update
 RUN apk add --no-cache python3 py3-pip make g++
 
 # First install dependencies (as they change less often)
-RUN yarn install
+RUN npm install
 
 # # Build the project and its dependencies
 # COPY --from=builder /app/out/full/ .
@@ -46,4 +46,4 @@ COPY --from=installer /app .
 
 WORKDIR /app/apps/${APP_NAME}
 
-CMD yarn run start
+CMD npm run start
