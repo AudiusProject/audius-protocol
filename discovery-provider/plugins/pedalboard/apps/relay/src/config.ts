@@ -5,7 +5,6 @@ import { bool, cleanEnv, num, str } from "envalid"
 export type Config = {
   environment: string;
   rpcEndpoint: string;
-  acdcChainId: string;
   entityManagerContractAddress: string;
   entityManagerContractRegistryKey: string;
   serverHost: string;
@@ -40,7 +39,6 @@ export const readConfig = (): Config => {
     audius_web3_localhost: str(),
     audius_web3_host: str(),
     audius_db_url: str(),
-    audius_chain_id: str(),
     aao_endpoint: str(),
     use_aao: bool(),
     relay_server_host: str({ default: "0.0.0.0" }),
@@ -51,7 +49,6 @@ export const readConfig = (): Config => {
   return {
     environment: env.audius_discprov_env,
     rpcEndpoint: env.audius_web3_localhost,
-    acdcChainId: env.audius_chain_id,
     entityManagerContractAddress: env.audius_contracts_entity_manager_address,
     entityManagerContractRegistryKey: "EntityManager",
     serverHost: env.relay_server_host,
