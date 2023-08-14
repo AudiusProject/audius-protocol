@@ -11,12 +11,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginTop: spacing(4),
     alignSelf: 'flex-start'
   },
-  button: {
-    paddingHorizontal: spacing(6)
-  },
   icon: {
-    height: 14,
-    weight: 14
+    height: spacing(4),
+    weight: spacing(4)
   }
 }))
 
