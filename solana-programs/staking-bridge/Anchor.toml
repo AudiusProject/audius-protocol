@@ -8,7 +8,7 @@ staking_bridge = "HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "mainnet"
 wallet = "id.json"
 
 [scripts]
