@@ -10,8 +10,8 @@ type InitializeStripeModalPayload = {
   amount: string
   destinationCurrency: StripeDestinationCurrencyType
   destinationWallet: string
-  onRampSucceeded: Action
-  onRampCanceled: Action
+  onrampSucceeded: Action
+  onrampCanceled: Action
 }
 
 const initialState: StripeModalState = {}
@@ -25,8 +25,8 @@ const slice = createSlice({
       action: PayloadAction<InitializeStripeModalPayload>
     ) => {
       state.stripeSessionStatus = 'initialized'
-      state.onRampSucceeded = action.payload.onRampSucceeded
-      state.onRampCanceled = action.payload.onRampCanceled
+      state.onrampSucceeded = action.payload.onrampSucceeded
+      state.onrampCanceled = action.payload.onrampCanceled
     },
     stripeSessionCreated: (
       state,

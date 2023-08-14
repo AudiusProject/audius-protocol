@@ -76,9 +76,9 @@ const {
   cacheAssociatedTokenAccount,
   cacheTransactionFees,
   startBuyAudioFlow,
-  onRampOpened,
-  onRampSucceeded,
-  onRampCanceled,
+  onrampOpened,
+  onrampSucceeded,
+  onrampCanceled,
   swapCompleted,
   swapStarted,
   transferStarted,
@@ -590,8 +590,8 @@ function* purchaseStep({
 
   // Wait for on ramp finish
   const result = yield* race({
-    success: take(onRampSucceeded),
-    canceled: take(onRampCanceled)
+    success: take(onrampSucceeded),
+    canceled: take(onrampCanceled)
   })
 
   // If the user didn't complete the on ramp flow, return early
@@ -820,7 +820,7 @@ function* transferStep({
  */
 function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
-}: ReturnType<typeof onRampOpened>) {
+}: ReturnType<typeof onrampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
   let userRootWallet = ''
   try {
@@ -1213,7 +1213,7 @@ function* watchCalculateAudioPurchaseInfo() {
 }
 
 function* watchOnRampOpened() {
-  yield takeLatest(onRampOpened, doBuyAudio)
+  yield takeLatest(onrampOpened, doBuyAudio)
 }
 
 function* watchStartBuyAudioFlow() {

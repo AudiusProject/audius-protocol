@@ -18,3 +18,9 @@
 .purchaseButtonSpinner g path {
   stroke: currentColor;
 }
+
+.errorContainer {
+  display: flex;
+  gap: var(--unit-2);
+  align-items: center;
+}

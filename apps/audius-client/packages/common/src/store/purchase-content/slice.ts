@@ -42,37 +42,35 @@ const slice = createSlice({
       state.contentType = action.payload.contentType || ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
     },
-    onBuyUSDC: (state) => {
+    buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
     },
-    onUSDCBalanceSufficient: (state) => {
+    usdcBalanceSufficient: (state) => {
       state.stage = PurchaseContentStage.PURCHASING
     },
-    onPurchaseCanceled: (state) => {
-      state.error = new Error('Content purchase canceled')
+    purchaseCanceled: (state) => {
       state.stage = PurchaseContentStage.CANCELED
     },
-    onPurchaseSucceeded: (state) => {
+    purchaseSucceeded: (state) => {
       state.stage = PurchaseContentStage.CONFIRMING_PURCHASE
     },
-    onPurchaseConfirmed: (state) => {
+    purchaseConfirmed: (state) => {
       state.stage = PurchaseContentStage.FINISH
     },
-
     purchaseContentFlowFailed: (state) => {
-      // TODO: Probably want to pass error in action payload
       state.error = new Error('Content purchase failed')
-    }
+    },
+    cleanup: () => initialState
   }
 })
 
 export const {
   startPurchaseContentFlow,
-  onBuyUSDC,
-  onUSDCBalanceSufficient,
-  onPurchaseSucceeded,
-  onPurchaseConfirmed,
-  onPurchaseCanceled,
+  buyUSDC,
+  usdcBalanceSufficient,
+  purchaseSucceeded,
+  purchaseConfirmed,
+  purchaseCanceled,
   purchaseContentFlowFailed
 } = slice.actions
 

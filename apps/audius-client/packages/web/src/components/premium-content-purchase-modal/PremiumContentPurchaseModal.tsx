@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
-import { premiumContentSelectors, useGetTrackById } from '@audius/common'
+import {
+  premiumContentSelectors,
+  purchaseContentActions,
+  useGetTrackById
+} from '@audius/common'
 import { IconCart, Modal, ModalContentPages, ModalHeader } from '@audius/stems'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { Icon } from 'components/Icon'
@@ -26,6 +30,7 @@ enum PurchaseSteps {
 export const PremiumContentPurchaseModal = () => {
   const [isOpen, setIsOpen] = useModalState('PremiumContentPurchase')
   const trackId = useSelector(getPurchaseContentId)
+  const dispatch = useDispatch()
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
@@ -33,7 +38,8 @@ export const PremiumContentPurchaseModal = () => {
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
-  }, [setIsOpen])
+    dispatch(purchaseContentActions.cleanup())
+  }, [setIsOpen, dispatch])
 
   const currentStep = !track ? PurchaseSteps.LOADING : PurchaseSteps.DETAILS
 

@@ -17,9 +17,9 @@ import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
 import styles from './CoinbaseBuyAudioButton.module.css'
 
 const {
-  onRampOpened,
-  onRampCanceled,
-  onRampSucceeded,
+  onrampOpened,
+  onrampCanceled,
+  onrampSucceeded,
   calculateAudioPurchaseInfo
 } = buyAudioActions
 const { getAudioPurchaseInfo, getAudioPurchaseInfoStatus } = buyAudioSelectors
@@ -43,10 +43,10 @@ export const CoinbaseBuyAudioButton = () => {
   const isDisabled = purchaseInfoStatus === Status.LOADING || belowSolThreshold
 
   const handleExit = useCallback(() => {
-    dispatch(onRampCanceled())
+    dispatch(onrampCanceled())
   }, [dispatch])
   const handleSuccess = useCallback(() => {
-    dispatch(onRampSucceeded())
+    dispatch(onrampSucceeded())
   }, [dispatch])
 
   const handleClick = useCallback(() => {
@@ -60,7 +60,7 @@ export const CoinbaseBuyAudioButton = () => {
         onSuccess: handleSuccess,
         onExit: handleExit
       })
-      dispatch(onRampOpened(purchaseInfo))
+      dispatch(onrampOpened(purchaseInfo))
       coinbasePay.open()
     } else if (purchaseInfoStatus === Status.IDLE) {
       // Generally only possible if `amount` is still undefined,

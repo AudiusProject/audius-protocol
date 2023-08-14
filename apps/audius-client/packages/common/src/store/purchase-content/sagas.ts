@@ -14,8 +14,8 @@ import { accountSelectors } from 'store/account'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
-  onRampOpened,
-  onRampCanceled
+  onrampOpened,
+  onrampCanceled
 } from 'store/buy-usdc/slice'
 import { USDCOnRampProvider } from 'store/buy-usdc/types'
 import { getUSDCUserBank } from 'store/buy-usdc/utils'
@@ -29,10 +29,11 @@ import { pollPremiumTrack } from '../premium-content/sagas'
 import { updatePremiumTrackStatus } from '../premium-content/slice'
 
 import {
-  onBuyUSDC,
-  onPurchaseConfirmed,
-  onPurchaseSucceeded,
-  onUSDCBalanceSufficient,
+  buyUSDC,
+  purchaseCanceled,
+  purchaseConfirmed,
+  purchaseSucceeded,
+  usdcBalanceSufficient,
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
@@ -159,9 +160,9 @@ function* doStartPurchaseContentFlow({
 
     // buy USDC if necessary
     if (initialBalance.lt(new BN(price).mul(BN_USDC_CENT_WEI))) {
-      yield* put(onBuyUSDC())
+      yield* put(buyUSDC())
       yield* put(
-        onRampOpened({
+        onrampOpened({
           provider: USDCOnRampProvider.STRIPE,
           purchaseInfo: {
             desiredAmount: price
@@ -171,17 +172,22 @@ function* doStartPurchaseContentFlow({
 
       const result = yield* race({
         success: take(buyUSDCFlowSucceeded),
-        canceled: take(onRampCanceled),
+        canceled: take(onrampCanceled),
         failed: take(buyUSDCFlowFailed)
       })
 
-      if (result.canceled || result.failed) {
-        // Return early for failure or cancellation
+      // Return early for failure or cancellation
+      if (result.canceled) {
+        yield* put(purchaseCanceled())
+        return
+      }
+      if (result.failed) {
+        yield* put(purchaseContentFlowFailed())
         return
       }
     }
 
-    yield* put(onUSDCBalanceSufficient())
+    yield* put(usdcBalanceSufficient())
 
     const { blocknumber, splits } = yield* getPurchaseConfig({
       contentId,
@@ -195,13 +201,13 @@ function* doStartPurchaseContentFlow({
       splits,
       type: 'track'
     })
-    yield* put(onPurchaseSucceeded())
+    yield* put(purchaseSucceeded())
 
     // confirm purchase
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
     // finish
-    yield* put(onPurchaseConfirmed())
+    yield* put(purchaseConfirmed())
 
     yield* put(
       setVisibility({
