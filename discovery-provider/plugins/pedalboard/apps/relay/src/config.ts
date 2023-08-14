@@ -19,18 +19,12 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  const environment = process.env.environment || "stage";
+  // needs to be UPPERCASE because audius-docker-compose
+  const environment = process.env.ENVIRONMENT || "dev";
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
-  switch (environment) {
-    case "prod":
-      dotenvConfig("prod");
-    case "stage":
-      dotenvConfig("stage");
-    default:
-      dotenvConfig("dev");
-  }
+  dotenvConfig(environment)
 };
 
 export const readConfig = (): Config => {
@@ -43,8 +37,8 @@ export const readConfig = (): Config => {
     audius_web3_localhost: str(),
     audius_web3_host: str(),
     audius_db_url: str(),
-    aao_endpoint: str(),
-    use_aao: bool(),
+    audius_aao_endpoint: str(),
+    audius_use_aao: bool(),
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
@@ -58,7 +52,7 @@ export const readConfig = (): Config => {
     entityManagerContractRegistryKey: "EntityManager",
     serverHost: env.relay_server_host,
     serverPort: env.relay_server_port,
-    aao: newAntiAbuseConfig(env.aao_endpoint, env.use_aao),
+    aao: newAntiAbuseConfig(env.audius_aao_endpoint, env.audius_use_aao),
     rateLimitAllowList: allowListPublicKeys(),
     rateLimitBlockList: blockListPublicKeys(),
   };
