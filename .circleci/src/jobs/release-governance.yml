@@ -1,5 +1,5 @@
 docker:
-  - image: cimg/node:14.16
+  - image: cimg/node:18.17
 steps:
   - checkout
 

@@ -23,6 +23,6 @@
   "devDependencies": {
     "bats": "^1.8.2",
     "bats-assert": "^2.0.0",
-    "bats-support": "^0.3.0"
+    "bats-support": "git+https://github.com/ztombol/bats-support.git#v0.2.0"
   }
 }
