@@ -1,18 +1,19 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { StakingBridge } from '../target/types/staking_bridge'
-import { CHAIN_ID_ETH, CONTRACTS } from '@certusone/wormhole-sdk'
+import { CHAIN_ID_ETH } from '@certusone/wormhole-sdk'
 import {
   TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount
 } from '@solana/spl-token'
 import pkg from 'bs58'
+import { formatEthAddress, getMinimumAmountOutFromAmountIn, getPostMessageData } from './wormholeTestUtils'
+import { ETH_AUDIO_TOKEN_ADDRESS, SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS, SOL_USDC_TOKEN_ADDRESS, ammProgram, bridgeId, serumDexProgram, serumMarketPublicKey, tokenBridgeId } from './constants'
+import { getAssociatedPoolKeys, getMarket, getVaultOwnerAndNonce } from './raydiumTestUtils'
 
 const {
   Connection,
-  Transaction,
   Keypair,
   PublicKey,
   SystemProgram,
@@ -26,43 +27,11 @@ const feePayerSecret = pkg.decode(FEE_PAYER_SECRET)
 const feePayerKeypair = Keypair.fromSecretKey(feePayerSecret)
 const feePayerPublicKey = feePayerKeypair.publicKey
 
-// Wormhole Testnet: Note that it uses Solana Devnet
-// https://book.wormhole.com/reference/contracts.html#testnet
-const CODE_BRIDGE_ID = CONTRACTS.TESTNET.solana.core
-const bridgeId = new PublicKey(CODE_BRIDGE_ID)
-const TOKEN_BRIDGE_ID = CONTRACTS.TESTNET.solana.token_bridge
-const tokenBridgeId = new PublicKey(TOKEN_BRIDGE_ID)
+const SOL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SOL_USDC_TOKEN_ADDRESS)
+const SOL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SOL_AUDIO_TOKEN_ADDRESS)
 
-// Solana Devnet
-const ETH_TOKEN_ADDRESS = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6' // ETH Goerli
-const SOL_TOKEN_MINT = '7VPWjBhCXrpYYBiRKZh1ubh9tLZZNkZGp2ReRphEV4Mc' // Wrapped Goerli ETH on Solana
-const SOL_TOKEN_MINT_KEY = new PublicKey(SOL_TOKEN_MINT)
-
-const endpoint = 'https://api.devnet.solana.com'
+const endpoint = 'https://api.mainnet-beta.solana.com'
 const connection = new Connection(endpoint, 'confirmed');
-
-type PostMessageData = {
-  nonce: anchor.BN,
-  amount: anchor.BN,
-  fee: anchor.BN,
-  targetAddress: Buffer,
-  targetChain: anchor.BN,
-}
-
-// Remove the 0x prefix and pad to 32 bytes
-function formatEthAddress(address: string) {
-  return address.slice(2).padStart(64, '0')
-}
-
-function getPostMessageData(args: { recipientEthAddress: string, amount: number, solTokenDecimals: number }): PostMessageData {
-  return {
-    nonce: new anchor.BN(0),
-    amount: new anchor.BN(args.amount * 10 ** args.solTokenDecimals),
-    fee: new anchor.BN(0),
-    targetAddress: Buffer.from(formatEthAddress(args.recipientEthAddress)),
-    targetChain: new anchor.BN(CHAIN_ID_ETH)
-  }
-}
 
 async function signTransaction(transaction) {
   transaction.partialSign(feePayerKeypair)
@@ -89,7 +58,7 @@ describe('staking-bridge', () => {
   const [stakingBridgePda, stakingBridgePdaBump] = PublicKey.findProgramAddressSync(
     [Buffer.from('staking_bridge')],
     program.programId
-  );
+  )
 
   it('creates the staking bridge pda', async () => {
     // Add your test here.
@@ -102,49 +71,118 @@ describe('staking-bridge', () => {
       })
       .rpc();
     console.log('Your transaction signature', tx);
-  });
+  })
 
-  it('posts the wormhole token bridge transfer message', async () => {
+  xit('swaps SOL USDC to SOL AUDIO', async () => {
+    const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
+    console.log("serum market info:", JSON.stringify(market))
+
+    const poolKeys = await getAssociatedPoolKeys({
+      programId: ammProgram,
+      serumProgramId: serumDexProgram,
+      marketId: market.address,
+      baseMint: market.baseMint,
+      quoteMint: market.quoteMint
+    })
+    console.log("amm poolKeys: ", JSON.stringify(poolKeys))
+
+    const { vaultOwner, vaultNonce } = await getVaultOwnerAndNonce(serumMarketPublicKey, serumDexProgram)
+    if (vaultNonce.toNumber() != market.vaultSignerNonce) {
+      console.log("withdraw vaultOwner:", vaultOwner.toString(), "vaultNonce: ", vaultNonce.toNumber(), "market.vaultSignerNonce:", market.vaultSignerNonce.toString())
+      throw ("vaultSignerNonce incorrect!")
+    }
+
+    const poolCoinTokenAccountTokenAccountPublicKey = await getAssociatedTokenAddressSync(
+      SOL_USDC_TOKEN_ADDRESS_KEY,
+      poolKeys.authority
+    )
+    const poolPcTokenAccountTokenAccountPublicKey = await getAssociatedTokenAddressSync(
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      poolKeys.authority
+    )
+    console.log({ poolCoinTokenAccountTokenAccountPublicKey, poolPcTokenAccountTokenAccountPublicKey })
+
+    const usdcTokenAccount = await getAssociatedTokenAddressSync(
+      SOL_USDC_TOKEN_ADDRESS_KEY,
+      stakingBridgePda
+    )
+    const audioTokenAccount = await getAssociatedTokenAddressSync(
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      stakingBridgePda
+    )
+    console.log({ usdcTokenAccount, audioTokenAccount })
+
+    const wholeAmountIn = 0.01
+    // Minimum amount of SOL AUDIO expected to be received from the swap.
+    const { amountIn, minimumAmountOut } = getMinimumAmountOutFromAmountIn(wholeAmountIn);
+
+    const accounts = {
+      programId: poolKeys.programId,
+      amm: poolKeys.id,
+      ammAuthority: poolKeys.authority,
+      ammOpenOrders: poolKeys.openOrders,
+      ammTargetOrders: poolKeys.targetOrders,
+      poolCoinTokenAccount: poolKeys.baseVault,
+      poolPcTokenAccount: poolKeys.quoteVault,
+      serumProgram: serumDexProgram,
+      serumMarket: serumMarketPublicKey,
+      serumBids: market.bids,
+      serumAsks: market.asks,
+      serumEventQueue: market.eventQueue,
+      serumCoinVaultAccount: market.baseVault,
+      serumPcVaultAccount: market.quoteVault,
+      serumVaultSigner: vaultOwner,
+      userSourceTokenAccount: usdcTokenAccount,
+      userDestinationTokenAccount: audioTokenAccount,
+      userSourceOwner: stakingBridgePda,
+      splTokenProgram: TOKEN_PROGRAM_ID,
+    }
+    console.log({ accounts })
+
+    // Add your test here.
+    const tx = await program.methods
+      .swap(
+        amountIn,
+        minimumAmountOut,
+        vaultNonce,
+        stakingBridgePdaBump,
+      )
+      .accounts(accounts)
+      .rpc();
+    console.log("Your transaction signature", tx);
+  })
+
+  xit('posts the wormhole token bridge transfer message', async () => {
     const messageKeypair = Keypair.generate()
     const messagePublicKey = messageKeypair.publicKey
 
-    // Use your own Goerli ETH address to receive the tokens
+    // Use your own ETH address to receive the AUDIO tokens
     const recipientEthAddress = '0x9d959Cf57D89DCf41925e19479A04E26f27563dB'
-    const solTokenDecimals = 8
-
+    // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
+    const wholeAmount = 1
     const {
       nonce,
       amount,
-      fee,
-      targetAddress,
-      targetChain
+      fee
     } = getPostMessageData({
       recipientEthAddress,
-      amount: 1,
-      solTokenDecimals
+      wholeAmount,
+      solTokenDecimals: SOL_AUDIO_DECIMALS
     })
 
-    const tokenAddress = Buffer.from(formatEthAddress(ETH_TOKEN_ADDRESS))
+    const tokenAddress = Buffer.from(formatEthAddress(ETH_AUDIO_TOKEN_ADDRESS))
     const tokenChain = new anchor.BN(CHAIN_ID_ETH)
 
     // Associated token account owned by the PDA
     const pdaAta = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
-      SOL_TOKEN_MINT_KEY,
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
       stakingBridgePda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
     const pdaAtaKey = pdaAta.address
     console.log({ pdaAtaKey })
-
-    // Create the PDA associated token account if it doesn't exist
-    createAssociatedTokenAccountIfNotExists({
-      mintKey: SOL_TOKEN_MINT_KEY,
-      ownerKey: stakingBridgePda,
-      ataKey: pdaAtaKey,
-      feePayerKeypair
-    })
 
     // PDAs
     const [config, configBump] = PublicKey.findProgramAddressSync(
@@ -237,15 +275,11 @@ describe('staking-bridge', () => {
         nonce,
         amount,
         fee,
-        targetAddress,
-        targetChain,
-        tokenAddress,
-        tokenChain,
         ...bumps
       )
       .accounts(accounts)
       .signers(signers)
       .rpc();
     console.log('Your transaction signature', tx);
-  });
-});
+  })
+})
