@@ -1,4 +1,5 @@
 import { chatActions } from '@audius/common'
+import { StackActions } from '@react-navigation/native'
 import { takeLatest } from 'redux-saga/effects'
 
 import { navigationRef } from 'app/components/navigation-container/NavigationContainer'
@@ -8,15 +9,21 @@ const { goToChat } = chatActions
 function* watchGoToChat() {
   yield takeLatest(goToChat, function* (action: ReturnType<typeof goToChat>) {
     const {
-      payload: { chatId, presetMessage }
+      payload: { chatId, presetMessage, replaceNavigation }
     } = action
     if (navigationRef.isReady()) {
       if (!chatId) {
         // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
         navigationRef.navigate('ChatList')
       } else {
-        // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
-        navigationRef.navigate('Chat', { chatId, presetMessage })
+        if (replaceNavigation) {
+          navigationRef.current?.dispatch(
+            StackActions.replace('Chat', { chatId, presetMessage })
+          )
+        } else {
+          // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
+          navigationRef.navigate('Chat', { chatId, presetMessage })
+        }
       }
     }
   })

@@ -132,6 +132,7 @@ const slice = createSlice({
         userIds: ID[]
         skipNavigation?: boolean
         presetMessage?: string
+        replaceNavigation?: boolean
       }>
     ) => {
       // triggers saga
@@ -159,7 +160,11 @@ const slice = createSlice({
     fetchUnreadMessagesCountFailed: (_state) => {},
     goToChat: (
       _state,
-      _action: PayloadAction<{ chatId?: string; presetMessage?: string }>
+      _action: PayloadAction<{
+        chatId?: string
+        presetMessage?: string
+        replaceNavigation?: boolean
+      }>
     ) => {
       // triggers saga
     },
