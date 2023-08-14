@@ -32,18 +32,17 @@ export const relayTransaction = async (
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
-    acdcChainId,
-    requiredConfirmations,
     aao,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit } = req;
   const { reqIp } = headers;
 
   const discoveryDb = app.getDnDb();
+  const { chainId } = await web3.getNetwork()
   const sender = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
     entityManagerAddress: entityManagerContractAddress,
-    chainId: acdcChainId,
+    chainId: chainId.toString(),
   });
   const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
   if (isBlockedFromRelay) {
