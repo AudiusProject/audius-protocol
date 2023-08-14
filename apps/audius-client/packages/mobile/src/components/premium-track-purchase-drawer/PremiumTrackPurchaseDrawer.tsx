@@ -1,20 +1,34 @@
+import { useCallback, type ReactNode } from 'react'
+
 import {
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
-  useGetTrackById
+  useGetTrackById,
+  purchaseContentSelectors,
+  purchaseContentActions,
+  PurchaseContentStage
 } from '@audius/common'
-import { View } from 'react-native'
+import { Linking, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
+import IconError from 'app/assets/images/iconError.svg'
 import { LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
+import { spacing } from 'app/styles/spacing'
+import { useThemeColors } from 'app/utils/theme'
 
 import { TrackDetailsTile } from '../track-details-tile'
 
+import { PurchaseSuccess } from './PurchaseSuccess'
+import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 import { StripePurchaseConfirmationButton } from './StripePurchaseConfirmationButton'
+
+const { getPurchaseContentError, getPurchaseContentFlowStage } =
+  purchaseContentSelectors
 
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
@@ -25,16 +39,27 @@ const messages = {
   audiusCut: 'Audius Cut',
   alwaysZero: 'Always $0',
   youPay: 'You Pay',
+  youPaid: 'You Paid',
   price: (price: string) => `$${price}`,
   payToUnlock: 'Pay-To-Unlock',
-  disclaimer:
-    'By clicking on "Buy", you agree to our Terms of Use. Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
+  disclaimer: (termsOfUse: ReactNode) => (
+    <>
+      {'By clicking on "Buy", you agree to our '}
+      {termsOfUse}
+      {
+        ' Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
+      }
+    </>
+  ),
+  termsOfUse: 'Terms of Use.',
+  error: 'Your purchase was unsuccessful.'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   drawer: {
-    paddingVertical: spacing(6),
+    paddingTop: spacing(6),
     paddingHorizontal: spacing(4),
+    paddingBottom: spacing(8),
     gap: spacing(6),
     backgroundColor: palette.white
   },
@@ -58,94 +83,103 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     borderRadius: spacing(2),
     backgroundColor: palette.neutralLight10
   },
-  summaryContainer: {
-    borderColor: palette.neutralLight8,
-    borderWidth: 1,
-    borderRadius: spacing(1)
-  },
-  summaryRow: {
-    ...flexRowCentered(),
-    justifyContent: 'space-between',
-    paddingVertical: spacing(3),
-    paddingHorizontal: spacing(6),
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1
-  },
-  lastRow: {
-    borderBottomWidth: 0
-  },
-  greyRow: {
-    backgroundColor: palette.neutralLight10
-  },
-  summaryTitle: {
-    letterSpacing: 1
-  },
   payToUnlockTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing(2),
     marginBottom: spacing(2)
+  },
+  errorContainer: {
+    ...flexRowCentered(),
+    gap: spacing(2)
   }
 }))
 
 export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
-  const neutralLight2 = useColor('neutralLight2')
+  const { neutralLight2, accentRed, secondary } = useThemeColors()
+  const dispatch = useDispatch()
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
   const { data: track } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
   )
+  const isUSDCEnabled = useIsUSDCEnabled()
+  const error = useSelector(getPurchaseContentError)
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
   const { premium_conditions: premiumConditions } = track ?? {}
-  if (!track || !isPremiumContentUSDCPurchaseGated(premiumConditions))
+
+  const handleClosed = useCallback(() => {
+    dispatch(purchaseContentActions.cleanup())
+  }, [dispatch])
+
+  const handleTermsPress = useCallback(() => {
+    Linking.openURL('https://audius.co/legal/terms-of-use')
+  }, [])
+
+  if (
+    !track ||
+    !isPremiumContentUSDCPurchaseGated(premiumConditions) ||
+    !isUSDCEnabled
+  )
     return null
   const price = formatPrice(premiumConditions.usdc_purchase.price)
 
   return (
-    <NativeDrawer drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}>
+    <NativeDrawer
+      drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
+      onClosed={handleClosed}
+    >
       <View style={styles.drawer}>
         <View style={styles.titleContainer}>
           <IconCart fill={neutralLight2} />
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <TrackDetailsTile trackId={track.track_id} />
-        <View style={styles.summaryContainer}>
-          <View style={[styles.summaryRow, styles.greyRow]}>
-            <Text
-              weight='bold'
-              textTransform='uppercase'
-              style={styles.summaryTitle}
-            >
-              {messages.summary}
+        <PurchaseSummaryTable
+          price={price}
+          isPurchaseSuccessful={isPurchaseSuccessful}
+        />
+        {isPurchaseSuccessful ? (
+          <PurchaseSuccess />
+        ) : (
+          <>
+            <View>
+              <View style={styles.payToUnlockTitleContainer}>
+                <Text weight='heavy' textTransform='uppercase' fontSize='small'>
+                  {messages.payToUnlock}
+                </Text>
+                <LockedStatusBadge locked />
+              </View>
+              <Text>
+                {messages.disclaimer(
+                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                    {messages.termsOfUse}
+                  </Text>
+                )}
+              </Text>
+            </View>
+            <StripePurchaseConfirmationButton
+              trackId={track.track_id}
+              price={price}
+            />
+          </>
+        )}
+        {error ? (
+          <View style={styles.errorContainer}>
+            <IconError
+              fill={accentRed}
+              width={spacing(5)}
+              height={spacing(5)}
+            />
+            <Text weight='medium' colorValue={accentRed}>
+              {messages.error}
             </Text>
           </View>
-          <View style={styles.summaryRow}>
-            <Text>{messages.artistCut}</Text>
-            <Text>{messages.price(price)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text>{messages.audiusCut}</Text>
-            <Text>{messages.alwaysZero}</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.lastRow, styles.greyRow]}>
-            <Text weight='bold'>{messages.youPay}</Text>
-            <Text weight='bold' color='secondary'>
-              {messages.price(price)}
-            </Text>
-          </View>
-        </View>
-        <View>
-          <View style={styles.payToUnlockTitleContainer}>
-            <Text weight='heavy' textTransform='uppercase' fontSize='small'>
-              {messages.payToUnlock}
-            </Text>
-            <LockedStatusBadge locked />
-          </View>
-          <Text>{messages.disclaimer}</Text>
-        </View>
-        <StripePurchaseConfirmationButton price={price} />
+        ) : null}
       </View>
     </NativeDrawer>
   )

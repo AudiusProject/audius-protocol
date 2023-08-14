@@ -1,74 +1,60 @@
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import type { ID } from '@audius/common'
+import {
+  purchaseContentActions,
+  ContentType,
+  purchaseContentSelectors,
+  isContentPurchaseInProgress
+} from '@audius/common'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { Button } from 'app/components/core'
-import { useNavigation } from 'app/hooks/useNavigation'
-import { createStripeSession, getUSDCUserBank } from 'app/services/buyCrypto'
-import { setVisibility } from 'app/store/drawers/slice'
 import { useThemeColors } from 'app/utils/theme'
 
-const { getAccountERCWallet } = accountSelectors
+import LoadingSpinner from '../loading-spinner/LoadingSpinner'
+
+const { getPurchaseContentFlowStage } = purchaseContentSelectors
+const { startPurchaseContentFlow } = purchaseContentActions
 
 const messages = {
-  buy: (price: string) => `Buy $${price}`
+  buy: (price: string) => `Buy $${price}`,
+  purchasing: 'Purchasing'
 }
 
 type StripePurchaseConfirmationButtonProps = {
+  trackId: ID
   price: string
 }
 
 export const StripePurchaseConfirmationButton = ({
+  trackId,
   price
 }: StripePurchaseConfirmationButtonProps) => {
   const dispatch = useDispatch()
-  const navigation = useNavigation()
   const { specialLightGreen1 } = useThemeColors()
-  const ethWallet = useSelector(getAccountERCWallet)
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const isLoading = isContentPurchaseInProgress(stage)
 
-  const handleBuyPress = useCallback(async () => {
-    try {
-      if (ethWallet === null) {
-        throw new Error('Stripe session creation failed: no eth wallet found')
-      }
-      const usdcUserBank = await getUSDCUserBank(ethWallet)
-      if (usdcUserBank === undefined) {
-        throw new Error(
-          'Stripe session creation failed: could not get USDC user bank'
-        )
-      }
-      const res = await createStripeSession({
-        amount: price,
-        destinationWallet: usdcUserBank.toString(),
-        destinationCurrency: 'usdc'
+  const handleBuyPress = useCallback(() => {
+    dispatch(
+      startPurchaseContentFlow({
+        contentId: trackId,
+        contentType: ContentType.TRACK
       })
-      if (res === undefined || res.client_secret === undefined) {
-        throw new Error(
-          'Stripe session creation failed: could not get client secret'
-        )
-      }
-      dispatch(
-        setVisibility({
-          drawer: 'PremiumTrackPurchase',
-          visible: false
-        })
-      )
-      navigation.navigate('StripeOnrampEmbed', {
-        clientSecret: res.client_secret
-      })
-    } catch (e) {
-      console.error(e)
-    }
-  }, [dispatch, ethWallet, navigation, price])
+    )
+  }, [dispatch, trackId])
 
   return (
     <Button
       onPress={handleBuyPress}
-      title={messages.buy(price)}
+      disabled={isLoading}
+      title={isLoading ? messages.purchasing : messages.buy(price)}
       variant={'primary'}
       size='large'
       color={specialLightGreen1}
+      iconPosition='left'
+      icon={isLoading ? LoadingSpinner : undefined}
       fullWidth
     />
   )
