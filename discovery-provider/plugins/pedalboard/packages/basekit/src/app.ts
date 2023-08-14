@@ -63,8 +63,8 @@ export default class App<AppData = Map<string, string>> {
 
   scan<T>(
     table: Table,
-    callback: (self: App<T>, row: T) => Promise<void>
-  ): App<T> {
+    callback: (self: App<AppData>, row: T) => Promise<void>
+  ): App<AppData> {
     throw new Error("Scan not implemented yet.");
   }
 
