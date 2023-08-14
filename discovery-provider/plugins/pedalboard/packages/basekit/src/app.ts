@@ -7,8 +7,6 @@ import { initializeDiscoveryDb } from "./db";
 
 dayjs.extend(duration);
 
-type DefaultAppData = Map<string, string>
-
 export type AppParams<AppData> = {
   appData?: AppData,
   discoveryDb?: Knex,
