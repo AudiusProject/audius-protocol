@@ -57,7 +57,6 @@ export const MultiTrackSidebar = () => {
                 size='xSmall'
                 fill='accentRed'
               />
-              {/* @ts-expect-error */}
               <Text size='xSmall' color='--accent-red'>
                 {messages.fixErrors}
               </Text>

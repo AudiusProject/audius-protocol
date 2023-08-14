@@ -16,7 +16,6 @@ export const HelperText = (props: HelperTextProps) => {
       <Text
         size='xSmall'
         strength='default'
-        // @ts-expect-error
         color={error ? '--accent-red' : '--neutral-light-4'}
       >
         {children}

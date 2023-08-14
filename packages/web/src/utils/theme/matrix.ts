@@ -33,6 +33,8 @@ const theme = {
   '--white': '#1F211F',
   '--darkmode-static-white': 'var(--white)',
 
+  '--accent-red': '#F9344C',
+
   '--page-header-gradient-color-1': '#4FF069',
   '--page-header-gradient-color-2': '#09BD51',
   '--page-header-gradient':

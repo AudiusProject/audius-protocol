@@ -17,10 +17,10 @@ import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
-  onRampCanceled,
-  onRampOpened,
-  onPurchaseStarted,
-  onRampSucceeded
+  onrampCanceled,
+  onrampOpened,
+  purchaseStarted,
+  onrampSucceeded
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
@@ -69,12 +69,12 @@ function* purchaseStep({
   )
   const initialBalance = initialAccountInfo.amount
 
-  yield* put(onPurchaseStarted())
+  yield* put(purchaseStarted())
 
   // Wait for on ramp finish
   const result = yield* race({
-    success: take(onRampSucceeded),
-    canceled: take(onRampCanceled)
+    success: take(onrampSucceeded),
+    canceled: take(onrampCanceled)
   })
 
   // If the user didn't complete the on ramp flow, return early
@@ -119,7 +119,7 @@ function* doBuyUSDC({
     provider,
     purchaseInfo: { desiredAmount }
   }
-}: ReturnType<typeof onRampOpened>) {
+}: ReturnType<typeof onrampOpened>) {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
@@ -136,8 +136,8 @@ function* doBuyUSDC({
         amount: (desiredAmount / 100).toString(),
         destinationCurrency: 'usdc',
         destinationWallet: userBank.toString(),
-        onRampCanceled,
-        onRampSucceeded
+        onrampCanceled,
+        onrampSucceeded
       })
     )
 
@@ -201,7 +201,7 @@ function* doBuyUSDC({
 }
 
 function* watchOnRampOpened() {
-  yield takeLatest(onRampOpened, doBuyUSDC)
+  yield takeLatest(onrampOpened, doBuyUSDC)
 }
 
 export default function sagas() {

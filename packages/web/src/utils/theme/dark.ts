@@ -33,6 +33,7 @@ const theme = {
   '--white': '#32334D',
   '--darkmode-static-white': 'var(--static-white)',
 
+  '--accent-red': '#F9344C',
   '--accent-red-dark-1': '#C43047',
 
   '--special-light-green': '#13c65a',

@@ -129,15 +129,15 @@ const slice = createSlice({
       state.provider = action.payload.provider
       state.onSuccess = action.payload.onSuccess
     },
-    onRampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
+    onrampOpened: (state, _action: PayloadAction<PurchaseInfo>) => {
       state.stage = BuyAudioStage.PURCHASING
     },
-    onRampCanceled: (state) => {
+    onrampCanceled: (state) => {
       if (state.stage === BuyAudioStage.PURCHASING) {
         state.error = true
       }
     },
-    onRampSucceeded: (state) => {
+    onrampSucceeded: (state) => {
       state.stage = BuyAudioStage.CONFIRMING_PURCHASE
     },
     swapStarted: (state) => {
@@ -175,9 +175,9 @@ export const {
   cacheTransactionFees,
   clearFeesCache,
   startBuyAudioFlow,
-  onRampOpened,
-  onRampSucceeded,
-  onRampCanceled,
+  onrampOpened,
+  onrampSucceeded,
+  onrampCanceled,
   swapStarted,
   swapCompleted,
   transferStarted,

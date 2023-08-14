@@ -30,20 +30,20 @@ function* handleStripeSessionChanged({
   payload: { status }
 }: ReturnType<typeof stripeSessionStatusChanged>) {
   if (status === 'fulfillment_complete') {
-    const { onRampSucceeded } = yield* select(getStripeModalState)
-    if (onRampSucceeded) {
-      yield* put(onRampSucceeded)
+    const { onrampSucceeded } = yield* select(getStripeModalState)
+    if (onrampSucceeded) {
+      yield* put(onrampSucceeded)
     }
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: false }))
   }
 }
 
 function* handleCancelStripeOnramp() {
-  const { onRampCanceled } = yield* select(getStripeModalState)
+  const { onrampCanceled } = yield* select(getStripeModalState)
   yield* put(setVisibility({ modal: 'StripeOnRamp', visible: false }))
 
-  if (onRampCanceled) {
-    yield* put(onRampCanceled)
+  if (onrampCanceled) {
+    yield* put(onrampCanceled)
   }
 }
 

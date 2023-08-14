@@ -15,7 +15,7 @@ import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
 import styles from './StripeBuyAudioButton.module.css'
 
 const { getAudioPurchaseInfo } = buyAudioSelectors
-const { onRampOpened, onRampSucceeded, onRampCanceled } = buyAudioActions
+const { onrampOpened, onrampSucceeded, onrampCanceled } = buyAudioActions
 const { initializeStripeModal } = stripeModalUIActions
 
 const messages = {
@@ -37,7 +37,7 @@ export const StripeBuyAudioButton = () => {
     if (!amount || !purchaseInfo || purchaseInfo?.isError === true) {
       return
     }
-    dispatch(onRampOpened(purchaseInfo))
+    dispatch(onrampOpened(purchaseInfo))
     try {
       const destinationWallet: string = (
         await getRootSolanaAccount()
@@ -45,14 +45,14 @@ export const StripeBuyAudioButton = () => {
       dispatch(
         initializeStripeModal({
           amount,
-          onRampSucceeded,
-          onRampCanceled,
+          onrampSucceeded,
+          onrampCanceled,
           destinationCurrency: 'sol',
           destinationWallet
         })
       )
     } catch (e) {
-      dispatch(onRampCanceled())
+      dispatch(onrampCanceled())
       console.error(e)
     }
   }, [dispatch, amount, purchaseInfo])
