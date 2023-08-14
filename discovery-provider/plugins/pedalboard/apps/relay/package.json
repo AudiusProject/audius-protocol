@@ -21,6 +21,7 @@
     "@sinclair/typebox": "^0.29.4",
     "@types/compute-lcm": "^1.1.0",
     "axios": "^0.19.2",
+    "basekit": "^0.0.0",
     "body-parser": "^1.19.0",
     "compute-lcm": "^1.1.2",
     "cors": "^2.8.5",
@@ -32,6 +33,7 @@
     "morgan": "^1.10.0",
     "pino": "^8.14.1",
     "rate-limiter-flexible": "^2.4.1",
+    "storage": "^0.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

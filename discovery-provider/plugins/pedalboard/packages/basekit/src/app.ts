@@ -34,30 +34,10 @@ export default class App<AppData> {
 
   private appData: AppData;
 
-<<<<<<< HEAD
-  constructor(appData: AppData) {
-    this.discoveryDb = knex({
-      client: "pg",
-      connection: {
-        connectionString:
-          process.env.audius_db_url ||
-          "postgresql://postgres:postgres@localhost:5432/audius_discovery",
-      },
-    });
-    if (process.env.identityDb !== undefined) {
-      this.identityDb = knex({
-        client: "pg",
-        connection: {
-          connectionString: process.env.identityDb,
-        },
-      });
-    }
-=======
   constructor(appData: AppData, params: Partial<AppParams>) {
     const { discoveryDb, identityDb } = params
     this.discoveryDb = initializeDiscoveryDb(discoveryDb);
     this.identityDb = initializeIdentityDb(identityDb)
->>>>>>> main
     this.listeners = new Map();
     this.scans = new Map();
     this.tickers = [];
