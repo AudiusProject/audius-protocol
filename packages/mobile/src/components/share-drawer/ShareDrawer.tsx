@@ -109,7 +109,8 @@ export const ShareDrawer = () => {
   const handleShareToDirectMessage = useCallback(async () => {
     if (!content) return
     navigation.navigate('ChatUserList', {
-      presetMessage: getContentUrl(content)
+      presetMessage: getContentUrl(content),
+      defaultUserList: 'chats'
     })
     track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'share' }))
   }, [content, navigation])

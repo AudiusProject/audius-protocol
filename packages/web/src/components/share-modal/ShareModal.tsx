@@ -60,7 +60,8 @@ export const ShareModal = () => {
     openCreateChatModal({
       // Just care about the link
       presetMessage: (await getTwitterShareText(content, false)).link,
-      onCancelAction: setVisibility({ modal: 'Share', visible: true })
+      onCancelAction: setVisibility({ modal: 'Share', visible: true }),
+      defaultUserList: 'chats'
     })
     dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'share' }))
   }, [openCreateChatModal, dispatch, onClose, content])

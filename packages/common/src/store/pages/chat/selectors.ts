@@ -7,8 +7,8 @@ import { User } from 'models/User'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
-import { decodeHashId } from 'utils/hashIds'
-import { Maybe } from 'utils/typeUtils'
+import { decodeHashId, encodeHashId } from 'utils/hashIds'
+import { Maybe, removeNullable } from 'utils/typeUtils'
 
 import { chatMessagesAdapter, chatsAdapter } from './slice'
 import { ChatPermissionAction } from './types'
@@ -168,6 +168,30 @@ export const getSingleOtherChatUser = (
   return getOtherChatUsers(state, chatId)[0]
 }
 
+/**
+ * Gets a list of the users the current user has chats with.
+ * Note that this only takes the first user of each chat that doesn't match the current one,
+ * so this will need to be adjusted when we do group chats.
+ */
+export const getUserList = createSelector(
+  [getUserId, getChats, getHasMoreChats, getChatsStatus],
+  (currentUserId, chats, hasMore, chatsStatus) => {
+    const chatUserListIds = chats
+      .map(
+        (c) =>
+          c.chat_members
+            .filter((u) => decodeHashId(u.user_id) !== currentUserId)
+            .map((u) => decodeHashId(u.user_id))[0]
+      )
+      .filter(removeNullable)
+    return {
+      userIds: chatUserListIds,
+      hasMore,
+      loading: chatsStatus === Status.LOADING
+    }
+  }
+)
+
 export const getChatMessageByIndex = (
   state: CommonState,
   chatId: string,
@@ -228,6 +252,7 @@ export const getCanCreateChat = createSelector(
     getBlockees,
     getBlockers,
     getChatPermissions,
+    getChats,
     (state: CommonState, { userId }: { userId: Maybe<ID> }) => {
       if (!userId) return null
       const usersMap = getUsers(state, { ids: [userId] })
@@ -239,6 +264,7 @@ export const getCanCreateChat = createSelector(
     blockees,
     blockers,
     chatPermissions,
+    chats,
     user
   ): { canCreateChat: boolean; callToAction: ChatPermissionAction } => {
     if (!currentUserId) {
@@ -254,13 +280,24 @@ export const getCanCreateChat = createSelector(
       }
     }
 
+    // Check for existing chat, since unblocked users with existing chats
+    // don't need permission to continue chatting.
+    // Use a callback fn to prevent iteration until necessary to improve perf
+    // Note: this only works if the respective chat has been fetched already, like in chatsUserList
+    const encodedUserId = encodeHashId(user.user_id)
+    const hasExistingChat = () =>
+      !!chats.find((c) =>
+        c.chat_members.find((u) => u.user_id === encodedUserId)
+      )
+
     const userPermissions = chatPermissions[user.user_id]
     const isBlockee = blockees.includes(user.user_id)
     const isBlocker = blockers.includes(user.user_id)
     const canCreateChat =
       !isBlockee &&
       !isBlocker &&
-      (userPermissions?.current_user_has_permission ?? true)
+      ((userPermissions?.current_user_has_permission ?? true) ||
+        hasExistingChat())
 
     let action = ChatPermissionAction.NOT_APPLICABLE
     if (!canCreateChat) {

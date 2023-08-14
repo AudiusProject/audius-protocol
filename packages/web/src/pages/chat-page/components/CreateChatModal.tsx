@@ -11,7 +11,8 @@ import {
   useCreateChatModal,
   useInboxUnavailableModal,
   createChatModalActions,
-  searchUsersModalActions
+  searchUsersModalActions,
+  chatSelectors
 } from '@audius/common'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -27,18 +28,21 @@ const messages = {
 }
 
 const { getAccountUser } = accountSelectors
-const { fetchBlockers } = chatActions
+const { getUserList: getFollowersUserList } = followersUserListSelectors
+const { getUserList: getChatsUserList } = chatSelectors
+const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
-  const { onCancelAction, presetMessage } = data
+  const { onCancelAction, presetMessage, defaultUserList } = data
 
-  const { userIds, loading, hasMore } = useSelector(
-    followersUserListSelectors.getUserList
-  )
+  const followersUserList = useSelector(getFollowersUserList)
+  const chatsUserList = useSelector(getChatsUserList)
+  const { userIds, hasMore, loading } =
+    defaultUserList === 'chats' ? chatsUserList : followersUserList
 
   const handleCancel = useCallback(() => {
     if (onCancelAction) {
@@ -48,10 +52,14 @@ export const CreateChatModal = () => {
 
   const loadMore = useCallback(() => {
     if (currentUser) {
-      dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
-      dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
+      if (defaultUserList === 'chats') {
+        dispatch(fetchMoreChats())
+      } else {
+        dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+        dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
+      }
     }
-  }, [dispatch, currentUser])
+  }, [dispatch, defaultUserList, currentUser])
 
   const handleOpenInboxUnavailableModal = useCallback(
     (user: User) => {
