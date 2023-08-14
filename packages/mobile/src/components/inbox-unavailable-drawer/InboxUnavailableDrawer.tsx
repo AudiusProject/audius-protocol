@@ -5,9 +5,12 @@ import {
   chatSelectors,
   chatActions,
   tippingActions,
-  cacheUsersSelectors,
   ChatPermissionAction,
-  CHAT_BLOG_POST_URL
+  CHAT_BLOG_POST_URL,
+  accountSelectors,
+  makeChatId,
+  useInboxUnavailableModal,
+  cacheUsersSelectors
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,10 +18,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconMessageLocked from 'app/assets/images/iconMessageLocked.svg'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text, Button, useLink } from 'app/components/core'
-import { NativeDrawer } from 'app/components/drawer'
-import { useDrawer } from 'app/hooks/useDrawer'
+import Drawer from 'app/components/drawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -26,10 +27,7 @@ import { UserBadges } from '../user-badges'
 
 const { unblockUser, createChat } = chatActions
 const { getCanCreateChat } = chatSelectors
-const { getUser } = cacheUsersSelectors
 const { beginTip } = tippingActions
-
-const INBOX_UNAVAILABLE_MODAL_NAME = 'InboxUnavailable'
 
 const messages = {
   title: 'Inbox Unavailable',
@@ -102,48 +100,71 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 }))
 
 type DrawerContentProps = {
-  data: ReturnType<typeof useDrawer<'InboxUnavailable'>>['data']
+  data: ReturnType<typeof useInboxUnavailableModal>['data']
+  onClose: () => void
 }
 
-const DrawerContent = ({ data }: DrawerContentProps) => {
+const DrawerContent = ({ data, onClose }: DrawerContentProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
-  const { userId, shouldOpenChat } = data
-  const user = useSelector((state) => getUser(state, { id: userId }))
-  const { canCreateChat, callToAction } = useSelector((state) =>
+  const { userId, presetMessage } = data
+  const user = useSelector((state) =>
+    cacheUsersSelectors.getUser(state, { id: userId })
+  )
+  const { callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId })
   )
-
-  const closeDrawer = useCallback(() => {
-    dispatch(
-      setVisibility({
-        drawer: 'InboxUnavailable',
-        visible: false
-      })
-    )
-  }, [dispatch])
+  const currentUserId = useSelector(accountSelectors.getUserId)
 
   const handleUnblockPress = useCallback(() => {
-    dispatch(unblockUser({ userId }))
-    if (shouldOpenChat && canCreateChat) {
-      dispatch(createChat({ userIds: [userId] }))
+    if (!userId) {
+      console.error(
+        'Unexpected undefined user in InboxUnavailableDrawer unblock'
+      )
+      return
     }
-    closeDrawer()
-  }, [dispatch, userId, shouldOpenChat, canCreateChat, closeDrawer])
+    dispatch(unblockUser({ userId }))
+    dispatch(createChat({ userIds: [userId], presetMessage }))
+    onClose()
+  }, [dispatch, userId, presetMessage, onClose])
 
   const { onPress: onPressLearnMore } = useLink(CHAT_BLOG_POST_URL)
   const handleLearnMorePress = useCallback(() => {
     onPressLearnMore()
-    closeDrawer()
-  }, [closeDrawer, onPressLearnMore])
+    onClose()
+  }, [onClose, onPressLearnMore])
 
   const handleTipPress = useCallback(() => {
-    dispatch(beginTip({ user, source: 'inboxUnavailableModal' }))
+    if (!currentUserId || !user) {
+      console.error(
+        'Unexpected undefined currentUserId or user when starting tip'
+      )
+      return
+    }
+    const chatId = makeChatId([currentUserId, user.user_id])
+    dispatch(
+      beginTip({
+        user,
+        source: 'inboxUnavailableModal',
+        onSuccessActions: [
+          chatActions.goToChat({
+            chatId,
+            presetMessage
+          })
+        ],
+        onSuccessConfirmedActions: [
+          chatActions.createChat({
+            userIds: [user.user_id],
+            skipNavigation: true
+          })
+        ]
+      })
+    )
     navigation.navigate('TipArtist')
-    closeDrawer()
-  }, [closeDrawer, dispatch, navigation, user])
+    onClose()
+  }, [onClose, currentUserId, dispatch, navigation, user, presetMessage])
 
   switch (callToAction) {
     case ChatPermissionAction.NONE:
@@ -219,7 +240,7 @@ const DrawerContent = ({ data }: DrawerContentProps) => {
           <Button
             key={messages.cancel}
             title={messages.cancel}
-            onPress={closeDrawer}
+            onPress={onClose}
             variant={'common'}
             styles={{
               root: styles.button,
@@ -237,22 +258,18 @@ const DrawerContent = ({ data }: DrawerContentProps) => {
 export const InboxUnavailableDrawer = () => {
   const styles = useStyles()
   const neutralLight2 = useColor('neutralLight2')
-
-  // Select data outside of drawer and use it to conditionally render content,
-  // preventing a race condition with the store clears before drawer
-  // is dismissed
-  const { data } = useDrawer('InboxUnavailable')
+  const { isOpen, onClose, onClosed, data } = useInboxUnavailableModal()
 
   return (
-    <NativeDrawer drawerName={INBOX_UNAVAILABLE_MODAL_NAME}>
+    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
       <View style={styles.drawer}>
         <View style={styles.titleContainer}>
           <IconMessageLocked fill={neutralLight2} />
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <View style={styles.border} />
-        {data ? <DrawerContent data={data} /> : null}
+        <DrawerContent data={data} onClose={onClose} />
       </View>
-    </NativeDrawer>
+    </Drawer>
   )
 }

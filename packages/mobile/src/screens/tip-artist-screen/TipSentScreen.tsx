@@ -2,8 +2,6 @@ import { useCallback } from 'react'
 
 import type { SolanaWalletAddress } from '@audius/common'
 import {
-  makeChatId,
-  chatActions,
   formatNumberCommas,
   accountSelectors,
   tippingSelectors
@@ -55,7 +53,8 @@ export const TipSentScreen = () => {
   const {
     user: recipient,
     amount: sendAmount,
-    source
+    source,
+    onSuccessActions
   } = useSelector(getSendTipData)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -84,20 +83,20 @@ export const TipSentScreen = () => {
     // After success + close, take the user to the chat they were
     // attempting to make if they were unlocking DMs by tipping.
     // The saga will create the chat once the tip is confirmed
-    if (
-      source === 'inboxUnavailableModal' &&
-      account?.user_id &&
-      recipient?.user_id
-    ) {
-      dispatch(
-        chatActions.goToChat({
-          chatId: makeChatId([account.user_id, recipient.user_id])
-        })
-      )
+    if (onSuccessActions && account?.user_id && recipient?.user_id) {
+      for (const action of onSuccessActions) {
+        dispatch(action)
+      }
     } else {
       navigation.getParent()?.goBack()
     }
-  }, [account?.user_id, dispatch, navigation, recipient?.user_id, source])
+  }, [
+    account?.user_id,
+    dispatch,
+    onSuccessActions,
+    navigation,
+    recipient?.user_id
+  ])
 
   return (
     <TipScreen
