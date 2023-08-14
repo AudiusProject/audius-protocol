@@ -373,7 +373,8 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
 }
 
 function* doCreateChat(action: ReturnType<typeof createChat>) {
-  const { userIds, skipNavigation, presetMessage } = action.payload
+  const { userIds, skipNavigation, presetMessage, replaceNavigation } =
+    action.payload
   const { track, make } = yield* getContext('analytics')
   try {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -387,7 +388,7 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
 
     // Optimistically go to the chat. If we fail to create it, we'll toast
     if (!skipNavigation) {
-      yield* put(goToChat({ chatId, presetMessage }))
+      yield* put(goToChat({ chatId, presetMessage, replaceNavigation }))
     }
 
     try {

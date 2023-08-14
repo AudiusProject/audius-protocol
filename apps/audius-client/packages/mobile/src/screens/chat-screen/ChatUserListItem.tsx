@@ -162,7 +162,13 @@ export const ChatUserListItem = ({
   const handlePress = useCallback(() => {
     if (user?.user_id) {
       Keyboard.dismiss()
-      dispatch(createChat({ userIds: [user.user_id], presetMessage }))
+      dispatch(
+        createChat({
+          userIds: [user.user_id],
+          presetMessage,
+          replaceNavigation: true
+        })
+      )
     }
   }, [dispatch, presetMessage, user?.user_id])
 
