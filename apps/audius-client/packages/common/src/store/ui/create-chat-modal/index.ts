@@ -3,6 +3,7 @@ import { Action } from '@reduxjs/toolkit'
 import { createModal } from '../modals/createModal'
 
 export type CreateChatModalState = {
+  defaultUserList?: 'followers' | 'chats'
   presetMessage?: string
   onCancelAction?: Action
 }
@@ -10,7 +11,8 @@ export type CreateChatModalState = {
 const createChatModal = createModal<CreateChatModalState>({
   reducerPath: 'createChatModal',
   initialState: {
-    isOpen: false
+    isOpen: false,
+    defaultUserList: 'followers'
   },
   sliceSelector: (state) => state.ui.modalsWithState
 })

@@ -7,7 +7,8 @@ import type {
   NotificationType,
   RepostType,
   SearchPlaylist,
-  SearchTrack
+  SearchTrack,
+  CreateChatModalState
 } from '@audius/common'
 import { FeatureFlags } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
@@ -110,6 +111,7 @@ export type AppTabScreenParamList = {
   ChatUserList:
     | {
         presetMessage?: string
+        defaultUserList?: CreateChatModalState['defaultUserList']
       }
     | undefined
   Chat: {
