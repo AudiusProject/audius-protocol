@@ -14,9 +14,11 @@ import { ethers } from "ethers";
 export const main = async () => {
   dotenv.config({ path: "./dev.env" });
 
-  const provider = new ethers.providers.JsonRpcProvider(stagingConfig.web3ProviderUrl)
-  const { chainId } = await provider.getNetwork()
-  console.log(`chain id = ${chainId}`)
+  const provider = new ethers.providers.JsonRpcProvider(
+    stagingConfig.web3ProviderUrl
+  );
+  const { chainId } = await provider.getNetwork();
+  console.log(`chain id = ${chainId}`);
 
   const apiKey = process.env.SANDBOX_API_KEY;
   const apiSecret = process.env.SANDBOX_API_SECRET;
@@ -60,6 +62,6 @@ export const main = async () => {
 };
 
 main().catch((e) => {
-  console.error(e)
-  process.exit()
+  console.error(e);
+  process.exit();
 });

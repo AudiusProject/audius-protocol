@@ -26,7 +26,7 @@ export const detectAbuse = async (
   abbreviated: boolean = false
 ): Promise<boolean> => {
   // if aao turned off, never detect abuse
-  if (!aaoConfig.useAao) return false
+  if (!aaoConfig.useAao) return false;
   try {
     const user = await discoveryDb<Users>(Table.Users)
       .where("wallet", "=", senderAddress)

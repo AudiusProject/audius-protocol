@@ -6,7 +6,7 @@ import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { Table, Users } from "storage/src";
-import { app, config } from "..";
+import { config, discoveryDb } from "..";
 
 const globalRateLimiter = new RelayRateLimiter();
 
@@ -19,17 +19,24 @@ export const relayRateLimiter = async (
   } = req;
 
   const operation = getEntityManagerActionKey(encodedABI);
+  const chainId = config.acdcChainId
+  if (chainId === undefined) {
+    throw new Error("chain id not defined")
+  }
   const signer = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
-    chainId: config.acdcChainId,
+    chainId,
     entityManagerAddress: config.entityManagerContractAddress,
   });
 
-  const isBlockedFromRelay = config.rateLimitBlockList.includes(signer)
-  if (isBlockedFromRelay) errorResponseUnauthorized(rep)
+  const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
+  if (isBlockedFromRelay) errorResponseUnauthorized(rep);
 
-  const discoveryDb = app.getDnDb();
-  const limit = await determineLimit(discoveryDb, config.rateLimitAllowList, signer);
+  const limit = await determineLimit(
+    discoveryDb,
+    config.rateLimitAllowList,
+    signer
+  );
   logger.info({ limit });
 
   try {
@@ -60,8 +67,8 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
 };
 
 const errorResponseUnauthorized = (rep: FastifyReply) => {
-  rep.code(403).send()
-}
+  rep.code(403).send();
+};
 
 const errorResponseRateLimited = (rep: FastifyReply) => {
   rep.code(429).send("Too many requests, please try again later");

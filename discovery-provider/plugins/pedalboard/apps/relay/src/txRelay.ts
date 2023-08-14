@@ -34,11 +34,11 @@ export const relayTransaction = async (
     entityManagerContractRegistryKey,
     aao,
   } = config;
-  const { encodedABI, contractRegistryKey, gasLimit } = req;
+  const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
 
   const discoveryDb = app.getDnDb();
-  const { chainId } = await web3.getNetwork()
+  const { chainId } = await web3.getNetwork();
   const sender = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
     entityManagerAddress: entityManagerContractAddress,
@@ -67,6 +67,8 @@ export const relayTransaction = async (
   const data = encodedABI;
 
   log({ msg: "gathered tx params", nonce });
+
+  const gasLimit = reqGasLimit || 3000000
 
   // assemble, sign, and send transaction
   const transaction = { nonce, gasLimit, to, value, data };
