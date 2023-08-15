@@ -259,7 +259,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
-	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
+	// workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
@@ -281,6 +281,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 			"data": c.RealIP(), // client/requestor IP
 		})
 	})
+
+	// TODO: remove deprecated routes
+	routes.GET("/deprecated/:cid", ss.getBlobDeprecated, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/deprecated/:jobID/:variant", ss.getBlobByJobIDAndVariantDeprecated, ss.requireHealthy)
 
 	// -------------------
 	// internal

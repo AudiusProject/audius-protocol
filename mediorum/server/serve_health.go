@@ -156,6 +156,11 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		allowUnhealthy, _ := strconv.ParseBool(c.QueryParam("allow_unhealthy"))
+		if allowUnhealthy {
+			return next(c)
+		}
+
 		if !ss.Config.WalletIsRegistered {
 			return c.JSON(506, "wallet not registered")
 		}
