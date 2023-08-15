@@ -8,6 +8,8 @@ const discoveryNodes = DISCOVERY_NODES.split(',')
 const discoveryNode =
   discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
 
+let h1 = null
+
 const routes = [
   { pattern: /^\/([^/]+)$/, name: 'user', keys: ['handle'] },
   {
@@ -128,7 +130,17 @@ function clean(str) {
     .replace(/"/g, '&quot;')
 }
 
-class HeadElementHandler {
+class SEOHandlerBody {
+  element(element) {
+    if (!h1) {
+      return
+    }
+    const h1Tag = `<h1 id="audius-h1" style="visibility:hidden;display:none;">${h1}</h1>`
+    element.prepend(h1Tag, { html: true })
+  }
+}
+
+class SEOHandlerHead {
   constructor(pathname) {
     self.pathname = pathname
   }
@@ -154,6 +166,7 @@ class HeadElementHandler {
     switch (name) {
       case 'user': {
         title = `${metadata.data.name} • Audius`
+        h1 = metadata.data.name
         description = `Play ${metadata.data.name} on Audius and discover followers on Audius`
         ogDescription = metadata.data.bio || description
         image = metadata.data.profile_picture
@@ -164,6 +177,7 @@ class HeadElementHandler {
       }
       case 'track': {
         title = `${metadata.data.title} by ${metadata.data.user.name} • Audius`
+        h1 = metadata.data.title
         description = `Stream ${metadata.data.title} by ${metadata.data.user.name} on Audius | Stream similar artists to ${metadata.data.user.name} on desktop and mobile`
         ogDescription = metadata.data.description || description
         image = metadata.data.artwork ? metadata.data.artwork['480x480'] : ''
@@ -172,6 +186,7 @@ class HeadElementHandler {
       }
       case 'playlist': {
         title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
+        h1 = metadata.data[0].playlist_name
         description = `Listen to ${metadata.data[0].playlist_name}, a playlist curated by ${metadata.data[0].user.name} on Audius`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
@@ -182,6 +197,7 @@ class HeadElementHandler {
       }
       case 'album': {
         title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
+        h1 = metadata.data[0].playlist_name
         description = `Listen to ${metadata.data[0].playlist_name}, an album by ${metadata.data[0].user.name} on Audius`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
@@ -268,7 +284,8 @@ async function handleEvent(event) {
     const asset = await getAssetFromKV(event, options)
 
     const rewritten = new HTMLRewriter()
-      .on('head', new HeadElementHandler(pathname))
+      .on('head', new SEOHandlerHead(pathname))
+      .on('body', new SEOHandlerBody())
       .transform(asset)
     return rewritten
   } catch (e) {
