@@ -43,6 +43,12 @@
   max-width: 1250px !important;
 }
 
+:global(#mainContent) > .pageContainer {
+  position: fixed;
+  bottom: 0;
+  overflow-y: auto;
+}
+
 .pageContainer {
   min-height: 100vh;
   display: flex;
