@@ -211,17 +211,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
             desc(TrackWithAggregates.track_id),
         )
 
-    final_query = add_query_pagination(base_query, limit, offset)
-
-    logger.info(
-        str(
-            final_query.statement.compile(
-                dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}
-            )
-        )
-    )
-
-    query_results = final_query.all()
+    query_results = add_query_pagination(base_query, limit, offset).all()
 
     if not query_results:
         return []
