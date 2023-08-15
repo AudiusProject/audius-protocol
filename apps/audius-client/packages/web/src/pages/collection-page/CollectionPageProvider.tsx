@@ -246,8 +246,12 @@ class CollectionPage extends Component<
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
       const collectionId = Uid.fromString(metadata._moved).id
-      // TODO: Put fetch collection succeeded and then replace route
-      fetchCollectionSucceeded(collectionId, metadata._moved, userUid)
+      fetchCollectionSucceeded(
+        collectionId,
+        metadata._moved,
+        metadata.permalink || '',
+        userUid
+      )
       const newPath = pathname.replace(
         `${metadata.playlist_id}`,
         collectionId.toString()
@@ -364,7 +368,6 @@ class CollectionPage extends Component<
     if (params?.permalink) {
       const { permalink, collectionId } = params
       if (forceFetch || params.permalink) {
-        this.props.setCollectionPermalink(permalink)
         this.props.fetchCollection(collectionId, permalink)
         this.props.fetchTracks()
       }
@@ -389,7 +392,6 @@ class CollectionPage extends Component<
 
   resetCollection = () => {
     const { collectionUid, userUid } = this.props
-    this.props.setCollectionPermalink('')
     this.props.resetCollection(collectionUid, userUid)
   }
 
@@ -875,8 +877,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(collectionActions.fetchCollection(id, permalink)),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
-    setCollectionPermalink: (permalink: string) =>
-      dispatch(collectionActions.setCollectionPermalink(permalink)),
     resetCollection: (collectionUid: string, userUid: string) =>
       dispatch(collectionActions.resetCollection(collectionUid, userUid)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
@@ -977,12 +977,14 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchCollectionSucceeded: (
       collectionId: ID,
       collectionUid: string,
+      collectionPermalink: string,
       userId: string
     ) =>
       dispatch(
         collectionActions.fetchCollectionSucceeded(
           collectionId,
           collectionUid,
+          collectionPermalink,
           userId
         )
       ),
