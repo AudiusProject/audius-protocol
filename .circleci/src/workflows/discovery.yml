@@ -86,19 +86,3 @@ jobs:
         stage-discovery-5
       service: discovery-provider
       freeze: $FREEZE_BUILD
-
-  - deploy:
-      name: deploy-stage-discovery-provider-notifications
-      requires:
-        - test-discovery-provider-notifications
-        - push-discovery-provider-notifications
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: >-
-        stage-discovery-2
-      service: discovery-provider-notifications
-      freeze: $FREEZE_BUILD
