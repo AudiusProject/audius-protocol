@@ -33,8 +33,6 @@ services:
     volumes:
       - ./apps/sla-auditor/:/app/apps/sla-auditor
       - /app/apps/sla-auditor/node_modules/
-    env_file:
-      - .env.stage
 
   relay:
     container_name: relay
