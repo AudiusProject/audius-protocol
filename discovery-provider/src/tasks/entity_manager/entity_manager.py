@@ -322,7 +322,7 @@ def entity_manager_update(
             new_records,
             original_records,
             existing_records_in_json,
-            session
+            session,
         )
 
         # insert/update all tracks, playlist records in this block
@@ -371,7 +371,7 @@ def get_records_to_save(
     new_records: RecordDict,
     original_records: dict,
     existing_records_in_json: dict[str, dict],
-    session: Session
+    session: Session,
 ):
     records_to_save = []
     prev_records: Dict[str, List] = defaultdict(list)
@@ -390,10 +390,12 @@ def get_records_to_save(
             ):
                 if record_type == "PlaylistRoute" or record_type == "TrackRoute":
                     # these are an exception since we want to keep is_current false to preserve old slugs
-                    print(f"asdf setting is_current false")
+                    print("asdf setting is_current false")
                     original_records[record_type][entity_id].is_current = False
                 else:
-                    print(f"asdf deleting original_records[record_type][entity_id] {original_records[record_type][entity_id]}")
+                    print(
+                        f"asdf deleting original_records[record_type][entity_id] {original_records[record_type][entity_id]}"
+                    )
                     session.delete(original_records[record_type][entity_id])
                     session.flush()
                 # add the json record for revert blocks
@@ -409,15 +411,13 @@ def get_records_to_save(
                     record.updated_at = datetime.utcfromtimestamp(block_timestamp)
             if "is_current" in get_record_columns(records[-1]):
                 records[-1].is_current = True
-            
             if record_type == "PlaylistRoute" or record_type == "TrackRoute":
-                records_to_save.extend(records)
+                # records_to_save.extend(records)
                 session.add_all(records)
             else:
                 print(f"asdf records {records}")
                 # records_to_save.append(records[-1])
                 session.add(records[-1])
-                
             # invalidate original record if it already existed in the DB
             # also add revert_blocks
 

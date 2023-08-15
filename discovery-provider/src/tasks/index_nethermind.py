@@ -324,6 +324,7 @@ def index_next_block(
             Fetch transaction receipts
             """
             tx_receipt_dict = fetch_tx_receipts(next_block)
+            logger.info("asdf sorting")
 
             """
             Parse transaction receipts
@@ -334,6 +335,7 @@ def index_next_block(
                 indexing_transaction_index_sort_order_start_block,
             )
             logger.set_context("tx_count", len(sorted_txs))
+            logger.info("asdf sorted")
 
             # Parse tx events in each block
             for tx in sorted_txs:
@@ -348,7 +350,9 @@ def index_next_block(
             """
             Add block to db
             """
+            logger.info("asdf adding next block")
             add_indexed_block_to_db(session, next_block, latest_database_block)
+            logger.info("asdf added next block")
 
             """
             Add state changes in block to db (users, tracks, etc.)

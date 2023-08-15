@@ -1,5 +1,4 @@
 from typing import List
-from src.models.indexing.revert_block import RevertBlock
 
 from sqlalchemy import desc
 from web3 import Web3
@@ -7,6 +6,7 @@ from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
+from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import PlaylistSeen
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
@@ -167,7 +167,9 @@ def test_index_playlist_view(app, mocker):
         )
         assert len(revert_block.prev_records["playlist_seen"]) == 1
 
-        prev_playlist_seen = PlaylistSeen(**revert_block.prev_records["playlist_seen"][0])
+        prev_playlist_seen = PlaylistSeen(
+            **revert_block.prev_records["playlist_seen"][0]
+        )
         prev_playlist_seen.is_current == False
         prev_playlist_seen.user_id == 1
         prev_playlist_seen.playlist_id == 1

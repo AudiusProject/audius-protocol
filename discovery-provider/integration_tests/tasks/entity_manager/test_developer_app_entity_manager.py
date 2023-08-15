@@ -397,6 +397,7 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
+        print(f"asdf all_apps {all_apps}")
         assert len(all_apps) == 5
 
     # Test invalid delete app txs
@@ -560,9 +561,10 @@ def test_index_app(app, mocker):
             assert len(updated) == 1
             updated = updated[0]
             assert updated.user_id == expected_app["user_id"]
-            
             assert updated.name == expected_app["name"]
-            assert updated.description == (expected_app.get("description", None) or None)
+            assert updated.description == (
+                expected_app.get("description", None) or None
+            )
             assert updated.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )

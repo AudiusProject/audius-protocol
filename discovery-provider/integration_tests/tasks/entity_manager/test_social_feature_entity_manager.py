@@ -582,7 +582,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist updated",
-            "playlist_owner_id": 10
+            "playlist_owner_id": 10,
         }
     }
     update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
