@@ -1,7 +1,6 @@
 from typing import Optional, TypedDict, cast
 
 from sqlalchemy import asc, desc, func, or_
-from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.sql.functions import coalesce, max
@@ -24,9 +23,6 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-from src.utils.structured_logger import StructuredLogger
-
-logger = StructuredLogger(__name__)
 
 
 class GetTrackLibraryArgs(TypedDict):
