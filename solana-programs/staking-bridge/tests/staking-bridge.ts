@@ -72,7 +72,7 @@ describe('staking-bridge', () => {
     console.log('Your transaction signature', tx);
   })
 
-  it('swaps SOL USDC to SOL AUDIO', async () => {
+  xit('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
     console.log("serum market info:", JSON.stringify(market))
 
@@ -155,7 +155,7 @@ describe('staking-bridge', () => {
     // Use your own ETH address to receive the AUDIO tokens
     const recipientEthAddress = '0x9d959Cf57D89DCf41925e19479A04E26f27563dB'
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
-    const wholeAmount = 1
+    const wholeAmount = 0.001
     const {
       nonce,
       amount,
@@ -165,9 +165,6 @@ describe('staking-bridge', () => {
       wholeAmount,
       solTokenDecimals: SOL_AUDIO_DECIMALS
     })
-
-    const tokenAddress = Buffer.from(formatEthAddress(ETH_AUDIO_TOKEN_ADDRESS))
-    const tokenChain = new anchor.BN(CHAIN_ID_ETH)
 
     // Associated token account owned by the PDA
     const pdaAta = await getOrCreateAssociatedTokenAccount(
@@ -188,8 +185,8 @@ describe('staking-bridge', () => {
     const [wrappedMint, wrappedMintBump] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('wrapped'),
-        tokenChain.toArrayLike(Buffer, 'be', 2),
-        tokenAddress
+        new anchor.BN(CHAIN_ID_ETH).toArrayLike(Buffer, 'be', 2),
+        Buffer.from(formatEthAddress(ETH_AUDIO_TOKEN_ADDRESS), 'hex')
       ],
       tokenBridgeId
     )

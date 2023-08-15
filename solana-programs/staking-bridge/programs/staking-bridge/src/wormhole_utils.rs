@@ -12,8 +12,8 @@ use anchor_spl::token::spl_token;
 
 use crate::constant::{
     ETH_CHAIN_ID,
-    ETH_RECIPIENT_ADDRESS,
-    ETH_AUDIO_TOKEN_ADDRESS,
+    ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES,
+    ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES,
     WORMHOLE_CORE_BRIDGE_ID,
     WORMHOLE_TOKEN_BRIDGE_ID
 };
@@ -55,10 +55,22 @@ pub fn check_wormhole_token_accounts(
 ) -> Result<()> {
     let from = &accounts.from;
     let from_owner = &accounts.from_owner;
-    if from.owner != from_owner.key {
+    let from_account_data = from.data.borrow();
+    let from_account_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+        ::unpack_account_owner(&from_account_data)
+        .unwrap();
+    if from_account_owner != from_owner.key {
         return Err(StakingBridgeErrorCode::WormholeTokenAccountNotOwnedByPDA.into());
     }
     Ok(())
+}
+
+fn hex_string_to_array(hex_string: &str) -> Vec<u8> {
+    hex_string
+        .as_bytes()
+        .chunks(2)
+        .map(|chunk| u8::from_str_radix(std::str::from_utf8(chunk).unwrap_or("00"), 16).unwrap_or(0))
+        .collect()
 }
 
 pub fn check_wormhole_pdas(
@@ -92,7 +104,7 @@ pub fn check_wormhole_pdas(
     }
 
     let (wrapped_mint_pda, wrapped_mint_pda_bump) = Pubkey::find_program_address(
-        &[b"wrapped".as_ref(), &ETH_CHAIN_ID.to_be_bytes()[..2], ETH_AUDIO_TOKEN_ADDRESS.as_ref()],
+        &[b"wrapped".as_ref(), &ETH_CHAIN_ID.to_be_bytes()[..2], hex_string_to_array(ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES).as_ref()],
         program_id.key
     );
     if *wrapped_mint.key != wrapped_mint_pda || wrapped_mint_bump != wrapped_mint_pda_bump {
@@ -215,7 +227,7 @@ pub fn execute_wormhole_transfer(
     let system_program = &accounts.system_program;
 
     let mut target_address = [0u8; 32];
-    target_address[..32].copy_from_slice(ETH_RECIPIENT_ADDRESS.as_bytes());
+    target_address[..32].copy_from_slice(&hex_string_to_array(ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES));
     let target_chain = ETH_CHAIN_ID;
 
     // https://github.com/wormhole-foundation/wormhole/blob/main/solana/modules/token_bridge/program/src/lib.rs#L107

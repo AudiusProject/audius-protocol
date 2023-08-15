@@ -54,12 +54,10 @@ pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
     // Note that anchor checks for the program ownership of the 'user_source_owner' account,
     // i.e. that the owner of the token accounts is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
-    msg!("user_source_owner.key: {}", user_source_owner.key);
     let source_token_data = user_source_token_account.data.borrow();
     let source_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_owner(&source_token_data)
         .unwrap();
-    msg!("source_token_owner: {}", source_token_owner);
     if source_token_owner != user_source_owner.key {
         return Err(StakingBridgeErrorCode::SourceTokenAccountNotOwnedByPDA.into());
     }
@@ -68,7 +66,6 @@ pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
     let destination_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_owner(&destination_token_data)
         .unwrap();
-    msg!("destination_token_owner: {}", destination_token_owner);
     if destination_token_owner != user_source_owner.key {
         return Err(StakingBridgeErrorCode::DestinationTokenAccountNotOwnedByPDA.into());
     }
