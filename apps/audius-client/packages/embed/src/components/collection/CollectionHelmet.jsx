@@ -2,7 +2,6 @@ import { h } from 'preact'
 import { Helmet } from 'react-helmet'
 
 import { getAudiusHostname } from '../../util/getEnv'
-import { decodeHashId } from '../../util/hashIds'
 
 const CollectionHelmet = ({ collection }) => {
   if (!collection) {
@@ -12,9 +11,7 @@ const CollectionHelmet = ({ collection }) => {
   const title = `${collection.playlistName} by ${collection.user.name} • Audius`
   const description = `Listen on Audius: ${collection.playlistName}`
   const hostname = getAudiusHostname()
-  const url = `https://${hostname}${collection.permalink}-${decodeHashId(
-    collection.id
-  )}`
+  const url = `https://${hostname}${collection.permalink}`
   const isAlbum = collection.isAlbum
   const type = isAlbum ? 'MusicAlbum' : 'MusicPlaylist'
   const structuredData = {

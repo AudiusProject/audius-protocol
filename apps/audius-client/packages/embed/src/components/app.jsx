@@ -435,15 +435,9 @@ const App = (props) => {
 
     const artworkURL = getArtworkUrl(tracksResponse || collectionsResponse)
     const artworkClickURL =
-      tracksResponse?.permalink ||
-      `${collectionsResponse?.permalink}-${decodeHashId(
-        collectionsResponse?.id
-      )}`
+      tracksResponse?.permalink || collectionsResponse?.permalink
         ? stripLeadingSlash(
-            tracksResponse?.permalink ||
-              `${collectionsResponse?.permalink}-${decodeHashId(
-                collectionsResponse?.id
-              )}`
+            tracksResponse?.permalink || collectionsResponse?.permalink
           )
         : null
     const listenOnAudiusURL = artworkClickURL
