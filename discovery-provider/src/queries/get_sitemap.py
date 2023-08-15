@@ -3,14 +3,13 @@ import urllib.parse
 from typing import List, Tuple
 
 from lxml import etree
-from sqlalchemy import asc, distinct, func, tuple_
+from sqlalchemy import asc
 from sqlalchemy.orm.session import Session
 
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
-from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.utils.get_all_other_nodes import get_node_endpoint
 
