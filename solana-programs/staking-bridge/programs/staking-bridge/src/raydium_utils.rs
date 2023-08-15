@@ -54,15 +54,26 @@ pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
     // Note that anchor checks for the program ownership of the 'user_source_owner' account,
     // i.e. that the owner of the token accounts is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
-    if user_source_token_account.owner != user_source_owner.key {
+    msg!("user_source_owner.key: {}", user_source_owner.key);
+    let source_token_data = user_source_token_account.data.borrow();
+    let source_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+        ::unpack_account_owner(&source_token_data)
+        .unwrap();
+    msg!("source_token_owner: {}", source_token_owner);
+    if source_token_owner != user_source_owner.key {
         return Err(StakingBridgeErrorCode::SourceTokenAccountNotOwnedByPDA.into());
     }
-    if user_destination_token_account.owner != user_source_owner.key {
+
+    let destination_token_data = user_destination_token_account.data.borrow();
+    let destination_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+        ::unpack_account_owner(&destination_token_data)
+        .unwrap();
+    msg!("destination_token_owner: {}", destination_token_owner);
+    if destination_token_owner != user_source_owner.key {
         return Err(StakingBridgeErrorCode::DestinationTokenAccountNotOwnedByPDA.into());
     }
 
     // 2. Verify that the source token account is of the USDC mint.
-    let source_token_data = user_source_token_account.data.borrow();
     let source_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_mint(&source_token_data)
         .unwrap();
@@ -71,7 +82,6 @@ pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
     }
 
     // 3. Verify that the destination token account is of the AUDIO mint.
-    let destination_token_data = user_destination_token_account.data.borrow();
     let destination_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_mint(&destination_token_data)
         .unwrap();

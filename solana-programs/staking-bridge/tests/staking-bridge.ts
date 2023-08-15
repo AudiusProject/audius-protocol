@@ -4,7 +4,6 @@ import { StakingBridge } from '../target/types/staking_bridge'
 import { CHAIN_ID_ETH } from '@certusone/wormhole-sdk'
 import {
   TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount
 } from '@solana/spl-token'
 import pkg from 'bs58'
@@ -60,7 +59,7 @@ describe('staking-bridge', () => {
     program.programId
   )
 
-  it('creates the staking bridge pda', async () => {
+  xit('creates the staking bridge pda', async () => {
     // Add your test here.
     const tx = await program.methods
       .createPda()
@@ -73,7 +72,7 @@ describe('staking-bridge', () => {
     console.log('Your transaction signature', tx);
   })
 
-  xit('swaps SOL USDC to SOL AUDIO', async () => {
+  it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
     console.log("serum market info:", JSON.stringify(market))
 
@@ -92,28 +91,25 @@ describe('staking-bridge', () => {
       throw ("vaultSignerNonce incorrect!")
     }
 
-    const poolCoinTokenAccountTokenAccountPublicKey = await getAssociatedTokenAddressSync(
+    // Create associated token accounts for the staking bridge PDA
+    const usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
       SOL_USDC_TOKEN_ADDRESS_KEY,
-      poolKeys.authority
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
     )
-    const poolPcTokenAccountTokenAccountPublicKey = await getAssociatedTokenAddressSync(
+    const audioTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
       SOL_AUDIO_TOKEN_ADDRESS_KEY,
-      poolKeys.authority
-    )
-    console.log({ poolCoinTokenAccountTokenAccountPublicKey, poolPcTokenAccountTokenAccountPublicKey })
-
-    const usdcTokenAccount = await getAssociatedTokenAddressSync(
-      SOL_USDC_TOKEN_ADDRESS_KEY,
-      stakingBridgePda
-    )
-    const audioTokenAccount = await getAssociatedTokenAddressSync(
-      SOL_AUDIO_TOKEN_ADDRESS_KEY,
-      stakingBridgePda
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
     )
     console.log({ usdcTokenAccount, audioTokenAccount })
 
-    const wholeAmountIn = 0.01
-    // Minimum amount of SOL AUDIO expected to be received from the swap.
+    // Amount of SOL USDC to be swapped for a minimum amount of SOL AUDIO expected to be received from the swap.
+    const wholeAmountIn = 0.001
     const { amountIn, minimumAmountOut } = getMinimumAmountOutFromAmountIn(wholeAmountIn);
 
     const accounts = {
@@ -132,8 +128,8 @@ describe('staking-bridge', () => {
       serumCoinVaultAccount: market.baseVault,
       serumPcVaultAccount: market.quoteVault,
       serumVaultSigner: vaultOwner,
-      userSourceTokenAccount: usdcTokenAccount,
-      userDestinationTokenAccount: audioTokenAccount,
+      userSourceTokenAccount: usdcTokenAccount.address,
+      userDestinationTokenAccount: audioTokenAccount.address,
       userSourceOwner: stakingBridgePda,
       splTokenProgram: TOKEN_PROGRAM_ID,
     }
@@ -141,7 +137,7 @@ describe('staking-bridge', () => {
 
     // Add your test here.
     const tx = await program.methods
-      .swap(
+      .raydiumSwap(
         amountIn,
         minimumAmountOut,
         vaultNonce,
@@ -271,7 +267,7 @@ describe('staking-bridge', () => {
 
     // Send the transaction
     const tx = await program.methods
-      .postMessage(
+      .postWormholeMessage(
         nonce,
         amount,
         fee,
