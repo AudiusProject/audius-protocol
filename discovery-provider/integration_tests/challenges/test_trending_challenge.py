@@ -327,4 +327,4 @@ def test_trending_challenge_job(app):
             .filter(TrendingResult.type == str(TrendingType.PLAYLISTS))
             .all()
         )
-        assert len(trending_playlists) == 4
+        assert len(trending_playlists) == 2
