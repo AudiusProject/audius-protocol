@@ -12,7 +12,7 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
   dotenv.config({ path: "./.env" });
 
   const libs = await initAudiusLibs();
-  const dryRun = true; //process.env.dryRun === "true";
+  const dryRun = process.env.dryRun === "true";
 
   // @ts-ignore
   return new Ok({

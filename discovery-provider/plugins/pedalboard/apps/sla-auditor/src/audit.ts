@@ -13,10 +13,14 @@ export type Node = {
 
 export const audit = async (app: App<SharedData>) => {
   const { libs } = app.viewAppData();
+  const db = app.getDnDb();
+
   const discoveryNodes: Node[] =
     (await libs.ServiceProvider?.listDiscoveryProviders()) ?? [];
   const contentNodes: Node[] =
     (await libs.ServiceProvider?.listCreatorNodes()) ?? [];
+
+  const nodes = [...discoveryNodes, ...contentNodes];
 
   const minVersions: { "discovery-node": string; "content-node": string } =
     ((await libs.ethContracts?.getExpectedServiceVersions()) ?? {}) as {
@@ -24,9 +28,7 @@ export const audit = async (app: App<SharedData>) => {
       "content-node": string;
     };
 
-  const nodes = [...discoveryNodes, ...contentNodes];
-
-  const proposals = await auditVersions(nodes, minVersions);
+  const proposals = await auditVersions(db, nodes, minVersions);
 
   for (const proposal of proposals) {
     await propose(app, proposal);

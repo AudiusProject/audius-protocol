@@ -47,8 +47,8 @@ export const propose = async (
     }
   }
 
+  console.log(`Submitting proposal: ${params.title}`);
   if (!dryRun) {
-    console.log(`Submitting proposal: ${params.title}`);
     const proposalId = await libs.ethContracts.GovernanceClient.submitProposal({
       targetContractRegistryKey,
       callValue,

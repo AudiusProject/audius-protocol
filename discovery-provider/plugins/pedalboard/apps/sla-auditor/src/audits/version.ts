@@ -1,26 +1,22 @@
 import semver from "semver";
 import { SlashProposalParams } from "../proposal";
 import { Node } from "../audit";
+import * as knex from "knex";
+import { VERSION_DATA_TABLE_NAME, VersionData } from "../db";
 
 const SLASH_AMOUNT = 3000;
 const SLASH_AMOUNT_WEI = SLASH_AMOUNT * 1_000_000_000_000_000_000;
-
-type Check = {
-  nodeEndpoint: string;
-  nodeVersion: string;
-  minVersion: string;
-  owner: string;
-};
+const TIME_RANGE = 24 * 60 * 60 * 1000;
 
 type AuditResponse = {
   failedAudit: boolean;
-  data: Check;
+  data: VersionData;
 };
 
-const checkVersion = async (
+const getVersionData = async (
   node: Node,
   minVersions: { "discovery-node": string; "content-node": string }
-): Promise<AuditResponse> => {
+): Promise<VersionData> => {
   try {
     // @ts-ignore: fetch defined in node 18
     const res = await fetch(`${node.endpoint}/health_check`);
@@ -35,49 +31,40 @@ const checkVersion = async (
     const nodeMajorVersion = semver.major(nodeVersion);
     const nodeMinorVersion = semver.minor(nodeVersion);
 
-    const requiredMajorVersion = semver.major(minVersion);
-    const requiredMinorVersion = semver.minor(minVersion);
+    const minMajorVersion = semver.major(minVersion);
+    const minMinorVersion = semver.minor(minVersion);
 
-    const isMajorVersionBehind = nodeMajorVersion < requiredMajorVersion;
+    const isMajorVersionBehind = nodeMajorVersion < minMajorVersion;
     const isMinorVersionBehind =
-      nodeMajorVersion === requiredMajorVersion &&
-      nodeMinorVersion < requiredMinorVersion;
+      nodeMajorVersion === minMajorVersion &&
+      nodeMinorVersion < minMinorVersion;
 
-    if (isMajorVersionBehind || isMinorVersionBehind) {
-      return {
-        failedAudit: true,
-        data: {
-          nodeEndpoint: node.endpoint,
-          nodeVersion,
-          minVersion,
-          owner: node.owner,
-        },
-      };
-    }
+    const ok = !isMajorVersionBehind && !isMinorVersionBehind;
+
     return {
-      failedAudit: false,
-      data: {
-        nodeEndpoint: node.endpoint,
-        nodeVersion,
-        minVersion,
-        owner: node.owner,
-      },
+      nodeEndpoint: node.endpoint,
+      nodeVersion,
+      minVersion,
+      owner: node.owner,
+      ok,
     };
   } catch (e) {
     console.log(`Caught error ${e} making request to ${node.endpoint}`);
     return {
-      failedAudit: true,
-      data: {
-        nodeEndpoint: node.endpoint,
-        nodeVersion: "",
-        minVersion: "",
-        owner: node.owner,
-      },
+      nodeEndpoint: node.endpoint,
+      nodeVersion: "",
+      minVersion: "",
+      owner: node.owner,
+      ok: false,
     };
   }
 };
 
-const createProposal = (auditResponse: AuditResponse): SlashProposalParams => {
+const writeVersionData = async (db: knex.Knex, versionData: VersionData[]) => {
+  await db(VERSION_DATA_TABLE_NAME).insert(versionData);
+};
+
+const formatProposal = (auditResponse: AuditResponse): SlashProposalParams => {
   const { nodeEndpoint, owner, nodeVersion, minVersion } = auditResponse.data!;
   return {
     amountWei: SLASH_AMOUNT_WEI,
@@ -96,12 +83,42 @@ Minimum required version: ${minVersion}\n
   };
 };
 
+const audit = async (
+  db: knex.Knex,
+  versionData: VersionData
+): Promise<AuditResponse> => {
+  const now = new Date();
+  const before = new Date(now.getTime() - TIME_RANGE);
+
+  // Find out if this node was ever ok during the entire range we care about.
+  // If so, we ca
+  const row = await db(VERSION_DATA_TABLE_NAME)
+    .select("ok")
+    .where("nodeEndpoint", versionData.nodeEndpoint)
+    .andWhere("timestamp", ">=", before)
+    .andWhere("timestamp", "<=", now)
+    .andWhere("ok", true)
+    .first();
+
+  const failedAudit = !row;
+  return {
+    failedAudit,
+    data: versionData,
+  };
+};
+
 export const auditVersions = async (
+  db: knex.Knex,
   nodes: Node[],
   minVersions: { "discovery-node": string; "content-node": string }
 ) => {
+  const versionData = await Promise.all(
+    nodes.map(async (node) => getVersionData(node, minVersions))
+  );
+  await writeVersionData(db, versionData);
+
   const auditResponses = await Promise.all(
-    nodes.map(async (node) => checkVersion(node, minVersions))
+    versionData.map(async (data) => audit(db, data))
   );
 
   for (const audit of auditResponses) {
@@ -109,7 +126,6 @@ export const auditVersions = async (
     console.log(
       `${status} ${audit.data?.nodeEndpoint} has version ${audit.data?.nodeVersion}, min version: ${audit.data?.minVersion}`
     );
-    // Write to database, determine if we have exceeded X checks
   }
 
   const failedAudits = auditResponses.filter(
@@ -117,7 +133,7 @@ export const auditVersions = async (
   );
 
   const proposals = failedAudits.map((failedAudit) =>
-    createProposal(failedAudit)
+    formatProposal(failedAudit)
   );
 
   return proposals;
