@@ -11,7 +11,7 @@ import { View } from 'react-native'
 import IconCart from 'app/assets/images/iconCart.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
-import Text from 'app/components/text'
+import { Text } from 'app/components/core'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -27,10 +27,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
     ...flexRowCentered(),
     gap: spacing(1)
-  },
-  text: {
-    fontSize: typography.fontSize.xs,
-    fontFamily: typography.fontByWeight.medium
   }
 }))
 
@@ -94,7 +90,9 @@ export const LineupTilePremiumContentTypeTag = ({
   return (
     <View style={styles.root}>
       <Icon fill={color} height={spacing(4)} width={spacing(4)} />
-      <Text style={[styles.text, { color }]}>{text}</Text>
+      <Text fontSize='xs' colorValue={color}>
+        {text}
+      </Text>
     </View>
   )
 }

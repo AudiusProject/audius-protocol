@@ -17,11 +17,12 @@ import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
-import { LockedStatusBadge } from 'app/components/core'
+import IconStar from 'app/assets/images/iconStar.svg'
+import { LockedStatusBadge, Text } from 'app/components/core'
 import { CollectionDownloadStatusIndicator } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
-import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -40,6 +41,11 @@ const formatPlayCount = (playCount?: number) => {
   }
   const suffix = playCount === 1 ? 'Play' : 'Plays'
   return `${formatCount(playCount)} ${suffix}`
+}
+
+const messages = {
+  artistPick: "Artist's Pick",
+  hiddenTrack: 'Hidden Track'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -76,6 +82,10 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   repostStat: {
     height: spacing(4),
     width: spacing(4)
+  },
+  tagContainer: {
+    ...flexRowCentered(),
+    gap: spacing(1)
   }
 }))
 
@@ -96,6 +106,8 @@ type Props = {
   doesUserHaveAccess?: boolean
   premiumConditions: Nullable<PremiumConditions>
   isOwner: boolean
+  isArtistPick?: boolean
+  showArtistPick?: boolean
 }
 
 export const LineupTileStats = ({
@@ -114,7 +126,9 @@ export const LineupTileStats = ({
   showRankIcon,
   doesUserHaveAccess,
   premiumConditions,
-  isOwner
+  isOwner,
+  isArtistPick,
+  showArtistPick
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -154,6 +168,30 @@ export const LineupTileStats = ({
             doesUserHaveAccess={doesUserHaveAccess}
             isOwner={isOwner}
           />
+        ) : null}
+        {!premiumConditions && showArtistPick && isArtistPick ? (
+          <View style={styles.tagContainer}>
+            <IconStar
+              fill={neutralLight4}
+              height={spacing(4)}
+              width={spacing(4)}
+            />
+            <Text fontSize='xs' colorValue={neutralLight4}>
+              {messages.artistPick}
+            </Text>
+          </View>
+        ) : null}
+        {isUnlisted ? (
+          <View style={styles.tagContainer}>
+            <IconHidden
+              fill={neutralLight4}
+              height={spacing(4)}
+              width={spacing(4)}
+            />
+            <Text fontSize='xs' colorValue={neutralLight4}>
+              {messages.hiddenTrack}
+            </Text>
+          </View>
         ) : null}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
