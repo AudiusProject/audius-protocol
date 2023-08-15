@@ -1,8 +1,7 @@
-from typing import Optional, TypedDict, cast
+from typing import Optional, TypedDict
 
 from sqlalchemy import asc, desc, func, or_
 from sqlalchemy.orm import contains_eager
-from sqlalchemy.sql.expression import ColumnElement
 from sqlalchemy.sql.functions import coalesce, max
 
 from src.models.social.aggregate_plays import AggregatePlay
@@ -159,9 +158,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
             .options(contains_eager(TrackWithAggregates.user))
             .filter(
                 or_(
-                    cast(ColumnElement, TrackWithAggregates.title).ilike(
-                        f"%{query.lower()}%"
-                    ),
+                    TrackWithAggregates.title.ilike(f"%{query.lower()}%"),
                     User.name.ilike(f"%{query.lower()}%"),
                 )
             )
@@ -169,9 +166,7 @@ def _get_track_library(args: GetTrackLibraryArgs, session):
 
     # Set sort methods
     if sort_method == SortMethod.title:
-        base_query = base_query.order_by(
-            sort_fn(cast(ColumnElement, TrackWithAggregates.title))
-        )
+        base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
     elif sort_method == SortMethod.artist_name:
         base_query = base_query.join(TrackWithAggregates.user, aliased=True).order_by(
             sort_fn(User.name)
