@@ -107,11 +107,7 @@ export const LineupTile = ({
         <LineupTileTopRight
           duration={duration}
           trackId={id}
-          isUnlisted={isUnlisted}
-          premiumConditions={premiumConditions}
-          isArtistPick={isArtistPick}
           isLongFormContent={isLongFormContent}
-          showArtistPick={showArtistPick}
         />
         <LineupTileMetadata
           artistName={name}
@@ -140,6 +136,8 @@ export const LineupTile = ({
           doesUserHaveAccess={doesUserHaveAccess}
           premiumConditions={premiumConditions}
           isOwner={isOwner}
+          isArtistPick={isArtistPick}
+          showArtistPick={showArtistPick}
         />
       </View>
       {children}
