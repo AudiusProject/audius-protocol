@@ -135,7 +135,7 @@ class SEOHandlerBody {
     if (!h1) {
       return
     }
-    const h1Tag = `<h1 id="audius-h1" style="visibility:hidden;display:none;">${h1}</h1>`
+    const h1Tag = `<h1 id="audius-h1" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">${h1}</h1>`
     element.prepend(h1Tag, { html: true })
   }
 }
