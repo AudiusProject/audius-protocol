@@ -32,6 +32,7 @@ type IconProps = {
  */
 export const Icon = (props: IconProps) => {
   const {
+    className,
     color,
     icon: IconComponent,
     size = 'small',
@@ -48,7 +49,7 @@ export const Icon = (props: IconProps) => {
 
   return (
     <IconComponent
-      className={cn(styles.icon, styles[size])}
+      className={cn(styles.icon, styles[size], className)}
       style={style}
       {...iconProps}
     />

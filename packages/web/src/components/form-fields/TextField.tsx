@@ -6,7 +6,7 @@ import {
   InputV2Variant
 } from 'components/data-entry/InputV2'
 
-type TextFieldProps = InputV2Props & {
+export type TextFieldProps = InputV2Props & {
   name: string
 }
 

@@ -38,9 +38,13 @@ const UploadArtwork = (props) => {
 
   return (
     <div
-      className={cn(styles.uploadArtwork, {
-        [styles.error]: props.error
-      })}
+      className={cn(
+        styles.uploadArtwork,
+        {
+          [styles.error]: props.error
+        },
+        props.className
+      )}
       ref={imageSelectionAnchorRef}
     >
       <div

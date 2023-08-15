@@ -1,6 +1,8 @@
 import { ExtendedTrackMetadata, Nullable } from '@audius/common'
 import moment from 'moment'
 
+import { TrackForUpload } from './components/types'
+
 export type SingleTrackEditValues = ExtendedTrackMetadata & {
   releaseDate: moment.Moment
   licenseType: {
@@ -13,4 +15,8 @@ export type SingleTrackEditValues = ExtendedTrackMetadata & {
 export type TrackEditFormValues = {
   trackMetadatas: SingleTrackEditValues[]
   trackMetadatasIndex: number
+}
+
+export type CollectionTrackForUpload = TrackForUpload & {
+  override: boolean
 }
