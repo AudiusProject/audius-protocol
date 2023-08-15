@@ -6,7 +6,6 @@ import 'simplebar/dist/simplebar.min.css'
 import IconVerified from '../../assets/img/iconVerified.svg'
 import { isBItem } from '../../util/bitems'
 import { getArtworkUrl } from '../../util/getArtworkUrl'
-import { decodeHashId } from '../../util/hashIds'
 import { stripLeadingSlash } from '../../util/stringUtil'
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'
@@ -93,9 +92,7 @@ const CollectionPlayerCard = ({
   isTwitter
 }) => {
   const makeOnTogglePlay = (index) => () => onTogglePlay(index)
-  const permalink = `${stripLeadingSlash(collection.permalink)}-${decodeHashId(
-    collection?.id
-  )}`
+  const permalink = `${stripLeadingSlash(collection.permalink)}`
   return (
     <Card
       isTwitter={isTwitter}
