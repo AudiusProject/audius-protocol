@@ -11,8 +11,7 @@ import {
   FETCH_COLLECTION_SUCCEEDED,
   FETCH_COLLECTION_FAILED,
   RESET_COLLECTION,
-  SET_SMART_COLLECTION,
-  SET_COLLECTION_PERMALINK
+  SET_SMART_COLLECTION
 } from './actions'
 import { PREFIX as tracksPrefix } from './lineup/actions'
 
@@ -22,7 +21,8 @@ export const initialState = {
   userUid: null,
   status: null,
   smartCollectionVariant: null,
-  tracks: initialLineupState
+  tracks: initialLineupState,
+  collectionPermalink: null
 }
 
 const actionsMap = {
@@ -33,19 +33,14 @@ const actionsMap = {
       smartCollectionVariant: null
     }
   },
-  [SET_COLLECTION_PERMALINK](state, action) {
-    return {
-      ...state,
-      permalink: action.permalink
-    }
-  },
   [FETCH_COLLECTION_SUCCEEDED](state, action) {
     return {
       ...state,
       collectionId: action.collectionId,
       collectionUid: action.collectionUid,
       userUid: action.userUid,
-      status: Status.SUCCESS
+      status: Status.SUCCESS,
+      collectionPermalink: action.collectionPermalink
     }
   },
   [FETCH_COLLECTION_FAILED](state, action) {

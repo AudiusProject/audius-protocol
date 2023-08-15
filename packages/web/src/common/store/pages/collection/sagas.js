@@ -65,6 +65,7 @@ function* watchFetchCollection() {
         fetchCollectionSucceeded(
           collection.playlist_id,
           collectionUid,
+          collection.permalink,
           userUid,
           collection.playlist_contents.track_ids.length
         )

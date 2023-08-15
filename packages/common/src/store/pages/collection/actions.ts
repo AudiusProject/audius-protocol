@@ -8,12 +8,6 @@ export const RESET_COLLECTION = 'RESET_COLLECTION'
 export const RESET_AND_FETCH_COLLECTION_TRACKS =
   'RESET_AND_FETCH_COLLECTION_TRACKS'
 export const SET_SMART_COLLECTION = 'SET_SMART_COLLECTION'
-export const SET_COLLECTION_PERMALINK = 'SET_COLLECTION_PERMALINK'
-
-export const setCollectionPermalink = (permalink: string) => ({
-  type: SET_COLLECTION_PERMALINK,
-  permalink
-})
 
 export const fetchCollection = (
   id: Nullable<number>,
@@ -29,11 +23,13 @@ export const fetchCollection = (
 export const fetchCollectionSucceeded = (
   collectionId: ID,
   collectionUid: string,
+  collectionPermalink: string,
   userUid: string
 ) => ({
   type: FETCH_COLLECTION_SUCCEEDED,
   collectionId,
   collectionUid,
+  collectionPermalink,
   userUid
 })
 
