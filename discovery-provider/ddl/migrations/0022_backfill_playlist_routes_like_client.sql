@@ -14,9 +14,9 @@ INSERT INTO playlist_routes (
                 playlist_id
                 , playlist_owner_id
                 -- first we lowercase the playlist name, then we remove all punctuation, then we replace spaces with dashes, then we dedupe any hyphens
-                , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(playlist_name), '/!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', playlist_id), '-+', '-', 'g')
+                , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(playlist_name), '!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', playlist_id), '-+', '-', 'g')
                     AS slug
-                , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(playlist_name), '/!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', playlist_id), '-+', '-', 'g')
+                , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(playlist_name), '!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', playlist_id), '-+', '-', 'g')
                     AS title_slug
                 , 0 AS collision_id
                 , is_current
@@ -59,8 +59,8 @@ INSERT INTO playlist_routes (
                 SELECT
                     nc.playlist_id
                     , nc.playlist_owner_id
-                    , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(nc.playlist_name), '/!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', nc.playlist_id), '-+', '-', 'g') AS slug
-                    , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(nc.playlist_name), '/!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', nc.playlist_id), '-+', '-', 'g') AS title_slug
+                    , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(nc.playlist_name), '!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', nc.playlist_id), '-+', '-', 'g') AS slug
+                    , REGEXP_REPLACE(CONCAT(REPLACE(REGEXP_REPLACE(LOWER(nc.playlist_name), '!|%|#|\$|&|''|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]/', '', 'g'), ' ', '-'),  '-', nc.playlist_id), '-+', '-', 'g') AS title_slug
                     , 0 AS collision_id
                     , nc.is_current
                     , nc.blockhash
