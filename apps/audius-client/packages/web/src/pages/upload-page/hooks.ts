@@ -1,3 +1,4 @@
+import { Maybe } from '@audius/common'
 import { useField } from 'formik'
 
 const getFieldName = (base: string, index: number, path: string) =>
@@ -5,10 +6,11 @@ const getFieldName = (base: string, index: number, path: string) =>
 
 export const useIndexedField = <T>(
   base: string,
-  index: number,
+  index: Maybe<number>,
   path: string
 ) => {
-  return useField<T>(getFieldName(base, index, path))
+  const fieldName = index === undefined ? path : getFieldName(base, index, path)
+  return useField<T>(fieldName)
 }
 
 export const getTrackFieldName = (index: number, path: string) => {

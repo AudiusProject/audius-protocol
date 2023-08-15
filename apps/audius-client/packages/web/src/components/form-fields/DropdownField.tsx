@@ -5,7 +5,7 @@ import DropdownInput, {
   DropdownInputProps
 } from 'components/data-entry/DropdownInput'
 
-type DropdownFieldProps = SetRequired<
+export type DropdownFieldProps = SetRequired<
   Partial<DropdownInputProps>,
   'placeholder' | 'menu'
 > & {

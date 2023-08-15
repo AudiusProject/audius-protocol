@@ -1,4 +1,5 @@
 export type UploadArtworkProps = {
+  className?: string
   artworkUrl?: string
   onDropArtwork: (selectedFiles: File[], source: string) => Promise<void>
   onRemoveArtwork?: () => void
