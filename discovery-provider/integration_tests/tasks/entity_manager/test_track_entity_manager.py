@@ -888,7 +888,6 @@ def test_index_invalid_tracks(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        print(f"asdf all_tracks {all_tracks}")
         assert len(all_tracks) == 1
         current_track: List[Track] = (
             session.query(Track).filter(Track.is_current == True).first()

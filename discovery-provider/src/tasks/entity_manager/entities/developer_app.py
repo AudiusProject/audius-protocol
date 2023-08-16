@@ -210,7 +210,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             )
             .count()
         )
-        print(f"asdf session.query(DeveloperApp) {session.query(DeveloperApp).all()}")
+
         num_new_apps_from_user = 0
         for addressKey, apps in params.new_records["DeveloperApp"].items():
             if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
@@ -219,9 +219,6 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         user_has_too_many_apps = (
             num_existing_apps_from_user + num_new_apps_from_user >= 3
         )
-        print(f"asdf num_existing_apps_from_user {num_existing_apps_from_user}")
-        print(f"asdf num_new_apps_from_user {num_new_apps_from_user}")
-
         if user_has_too_many_apps:
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, user has too many developer apps"

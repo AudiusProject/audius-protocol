@@ -316,7 +316,7 @@ def entity_manager_update(
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
-        records_to_save = get_records_to_save(
+        save_new_records(
             block_timestamp,
             block_number,
             new_records,
@@ -325,12 +325,6 @@ def entity_manager_update(
             session,
         )
 
-        # insert/update all tracks, playlist records in this block
-        # print(f"asdf reposts {session.query(Repost).all()}")
-        # session.flush()
-        print(f"asdf session.query(Repost).all() {session.query(Repost).all()}")
-        print(f"asdf records_to_save {records_to_save}")
-        session.add_all(records_to_save)
         num_total_changes += len(new_records)
         # update metrics
         metric_latency.save_time(
@@ -365,7 +359,7 @@ def entity_manager_update(
     return num_total_changes, changed_entity_ids
 
 
-def get_records_to_save(
+def save_new_records(
     block_timestamp: int,
     block_number: int,
     new_records: RecordDict,
@@ -373,7 +367,6 @@ def get_records_to_save(
     existing_records_in_json: dict[str, dict],
     session: Session,
 ):
-    records_to_save = []
     prev_records: Dict[str, List] = defaultdict(list)
     for record_type, record_dict in new_records.items():
         # This is actually a dict, but python has a hard time inferring.
@@ -381,6 +374,8 @@ def get_records_to_save(
         for entity_id, records in casted_record_dict.items():
             if not records:
                 continue
+
+            # invalidate old records
             if (
                 record_type in original_records
                 and entity_id in original_records[record_type]
@@ -390,12 +385,8 @@ def get_records_to_save(
             ):
                 if record_type == "PlaylistRoute" or record_type == "TrackRoute":
                     # these are an exception since we want to keep is_current false to preserve old slugs
-                    print("asdf setting is_current false")
-                    original_records[record_type][entity_id].is_current = False
+                    original_records[record_type][entity_id].is_current = True
                 else:
-                    print(
-                        f"asdf deleting original_records[record_type][entity_id] {original_records[record_type][entity_id]}"
-                    )
                     session.delete(original_records[record_type][entity_id])
                     session.flush()
                 # add the json record for revert blocks
@@ -412,23 +403,13 @@ def get_records_to_save(
             if "is_current" in get_record_columns(records[-1]):
                 records[-1].is_current = True
             if record_type == "PlaylistRoute" or record_type == "TrackRoute":
-                # records_to_save.extend(records)
                 session.add_all(records)
             else:
-                print(f"asdf records {records}")
-                # records_to_save.append(records[-1])
                 session.add(records[-1])
-            # invalidate original record if it already existed in the DB
-            # also add revert_blocks
-
-    # prev records may contain records that did not change
-    # how do i handle conflicts?
-    # may need to modify existing_records_in_json keys
+    
     if prev_records:
         revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
-        records_to_save.append(revert_block)
-    print(f"asdf records_to_save {records_to_save}")
-    return records_to_save
+        session.add(revert_block)
 
 
 def copy_original_records(existing_records):

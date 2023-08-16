@@ -406,7 +406,6 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
 
         # validate db records
         playlist_routes = session.query(PlaylistRoute).all()
-        print(f"asdf playlist_routes {playlist_routes}")
         assert len(playlist_routes) == 11
 
         expected_routes = [
@@ -584,7 +583,6 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        print(f"asdf all_playlists {all_playlists}")
         assert len(all_playlists) == 6
 
         playlists_1: List[Playlist] = (

@@ -25,10 +25,8 @@ begin
 
   -- increment or decrement?
   if new.is_delete then
-    raise notice 'decrement';
     delta := -1;
   else
-    raise notice 'increment';
     delta := 1;
   end if;
 

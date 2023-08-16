@@ -1,6 +1,6 @@
 -- for all tables with is_current
--- use a fkey constraint that cascades delete
--- delete is_current false
+-- add a fkey constraint that cascades delete
+-- delete rows with is_current false
 begin;
 
 -- drop_fk_constraints: drop existing fk constraints so they can be recreated with cascade deletes
@@ -40,6 +40,11 @@ _new_table_name text;
 
 begin foreach _table_name in array _table_names loop _new_table_name := 'new_' || _table_name;
 
+-- logging the replacement
+raise notice 'replacing table % with new table %',
+_table_name,
+_new_table_name;
+
 -- create a new table with the same structure as the old table
 execute format(
    'create table %s (like %s including all)',
@@ -64,11 +69,6 @@ execute format(
    _table_name
 );
 
--- logging the replacement
-raise notice 'replaced table % with new table %',
-_table_name,
-_new_table_name;
-
 end loop;
 
 end $$ language plpgsql;
@@ -83,6 +83,8 @@ drop materialized view if exists tag_track_user;
 ALTER TABLE associated_wallets ALTER COLUMN id DROP DEFAULT;
 ALTER TABLE user_events ALTER COLUMN id DROP DEFAULT;
 
+-- replace is_current tables but exclude playlist_routes and track_routes 
+-- routes tables need is_current false to preserve slugs
 select replace_table(
   array[
     'associated_wallets',

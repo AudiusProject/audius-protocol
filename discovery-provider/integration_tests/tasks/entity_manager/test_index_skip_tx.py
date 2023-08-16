@@ -76,6 +76,7 @@ def test_skip_tx(app, mocker):
         for tx_receipt in tx_receipts
     ]
     populate_mock_db_blocks(db, 0, 1)
+
     "Tests valid batch of tracks create/update/delete actions"
     with db.scoped_session() as session:
         # index transactions

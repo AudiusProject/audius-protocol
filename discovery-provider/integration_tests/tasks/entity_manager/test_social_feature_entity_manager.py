@@ -351,7 +351,6 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
-        print(f"asdf all_reposts {all_reposts}")
         assert len(all_reposts) == 2
 
         current_reposts: List[Repost] = (
@@ -671,14 +670,12 @@ def test_index_entity_update_and_social_feature(app, mocker):
         )
 
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        print(f"asdf all_playlists {all_playlists}")
         assert len(all_playlists) == 1
 
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 11
 
         all_notifications: List[Notification] = session.query(Notification).all()
-        print(f"asdf all_notifications {all_notifications}")
         assert len(all_notifications) == 12
 
         all_milestones: List[Milestone] = session.query(Milestone).all()

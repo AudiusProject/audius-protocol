@@ -128,7 +128,6 @@ def test_index_revert_blocks(app, mocker):
 
     existing_user_2_dict = None
     with db.scoped_session() as session:
-
         # index transactions
         existing_user_2: User = session.query(User).first()
         existing_user_2_dict = existing_user_2.__dict__.copy()
@@ -149,8 +148,6 @@ def test_index_revert_blocks(app, mocker):
         assert updated_user_2.bio == "UpdateUser2Bio"
 
         revert_blocks: List[RevertBlock] = session.query(RevertBlock).all()
-        revert_blocks: List[RevertBlock] = session.query(RevertBlock).all()
-        print(f"asdf {RevertBlock.__table__}")
         assert len(revert_blocks) == 1
         assert revert_blocks[0].blocknumber == 0
         assert len(revert_blocks[0].prev_records) == 1

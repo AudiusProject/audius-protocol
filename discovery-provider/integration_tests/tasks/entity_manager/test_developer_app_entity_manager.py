@@ -397,7 +397,6 @@ def test_index_app(app, mocker):
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
         # make sure no new rows were added
-        print(f"asdf all_apps {all_apps}")
         assert len(all_apps) == 5
 
     # Test invalid delete app txs
