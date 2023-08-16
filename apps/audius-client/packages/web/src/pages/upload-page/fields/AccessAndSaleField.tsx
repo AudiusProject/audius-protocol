@@ -8,17 +8,21 @@ import {
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
+  isPremiumContentUSDCPurchaseGated,
   Nullable,
   PremiumConditions,
   TrackAvailabilityType
 } from '@audius/common'
 import {
+  IconCart,
   IconCollectible,
   IconHidden,
+  IconNote,
   IconSpecialAccess,
   IconVisibilityPublic,
   RadioButtonGroup
 } from '@audius/stems'
+import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -29,6 +33,7 @@ import {
 } from 'components/data-entry/ContextualMenu'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
+import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -42,6 +47,7 @@ import {
   SpecialAccessFields,
   SpecialAccessType
 } from '../fields/availability/SpecialAccessFields'
+import { UsdcPurchaseFields } from '../fields/availability/UsdcPurchaseFields'
 import { CollectibleGatedDescription } from '../fields/availability/collectible-gated/CollectibleGatedDescription'
 import { CollectibleGatedFields } from '../fields/availability/collectible-gated/CollectibleGatedFields'
 import { useTrackField } from '../hooks'
@@ -56,12 +62,17 @@ const messages = {
   title: 'Access & Sale',
   description:
     "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
+  modalDescription:
+    'Control who has access to listen. Create gated experiences or require users pay to unlock your music.',
   isRemix:
     'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done',
   public: 'Public (Default)',
   publicSubtitle:
     'Public tracks are visible to all users and appear throughout Audius.',
+  usdcPurchase: 'Premium (Pay-to-Unlock)',
+  usdcPurchaseSubtitle:
+    'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
@@ -88,7 +99,12 @@ const messages = {
 
   followersOnly: 'Followers Only',
   supportersOnly: 'Supporters Only',
-  ownersOf: 'Owners Of'
+  ownersOf: 'Owners Of',
+  price: (price: number) =>
+    price.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+  preview: (seconds: number) => {
+    return `${seconds.toString()} seconds`
+  }
 }
 
 const IS_UNLISTED = 'is_unlisted'
@@ -98,6 +114,8 @@ export const PREMIUM_CONDITIONS = 'premium_conditions'
 export const AVAILABILITY_TYPE = 'availability_type'
 const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const FIELD_VISIBILITY = 'field_visibility'
+export const PRICE = 'premium_conditions.usdc_purchase.price'
+export const PREVIEW = 'preview_start_seconds'
 
 export type AccessAndSaleFormValues = {
   [IS_UNLISTED]: boolean
@@ -105,6 +123,7 @@ export type AccessAndSaleFormValues = {
   [PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
   [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
   [FIELD_VISIBILITY]: FieldVisibility
+  [PREVIEW]?: number
 }
 
 export const AccessAndSaleField = () => {
@@ -127,9 +146,14 @@ export const AccessAndSaleField = () => {
     )
   const [{ value: remixOfValue }] =
     useTrackField<SingleTrackEditValues[typeof REMIX_OF]>(REMIX_OF)
+
+  const [{ value: preview }, , { setValue: setPreviewValue }] =
+    useTrackField<SingleTrackEditValues[typeof PREVIEW]>(PREVIEW)
+
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
   const initialValues = useMemo(() => {
+    const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
     const isTipGated = isPremiumContentTipGated(premiumConditions)
     const isFollowGated = isPremiumContentFollowGated(premiumConditions)
     const isCollectibleGated =
@@ -140,6 +164,9 @@ export const AccessAndSaleField = () => {
     set(initialValues, PREMIUM_CONDITIONS, premiumConditions)
 
     let availabilityType = TrackAvailabilityType.PUBLIC
+    if (isUsdcGated) {
+      availabilityType = TrackAvailabilityType.USDC_PURCHASE
+    }
     if (isFollowGated || isTipGated) {
       availabilityType = TrackAvailabilityType.SPECIAL_ACCESS
     }
@@ -149,22 +176,37 @@ export const AccessAndSaleField = () => {
     if (isUnlisted) {
       availabilityType = TrackAvailabilityType.HIDDEN
     }
-    // TODO: USDC gated type
     set(initialValues, AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
+    set(initialValues, PREVIEW, preview)
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
     return initialValues as AccessAndSaleFormValues
-  }, [fieldVisibility, isPremium, isUnlisted, premiumConditions])
+  }, [fieldVisibility, isPremium, isUnlisted, premiumConditions, preview])
 
   const onSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
       setPremiumConditionsValue(get(values, PREMIUM_CONDITIONS))
       if (get(values, PREMIUM_CONDITIONS)) {
         setIsPremiumValue(true)
+      }
+      if (
+        get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.USDC_PURCHASE
+      ) {
+        setPreviewValue(get(values, PREVIEW))
+        const priceStr = get(values, PRICE)
+        const price = priceStr ? parseFloat(priceStr) : 0
+        setPremiumConditionsValue({
+          // @ts-ignore
+          usdc_purchase: {
+            price
+            // TODO: splits value
+            // splits: price * 1000
+          }
+        })
       }
       if (get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.HIDDEN) {
         setFieldVisibilityValue({
@@ -185,7 +227,8 @@ export const AccessAndSaleField = () => {
       setFieldVisibilityValue,
       setIsPremiumValue,
       setIsUnlistedValue,
-      setPremiumConditionsValue
+      setPremiumConditionsValue,
+      setPreviewValue
     ]
   )
 
@@ -228,7 +271,20 @@ export const AccessAndSaleField = () => {
       icon: IconSpecialAccess
     }
 
-    if (isPremiumContentFollowGated(premiumConditions)) {
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      selectedValues = [
+        {
+          label: messages.price(premiumConditions.usdc_purchase.price),
+          icon: IconCart
+        }
+      ]
+      if (preview) {
+        selectedValues.push({
+          label: messages.preview(preview),
+          icon: IconNote
+        })
+      }
+    } else if (isPremiumContentFollowGated(premiumConditions)) {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isPremiumContentTipGated(premiumConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
@@ -257,7 +313,7 @@ export const AccessAndSaleField = () => {
         })}
       </div>
     )
-  }, [fieldVisibility, isUnlisted, premiumConditions])
+  }, [fieldVisibility, isUnlisted, premiumConditions, preview])
 
   return (
     <ContextualMenu
@@ -285,6 +341,7 @@ type AccesAndSaleMenuFieldsProps = {
 const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const { isRemix } = props
   const accountUserId = useSelector(getUserId)
+  const { isEnabled: isUsdcEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
   const { isEnabled: isCollectibleGatedEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )
@@ -305,6 +362,8 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     { setValue: setfieldVisibilityValue }
   ] =
     useField<AccessAndSaleFormValues[typeof FIELD_VISIBILITY]>(FIELD_VISIBILITY)
+  const [{ value: previewValue }, , { setValue: setPreviewValue }] =
+    useField<AccessAndSaleFormValues[typeof PREVIEW]>(PREVIEW)
 
   const [availabilityField, , { setValue: setAvailabilityValue }] = useField({
     name: AVAILABILITY_TYPE
@@ -318,6 +377,7 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
 
   const noCollectibleGate = !hasCollectibles
   const noSpecialAccess = isRemix
+  const noUsdcPurchase = isRemix // TODO: support edit
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -325,6 +385,15 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       switch (type) {
         case TrackAvailabilityType.PUBLIC: {
           setPremiumConditionsValue(null)
+          break
+        }
+        case TrackAvailabilityType.USDC_PURCHASE: {
+          if (!isPremiumContentUSDCPurchaseGated(premiumConditionsValue)) {
+            setPremiumConditionsValue(null)
+          }
+          if (!previewValue) {
+            setPreviewValue(0)
+          }
           break
         }
         case TrackAvailabilityType.SPECIAL_ACCESS: {
@@ -358,17 +427,20 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       accountUserId,
       fieldVisibilityValue,
       premiumConditionsValue,
+      previewValue,
       setAvailabilityValue,
       setPremiumConditionsValue,
+      setPreviewValue,
       setfieldVisibilityValue
     ]
   )
 
   return (
-    <>
+    <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       {isRemix ? (
         <HelpCallout className={styles.isRemix} content={messages.isRemix} />
       ) : null}
+      <Text>{messages.modalDescription}</Text>
       <RadioButtonGroup {...availabilityField} onChange={handleChange}>
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
@@ -376,6 +448,17 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           description={messages.publicSubtitle}
           value={TrackAvailabilityType.PUBLIC}
         />
+        {isUsdcEnabled ? (
+          <ModalRadioItem
+            icon={<IconCart />}
+            label={messages.usdcPurchase}
+            description={messages.usdcPurchaseSubtitle}
+            value={TrackAvailabilityType.USDC_PURCHASE}
+            disabled={noUsdcPurchase}
+            checkedContent={<UsdcPurchaseFields disabled={noSpecialAccess} />}
+          />
+        ) : null}
+
         {isSpecialAccessEnabled ? (
           <ModalRadioItem
             icon={<IconSpecialAccess />}
@@ -411,6 +494,6 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           checkedContent={<HiddenAvailabilityFields />}
         />
       </RadioButtonGroup>
-    </>
+    </div>
   )
 }
