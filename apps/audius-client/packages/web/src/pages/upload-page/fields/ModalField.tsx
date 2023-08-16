@@ -13,6 +13,8 @@ import {
 import { useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
+import { Tile } from 'components/tile/Tile'
+
 import styles from './ModalField.module.css'
 
 const messages = {
@@ -60,12 +62,10 @@ export const ModalField = (props: ModalFieldProps) => {
   )
 
   return (
-    <>
-      <div className={styles.previewTile} onClick={open}>
-        {preview}
-        <IconCaretRight className={styles.caret} />
-      </div>
+    <Tile onClick={open} className={styles.previewTile} elevation='flat'>
+      {preview}
+      <IconCaretRight className={styles.caret} />
       {modal}
-    </>
+    </Tile>
   )
 }

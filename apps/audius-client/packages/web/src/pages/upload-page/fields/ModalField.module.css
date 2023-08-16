@@ -7,7 +7,7 @@
   padding: var(--unit-4) var(--unit-6);
   gap: var(--unit-4);
 
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-default);
   border-radius: 8px;
 }
 
