@@ -575,7 +575,8 @@ export enum ShareSource {
   PAGE = 'page',
   NOW_PLAYING = 'now playing',
   OVERFLOW = 'overflow',
-  LEFT_NAV = 'left-nav'
+  LEFT_NAV = 'left-nav',
+  UPLOAD = 'upload'
 }
 export enum RepostSource {
   TILE = 'tile',

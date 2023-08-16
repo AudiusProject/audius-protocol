@@ -132,3 +132,28 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.containerNew {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+  gap: 24px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  transition: all ease-in-out 0.2s;
+  margin-bottom: 0px;
+  overflow: hidden;
+  padding: 40px;
+}
+
+.buttonContainerNew {
+  width: 100%;
+  max-width: 750px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}
