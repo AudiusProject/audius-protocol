@@ -42,7 +42,7 @@ begin foreach _table_name in array _table_names loop _new_table_name := 'new_' |
 
 -- create a new table with the same structure as the old table
 execute format(
-   'create table %s as table %s with no data',
+   'create table %s (like %s including all)',
    _new_table_name,
    _table_name
 );
@@ -80,6 +80,9 @@ drop materialized view if exists aggregate_interval_plays;
 
 drop materialized view if exists tag_track_user;
 
+ALTER TABLE associated_wallets ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE user_events ALTER COLUMN id DROP DEFAULT;
+
 select replace_table(
   array[
     'associated_wallets',
@@ -96,6 +99,14 @@ select replace_table(
     'users'
   ]
 );
+
+
+-- Recreate the default value
+CREATE SEQUENCE associated_wallets_id_seq;
+CREATE SEQUENCE user_events_id_seq;
+
+ALTER TABLE associated_wallets ALTER COLUMN id SET DEFAULT nextval('associated_wallets_id_seq');
+ALTER TABLE user_events ALTER COLUMN id SET DEFAULT nextval('user_events_id_seq');
 
 -- add_fk_constraints: add cascading fk constraints
 create

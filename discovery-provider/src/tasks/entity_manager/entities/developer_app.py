@@ -210,7 +210,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             )
             .count()
         )
-
+        print(f"asdf session.query(DeveloperApp) {session.query(DeveloperApp).all()}")
         num_new_apps_from_user = 0
         for addressKey, apps in params.new_records["DeveloperApp"].items():
             if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
