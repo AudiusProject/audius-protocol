@@ -1,17 +1,12 @@
-.modalBody {
-  width: 480px;
-}
-
-.text {
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
-}
-
 .content > div {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--unit-6);
+}
+
+.hint {
+  align-self: stretch;
 }
 
 .hintContent {

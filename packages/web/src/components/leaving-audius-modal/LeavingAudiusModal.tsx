@@ -32,13 +32,15 @@ export const LeavingAudiusModal = () => {
   const { link } = data
   const handleOpen = useCallback(() => {
     window.open(link, '_blank', 'noreferrer,noopener')
-  }, [link])
+    onClose()
+  }, [link, onClose])
   return (
     <Modal
       bodyClassName={styles.modalBody}
       isOpen={isOpen}
       onClose={onClose}
       onClosed={onClosed}
+      size={'small'}
     >
       <ModalHeader>
         <ModalTitle
@@ -50,6 +52,7 @@ export const LeavingAudiusModal = () => {
       <ModalContent className={styles.content}>
         <Text>{messages.body}</Text>
         <HelpCallout
+          className={styles.hint}
           contentClassName={styles.hintContent}
           icon={<IconExternalLink />}
           content={link}
