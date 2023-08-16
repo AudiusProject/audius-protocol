@@ -31,20 +31,28 @@ type HelpCalloutProps = {
   content: ReactNode
   style?: ViewStyle
   icon?: ComponentType<SvgProps>
+  numberOfLines?: number
 }
 
 /**
  * @todo Rename to Hint
  */
 export const HelpCallout = (props: HelpCalloutProps) => {
-  const { style, content, icon: Icon = IconQuestionCircle } = props
+  const {
+    style,
+    content,
+    icon: Icon = IconQuestionCircle,
+    numberOfLines
+  } = props
   const styles = useStyles()
   const neutral = useColor('neutral')
 
   return (
     <View style={[styles.root, style]}>
       <Icon fill={neutral} />
-      <Text style={styles.text}>{content}</Text>
+      <Text numberOfLines={numberOfLines} style={styles.text}>
+        {content}
+      </Text>
     </View>
   )
 }
