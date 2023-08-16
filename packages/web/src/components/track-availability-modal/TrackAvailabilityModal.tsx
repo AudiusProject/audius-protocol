@@ -283,7 +283,12 @@ const TrackAvailabilityModal = ({
   )
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} bodyClassName={styles.modalBody}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      bodyClassName={styles.modalBody}
+      size='medium'
+    >
       <ModalHeader
         className={styles.modalHeader}
         onClose={onClose}

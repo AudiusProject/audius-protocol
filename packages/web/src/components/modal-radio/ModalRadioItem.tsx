@@ -5,12 +5,15 @@ import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
+import layoutStyles from 'components/layout/layout.module.css'
+import { Text } from 'components/typography'
+
 import styles from './ModalRadioItem.module.css'
 
 type ModalRadioItemProps = {
   label: string
   title?: ReactNode
-  description: ReactNode
+  description?: ReactNode
   value: any
   disabled?: boolean
   icon?: ReactNode
@@ -38,32 +41,34 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
   }, [radioGroup, isCollapsed, value, setIsCollapsed])
 
   return (
-    <label className={cn(styles.root)}>
-      <RadioButton
-        className={styles.radio}
-        inputClassName={styles.input}
-        aria-label={label}
-        value={value}
-        disabled={disabled}
-      />
-      <div className={styles.labelContent}>
+    <label className={cn(styles.root, layoutStyles.col, layoutStyles.gap2)}>
+      <div className={cn(layoutStyles.row)}>
+        <RadioButton
+          className={styles.radio}
+          inputClassName={styles.input}
+          aria-label={label}
+          value={value}
+          disabled={disabled}
+        />
         <div className={styles.optionTitle}>
           {icon}
           <span>{title ?? label}</span>
         </div>
-        <div className={styles.optionDescription}>{description}</div>
-        {checkedContent ? (
-          <div
-            className={styles.collapsibleContainer}
-            style={{ height: isCollapsed ? 0 : bounds.height }}
-            aria-hidden={isCollapsed}
-          >
-            <div ref={ref} className={styles.checkedContent}>
-              {checkedContent}
-            </div>
-          </div>
-        ) : null}
       </div>
+      {checkedContent || description ? (
+        <div
+          className={cn(styles.collapsibleContainer, {
+            [styles.collapsed]: isCollapsed
+          })}
+          style={{ height: isCollapsed ? 0 : bounds.height }}
+          aria-hidden={isCollapsed}
+        >
+          <div ref={ref} className={cn(layoutStyles.col, layoutStyles.gap4)}>
+            <Text size='medium'>{description}</Text>
+            {checkedContent}
+          </div>
+        </div>
+      ) : null}
     </label>
   )
 }
