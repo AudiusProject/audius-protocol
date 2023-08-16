@@ -50,8 +50,8 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	key := cidutil.ShardCID(fileName)
 
 	// already have?
-	alreadyHave, _ := ss.bucket.Exists(ctx, key)
-	if !alreadyHave {
+	attr, err := ss.bucket.Attributes(ctx, key)
+	if err != nil || attr == nil || attr.Size == 0 {
 		w, err := ss.bucket.NewWriter(ctx, key, nil)
 		if err != nil {
 			return err

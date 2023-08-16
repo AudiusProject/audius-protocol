@@ -316,6 +316,58 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
 	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
 
+	internalApi.GET("/qm/migrated/success/image", func(c echo.Context) error {
+		migrateMu.RLock()
+		defer migrateMu.RUnlock()
+		return c.JSON(http.StatusOK, numImageSuccesses)
+	})
+	internalApi.GET("/qm/migrated/success/track", func(c echo.Context) error {
+		migrateMu.RLock()
+		defer migrateMu.RUnlock()
+		return c.JSON(http.StatusOK, numTrackCidSuccesses)
+	})
+	internalApi.GET("/qm/migrated/failed", func(c echo.Context) error {
+		migrateMu.RLock()
+		defer migrateMu.RUnlock()
+		return c.JSON(http.StatusOK, failedToMigrate)
+	})
+	internalApi.GET("/qm/migrated/done", func(c echo.Context) error {
+		migrateMu.RLock()
+		defer migrateMu.RUnlock()
+		return c.JSON(http.StatusOK, migrateDone)
+	})
+
+	internalApi.GET("/qm/fix/success/image/migrated", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, migratedImageCids)
+	})
+	internalApi.GET("/qm/fix/success/image", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, fixedImageCids)
+	})
+	internalApi.GET("/qm/fix/success/track", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, fixedTrackCids)
+	})
+	internalApi.GET("/qm/fix/failed/track", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, failedTrackCids)
+	})
+	internalApi.GET("/qm/fix/failed/image", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, failedImageCids)
+	})
+	internalApi.GET("/qm/fix/done", func(c echo.Context) error {
+		fixMu.RLock()
+		defer fixMu.RUnlock()
+		return c.JSON(http.StatusOK, fixDone)
+	})
+
 	return ss, nil
 
 }
@@ -336,6 +388,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startCuckooFetcher()
 	createUploadsCache()
 	go ss.buildUploadsCache()
+	// go ss.migrateQmDiscovery() // RUN THIS FIRST
+	// go ss.fixMissingCids() // THEN RUN THIS MULTIPLE TIMES TO RETRY FIXING AS MANY CIDS AS POSSIBLE
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
