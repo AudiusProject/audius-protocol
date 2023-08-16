@@ -44,7 +44,11 @@ export const LeavingAudiusDrawer = () => {
     >
       <View style={styles.root}>
         <Text>{messages.content}</Text>
-        <HelpCallout content={link} icon={IconExternalLink} />
+        <HelpCallout
+          numberOfLines={10}
+          content={link}
+          icon={IconExternalLink}
+        />
         <Button
           style={styles.button}
           title={messages.visit}
