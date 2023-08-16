@@ -152,7 +152,7 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
         title_slug: `track_${track.track_id}`,
         collision_id: track.track_id,
         blockhash: `0x${track.track_id}`,
-        blocknumber: 1,
+        blocknumber: 0,
         txhash: `0x${track.track_id}`,
         track_id: track.track_id,
         owner_id: track.owner_id
@@ -191,7 +191,7 @@ export const createPlaylists = async (
         title_slug: `playlist_${playlist.playlist_id}`,
         collision_id: playlist.playlist_id,
         blockhash: `0x${playlist.playlist_id}`,
-        blocknumber: 1,
+        blocknumber: 0,
         txhash: `0x${playlist.playlist_id}`,
         playlist_id: playlist.playlist_id,
         owner_id: playlist.playlist_owner_id
