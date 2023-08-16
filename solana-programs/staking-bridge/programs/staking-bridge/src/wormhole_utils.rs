@@ -278,7 +278,7 @@ pub fn execute_wormhole_transfer(
         clock.to_account_info().clone(),
         rent.to_account_info().clone(),
         system_program.to_account_info().clone(),
-        bridge_id.to_account_info().clone(), // CHECK: Is this the correct order?
+        bridge_id.to_account_info().clone(),
         spl_token.to_account_info().clone(),
     ];
     invoke_signed(

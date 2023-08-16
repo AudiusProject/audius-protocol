@@ -1,3 +1,4 @@
+// TODO: Use the Audius Staking Program Ethereum Address
 pub const ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES: &str = "0000000000000000000000009d959Cf57D89DCf41925e19479A04E26f27563dB";
 // https://docs.raydium.io/raydium/protocol/developers/addresses
 pub const RAYDIUM_AMM_PROGRAM_ADDRESS: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8";

@@ -4,12 +4,21 @@ import { StakingBridge } from '../target/types/staking_bridge'
 import { CHAIN_ID_ETH } from '@certusone/wormhole-sdk'
 import {
   TOKEN_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount
+  getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token'
-import pkg from 'bs58'
-import { formatEthAddress, getMinimumAmountOutFromAmountIn, getPostMessageData } from './wormholeTestUtils'
-import { ETH_AUDIO_TOKEN_ADDRESS, SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS, SOL_USDC_TOKEN_ADDRESS, ammProgram, bridgeId, serumDexProgram, serumMarketPublicKey, tokenBridgeId } from './constants'
+import {
+  ETH_AUDIO_TOKEN_ADDRESS,
+  SOL_AUDIO_DECIMALS,
+  SOL_AUDIO_TOKEN_ADDRESS,
+  SOL_USDC_TOKEN_ADDRESS,
+  ammProgram,
+  bridgeId,
+  serumDexProgram,
+  serumMarketPublicKey,
+  tokenBridgeId
+} from './constants'
 import { getAssociatedPoolKeys, getMarket, getVaultOwnerAndNonce } from './raydiumTestUtils'
+import { formatEthAddress, getMinimumAmountOutFromAmountIn, getPostMessageData } from './wormholeTestUtils'
 
 const {
   Connection,
@@ -22,8 +31,9 @@ const {
 
 // Read in fee payer from the environment variable
 const FEE_PAYER_SECRET = process.env.feePayerSecret
-const feePayerSecret = pkg.decode(FEE_PAYER_SECRET)
-const feePayerKeypair = Keypair.fromSecretKey(feePayerSecret)
+const feePayerKeypair = Keypair.fromSecretKey(
+  Uint8Array.from(JSON.parse(FEE_PAYER_SECRET))
+)
 const feePayerPublicKey = feePayerKeypair.publicKey
 
 const SOL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SOL_USDC_TOKEN_ADDRESS)
@@ -59,7 +69,7 @@ describe('staking-bridge', () => {
     program.programId
   )
 
-  xit('creates the staking bridge pda', async () => {
+  it('creates the staking bridge pda', async () => {
     // Add your test here.
     const tx = await program.methods
       .createPda()
@@ -72,7 +82,7 @@ describe('staking-bridge', () => {
     console.log('Your transaction signature', tx);
   })
 
-  xit('swaps SOL USDC to SOL AUDIO', async () => {
+  it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
     console.log("serum market info:", JSON.stringify(market))
 
@@ -87,11 +97,19 @@ describe('staking-bridge', () => {
 
     const { vaultOwner, vaultNonce } = await getVaultOwnerAndNonce(serumMarketPublicKey, serumDexProgram)
     if (vaultNonce.toNumber() != market.vaultSignerNonce) {
-      console.log("withdraw vaultOwner:", vaultOwner.toString(), "vaultNonce: ", vaultNonce.toNumber(), "market.vaultSignerNonce:", market.vaultSignerNonce.toString())
+      console.log(
+        "withdraw vaultOwner:",
+        vaultOwner.toString(),
+        "vaultNonce: ",
+        vaultNonce.toNumber(),
+        "market.vaultSignerNonce:",
+        market.vaultSignerNonce.toString()
+      )
       throw ("vaultSignerNonce incorrect!")
     }
 
-    // Create associated token accounts for the staking bridge PDA
+    // Get associated token accounts for the staking bridge PDA.
+    // Create them if they don't exist.
     const usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
@@ -106,7 +124,6 @@ describe('staking-bridge', () => {
       stakingBridgePda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
-    console.log({ usdcTokenAccount, audioTokenAccount })
 
     // Amount of SOL USDC to be swapped for a minimum amount of SOL AUDIO expected to be received from the swap.
     const wholeAmountIn = 0.001
@@ -133,7 +150,7 @@ describe('staking-bridge', () => {
       userSourceOwner: stakingBridgePda,
       splTokenProgram: TOKEN_PROGRAM_ID,
     }
-    console.log({ accounts })
+    console.log('Raydium swap accounts:', { accounts })
 
     // Add your test here.
     const tx = await program.methods
@@ -148,12 +165,10 @@ describe('staking-bridge', () => {
     console.log("Your transaction signature", tx);
   })
 
-  xit('posts the wormhole token bridge transfer message', async () => {
+  it('posts the wormhole token bridge transfer message', async () => {
     const messageKeypair = Keypair.generate()
     const messagePublicKey = messageKeypair.publicKey
 
-    // Use your own ETH address to receive the AUDIO tokens
-    const recipientEthAddress = '0x9d959Cf57D89DCf41925e19479A04E26f27563dB'
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
     const wholeAmount = 0.001
     const {
@@ -161,7 +176,6 @@ describe('staking-bridge', () => {
       amount,
       fee
     } = getPostMessageData({
-      recipientEthAddress,
       wholeAmount,
       solTokenDecimals: SOL_AUDIO_DECIMALS
     })
@@ -256,6 +270,7 @@ describe('staking-bridge', () => {
       splToken: new PublicKey(TOKEN_PROGRAM_ID),
       systemProgram: SystemProgram.programId,
     }
+    console.log('Wormhole transfer accounts:', { accounts })
 
     // Signers
     // fromOwner is also a signer but the program will use

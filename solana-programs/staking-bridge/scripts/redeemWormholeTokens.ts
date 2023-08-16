@@ -22,9 +22,12 @@ const WORMHOLE_RPC_HOSTS = [
 const redeem = async ({
   txid,
   connection,
-  signer
+  signer,
+  retries = 5,
+  backoffMs = 1000
 }) => {
   try {
+    console.log(`Redeeming transaction ${txid}... Attempt #${6 - retries}`)
     const info = await connection.getTransaction(txid, {})
     if (!info) {
       throw new Error(
@@ -54,17 +57,24 @@ const redeem = async ({
     console.log('Successfully redeemed the tokens on Ethereum!')
   } catch (e) {
     console.error(`Caught error: ${e}`)
+    if (retries <= 0) {
+      console.error('No retries left, exiting.')
+      process.exit(1)
+    }
+    console.log(`Retrying in ${backoffMs / 1000} seconds...`)
+    await new Promise((resolve) => setTimeout(resolve, backoffMs))
+    redeem({ txid, connection, signer, retries: retries - 1, backoffMs: backoffMs * 2 })
   }
 }
 
 if (process.argv.length < 3) {
-  console.error('Usage: node scripts/redeem.ts <transaction-id>')
+  console.error(
+    'Usage: ethProviderUrl=<eth-provider-url> ethPrivateKey=<eth-private-key> node scripts/redeemWormholeTokens.ts <transaction-id>'
+  )
   process.exit(1)
 }
 
 const txid = process.argv[2]
-console.log(`Redeeming transaction ${txid}...`)
-
 const endpoint = 'https://api.mainnet-beta.solana.com'
 const connection = new Connection(endpoint, 'confirmed');
 const provider = new ethers.providers.JsonRpcProvider(process.env.ethProviderUrl);
