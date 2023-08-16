@@ -5,5 +5,5 @@ BEGIN;
     "is_deactivated" = false
     and "is_current" = true
     and "handle_lc" is not null	
-    and "is_available" = true
+    and "is_available" = true;
 COMMIT;
