@@ -322,6 +322,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
+            "src.tasks.cache_entity_counts",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -419,6 +420,10 @@ def configure_celery(celery, test_config=None):
             "cache_current_nodes": {
                 "task": "cache_current_nodes",
                 "schedule": timedelta(minutes=1),
+            },
+            "cache_entity_counts": {
+                "task": "cache_entity_counts",
+                "schedule": timedelta(minutes=10),
             },
             "update_aggregates": {
                 "task": "update_aggregates",
