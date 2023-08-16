@@ -12,8 +12,14 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.utils.get_all_other_nodes import get_node_endpoint
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
+redis = get_redis()
+
+max_track_count_redis_key = "max_track_count"
+max_playlist_count_redis_key = "max_playlist_count"
+max_user_count_redis_key = "max_user_count"
 
 root_site_maps_routes = [
     "defaults.xml",
@@ -244,17 +250,29 @@ def get_user_slugs(session: Session, limit: int, offset: int):
 
 
 def get_track_root(session: Session, limit: int = LIMIT):
-    max_track_count = get_max_track_count(session)
+    cached_max_track_count = redis.get(max_track_count_redis_key)
+    if cached_max_track_count:
+        max_track_count = int(cached_max_track_count)
+    else:
+        max_track_count = get_max_track_count(session)
     return get_dynamic_root(max_track_count, "track", limit)
 
 
 def get_playlist_root(session: Session, limit: int = LIMIT):
-    max_track_count = get_max_playlist_count(session)
-    return get_dynamic_root(max_track_count, "playlist", limit)
+    cached_max_playlist_count = redis.get(max_playlist_count_redis_key)
+    if cached_max_playlist_count:
+        max_playlist_count = int(cached_max_playlist_count)
+    else:
+        max_playlist_count = get_max_playlist_count(session)
+    return get_dynamic_root(max_playlist_count, "playlist", limit)
 
 
 def get_user_root(session: Session, limit: int = LIMIT):
-    max_user_count = get_max_user_count(session)
+    cached_max_user_count = redis.get(max_user_count_redis_key)
+    if cached_max_user_count:
+        max_user_count = int(cached_max_user_count)
+    else:
+        max_user_count = get_max_user_count(session)
     return get_dynamic_root(max_user_count, "user", limit)
 
 
