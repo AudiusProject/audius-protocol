@@ -41,7 +41,8 @@ export interface ExtendedCollectionMetadata extends CollectionMetadata {
 export enum ProgressStatus {
   UPLOADING = 'UPLOADING',
   PROCESSING = 'PROCESSING',
-  COMPLETE = 'COMPLETE'
+  COMPLETE = 'COMPLETE',
+  ERROR = 'ERROR'
 }
 
 export type Progress = {
