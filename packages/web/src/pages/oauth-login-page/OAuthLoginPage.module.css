@@ -3,7 +3,9 @@
 }
 
 .wrapper {
+  margin: 0 auto;
   justify-content: center;
+  width: 375px;
 }
 
 .centeredContent {
@@ -53,10 +55,14 @@
 .container {
   width: 375px;
   flex-direction: column;
-  margin: 64px 24px 0px 24px;
+  padding: 64px 24px 0px 24px;
 }
 
 @media (max-width: 375px) {
+  .wrapper {
+    width: 100%;
+  }
+
   .container {
     width: 100%;
   }
