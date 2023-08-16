@@ -137,9 +137,11 @@ async fn success_transfer() {
 
     let transfer_account_data = get_account(&mut context, &transfer_account).await.unwrap();
 
+    // Assert that we have spent the lamports to make TRANSFER_ACC_SPACE.
+    // We should have remaining only the amount necessary for the solana account (space = 0).
     assert_eq!(
         transfer_account_data.lamports,
-        rent.minimum_balance(TRANSFER_ACC_SPACE)
+        rent.minimum_balance(0)
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 
@@ -1250,9 +1252,11 @@ async fn success_transfer_denial_with_lamports() {
 
     let transfer_account_data = get_account(&mut context, &transfer_account).await.unwrap();
 
+    // Assert that we have spent the lamports to make TRANSFER_ACC_SPACE.
+    // We should have remaining only the amount necessary for the solana account (space = 0).
     assert_eq!(
         transfer_account_data.lamports,
-        rent.minimum_balance(TRANSFER_ACC_SPACE)
+        rent.minimum_balance(0)
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 

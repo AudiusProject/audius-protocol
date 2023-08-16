@@ -216,31 +216,27 @@ impl Processor {
             )?;
         }
 
-        // If the account to create is empty / doesn't exist yet, create it.
-        let acct_is_empty = account_to_create.try_data_is_empty().unwrap_or(true);
-        if acct_is_empty {
-            invoke_signed(
-                &system_instruction::allocate_with_seed(
-                    account_to_create.key,
-                    base.key,
-                    pair.derive.seed.as_str(),
-                    space,
-                    &spl_token::id(),
-                ),
-                &[account_to_create.clone(), base.clone()],
-                &[signature],
-            )?;
-            invoke_signed(
-                &system_instruction::assign_with_seed(
-                    account_to_create.key,
-                    base.key,
-                    pair.derive.seed.as_str(),
-                    &spl_token::id(),
-                ),
-                &[account_to_create.clone(), base.clone()],
-                &[signature],
-            )?;
-        }
+        invoke_signed(
+            &system_instruction::allocate_with_seed(
+                account_to_create.key,
+                base.key,
+                pair.derive.seed.as_str(),
+                space,
+                &spl_token::id(),
+            ),
+            &[account_to_create.clone(), base.clone()],
+            &[signature],
+        )?;
+        invoke_signed(
+            &system_instruction::assign_with_seed(
+                account_to_create.key,
+                base.key,
+                pair.derive.seed.as_str(),
+                &spl_token::id(),
+            ),
+            &[account_to_create.clone(), base.clone()],
+            &[signature],
+        )?;
 
         Ok(())
     }

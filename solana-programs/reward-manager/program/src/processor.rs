@@ -34,7 +34,7 @@ pub const TRANSFER_SEED_PREFIX: &str = "T_";
 /// Verify transfer program account seed
 pub const VERIFY_TRANSFER_SEED_PREFIX: &str = "V_";
 /// Transfer account space
-pub const TRANSFER_ACC_SPACE: usize = 0;
+pub const TRANSFER_ACC_SPACE: usize = 1;
 
 /// Program state handler.
 pub struct Processor;
@@ -178,24 +178,20 @@ impl Processor {
             )?;
         }
 
-        // If the sender account is empty / doesn't exist yet, create it.
-        let sender_acct_is_empty = sender_info.try_data_is_empty().unwrap_or(true);
-        if sender_acct_is_empty {
-            invoke_signed(
-                &system_instruction::allocate(sender_info.key, SenderAccount::LEN as u64),
-                &[sender_info.clone()],
-                &[signers_seeds],
-            )?;
+        invoke_signed(
+            &system_instruction::allocate(sender_info.key, SenderAccount::LEN as u64),
+            &[sender_info.clone()],
+            &[signers_seeds],
+        )?;
 
-            invoke_signed(
-                &system_instruction::assign(sender_info.key, program_id),
-                &[sender_info.clone()],
-                &[signers_seeds],
-            )?;
+        invoke_signed(
+            &system_instruction::assign(sender_info.key, program_id),
+            &[sender_info.clone()],
+            &[signers_seeds],
+        )?;
 
-            let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
-            SenderAccount::pack(sender_account, *sender_info.data.borrow_mut())?;
-        }
+        let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
+        SenderAccount::pack(sender_account, *sender_info.data.borrow_mut())?;
 
         Ok(())
     }
@@ -338,24 +334,20 @@ impl Processor {
             )?;
         }
 
-        // If the sender account is empty / doesn't exist yet, create it.
-        let sender_acct_is_empty = new_sender_info.try_data_is_empty().unwrap_or(true);
-        if sender_acct_is_empty {
-            invoke_signed(
-                &system_instruction::allocate(new_sender_info.key, SenderAccount::LEN as u64),
-                &[new_sender_info.clone()],
-                &[signers_seeds],
-            )?;
+        invoke_signed(
+            &system_instruction::allocate(new_sender_info.key, SenderAccount::LEN as u64),
+            &[new_sender_info.clone()],
+            &[signers_seeds],
+        )?;
 
-            invoke_signed(
-                &system_instruction::assign(new_sender_info.key, program_id),
-                &[new_sender_info.clone()],
-                &[signers_seeds],
-            )?;
+        invoke_signed(
+            &system_instruction::assign(new_sender_info.key, program_id),
+            &[new_sender_info.clone()],
+            &[signers_seeds],
+        )?;
 
-            let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
-            SenderAccount::pack(sender_account, *new_sender_info.data.borrow_mut())?;
-        }
+        let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
+        SenderAccount::pack(sender_account, *new_sender_info.data.borrow_mut())?;
 
         Ok(())
     }
@@ -604,8 +596,10 @@ impl Processor {
             )?;
         }
 
+        // Allocate 1 byte to use transfer_account_info to prevent repeat invocations.
+        // This is checked at the beginning of the function in borrow_data.
         invoke_signed(
-            &system_instruction::allocate(transfer_account_info.key, 0),
+            &system_instruction::allocate(transfer_account_info.key, TRANSFER_ACC_SPACE as u64),
             &[transfer_account_info.clone()],
             &[signers_seeds],
         )?;
