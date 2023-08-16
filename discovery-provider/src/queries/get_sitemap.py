@@ -109,7 +109,6 @@ def get_max_track_count(session: Session) -> int:
             User.is_current == True,
             TrackRoute.is_current == True,
         )
-        .group_by(User.handle, TrackRoute.slug)
         .count()
     )
     return cnt
@@ -149,7 +148,6 @@ def get_max_playlist_count(session: Session) -> int:
             Playlist.is_current == True,
             Playlist.is_private == False,
         )
-        .group_by(User.handle, PlaylistRoute.slug, Playlist.is_album)
         .count()
     )
     return cnt
