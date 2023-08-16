@@ -313,15 +313,6 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-// TODO: remove after confirming files didn't start go missing
-func (ss *MediorumServer) getBlobByJobIDAndVariantDeprecated(c echo.Context) error {
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-	c.SetParamNames("dirCid", "fileName")
-	c.SetParamValues(jobID, variant)
-	return ss.serveLegacyDirCid(c)
-}
-
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -357,24 +348,19 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		if err != nil {
 			c.Response().Header().Set("x-find-node-err", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets. return `err` instead
-			// c.SetParamNames("dirCid", "fileName")
-			// c.SetParamValues(jobID, variant)
-			// return ss.serveLegacyDirCid(c)
-			return err
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
 		} else if host != "" {
 			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			dest := ss.replaceHost(c, host)
-			query := dest.Query()
-			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-			dest.RawQuery = query.Encode()
 			return c.Redirect(302, dest.String())
 		} else {
 			c.Response().Header().Set("x-find-node-not-found", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets
-			// c.SetParamNames("dirCid", "fileName")
-			// c.SetParamValues(jobID, variant)
-			// return ss.serveLegacyDirCid(c)
-			return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
+			c.SetParamNames("dirCid", "fileName")
+			c.SetParamValues(jobID, variant)
+			return ss.serveLegacyDirCid(c)
 		}
 	} else {
 		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup
