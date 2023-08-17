@@ -177,10 +177,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
-	// if cidutil.IsLegacyCID(cid) {
-	// 	logger.Debug("serving legacy cid")
-	// 	return ss.serveLegacyCid(c)
-	// }
+	if cidutil.IsLegacyCID(cid) {
+		return ss.serveLegacyCid(c)
+	}
 
 	if err != nil {
 		logger.Warn("error finding node to serve blob", "err", err)
