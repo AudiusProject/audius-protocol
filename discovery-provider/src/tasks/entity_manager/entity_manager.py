@@ -406,7 +406,7 @@ def save_new_records(
                 session.add_all(records)
             else:
                 session.add(records[-1])
-    
+
     if prev_records:
         revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
         session.add(revert_block)

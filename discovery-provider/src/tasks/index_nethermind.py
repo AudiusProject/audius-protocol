@@ -206,25 +206,6 @@ def process_state_changes(
         )
 
 
-@log_duration(logger)
-def revert_user_events(session, revert_user_events_entries, revert_block_number):
-    for user_events_to_revert in revert_user_events_entries:
-        user_id = user_events_to_revert.user_id
-        previous_user_events_entry = (
-            session.query(UserEvent)
-            .filter(UserEvent.user_id == user_id)
-            .filter(UserEvent.blocknumber < revert_block_number)
-            .order_by(UserEvent.blocknumber.desc())
-            .first()
-        )
-        if previous_user_events_entry:
-            session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
-                UserEvent.blocknumber == previous_user_events_entry.blocknumber
-            ).update({"is_current": True})
-        logger.debug(f"Reverting user events: {user_events_to_revert}")
-        session.delete(user_events_to_revert)
-
-
 def get_latest_database_block(session: Session) -> Block:
     """
     Gets the latest block in the database.
