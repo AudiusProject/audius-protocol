@@ -7,19 +7,18 @@ import {
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
-import cn from 'classnames'
+import { HarmonyButton, HarmonyButtonProps } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 
-import styles from './TwitterShareButton.module.css'
 const { fetchUserSocials } = cacheUsersActions
 const { getUser } = cacheUsersSelectors
 
 const messages = {
-  share: 'Share'
+  share: 'Share to Twitter'
 }
 
 type StaticTwitterProps = {
@@ -41,14 +40,13 @@ type DynamicTwitterProps = {
 
 type TwitterShareButtonProps = {
   url?: string
-  className?: string
   hideText?: boolean
+  fullWidth?: HarmonyButtonProps['fullWidth']
+  size?: HarmonyButtonProps['size']
 } & (StaticTwitterProps | DynamicTwitterProps)
 
-// TODO: Migrate this to deriving from components/TwitterShareButton, similar to mobile
-// https://linear.app/audius/issue/PAY-1722/consolidate-twittersharebuttons-on-web
 export const TwitterShareButton = (props: TwitterShareButtonProps) => {
-  const { url = null, className, hideText, ...other } = props
+  const { url = null, fullWidth, size, hideText, ...other } = props
   const record = useRecord()
   const dispatch = useDispatch()
 
@@ -117,12 +115,18 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     }
   }
 
+  const colorOverride: Partial<HarmonyButtonProps> = {
+    color: 'staticTwitterBlue'
+  }
+
   return (
-    <button className={cn(styles.root, className)} onClick={handleClick}>
-      <IconTwitterBird
-        className={cn(styles.icon, { [styles.hideText]: hideText })}
-      />
-      {!hideText ? messages.share : null}
-    </button>
+    <HarmonyButton
+      fullWidth={fullWidth}
+      text={hideText ? null : messages.share}
+      iconLeft={IconTwitterBird}
+      size={size}
+      {...colorOverride}
+      onClick={handleClick}
+    />
   )
 }

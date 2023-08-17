@@ -80,7 +80,11 @@ export const PremiumContentPurchaseModal = () => {
       {track ? (
         <ModalContentPages currentPage={currentStep}>
           <LoadingPage />
-          <PurchaseDetailsPage track={track} currentBalance={balance} />
+          <PurchaseDetailsPage
+            track={track}
+            currentBalance={balance}
+            onViewTrackClicked={handleClose}
+          />
         </ModalContentPages>
       ) : null}
     </Modal>

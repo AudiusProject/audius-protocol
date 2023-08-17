@@ -36,6 +36,7 @@ const theme = {
   '--accent-red': '#F9344C',
   '--accent-red-dark-1': '#C43047',
 
+  '--special-green': '#6cdf44',
   '--special-light-green': '#13c65a',
 
   '--page-header-gradient-color-1': '#7652CC',
