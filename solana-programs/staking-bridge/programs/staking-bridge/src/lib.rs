@@ -66,7 +66,7 @@ pub mod staking_bridge {
     pub fn post_wormhole_message(
         ctx: Context<PostWormholeMessage>,
         nonce: u32,
-        amount: u64, // TODO: if amount greater than max amount of our PDA, do we send max or do we fail?
+        amount: u64,
         fee: u64, // TODO: do we need this? what if someone passes in a huge fee?
         config_bump: u8,
         wrapped_mint_bump: u8,

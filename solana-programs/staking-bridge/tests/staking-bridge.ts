@@ -170,7 +170,7 @@ describe('staking-bridge', () => {
     const messagePublicKey = messageKeypair.publicKey
 
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
-    const wholeAmount = 0.001
+    const wholeAmount = 0.00001
     const {
       nonce,
       amount,
