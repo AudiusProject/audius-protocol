@@ -17,6 +17,9 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	m.Host = ss.Config.Self.Host
 	m.Uploads = ss.uploadsCount
 	m.OutboxSizes = ss.crud.GetOutboxSizes()
+
+	ss.legacyServesMu.RLock()
+	defer ss.legacyServesMu.RUnlock()
 	m.AttemptedLegacyServes = ss.attemptedLegacyServes
 	m.SuccessfulLegacyServes = ss.successfulLegacyServes
 
