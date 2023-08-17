@@ -12,6 +12,7 @@ const messages = {
   alwaysZero: 'Always $0',
   existingBalance: 'Existing Balance',
   youPay: 'You Pay',
+  youPaid: 'You Paid',
   zero: '$0',
   price: (val: string) => `$${val}`
 }
@@ -21,13 +22,15 @@ type PurchaseSummaryTableProps = {
   artistCut: number
   basePrice: number
   existingBalance?: number
+  isPurchased?: boolean
 }
 
 export const PurchaseSummaryTable = ({
   amountDue,
   artistCut,
   basePrice,
-  existingBalance
+  existingBalance,
+  isPurchased
 }: PurchaseSummaryTableProps) => {
   return (
     <Text className={styles.container}>
@@ -49,7 +52,7 @@ export const PurchaseSummaryTable = ({
         </div>
       ) : null}
       <Text className={styles.row} variant='title'>
-        <span>{messages.youPay}</span>
+        <span>{isPurchased ? messages.youPaid : messages.youPay}</span>
         <FormatPrice
           className={styles.finalPrice}
           basePrice={basePrice}

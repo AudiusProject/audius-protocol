@@ -46,6 +46,7 @@ const theme = {
   '--accent-orange-light-1': '#FFA70F',
 
   '--accent-purple': '#8E51CF',
+  '--special-green': '#0f9e48',
   '--special-light-green': '#13c65a',
 
   '--page-header-gradient-color-1': '#5B23E1',

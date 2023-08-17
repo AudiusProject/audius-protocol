@@ -8,15 +8,25 @@ import {
   isPremiumContentUSDCPurchaseGated,
   purchaseContentActions,
   purchaseContentSelectors,
+  PurchaseContentStage,
   Track,
   UserTrackMetadata
 } from '@audius/common'
-import { HarmonyButton, IconError } from '@audius/stems'
+import {
+  HarmonyButton,
+  HarmonyPlainButton,
+  HarmonyPlainButtonSize,
+  HarmonyPlainButtonType,
+  IconCaretRight,
+  IconCheck,
+  IconError
+} from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
+import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
 
 import { FormatPrice } from './FormatPrice'
@@ -31,7 +41,11 @@ const { getPurchaseContentFlowStage, getPurchaseContentError } =
 const messages = {
   buy: 'Buy',
   purchasing: 'Purchasing',
-  error: 'Your purchase was unsuccessful.'
+  purchaseSuccessful: 'Your Purchase Was Successful!',
+  error: 'Your purchase was unsuccessful.',
+  // TODO: PAY-1723
+  shareButtonContent: 'I just purchased a track on Audius!',
+  viewTrack: 'View Track'
 }
 
 const ContentPurchaseError = () => {
@@ -46,16 +60,19 @@ const ContentPurchaseError = () => {
 export type PurchaseDetailsPageProps = {
   currentBalance?: BNUSDC
   track: UserTrackMetadata
+  onViewTrackClicked: () => void
 }
 
 export const PurchaseDetailsPage = ({
   currentBalance,
-  track
+  track,
+  onViewTrackClicked
 }: PurchaseDetailsPageProps) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const isPurchased = stage === PurchaseContentStage.FINISH
 
   const onClickBuy = useCallback(() => {
     if (isUnlocking) return
@@ -102,15 +119,45 @@ export const PurchaseDetailsPage = ({
         track={track as unknown as Track}
         owner={track.user}
       />
-      <PurchaseSummaryTable {...purchaseSummaryValues} />
-      <PayToUnlockInfo />
-      <HarmonyButton
-        disabled={isUnlocking}
-        color='specialLightGreen'
-        onClick={onClickBuy}
-        text={textContent}
-        fullWidth
+      <PurchaseSummaryTable
+        {...purchaseSummaryValues}
+        isPurchased={isPurchased}
       />
+      {isPurchased ? (
+        <>
+          <div className={styles.purchaseSuccessfulContainer}>
+            <div className={styles.completionCheck}>
+              <Icon icon={IconCheck} size='xxSmall' color='white' />
+            </div>
+            <Text variant='heading' size='small'>
+              {messages.purchaseSuccessful}
+            </Text>
+          </div>
+          <TwitterShareButton
+            fullWidth
+            type='static'
+            shareText={messages.shareButtonContent}
+          />
+          <HarmonyPlainButton
+            onClick={onViewTrackClicked}
+            iconRight={IconCaretRight}
+            variant={HarmonyPlainButtonType.SUBDUED}
+            size={HarmonyPlainButtonSize.LARGE}
+            text={messages.viewTrack}
+          />
+        </>
+      ) : (
+        <>
+          <PayToUnlockInfo />
+          <HarmonyButton
+            disabled={isUnlocking}
+            color='specialLightGreen'
+            onClick={onClickBuy}
+            text={textContent}
+            fullWidth
+          />
+        </>
+      )}
       {error ? <ContentPurchaseError /> : null}
     </div>
   )
