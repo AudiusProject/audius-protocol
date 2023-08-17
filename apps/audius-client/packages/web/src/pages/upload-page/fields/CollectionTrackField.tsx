@@ -21,7 +21,7 @@ import { SelectMoodField } from '../fields/SelectMoodField'
 import { TrackNameField } from '../fields/TrackNameField'
 import { CollectionTrackForUpload } from '../types'
 
-import styles from './UploadCollectionForm.module.css'
+import styles from './CollectionTrackField.module.css'
 
 const messages = {
   overrideLabel: 'Override details for this track',
@@ -62,11 +62,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   }, [remove, index])
 
   return (
-    <Tile
-      className={styles.trackField}
-      key={track.metadata.track_id}
-      elevation='mid'
-    >
+    <Tile className={styles.root} key={track.metadata.track_id} elevation='mid'>
       <div className={styles.trackNameRow}>
         <span className={styles.iconDrag}>
           <Icon icon={IconDrag} size='large' />

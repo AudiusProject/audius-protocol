@@ -5,7 +5,8 @@ import {
   playerActions,
   playerSelectors,
   UploadType,
-  removeNullable
+  removeNullable,
+  newCollectionMetadata
 } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
@@ -16,10 +17,10 @@ import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 
 import { processFiles } from '../store/utils/processFiles'
+import { UploadFormState } from '../types'
 
 import styles from './SelectPage.module.css'
 import TracksPreview from './TracksPreview'
-import { TrackForUpload } from './types'
 const { pause } = playerActions
 
 const { getPlaying } = playerSelectors
@@ -27,22 +28,21 @@ const { getPlaying } = playerSelectors
 type ErrorType = { reason: 'size' | 'type' } | null
 
 type SelectPageProps = {
-  tracks: TrackForUpload[]
-  setTracks: (tracks: TrackForUpload[]) => void
-  onContinue: () => void
+  formState: UploadFormState
+  onContinue: (formState: UploadFormState) => void
 }
 
 export const SelectPageNew = (props: SelectPageProps) => {
-  const { tracks, setTracks, onContinue } = props
+  const { formState, onContinue } = props
   const dispatch = useDispatch()
   const playing = useSelector(getPlaying)
 
+  const [tracks, setTracks] = useState(formState.tracks ?? [])
+  const [uploadType, setUploadType] = useState(
+    formState.uploadType ?? UploadType.INDIVIDUAL_TRACK
+  )
   const [uploadTrackError, setUploadTrackError] =
     useState<Nullable<ErrorType>>(null)
-  // TODO: support upload types when directing to next page
-  const [uploadType, setUploadType] = useState<UploadType>(
-    UploadType.INDIVIDUAL_TRACK
-  )
   const [previewIndex, setPreviewIndex] = useState(-1)
   const [preview, setPreview] = useState<Nullable<HTMLAudioElement>>()
 
@@ -72,14 +72,14 @@ export const SelectPageNew = (props: SelectPageProps) => {
 
       if (
         uploadType === UploadType.INDIVIDUAL_TRACK &&
-        tracks.length + processedTracks.length > 1
+        selectedFiles.length + processedTracks.length > 1
       ) {
         setUploadType(UploadType.INDIVIDUAL_TRACKS)
       }
 
       setTracks([...tracks, ...processedTracks])
     },
-    [setTracks, tracks, uploadType]
+    [setTracks, tracks, uploadType, setUploadType]
   )
 
   const onRemoveTrack = useCallback(
@@ -89,7 +89,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
         tracks.length === 2 ? UploadType.INDIVIDUAL_TRACK : uploadType
       )
     },
-    [setTracks, tracks, uploadType]
+    [setTracks, setUploadType, tracks, uploadType]
   )
 
   const stopPreview = useCallback(() => {
@@ -120,6 +120,21 @@ export const SelectPageNew = (props: SelectPageProps) => {
   useUnmount(() => {
     stopPreview()
   })
+
+  const handleContinue = useCallback(() => {
+    if (uploadType !== undefined && tracks) {
+      switch (uploadType) {
+        case UploadType.INDIVIDUAL_TRACK:
+        case UploadType.INDIVIDUAL_TRACKS:
+          onContinue({ tracks, uploadType })
+          break
+        case UploadType.ALBUM:
+        case UploadType.PLAYLIST:
+          onContinue({ tracks, uploadType, metadata: newCollectionMetadata() })
+          break
+      }
+    }
+  }, [onContinue, tracks, uploadType])
 
   const textAboveIcon = tracks.length > 0 ? 'More to Upload?' : undefined
   return (
@@ -165,7 +180,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
                   text='Continue'
                   name='continue'
                   rightIcon={<IconArrow />}
-                  onClick={onContinue}
+                  onClick={handleContinue}
                   textClassName={styles.continueButtonText}
                   className={styles.continueButton}
                 />

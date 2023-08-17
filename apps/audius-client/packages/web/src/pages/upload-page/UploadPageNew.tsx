@@ -1,28 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { uploadActions, UploadType } from '@audius/common'
+import { UploadType, uploadActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 
 import styles from './UploadPage.module.css'
-import { EditPageNew } from './components/EditPageNew'
 import { FinishPageNew } from './components/FinishPageNew'
 import SelectPageNew from './components/SelectPageNew'
-import { TrackForUpload } from './components/types'
+import { EditPage } from './pages/EditPage'
+import { UploadFormState } from './types'
 
 const { uploadTracks } = uploadActions
-
-type UploadPageProps = {
-  uploadType: UploadType
-}
-
-enum Phase {
-  SELECT,
-  EDIT,
-  FINISH
-}
 
 const messages = {
   selectPageTitle: 'Upload Your Music',
@@ -32,10 +22,22 @@ const messages = {
   finishMultiTrackPageTitle: 'Uploading Your Tracks'
 }
 
-export const UploadPageNew = (props: UploadPageProps) => {
+enum Phase {
+  SELECT,
+  EDIT,
+  FINISH
+}
+
+export const UploadPageNew = () => {
   const dispatch = useDispatch()
   const [phase, setPhase] = useState(Phase.SELECT)
-  const [tracks, setTracks] = useState<TrackForUpload[]>([])
+  const [formState, setFormState] = useState<UploadFormState>({
+    uploadType: undefined,
+    metadata: undefined,
+    tracks: undefined
+  })
+
+  const { tracks } = formState
 
   // Pretty print json just for testing
   useEffect(() => {
@@ -64,11 +66,11 @@ export const UploadPageNew = (props: UploadPageProps) => {
   const pageTitle = useMemo(() => {
     switch (phase) {
       case Phase.EDIT:
-        return tracks.length > 1
+        return tracks && tracks.length > 1
           ? messages.editMultiTrackPageTitle
           : messages.editSingleTrackPageTitle
       case Phase.FINISH:
-        return tracks.length > 1
+        return tracks && tracks.length > 1
           ? messages.finishMultiTrackPageTitle
           : messages.finishSingleTrackPageTitle
       case Phase.SELECT:
@@ -82,39 +84,48 @@ export const UploadPageNew = (props: UploadPageProps) => {
     case Phase.SELECT:
       page = (
         <SelectPageNew
-          tracks={tracks}
-          setTracks={setTracks}
-          onContinue={() => {
+          formState={formState}
+          onContinue={(formState: UploadFormState) => {
+            setFormState(formState)
             setPhase(Phase.EDIT)
           }}
         />
       )
       break
     case Phase.EDIT:
-      page = (
-        <EditPageNew
-          tracks={tracks}
-          setTracks={setTracks}
-          onContinue={() => {
-            setPhase(Phase.FINISH)
-          }}
-        />
-      )
+      if (formState.uploadType) {
+        page = (
+          <EditPage
+            formState={formState}
+            onContinue={(formState: UploadFormState) => {
+              setFormState(formState)
+              setPhase(Phase.FINISH)
+            }}
+          />
+        )
+      }
       break
     case Phase.FINISH:
-      page = (
-        <FinishPageNew
-          tracks={tracks}
-          onContinue={() => {
-            setTracks([])
-            setPhase(Phase.SELECT)
-          }}
-        />
-      )
+      if (formState.uploadType) {
+        page = (
+          <FinishPageNew
+            formState={formState}
+            onContinue={() => {
+              setFormState({
+                tracks: undefined,
+                uploadType: undefined,
+                metadata: undefined
+              })
+              setPhase(Phase.SELECT)
+            }}
+          />
+        )
+      }
   }
 
   const handleUpload = useCallback(() => {
-    console.log('Handling upload')
+    if (!formState.tracks) return
+    const { tracks } = formState
     const trackStems = tracks.reduce((acc, track) => {
       // @ts-ignore - This has stems in it sometimes
       acc = [...acc, ...(track.metadata.stems ?? [])]
@@ -133,7 +144,7 @@ export const UploadPageNew = (props: UploadPageProps) => {
         trackStems
       )
     )
-  }, [dispatch, tracks])
+  }, [dispatch, formState])
 
   useEffect(() => {
     if (phase === Phase.FINISH) handleUpload()

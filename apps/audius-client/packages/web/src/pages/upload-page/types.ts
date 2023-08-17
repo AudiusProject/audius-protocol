@@ -1,9 +1,37 @@
-import { ExtendedTrackMetadata, Nullable } from '@audius/common'
+import { Nullable, TrackMetadata, UploadType } from '@audius/common'
 import moment from 'moment'
 
-import { TrackForUpload } from './components/types'
+import { CollectionValues } from './validation'
 
-export type SingleTrackEditValues = ExtendedTrackMetadata & {
+export type TrackForUpload = {
+  file: File
+  preview: HTMLAudioElement
+  metadata: TrackMetadata
+}
+
+export type InitialFormState = {
+  uploadType: undefined
+  tracks: undefined
+  metadata: undefined
+}
+
+export type TrackFormState = {
+  uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
+  tracks: TrackForUpload[]
+}
+
+export type CollectionFormState = {
+  uploadType: UploadType.ALBUM | UploadType.PLAYLIST
+  tracks: TrackForUpload[]
+  metadata: CollectionValues
+}
+
+export type UploadFormState =
+  | TrackFormState
+  | CollectionFormState
+  | InitialFormState
+
+export type SingleTrackEditValues = TrackMetadata & {
   releaseDate: moment.Moment
   licenseType: {
     allowAttribution: Nullable<boolean>

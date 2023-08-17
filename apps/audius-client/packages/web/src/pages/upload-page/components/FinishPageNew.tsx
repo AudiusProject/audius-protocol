@@ -28,9 +28,10 @@ import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 import { profilePage } from 'utils/route'
 
+import { CollectionFormState, TrackFormState, TrackForUpload } from '../types'
+
 import styles from './FinishPage.module.css'
 import { ShareBannerNew } from './ShareBannerNew'
-import { TrackForUpload } from './types'
 
 const { getAccountUser } = accountSelectors
 const { getUploadPercentage } = uploadSelectors
@@ -93,12 +94,13 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
 }
 
 type FinishPageProps = {
-  tracks: TrackForUpload[]
+  formState: TrackFormState | CollectionFormState
   onContinue: () => void
 }
 
 export const FinishPageNew = (props: FinishPageProps) => {
-  const { tracks, onContinue } = props
+  const { formState, onContinue } = props
+  const { tracks } = formState
   const accountUser = useSelector(getAccountUser)
   const upload = useSelector((state: CommonState) => state.upload)
   const user = useSelector(getAccountUser)

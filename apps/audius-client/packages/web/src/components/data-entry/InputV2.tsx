@@ -97,7 +97,6 @@ export const InputV2 = (props: InputV2Props) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           ref={inputRef}
-          required={required}
           className={cn(styles.textInput, inputClassName)}
           value={value}
           maxLength={maxLength}
@@ -119,8 +118,8 @@ export const InputV2 = (props: InputV2Props) => {
   )
 
   return (
-    <>
-      <div className={cn(styles.root, style, className)}>
+    <div className={cn(styles.root, className)}>
+      <div className={cn(styles.inputRoot, style)}>
         {elevatePlaceholder ? (
           <label className={styles.elevatedLabel}>
             <span
@@ -147,6 +146,6 @@ export const InputV2 = (props: InputV2Props) => {
         {children}
       </div>
       {helperText ? <HelperText error={error}>{helperText}</HelperText> : null}
-    </>
+    </div>
   )
 }

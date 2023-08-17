@@ -1,0 +1,40 @@
+.root {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+}
+
+.collectionFields {
+  display: flex;
+  padding: var(--unit-4);
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.row {
+  display: flex;
+  gap: var(--unit-4);
+}
+
+.collectionInfo {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.artwork {
+  height: 248px;
+  width: 248px;
+}
+
+.description {
+  flex-grow: 1;
+}
+
+.trackDetails {
+  display: flex;
+  padding: var(--unit-4) var(--unit-6);
+  flex-direction: column;
+  gap: var(--unit-4);
+}
