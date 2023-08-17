@@ -67,7 +67,6 @@ pub mod staking_bridge {
         ctx: Context<PostWormholeMessage>,
         nonce: u32,
         amount: u64,
-        fee: u64, // TODO: do we need this? what if someone passes in a huge fee?
         config_bump: u8,
         wrapped_mint_bump: u8,
         wrapped_meta_bump: u8,
@@ -101,7 +100,6 @@ pub mod staking_bridge {
             accounts,
             nonce,
             amount,
-            fee,
             staking_bridge_pda_bump
         )?;
         Ok(())
@@ -210,7 +208,6 @@ pub struct PostWormholeMessageData {
 #[instruction(
     _nonce: u32,
     _amount: u64,
-    _fee: u64,
     _config_bump: u8,
     _wrapped_mint_bump: u8,
     _wrapped_meta_bump: u8,

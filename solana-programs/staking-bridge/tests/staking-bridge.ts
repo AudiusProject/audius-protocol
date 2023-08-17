@@ -171,13 +171,14 @@ describe('staking-bridge', () => {
 
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
     const wholeAmount = 0.00001
+    const { lastValidBlockHeight } = await connection.getLatestBlockhash()
     const {
       nonce,
       amount,
-      fee
     } = getPostMessageData({
       wholeAmount,
-      solTokenDecimals: SOL_AUDIO_DECIMALS
+      solTokenDecimals: SOL_AUDIO_DECIMALS,
+      lastValidBlockHeight
     })
 
     // Associated token account owned by the PDA
@@ -282,7 +283,6 @@ describe('staking-bridge', () => {
       .postWormholeMessage(
         nonce,
         amount,
-        fee,
         ...bumps
       )
       .accounts(accounts)

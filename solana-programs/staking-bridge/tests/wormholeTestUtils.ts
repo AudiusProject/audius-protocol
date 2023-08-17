@@ -6,11 +6,10 @@ export function formatEthAddress(address: string) {
   return address.slice(2).padStart(64, '0')
 }
 
-export function getPostMessageData(args: { wholeAmount: number, solTokenDecimals: number }) {
+export function getPostMessageData(args: { wholeAmount: number, solTokenDecimals: number, lastValidBlockHeight: number }) {
   return {
-    nonce: new anchor.BN(0),
-    amount: new anchor.BN(args.wholeAmount * 10 ** args.solTokenDecimals),
-    fee: new anchor.BN(0)
+    nonce: new anchor.BN(args.lastValidBlockHeight),
+    amount: new anchor.BN(args.wholeAmount * 10 ** args.solTokenDecimals)
   }
 }
 

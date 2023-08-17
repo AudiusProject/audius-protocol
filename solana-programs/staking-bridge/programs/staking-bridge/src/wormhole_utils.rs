@@ -204,7 +204,6 @@ pub fn execute_wormhole_transfer(
     accounts: &mut PostWormholeMessage,
     nonce: u32,
     amount: u64,
-    fee: u64,
     staking_bridge_pda_bump: u8
 ) -> Result<()> {
     let program_id = &accounts.program_id;
@@ -232,6 +231,7 @@ pub fn execute_wormhole_transfer(
 
     // https://github.com/wormhole-foundation/wormhole/blob/main/solana/modules/token_bridge/program/src/lib.rs#L107
     let instruction_index: u8 = 4;
+    let fee: u64 = 0;
     let data = PostWormholeMessageData {
         nonce,
         amount,
