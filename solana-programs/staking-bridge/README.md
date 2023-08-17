@@ -42,20 +42,19 @@ You can also run `anchor test --skip-deploy` if your Solana Rust program has not
 ## Testing the PDA creation
 Note that the PDA has already been created, so attempting to create it again will fail. Here is [the PDA account](https://explorer.solana.com/address/GwVsdGg5ZjJRzxP1wVhZBDKaS1BgdbV8sVvE4wDE36dU).
 ```
-feePayerSecret=$(cat <fee-payer-keypair-file>) anchor run test-create-pda -- --skip-deploy
+./scripts/testCreatePda.sh
 ```
 
 ## Testing the Raydium swap
-As written in the test, this will swap 0.001 USDC tokens to its AUDIO equivalent.
+This will swap 0.001 USDC tokens to its AUDIO equivalent.
 ```
-feePayerSecret=$(cat <fee-payer-keypair-file>) anchor run test-swap -- --skip-deploy
+./scripts/testRaydiumSwap.sh
 ```
 
 ## Testing the Wormhole transfer
-As written in the test, this will send 0.001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
-
+This will send 0.001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
 ```
-feePayerSecret=$(cat <fee-payer-keypair-file>) anchor run test-wormhole -- --skip-deploy
+./scripts/testWormholeTransfer.sh
 ```
 
 ## Redeeming the Wormhole tokens
