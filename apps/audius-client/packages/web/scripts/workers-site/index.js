@@ -212,12 +212,12 @@ class SEOHandlerHead {
     const tags = `<title>${clean(title)}</title>
     <meta name="description" content="${clean(description)}">
 
-    <link rel="canonical" href="https://audius.co${permalink}">
+    <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
 
     <meta property="og:title" content="${clean(title)}">
     <meta property="og:description" content="${clean(ogDescription)}">
     <meta property="og:image" content="${image}">
-    <meta property="og:url" content="https://audius.co${permalink}">
+    <meta property="og:url" content="https://audius.co${encodeURI(permalink)}">
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="${clean(title)}">
