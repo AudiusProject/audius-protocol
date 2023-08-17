@@ -27,6 +27,7 @@ const Template: Story<HarmonyButtonProps> = (args) => (
       display: 'flex',
       flexDirection: 'column',
       gap: '16px',
+      justifyContent: 'center',
       alignItems: 'flex-start'
     }}
   >
