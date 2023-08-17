@@ -1,7 +1,10 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,10 +22,21 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
 	logger := ss.logger.With("cid", cid)
-	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 
+	isSegmentOrMetadata := false
+	sql := `select exists (
+    select 1 from "Files"
+    where "multihash" = '$1'
+    and ("type" = 'track' OR "type" = 'metadata') limit 1
+  )`
+	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&isSegmentOrMetadata)
+	if err == nil && isSegmentOrMetadata {
+		return c.String(http.StatusGone, "no longer serving segments and metadata")
+	}
+
+	sql = `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 	var storagePath string
-	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
+	err = ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
 	if err != nil && err != pgx.ErrNoRows {
 		logger.Error("error querying cid storage path", "err", err)
 	}
@@ -46,6 +60,26 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 
 	if c.Request().Method == "HEAD" {
 		return c.NoContent(200)
+	}
+
+	source, err := os.Open(diskPath)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	// don't serve metadata blobs
+	if bytes, err := io.ReadAll(source); err == nil {
+		var jsonData map[string]interface{}
+		if err = json.Unmarshal(bytes, &jsonData); err == nil {
+			// if unmarshal is successful, it's a JSON/metadata file (not an image or track)
+			return c.String(http.StatusGone, "no longer serving metadata")
+		}
+	}
+
+	// don't serve ffmpeg segments
+	if isSegment, _ := isFFmpegSegment(diskPath); isSegment {
+		return c.String(http.StatusGone, "no longer serving ffmpeg segments")
 	}
 
 	if err = c.File(diskPath); err != nil {
@@ -282,4 +316,33 @@ func getStorageLocationForCID(cid string) string {
 		directoryID,
 	)
 	return storageLocationForCid
+}
+
+func isFFmpegSegment(filePath string) (bool, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+
+	buffer := make([]byte, 3)
+	_, err = file.Read(buffer)
+	if err != nil {
+		return false, err
+	}
+
+	// if first 3 bytes are an ID3 tag, it's likely an MP3 (not a segment)
+	if bytes.Equal(buffer, []byte{'I', 'D', '3'}) {
+		return false, nil
+	}
+
+	buffer = make([]byte, 512)
+	file.Seek(0, 0)
+	_, err = file.Read(buffer)
+	if err != nil {
+		return false, err
+	}
+
+	// if first 3 bytes contain "FFmpeg," it's likely a segment
+	return bytes.Contains(buffer, []byte("FFmpeg")), nil
 }
