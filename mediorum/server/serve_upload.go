@@ -351,6 +351,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			c.SetParamNames("dirCid", "fileName")
 			c.SetParamValues(jobID, variant)
 			return ss.serveLegacyDirCid(c)
+			// return err
 		} else if host != "" {
 			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			dest := ss.replaceHost(c, host)
@@ -361,6 +362,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			c.SetParamNames("dirCid", "fileName")
 			c.SetParamValues(jobID, variant)
 			return ss.serveLegacyDirCid(c)
+			// return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
 		}
 	} else {
 		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup

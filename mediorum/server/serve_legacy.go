@@ -27,6 +27,10 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		logger.Error("error querying cid storage path", "err", err)
 	}
 
+	if !slices.Contains(ss.attemptedLegacyServes, cid) && len(ss.attemptedLegacyServes) < 100000 {
+		ss.attemptedLegacyServes = append(ss.attemptedLegacyServes, cid)
+	}
+
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
 	if diskPath == "" {
 		return ss.redirectToCid(c, cid)
@@ -42,12 +46,13 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return c.NoContent(200)
 	}
 
-	logger.Info("serving non-image from non-CDK disk", "storagePath", diskPath, "isAudioFile", isAudioFile)
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, cid)
 	}
-	logger.Info("successfully served non-image from non-CDK disk", "storagePath", diskPath, "isAudioFile", isAudioFile)
+	if !slices.Contains(ss.successfulLegacyServes, cid) && len(ss.successfulLegacyServes) < 100000 {
+		ss.successfulLegacyServes = append(ss.successfulLegacyServes, cid)
+	}
 
 	// v1 file listen
 	if isAudioFile {
@@ -70,6 +75,11 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		logger.Error("error querying dirCid storage path", "err", err)
 	}
 
+	key := dirCid + "/" + fileName
+	if !slices.Contains(ss.attemptedLegacyServes, key) && len(ss.attemptedLegacyServes) < 100000 {
+		ss.attemptedLegacyServes = append(ss.attemptedLegacyServes, key)
+	}
+
 	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
 	if diskPath == "" {
@@ -86,12 +96,13 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		return c.NoContent(200)
 	}
 
-	logger.Info("serving image from non-CDK disk", "fileName", fileName, "storagePath", diskPath)
 	if err = c.File(diskPath); err != nil {
 		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, dirCid)
 	}
-	logger.Info("successfully served image from non-CDK disk", "fileName", fileName, "storagePath", diskPath)
+	if !slices.Contains(ss.successfulLegacyServes, key) && len(ss.successfulLegacyServes) < 100000 {
+		ss.successfulLegacyServes = append(ss.successfulLegacyServes, key)
+	}
 
 	return nil
 }
