@@ -15,7 +15,7 @@ from src.tasks.entity_manager.entity_manager import (
     entity_manager_update,
 )
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_TRACK_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
 )
 from src.utils.db_session import get_db
@@ -941,7 +941,7 @@ def test_invalid_track_description(app, mocker):
             "remix_of": {"tracks": [{"parent_track_id": 75808}]},
             "repost_count": 12,
             "save_count": 21,
-            "description": "xtralargeplz" * CHARACTER_LIMIT_TRACK_DESCRIPTION,
+            "description": "xtralargeplz" * CHARACTER_LIMIT_DESCRIPTION,
             "license": "All rights reserved",
             "isrc": None,
             "iswc": None,
