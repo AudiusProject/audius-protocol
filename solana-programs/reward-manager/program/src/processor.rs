@@ -582,7 +582,7 @@ impl Processor {
         let transfer_acct_lamports = transfer_account_info.lamports();
 
         let required_lamports = rent
-            .minimum_balance(0)
+            .minimum_balance(TRANSFER_ACC_SPACE)
             .saturating_sub(transfer_acct_lamports);
 
         // Transfer required lamports from payer to transfer account if necessary.

@@ -141,7 +141,7 @@ async fn success_transfer() {
     // We should have remaining only the amount necessary for the solana account (space = 0).
     assert_eq!(
         transfer_account_data.lamports,
-        rent.minimum_balance(0)
+        rent.minimum_balance(TRANSFER_ACC_SPACE)
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 
@@ -1256,7 +1256,7 @@ async fn success_transfer_denial_with_lamports() {
     // We should have remaining only the amount necessary for the solana account (space = 0).
     assert_eq!(
         transfer_account_data.lamports,
-        rent.minimum_balance(0)
+        rent.minimum_balance(TRANSFER_ACC_SPACE)
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 
