@@ -37,7 +37,7 @@ export const ArtworkField = (props: ArtworkFieldProps) => {
   const hasError = Boolean(touched && error)
 
   return (
-    <>
+    <div>
       <UploadArtwork
         {...otherField}
         artworkUrl={value?.url}
@@ -46,6 +46,6 @@ export const ArtworkField = (props: ArtworkFieldProps) => {
         {...other}
       />
       {hasError ? <HelperText error={hasError}>{error}</HelperText> : null}
-    </>
+    </div>
   )
 }

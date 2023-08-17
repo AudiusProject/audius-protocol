@@ -1,8 +1,13 @@
 .root {
   display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inputRoot {
+  display: flex;
   align-items: center;
   gap: var(--unit-2);
-  width: 100%;
   padding: 0 var(--unit-4);
   border: 1px solid var(--neutral-light-8);
   border-radius: var(--unit-1);
