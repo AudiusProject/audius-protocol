@@ -94,6 +94,7 @@ type MediorumServer struct {
 
 	attemptedLegacyServes  []string
 	successfulLegacyServes []string
+	legacyServesMu         sync.RWMutex
 
 	isSeeding bool
 
