@@ -47,7 +47,7 @@ def test_trending_challenge_should_update(app):
         assert not should_update
 
         # wrong time, right day
-        timestamp = 1629489600
+        timestamp = 1629496800
         should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
