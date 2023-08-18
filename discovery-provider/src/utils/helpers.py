@@ -485,17 +485,6 @@ def decode_all_solana_memos(tx_message: Message):
         return []
 
 
-def get_solana_tx_owner(meta: UiTransactionStatusMeta, idx: int) -> str:
-    return next(
-        (
-            str(balance.owner)
-            for balance in (meta.pre_token_balances or [])
-            if balance.account_index == idx
-        ),
-        "",
-    )
-
-
 def get_valid_instruction(
     tx_message: Message, meta: UiTransactionStatusMeta, program_address: str
 ) -> Optional[CompiledInstruction]:

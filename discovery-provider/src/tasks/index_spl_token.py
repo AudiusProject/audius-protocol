@@ -40,7 +40,6 @@ from src.utils.cache_solana_program import (
 from src.utils.config import shared_config
 from src.utils.helpers import (
     get_account_index,
-    get_solana_tx_owner,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
