@@ -385,7 +385,7 @@ def save_new_records(
             ):
                 if record_type == "PlaylistRoute" or record_type == "TrackRoute":
                     # these are an exception since we want to keep is_current false to preserve old slugs
-                    original_records[record_type][entity_id].is_current = True
+                    original_records[record_type][entity_id].is_current = False
                 else:
                     session.delete(original_records[record_type][entity_id])
                     session.flush()

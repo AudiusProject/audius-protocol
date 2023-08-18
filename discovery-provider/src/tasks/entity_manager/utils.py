@@ -215,7 +215,6 @@ class ManageEntityParameters:
         self.logger = logger  # passed in with EM context
 
     def add_record(self, key, record, record_type=None):
-        print(f"asdf adding record {record}")
         if not record_type:
             record_type = self.entity_type
         # add to new records to insert

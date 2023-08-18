@@ -17,7 +17,6 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
-from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -245,7 +244,6 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
     if latest_database_block.number is None:
         logger.info(f"Block number invalid {latest_database_block}, returning early")
         return False
-    logger.info(f"asdf get_next_block latest_database_block {latest_database_block}")
 
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
@@ -254,7 +252,6 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         # Copy the immutable attribute dict to a mutable dict
         next_block: BlockData = cast(BlockData, dict(next_block_immutable))
         next_block["number"] = next_block["number"] + final_poa_block
-        logger.info(f"asdf get_next_block next_block {next_block}")
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -313,7 +310,6 @@ def index_next_block(
             Fetch transaction receipts
             """
             tx_receipt_dict = fetch_tx_receipts(next_block)
-            logger.info("asdf sorting")
 
             """
             Parse transaction receipts
@@ -324,7 +320,6 @@ def index_next_block(
                 indexing_transaction_index_sort_order_start_block,
             )
             logger.set_context("tx_count", len(sorted_txs))
-            logger.info("asdf sorted")
 
             # Parse tx events in each block
             for tx in sorted_txs:
@@ -339,9 +334,7 @@ def index_next_block(
             """
             Add block to db
             """
-            logger.info("asdf adding next block")
             add_indexed_block_to_db(session, next_block, latest_database_block)
-            logger.info("asdf added next block")
 
             """
             Add state changes in block to db (users, tracks, etc.)
