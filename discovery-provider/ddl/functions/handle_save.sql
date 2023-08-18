@@ -51,10 +51,10 @@ begin
     set track_save_count = (
       select count(*)
       from saves r
-      where r.is_current IS TRUE
-        AND r.is_delete IS FALSE
-        AND r.user_id = new.user_id
-        AND r.save_type = new.save_type
+      where r.is_current is true
+        and r.is_delete is false
+        and r.user_id = new.user_id
+        and r.save_type = new.save_type
     )
     where user_id = new.user_id;
     

@@ -4,6 +4,7 @@ import copy
 import os
 from datetime import datetime
 from typing import Dict, List, Sequence, Tuple, TypedDict, cast
+from src.models.indexing.revert_block import RevertBlock
 
 from hexbytes import HexBytes
 from redis import Redis
@@ -581,8 +582,20 @@ def revert_block(session: Session, block_to_revert: Block):
         logger.info(f"Reverting grant {grant_to_revert}")
         session.delete(grant_to_revert)
 
+    revert_block_record = (
+        session.query(RevertBlock)
+        .filter(RevertBlock.blocknumber == revert_block_number)
+        .first()
+    )
+
+    # delete block record and cascade delete from tables ^
+    session.query(Block).filter(Block.blockhash == revert_hash).delete()
+    if not revert_block_record:
+        logger.info("No reverts to apply")
+        return
+
     revert_records = []
-    prev_records: Dict[str, List[Dict]] = dict(revert_block.prev_records)
+    prev_records: Dict[str, List[Dict]] = dict(revert_block_record.prev_records)
     # apply reverts
     for record_type in prev_records:
         for json_record in prev_records[record_type]:
@@ -592,9 +605,7 @@ def revert_block(session: Session, block_to_revert: Block):
                 k: v for k, v in json_record.items() if k in Model.__table__.columns  # type: ignore
             }
             revert_records.append(Model(**filtered_json_record))
-
     # Remove outdated block entry
-    session.query(Block).filter(Block.blockhash == revert_hash).delete()
     session.add_all(revert_records)
 
     logger.info(

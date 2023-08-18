@@ -34,9 +34,9 @@ begin
   set repost_count = (
     select count(*)
     from reposts r
-    where r.is_current IS TRUE
-      AND r.is_delete IS FALSE
-      AND r.user_id = new.user_id
+    where r.is_current is true
+      and r.is_delete is false
+      and r.user_id = new.user_id
   )
   where user_id = new.user_id;
 
@@ -45,13 +45,13 @@ begin
     milestone_name := 'TRACK_REPOST_COUNT';
     update aggregate_track 
     set repost_count = (
-      SELECT count(*)
-      FROM reposts r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.repost_type = new.repost_type
-          AND r.repost_item_id = new.repost_item_id
+      select count(*)
+      from reposts r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.repost_type = new.repost_type
+          and r.repost_item_id = new.repost_item_id
     )
     where track_id = new.repost_item_id
     returning repost_count into new_val;
@@ -62,13 +62,13 @@ begin
     milestone_name := 'PLAYLIST_REPOST_COUNT';
     update aggregate_playlist
     set repost_count = (
-      SELECT count(*)
-      FROM reposts r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.repost_type = new.repost_type
-          AND r.repost_item_id = new.repost_item_id
+      select count(*)
+      from reposts r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.repost_type = new.repost_type
+          and r.repost_item_id = new.repost_item_id
     )    
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
