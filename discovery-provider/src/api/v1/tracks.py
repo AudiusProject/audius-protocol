@@ -507,11 +507,17 @@ class TrackStream(Resource):
 
         # we cache track cid -> content node so we can avoid
         # checking multiple content nodes for a track
+        # if we already know where to look
         redis_key = f"track_cid:{cid}"
         cached_content_node = redis.get(redis_key)
         stream_url = None
         if cached_content_node:
-            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            logger.info(
+                f"tracks.py | stream | Retrieving {track_id} from cached content node."
+            )
+            stream_url = get_stream_url_from_content_node(
+                str(cached_content_node), path
+            )
             if stream_url:
                 return stream_url
 
@@ -526,6 +532,9 @@ class TrackStream(Resource):
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
         content_nodes = rendezvous.get_n(5, cid)
+        logger.info(
+            f"tracks.py | stream | Trying multiple content nodes to retrieve track {track_id}"
+        )
         for content_node in content_nodes:
             stream_url = get_stream_url_from_content_node(content_node, path)
             if stream_url:
