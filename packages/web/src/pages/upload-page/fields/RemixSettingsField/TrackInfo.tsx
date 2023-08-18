@@ -32,7 +32,7 @@ export const TrackInfo = (props: TrackInfoProps) => {
       <Text variant='body' strength='strong'>
         {track.title}
       </Text>
-      <Text variant='body' strength='strong' color='--neutral-light-2'>
+      <Text variant='body' strength='strong' color='neutralLight2'>
         {messages.by}
       </Text>
       <Text variant='body' strength='strong'>

@@ -1,0 +1,9 @@
+.root {
+  transition: color var(--expressive);
+}
+
+.root:hover {
+  color: var(--primary);
+  text-decoration: underline !important;
+  text-decoration-color: var(--primary-light-2);
+}

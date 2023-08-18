@@ -60,10 +60,10 @@ export const ShareBannerNew = (props: ShareBannerProps) => {
         backgroundImage: `linear-gradient(315deg, rgba(91, 35, 225, 0.8) 0%, rgba(162, 47, 237, 0.8) 100%), url(${backgroundPlaceholder})`
       }}
     >
-      <Text variant='display' size='small' color='--darkmode-static-white'>
+      <Text variant='display' size='small' color='darkmodeStaticWhite'>
         {messages.uploadComplete}
       </Text>
-      <Text variant='heading' size='medium' color='--darkmode-static-white'>
+      <Text variant='heading' size='medium' color='darkmodeStaticWhite'>
         {messages.shareText}
       </Text>
       <div className={styles.buttonContainerNew}>
@@ -72,7 +72,7 @@ export const ShareBannerNew = (props: ShareBannerProps) => {
           leftIcon={<IconTwitterBird />}
           onClick={handleTwitterShare}
           text={
-            <Text variant='title' size='large' color='--secondary'>
+            <Text variant='title' size='large' color='secondary'>
               {messages.twitterButtonText}
             </Text>
           }
@@ -83,7 +83,7 @@ export const ShareBannerNew = (props: ShareBannerProps) => {
           leftIcon={<IconLink />}
           onClick={handleCopyTrackLink}
           text={
-            <Text variant='title' size='large' color='--secondary'>
+            <Text variant='title' size='large' color='secondary'>
               {messages.copyLinkButtonText}
             </Text>
           }

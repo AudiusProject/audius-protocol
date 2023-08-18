@@ -68,7 +68,7 @@ export const PremiumContentPurchaseModal = () => {
       <ModalHeader onClose={handleClose} showDismissButton>
         <Text
           variant='label'
-          color='--neutral-light-2'
+          color='neutralLight2'
           size='xLarge'
           strength='strong'
           className={styles.title}

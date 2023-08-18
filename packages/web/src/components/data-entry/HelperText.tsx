@@ -16,7 +16,7 @@ export const HelperText = (props: HelperTextProps) => {
       <Text
         size='xSmall'
         strength='default'
-        color={error ? '--accent-red' : '--neutral-light-4'}
+        color={error ? 'accentRed' : 'neutralLight4'}
       >
         {children}
       </Text>
