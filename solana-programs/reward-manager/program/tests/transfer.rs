@@ -22,8 +22,8 @@ use solana_sdk::{
 use std::mem::MaybeUninit;
 use utils::*;
 
+// Test a transfer can be completed successfully
 #[tokio::test]
-/// Test a transfer can be completed successfully
 async fn success_transfer() {
     let TestConstants {
         reward_manager,
@@ -137,6 +137,8 @@ async fn success_transfer() {
 
     let transfer_account_data = get_account(&mut context, &transfer_account).await.unwrap();
 
+    // Assert that we have spent the lamports to make TRANSFER_ACC_SPACE.
+    // We should have remaining only the amount necessary for the solana account (space = 0).
     assert_eq!(
         transfer_account_data.lamports,
         rent.minimum_balance(TRANSFER_ACC_SPACE)
@@ -156,11 +158,11 @@ async fn success_transfer() {
     assert!(verified_messages_data.is_none());
 }
 
+// Creates an invalid messages account by filling it wihout an oracle attestation,
+// validates that we see the expected error on calling `evaluate`, and then that we can
+// wipe the account by calling `submit` again with correct attestations and
+// finally succeed in `evaluate`.
 #[tokio::test]
-/// Creates an invalid messages account by filling it wihout an oracle attestation,
-/// validates that we see the expected error on calling `evaluate`, and then that we can
-/// wipe the account by calling `submit` again with correct attestations and
-/// finally succeed in `evaluate`.
 async fn invalid_messages_are_wiped() {
     let TestConstants {
         reward_manager,
@@ -347,8 +349,8 @@ async fn invalid_messages_are_wiped() {
     assert_eq!(recipient_account.amount, 10_000u64)
 }
 
+// Purposefully send a corrupted DN attestation
 #[tokio::test]
-/// Purposefully send a corrupted DN attestation
 async fn failure_transfer_invalid_message_format() {
     let TestConstants {
         reward_manager,
@@ -488,8 +490,8 @@ async fn failure_transfer_invalid_message_format() {
     assert_custom_error(tx_result, 0, AudiusProgramError::IncorrectMessages)
 }
 
+// Purposefully send a corrupted AAO Attestation
 #[tokio::test]
-/// Purposefully send a corrupted AAO Attestation
 async fn failure_transfer_invalid_oracle_message_format() {
     let TestConstants {
         reward_manager,
@@ -609,8 +611,8 @@ async fn failure_transfer_invalid_oracle_message_format() {
     assert_custom_error(tx_result, 0, AudiusProgramError::IncorrectMessages)
 }
 
+// Test that we fail if missing AAO attestation
 #[tokio::test]
-/// Test that we fail if missing AAO attestation
 async fn failure_transfer_incorrect_number_of_verified_messages() {
     let TestConstants {
         reward_manager,
@@ -720,8 +722,8 @@ async fn failure_occupy_transfer_account() {
     failed_tx.sign(&[&context.payer], recent_blockhash);
 }
 
+// Ensure we fail trying to disburse multiple times for the same challenge
 #[tokio::test]
-/// Ensure we fail trying to disburse multiple times for the same challenge
 async fn failure_multiple_disbursements() {
     let mut c = setup_test_environment().await;
 
@@ -867,8 +869,8 @@ async fn failure_multiple_disbursements() {
     assert_custom_error(res, 0, AudiusProgramError::AlreadySent);
 }
 
+// Ensure we fail if only AAO attestations and no Discovery Node attestations are included
 #[tokio::test]
-/// Ensure we fail if only AAO attestations and no Discovery Node attestations are included
 async fn failure_only_aao_attestations() {
     let TestConstants {
         reward_manager,
@@ -1106,6 +1108,171 @@ async fn disallows_transfers_to_invalid_account() {
         spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
     assert_eq!(recipient_account.amount, 0);
 }
+
+// Verify that someone cannot cause a submit attestations denial by sending lamports
+// before it is used
+#[tokio::test]
+async fn success_transfer_denial_with_lamports() {
+    let TestConstants {
+        reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        senders_message,
+        mut context,
+        transfer_id,
+        oracle_derived_address,
+        recipient_eth_key,
+        token_account,
+        rent,
+        mut rng,
+        manager_account,
+        recipient_sol_key,
+        ..
+    } = setup_test_environment().await;
+
+    // Generate data and create senders
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
+        signers[i] = derived_address;
+    }
+
+    let transfer_account = get_transfer_account(&reward_manager, transfer_id);
+    let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
+
+    // Transfer 1 lamport to verified_messages_account to potentially deny its creation
+    let send_lamports_instruction = system_instruction::transfer(
+        &context.payer.pubkey(),
+        &verified_messages_account,
+        1
+    );
+    let mut send_lamports_transaction = Transaction::new_with_payer(
+        &[send_lamports_instruction],
+        Some(&context.payer.pubkey())
+    );
+    send_lamports_transaction.sign(&[&context.payer], context.last_blockhash);
+    context.banks_client.process_transaction(send_lamports_transaction).await.unwrap();
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Add 3 messages and AAO
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst =
+            new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), (2 * item.0) as u8);
+        instructions.push(inst);
+        instructions.push(
+            instruction::submit_attestations(
+                &audius_reward_manager::id(),
+                &reward_manager.pubkey(),
+                &signers[item.0],
+                &context.payer.pubkey(),
+                transfer_id.to_string(),
+            )
+            .unwrap(),
+        );
+    }
+
+    let oracle_sign = new_secp256k1_instruction_2_0(
+        &oracle_priv_key,
+        bot_oracle_message.as_ref(),
+        (keys.len() * 2) as u8,
+    );
+    instructions.push(oracle_sign);
+    instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &oracle_derived_address,
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Transfer 1 lamport to transfer_account to potentially deny its creation
+    let send_lamports_instruction = system_instruction::transfer(
+        &context.payer.pubkey(),
+        &transfer_account,
+        1
+    );
+    let mut send_lamports_transaction = Transaction::new_with_payer(
+        &[send_lamports_instruction],
+        Some(&context.payer.pubkey())
+    );
+    send_lamports_transaction.sign(&[&context.payer], context.last_blockhash);
+    context.banks_client.process_transaction(send_lamports_transaction).await.unwrap();
+
+    let verified_messages_data = get_account(&mut context, &verified_messages_account)
+        .await
+        .unwrap();
+    assert_eq!(
+        verified_messages_data.lamports,
+        rent.minimum_balance(VERIFIED_MESSAGES_LEN)
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction::evaluate_attestations(
+            &audius_reward_manager::id(),
+            &verified_messages_account,
+            &reward_manager.pubkey(),
+            &token_account.pubkey(),
+            &recipient_sol_key.derive.address,
+            &oracle_derived_address,
+            &context.payer.pubkey(),
+            10_000u64,
+            transfer_id.to_string(),
+            recipient_eth_key,
+        )
+        .unwrap()],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    let transfer_account_data = get_account(&mut context, &transfer_account).await.unwrap();
+
+    // Assert that we have spent the lamports to make TRANSFER_ACC_SPACE.
+    // We should have remaining only the amount necessary for the solana account (space = 0).
+    assert_eq!(
+        transfer_account_data.lamports,
+        rent.minimum_balance(TRANSFER_ACC_SPACE)
+    );
+    assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
+
+    // Assert that we transferred the expected amount
+    let recipient_account_data = get_account(&mut context, &recipient_sol_key.derive.address)
+        .await
+        .unwrap();
+    let recipient_account =
+        spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+    assert_eq!(recipient_account.amount, 10_000u64);
+
+    // Assert that we wiped the verified messages account
+    let verified_messages_data = get_account(&mut context, &verified_messages_account).await;
+    assert!(verified_messages_data.is_none());
+}
+
 
 // Helpers
 

@@ -200,40 +200,45 @@ impl Processor {
         // Create user bank account signature and invoke from program
         let signature = &[&mint_key.to_bytes()[..32], &[pair.base.seed]];
 
+        let account_to_create_lamports = account_to_create.lamports();
+        let required_lamports_remaining =
+            required_lamports.saturating_sub(account_to_create_lamports);
+
+        // Transfer required lamports from payer to account to create if necessary.
+        if required_lamports_remaining > 0 {
+            invoke(
+                &system_instruction::transfer(
+                    funder.key,
+                    account_to_create.key,
+                    required_lamports_remaining,
+                ),
+                &[funder.clone(), account_to_create.clone()],
+            )?;
+        }
+
         invoke_signed(
-            &system_instruction::create_account_with_seed(
-                funder.key,
+            &system_instruction::allocate_with_seed(
                 account_to_create.key,
                 base.key,
                 pair.derive.seed.as_str(),
-                required_lamports,
                 space,
                 &spl_token::id(),
             ),
-            &[funder.clone(), account_to_create.clone(), base.clone()],
+            &[account_to_create.clone(), base.clone()],
             &[signature],
-        )
-    }
+        )?;
+        invoke_signed(
+            &system_instruction::assign_with_seed(
+                account_to_create.key,
+                base.key,
+                pair.derive.seed.as_str(),
+                &spl_token::id(),
+            ),
+            &[account_to_create.clone(), base.clone()],
+            &[signature],
+        )?;
 
-    /// Create account
-    #[allow(clippy::too_many_arguments)]
-    pub fn create_account<'a>(
-        program_id: &Pubkey,
-        from: AccountInfo<'a>,
-        to: AccountInfo<'a>,
-        space: usize,
-        signers_seeds: &[&[&[u8]]],
-        rent: &Rent,
-    ) -> ProgramResult {
-        let ix = system_instruction::create_account(
-            from.key,
-            to.key,
-            rent.minimum_balance(space),
-            space as u64,
-            program_id,
-        );
-
-        invoke_signed(&ix, &[from, to], signers_seeds)
+        Ok(())
     }
 
     /// Helper to initialize user token account
@@ -306,7 +311,7 @@ impl Processor {
         rent: &Rent,
     ) -> Result<u64, ProgramError> {
         let index = sysvar::instructions::load_current_index_checked(&instruction_info)
-        .map_err(to_claimable_tokens_error)?;
+            .map_err(to_claimable_tokens_error)?;
 
         // instruction can't be first in transaction
         // because must follow after `new_secp256k1_instruction`
@@ -350,25 +355,47 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        let nonce_acct_lamports = nonce_account_info.lamports();
-        // Default nonce starts at 0
-        let mut current_chain_nonce = 0;
-        let mut current_nonce_account: NonceAccount;
+        let signers_seeds = &[
+            &authority.key.to_bytes()[..32],
+            &nonce_acct_seed.as_slice(),
+            &[bump_seed],
+        ];
 
-        if nonce_acct_lamports == 0 {
-            // Create user nonce account if not found
-            let signers_seeds = &[
-                &authority.key.to_bytes()[..32],
-                &nonce_acct_seed.as_slice(),
-                &[bump_seed],
-            ];
-            Self::create_account(
-                program_id,
-                funder_account_info.clone(),
-                nonce_account_info.clone(),
-                NonceAccount::LEN,
+        // Calculate if additional lamports are required to store nonce
+        // just in case someone is trying to deny this nonce from being used.
+        let nonce_acct_lamports = nonce_account_info.lamports();
+        let required_lamports = rent
+            .minimum_balance(NonceAccount::LEN)
+            .saturating_sub(nonce_acct_lamports);
+
+        // Transfer required lamports from payer to nonce account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(
+                    funder_account_info.key,
+                    nonce_account_info.key,
+                    required_lamports,
+                ),
+                &[funder_account_info.clone(), nonce_account_info.clone()],
+            )?;
+        }
+
+        let mut current_nonce_account: NonceAccount;
+        let mut current_chain_nonce = 0;
+
+        // If the nonce account is empty / doesn't exist yet, create it.
+        let nonce_acct_is_empty = nonce_account_info.try_data_is_empty().unwrap_or(true);
+        if nonce_acct_is_empty {
+            invoke_signed(
+                &system_instruction::allocate(nonce_account_info.key, NonceAccount::LEN as u64),
+                &[nonce_account_info.clone()],
                 &[signers_seeds],
-                rent,
+            )?;
+
+            invoke_signed(
+                &system_instruction::assign(nonce_account_info.key, program_id),
+                &[nonce_account_info.clone()],
+                &[signers_seeds],
             )?;
 
             current_nonce_account = NonceAccount::new();
