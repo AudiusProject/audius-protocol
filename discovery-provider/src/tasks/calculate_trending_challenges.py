@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime
+from datetime import date
 from typing import Optional
 
 from redis import Redis
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
-def date_to_week(date: datetime) -> str:
+def date_to_week(date: date) -> str:
     return date.strftime("%Y-%m-%d")
 
 
@@ -53,7 +53,7 @@ def dispatch_trending_challenges(
     latest_blocknumber: int,
     tracks,
     version: str,
-    date: datetime,
+    date: date,
     type: TrendingType,
 ):
     for idx, track in enumerate(tracks):
@@ -73,7 +73,7 @@ def dispatch_trending_challenges(
 
 
 def enqueue_trending_challenges(
-    db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus, date: datetime
+    db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus, date: date
 ):
     logger.info(
         "calculate_trending_challenges.py | Start calculating trending challenges"
@@ -176,13 +176,11 @@ def enqueue_trending_challenges(
 # ####### CELERY TASKS ####### #
 @celery.task(name="calculate_trending_challenges", bind=True)
 @save_duration_metric(metric_group="celery_task")
-def calculate_trending_challenges_task(self, date=None):
+def calculate_trending_challenges_task(self, date: Optional[date] = None):
     """Caches all trending combination of time-range and genre (including no genre)."""
     if date is None:
         logger.error("calculate_trending_challenges.py | Must be called with a date")
         return
-    # Celery gives this to us formatted as '2022-01-01T00:00:00', need to parse into datetime
-    date = datetime.fromisoformat(date)
     db = calculate_trending_challenges_task.db
     redis = calculate_trending_challenges_task.redis
     challenge_bus = calculate_trending_challenges_task.challenge_event_bus
