@@ -1,32 +1,9 @@
--- for all tables with is_current
--- use a fkey constraint that cascades delete
 -- delete is_current false
+-- for now, only delete associated_wallets and user_events
+-- these tables do not have is_current in the pkey so re-inserting a prev record would have conflicts
 begin;
 
-CREATE OR REPLACE FUNCTION drop_fk_constraints(_ref_table_name text)
-RETURNS VOID AS
-$$
-DECLARE
-   _constraint_name text;
-   _table_name text;
-BEGIN
-   FOR _constraint_name, _table_name IN
-      SELECT conname, conrelid::regclass::text
-      FROM   pg_constraint
-      WHERE  confrelid = _ref_table_name::regclass
-      AND    conrelid::regclass::text <> 'revert_blocks' -- exclude revert_blocks since its constraint is correct
-   LOOP
-      EXECUTE format('ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s', 
-                     quote_ident(_table_name), 
-                     quote_ident(_constraint_name));
-   END LOOP;
-END
-$$ LANGUAGE plpgsql;
-SELECT drop_fk_constraints('blocks');
-
-
-
-CREATE OR REPLACE FUNCTION delete_rows(_table_names text[])
+CREATE OR REPLACE FUNCTION delete_is_current_false_rows(_table_names text[])
 RETURNS VOID AS
 $$
 DECLARE
@@ -44,57 +21,9 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION add_fk_constraints(_table_names text[])
-RETURNS VOID AS
-$$
-DECLARE
-   _table_name text;
-BEGIN
-   FOREACH _table_name IN ARRAY _table_names
-   LOOP
-      -- Logging the action
-      RAISE NOTICE 'Adding foreign key constraint to table %', _table_name;
-      
-      EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (blocknumber) REFERENCES blocks (number) ON DELETE CASCADE', 
-                     quote_ident(_table_name), 
-                     quote_ident(_table_name || '_blocknumber_fkey'));
-                     
-   END LOOP;
-END
-$$ LANGUAGE plpgsql;
-
-
-SELECT delete_rows(ARRAY[
+SELECT delete_is_current_false_rows(ARRAY[
     'associated_wallets', 
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'tracks', 
-    'user_events', 
-    'users'
-]
-);
-
-SELECT add_fk_constraints(ARRAY[
-    'associated_wallets', 
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlist_routes', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'track_routes', 
-    'tracks', 
-    'user_events', 
-    'users'
+    'user_events'
 ]
 );
 
