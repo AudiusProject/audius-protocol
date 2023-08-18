@@ -20,10 +20,11 @@ where
         is_current = false
         or is_current = true
     );
+
 -- remove dupes
 -- pick most recent row with is_current and delete others 
 with
-    max_blocknumbers as (
+    dupes as (
         select
             *
         from
@@ -46,15 +47,25 @@ with
         where
             a.current_count > 1
     )
-delete from reposts using max_blocknumbers
-where
-    reposts.repost_item_id = max_blocknumbers.repost_item_id
-    and reposts.user_id = max_blocknumbers.user_id
-    and reposts.repost_type = max_blocknumbers.repost_type
-    and reposts.blocknumber < max_blocknumbers.max_blocknumber;
+update reposts
+set is_current = false
+where (repost_item_id, user_id, blocknumber) in (
+    select 
+        d.repost_item_id,
+        d.user_id,
+        r.blocknumber
+    from dupes d
+    join reposts r 
+    on d.repost_item_id = r.repost_item_id 
+    and d.user_id = r.user_id 
+    and r.blocknumber < d.max_blocknumber
+    where r.is_current = true
+);
+
+
 
 with
-    max_blocknumbers as (
+    dupes as (
         select
             *
         from
@@ -77,12 +88,19 @@ with
         where
             a.current_count > 1
     )
-delete from saves using max_blocknumbers
-where
-    saves.save_item_id = max_blocknumbers.save_item_id
-    and saves.user_id = max_blocknumbers.user_id
-    and saves.save_type = max_blocknumbers.save_type
-    and saves.blocknumber < max_blocknumbers.max_blocknumber;
-
+update saves
+set is_current = false
+where (save_item_id, user_id, blocknumber) in (
+    select 
+        d.save_item_id,
+        d.user_id,
+        r.blocknumber
+    from dupes d
+    join saves r 
+    on d.save_item_id = r.save_item_id 
+    and d.user_id = r.user_id 
+    and r.blocknumber < d.max_blocknumber
+    where r.is_current = true
+);
 
 commit;
