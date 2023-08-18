@@ -77,7 +77,12 @@ pub struct CreatePDA<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(payment_router_pda_bump: u8, _amounts: Vec<u8>, _total_amount: u64, _is_audio: bool)]
+#[instruction(
+    payment_router_pda_bump: u8,
+    _amounts: Vec<u64>,
+    _total_amount: u64,
+    _is_audio: bool
+)]
 pub struct Route<'info> {
     #[account(mut)]
     /// CHECK: This is the token account owned by the PDA.
