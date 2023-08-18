@@ -57,7 +57,7 @@ export const MultiTrackSidebar = () => {
                 size='xSmall'
                 fill='accentRed'
               />
-              <Text size='xSmall' color='--accent-red'>
+              <Text size='xSmall' color='accentRed'>
                 {messages.fixErrors}
               </Text>
             </div>
@@ -140,7 +140,7 @@ const TrackRow = (props: TrackRowProps) => {
             ) : (
               <Text
                 className={styles.trackIndex}
-                color={isSelected ? '--secondary' : '--neutral'}
+                color={isSelected ? 'secondary' : 'neutral'}
               >
                 {index + 1}
               </Text>

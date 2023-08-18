@@ -17,6 +17,10 @@
  ```
 */
 
+.root {
+  color: var(--text-color);
+}
+
 /* Display Styles */
 .display {
   font-weight: var(--font-bold);
