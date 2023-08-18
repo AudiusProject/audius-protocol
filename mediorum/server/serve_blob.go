@@ -68,6 +68,34 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
+func (ss *MediorumServer) getBlobDeprecated(c echo.Context) error {
+	cid := c.Param("cid")
+
+	// the only keys we store with ".jpg" suffixes are of the format "<cid>/<size>.jpg", so remove the ".jpg" if it's just like "<cid>.jpg"
+	// this is to support clients that forget to leave off the .jpg for this legacy format
+	if strings.HasSuffix(cid, ".jpg") && !strings.Contains(cid, "/") {
+		cid = cid[:len(cid)-4]
+
+		// find and replace cid parameter for future calls
+		names := c.ParamNames()
+		values := c.ParamValues()
+		for i, name := range names {
+			if name == "cid" {
+				values[i] = cid
+			}
+		}
+
+		// set parameters back to the context
+		c.SetParamNames(names...)
+		c.SetParamValues(values...)
+	}
+
+	if cidutil.IsLegacyCID(cid) {
+		return ss.serveLegacyCid(c)
+	}
+	return c.String(404, "blob not found")
+}
+
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
@@ -142,12 +170,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	host, err := ss.findNodeToServeBlob(cid)
 	if err == nil && host != "" {
 		dest := ss.replaceHost(c, host)
+		query := dest.Query()
+		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
+		dest.RawQuery = query.Encode()
 		return c.Redirect(302, dest.String())
 	}
 
 	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
 	if cidutil.IsLegacyCID(cid) {
-		logger.Debug("serving legacy cid")
 		return ss.serveLegacyCid(c)
 	}
 
@@ -180,7 +210,19 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 		fallbackHealthyHosts = append(fallbackHealthyHosts, blob.Host)
 	}
 	fallbackHostWithBlob := ss.raceHostHasBlob(key, fallbackHealthyHosts)
-	return fallbackHostWithBlob, nil
+	if fallbackHostWithBlob != "" {
+		return fallbackHostWithBlob, nil
+	}
+
+	// try unhealthy hosts as a last resort
+	unhealthyHosts := []string{}
+	for _, peer := range ss.Config.Peers {
+		if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
+			unhealthyHosts = append(unhealthyHosts, peer.Host)
+		}
+	}
+	unhealthyHostWithBlob := ss.raceHostHasBlob(key, unhealthyHosts)
+	return unhealthyHostWithBlob, nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {

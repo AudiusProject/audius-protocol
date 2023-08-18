@@ -3,16 +3,17 @@ import duration from "dayjs/plugin/duration";
 import { Knex, knex } from "knex";
 import { setIntervalAsync } from "set-interval-async";
 import { Table } from "storage/src/index";
-import { initializeDiscoveryDb, initializeIdentityDb } from "./db";
+import { initializeDiscoveryDb } from "./db";
 
 dayjs.extend(duration);
 
-export interface AppParams {
-  discoveryDb: string,
-  identityDb: string
-}
+export type AppParams<AppData> = {
+  appData?: AppData;
+  discoveryDb?: Knex;
+  identityDb?: Knex;
+};
 
-export default class App<AppData> {
+export default class App<AppData = Map<string, string>> {
   // database connections
   private discoveryDb: Knex;
   private identityDb?: Knex;
@@ -34,15 +35,14 @@ export default class App<AppData> {
 
   private appData: AppData;
 
-  constructor(appData: AppData, params: Partial<AppParams>) {
-    const { discoveryDb, identityDb } = params
-    this.discoveryDb = initializeDiscoveryDb(discoveryDb);
-    this.identityDb = initializeIdentityDb(identityDb)
+  constructor({ discoveryDb, identityDb, appData }: AppParams<AppData>) {
+    this.discoveryDb = discoveryDb || initializeDiscoveryDb();
+    this.identityDb = identityDb;
     this.listeners = new Map();
     this.scans = new Map();
     this.tickers = [];
     this.tasks = [];
-    this.appData = appData;
+    this.appData = (appData || new Map()) as AppData;
   }
 
   /* External Builder Methods */
@@ -142,7 +142,6 @@ export default class App<AppData> {
   // good for long running CPU bound operations
   async spawn<T>(task: () => T): Promise<T> {
     throw new Error("Spawn not implemented yet");
-    return task(); // unreachable
   }
 
   /* Internal Builder Methods */
@@ -174,6 +173,8 @@ export default class App<AppData> {
   private initTickerHandlers(): (() => Promise<void>)[] {
     const tickers = [];
     for (const [interval, callback] of this.tickers) {
+      // Dispatch single tick so that we trigger on the "leading edge"
+      callback(this).catch(console.error);
       const func = async () => {
         setIntervalAsync(async () => {
           await callback(this).catch(console.error);

@@ -16,7 +16,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_TRACK_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
     Action,
     EntityType,
@@ -294,9 +294,9 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
             )
-        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
+        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_DESCRIPTION:
             raise IndexingValidationError(
-                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations

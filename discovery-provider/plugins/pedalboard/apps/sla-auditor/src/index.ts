@@ -1,13 +1,21 @@
 import { log } from "logger";
 import App from "basekit/src/app";
 import { audit } from "./audit";
-
-type SharedData = {};
+import { SharedData, initSharedData } from "./config";
+import { createTables } from "./db";
 
 const main = async () => {
-  await new App<SharedData>({}).tick({ hours: 1 }, audit).run();
+  const dataRes = await initSharedData();
+  if (dataRes.err) {
+    console.error("SETUP ERROR = ", dataRes);
+    return;
+  }
+  const data = dataRes.unwrap();
+
+  await new App<SharedData>({ appData: data })
+    .task(createTables)
+    .tick({ minutes: 10 }, audit)
+    .run();
 };
 
-(async () => {
-  await main().catch(log);
-})();
+main().catch(log);

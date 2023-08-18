@@ -6,7 +6,7 @@ from src.exceptions import IndexingValidationError
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
     PLAYLIST_TRACK_LIMIT,
     Action,
@@ -163,10 +163,10 @@ def validate_playlist_tx(params: ManageEntityParameters):
         playlist_description = params.metadata.get("description")
         if (
             playlist_description
-            and len(playlist_description) > CHARACTER_LIMIT_PLAYLIST_DESCRIPTION
+            and len(playlist_description) > CHARACTER_LIMIT_DESCRIPTION
         ):
             raise IndexingValidationError(
-                f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_PLAYLIST_DESCRIPTION}"
+                f"Playlist {playlist_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
         if params.metadata.get("playlist_contents"):
             if (
