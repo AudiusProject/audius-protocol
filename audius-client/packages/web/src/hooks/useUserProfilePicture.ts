@@ -48,7 +48,6 @@ export const useProfilePicture = (
   return useImageSize({
     dispatch,
     id: userId,
-    sizes: profilePictureSizes ?? null
     sizes: profilePictureSizes ?? null,
     size,
     action: fetchProfilePicture,
