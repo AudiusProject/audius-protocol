@@ -21,6 +21,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// NOTE: These steps require comenting and uncommenting out various parts. That's up to you to figure out ;)
+
 // STEP 1: Get CIDs from Discovery with this SQL:
 
 // select cover_art_sizes, track_cid, track_id from tracks where is_current = true;
@@ -90,9 +92,20 @@ with open(input_file_path, 'r') as infile, open(output_file_path, 'w') as outfil
         outfile.write(f"{encoded_id}\t{cid}\n")
 */
 
-// STEP 6: Copy over image files as well, and run fixMissingCids()
+// STEP 6: Copy over image files as well, and run fixMissingCids(), making sure it calls fixImageCID() and not fixLegacyImageCID() for each line
 
 // STEP 7: View the routes (see server.go) to see which CIDs were migrated, fixed, or failed. Re-run the failed ones.
+
+// STEP 8: Run these on Discovery to get images in the super duper old format (I've already included them in super_duper_legacy_image_cids.txt):
+// Note: These are users who are suuuper old and have not since edited their profile/track/playlist, which would've triggered moving the old to the new.
+// select cover_art from tracks where is_current = true and cover_art is not null;
+// select profile_picture from users where is_current = true and profile_picture is not null;
+// select cover_photo from users where is_current = true and cover_photo is not null;
+// select playlist_image_multihash from playlists where is_current = true playlist_image_multihash is not null;
+
+// STEP 9: Run fixMissingCids(), but this make it call fixLegacyImageCID() on each line and not fixImageCID()
+
+// STEP 10: Do the same thing again, but this time uncomment out the part to duplicate the unsized (just plain CID) images to all sizes
 
 var numImageSuccesses int
 var numTrackCidSuccesses int
@@ -369,6 +382,16 @@ func (ss *MediorumServer) fixMissingCids() {
 	scanner = bufio.NewScanner(imageFile)
 	for scanner.Scan() {
 		imageLine := scanner.Text()
+		if !strings.Contains(imageLine, "/") && strings.HasPrefix(imageLine, "Qm") {
+			// try to fix super legacy format (`cover_art`, `profile_picture`, `cover_photo`, `playlist_image_multihash`)
+			imageCid := imageLine
+			g.Go(func() error {
+				ss.fixLegacyImageCID(imageCid)
+				return nil
+			})
+			continue
+		}
+
 		parts := strings.Split(imageLine, "/")
 		if len(parts) != 2 {
 			ss.logger.Error("skipping line because it doesn't have cid + size", "line", imageLine)
@@ -652,4 +675,132 @@ func downloadToTempFile(urlStr string) (string, error) {
 	}
 
 	return tempFile.Name(), nil
+}
+
+func (ss *MediorumServer) fixLegacyImageCID(cid string) {
+	// check if it's already migrated on this node
+	shardedCid := cidutil.ShardCID(cid)
+	attr, err := ss.bucket.Attributes(context.Background(), shardedCid)
+	if err == nil && attr.Size > 0 {
+		// ONLY RUN THIS BLOCK AFTER RUNNING THE CODE AFTER IT. FIRST, JUST RETURN EARLY ON THIS LINE
+
+		// assuming it exists now, copy to every other size key
+		for _, size := range orderedSizes {
+			dstKey := fmt.Sprintf("%s/%s", cid, size)
+			exists, err := ss.bucket.Exists(context.Background(), dstKey)
+			if err == nil && !exists {
+				err = ss.bucket.Copy(context.Background(), dstKey, shardedCid, nil)
+				// record that we "have" this key
+				if err != nil {
+					fixMu.Lock()
+					failedImageCids = append(failedImageCids, cid)
+					fixMu.Unlock()
+					return
+				}
+				var exists bool
+				ss.crud.DB.Raw(
+					"SELECT EXISTS(SELECT 1 FROM blobs WHERE host = ? AND key = ? LIMIT 1)",
+					ss.Config.Self.Host,
+					dstKey,
+				).Scan(&exists)
+				if !exists {
+					err = ss.crud.Create(&Blob{
+						Host:      ss.Config.Self.Host,
+						Key:       dstKey,
+						CreatedAt: time.Now().UTC(),
+					})
+					if err != nil {
+						fixMu.Lock()
+						failedImageCids = append(failedImageCids, cid)
+						fixMu.Unlock()
+						return
+					}
+				}
+
+				fixMu.Lock()
+				migratedImageCids = append(migratedImageCids, cid)
+				fixMu.Unlock()
+			}
+		}
+		return
+	}
+
+	// FIRST UNCOMMENT BELOW AND RUN THIS
+
+	// // check if it's already migrated on another node
+	// hostWithMigratedBlob, err := ss.findNodeToServeBlob(cid)
+	// if err == nil && hostWithMigratedBlob != "" {
+	// 	return
+	// }
+
+	// // try to migrate from own disk first
+	// diskPath := getDiskPathOnlyIfFileExists("", cid, cid)
+	// if diskPath != "" {
+	// 	err = ss.moveFromDiskToMyBucket(diskPath, cid, false)
+	// 	if err == nil {
+	// 		fixMu.Lock()
+	// 		migratedImageCids = append(migratedImageCids, cid)
+	// 		fixMu.Unlock()
+	// 		return
+	// 	}
+	// }
+
+	// // try to download from legacy path on another host in the network
+	// urlWithBlob, err := ss.findNodeToServeUnmigratedLegacyImage(cid)
+	// if err == nil && urlWithBlob != "" {
+	// 	err = ss.copyFromAnotherNodeToMyBucket(urlWithBlob, cid)
+	// 	if err == nil {
+	// 		fixMu.Lock()
+	// 		migratedImageCids = append(migratedImageCids, cid)
+	// 		fixMu.Unlock()
+	// 		return
+	// 	}
+	// }
+
+	// fixMu.Lock()
+	// failedImageCids = append(failedImageCids, cid)
+	// fixMu.Unlock()
+}
+
+func (ss *MediorumServer) findNodeToServeUnmigratedLegacyImage(cid string) (string, error) {
+	ctx := context.Background()
+
+	cidLookupHosts, err := ss.findHostsWithCid(ctx, cid)
+	if err != nil {
+		return "", err
+	}
+
+	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
+
+	// find the first healthy host that we know has the cid (thanks to our cid_lookup table)
+	for _, host := range cidLookupHosts {
+		if !slices.Contains(healthyHosts, host) || host == ss.Config.Self.Host {
+			continue
+		}
+		urlStr := fmt.Sprintf("%s/content/%s", host, cid)
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			continue
+		}
+		if dest, is200 := ss.diskCheckUrl(*u, host); is200 {
+			return dest, nil
+		}
+	}
+
+	// check healthy hosts via HEAD request to see if they have the cid but aren't in our cid_lookup
+	for _, host := range healthyHosts {
+		if host == ss.Config.Self.Host || slices.Contains(cidLookupHosts, host) {
+			continue
+		}
+		urlStr := fmt.Sprintf("%s/content/%s", host, cid)
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			continue
+		}
+		if dest, is200 := ss.diskCheckUrl(*u, host); is200 {
+			return dest, nil
+		}
+	}
+
+	return "", nil
 }
