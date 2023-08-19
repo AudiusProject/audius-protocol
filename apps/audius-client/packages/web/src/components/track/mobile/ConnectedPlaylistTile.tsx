@@ -32,7 +32,6 @@ import { PlaylistTileProps } from 'components/track/types'
 import { AppState } from 'store/types'
 import {
   collectionPage,
-  profilePage,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE
 } from 'utils/route'
@@ -167,14 +166,6 @@ const ConnectedPlaylistTile = ({
     [goToRoute, getRoute]
   )
 
-  const goToArtistPage = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
-      e.stopPropagation()
-      goToRoute(profilePage(user.handle))
-    },
-    [goToRoute, user]
-  )
-
   const onShare = useCallback(() => {
     shareCollection(collection.playlist_id)
   }, [shareCollection, collection.playlist_id])
@@ -281,6 +272,7 @@ const ConnectedPlaylistTile = ({
       isPublic={!collection.is_private}
       contentTitle={collection.is_album ? 'album' : 'playlist'}
       playlistTitle={collection.playlist_name}
+      permalink={collection.permalink}
       artistHandle={user.handle}
       artistName={user.name}
       artistIsVerified={user.is_verified}
@@ -310,7 +302,6 @@ const ConnectedPlaylistTile = ({
       isLoading={isActive && isBuffering}
       activeTrackUid={playingUid || null}
       goToRoute={goToRoute}
-      goToArtistPage={goToArtistPage}
       goToCollectionPage={goToCollectionPage}
       toggleSave={toggleSave}
       toggleRepost={toggleRepost}

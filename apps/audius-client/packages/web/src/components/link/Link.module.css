@@ -1,4 +1,6 @@
 .root {
+  display: inline-flex;
+  align-items: center;
   transition: color var(--expressive);
 }
 

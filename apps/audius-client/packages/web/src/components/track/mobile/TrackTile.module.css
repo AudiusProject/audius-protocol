@@ -131,19 +131,11 @@
   margin-right: var(--unit-3);
 }
 
-.title path {
-  fill: var(--primary);
-}
-
-.title svg {
-  flex: 0 0 auto;
-}
-
 .titlesActive {
   color: var(--primary);
 }
 
-.titles div {
+.text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -158,27 +150,18 @@
   margin-top: auto;
   padding-right: 5px;
   width: 100%;
-  color: inherit;
-  text-decoration: none;
 }
 
-.title:hover {
-  color: var(--primary);
-  text-decoration: underline !important;
-}
-
-.title:active {
-  text-decoration: underline !important;
-}
-
-.title svg {
+.playIcon {
   margin-left: var(--unit-2);
+}
+
+.playIcon path {
+  fill: var(--primary);
 }
 
 .artist {
   margin-bottom: auto;
-  font-weight: 500;
-  line-height: normal;
   padding-right: 5px;
   max-width: 100%;
   min-height: var(--unit-5);
@@ -187,21 +170,6 @@
   position: relative;
   display: flex;
   color: inherit;
-  text-decoration: none;
-}
-
-.artist:hover {
-  color: var(--primary);
-  text-decoration: underline !important;
-}
-
-.artist:active {
-  text-decoration: underline !important;
-}
-
-.userName {
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .skeleton {

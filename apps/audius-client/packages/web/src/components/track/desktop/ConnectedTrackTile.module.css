@@ -48,35 +48,8 @@
   opacity: 0.75;
 }
 
-.name,
-.name:hover,
-.name:active {
-  color: inherit;
-  text-decoration: inherit;
-}
-
-.userName {
-  display: inline-flex;
-  font-weight: var(--font-medium);
-  align-items: center;
-  /**
-   * Some webkit browsers (safari) have some trouble rendering this specific
-   * font style within this particular context (due to floating point math being wonky
-   * and the text getting accidentally wrapped). This is a temporary fix.
-   * https://bugs.webkit.org/show_bug.cgi?id=217136
-   */
-  letter-spacing: 0.000001px;
-}
-
-.active .userName {
+.active .name {
   color: var(--primary);
-}
-
-.artistNameLink:hover {
-  cursor: pointer;
-  color: var(--primary);
-  text-decoration: underline !important;
-  text-decoration-color: var(--primary-light-2);
 }
 
 .socialInfo {

@@ -13,9 +13,12 @@ import { range } from 'lodash'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
+import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
+import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
+import { profilePage } from 'utils/route'
 
 import BottomButtons from './BottomButtons'
 import styles from './PlaylistTile.module.css'
@@ -113,7 +116,6 @@ type ExtraProps = {
   isPlaying: boolean
   isActive: boolean
   goToCollectionPage: (e: MouseEvent<HTMLElement>) => void
-  goToArtistPage: (e: MouseEvent<HTMLElement>) => void
   toggleSave: () => void
   toggleRepost: () => void
   onClickOverflow: () => void
@@ -136,7 +138,9 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     showRankIcon,
     trackCount,
     variant,
-    containerClassName
+    containerClassName,
+    permalink,
+    artistHandle
   } = props
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -176,14 +180,17 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             isBuffering={props.isLoading}
             artworkIconClassName={styles.artworkIcon}
           />
-          <div
-            className={cn(styles.titles, {
-              [styles.titlesActive]: props.isActive
-            })}
-          >
-            <div className={styles.title} onClick={props.goToCollectionPage}>
-              <div className={cn(fadeIn)}>{props.playlistTitle}</div>
-              {props.isPlaying && <IconVolume />}
+          <div className={styles.titles}>
+            <Link
+              to={permalink ?? ''}
+              className={styles.title}
+              variant='title'
+              color={props.isActive ? 'primary' : 'neutral'}
+            >
+              <Text variant='inherit' className={cn(fadeIn)}>
+                {props.playlistTitle}
+              </Text>
+              {props.isPlaying && <IconVolume className={styles.playIcon} />}
               {!shouldShow && (
                 <Skeleton
                   className={styles.skeleton}
@@ -191,11 +198,16 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   height='16px'
                 />
               )}
-            </div>
-            <div className={styles.artist} onClick={props.goToArtistPage}>
-              <span className={cn(styles.userName, fadeIn)}>
+            </Link>
+            <Link
+              variant='body'
+              className={styles.artist}
+              to={profilePage(artistHandle)}
+              color={props.isActive ? 'primary' : 'neutral'}
+            >
+              <Text variant='inherit' className={cn(styles.userName, fadeIn)}>
                 {props.artistName}
-              </span>
+              </Text>
               <UserBadges
                 userId={props.ownerId}
                 badgeSize={10}
@@ -208,7 +220,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
                   height='16px'
                 />
               )}
-            </div>
+            </Link>
           </div>
         </div>
         <div className={cn(styles.stats, styles.statText)}>

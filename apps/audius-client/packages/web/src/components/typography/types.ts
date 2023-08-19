@@ -14,5 +14,11 @@ export type TextStrength = 'weak' | 'default' | 'strong'
 
 export type TextSize = 'xLarge' | 'large' | 'medium' | 'small' | 'xSmall'
 
-export type TextVariant = 'display' | 'heading' | 'title' | 'label' | 'body'
+export type TextVariant =
+  | 'display'
+  | 'heading'
+  | 'title'
+  | 'label'
+  | 'body'
+  | 'inherit'
 export type VariantSizeTagMap = Partial<Record<TextSize, ElementType>>

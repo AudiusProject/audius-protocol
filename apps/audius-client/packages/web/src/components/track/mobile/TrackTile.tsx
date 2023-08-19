@@ -23,9 +23,11 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { DogEar } from 'components/dog-ear'
+import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
 import { TrackTileProps } from 'components/track/types'
+import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
 import { profilePage } from 'utils/route'
@@ -42,8 +44,6 @@ const { getPremiumTrackStatusMap } = premiumContentSelectors
 
 type ExtraProps = {
   permalink: string
-  goToTrackPage: (e: MouseEvent<HTMLElement>) => void
-  goToArtistPage: (e: MouseEvent<HTMLElement>) => void
   toggleSave: (trackId: ID) => void
   toggleRepost: (trackId: ID) => void
   onShare: (trackId: ID) => void
@@ -324,17 +324,16 @@ const TrackTile = (props: CombinedProps) => {
               [styles.titlesSkeleton]: props.showSkeleton
             })}
           >
-            <a
-              className={cn(
-                typeStyles.title,
-                typeStyles.titleMedium,
-                styles.title
-              )}
-              href={permalink}
-              onClick={props.goToTrackPage}
+            <Link
+              variant='title'
+              color={isActive ? 'primary' : 'neutral'}
+              className={styles.title}
+              to={permalink}
             >
-              <div className={cn(fadeIn)}>{props.title}</div>
-              {isPlaying ? <IconVolume /> : null}
+              <Text variant='inherit' className={cn(fadeIn, styles.text)}>
+                {props.title}
+              </Text>
+              {isPlaying ? <IconVolume className={styles.playIcon} /> : null}
               {(!artworkLoaded || showSkeleton) && (
                 <Skeleton
                   className={styles.skeleton}
@@ -342,17 +341,17 @@ const TrackTile = (props: CombinedProps) => {
                   height='80%'
                 />
               )}
-            </a>
-            <a
+            </Link>
+            <Link
+              to={profilePage(artistHandle)}
               className={styles.artist}
-              href={profilePage(artistHandle)}
-              onClick={props.goToArtistPage}
+              color={isActive ? 'primary' : 'neutral'}
             >
-              <div className={cn(fadeIn, styles.userName)}>
-                <ArtistPopover handle={artistHandle}>
-                  <span onClick={props.goToArtistPage}>{props.artistName}</span>
-                </ArtistPopover>
-              </div>
+              <ArtistPopover handle={artistHandle}>
+                <Text variant='inherit' className={cn(fadeIn, styles.text)}>
+                  {props.artistName}
+                </Text>
+              </ArtistPopover>
               <UserBadges
                 userId={userId}
                 badgeSize={12}
@@ -365,7 +364,7 @@ const TrackTile = (props: CombinedProps) => {
                   height='80%'
                 />
               )}
-            </a>
+            </Link>
           </div>
           {coSign && (
             <div

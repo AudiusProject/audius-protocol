@@ -43,12 +43,6 @@
   margin-right: 4px;
 }
 
-.name {
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
-  color: var(--neutral);
-}
-
 .userName {
   display: inline-flex;
   align-items: baseline;
@@ -66,13 +60,6 @@
   /* identical to box height, or 100% */
   color: var(--neutral-light-4);
   margin-right: 4px;
-}
-
-.name.artistNameLink:hover {
-  cursor: pointer;
-  color: var(--primary);
-  text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
 }
 
 .iconVerified {
