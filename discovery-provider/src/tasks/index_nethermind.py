@@ -345,6 +345,11 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
+            # Only dispatch trending challenge computation on a similar block, modulo 100
+            # so things are consistent. Note that if a discovery node is behind, this will be
+            # inconsistent.
+            # TODO: Consider better alternatives for consistency with behind nodes. Maybe this
+            # should not be calculated.
             if next_block["number"] % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(

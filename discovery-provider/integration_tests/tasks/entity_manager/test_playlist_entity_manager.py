@@ -14,7 +14,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
@@ -975,7 +975,7 @@ def test_invalid_playlist_description(app, mocker):
     metadata = {
         "PlaylistInvalidDescriptionMetadata": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
-            "description": "xtralargeplz" * CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+            "description": "xtralargeplz" * CHARACTER_LIMIT_DESCRIPTION,
             "playlist_image_sizes_multihash": "",
             "is_album": False,
         },

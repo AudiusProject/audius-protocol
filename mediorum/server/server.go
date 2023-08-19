@@ -92,6 +92,10 @@ type MediorumServer struct {
 	uploadsCount    int64
 	uploadsCountErr string
 
+	attemptedLegacyServes  []string
+	successfulLegacyServes []string
+	legacyServesMu         sync.RWMutex
+
 	isSeeding bool
 
 	peerHealthMutex  sync.RWMutex

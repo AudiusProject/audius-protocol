@@ -8,10 +8,10 @@ import { initializeDiscoveryDb } from "./db";
 dayjs.extend(duration);
 
 export type AppParams<AppData> = {
-  appData?: AppData,
-  discoveryDb?: Knex,
-  identityDb?: Knex
-}
+  appData?: AppData;
+  discoveryDb?: Knex;
+  identityDb?: Knex;
+};
 
 export default class App<AppData = Map<string, string>> {
   // database connections
@@ -37,7 +37,7 @@ export default class App<AppData = Map<string, string>> {
 
   constructor({ discoveryDb, identityDb, appData }: AppParams<AppData>) {
     this.discoveryDb = discoveryDb || initializeDiscoveryDb();
-    this.identityDb = identityDb
+    this.identityDb = identityDb;
     this.listeners = new Map();
     this.scans = new Map();
     this.tickers = [];
@@ -142,7 +142,6 @@ export default class App<AppData = Map<string, string>> {
   // good for long running CPU bound operations
   async spawn<T>(task: () => T): Promise<T> {
     throw new Error("Spawn not implemented yet");
-    return task(); // unreachable
   }
 
   /* Internal Builder Methods */
@@ -174,6 +173,8 @@ export default class App<AppData = Map<string, string>> {
   private initTickerHandlers(): (() => Promise<void>)[] {
     const tickers = [];
     for (const [interval, callback] of this.tickers) {
+      // Dispatch single tick so that we trigger on the "leading edge"
+      callback(this).catch(console.error);
       const func = async () => {
         setIntervalAsync(async () => {
           await callback(this).catch(console.error);

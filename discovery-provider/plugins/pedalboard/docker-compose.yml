@@ -9,6 +9,7 @@ services:
       args:
         app_name: app-template
     restart: always
+    command: npm run dev
 
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
@@ -18,6 +19,7 @@ services:
       args:
         app_name: trending-challenge-rewards
     restart: always
+    command: npm run dev
 
   sla-auditor:
     container_name: sla-auditor
@@ -27,6 +29,10 @@ services:
       args:
         app_name: sla-auditor
     restart: always
+    command: npm run dev
+    volumes:
+      - ./apps/sla-auditor/:/app/apps/sla-auditor
+      - /app/apps/sla-auditor/node_modules/
 
   relay:
     container_name: relay
@@ -36,3 +42,4 @@ services:
       args:
         app_name: relay
     restart: always
+    command: npm run dev
