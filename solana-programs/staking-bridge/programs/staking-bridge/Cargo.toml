@@ -1,7 +1,7 @@
 [package]
 name = "staking-bridge"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "This program had 2 main functions: it swaps SOL USDC to SOL AUDIO tokens using Raydium, and it converts SOL AUDIO to ETH AUDIO using the Wormhole Token Bridge."
 edition = "2021"
 
 [lib]
