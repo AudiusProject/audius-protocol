@@ -25,7 +25,7 @@ export const ArtistRecommendationsDropdown = (
   props: ArtistRecommendationsDropdownProps
 ) => {
   const { isVisible } = props
-  const childRef = useRef<HTMLElement | null>(null)
+  const childRef = useRef<HTMLDivElement | null>(null)
 
   const rect = childRef.current?.getBoundingClientRect()
   const childHeight = rect ? rect.bottom - rect.top : 0

@@ -3,18 +3,15 @@ import { MouseEvent, useCallback, useRef, useState } from 'react'
 import {
   FavoriteSource,
   Name,
-  SquareSizes,
   Status,
   accountSelectors,
   collectionsSocialActions,
   tracksSocialActions,
-  imageProfilePicEmpty,
   CreateAccountOpen
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
@@ -23,25 +20,21 @@ import { Dispatch } from 'redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
-import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import {
   EXPLORE_PAGE,
   FEED_PAGE,
   HISTORY_PAGE,
-  profilePage,
   SAVED_PAGE,
   TRENDING_PAGE
 } from 'utils/route'
 
+import { AccountDetails } from './AccountDetails'
 import { GroupHeader } from './GroupHeader'
 import styles from './LeftNav.module.css'
 import { LeftNavDroppable, LeftNavLink } from './LeftNavLink'
-import NavAudio from './NavAudio'
 import { NavButton } from './NavButton'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
@@ -66,18 +59,17 @@ type NavColumnProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps
 
-const LeftNav = ({
-  account,
-  showActionRequiresAccount,
-  isElectron,
-  draggingKind,
-  saveTrack,
-  saveCollection,
-  accountStatus,
-  goToRoute,
-  goToSignUp: routeToSignup,
-  goToSignIn
-}: NavColumnProps) => {
+const LeftNav = (props: NavColumnProps) => {
+  const {
+    account,
+    showActionRequiresAccount,
+    isElectron,
+    draggingKind,
+    saveTrack,
+    saveCollection,
+    accountStatus,
+    goToSignUp: routeToSignup
+  } = props
   const record = useRecord()
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
@@ -101,14 +93,6 @@ const LeftNav = ({
     [record, routeToSignup]
   )
 
-  const onClickNavProfile = useCallback(() => goToSignIn(), [goToSignIn])
-
-  const goToProfile = useCallback(() => {
-    if (account?.handle) {
-      goToRoute(profilePage(account.handle))
-    }
-  }, [account, goToRoute])
-
   const onClickNavLinkWithAccount = useCallback(
     (e?: MouseEvent) => {
       if (!account) {
@@ -131,18 +115,6 @@ const LeftNav = ({
     <div className={styles.profileCompletionContainer}>
       <ConnectedProfileCompletionPane />
     </div>
-  )
-
-  let name, handle
-  if (account) {
-    name = account.name
-    handle = account.handle
-  }
-
-  const profileImage = useUserProfilePicture(
-    account ? account.user_id : null,
-    account ? account._profile_picture_sizes : null,
-    SquareSizes.SIZE_150_BY_150
   )
 
   const navLoaded =
@@ -171,53 +143,7 @@ const LeftNav = ({
             updateScrollTopPosition={updateScrollTopPosition}
             onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
           >
-            {account ? (
-              <div className={styles.userHeader}>
-                <div className={styles.accountWrapper}>
-                  <DynamicImage
-                    wrapperClassName={styles.wrapperPhoto}
-                    className={styles.dynamicPhoto}
-                    skeletonClassName={styles.wrapperPhotoSkeleton}
-                    onClick={goToProfile}
-                    image={profileImage}
-                  />
-                  <div className={styles.userInfoWrapper}>
-                    <div className={styles.name} onClick={goToProfile}>
-                      <div className={styles.nameText}>{name}</div>
-                      <UserBadges
-                        userId={account.user_id}
-                        badgeSize={12}
-                        className={styles.badge}
-                      />
-                    </div>
-                    <div className={styles.handleContainer}>
-                      <span
-                        className={styles.handle}
-                        onClick={goToProfile}
-                      >{`@${handle}`}</span>
-                    </div>
-                  </div>
-                </div>
-                <NavAudio />
-              </div>
-            ) : (
-              <div className={styles.userHeader}>
-                <div className={styles.accountWrapper}>
-                  <div
-                    className={styles.photo}
-                    style={{ backgroundImage: `url(${imageProfilePicEmpty})` }}
-                    onClick={onClickNavProfile}
-                  />
-                  <div className={styles.userInfoWrapper}>
-                    <div className={styles.haveAccount}>Have an Account?</div>
-                    <div className={styles.logIn} onClick={onClickNavProfile}>
-                      Sign In
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
+            <AccountDetails />
             <div className={styles.links}>
               <div className={styles.linkGroup}>
                 <GroupHeader>{messages.discover}</GroupHeader>
@@ -281,15 +207,13 @@ const mapStateToProps = (state: AppState) => {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  goToRoute: (route: string) => dispatch(pushRoute(route)),
   saveTrack: (trackId: number) =>
     dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
   saveCollection: (collectionId: number) =>
     dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
-  goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
-  goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true))
+  goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false))
 })
 
 const ConnectedLeftNav = withRouter(

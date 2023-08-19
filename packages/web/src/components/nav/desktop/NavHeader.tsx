@@ -2,7 +2,6 @@ import { useCallback, useRef } from 'react'
 
 import {
   Theme,
-  StringKeys,
   FeatureFlags,
   formatCount,
   accountSelectors,
@@ -11,22 +10,22 @@ import {
   themeSelectors
 } from '@audius/common'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
 import { NotificationPanel } from 'components/notification'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
 import {
   closeNotificationPanel,
   openNotificationPanel
 } from 'store/application/ui/notifications/notificationsUISlice'
-import { AppState } from 'store/types'
-import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
+import { useSelector } from 'utils/reducer'
+import { HOME_PAGE } from 'utils/route'
 
 import styles from './NavHeader.module.css'
 
@@ -35,7 +34,8 @@ const { getNotificationUnviewedCount } = notificationsSelectors
 const { getTheme } = themeSelectors
 
 const messages = {
-  earlyAccess: 'Early Access'
+  earlyAccess: 'Early Access',
+  homeLink: 'Go to Home'
 }
 
 export const NavHeader = () => {
@@ -46,14 +46,8 @@ export const NavHeader = () => {
 
   const notificationPanelIsOpen = useSelector(getNotificationPanelIsOpen)
   const notificationPanelAnchorRef = useRef<HTMLDivElement>(null)
-  const logoVariant = useRemoteVar(StringKeys.AUDIUS_LOGO_VARIANT)
-  const logoVariantClickTarget = useRemoteVar(
-    StringKeys.AUDIUS_LOGO_VARIANT_CLICK_TARGET
-  )
 
-  const isMatrix = useSelector(
-    (state: AppState) => getTheme(state) === Theme.MATRIX
-  )
+  const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
 
   const handleToggleNotificationPanel = useCallback(() => {
     if (!notificationPanelIsOpen) {
@@ -64,32 +58,15 @@ export const NavHeader = () => {
     }
   }, [notificationPanelIsOpen, dispatch, record])
 
-  const handleClickLogo = useCallback(() => {
-    if (logoVariantClickTarget) {
-      if (logoVariantClickTarget.startsWith(BASE_URL)) {
-        dispatch(push(stripBaseUrl(logoVariantClickTarget)))
-      } else {
-        const win = window.open(logoVariantClickTarget, '_blank')
-        if (win) win.focus()
-      }
-    } else {
-      dispatch(push(HOME_PAGE))
-    }
-  }, [logoVariantClickTarget, dispatch])
-
   const { isEnabled: isEarlyAccess } = useFlag(FeatureFlags.EARLY_ACCESS)
 
   return (
     <div className={styles.header}>
-      <div className={styles.logoWrapper} onClick={handleClickLogo}>
-        {logoVariant ? (
-          <img src={logoVariant} alt='' />
-        ) : (
-          <AudiusLogoHorizontal
-            className={cn(styles.logo, { [styles.matrixLogo]: isMatrix })}
-          />
-        )}
-      </div>
+      <Link to={HOME_PAGE} aria-label={messages.homeLink}>
+        <AudiusLogoHorizontal
+          className={cn(styles.logo, { [styles.matrixLogo]: isMatrix })}
+        />
+      </Link>
       {isEarlyAccess ? (
         <div className={styles.earlyAccess}>{messages.earlyAccess}</div>
       ) : null}

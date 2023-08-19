@@ -13,6 +13,7 @@
   font-weight: var(--font-bold);
   font-size: var(--font-s);
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .createAccount > .navButtonText {

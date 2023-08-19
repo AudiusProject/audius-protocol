@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  MutableRefObject,
-  ReactNode,
-  useCallback,
-  useEffect
-} from 'react'
+import { forwardRef, ReactNode, useCallback, useEffect } from 'react'
 
 import {
   ID,
@@ -39,7 +33,6 @@ const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchRelatedArtists } = relatedArtistsUIActions
 
 export type ArtistRecommendationsProps = {
-  ref?: MutableRefObject<HTMLDivElement>
   itemClassName?: string
   className?: string
   renderHeader: () => ReactNode
@@ -123,149 +116,144 @@ const ArtistPopoverWrapper = ({
   )
 }
 
-export const ArtistRecommendations = forwardRef(
-  (
-    {
-      className,
-      itemClassName,
-      artistId,
-      renderHeader,
-      renderSubheader,
-      onClose
-    }: ArtistRecommendationsProps,
-    ref: any
-  ) => {
-    const dispatch = useDispatch()
+export const ArtistRecommendations = forwardRef<
+  HTMLDivElement,
+  ArtistRecommendationsProps
+>((props, ref) => {
+  const {
+    className,
+    itemClassName,
+    artistId,
+    renderHeader,
+    renderSubheader,
+    onClose
+  } = props
+  const dispatch = useDispatch()
 
-    // Start fetching the related artists
-    useEffect(() => {
+  // Start fetching the related artists
+  useEffect(() => {
+    dispatch(
+      fetchRelatedArtists({
+        artistId
+      })
+    )
+  }, [dispatch, artistId])
+
+  const suggestedArtists = useSelector<CommonState, User[]>((state) =>
+    selectSuggestedFollowsUsers(state, { id: artistId })
+  )
+
+  // Follow/Unfollow listeners
+  const handleFollowAll = useCallback(() => {
+    suggestedArtists.forEach((a) => {
       dispatch(
-        fetchRelatedArtists({
-          artistId
-        })
-      )
-    }, [dispatch, artistId])
-
-    const suggestedArtists = useSelector<CommonState, User[]>((state) =>
-      selectSuggestedFollowsUsers(state, { id: artistId })
-    )
-
-    // Follow/Unfollow listeners
-    const handleFollowAll = useCallback(() => {
-      suggestedArtists.forEach((a) => {
-        dispatch(
-          socialActions.followUser(
-            a.user_id,
-            FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-          )
+        socialActions.followUser(
+          a.user_id,
+          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
         )
-      })
-    }, [dispatch, suggestedArtists])
+      )
+    })
+  }, [dispatch, suggestedArtists])
 
-    const handleUnfollowAll = useCallback(() => {
-      suggestedArtists.forEach((a) => {
-        dispatch(
-          socialActions.unfollowUser(
-            a.user_id,
-            FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-          )
+  const handleUnfollowAll = useCallback(() => {
+    suggestedArtists.forEach((a) => {
+      dispatch(
+        socialActions.unfollowUser(
+          a.user_id,
+          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
         )
-      })
-    }, [dispatch, suggestedArtists])
-
-    // Navigate to profile pages on artist links
-    const onArtistNameClicked = useCallback(
-      (handle: string) => {
-        dispatch(push(profilePage(handle)))
-      },
-      [dispatch]
-    )
-
-    const isLoading = !suggestedArtists || suggestedArtists.length === 0
-    const renderMainContent = () => {
-      if (isLoading) return <LoadingSpinner className={styles.spinner} />
-      return (
-        <>
-          <div
-            className={cn(
-              styles.profilePictureList,
-              styles.contentItem,
-              itemClassName
-            )}
-          >
-            {suggestedArtists.map((a) => (
-              <div key={a.user_id} className={styles.profilePictureWrapper}>
-                <ArtistProfilePictureWrapper
-                  userId={a.user_id}
-                  handle={a.handle}
-                  profilePictureSizes={a._profile_picture_sizes}
-                />
-              </div>
-            ))}
-          </div>
-          <div className={cn(styles.contentItem, itemClassName)}>
-            {`${messages.featuring} `}
-            {suggestedArtists
-              .slice(0, 3)
-              .map<ReactNode>((a, i) => (
-                <ArtistPopoverWrapper
-                  key={a.user_id}
-                  userId={a.user_id}
-                  handle={a.handle}
-                  name={a.name}
-                  onArtistNameClicked={onArtistNameClicked}
-                  closeParent={onClose}
-                />
-              ))
-              .reduce((prev, curr) => [prev, ', ', curr])}
-            {suggestedArtists.length > 3
-              ? `, and ${suggestedArtists.length - 3} others.`
-              : ''}
-          </div>
-        </>
       )
-    }
+    })
+  }, [dispatch, suggestedArtists])
 
-    const record = useRecord()
-    useEffect(() => {
-      record(
-        make(Name.PROFILE_PAGE_SHOWN_ARTIST_RECOMMENDATIONS, {
-          userId: artistId
-        })
-      )
-    }, [record, artistId])
+  // Navigate to profile pages on artist links
+  const onArtistNameClicked = useCallback(
+    (handle: string) => {
+      dispatch(push(profilePage(handle)))
+    },
+    [dispatch]
+  )
 
+  const isLoading = !suggestedArtists || suggestedArtists.length === 0
+  const renderMainContent = () => {
+    if (isLoading) return <LoadingSpinner className={styles.spinner} />
     return (
-      <div className={cn(styles.content, className)} ref={ref}>
+      <>
         <div
-          className={cn(styles.headerBar, styles.contentItem, itemClassName)}
+          className={cn(
+            styles.profilePictureList,
+            styles.contentItem,
+            itemClassName
+          )}
         >
-          <div
-            role='button'
-            title='Dismiss'
-            className={styles.closeButton}
-            onClick={onClose}
-          >
-            <IconClose className={cn(styles.icon, styles.remove)} />
-          </div>
-          {renderHeader()}
+          {suggestedArtists.map((a) => (
+            <div key={a.user_id} className={styles.profilePictureWrapper}>
+              <ArtistProfilePictureWrapper
+                userId={a.user_id}
+                handle={a.handle}
+                profilePictureSizes={a._profile_picture_sizes}
+              />
+            </div>
+          ))}
         </div>
-        {renderSubheader && renderSubheader()}
-        {renderMainContent()}
         <div className={cn(styles.contentItem, itemClassName)}>
-          <FollowButton
-            isDisabled={isLoading}
-            following={suggestedArtists.every(
-              (a) => a.does_current_user_follow
-            )}
-            invertedColor={true}
-            messages={messages}
-            size='full'
-            onFollow={handleFollowAll}
-            onUnfollow={handleUnfollowAll}
-          />
+          {`${messages.featuring} `}
+          {suggestedArtists
+            .slice(0, 3)
+            .map<ReactNode>((a, i) => (
+              <ArtistPopoverWrapper
+                key={a.user_id}
+                userId={a.user_id}
+                handle={a.handle}
+                name={a.name}
+                onArtistNameClicked={onArtistNameClicked}
+                closeParent={onClose}
+              />
+            ))
+            .reduce((prev, curr) => [prev, ', ', curr])}
+          {suggestedArtists.length > 3
+            ? `, and ${suggestedArtists.length - 3} others.`
+            : ''}
         </div>
-      </div>
+      </>
     )
   }
-)
+
+  const record = useRecord()
+  useEffect(() => {
+    record(
+      make(Name.PROFILE_PAGE_SHOWN_ARTIST_RECOMMENDATIONS, {
+        userId: artistId
+      })
+    )
+  }, [record, artistId])
+
+  return (
+    <div className={cn(styles.content, className)} ref={ref}>
+      <div className={cn(styles.headerBar, styles.contentItem, itemClassName)}>
+        <div
+          role='button'
+          title='Dismiss'
+          className={styles.closeButton}
+          onClick={onClose}
+        >
+          <IconClose className={cn(styles.icon, styles.remove)} />
+        </div>
+        {renderHeader()}
+      </div>
+      {renderSubheader && renderSubheader()}
+      {renderMainContent()}
+      <div className={cn(styles.contentItem, itemClassName)}>
+        <FollowButton
+          isDisabled={isLoading}
+          following={suggestedArtists.every((a) => a.does_current_user_follow)}
+          invertedColor={true}
+          messages={messages}
+          size='full'
+          onFollow={handleFollowAll}
+          onUnfollow={handleUnfollowAll}
+        />
+      </div>
+    </div>
+  )
+})

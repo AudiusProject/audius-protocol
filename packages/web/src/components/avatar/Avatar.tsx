@@ -3,7 +3,8 @@ import {
   Maybe,
   SquareSizes,
   accountSelectors,
-  cacheUsersSelectors
+  cacheUsersSelectors,
+  imageProfilePicEmpty
 } from '@audius/common'
 import { Link } from 'react-router-dom'
 
@@ -35,6 +36,8 @@ export const Avatar = (props: AvatarProps) => {
     SquareSizes.SIZE_150_BY_150
   )
 
+  const image = userId ? profileImage : imageProfilePicEmpty
+
   const goTo = useSelector((state) => {
     const profile = getUser(state, { id: userId })
     if (!profile) return SIGN_IN_PAGE
@@ -58,7 +61,7 @@ export const Avatar = (props: AvatarProps) => {
         className={styles.image}
         wrapperClassName={styles.imageWrapper}
         skeletonClassName={styles.skeleton}
-        image={profileImage}
+        image={image}
       />
     </Link>
   )

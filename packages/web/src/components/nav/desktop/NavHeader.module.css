@@ -9,17 +9,11 @@
   min-height: 56px;
 }
 
-.logoWrapper {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-}
-
 .logo {
   display: block;
   height: 25px;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  margin-top: var(--unit-4);
+  margin-bottom: var(--unit-4);
 }
 
 svg.logo path {
