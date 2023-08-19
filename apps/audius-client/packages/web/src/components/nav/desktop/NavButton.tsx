@@ -15,20 +15,25 @@ import {
   IconUpload
 } from '@audius/stems'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { openSignOn } from 'common/store/pages/signon/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { AppState } from 'store/types'
-import { UPLOAD_PAGE } from 'utils/route'
+import { SIGN_UP_PAGE, UPLOAD_PAGE } from 'utils/route'
 
 import styles from './NavButton.module.css'
 
 const { getAccountStatus, getAccountUser } = accountSelectors
 const { resetState: resetUploadState } = uploadActions
 const { getIsUploading } = uploadSelectors
+
+const messages = {
+  signUp: 'Sign up',
+  uploadTrack: 'Upload Track',
+  uploading: 'Uploading...'
+}
 
 export const NavButton = () => {
   const dispatch = useDispatch()
@@ -43,16 +48,14 @@ export const NavButton = () => {
   if (accountStatus === Status.LOADING) status = 'loading'
 
   const handleSignup = useCallback(() => {
-    dispatch(openSignOn(/** signIn */ false))
     record(make(Name.CREATE_ACCOUNT_OPEN, { source: 'nav button' }))
-  }, [dispatch, record])
+  }, [record])
 
   const handleUpload = useCallback(() => {
     if (!isUploading) {
       dispatch(resetUploadState())
+      record(make(Name.TRACK_UPLOAD_OPEN, { source: 'nav' }))
     }
-    dispatch(push(UPLOAD_PAGE))
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'nav' }))
   }, [isUploading, dispatch, record])
 
   let button
@@ -60,12 +63,14 @@ export const NavButton = () => {
     case 'signedOut':
       button = (
         <Button
+          as={Link}
+          to={SIGN_UP_PAGE}
           className={cn(styles.navButton, styles.createAccount)}
           textClassName={styles.navButtonText}
           iconClassName={styles.navButtonIcon}
           type={ButtonType.PRIMARY_ALT}
           size={ButtonSize.SMALL}
-          text='SIGN UP'
+          text={messages.signUp}
           leftIcon={<IconFollow />}
           onClick={handleSignup}
         />
@@ -74,12 +79,14 @@ export const NavButton = () => {
     case 'signedIn':
       button = (
         <Button
+          as={Link}
+          to={UPLOAD_PAGE}
           className={cn(styles.navButton, styles.upload)}
           textClassName={styles.navButtonText}
           iconClassName={styles.navButtonIcon}
           type={ButtonType.COMMON}
           size={ButtonSize.SMALL}
-          text='Upload Track'
+          text={messages.uploadTrack}
           leftIcon={<IconUpload />}
           onClick={handleUpload}
         />
@@ -88,12 +95,14 @@ export const NavButton = () => {
     case 'uploading':
       button = (
         <Button
+          as={Link}
+          to={UPLOAD_PAGE}
           className={cn(styles.navButton, styles.upload)}
           textClassName={styles.navButtonText}
           iconClassName={styles.navButtonIcon}
           type={ButtonType.COMMON_ALT}
           size={ButtonSize.SMALL}
-          text='Uploading...'
+          text={messages.uploading}
           leftIcon={<LoadingSpinner className={styles.spinner} />}
           onClick={handleUpload}
         />

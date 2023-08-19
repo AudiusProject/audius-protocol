@@ -72,32 +72,6 @@ svg.logo path {
   color: var(--neutral);
 }
 
-.wrapperPhoto {
-  position: relative;
-  cursor: pointer;
-
-  overflow: hidden;
-  flex: 0 0 48px;
-  height: 48px;
-}
-
-.dynamicPhoto {
-  height: 48px;
-  border-radius: 30px;
-  border: 1px solid var(--white);
-  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
-
-  text-align: center;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: var(--default-profile-picture-background);
-}
-
-.wrapperPhotoSkeleton {
-  border-radius: 50%;
-}
-
 .photo {
   position: relative;
   cursor: pointer;
@@ -116,7 +90,10 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
-.userInfoWrapper {
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-1);
   margin-left: 16px;
   margin-right: 16px;
   text-align: left;
@@ -125,86 +102,9 @@ svg.logo path {
   overflow: hidden;
 }
 
-.name {
-  font-size: var(--font-s);
-  line-height: 17px;
-  font-weight: var(--font-demi-bold);
-  padding-bottom: 4px;
-  padding-right: 4px;
-  color: var(--neutral);
-  cursor: pointer;
-  align-items: center;
-  display: flex;
-}
-
-.nameText {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .badge {
   flex-shrink: 0;
   margin-left: 4px;
-}
-
-.name:hover {
-  color: var(--primary);
-  text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
-}
-
-.handleContainer {
-  display: inline-flex;
-  overflow: hidden;
-  line-height: 14px;
-  cursor: pointer;
-  padding-right: 4px;
-  width: 100%;
-}
-
-.handle {
-  font-size: var(--font-xs);
-  color: var(--neutral);
-  font-weight: var(--font-medium);
-  transition: all 0.07s ease-in-out;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.handleContainer:hover .handle {
-  color: var(--primary);
-  text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
-}
-
-.handleContainer svg {
-  transition: all 0.07s ease-in-out;
-}
-
-.handleContainer:hover g path {
-  fill: var(--primary);
-}
-
-.haveAccount {
-  color: var(--neutral);
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-s);
-  line-height: 18px;
-}
-
-.logIn {
-  color: var(--secondary);
-  font-size: var(--font-xs);
-  line-height: 14px;
-  cursor: pointer;
-}
-
-.logIn:hover {
-  color: var(--primary);
-  text-decoration: underline;
-  text-decoration-color: var(--primary-light-2);
 }
 
 .links {
@@ -214,6 +114,7 @@ svg.logo path {
   margin: 0;
   padding: 0;
 }
+
 .linkGroup {
   margin: 0px 16px 25px;
 }

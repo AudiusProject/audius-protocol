@@ -111,16 +111,3 @@ export type PopupProps = {
    */
   zIndex?: number
 }
-
-export const popupDefaultProps: Partial<PopupProps> = {
-  anchorOrigin: {
-    horizontal: 'center',
-    vertical: 'bottom'
-  },
-  transformOrigin: {
-    horizontal: 'center',
-    vertical: 'top'
-  },
-  animationDuration: 90,
-  onAfterClose: () => {}
-}

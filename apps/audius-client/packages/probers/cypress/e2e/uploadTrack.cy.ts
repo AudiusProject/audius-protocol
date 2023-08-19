@@ -9,7 +9,7 @@ describe('Upload Track', () => {
     cy.visit(`trending?login=${base64Entropy}`)
     cy.findByText(user.name, { timeout: 20000 }).should('exist')
 
-    cy.findByRole('button', { name: /upload track/i }).click()
+    cy.findByRole('link', { name: /upload track/i }).click()
 
     cy.findByRole('heading', { name: /upload tracks/i, level: 1 }).should(
       'exist'
@@ -78,7 +78,7 @@ describe('Upload Track', () => {
     cy.visit(`trending?login=${base64Entropy}`)
     cy.findByText(user.name, { timeout: 20000 }).should('exist')
 
-    cy.findByRole('button', { name: /upload track/i }).click()
+    cy.findByRole('link', { name: /upload track/i }).click()
 
     cy.findByRole('heading', { name: /upload tracks/i, level: 1 }).should(
       'exist'

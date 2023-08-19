@@ -115,7 +115,6 @@
   opacity: var(--overlay-opacity, 0);
 }
 
-
 /* Primary Button */
 
 .primary {
@@ -137,17 +136,17 @@
   fill: var(--primary-secondary-text);
 }
 
-.primary.includeHoverAnimations:hover:enabled {
+.primary.includeHoverAnimations:hover.enabled {
   --overlay-color: var(--static-white);
-  --overlay-opacity: .1;
+  --overlay-opacity: 0.1;
   box-shadow: var(--shadow-mid);
   transform: var(--grow);
   background: var(--button-color);
 }
 
-.primary.includeHoverAnimations:active:enabled {
+.primary.includeHoverAnimations:active.enabled {
   --overlay-color: var(--static-blck);
-  --overlay-opacity: .2;
+  --overlay-opacity: 0.2;
   box-shadow: none;
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   background: var(--button-color);
@@ -174,12 +173,12 @@
   fill: var(--primary-secondary-text);
 }
 
-.primaryAlt.includeHoverAnimations:hover:enabled {
+.primaryAlt.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   background: var(--primary-light-1);
 }
 
-.primaryAlt.includeHoverAnimations:active:enabled {
+.primaryAlt.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   background: var(--primary-dark-1);
 }
@@ -213,22 +212,22 @@
   fill: var(--primary);
 }
 
-.secondary.includeHoverAnimations:hover:enabled {
+.secondary.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   border: 1px solid var(--primary-dark-2);
   background: var(--primary);
 }
 
-.secondary.includeHoverAnimations:hover:enabled .textLabel {
+.secondary.includeHoverAnimations:hover.enabled .textLabel {
   color: var(--primary-secondary-text);
 }
 
-.secondary.includeHoverAnimations:hover:enabled .icon path,
-.secondary.includeHoverAnimations:hover:enabled .icon use {
+.secondary.includeHoverAnimations:hover.enabled .icon path,
+.secondary.includeHoverAnimations:hover.enabled .icon use {
   fill: var(--primary-secondary-text);
 }
 
-.secondary.includeHoverAnimations:active:enabled {
+.secondary.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   border: 1px solid var(--primary-dark-2);
   background: var(--primary-dark-2);
@@ -254,12 +253,12 @@
   fill: var(--secondary);
 }
 
-.tertiary.includeHoverAnimations:hover:enabled {
+.tertiary.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   background-color: var(--static-white);
 }
 
-.tertiary.includeHoverAnimations:active:enabled {
+.tertiary.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
 }
 
@@ -292,32 +291,32 @@
   fill: var(--neutral);
 }
 
-.common.includeHoverAnimations:hover:enabled {
+.common.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   border: 1px solid var(--primary-dark-2);
   background: var(--primary);
 }
 
-.common.includeHoverAnimations:hover:enabled .textLabel {
+.common.includeHoverAnimations:hover.enabled .textLabel {
   color: var(--primary-secondary-text);
 }
 
-.common.includeHoverAnimations:hover:enabled .icon path,
-.common.includeHoverAnimations:hover:enabled .icon use {
+.common.includeHoverAnimations:hover.enabled .icon path,
+.common.includeHoverAnimations:hover.enabled .icon use {
   fill: var(--primary-secondary-text);
 }
 
-.common.includeHoverAnimations:active:enabled {
+.common.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   border: 1px solid var(--primary-dark-2);
   background: var(--primary-dark-2);
 }
 
-.common.includeHoverAnimations:active:enabled .textLabel {
+.common.includeHoverAnimations:active.enabled .textLabel {
   color: var(--primary-secondary-text);
 }
 
-.common.includeHoverAnimations:active:enabled .icon path {
+.common.includeHoverAnimations:active.enabled .icon path {
   fill: var(--primary-secondary-text);
 }
 
@@ -345,13 +344,13 @@
   fill: var(--neutral);
 }
 
-.commonAlt:hover:enabled {
+.commonAlt:hover.enabled {
   transform: var(--grow);
   border: 1px solid var(--neutral-light-6);
   background: var(--neutral-light-10);
 }
 
-.commonAlt.includeHoverAnimations:active:enabled {
+.commonAlt.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   border: 1px solid var(--neutral-light-6);
   background: var(--neutral-light-8);
@@ -377,12 +376,12 @@
   fill: var(--white);
 }
 
-.glass.includeHoverAnimations:hover:enabled {
+.glass.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-.glass.includeHoverAnimations:active:enabled {
+.glass.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(1, 1, 1);
   background-color: rgba(255, 255, 255, 0.05);
 }
@@ -432,14 +431,14 @@
   fill: var(--secondary);
 }
 
-.white.includeHoverAnimations:hover:enabled {
+.white.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   background-color: var(--static-white);
   box-shadow: 0 1px 0 0 var(--neutral-light-5),
     0 5px 20px -3px rgba(0, 0, 0, 0.3);
 }
 
-.white.includeHoverAnimations:active:enabled {
+.white.includeHoverAnimations:active.enabled {
   background-color: #eeeeee;
   box-shadow: 0 1px 0 0 var(--neutral-light-4),
     0 4px 12px -4px rgba(0, 0, 0, 0.3);
@@ -517,21 +516,21 @@
 }
 
 /** destructive hover **/
-.destructive.includeHoverAnimations:hover:enabled {
+.destructive.includeHoverAnimations:hover.enabled {
   transform: var(--grow);
   background-color: var(--accent-red);
 }
 
-.destructive.includeHoverAnimations:active:enabled {
+.destructive.includeHoverAnimations:active.enabled {
   transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
   background-color: var(--accent-red-dark-1);
 }
 
-.destructive.includeHoverAnimations:hover:enabled .textLabel {
+.destructive.includeHoverAnimations:hover.enabled .textLabel {
   color: white;
 }
 
-.destructive.includeHoverAnimations:hover:enabled .icon path {
+.destructive.includeHoverAnimations:hover.enabled .icon path {
   fill: var(--static-white);
 }
 

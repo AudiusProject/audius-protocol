@@ -20,7 +20,7 @@ import { getScrollParent } from 'utils/scrollParent'
 import { standard } from 'utils/transitions'
 
 import styles from './Popup.module.css'
-import { PopupProps, Position, Origin, popupDefaultProps } from './types'
+import { PopupProps, Position, Origin } from './types'
 
 const messages = {
   close: 'close popup'
@@ -457,5 +457,3 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     </>
   )
 })
-
-Popup.defaultProps = popupDefaultProps

@@ -6,7 +6,7 @@ import { TextProps } from 'components/typography/Text'
 
 import styles from './Link.module.css'
 
-type LinkProps = LinkBaseProps & TextProps<'a'>
+type LinkProps = LinkBaseProps<'a'> & TextProps<'a'>
 
 export const Link = (props: LinkProps) => {
   const { className, ...other } = props

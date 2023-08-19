@@ -1,4 +1,4 @@
-import { ComponentPropsWithoutRef, ReactNode } from 'react'
+import { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react'
 
 import { ColorValue } from 'styles/colors'
 
@@ -23,12 +23,8 @@ export enum Size {
   LARGE = 'large'
 }
 
-type BaseButtonProps = Omit<
-  ComponentPropsWithoutRef<'button'>,
-  'type' | 'children'
->
-
-export type ButtonProps = {
+type ButtonOwnProps<Component extends ElementType = 'button'> = {
+  as?: Component
   color?: ColorValue
   /**
    * The text of the button
@@ -97,4 +93,8 @@ export type ButtonProps = {
    * Class name to apply to the text label
    */
   textClassName?: string
-} & BaseButtonProps
+}
+
+export type ButtonProps<Component extends ElementType = 'button'> =
+  ButtonOwnProps<Component> &
+    Omit<ComponentPropsWithoutRef<Component>, keyof ButtonOwnProps>

@@ -207,6 +207,10 @@
   font-weight: var(--font-demi-bold);
 }
 
+.bodyWeak {
+  font-weight: var(--font-regular);
+}
+
 /* Special Styles */
 
 .link {
