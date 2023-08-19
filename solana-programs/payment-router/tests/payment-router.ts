@@ -56,7 +56,7 @@ describe('payment-router', () => {
 
   it('creates the payment router pda', async () => {
     const tx = await program.methods
-      .createPda()
+      .createPaymentRouterBalancePda()
       .accounts({
         paymentRouterPda,
         payer: feePayerPublicKey,
