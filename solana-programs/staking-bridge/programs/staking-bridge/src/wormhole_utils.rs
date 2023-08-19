@@ -168,9 +168,9 @@ pub fn approve_wormhole_transfer(
     amount: u64,
     staking_bridge_pda_bump: u8
 ) -> Result<()> {
-    let from = &accounts.from;
-    let authority_signer = &accounts.authority_signer;
-    let from_owner = &accounts.from_owner; // PDA owned by this program which will sign the instruction
+    let from = &accounts.from.to_account_info();
+    let authority_signer = &accounts.authority_signer.to_account_info();
+    let from_owner = &accounts.from_owner.to_account_info(); // PDA owned by this program which will sign the instruction
 
     // https://github.com/solana-labs/solana-program-library/blob/master/token/program/src/instruction.rs#L126
     let instruction_index: u8 = 4;
@@ -187,7 +187,7 @@ pub fn approve_wormhole_transfer(
     let accounts = [
         from.clone(),
         authority_signer.clone(),
-        from_owner.to_account_info().clone(),
+        from_owner.clone(),
     ];
     invoke_signed(
         &instruction,
@@ -206,20 +206,20 @@ pub fn execute_wormhole_transfer(
     amount: u64,
     staking_bridge_pda_bump: u8
 ) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let bridge_id = &accounts.bridge_id;
+    let program_id = &accounts.program_id.to_account_info();
+    let bridge_id = &accounts.bridge_id.to_account_info();
     let payer = &accounts.payer;
-    let config = &accounts.config;
-    let from = &accounts.from;
-    let from_owner = &accounts.from_owner; // PDA owned by this program which will sign the instruction
-    let wrapped_mint = &accounts.wrapped_mint;
-    let wrapped_meta = &accounts.wrapped_meta;
-    let authority_signer = &accounts.authority_signer;
-    let bridge_config = &accounts.bridge_config;
+    let config = &accounts.config.to_account_info();
+    let from = &accounts.from.to_account_info();
+    let from_owner = &accounts.from_owner.to_account_info(); // PDA owned by this program which will sign the instruction
+    let wrapped_mint = &accounts.wrapped_mint.to_account_info();
+    let wrapped_meta = &accounts.wrapped_meta.to_account_info();
+    let authority_signer = &accounts.authority_signer.to_account_info();
+    let bridge_config = &accounts.bridge_config.to_account_info();
     let message = &accounts.message;
-    let emitter = &accounts.emitter;
-    let sequence = &accounts.sequence;
-    let fee_collector = &accounts.fee_collector;
+    let emitter = &accounts.emitter.to_account_info();
+    let sequence = &accounts.sequence.to_account_info();
+    let fee_collector = &accounts.fee_collector.to_account_info();
     let clock = &accounts.clock;
     let rent = &accounts.rent;
     let spl_token = &accounts.spl_token;
@@ -230,6 +230,7 @@ pub fn execute_wormhole_transfer(
     let target_chain = ETH_CHAIN_ID;
 
     // https://github.com/wormhole-foundation/wormhole/blob/main/solana/modules/token_bridge/program/src/lib.rs#L107
+    // This is the index of the TransferWrapped instruction in the Wormhole Token Bridge program
     let instruction_index: u8 = 4;
     let fee: u64 = 0;
     let data = PostWormholeMessageData {
@@ -266,7 +267,7 @@ pub fn execute_wormhole_transfer(
         payer.to_account_info().clone(),
         config.clone(),
         from.clone(),
-        from_owner.to_account_info().clone(),
+        from_owner.clone(),
         wrapped_mint.clone(),
         wrapped_meta.clone(),
         authority_signer.clone(),
