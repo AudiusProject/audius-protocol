@@ -5,7 +5,8 @@ import { accountSelectors } from 'store/account'
 import { processAndCacheUsers } from 'store/cache/users/utils'
 import { getContext } from 'store/effects'
 import { SearchKind } from 'store/pages/search-results/types'
-import { searchUsersModalActions, searchUsersModalSelectors } from 'store/ui'
+import * as searchUsersModalSelectors from 'store/ui/search-users-modal/selectors'
+import { actions as searchUsersModalActions } from 'store/ui/search-users-modal/slice'
 
 const { getUserId } = accountSelectors
 const { searchUsers, searchUsersSucceeded } = searchUsersModalActions

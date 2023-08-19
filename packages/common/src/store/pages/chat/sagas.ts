@@ -19,8 +19,8 @@ import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
+import * as toastActions from 'src/store/ui/toast/slice'
 import { getAccountUser, getUserId } from 'store/account/selectors'
-import { makeChatId, toastActions } from 'store/index'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
@@ -28,6 +28,7 @@ import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
 import { actions as chatActions } from './slice'
+import { makeChatId } from './utils'
 
 // Attach ulid to window object for debugging DMs
 // @ts-ignore

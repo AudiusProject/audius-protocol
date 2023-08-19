@@ -1,13 +1,12 @@
 import { useSelector } from 'react-redux'
 
+import { useProxySelector } from 'hooks/useProxySelector'
 import { User } from 'models/User'
 import { ChatPermissionAction, CommonState } from 'store/index'
 import {
   getCanSendMessage,
   getOtherChatUsers
 } from 'store/pages/chat/selectors'
-
-import { useProxySelector } from '..'
 
 /**
  * Returns whether or not the current user can send messages to the current chat
