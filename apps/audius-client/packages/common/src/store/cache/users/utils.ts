@@ -3,10 +3,10 @@ import { put } from 'typed-redux-saga'
 import { Kind } from 'models/Kind'
 import { UserMetadata } from 'models/User'
 import { AudiusBackend } from 'services/audius-backend'
-import { cacheActions } from 'store/cache'
+import * as cacheActions from 'store/cache/actions'
 import { getContext } from 'store/effects'
-import { makeUid } from 'utils'
 import { waitForRead } from 'utils/sagaHelpers'
+import { makeUid } from 'utils/uid'
 
 export function* processAndCacheUsers(users: UserMetadata[]) {
   yield* waitForRead()

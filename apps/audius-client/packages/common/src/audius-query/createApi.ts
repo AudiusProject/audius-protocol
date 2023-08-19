@@ -10,8 +10,10 @@ import { Dispatch } from 'redux'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
 import { Status } from 'models/Status'
+import { UserMetadata } from 'models/User'
 import { getCollection } from 'store/cache/collections/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
+import { reformatUser } from 'store/cache/users/utils'
 import { CommonState } from 'store/reducers'
 import { getErrorMessage } from 'utils/error'
 import { Nullable, removeNullable } from 'utils/typeUtils'
@@ -252,6 +254,7 @@ const fetchData = async <Args, Data>(
   context: AudiusQueryContextType,
   dispatch: Dispatch
 ) => {
+  const { audiusBackend } = context
   try {
     dispatch(
       // @ts-ignore
@@ -274,6 +277,12 @@ const fetchData = async <Args, Data>(
         apiResponseSchema
       )
       data = result
+
+      // Format entities before adding to cache
+      entities[Kind.USERS] = mapValues(
+        entities[Kind.USERS] ?? [],
+        (user: UserMetadata) => reformatUser(user, audiusBackend)
+      )
       dispatch(addEntries(Object.keys(entities), entities))
     } else {
       data = apiData
