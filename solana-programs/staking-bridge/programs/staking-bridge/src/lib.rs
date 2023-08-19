@@ -136,55 +136,55 @@ pub struct Amounts {
   staking_bridge_pda_bump: u8
 )]
 pub struct RaydiumSwap<'info> {
-    /// CHECK: This is the Raydium Liquidity Pool V4 program id
+    /// CHECK: This is the Raydium Liquidity Pool V4 program id. No check necessary.
     pub program_id: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the AMM id for the pool. No check necessary.
     pub amm: AccountInfo<'info>,
     #[account()]
-    /// CHECK: ok
+    /// CHECK: This is the authority for the pool. No check necessary.
     pub amm_authority: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the open orders account for the pool. No check necessary.
     pub amm_open_orders: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the target orders account for the pool. No check necessary.
     pub amm_target_orders: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the coin token account for the pool. No check necessary.
     pub pool_coin_token_account: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the pc token account for the pool. No check necessary.
     pub pool_pc_token_account: AccountInfo<'info>,
     #[account()]
-    /// CHECK: This is the Serum DEX program
+    /// CHECK: This is the Serum DEX program. No check necessary.
     pub serum_program: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the market address
+    /// CHECK: This is the market address. No check necessary.
     pub serum_market: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the bids account for the serum market. No check necessary.
     pub serum_bids: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the asks account for the serum market. No check necessary.
     pub serum_asks: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the event queue for the serum market. No check necessary.
     pub serum_event_queue: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the coin vault for the serum market. No check necessary.
     pub serum_coin_vault_account: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the pc vault for the serum market. No check necessary.
     pub serum_pc_vault_account: AccountInfo<'info>,
     #[account()]
-    /// CHECK: ok
+    /// CHECK: This is the vault signer for the serum market. No check necessary.
     pub serum_vault_signer: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the SOL USDC token account for the PDA, which is checked by the implementation of this method.
     pub user_source_token_account: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: ok
+    /// CHECK: This is the SOL AUDIO token account for the PDA, which is checked by the implementation of this method.
     pub user_destination_token_account: AccountInfo<'info>,
     #[account(
         seeds = [b"staking_bridge".as_ref()],

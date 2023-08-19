@@ -163,11 +163,11 @@ pub fn check_wormhole_pdas(
 }
 
     // Build and invoke the approve instruction
-    pub fn approve_wormhole_transfer(
+pub fn approve_wormhole_transfer(
     accounts: &mut PostWormholeMessage,
     amount: u64,
     staking_bridge_pda_bump: u8
-    ) -> Result<()> {
+) -> Result<()> {
     let from = &accounts.from;
     let authority_signer = &accounts.authority_signer;
     let from_owner = &accounts.from_owner; // PDA owned by this program which will sign the instruction
@@ -194,7 +194,7 @@ pub fn check_wormhole_pdas(
         &accounts,
         &[&[b"staking_bridge".as_ref(), &[staking_bridge_pda_bump]]]
     )?;
-    msg!("Approved the transfer of {} tokens!", amount);
+    msg!("Approved the transfer of {} tokens.", amount);
 
     Ok(())
 }
@@ -286,7 +286,7 @@ pub fn execute_wormhole_transfer(
         &accounts,
         &[&[b"staking_bridge".as_ref(), &[staking_bridge_pda_bump]]]
     )?;
-    msg!("Successfully transferred {} wrapped tokens!", amount);
+    msg!("Successfully transferred {} wrapped tokens.", amount);
 
     Ok(())
 }
