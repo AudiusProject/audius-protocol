@@ -3,16 +3,16 @@ use anchor_spl::token::Token;
 
 pub mod constant;
 pub mod error;
-pub mod raydium_utils;
-pub mod wormhole_utils;
+pub mod raydium;
+pub mod wormhole;
 
-use crate::raydium_utils::{
+use crate::raydium::{
     check_raydium_programs,
     check_raydium_token_accounts,
     check_raydium_pdas,
     swap
 };
-use crate::wormhole_utils::{
+use crate::wormhole::{
     check_wormhole_programs,
     check_wormhole_token_accounts,
     check_wormhole_pdas,
