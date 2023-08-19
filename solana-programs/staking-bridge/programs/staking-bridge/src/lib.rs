@@ -30,9 +30,9 @@ pub mod staking_bridge {
      * Creates the PDA.
      * This instruction can be called by anyone.
      * Immediately returns successfully because Anchor handles
-     * the PDA creation via the CreatePda struct account macros.
+     * the PDA creation via the CreateStakingBridgeBalancePda struct account macros.
      */
-    pub fn create_pda(_ctx: Context<CreatePda>) -> Result<()> {
+    pub fn create_staking_bridge_balance_pda(_ctx: Context<CreateStakingBridgeBalancePda>) -> Result<()> {
         Ok(())
     }
 
@@ -107,7 +107,7 @@ pub mod staking_bridge {
 }
 
 #[derive(Accounts)]
-pub struct CreatePda<'info> {
+pub struct CreateStakingBridgeBalancePda<'info> {
     #[account(
         init,
         seeds = [b"staking_bridge".as_ref()],
@@ -190,7 +190,7 @@ pub struct RaydiumSwap<'info> {
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
-    /// CHECK: This is the PDA initialized in the CreatePDA instruction.
+    /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub user_source_owner: UncheckedAccount<'info>,
     pub spl_token_program: Program<'info, Token>,
 }
@@ -256,7 +256,7 @@ pub struct PostWormholeMessage<'info> {
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
-    /// CHECK: This is the PDA initialized in the CreatePDA instruction.
+    /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub from_owner: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the associated token account of the PDA, from which the tokens will be transferred

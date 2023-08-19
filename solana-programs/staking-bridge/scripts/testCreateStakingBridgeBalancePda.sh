@@ -6,4 +6,4 @@ if [ -z "$keypair_path" ]; then
   exit 1
 fi
 
-feePayerSecret=$(cat $keypair_path) anchor run test-create-pda -- --skip-deploy
+feePayerSecret=$(cat $keypair_path) anchor run test-create-staking-bridge-balance-pda -- --skip-deploy

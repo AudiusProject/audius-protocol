@@ -42,7 +42,7 @@ You can also run `anchor test --skip-deploy` if your Solana Rust program has not
 ## Testing the PDA creation
 Note that the PDA has already been created, so attempting to create it again will fail. Here is [the PDA account](https://explorer.solana.com/address/GwVsdGg5ZjJRzxP1wVhZBDKaS1BgdbV8sVvE4wDE36dU).
 ```
-./scripts/testCreatePda.sh
+./scripts/testCreateStakingBridgeBalancePda.sh
 ```
 
 ## Testing the Raydium swap

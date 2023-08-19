@@ -72,19 +72,20 @@ describe('staking-bridge', () => {
   it('creates the staking bridge pda', async () => {
     // Add your test here.
     const tx = await program.methods
-      .createPda()
+      .createStakingBridgeBalancePda()
       .accounts({
         stakingBridgePda,
         payer: feePayerPublicKey,
         systemProgram: SystemProgram.programId,
       })
+      .signers([feePayerKeypair])
       .rpc();
     console.log('Your transaction signature', tx);
   })
 
   it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
-    console.log("serum market info:", JSON.stringify(market))
+    console.log('serum market info:', JSON.stringify(market))
 
     const poolKeys = await getAssociatedPoolKeys({
       programId: ammProgram,
@@ -93,19 +94,19 @@ describe('staking-bridge', () => {
       baseMint: market.baseMint,
       quoteMint: market.quoteMint
     })
-    console.log("amm poolKeys: ", JSON.stringify(poolKeys))
+    console.log('amm poolKeys: ', JSON.stringify(poolKeys))
 
     const { vaultOwner, vaultNonce } = await getVaultOwnerAndNonce(serumMarketPublicKey, serumDexProgram)
     if (vaultNonce.toNumber() != market.vaultSignerNonce) {
       console.log(
-        "withdraw vaultOwner:",
+        'withdraw vaultOwner:',
         vaultOwner.toString(),
-        "vaultNonce: ",
+        'vaultNonce: ',
         vaultNonce.toNumber(),
-        "market.vaultSignerNonce:",
+        'market.vaultSignerNonce:',
         market.vaultSignerNonce.toString()
       )
-      throw ("vaultSignerNonce incorrect!")
+      throw ('vaultSignerNonce incorrect!')
     }
 
     // Get associated token accounts for the staking bridge PDA.
@@ -126,7 +127,7 @@ describe('staking-bridge', () => {
     )
 
     // Amount of SOL USDC to be swapped for a minimum amount of SOL AUDIO expected to be received from the swap.
-    const wholeAmountIn = 0.001
+    const wholeAmountIn = 0.00001
     const { amountIn, minimumAmountOut } = getMinimumAmountOutFromAmountIn(wholeAmountIn);
 
     const accounts = {
@@ -162,7 +163,7 @@ describe('staking-bridge', () => {
       )
       .accounts(accounts)
       .rpc();
-    console.log("Your transaction signature", tx);
+    console.log('Your transaction signature', tx);
   })
 
   it('posts the wormhole token bridge transfer message', async () => {
