@@ -10,6 +10,7 @@ import {
   ETH_AUDIO_TOKEN_ADDRESS,
   SOL_AUDIO_DECIMALS,
   SOL_AUDIO_TOKEN_ADDRESS,
+  SOL_USDC_DECIMALS,
   SOL_USDC_TOKEN_ADDRESS,
   ammProgram,
   bridgeId,
@@ -18,7 +19,7 @@ import {
   tokenBridgeId
 } from './constants'
 import { getAssociatedPoolKeys, getMarket, getVaultOwnerAndNonce } from './raydiumTestUtils'
-import { formatEthAddress, getMinimumAmountOutFromAmountIn, getPostMessageData } from './wormholeTestUtils'
+import { formatEthAddress, getPostMessageData } from './wormholeTestUtils'
 
 const {
   Connection,
@@ -70,7 +71,6 @@ describe('staking-bridge', () => {
   )
 
   it('creates the staking bridge pda', async () => {
-    // Add your test here.
     const tx = await program.methods
       .createStakingBridgeBalancePda()
       .accounts({
@@ -127,8 +127,9 @@ describe('staking-bridge', () => {
     )
 
     // Amount of SOL USDC to be swapped for a minimum amount of SOL AUDIO expected to be received from the swap.
-    const wholeAmountIn = 0.00001
-    const { amountIn, minimumAmountOut } = getMinimumAmountOutFromAmountIn(wholeAmountIn);
+    const uiAmountIn = 0.00001
+    const amountIn = new anchor.BN(uiAmountIn * 10 ** SOL_USDC_DECIMALS);
+    const minimumAmountOut = new anchor.BN(0);
 
     const accounts = {
       programId: poolKeys.programId,
@@ -153,7 +154,6 @@ describe('staking-bridge', () => {
     }
     console.log('Raydium swap accounts:', { accounts })
 
-    // Add your test here.
     const tx = await program.methods
       .raydiumSwap(
         amountIn,
@@ -171,13 +171,13 @@ describe('staking-bridge', () => {
     const messagePublicKey = messageKeypair.publicKey
 
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
-    const wholeAmount = 0.00001
+    const uiAmount = 0.00001
     const { lastValidBlockHeight } = await connection.getLatestBlockhash()
     const {
       nonce,
       amount,
     } = getPostMessageData({
-      wholeAmount,
+      uiAmount,
       solTokenDecimals: SOL_AUDIO_DECIMALS,
       lastValidBlockHeight
     })

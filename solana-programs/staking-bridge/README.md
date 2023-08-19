@@ -35,10 +35,6 @@ For example,
 ./scripts/setupTestEnv.sh id.json
 ```
 
-The [program](https://explorer.solana.com/address/HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV) is already deployed, and all your transactions should have very low fees, in the order of <0.01 SOL.
-Note that you can make changes to the rust code, run `anchor build` and `anchor test`, and the redeployment will still cost very little because of the program having already been previously deployed.
-You can also run `anchor test --skip-deploy` if your Solana Rust program has not changed and you do not need to redeploy.
-
 ## Testing the PDA creation
 Note that the PDA has already been created, so attempting to create it again will fail. Here is [the PDA account](https://explorer.solana.com/address/GwVsdGg5ZjJRzxP1wVhZBDKaS1BgdbV8sVvE4wDE36dU).
 ```
