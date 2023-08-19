@@ -84,6 +84,7 @@ export type PlaylistTileProps = TileProps & {
   isPublic: boolean
   contentTitle: string
   playlistTitle: string
+  permalink?: string
   artistName: string
   artistHandle: string
   artistIsVerified: boolean
@@ -203,7 +204,7 @@ export type DesktopTrackTileProps = {
   showIconButtons?: boolean
 
   /** on click title */
-  onClickTitle: (e: MouseEvent) => void
+  onClickTitle?: (e: MouseEvent) => void
 
   /** on click repost icon */
   onClickRepost: (e?: MouseEvent) => void

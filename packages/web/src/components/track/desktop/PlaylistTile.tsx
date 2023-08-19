@@ -109,7 +109,6 @@ const PlaylistTile = ({
           bottomBar={bottomBar}
           showIconButtons={showIconButtons}
           containerClassName={tileClassName}
-          onClickTitle={onClickTitle}
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}

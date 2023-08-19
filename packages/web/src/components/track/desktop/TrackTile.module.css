@@ -148,10 +148,6 @@
     inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
 }
 
-.title {
-  color: var(--neutral);
-}
-
 .volumeIcon {
   margin-left: 6px;
 }
@@ -212,19 +208,11 @@
   color: var(--primary);
 }
 
-.title:hover,
-.creatorRow .name.artistNameLink:hover {
-  cursor: pointer;
-  color: var(--primary);
-  text-decoration: underline !important;
-  text-decoration-color: var(--primary-light-2);
-}
-
 .isDisabled .title:hover,
-.isDisabled .creatorRow .name.artistNameLink:hover {
+.isDisabled .creatorRow:hover {
   cursor: default;
   color: inherit;
-  text-decoration: none;
+  text-decoration: none !important;
 }
 
 .isHidden {

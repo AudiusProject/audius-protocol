@@ -95,19 +95,11 @@
   display: inline;
 }
 
-.artistWrapper .artist {
+.artist {
   display: inline-flex;
-  color: var(--secondary);
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
   padding-left: var(--unit-1);
-  align-items: center;
-}
-
-.artistWrapper .artist:hover {
-  color: var(--primary);
-  cursor: pointer;
-  text-decoration: underline;
+  text-decoration: inherit;
+  color: inherit;
 }
 
 .playSection {

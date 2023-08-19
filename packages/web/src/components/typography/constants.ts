@@ -42,5 +42,11 @@ export const variantTagMap: Record<TextVariant, VariantSizeTagMap> = {
     medium: 'p',
     small: 'p',
     xSmall: 'p'
+  },
+  inherit: {
+    large: 'span',
+    medium: 'span',
+    small: 'span',
+    xSmall: 'span'
   }
 }

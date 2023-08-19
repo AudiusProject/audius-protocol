@@ -34,6 +34,7 @@ import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
+import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -43,9 +44,11 @@ import { Tile } from 'components/tile'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
+import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
+import { profilePage } from 'utils/route'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
@@ -105,7 +108,6 @@ export type GiantTrackTileProps = {
   listenCount: number
   loading: boolean
   mood: string
-  onClickArtistName: () => void
   onClickFavorites: () => void
   onClickReposts: () => void
   onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
@@ -154,7 +156,6 @@ export const GiantTrackTile = ({
   listenCount,
   loading,
   mood,
-  onClickArtistName,
   onClickFavorites,
   onClickReposts,
   onDownload,
@@ -523,16 +524,23 @@ export const GiantTrackTile = ({
             </div>
             <div className={styles.artistWrapper}>
               <div className={cn(fadeIn)}>
-                <span>By</span>
+                <span>By </span>
                 <ArtistPopover handle={artistHandle}>
-                  <h2 className={styles.artist} onClick={onClickArtistName}>
-                    {artistName}
+                  <Link
+                    to={profilePage(artistHandle)}
+                    color='secondary'
+                    variant='body'
+                    size='large'
+                  >
+                    <Text as='h2' variant='inherit'>
+                      {artistName}
+                    </Text>
                     <UserBadges
                       className={styles.verified}
                       badgeSize={18}
                       userId={userId}
                     />
-                  </h2>
+                  </Link>
                 </ArtistPopover>
               </div>
               {isLoading && (

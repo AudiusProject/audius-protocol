@@ -52,27 +52,6 @@
   text-align: center;
 }
 
-.artist {
-  color: var(--secondary);
-  font-family: var(--font-family);
-  font-size: var(--font-l);
-  font-weight: var(--font-medium);
-  line-height: 24px;
-  justify-content: center;
-  text-align: center;
-  display: flex;
-  align-items: center;
-}
-
-.artist h2 {
-  color: var(--secondary);
-  display: inline;
-}
-
-.artist:active {
-  text-decoration: underline;
-}
-
 .verified {
   margin-left: 8px;
 }
@@ -80,6 +59,7 @@
 .titleArtistSection {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--unit-3);
 }
 

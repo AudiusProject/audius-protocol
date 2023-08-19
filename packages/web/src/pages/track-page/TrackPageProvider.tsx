@@ -459,7 +459,6 @@ class TrackPageProvider extends Component<
       userId,
       badge,
       onHeroPlay: this.onHeroPlay,
-      goToProfilePage: this.goToProfilePage,
       goToAllRemixesPage: this.goToAllRemixesPage,
       goToParentRemixesPage: this.goToParentRemixesPage,
       onHeroRepost: this.onHeroRepost,

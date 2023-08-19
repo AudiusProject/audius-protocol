@@ -40,14 +40,17 @@ import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Link } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
+import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
+import { profilePage } from 'utils/route'
 import { isDarkMode } from 'utils/theme/theme'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
@@ -112,7 +115,7 @@ type TrackHeaderProps = {
   userId: ID
   coverArtSizes: CoverArtSizes | null
   artistName: string
-  artistVerified: boolean
+  artistHandle: string
   description: string
   released: string
   genre: string
@@ -131,7 +134,6 @@ type TrackHeaderProps = {
   fieldVisibility: FieldVisibility
   coSign: Remix | null
   aiAttributedUserId: Nullable<ID>
-  onClickArtistName: () => void
   onClickMobileOverflow: (
     trackId: ID,
     overflowActions: OverflowAction[]
@@ -151,7 +153,7 @@ const TrackHeader = ({
   userId,
   coverArtSizes,
   artistName,
-  artistVerified,
+  artistHandle,
   description,
   isOwner,
   isFollowing,
@@ -176,7 +178,6 @@ const TrackHeader = ({
   genre,
   tags,
   aiAttributedUserId,
-  onClickArtistName,
   onPlay,
   onShare,
   onSave,
@@ -400,14 +401,21 @@ const TrackHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <div className={styles.artist} onClick={onClickArtistName}>
-          <h2>{artistName}</h2>
+        <Link
+          to={profilePage(artistHandle)}
+          color='secondary'
+          variant='body'
+          size='large'
+        >
+          <Text as='h2' variant='inherit'>
+            {artistName}
+          </Text>
           <UserBadges
             className={styles.verified}
             badgeSize={16}
             userId={userId}
           />
-        </div>
+        </Link>
       </div>
       {showPlay ? (
         <PlayButton

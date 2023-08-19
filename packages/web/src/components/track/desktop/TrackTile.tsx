@@ -1,4 +1,4 @@
-import { memo, MouseEvent, useCallback } from 'react'
+import { memo } from 'react'
 
 import {
   formatCount,
@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux'
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
+import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import typeStyles from 'components/typography/typography.module.css'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -194,15 +195,6 @@ const TrackTile = ({
     }
   }
 
-  const onClickTitleWrapper = useCallback(
-    (e: MouseEvent) => {
-      e.stopPropagation()
-      e.preventDefault()
-      onClickTitle(e)
-    },
-    [onClickTitle]
-  )
-
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
@@ -291,20 +283,17 @@ const TrackTile = ({
             {isLoading ? (
               <Skeleton width='80%' className={styles.skeleton} />
             ) : (
-              <a
-                href={permalink}
-                className={cn(
-                  typeStyles.title,
-                  typeStyles.titleMedium,
-                  styles.title
-                )}
-                onClick={onClickTitleWrapper}
+              <Link
+                variant='title'
+                to={permalink}
+                className={styles.title}
+                onClick={onClickTitle}
               >
                 {title}
                 {isPlaying ? (
                   <IconVolume className={styles.volumeIcon} />
                 ) : null}
-              </a>
+              </Link>
             )}
           </div>
           <div

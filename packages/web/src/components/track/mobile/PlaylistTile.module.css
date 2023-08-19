@@ -128,10 +128,6 @@
   flex: 0 0 auto;
 }
 
-.titlesActive {
-  color: var(--primary);
-}
-
 .titles div {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -140,33 +136,21 @@
 }
 
 .title {
-  font-weight: bold;
-  line-height: normal;
   margin-bottom: 2px;
-  display: flex;
-  align-items: center;
   position: relative;
   min-height: 20px;
   min-width: 90px;
 }
 
-.title:hover {
-  color: var(--primary);
-  text-decoration: underline;
+.playIcon {
+  margin-left: var(--unit-2);
 }
 
-.title:active {
-  color: var(--primary);
-  text-decoration: underline;
-}
-
-.title svg {
-  margin-left: 4px;
+.playIcon path {
+  fill: var(--primary);
 }
 
 .artist {
-  font-weight: var(--font-medium);
-  line-height: normal;
   max-width: 100%;
   width: 100%;
   display: inline-flex;
@@ -174,16 +158,6 @@
   align-items: center;
   position: relative;
   min-height: 20px;
-}
-
-.artist:hover {
-  color: var(--primary);
-  text-decoration: underline;
-}
-
-.artist:active {
-  color: var(--primary);
-  text-decoration: underline;
 }
 
 .userName {
