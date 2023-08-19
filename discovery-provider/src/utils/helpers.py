@@ -431,7 +431,9 @@ class BalanceChange(TypedDict):
 
 
 def get_solana_tx_token_balance_changes(
-    account_keys: List[str], meta: UiTransactionStatusMeta, mint: Optional[str] = None
+    account_keys: List[str],
+    meta: UiTransactionStatusMeta,
+    mint: Optional[str] = None,
 ):
     """
     Extracts the pre and post balances and determines change for a solana transaction metadata object
@@ -439,6 +441,12 @@ def get_solana_tx_token_balance_changes(
         account_keys: the account keys for legacy transaction or the account keys
             + loaded addresses for a v1 transaction.
     """
+    all_keys = account_keys.copy()
+    if meta.loaded_addresses:
+        writable = meta.loaded_addresses.writable or []
+        readonly = meta.loaded_addresses.readonly or []
+        all_keys.extend(str(key) for key in writable + readonly)
+
     balance_changes: dict[str, BalanceChange] = {}
     for pre_balance_dict in meta.pre_token_balances or []:
         if mint and str(pre_balance_dict.mint) != mint:
@@ -455,7 +463,7 @@ def get_solana_tx_token_balance_changes(
         if post_balance_dict is None:
             continue
 
-        account_key = account_keys[pre_balance_dict.account_index]
+        account_key = all_keys[pre_balance_dict.account_index]
         pre_balance = int(pre_balance_dict.ui_token_amount.amount)
         post_balance = int(post_balance_dict.ui_token_amount.amount)
         owner = post_balance_dict.owner

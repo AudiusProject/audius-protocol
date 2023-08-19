@@ -176,10 +176,6 @@ def parse_spl_token_transaction(
 
         tx_message = cast(Transaction, result.transaction.transaction).message
         account_keys = list(map(lambda key: str(key), tx_message.account_keys))
-        if version == 0 and meta.loaded_addresses:
-            writable = meta.loaded_addresses.writable or []
-            readonly = meta.loaded_addresses.readonly or []
-            account_keys.extend(str(key) for key in writable + readonly)
 
         memo_encoded = parse_memo_instruction(tx_message)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
