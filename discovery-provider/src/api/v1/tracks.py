@@ -512,13 +512,15 @@ class TrackStream(Resource):
         cached_content_node = redis.get(redis_key)
         stream_url = None
         if cached_content_node:
+            cached_content_node = cached_content_node.decode("utf-8")
             logger.info(
-                f"tracks.py | stream | Retrieving {track_id} from cached content node."
+                f"tracks.py | stream | Retrieving {track_id} from cached content node {cached_content_node}"
             )
-            stream_url = get_stream_url_from_content_node(
-                str(cached_content_node), path
-            )
+            stream_url = get_stream_url_from_content_node(cached_content_node, path)
             if stream_url:
+                logger.info(
+                    f"tracks.py | stream | Returning {track_id} from cached content node."
+                )
                 return stream_url
 
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
