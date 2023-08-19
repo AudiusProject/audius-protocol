@@ -513,14 +513,8 @@ class TrackStream(Resource):
         stream_url = None
         if cached_content_node:
             cached_content_node = cached_content_node.decode("utf-8")
-            logger.info(
-                f"tracks.py | stream | Retrieving {track_id} from cached content node {cached_content_node}"
-            )
             stream_url = get_stream_url_from_content_node(cached_content_node, path)
             if stream_url:
-                logger.info(
-                    f"tracks.py | stream | Returning {track_id} from cached content node."
-                )
                 return stream_url
 
         healthy_nodes = get_all_healthy_content_nodes_cached(redis)
@@ -534,9 +528,6 @@ class TrackStream(Resource):
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
         content_nodes = rendezvous.get_n(5, cid)
-        logger.info(
-            f"tracks.py | stream | Trying multiple content nodes to retrieve track {track_id}"
-        )
         for content_node in content_nodes:
             stream_url = get_stream_url_from_content_node(content_node, path)
             if stream_url:
