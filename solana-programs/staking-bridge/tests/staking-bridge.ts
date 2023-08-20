@@ -20,6 +20,7 @@ import {
 } from './constants'
 import { getAssociatedPoolKeys, getMarket, getVaultOwnerAndNonce } from './raydiumTestUtils'
 import { formatEthAddress, getPostMessageData } from './wormholeTestUtils'
+import { assert } from 'chai'
 
 const {
   Connection,
@@ -41,7 +42,7 @@ const SOL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SOL_USDC_TOKEN_ADDRESS)
 const SOL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SOL_AUDIO_TOKEN_ADDRESS)
 
 const endpoint = 'https://api.mainnet-beta.solana.com'
-const connection = new Connection(endpoint, 'confirmed');
+const connection = new Connection(endpoint, 'finalized')
 
 async function signTransaction(transaction) {
   transaction.partialSign(feePayerKeypair)
@@ -60,10 +61,10 @@ describe('staking-bridge', () => {
     signTransaction,
     signAllTransactions
   }
-  const provider = new anchor.AnchorProvider(connection, wallet, { skipPreflight: true });
+  const provider = new anchor.AnchorProvider(connection, wallet, { skipPreflight: true })
   anchor.setProvider(provider)
 
-  const program = anchor.workspace.StakingBridge as Program<StakingBridge>;
+  const program = anchor.workspace.StakingBridge as Program<StakingBridge>
 
   const [stakingBridgePda, stakingBridgePdaBump] = PublicKey.findProgramAddressSync(
     [Buffer.from('staking_bridge')],
@@ -71,21 +72,34 @@ describe('staking-bridge', () => {
   )
 
   it('creates the staking bridge pda', async () => {
-    const tx = await program.methods
-      .createStakingBridgeBalancePda()
-      .accounts({
-        stakingBridgePda,
-        payer: feePayerPublicKey,
-        systemProgram: SystemProgram.programId,
-      })
-      .signers([feePayerKeypair])
-      .rpc();
-    console.log('Your transaction signature', tx);
+    try {
+      const tx = await program.methods
+        .createStakingBridgeBalancePda()
+        .accounts({
+          stakingBridgePda,
+          payer: feePayerPublicKey,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([feePayerKeypair])
+        .rpc()
+      console.log('Your transaction signature', tx)
+    } catch (e) {
+      const timeoutError = 'TransactionExpiredTimeoutError'
+      if (e.toString().includes(timeoutError)) {
+        assert.fail(`The transaction timed out, but the PDA may have been created.\nError: ${e}`)
+      }
+      const error = `{"err":{"InstructionError":[0,{"Custom":0}]}}`
+      assert.ok(e.toString().includes(error), `Error message not expected: ${e}`)
+      console.log('Staking Bridge balance PDA already exists')
+    }
+
+    const stakingBridgePdaAccount = await connection.getAccountInfo(stakingBridgePda)
+    assert.ok(stakingBridgePdaAccount, 'Staking Bridge balance PDA account not found')
   })
 
   it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
-    console.log('serum market info:', JSON.stringify(market))
+    console.log('Serum market info:', JSON.stringify(market))
 
     const poolKeys = await getAssociatedPoolKeys({
       programId: ammProgram,
@@ -94,42 +108,39 @@ describe('staking-bridge', () => {
       baseMint: market.baseMint,
       quoteMint: market.quoteMint
     })
-    console.log('amm poolKeys: ', JSON.stringify(poolKeys))
+    console.log('AMM poolKeys: ', JSON.stringify(poolKeys))
 
     const { vaultOwner, vaultNonce } = await getVaultOwnerAndNonce(serumMarketPublicKey, serumDexProgram)
-    if (vaultNonce.toNumber() != market.vaultSignerNonce) {
-      console.log(
-        'withdraw vaultOwner:',
-        vaultOwner.toString(),
-        'vaultNonce: ',
-        vaultNonce.toNumber(),
-        'market.vaultSignerNonce:',
-        market.vaultSignerNonce.toString()
-      )
-      throw ('vaultSignerNonce incorrect!')
-    }
+    assert.equal(
+      vaultNonce.toNumber(),
+      market.vaultSignerNonce,
+      'vaultSignerNonce is incorrect'
+    )
 
     // Get associated token accounts for the staking bridge PDA.
     // Create them if they don't exist.
-    const usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+    let usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
       SOL_USDC_TOKEN_ADDRESS_KEY,
       stakingBridgePda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
-    const audioTokenAccount = await getOrCreateAssociatedTokenAccount(
+    const usdcAmountBeforeSwap = Number(usdcTokenAccount.amount)
+    let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
       SOL_AUDIO_TOKEN_ADDRESS_KEY,
       stakingBridgePda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
+    const audioAmountBeforeSwap = Number(audioTokenAccount.amount)
 
     // Amount of SOL USDC to be swapped for a minimum amount of SOL AUDIO expected to be received from the swap.
     const uiAmountIn = 0.00001
-    const amountIn = new anchor.BN(uiAmountIn * 10 ** SOL_USDC_DECIMALS);
-    const minimumAmountOut = new anchor.BN(0);
+    const amountToSwap = uiAmountIn * 10 ** SOL_USDC_DECIMALS
+    const amountIn = new anchor.BN(amountToSwap)
+    const minimumAmountOut = new anchor.BN(0)
 
     const accounts = {
       programId: poolKeys.programId,
@@ -162,8 +173,33 @@ describe('staking-bridge', () => {
         stakingBridgePdaBump,
       )
       .accounts(accounts)
-      .rpc();
-    console.log('Your transaction signature', tx);
+      .rpc()
+    console.log('Your transaction signature', tx)
+
+    usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SOL_USDC_TOKEN_ADDRESS_KEY,
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    audioTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    assert.equal(
+      Number(usdcTokenAccount.amount),
+      usdcAmountBeforeSwap - amountToSwap,
+      'Incorrect expected amount after raydium swap'
+    )
+    assert.isAbove(
+      Number(audioTokenAccount.amount),
+      audioAmountBeforeSwap,
+      'AUDIO amount did not increase'
+    )
   })
 
   it('posts the wormhole token bridge transfer message', async () => {
@@ -181,17 +217,18 @@ describe('staking-bridge', () => {
       solTokenDecimals: SOL_AUDIO_DECIMALS,
       lastValidBlockHeight
     })
+    const amountToTransfer = amount.toNumber()
 
     // Associated token account owned by the PDA
-    const pdaAta = await getOrCreateAssociatedTokenAccount(
+    let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
       SOL_AUDIO_TOKEN_ADDRESS_KEY,
       stakingBridgePda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
-    const pdaAtaKey = pdaAta.address
-    console.log({ pdaAtaKey })
+    const pdaAtaKey = audioTokenAccount.address
+    const audioAmountBeforeTransfer = Number(audioTokenAccount.amount)
 
     // PDAs
     const [config, configBump] = PublicKey.findProgramAddressSync(
@@ -288,7 +325,20 @@ describe('staking-bridge', () => {
       )
       .accounts(accounts)
       .signers(signers)
-      .rpc();
-    console.log('Your transaction signature', tx);
+      .rpc()
+    console.log('Your transaction signature', tx)
+
+    audioTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    assert.equal(
+      Number(audioTokenAccount.amount),
+      audioAmountBeforeTransfer - amountToTransfer,
+      'Incorrect expected amount after wormhole transfer'
+    )
   })
 })
