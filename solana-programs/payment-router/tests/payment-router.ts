@@ -104,13 +104,15 @@ describe('payment-router', () => {
     )
 
     // Associated token account owned by the PDA
-    const pdaAta = await getOrCreateAssociatedTokenAccount(
+    let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
       SOL_AUDIO_TOKEN_ADDRESS_KEY,
       paymentRouterPda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
+    const pdaAtaKey = audioTokenAccount.address
+    const audioAmountBeforeTransfer = Number(audioTokenAccount.amount)
 
     const amounts = Object.values(recipientAmounts)
       .map(amount => new anchor.BN(amount * 10 ** SOL_AUDIO_DECIMALS))
@@ -125,7 +127,7 @@ describe('payment-router', () => {
         totalAmount,
       )
       .accounts({
-        sender: pdaAta.address,
+        sender: pdaAtaKey,
         senderOwner: paymentRouterPda,
         splToken: TOKEN_PROGRAM_ID,
       })
@@ -139,5 +141,18 @@ describe('payment-router', () => {
       )
       .rpc()
     console.log('Your transaction signature', tx)
+
+    audioTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      paymentRouterPda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    assert.equal(
+      Number(audioTokenAccount.amount),
+      audioAmountBeforeTransfer - totalAmount.toNumber(),
+      'Incorrect expected amount after transfer to recipients'
+    )
   })
 })
