@@ -1,5 +1,6 @@
-import { ReactNode, useCallback, useMemo } from 'react'
+import { ReactNode } from 'react'
 
+import { Maybe } from '@audius/common'
 import {
   IconTwitterBird,
   IconInstagram,
@@ -10,6 +11,7 @@ import {
 import cn from 'classnames'
 import Linkify from 'linkify-react'
 
+import { ExternalLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SocialLink.module.css'
@@ -30,28 +32,17 @@ const SITE_URL_MAP = {
 
 type HandleType = keyof typeof SITE_URL_MAP
 
-const goToHandle = (type: HandleType, handle: string) => {
-  if (SITE_URL_MAP[type] && handle) {
-    const win = window.open(`${SITE_URL_MAP[type]}${handle}`, '_blank')
-    if (win) win.focus()
-  }
-}
-
-const goToLink = (link: string) => {
-  if (!/^https?/.test(link)) {
-    link = `http://${link}`
-  }
-  const win = window.open(link, '_blank')
-  if (win) win.focus()
-}
-
 export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK]
+
 const singleLinkTypes = [
   Type.TWITTER,
   Type.INSTAGRAM,
   Type.TIKTOK,
   Type.WEBSITE
 ]
+
+const isHandleType = (type: Type): type is HandleType =>
+  handleTypes.includes(type)
 
 type SocialLinkProps = {
   type: Type
@@ -60,23 +51,9 @@ type SocialLinkProps = {
   iconOnly?: boolean
 }
 
-const SocialLink = ({
-  type,
-  link,
-  onClick,
-  iconOnly = false
-}: SocialLinkProps) => {
-  const isHandle = useMemo(() => handleTypes.includes(type), [type])
-  const isSingleLink = useMemo(() => singleLinkTypes.includes(type), [type])
-
-  const onIconClick = useCallback(() => {
-    if (isHandle) {
-      goToHandle(type as HandleType, link)
-    } else {
-      goToLink(link)
-    }
-    if (onClick) onClick()
-  }, [isHandle, type, link, onClick])
+const SocialLink = (props: SocialLinkProps) => {
+  const { type, link, onClick, iconOnly = false } = props
+  const isSingleLink = singleLinkTypes.includes(type)
 
   let icon: ReactNode
   switch (type) {
@@ -114,7 +91,7 @@ const SocialLink = ({
   }
 
   let text: ReactNode
-  if (isHandle) {
+  if (isHandleType(type)) {
     text = `@${link}`
   } else {
     text = link.replace(/((?:https?):\/\/)|www./g, '')
@@ -135,18 +112,40 @@ const SocialLink = ({
     }
   }
 
-  return (
-    <div className={styles.socialLink}>
-      <div
-        onClick={isSingleLink ? onIconClick : () => {}}
-        className={cn(styles.wrapper, {
-          [styles.singleLink]: isSingleLink
-        })}
-      >
-        {icon}
-        {!iconOnly && <div className={styles.text}>{text}</div>}
-      </div>
+  let href: Maybe<string>
+
+  if (isHandleType(type)) {
+    href = `${SITE_URL_MAP[type]}${link}`
+  } else if (isSingleLink) {
+    if (!/^https?/.test(link)) {
+      href = `https://${link}`
+    } else {
+      href = link
+    }
+  }
+
+  const socialLinkContent = (
+    <div
+      className={cn(styles.wrapper, {
+        [styles.singleLink]: isSingleLink
+      })}
+    >
+      {icon}
+      {!iconOnly && <div className={styles.text}>{text}</div>}
     </div>
+  )
+
+  const rootProps = {
+    onClick,
+    className: styles.socialLink
+  }
+
+  return href ? (
+    <ExternalLink href={href} {...rootProps}>
+      {socialLinkContent}
+    </ExternalLink>
+  ) : (
+    <div {...rootProps}>{socialLinkContent}</div>
   )
 }
 

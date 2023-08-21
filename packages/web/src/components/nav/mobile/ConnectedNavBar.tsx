@@ -20,12 +20,7 @@ import {
 } from 'components/animated-switch/RouterContextProvider'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
-import {
-  TRENDING_PAGE,
-  NOTIFICATION_PAGE,
-  SETTINGS_PAGE,
-  AUDIO_PAGE
-} from 'utils/route'
+import { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } from 'utils/route'
 
 import NavBar from './NavBar'
 const { getSearchStatus } = searchResultsPageSelectors
@@ -54,10 +49,6 @@ const ConnectedNavBar = ({
       state: {}
     })
   }
-
-  const goToTrending = useCallback(() => {
-    goToRoute(TRENDING_PAGE)
-  }, [goToRoute])
 
   const record = useRecord()
   const goToNotificationPage = useCallback(() => {
@@ -94,7 +85,6 @@ const ConnectedNavBar = ({
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
       search={search}
-      logoClicked={goToTrending}
       searchStatus={searchStatus}
       goBack={goBack}
       history={history}

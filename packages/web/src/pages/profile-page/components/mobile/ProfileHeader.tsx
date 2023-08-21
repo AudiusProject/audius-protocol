@@ -40,6 +40,7 @@ import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
+import { SocialLink } from './SocialLink'
 import UploadButton from './UploadButton'
 import UploadStub from './UploadStub'
 
@@ -223,11 +224,6 @@ const ProfileHeader = ({
         instagramHandle
       })
     )
-    const win = window.open(
-      `https://instagram.com/${instagramHandle}`,
-      '_blank'
-    )
-    if (win) win.focus()
   }, [record, instagramHandle, handle])
 
   const onGoToTwitter = useCallback(() => {
@@ -237,8 +233,6 @@ const ProfileHeader = ({
         twitterHandle
       })
     )
-    const win = window.open(`https://twitter.com/${twitterHandle}`, '_blank')
-    if (win) win.focus()
   }, [record, twitterHandle, handle])
 
   const onGoToTikTok = useCallback(() => {
@@ -248,8 +242,6 @@ const ProfileHeader = ({
         tikTokHandle
       })
     )
-    const win = window.open(`https://tiktok.com/@${tikTokHandle}`, '_blank')
-    if (win) win.focus()
   }, [record, tikTokHandle, handle])
 
   const onExternalLinkClick = useCallback(
@@ -277,7 +269,7 @@ const ProfileHeader = ({
   const onGoToWebsite = () => {
     let link = website
     if (!/^https?/.test(link)) {
-      link = `http://${link}`
+      link = `https://${link}`
     }
     const win = window.open(link, '_blank')
     if (win) win.focus()
@@ -421,24 +413,27 @@ const ProfileHeader = ({
               isCompact
               className={styles.badge}
             />
-            {twitterHandle && (
-              <IconTwitterBird
-                className={cn(styles.socialIcon)}
+            {twitterHandle ? (
+              <SocialLink
+                href={`https://twitter.com/${twitterHandle}`}
                 onClick={onGoToTwitter}
+                icon={<IconTwitterBird />}
               />
-            )}
-            {instagramHandle && (
-              <IconInstagram
-                className={cn(styles.socialIcon)}
+            ) : null}
+            {instagramHandle ? (
+              <SocialLink
+                href={`https://instagram.com/${instagramHandle}`}
                 onClick={onGoToInstagram}
+                icon={<IconInstagram />}
               />
-            )}
-            {tikTokHandle && (
-              <IconTikTok
-                className={cn(styles.socialIcon)}
+            ) : null}
+            {tikTokHandle ? (
+              <SocialLink
+                href={`https://tiktok.com/@${tikTokHandle}`}
                 onClick={onGoToTikTok}
+                icon={<IconTikTok />}
               />
-            )}
+            ) : null}
           </div>
           {bio ? (
             <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
@@ -462,10 +457,7 @@ const ProfileHeader = ({
               )}
               {donation && (
                 <div className={styles.donation}>
-                  <IconDonate
-                    className={cn(styles.socialIcon)}
-                    onClick={onGoToInstagram}
-                  />
+                  <IconDonate className={cn(styles.socialIcon)} />
                   <span>
                     <Linkify
                       options={{

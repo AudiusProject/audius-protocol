@@ -35,9 +35,9 @@ import NavContext, {
   CenterPreset
 } from 'components/nav/store/context'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
-import useTabs from 'hooks/useTabs/useTabs'
+import useTabs, { TabHeader } from 'hooks/useTabs/useTabs'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
-import { collectionPage } from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -147,38 +147,53 @@ export const EmptyTab = (props: EmptyTabProps) => {
   return <div className={styles.emptyTab}>{props.message}</div>
 }
 
-const artistTabs = [
-  { icon: <IconNote />, text: 'Tracks', label: ProfilePageTabs.TRACKS },
-  { icon: <IconAlbum />, text: 'Albums', label: ProfilePageTabs.ALBUMS },
+const artistTabs: TabHeader[] = [
+  {
+    icon: <IconNote />,
+    text: 'Tracks',
+    label: ProfilePageTabs.TRACKS,
+    to: 'tracks'
+  },
+  {
+    icon: <IconAlbum />,
+    text: 'Albums',
+    label: ProfilePageTabs.ALBUMS,
+    to: 'albums'
+  },
   {
     icon: <IconPlaylists />,
     text: 'Playlists',
-    label: ProfilePageTabs.PLAYLISTS
+    label: ProfilePageTabs.PLAYLISTS,
+    to: 'playlists'
   },
   {
     icon: <IconReposts className={styles.iconReposts} />,
     text: 'Reposts',
-    label: ProfilePageTabs.REPOSTS
+    label: ProfilePageTabs.REPOSTS,
+    to: 'reposts'
   }
 ]
 
-const userTabs = [
+const userTabs: TabHeader[] = [
   {
     icon: <IconReposts className={styles.iconReposts} />,
     text: 'Reposts',
-    label: ProfilePageTabs.REPOSTS
+    label: ProfilePageTabs.REPOSTS,
+    to: 'reposts'
   },
   {
     icon: <IconPlaylists />,
     text: 'Playlists',
-    label: ProfilePageTabs.PLAYLISTS
+    label: ProfilePageTabs.PLAYLISTS,
+    to: 'playlists'
   }
 ]
 
 const collectiblesTab = {
   icon: <IconCollectibles />,
   text: 'Collectibles',
-  label: ProfilePageTabs.COLLECTIBLES
+  label: ProfilePageTabs.COLLECTIBLES,
+  to: 'collectibles'
 }
 
 const artistTabsWithCollectibles = [...artistTabs, collectiblesTab]
@@ -609,7 +624,8 @@ const ProfilePage = g(
       didChangeTabsFrom,
       tabs: isLoading ? [] : profileTabs || [],
       elements: isLoading ? [] : profileElements || [],
-      initialTab: activeTab || undefined
+      initialTab: activeTab || undefined,
+      pathname: profilePage(handle)
     })
 
     if (profile && profile.is_deactivated) {

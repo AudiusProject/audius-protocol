@@ -11,6 +11,8 @@ import { useInstanceVar } from '@audius/common'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
+import { SeoLink } from 'components/link'
+
 import styles from './AnimatedButtonProvider.module.css'
 
 export type BaseAnimatedButtonProps = {
@@ -99,31 +101,32 @@ const AnimatedButton = ({
     }
   ]
 
-  return (
-    <a
-      href={href}
-      onClick={handleClick}
-      className={cn(
-        [styles.baseStyle],
-        className,
-        {
-          [activeClassName]: isActive
-        },
-        {
-          [disabledClassName]: isDisabled
-        },
-        { [styles.glow]: isActive && isMatrix }
-      )}
-    >
-      <div className={cn(wrapperClassName)}>
-        <Lottie
-          options={animationOptions}
-          isPaused={isPaused}
-          isClickToPauseDisabled
-          eventListeners={isDisabled ? [] : eventListeners}
-        />
-      </div>
-    </a>
+  const buttonElement = (
+    <div className={cn(wrapperClassName)}>
+      <Lottie
+        options={animationOptions}
+        isPaused={isPaused}
+        isClickToPauseDisabled
+        eventListeners={isDisabled ? [] : eventListeners}
+      />
+    </div>
+  )
+
+  const rootProps = {
+    onClick: handleClick,
+    className: cn(styles.baseStyle, className, {
+      [activeClassName]: isActive,
+      [disabledClassName]: isDisabled,
+      [styles.glow]: isActive && isMatrix
+    })
+  }
+
+  return href ? (
+    <SeoLink to={href} {...rootProps}>
+      {buttonElement}
+    </SeoLink>
+  ) : (
+    <button {...rootProps}>{buttonElement}</button>
   )
 }
 

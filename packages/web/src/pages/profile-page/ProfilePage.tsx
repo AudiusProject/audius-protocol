@@ -1,4 +1,4 @@
-import { RefObject } from 'react'
+import { RefObject, memo } from 'react'
 
 import { useIsMobile } from 'utils/clientUtil'
 
@@ -21,4 +21,4 @@ const ProfilePage = ({ containerRef }: ProfilePageProps) => {
   )
 }
 
-export default ProfilePage
+export default memo(ProfilePage)
