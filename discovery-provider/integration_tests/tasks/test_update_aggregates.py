@@ -5,7 +5,6 @@ from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
-from src.models.social.repost import Repost
 
 from src.tasks.update_aggregates import _update_aggregates
 from src.utils.db_session import get_db
@@ -111,8 +110,6 @@ def test_update_aggregate_playlist(app):
         aggregate_playlist = (
             session.query(AggregatePlaylist).filter_by(playlist_id=1).first()
         )
-        print(f"asdf reposts {session.query(Repost).all()}")
-        print(f"asdf aggregate_playlist {aggregate_playlist}")
         assert aggregate_playlist.playlist_id == 1
         assert aggregate_playlist.repost_count == 1
         assert aggregate_playlist.save_count == 1
@@ -126,7 +123,6 @@ def test_update_aggregate_playlist(app):
         aggregate_playlist = (
             session.query(AggregatePlaylist).filter_by(playlist_id=1).first()
         )
-        print(f"asdf aggregate_playlist {aggregate_playlist}")
         assert aggregate_playlist.playlist_id == 1
         assert aggregate_playlist.repost_count == 1
         assert aggregate_playlist.save_count == 1
