@@ -9,6 +9,8 @@ The program methods are permissionless, meaning that anyone can interact with th
 
 Please note that this program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
+Here is the [deployed program](https://explorer.solana.com/address/HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV).
+
 ## Building the project
 Make sure you have `anchor` installed. See https://www.anchor-lang.com/docs/installation. If you follow the installation steps, you should also have Rust, Solana, and Yarn installed.
 
@@ -21,8 +23,6 @@ Anchor uses Yarn, so please sure you have it installed, and run
 ```
 yarn install
 ```
-
-Note that I've been using Node 16 for this project, as I was running into issues with older Node versions for the `@solana/spl-token` and `@solana/web3.js` modules.
 
 ## Setting up your Solana cluster and environment
 We are going to be invoking programs on the Solana mainnet.
@@ -42,13 +42,13 @@ Note that the PDA has already been created, so attempting to create it again wil
 ```
 
 ## Testing the Raydium swap
-This will swap 0.001 USDC tokens to its AUDIO equivalent.
+This will swap 0.00001 USDC tokens to its AUDIO equivalent.
 ```
 ./scripts/testRaydiumSwap.sh
 ```
 
 ## Testing the Wormhole transfer
-This will send 0.001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
+This will send 0.00001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
 ```
 ./scripts/testWormholeTransfer.sh
 ```
