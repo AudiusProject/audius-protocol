@@ -83,7 +83,7 @@ type TrackDetailsTileProps = {
 
 export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
   const styles = useStyles()
-  const { accentBlue, specialLightGreen1 } = useThemeColors()
+  const { accentBlue, specialLightGreen } = useThemeColors()
   const track = useSelector((state) => getTrack(state, { id: trackId }))
   const owner = useSelector((state) => getUser(state, { id: track?.owner_id }))
   const isCollectibleGated = isPremiumContentCollectibleGated(
@@ -126,10 +126,10 @@ export const TrackDetailsTile = ({ trackId }: TrackDetailsTileProps) => {
       [PremiumContentType.USDC_PURCHASE]: {
         message: messages.premiumTrack,
         icon: IconCart,
-        color: specialLightGreen1
+        color: specialLightGreen
       }
     }
-  }, [accentBlue, specialLightGreen1])
+  }, [accentBlue, specialLightGreen])
 
   if (!track || !owner) {
     return null

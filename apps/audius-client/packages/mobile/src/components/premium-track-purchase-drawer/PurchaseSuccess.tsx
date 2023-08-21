@@ -27,7 +27,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 export const PurchaseSuccess = () => {
   const styles = useStyles()
-  const { specialLightGreen1, staticWhite } = useThemeColors()
+  const { specialGreen, staticWhite } = useThemeColors()
 
   return (
     <View style={styles.root}>
@@ -35,7 +35,7 @@ export const PurchaseSuccess = () => {
         <IconVerified
           height={spacing(4)}
           width={spacing(4)}
-          fill={specialLightGreen1}
+          fill={specialGreen}
           fillSecondary={staticWhite}
         />
         <Text weight='bold'>{messages.success}</Text>
