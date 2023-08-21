@@ -4,11 +4,10 @@ import {
   combineStatuses,
   premiumContentSelectors,
   purchaseContentActions,
-  statusIsNotFinalized,
   useGetTrackById,
   useUSDCBalance
 } from '@audius/common'
-import { IconCart, Modal, ModalContentPages, ModalHeader } from '@audius/stems'
+import { IconCart, Modal, ModalContent, ModalHeader } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -16,18 +15,12 @@ import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
-import { LoadingPage } from './components/LoadingPage'
 import { PurchaseDetailsPage } from './components/PurchaseDetailsPage'
 
 const { getPurchaseContentId } = premiumContentSelectors
 
 const messages = {
   completePurchase: 'Complete Purchase'
-}
-
-enum PurchaseSteps {
-  LOADING = 0,
-  DETAILS = 1
 }
 
 const usePremiumContentPurchaseModalState = () => {
@@ -47,15 +40,11 @@ const usePremiumContentPurchaseModalState = () => {
     dispatch(purchaseContentActions.cleanup())
   }, [setIsOpen, dispatch])
 
-  const currentStep = statusIsNotFinalized(status)
-    ? PurchaseSteps.LOADING
-    : PurchaseSteps.DETAILS
-
-  return { isOpen, handleClose, currentStep, track, balance, status }
+  return { isOpen, handleClose, track, balance, status }
 }
 
 export const PremiumContentPurchaseModal = () => {
-  const { balance, isOpen, handleClose, currentStep, track } =
+  const { balance, isOpen, handleClose, track } =
     usePremiumContentPurchaseModalState()
 
   return (
@@ -77,16 +66,15 @@ export const PremiumContentPurchaseModal = () => {
           {messages.completePurchase}
         </Text>
       </ModalHeader>
-      {track ? (
-        <ModalContentPages currentPage={currentStep}>
-          <LoadingPage />
+      <ModalContent>
+        {track ? (
           <PurchaseDetailsPage
             track={track}
             currentBalance={balance}
             onViewTrackClicked={handleClose}
           />
-        </ModalContentPages>
-      ) : null}
+        ) : null}
+      </ModalContent>
     </Modal>
   )
 }

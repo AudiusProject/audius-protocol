@@ -133,8 +133,17 @@ const LockedPremiumTrackSection = ({
 
   const handlePurchase = useCallback(() => {
     dispatch(setPurchaseContentId({ id: trackId }))
+    if (lockedContentModalVisibility) {
+      setLockedContentModalVisibility(false)
+    }
     setPurchaseModalVisibility(true)
-  }, [trackId, setPurchaseModalVisibility, dispatch])
+  }, [
+    trackId,
+    lockedContentModalVisibility,
+    setPurchaseModalVisibility,
+    setLockedContentModalVisibility,
+    dispatch
+  ])
 
   const handleSendTip = useCallback(() => {
     if (account) {
