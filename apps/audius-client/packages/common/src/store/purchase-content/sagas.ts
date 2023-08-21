@@ -23,7 +23,6 @@ import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
-import { setVisibility } from 'store/ui/modals/slice'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -220,13 +219,6 @@ function* doStartPurchaseContentFlow({
 
     // finish
     yield* put(purchaseConfirmed())
-
-    yield* put(
-      setVisibility({
-        modal: 'PremiumContentPurchase',
-        visible: false
-      })
-    )
 
     yield* call(
       track,
