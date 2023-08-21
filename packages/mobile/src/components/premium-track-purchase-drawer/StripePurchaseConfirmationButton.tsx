@@ -32,7 +32,7 @@ export const StripePurchaseConfirmationButton = ({
   price
 }: StripePurchaseConfirmationButtonProps) => {
   const dispatch = useDispatch()
-  const { specialLightGreen1 } = useThemeColors()
+  const { specialLightGreen } = useThemeColors()
   const stage = useSelector(getPurchaseContentFlowStage)
   const isLoading = isContentPurchaseInProgress(stage)
 
@@ -52,7 +52,7 @@ export const StripePurchaseConfirmationButton = ({
       title={isLoading ? messages.purchasing : messages.buy(price)}
       variant={'primary'}
       size='large'
-      color={specialLightGreen1}
+      color={specialLightGreen}
       iconPosition='left'
       icon={isLoading ? LoadingSpinner : undefined}
       fullWidth

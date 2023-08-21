@@ -126,7 +126,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     backgroundColor: palette.accentBlue
   },
   buyButton: {
-    backgroundColor: palette.specialLightGreen1
+    backgroundColor: palette.specialLightGreen
   },
   loadingSpinner: {
     width: spacing(5),

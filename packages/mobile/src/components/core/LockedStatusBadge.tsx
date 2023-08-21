@@ -15,7 +15,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     justifyContent: 'center'
   },
   premium: {
-    backgroundColor: palette.specialLightGreen1
+    backgroundColor: palette.specialLightGreen
   },
   locked: {
     backgroundColor: palette.neutralLight4
