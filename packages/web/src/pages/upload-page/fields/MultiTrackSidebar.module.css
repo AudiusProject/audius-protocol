@@ -42,6 +42,7 @@
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
 }
+
 .trackRoot:hover {
   background: var(--neutral-light-9);
   border-top: 1px solid var(--border-strong);
@@ -52,9 +53,11 @@
   width: 100%;
   padding: var(--unit-2) var(--unit-4);
 }
+
 .trackInfo.selected {
   color: var(--secondary);
 }
+
 .trackInfo.error {
   color: var(--accent-red);
 }
@@ -63,6 +66,7 @@
   min-width: 0;
   flex-grow: 1;
 }
+
 .trackTitleContainer > * {
   text-overflow: ellipsis;
   overflow: hidden;
@@ -88,7 +92,6 @@
   border-radius: 4px;
   border: 1px solid var(--border-strong);
   background: lightgray 50% / cover no-repeat;
-  border: 1px solid var(--border-strong);
   transition: border ease-in-out 0.1s;
 }
 
@@ -102,6 +105,7 @@
   padding-right: 8px;
   display: none;
 }
+
 .trackRoot:hover .iconRemove {
   display: flex;
 }
