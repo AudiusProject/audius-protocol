@@ -7,7 +7,7 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
-import styles from './LeftNav.module.css'
+import styles from './AccountDetails.module.css'
 import NavAudio from './NavAudio'
 
 const { getAccountUser } = accountSelectors
@@ -29,12 +29,13 @@ export const AccountDetails = () => {
         <div className={styles.userInfo}>
           {account ? (
             <>
-              <div>
+              <div className={styles.name}>
                 <Link
                   to={profileLink}
                   variant='title'
                   size='small'
                   strength='weak'
+                  className={styles.nameLink}
                 >
                   {account.name}
                 </Link>
@@ -52,12 +53,7 @@ export const AccountDetails = () => {
             </>
           ) : (
             <>
-              <Text
-                variant='body'
-                size='small'
-                strength='strong'
-                className={styles.haveAccount}
-              >
+              <Text variant='body' size='small' strength='strong'>
                 {messages.haveAccount}
               </Text>
               <Link
