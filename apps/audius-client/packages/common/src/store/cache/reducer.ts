@@ -201,6 +201,7 @@ const addEntries = (state: CacheState, entries: any[], replace?: boolean) => {
       newEntries[entity.id] = wrapEntry(entity.metadata)
     } else if (
       existing &&
+      !existing.local &&
       _timestamp + entryTTL > now &&
       cacheType === 'fast'
     ) {

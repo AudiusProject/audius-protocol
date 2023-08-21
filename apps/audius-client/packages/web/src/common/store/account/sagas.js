@@ -226,7 +226,7 @@ export function* fetchLocalAccountAsync() {
   if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
     yield call(
       cacheAccount,
-      cachedAccountUser,
+      { ...cachedAccountUser, local: true },
       cachedAccountUser.orderedPlaylists
     )
   } else if (!currentUserExists) {
