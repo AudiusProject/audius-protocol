@@ -23,14 +23,9 @@ export const getCollectionRoute = (
   collection: UserCollection,
   fullUrl = false
 ) => {
-  const { playlist_name, playlist_id, is_album, user } = collection
-  const { handle } = user
-  const encodedHandle = encodeUrlName(handle)
-  const encodedPlaylistName = encodeUrlName(playlist_name)
-  const collectionType = is_album ? 'album' : 'playlist'
-  const route = `/${encodedHandle}/${collectionType}/${encodedPlaylistName}-${playlist_id}`
+  const { permalink } = collection
 
-  return fullUrl ? `${AUDIUS_URL}${route}` : route
+  return fullUrl ? `${AUDIUS_URL}${permalink}` : permalink || ''
 }
 
 export const getSearchRoute = (query: string, fullUrl = false) => {
