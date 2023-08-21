@@ -1,5 +1,5 @@
-// TODO: Use the Audius Staking Program Ethereum Address
-pub const ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES: &str = "0000000000000000000000009d959Cf57D89DCf41925e19479A04E26f27563dB";
+// Audius ETH Governance Address
+pub const ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES: &str = "0000000000000000000000004DEcA517D6817B6510798b7328F2314d3003AbAC";
 // https://docs.raydium.io/raydium/protocol/developers/addresses
 pub const RAYDIUM_AMM_PROGRAM_ADDRESS: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8";
 // https://github.com/project-serum/serum-dex/blob/master/README.md#program-deployments

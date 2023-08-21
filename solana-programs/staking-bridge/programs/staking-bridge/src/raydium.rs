@@ -158,24 +158,24 @@ pub fn swap(
     minimum_amount_out: u64,
     staking_bridge_pda_bump: u8
 ) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let amm = &accounts.amm;
-    let amm_authority = &accounts.amm_authority;
-    let amm_open_orders = &accounts.amm_open_orders;
-    let amm_target_orders = &accounts.amm_target_orders;
-    let pool_coin_token_account = &accounts.pool_coin_token_account;
-    let pool_pc_token_account = &accounts.pool_pc_token_account;
-    let serum_program = &accounts.serum_program;
-    let serum_market = &accounts.serum_market;
-    let serum_bids = &accounts.serum_bids;
-    let serum_asks = &accounts.serum_asks;
-    let serum_event_queue = &accounts.serum_event_queue;
-    let serum_coin_vault_account = &accounts.serum_coin_vault_account;
-    let serum_pc_vault_account = &accounts.serum_pc_vault_account;
-    let serum_vault_signer = &accounts.serum_vault_signer;
-    let user_source_token_account = &accounts.user_source_token_account;
-    let user_destination_token_account = &accounts.user_destination_token_account;
-    let user_source_owner = &accounts.user_source_owner;
+    let program_id = &accounts.program_id.to_account_info();
+    let amm = &accounts.amm.to_account_info();
+    let amm_authority = &accounts.amm_authority.to_account_info();
+    let amm_open_orders = &accounts.amm_open_orders.to_account_info();
+    let amm_target_orders = &accounts.amm_target_orders.to_account_info();
+    let pool_coin_token_account = &accounts.pool_coin_token_account.to_account_info();
+    let pool_pc_token_account = &accounts.pool_pc_token_account.to_account_info();
+    let serum_program = &accounts.serum_program.to_account_info();
+    let serum_market = &accounts.serum_market.to_account_info();
+    let serum_bids = &accounts.serum_bids.to_account_info();
+    let serum_asks = &accounts.serum_asks.to_account_info();
+    let serum_event_queue = &accounts.serum_event_queue.to_account_info();
+    let serum_coin_vault_account = &accounts.serum_coin_vault_account.to_account_info();
+    let serum_pc_vault_account = &accounts.serum_pc_vault_account.to_account_info();
+    let serum_vault_signer = &accounts.serum_vault_signer.to_account_info();
+    let user_source_token_account = &accounts.user_source_token_account.to_account_info();
+    let user_destination_token_account = &accounts.user_destination_token_account.to_account_info();
+    let user_source_owner = &accounts.user_source_owner.to_account_info();
     let spl_token_program = &accounts.spl_token_program;
 
     // https://github.com/raydium-io/raydium-contract-instructions/blob/master/lib/src/amm_instruction.rs#L162

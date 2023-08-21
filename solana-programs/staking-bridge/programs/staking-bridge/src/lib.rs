@@ -3,16 +3,16 @@ use anchor_spl::token::Token;
 
 pub mod constant;
 pub mod error;
-pub mod raydium_utils;
-pub mod wormhole_utils;
+pub mod raydium;
+pub mod wormhole;
 
-use crate::raydium_utils::{
+use crate::raydium::{
     check_raydium_programs,
     check_raydium_token_accounts,
     check_raydium_pdas,
     swap
 };
-use crate::wormhole_utils::{
+use crate::wormhole::{
     check_wormhole_programs,
     check_wormhole_token_accounts,
     check_wormhole_pdas,
@@ -30,9 +30,9 @@ pub mod staking_bridge {
      * Creates the PDA.
      * This instruction can be called by anyone.
      * Immediately returns successfully because Anchor handles
-     * the PDA creation via the CreatePda struct account macros.
+     * the PDA creation via the CreateStakingBridgeBalancePda struct account macros.
      */
-    pub fn create_pda(_ctx: Context<CreatePda>) -> Result<()> {
+    pub fn create_staking_bridge_balance_pda(_ctx: Context<CreateStakingBridgeBalancePda>) -> Result<()> {
         Ok(())
     }
 
@@ -66,8 +66,7 @@ pub mod staking_bridge {
     pub fn post_wormhole_message(
         ctx: Context<PostWormholeMessage>,
         nonce: u32,
-        amount: u64, // TODO: if amount greater than max amount of our PDA, do we send max or do we fail?
-        fee: u64, // TODO: do we need this? what if someone passes in a huge fee?
+        amount: u64,
         config_bump: u8,
         wrapped_mint_bump: u8,
         wrapped_meta_bump: u8,
@@ -101,7 +100,6 @@ pub mod staking_bridge {
             accounts,
             nonce,
             amount,
-            fee,
             staking_bridge_pda_bump
         )?;
         Ok(())
@@ -109,7 +107,7 @@ pub mod staking_bridge {
 }
 
 #[derive(Accounts)]
-pub struct CreatePda<'info> {
+pub struct CreateStakingBridgeBalancePda<'info> {
     #[account(
         init,
         seeds = [b"staking_bridge".as_ref()],
@@ -118,7 +116,7 @@ pub struct CreatePda<'info> {
         space = 8
     )]
     /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
-    pub staking_bridge_pda: AccountInfo<'info>,
+    pub staking_bridge_pda: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -138,62 +136,62 @@ pub struct Amounts {
   staking_bridge_pda_bump: u8
 )]
 pub struct RaydiumSwap<'info> {
-    /// CHECK: This is the Raydium Liquidity Pool V4 program id
-    pub program_id: AccountInfo<'info>,
+    /// CHECK: This is the Raydium Liquidity Pool V4 program id. No check necessary.
+    pub program_id: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub amm: AccountInfo<'info>,
+    /// CHECK: This is the AMM id for the pool. No check necessary.
+    pub amm: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: ok
-    pub amm_authority: AccountInfo<'info>,
+    /// CHECK: This is the authority for the pool. No check necessary.
+    pub amm_authority: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub amm_open_orders: AccountInfo<'info>,
+    /// CHECK: This is the open orders account for the pool. No check necessary.
+    pub amm_open_orders: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub amm_target_orders: AccountInfo<'info>,
+    /// CHECK: This is the target orders account for the pool. No check necessary.
+    pub amm_target_orders: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub pool_coin_token_account: AccountInfo<'info>,
+    /// CHECK: This is the coin token account for the pool. No check necessary.
+    pub pool_coin_token_account: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub pool_pc_token_account: AccountInfo<'info>,
+    /// CHECK: This is the pc token account for the pool. No check necessary.
+    pub pool_pc_token_account: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: This is the Serum DEX program
-    pub serum_program: AccountInfo<'info>,
+    /// CHECK: This is the Serum DEX program. No check necessary.
+    pub serum_program: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the market address
-    pub serum_market: AccountInfo<'info>,
+    /// CHECK: This is the market address. No check necessary.
+    pub serum_market: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub serum_bids: AccountInfo<'info>,
+    /// CHECK: This is the bids account for the serum market. No check necessary.
+    pub serum_bids: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub serum_asks: AccountInfo<'info>,
+    /// CHECK: This is the asks account for the serum market. No check necessary.
+    pub serum_asks: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub serum_event_queue: AccountInfo<'info>,
+    /// CHECK: This is the event queue for the serum market. No check necessary.
+    pub serum_event_queue: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub serum_coin_vault_account: AccountInfo<'info>,
+    /// CHECK: This is the coin vault for the serum market. No check necessary.
+    pub serum_coin_vault_account: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub serum_pc_vault_account: AccountInfo<'info>,
+    /// CHECK: This is the pc vault for the serum market. No check necessary.
+    pub serum_pc_vault_account: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: ok
-    pub serum_vault_signer: AccountInfo<'info>,
+    /// CHECK: This is the vault signer for the serum market. No check necessary.
+    pub serum_vault_signer: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub user_source_token_account: AccountInfo<'info>,
+    /// CHECK: This is the SOL USDC token account for the PDA, which is checked by the implementation of this method.
+    pub user_source_token_account: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: ok
-    pub user_destination_token_account: AccountInfo<'info>,
+    /// CHECK: This is the SOL AUDIO token account for the PDA, which is checked by the implementation of this method.
+    pub user_destination_token_account: UncheckedAccount<'info>,
     #[account(
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
-    /// CHECK: This is the PDA initialized in the CreatePDA instruction.
-    pub user_source_owner: AccountInfo<'info>,
+    /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
+    pub user_source_owner: UncheckedAccount<'info>,
     pub spl_token_program: Program<'info, Token>,
 }
 
@@ -210,7 +208,6 @@ pub struct PostWormholeMessageData {
 #[instruction(
     _nonce: u32,
     _amount: u64,
-    _fee: u64,
     _config_bump: u8,
     _wrapped_mint_bump: u8,
     _wrapped_meta_bump: u8,
@@ -223,35 +220,35 @@ pub struct PostWormholeMessageData {
 )]
 pub struct PostWormholeMessage<'info> {
     /// CHECK: This is the Token Bridge program id
-    pub program_id: AccountInfo<'info>,
+    pub program_id: UncheckedAccount<'info>,
     /// CHECK: This is the Core Bridge program id
-    pub bridge_id: AccountInfo<'info>,
+    pub bridge_id: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account()]
     /// CHECK: This is the config PDA owned by the Token Bridge
-    pub config: AccountInfo<'info>,
+    pub config: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the wrapped mint PDA, which also depends on the origin token chain and origin token address, owned by the Token Bridge
-    pub wrapped_mint: AccountInfo<'info>,
+    pub wrapped_mint: UncheckedAccount<'info>,
     #[account()]
     /// CHECK: This is the wrapped meta PDA, which also depends on the wrapped mint, owned by the Token Bridge
-    pub wrapped_meta: AccountInfo<'info>,
+    pub wrapped_meta: UncheckedAccount<'info>,
     #[account()]
     /// CHECK: This is the authority signer PDA owned by the Token Bridge
-    pub authority_signer: AccountInfo<'info>,
+    pub authority_signer: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the bridge PDA owned by the Core Bridge
-    pub bridge_config: AccountInfo<'info>,
+    pub bridge_config: UncheckedAccount<'info>,
     #[account()]
     /// CHECK: This is the emitter PDA owned by the Token Bridge
-    pub emitter: AccountInfo<'info>,
+    pub emitter: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the sequence PDA, which also depends on the emitter, owned by the Core Bridge
-    pub sequence: AccountInfo<'info>,
+    pub sequence: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the fee collector PDA owned by the Core Bridge
-    pub fee_collector: AccountInfo<'info>,
+    pub fee_collector: UncheckedAccount<'info>,
     #[account(mut)]
     pub message: Signer<'info>,
     #[account(
@@ -259,11 +256,11 @@ pub struct PostWormholeMessage<'info> {
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
-    /// CHECK: This is the PDA initialized in the CreatePDA instruction.
-    pub from_owner: AccountInfo<'info>,
+    /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
+    pub from_owner: UncheckedAccount<'info>,
     #[account(mut)]
     /// CHECK: This is the associated token account of the PDA, from which the tokens will be transferred
-    pub from: AccountInfo<'info>,
+    pub from: UncheckedAccount<'info>,
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,
     pub spl_token: Program<'info, Token>,
