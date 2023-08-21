@@ -13,6 +13,7 @@ export const initSharedData = async (): Promise<Result<SharedData, string>> => {
 
   const libs = await initAudiusLibs();
   const dryRun = process.env.dryRun === "true";
+  console.log(`Dry run: ${dryRun}`);
 
   // @ts-ignore
   return new Ok({
