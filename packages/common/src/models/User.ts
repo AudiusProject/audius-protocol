@@ -63,6 +63,7 @@ export type UserMetadata = {
   associated_wallets_balance?: Nullable<StringWei>
   playlist_library?: PlaylistLibrary
   userBank?: SolanaWalletAddress
+  local?: boolean
 } & Timestamped
 
 export type ComputedUserProperties = {
