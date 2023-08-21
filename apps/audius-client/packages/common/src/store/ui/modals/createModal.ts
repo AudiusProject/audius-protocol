@@ -48,7 +48,7 @@ export const createModal = <T>({
     }
     if (!baseState) {
       throw new Error(
-        `State for ${reducerPath} is undefined - did you forget to register the reducer in the store?`
+        `State for ${reducerPath} is undefined - did you forget to register the reducer in src/store/ui/modals/reducers.ts?`
       )
     }
     return baseState

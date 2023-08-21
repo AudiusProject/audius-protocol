@@ -2,7 +2,7 @@ import { Action } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
 
-import { createModal } from '../modals/createModal'
+import { createModal } from '../createModal'
 
 export type InboxUnavailableModalState = {
   userId?: ID
@@ -15,8 +15,8 @@ const inboxUnavailableModal = createModal<InboxUnavailableModalState>({
   initialState: {
     isOpen: false
   },
-  reducerPath: 'inboxUnavailableModal',
-  sliceSelector: (state) => state.ui.modalsWithState
+  reducerPath: 'InboxUnavailableModal',
+  sliceSelector: (state) => state.ui.modals
 })
 
 export const {

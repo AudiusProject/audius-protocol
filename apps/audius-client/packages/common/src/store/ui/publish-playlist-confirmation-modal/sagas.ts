@@ -1,7 +1,7 @@
 import { takeEvery } from 'redux-saga/effects'
 import { put } from 'typed-redux-saga'
 
-import { setVisibility } from '../modals/slice'
+import { setVisibility } from '../modals/parentSlice'
 
 import { open, OpenPayload, requestOpen } from './slice'
 

@@ -1,6 +1,6 @@
 import { Action } from '@reduxjs/toolkit'
 
-import { createModal } from '../modals/createModal'
+import { createModal } from '../createModal'
 
 export type CreateChatModalState = {
   defaultUserList?: 'followers' | 'chats'
@@ -9,12 +9,12 @@ export type CreateChatModalState = {
 }
 
 const createChatModal = createModal<CreateChatModalState>({
-  reducerPath: 'createChatModal',
+  reducerPath: 'CreateChatModal',
   initialState: {
     isOpen: false,
     defaultUserList: 'followers'
   },
-  sliceSelector: (state) => state.ui.modalsWithState
+  sliceSelector: (state) => state.ui.modals
 })
 
 export const {

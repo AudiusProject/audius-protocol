@@ -73,7 +73,10 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
-  PremiumContentPurchase: PremiumContentPurchaseModal
+  PremiumContentPurchase: PremiumContentPurchaseModal,
+  LeavingAudiusModal,
+  CreateChatModal,
+  InboxUnavailableModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
@@ -96,8 +99,6 @@ const Modals = () => {
       <UnloadDialog />
       <CollectibleDetailsModal />
       <StripeOnRampModal />
-      <CreateChatModal />
-      <InboxUnavailableModal />
 
       {!isMobileClient && (
         <>
@@ -105,7 +106,6 @@ const Modals = () => {
           <EditPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />
-          <LeavingAudiusModal />
 
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />
