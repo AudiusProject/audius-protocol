@@ -5,7 +5,6 @@ use anchor_lang::{
 };
 use anchor_spl::token::Token;
 
-pub mod constant;
 pub mod error;
 pub mod router;
 
@@ -29,8 +28,7 @@ pub mod payment_router {
         ctx: Context<'a, 'b, 'c, 'info, Route<'info>>,
         payment_router_pda_bump: u8,
         amounts: Vec<u64>,
-        total_amount: u64,
-        is_audio: bool,
+        total_amount: u64
     ) -> Result<()> {
         let sender = &ctx.accounts.sender.to_account_info();
         let sender_owner = &ctx.accounts.sender_owner.to_account_info();
@@ -38,8 +36,7 @@ pub mod payment_router {
 
         check_sender(
             sender.clone(),
-            sender_owner.clone(),
-            is_audio
+            sender_owner.clone()
         )?;
         check_recipient_amounts(
             remaining_accounts,
@@ -51,7 +48,6 @@ pub mod payment_router {
             sender_owner.clone(),
             remaining_accounts,
             amounts.clone(),
-            is_audio,
             payment_router_pda_bump
         )?;
 
@@ -80,8 +76,7 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
 #[instruction(
     payment_router_pda_bump: u8,
     _amounts: Vec<u64>,
-    _total_amount: u64,
-    _is_audio: bool
+    _total_amount: u64
 )]
 pub struct Route<'info> {
     #[account(mut)]

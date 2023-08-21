@@ -123,7 +123,6 @@ describe('payment-router', () => {
         paymentRouterPdaBump,
         amounts,
         totalAmount,
-        true // isAudio
       )
       .accounts({
         sender: pdaAta.address,

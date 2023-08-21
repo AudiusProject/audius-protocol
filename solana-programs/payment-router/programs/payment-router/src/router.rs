@@ -5,31 +5,14 @@ use anchor_lang::solana_program::{
 };
 use anchor_spl::token::spl_token;
 
-use crate::constant::{
-  SOL_USDC_TOKEN_ADDRESS,
-  SOL_AUDIO_TOKEN_ADDRESS,
-};
 use crate::error::PaymentRouterErrorCode;
 
-// Returns the token mint address for either SOL AUDIO or SOL USDC.
-fn get_token_mint(is_audio: bool) -> String {
-    if is_audio {
-      SOL_AUDIO_TOKEN_ADDRESS.to_string()
-    } else {
-      SOL_USDC_TOKEN_ADDRESS.to_string()
-    }
-}
-
-/**
- * 1. Verify PDA ownership of the sender token account.
- * 2. Verify that the passed in token mint matches the sender token mint.
- */
+// Verify PDA ownership of the sender token account.
 pub fn check_sender(
   sender: AccountInfo,
-  sender_owner: AccountInfo,
-  is_audio: bool
+  sender_owner: AccountInfo
 ) -> Result<()> {
-    // 1. Verify PDA ownership of the sender token account.
+    // Verify PDA ownership of the sender token account.
     // Note that anchor checks for the program ownership of the 'sender_owner' account,
     // i.e. that the owner of the sender account is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'sender_owner'.
@@ -39,15 +22,6 @@ pub fn check_sender(
         .unwrap();
     if sender_account_owner != sender_owner.key {
         return Err(PaymentRouterErrorCode::SenderTokenAccountNotOwnedByPDA.into());
-    }
-
-    // 2. Verify that the passed in token mint matches the sender token mint.
-    let token_mint = get_token_mint(is_audio);
-    let sender_mint = <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_mint(&sender_data)
-        .unwrap();
-    if sender_mint.key().to_string() != token_mint.to_string() {
-        return Err(PaymentRouterErrorCode::InvalidSenderTokenMint.into());
     }
 
     Ok(())
@@ -85,24 +59,12 @@ pub fn execute_transfers<'info>(
     sender_owner: AccountInfo<'info>,
     remaining_accounts: &[AccountInfo<'info>],
     amounts: Vec<u64>,
-    is_audio: bool,
     payment_router_pda_bump: u8,
 ) -> Result<()> {
     let remaining_accounts_iter = &mut remaining_accounts.iter();
     let mut amount_index = 0;
-    let token_mint = get_token_mint(is_audio);
     while let Ok(receiver) = next_account_info(remaining_accounts_iter) {
         let receiver = receiver.to_account_info();
-
-        // Verify that the passed in token mint matches the sender token mint.
-        let receiver_data = receiver.data.borrow();
-        let receiver_mint = <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-            ::unpack_account_mint(&receiver_data)
-            .unwrap();
-        if receiver_mint.key().to_string() != token_mint.to_string() {
-            return Err(PaymentRouterErrorCode::InvalidRecipientTokenMint.into());
-        }
-
         let amount = *amounts.get(amount_index).unwrap();
         let account_infos = &[sender.clone(), receiver.clone(), sender_owner.clone()];
         let transfer = &spl_token::instruction::transfer(
