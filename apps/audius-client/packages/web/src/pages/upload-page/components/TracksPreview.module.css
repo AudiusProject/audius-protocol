@@ -59,3 +59,43 @@
 .tabSlider {
   margin-bottom: 15px;
 }
+
+.containerNew {
+  display: flex;
+  flex-direction: column;
+  /* TODO: KJ - Figure out if we need this  */
+  max-height: 600px;
+  width: 100%;
+  user-select: none;
+  border-radius: 8px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
+    0px 0px 4px 0px rgba(0, 0, 0, 0.04);
+}
+
+.infoContainerNew {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  background-color: var(--background-surface-1);
+}
+
+.headerContainerNew {
+  border-bottom: 1px solid var(--border-strong);
+  border-radius: 8px 8px 0 0;
+}
+
+.footerContainerNew {
+  border-top: 1px solid var(--border-strong);
+  border-radius: 0 0 8px 8px;
+}
+
+.tracksContainerNew {
+  display: flex;
+  padding: 16px 0;
+  flex-direction: column;
+  background-color: var(--background-white);
+  /* TODO: KJ - Figure out if we need this  */
+  /* max-height: 467px; */
+}
