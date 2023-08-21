@@ -4,7 +4,8 @@ import {
   buyAudioActions,
   buyAudioSelectors,
   stripeModalUIActions,
-  OnRampProvider
+  OnRampProvider,
+  modalsActions
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -13,6 +14,7 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
 
 import styles from './StripeBuyAudioButton.module.css'
+const { setVisibility } = modalsActions
 
 const { getAudioPurchaseInfo } = buyAudioSelectors
 const { onrampOpened, onrampSucceeded, onrampCanceled } = buyAudioActions
@@ -51,6 +53,7 @@ export const StripeBuyAudioButton = () => {
           destinationWallet
         })
       )
+      dispatch(setVisibility({ modal: 'StripeOnRamp', visible: true }))
     } catch (e) {
       dispatch(onrampCanceled())
       console.error(e)
