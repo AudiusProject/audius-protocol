@@ -11,6 +11,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
+import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
@@ -27,6 +28,7 @@ import NavContext, {
 import SearchBar from 'components/search-bar/SearchBar'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
+import { TRENDING_PAGE } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
@@ -41,7 +43,6 @@ interface NavBarProps {
   goToSettingsPage: () => void
   goToAudioPage: () => void
   search: (term: string) => void
-  logoClicked: () => void
   goBack: () => void
   history: History<any>
 }
@@ -61,7 +62,6 @@ const NavBar = ({
   signUp,
   goToNotificationPage,
   goToSettingsPage,
-  logoClicked,
   goBack,
   goToAudioPage,
   history: {
@@ -206,26 +206,25 @@ const NavBar = ({
       >
         {left}
       </div>
-      {centerElement === CenterPreset.LOGO && (
-        <div
+      {centerElement === CenterPreset.LOGO ? (
+        <Link
+          to={TRENDING_PAGE}
           className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
-          onClick={logoClicked}
         >
-          {logoTransitions.map(
-            ({ item, props, key }) =>
-              item && (
-                <animated.div style={props} key={key}>
-                  <AudiusLogo />
-                  {isEarlyAccess ? (
-                    <div className={styles.earlyAccess}>
-                      {messages.earlyAccess}
-                    </div>
-                  ) : null}
-                </animated.div>
-              )
+          {logoTransitions.map(({ item, props, key }) =>
+            item ? (
+              <animated.div style={props} key={key}>
+                <AudiusLogo />
+                {isEarlyAccess ? (
+                  <div className={styles.earlyAccess}>
+                    {messages.earlyAccess}
+                  </div>
+                ) : null}
+              </animated.div>
+            ) : null
           )}
-        </div>
-      )}
+        </Link>
+      ) : null}
       {typeof centerElement === 'string' &&
         !Object.values(CenterPreset).includes(centerElement as any) && (
           <div className={styles.centerText}> {centerElement} </div>

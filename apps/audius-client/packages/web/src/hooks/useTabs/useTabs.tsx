@@ -17,20 +17,22 @@ import { useInstanceVar } from '@audius/common'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { throttle } from 'lodash'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
+// eslint-disable-next-line no-restricted-imports
 import { animated, useTransition, useSpring } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
+import { SeoLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './TabStyles.module.css'
 
-type TabHeader = {
+export type TabHeader = {
   icon?: ReactNode
   text: string
   label: string
   disabled?: boolean
   disabledTooltipText?: string
+  to?: string
 }
 
 type TabProps = {
@@ -56,7 +58,7 @@ const Tab = forwardRef(
         { [styles.tabActive]: isActive },
         { [styles.tabDisabled]: disabled }
       )}
-      onClick={() => !disabled && onClick()}
+      onClick={() => !disabled && onClick?.()}
       ref={ref}
     >
       {icon && <div className={styles.icon}>{icon}</div>}
@@ -87,6 +89,7 @@ type TabBarProps = {
   // offset of -1 to the left.
   // Used to track in progress gestures.
   fractionalOffset?: number
+  pathname?: string
 }
 
 const TabBar = memo(
@@ -96,7 +99,8 @@ const TabBar = memo(
     onClick,
     isMobile,
     disabledTabTooltipText,
-    fractionalOffset = 0
+    fractionalOffset = 0,
+    pathname
   }: TabBarProps) => {
     const [accentPosition, setAccentPosition] = useState({
       top: 0,
@@ -224,6 +228,7 @@ const TabBar = memo(
           { [styles.tabBarContainerMobile]: isMobile },
           { [styles.tabBarContainerDesktop]: !isMobile }
         )}
+        role='tablist'
       >
         <TabAccent
           style={{
@@ -233,35 +238,49 @@ const TabBar = memo(
             transform: left.interpolate(interpolateScale)
           }}
         />
-        {tabs.map((e, i) => {
+        {tabs.map((tab, i) => {
           const isActive = activeIndex === i
           const tooltipActive =
-            (!!disabledTabTooltipText || !!e.disabledTooltipText) && e.disabled
+            (!!disabledTabTooltipText || !!tab.disabledTooltipText) &&
+            tab.disabled
+
+          const tabElement = (
+            <Tab
+              onClick={() => onClick(i)}
+              ref={refsArr.current[i]}
+              isActive={isActive}
+              key={tab.label}
+              isMobile={isMobile}
+              disabled={!!tab.disabled}
+              icon={tab.icon}
+              label={tab.label}
+              text={tab.text}
+            />
+          )
+
+          const { to } = tab
+
+          const rootProps = {
+            role: 'tab',
+            className: cn(styles.tabWrapper, {
+              [styles.tabWrapperMobile]: isMobile
+            })
+          }
+
           return (
             <Tooltip
-              text={e.disabledTooltipText || disabledTabTooltipText}
+              text={tab.disabledTooltipText || disabledTabTooltipText}
               placement='bottom'
               disabled={!tooltipActive}
               key={i}
             >
-              {/* Extra div inserted here because tooltip needs to pass a ref to it's child :( */}
-              <div
-                className={cn(styles.tabWrapper, {
-                  [styles.tabWrapperMobile]: isMobile
-                })}
-              >
-                <Tab
-                  onClick={() => onClick(i)}
-                  ref={refsArr.current[i]}
-                  isActive={isActive}
-                  key={e.label}
-                  isMobile={isMobile}
-                  disabled={!!e.disabled}
-                  icon={e.icon}
-                  label={e.label}
-                  text={e.text}
-                />
-              </div>
+              {to && pathname ? (
+                <SeoLink {...rootProps} to={`${pathname}/${to}`}>
+                  {tabElement}
+                </SeoLink>
+              ) : (
+                <div {...rootProps}>{tabElement}</div>
+              )}
             </Tooltip>
           )
         })}
@@ -736,6 +755,7 @@ const BodyContainer = memo(
     dimensionsAreDirty,
     didSetDimensions
   }: BodyContainerProps) => {
+    console.log('hmm', elements, activeIndex)
     // Get a ref to the element to use for calculating height
     const {
       containerWidth,
@@ -920,6 +940,8 @@ type UseTabsArguments = {
 
   // The intitial scroll offset height to adjust the window to on transition
   initialScrollOffset?: number
+  // The base pathname url of the page to determine tab navigation
+  pathname?: string
 }
 
 type UseTabsResult = {
@@ -954,7 +976,8 @@ const useTabs = ({
   interElementSpacing = 0,
   disabledTabTooltipText,
   tabRecalculator,
-  initialScrollOffset = 0
+  initialScrollOffset = 0,
+  pathname
 }: UseTabsArguments): UseTabsResult => {
   if (tabs.length !== elements.length)
     throw new Error('Non-matching number of tabs and elements')
@@ -1107,6 +1130,7 @@ const useTabs = ({
         isMobile={isMobile}
         disabledTabTooltipText={disabledTabTooltipText}
         fractionalOffset={accentFractionalOffset}
+        pathname={pathname}
       />
     ),
     [
@@ -1117,7 +1141,8 @@ const useTabs = ({
       shouldAnimate,
       isMobile,
       disabledTabTooltipText,
-      accentFractionalOffset
+      accentFractionalOffset,
+      pathname
     ]
   )
 

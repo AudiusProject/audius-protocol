@@ -117,8 +117,10 @@
   color: var(--primary);
 }
 
-.info .socials {
-  padding-bottom: 8px;
+.socials {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--unit-2);
 }
 .info .socialsTruncated {
   display: flex;
@@ -266,9 +268,9 @@
   transition: fill 0.07s ease-out;
 }
 
-.socialsTruncated > div {
+.socialsTruncated > * {
   margin-right: 32px;
-  margin-bottom: 0;
+  margin-bottom: 0px !important;
 }
 
 .tipAudioButtonContainer {

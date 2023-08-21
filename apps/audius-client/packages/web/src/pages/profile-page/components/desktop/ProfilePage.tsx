@@ -35,7 +35,7 @@ import ConnectedProfileCompletionHeroCard from 'components/profile-progress/Conn
 import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
-import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import useTabs, { TabHeader, useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { BlockUserConfirmationModal } from 'pages/chat-page/components/BlockUserConfirmationModal'
 import { UnblockUserConfirmationModal } from 'pages/chat-page/components/UnblockUserConfirmationModal'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
@@ -44,7 +44,8 @@ import {
   collectionPage,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
-  UPLOAD_PLAYLIST_PAGE
+  UPLOAD_PLAYLIST_PAGE,
+  profilePage
 } from 'utils/route'
 import { getUserPageSEOFields } from 'utils/seo'
 
@@ -404,26 +405,30 @@ const ProfilePage = ({
       />
     ) : null
 
-    const headers = [
+    const headers: TabHeader[] = [
       {
         icon: <IconNote />,
         text: ProfilePageTabs.TRACKS,
-        label: ProfilePageTabs.TRACKS
+        label: ProfilePageTabs.TRACKS,
+        to: 'tracks'
       },
       {
         icon: <IconAlbum />,
         text: ProfilePageTabs.ALBUMS,
-        label: ProfilePageTabs.ALBUMS
+        label: ProfilePageTabs.ALBUMS,
+        to: 'albums'
       },
       {
         icon: <IconPlaylists />,
         text: ProfilePageTabs.PLAYLISTS,
-        label: ProfilePageTabs.PLAYLISTS
+        label: ProfilePageTabs.PLAYLISTS,
+        to: 'playlists'
       },
       {
         icon: <IconReposts />,
         text: ProfilePageTabs.REPOSTS,
-        label: ProfilePageTabs.REPOSTS
+        label: ProfilePageTabs.REPOSTS,
+        to: 'reposts'
       }
     ]
     const elements = [
@@ -511,7 +516,8 @@ const ProfilePage = ({
       headers.push({
         icon: <IconCollectibles />,
         text: ProfilePageTabs.COLLECTIBLES,
-        label: ProfilePageTabs.COLLECTIBLES
+        label: ProfilePageTabs.COLLECTIBLES,
+        to: 'collectibles'
       })
 
       elements.push(
@@ -593,16 +599,18 @@ const ProfilePage = ({
       />
     )
 
-    const headers = [
+    const headers: TabHeader[] = [
       {
         icon: <IconReposts />,
         text: ProfilePageTabs.REPOSTS,
-        label: ProfilePageTabs.REPOSTS
+        label: ProfilePageTabs.REPOSTS,
+        to: 'reposts'
       },
       {
         icon: <IconPlaylists />,
         text: ProfilePageTabs.PLAYLISTS,
-        label: ProfilePageTabs.PLAYLISTS
+        label: ProfilePageTabs.PLAYLISTS,
+        to: 'playlists'
       }
     ]
     const elements = [
@@ -654,7 +662,8 @@ const ProfilePage = ({
       headers.push({
         icon: <IconCollectibles />,
         text: ProfilePageTabs.COLLECTIBLES,
-        label: ProfilePageTabs.COLLECTIBLES
+        label: ProfilePageTabs.COLLECTIBLES,
+        to: 'collectibles'
       })
 
       elements.push(
@@ -690,7 +699,8 @@ const ProfilePage = ({
     tabRecalculator,
     bodyClassName: styles.tabBody,
     initialTab: activeTab || undefined,
-    elements
+    elements,
+    pathname: profilePage(handle)
   })
   const {
     title = '',

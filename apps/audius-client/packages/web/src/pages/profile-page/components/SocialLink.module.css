@@ -8,6 +8,10 @@
   user-select: none;
 }
 
+.socialLink:hover {
+  color: inherit;
+}
+
 .wrapper {
   display: inline-flex;
   transition: all 0.18 ease-in-out;
