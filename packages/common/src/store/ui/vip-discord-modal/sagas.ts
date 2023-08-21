@@ -1,7 +1,7 @@
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { getContext } from '../../effects'
-import { setVisibility } from '../modals/slice'
+import { setVisibility } from '../modals/parentSlice'
 
 import { getDiscordCode } from './selectors'
 import { pressDiscord, setDiscordCode } from './slice'

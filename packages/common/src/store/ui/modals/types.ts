@@ -1,3 +1,8 @@
+import { CreateChatModalState } from './create-chat-modal'
+import { BaseModalState } from './createModal'
+import { InboxUnavailableModalState } from './inbox-unavailable-modal'
+import { LeavingAudiusModalState } from './leaving-audius-modal'
+
 export type Modals =
   | 'TiersExplainer'
   | 'TrendingRewardsExplainer'
@@ -36,5 +41,18 @@ export type Modals =
   | 'AiAttributionSettings'
   | 'DuplicateAddConfirmation'
   | 'PremiumContentPurchase'
+  | 'CreateChatModal'
+  | 'InboxUnavailableModal'
+  | 'LeavingAudiusModal'
 
-export type ModalsState = { [modal in Modals]: boolean | 'closing' }
+export type BasicModalsState = {
+  [modal in Modals]: BaseModalState
+}
+
+export type StatefulModalsState = {
+  CreateChatModal: CreateChatModalState
+  InboxUnavailableModal: InboxUnavailableModalState
+  LeavingAudiusModal: LeavingAudiusModalState
+}
+
+export type ModalsState = BasicModalsState & StatefulModalsState

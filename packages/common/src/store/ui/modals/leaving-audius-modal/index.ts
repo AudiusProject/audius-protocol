@@ -1,16 +1,16 @@
-import { createModal } from '../modals/createModal'
+import { createModal } from '../createModal'
 
 export type LeavingAudiusModalState = {
   link: string
 }
 
 const leavingAudiusModal = createModal<LeavingAudiusModalState>({
-  reducerPath: 'leavingAudiusModal',
+  reducerPath: 'LeavingAudiusModal',
   initialState: {
     isOpen: false,
     link: ''
   },
-  sliceSelector: (state) => state.ui.modalsWithState
+  sliceSelector: (state) => state.ui.modals
 })
 
 export const {

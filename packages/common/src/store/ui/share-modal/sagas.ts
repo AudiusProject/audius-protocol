@@ -6,7 +6,7 @@ import { getUser as getUserBase } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 
 import { ID } from '../../../models'
-import { setVisibility } from '../modals/slice'
+import { setVisibility } from '../modals/parentSlice'
 
 import { open, requestOpen } from './slice'
 import { ShareModalRequestOpenAction } from './types'

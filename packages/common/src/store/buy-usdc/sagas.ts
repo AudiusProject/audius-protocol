@@ -11,7 +11,7 @@ import {
 } from 'services/audius-backend/solana'
 import { IntKeys } from 'services/remote-config'
 import { getContext } from 'store/effects'
-import { setVisibility } from 'store/ui/modals/slice'
+import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 
 import {

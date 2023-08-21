@@ -3,7 +3,7 @@ import { call, takeEvery, put, select } from 'typed-redux-saga'
 import { createStripeSession } from 'services/audius-backend/stripe'
 import { getContext } from 'store/effects'
 
-import { setVisibility } from '../modals/slice'
+import { setVisibility } from '../modals/parentSlice'
 
 import { getStripeModalState } from './selectors'
 import {

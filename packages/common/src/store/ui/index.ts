@@ -44,12 +44,7 @@ export {
 export { default as mobileOverflowMenuUISagas } from './mobile-overflow-menu/sagas'
 export * from './mobile-overflow-menu/types'
 
-export * as modalsSelectors from './modals/selectors'
-export {
-  default as modalsReducer,
-  actions as modalsActions
-} from './modals/slice'
-export * from './modals/types'
+export * from './modals'
 
 export * as nowPlayingUISelectors from './now-playing/selectors'
 export {
@@ -139,7 +134,3 @@ export {
 } from './search-users-modal/slice'
 export * as searchUsersModalSelectors from './search-users-modal/selectors'
 export { default as searchUsersModalSagas } from './search-users-modal/sagas'
-
-export * from './create-chat-modal'
-export * from './leaving-audius-modal'
-export * from './inbox-unavailable-modal'

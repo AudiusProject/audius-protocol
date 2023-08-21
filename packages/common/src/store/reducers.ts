@@ -77,8 +77,6 @@ import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
 import {
-  createChatModalReducer,
-  CreateChatModalState,
   searchUsersModalReducer,
   SearchUsersModalState,
   ToastState,
@@ -97,18 +95,9 @@ import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation
 import { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
 import duplicateAddConfirmationReducer from './ui/duplicate-add-confirmation-modal/slice'
 import { DuplicateAddConfirmationModalState } from './ui/duplicate-add-confirmation-modal/types'
-import {
-  InboxUnavailableModalState,
-  inboxUnavailableModalReducer
-} from './ui/inbox-unavailable-modal'
-import {
-  LeavingAudiusModalState,
-  leavingAudiusModalReducer
-} from './ui/leaving-audius-modal'
 import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
 import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
-import modalsReducer from './ui/modals/slice'
-import { ModalsState } from './ui/modals/types'
+import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import publishPlaylistConfirmationReducer from './ui/publish-playlist-confirmation-modal/slice'
 import { PublishPlaylistConfirmationModalState } from './ui/publish-playlist-confirmation-modal/types'
@@ -195,7 +184,6 @@ export const reducers = () => ({
 
     relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
-    createChatModal: createChatModalReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -203,11 +191,6 @@ export const reducers = () => ({
     publishPlaylistConfirmationModal: publishPlaylistConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
-    modalsWithState: combineReducers({
-      createChatModal: createChatModalReducer,
-      inboxUnavailableModal: inboxUnavailableModalReducer,
-      leavingAudiusModal: leavingAudiusModalReducer
-    }),
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
@@ -331,11 +314,6 @@ export type CommonState = {
     publishPlaylistConfirmationModal: PublishPlaylistConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState
-    modalsWithState: {
-      createChatModal: CreateChatModalState
-      inboxUnavailableModal: InboxUnavailableModalState
-      leavingAudiusModal: LeavingAudiusModalState
-    }
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
