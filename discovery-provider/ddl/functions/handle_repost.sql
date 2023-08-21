@@ -17,7 +17,12 @@ begin
 
     entity_type := 'track';
   else
-    insert into aggregate_playlist (playlist_id, is_album) values (new.repost_item_id, new.repost_type = 'album') on conflict do nothing;
+    insert into aggregate_playlist (playlist_id, is_album)
+    select p.playlist_id, p.is_album
+    from playlists p
+    where p.playlist_id = new.repost_item_id
+    and p.is_current
+    on conflict do nothing;
 
     entity_type := 'playlist';
   end if;
