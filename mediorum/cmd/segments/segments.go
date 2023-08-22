@@ -17,7 +17,7 @@ import (
 const (
 	batchSize         = 1000
 	numWorkers        = 5
-	sleepMilliseconds = 1
+	sleepMilliseconds = 10
 	deleteDBRows      = false
 )
 
