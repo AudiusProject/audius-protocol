@@ -15,7 +15,7 @@ const messages = {
 }
 
 const META_MASK_SETUP_URL =
-  'https://medium.com/@audius/configuring-metamask-for-use-with-audius-91e24bf6840'
+  'https://help.audius.co/help/configuring-metamask-for-use-with-audius-2d446'
 
 /**
  * Displays an error banner if the user is trying to use Metamask but it's configured incorrectly
