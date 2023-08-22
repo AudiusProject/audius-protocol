@@ -6,6 +6,7 @@ import {
   chatSagas,
   premiumContentSagas,
   purchaseContentSagas,
+  withdrawUSDCSagas,
   remoteConfigSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
@@ -216,6 +217,7 @@ export default function* rootSaga() {
     premiumContentSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
+    withdrawUSDCSagas(),
 
     // Error
     errorSagas()
