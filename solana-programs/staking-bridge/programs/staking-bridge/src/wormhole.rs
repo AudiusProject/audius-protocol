@@ -9,6 +9,10 @@ use anchor_lang::{
     },
 }};
 use anchor_spl::token::spl_token;
+use anchor_spl::token::spl_token::state::{
+    Account,
+    GenericTokenAccount
+};
 
 use crate::constant::{
     ETH_CHAIN_ID,
@@ -53,7 +57,7 @@ pub fn check_wormhole_token_accounts(
     from_owner: AccountInfo,
 ) -> Result<()> {
     let from_account_data = from.data.borrow();
-    let from_account_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let from_account_owner= <Account as GenericTokenAccount>
         ::unpack_account_owner(&from_account_data)
         .unwrap();
     if from_account_owner != from_owner.key {

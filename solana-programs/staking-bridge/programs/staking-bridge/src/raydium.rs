@@ -7,6 +7,10 @@ use anchor_lang::solana_program::{
     },
 };
 use anchor_spl::token::spl_token;
+use anchor_spl::token::spl_token::state::{
+    Account,
+    GenericTokenAccount
+};
 
 use crate::constant::{
     RAYDIUM_AMM_PROGRAM_ADDRESS,
@@ -56,7 +60,7 @@ pub fn check_swap_token_accounts(
     // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
     let source_token_data = user_source_token_account.data.borrow();
     // msg!("source_token_data: {:?}", source_token_data);
-    let source_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let source_token_owner= <Account as GenericTokenAccount>
         ::unpack_account_owner(&source_token_data)
         .unwrap();
     if source_token_owner != user_source_owner.key {
@@ -64,7 +68,7 @@ pub fn check_swap_token_accounts(
     }
 
     let destination_token_data = user_destination_token_account.data.borrow();
-    let destination_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let destination_token_owner= <Account as GenericTokenAccount>
         ::unpack_account_owner(&destination_token_data)
         .unwrap();
     if destination_token_owner != user_source_owner.key {
@@ -72,7 +76,7 @@ pub fn check_swap_token_accounts(
     }
 
     // 2. Verify that the source token account is of the USDC mint.
-    let source_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let source_token_mint= <Account as GenericTokenAccount>
         ::unpack_account_mint(&source_token_data)
         .unwrap();
     if source_token_mint.key().to_string() != SOL_USDC_TOKEN_ADDRESS.to_string() {
@@ -80,7 +84,7 @@ pub fn check_swap_token_accounts(
     }
 
     // 3. Verify that the destination token account is of the AUDIO mint.
-    let destination_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let destination_token_mint= <Account as GenericTokenAccount>
         ::unpack_account_mint(&destination_token_data)
         .unwrap();
     if destination_token_mint.key().to_string() != SOL_AUDIO_TOKEN_ADDRESS.to_string() {

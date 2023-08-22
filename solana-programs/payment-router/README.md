@@ -1,9 +1,8 @@
 # Payment Router
 
-This program transfer SOL AUDIO or SOL USDC from its PDA token account to given recipients.
+This program transfers SOL AUDIO or SOL USDC from its PDA token account to given recipients.
 
 The program has a PDA (Program Derived Address) account that will own the tokens.
-The program methods are permissionless, meaning that anyone can interact with them as long as they're willing to pay for the transactions.
 
 Please note that this program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
