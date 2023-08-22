@@ -178,7 +178,7 @@ async def race_requests(urls, timeout):
     done, pending = await asyncio.wait(
         tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
     )
-    while len(done) > 0 or len(pending) > 0:
+    while len(done) > 0:
         for task in done:
             response = task.result()
             if response.status_code == 200:
