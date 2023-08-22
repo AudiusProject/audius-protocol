@@ -59,7 +59,6 @@ pub fn check_swap_token_accounts(
     // i.e. that the owner of the token accounts is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
     let source_token_data = user_source_token_account.data.borrow();
-    // msg!("source_token_data: {:?}", source_token_data);
     let source_token_owner= <Account as GenericTokenAccount>
         ::unpack_account_owner(&source_token_data)
         .unwrap();
