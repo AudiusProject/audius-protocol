@@ -73,6 +73,9 @@ export const CHECK_PAGE = '/check'
 export const DEACTIVATE_PAGE = '/deactivate'
 export const CHATS_PAGE = '/messages'
 export const CHAT_PAGE = '/messages/:id?'
+export const PURCHASES_PAGE = '/purchases'
+export const SALES_PAGE = '/sales'
+export const WITHDRAWALS_PAGE = '/withdrawals'
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
@@ -156,7 +159,10 @@ export const authenticatedRoutes = [
   SETTINGS_PAGE,
   DEACTIVATE_PAGE,
   CHATS_PAGE,
-  CHAT_PAGE
+  CHAT_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE,
+  WITHDRAWALS_PAGE
 ]
 
 export const publicSiteRoutes = [
@@ -194,6 +200,9 @@ export const orderedRoutes = [
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE,
+  WITHDRAWALS_PAGE,
   NOT_FOUND_PAGE,
   HOME_PAGE,
   PLAYLIST_PAGE,
@@ -241,7 +250,10 @@ export const staticRoutes = new Set([
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
-  TRENDING_GENRES
+  TRENDING_GENRES,
+  PURCHASES_PAGE,
+  SALES_PAGE,
+  WITHDRAWALS_PAGE
 ])
 
 /** Given a pathname, finds a matching route */
