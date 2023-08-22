@@ -123,7 +123,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       onPress={handlePress}
       IconProps={{
         ...(size === 'large'
-          ? { height: spacing(5), width: spacing(5) }
+          ? { height: spacing(6), width: spacing(6) }
           : null),
         ...IconProps
       }}

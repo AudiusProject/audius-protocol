@@ -97,6 +97,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     height: 64,
     minWidth: 300
   },
+  twitterButton: {
+    backgroundColor: palette.staticTwitterBlue
+  },
   button: {
     paddingHorizontal: spacing(4)
   },
