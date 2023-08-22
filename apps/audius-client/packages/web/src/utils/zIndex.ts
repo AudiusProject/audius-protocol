@@ -27,6 +27,7 @@ export enum zIndex {
   IMAGE_SELECTION_POPUP = 1002,
 
   // Web3 wallet connect modal
+  MUSIC_CONFETTI = 10000,
   WEB3_WALLET_CONNECT_MODAL = 10001,
 
   ARTIST_POPOVER_POPUP = 20000,
