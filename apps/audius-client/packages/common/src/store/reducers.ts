@@ -127,6 +127,7 @@ import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
+import { withdrawUSDCReducer } from './withdraw-usdc'
 
 /**
  * A function that creates common reducers. The function takes
@@ -255,6 +256,9 @@ export const reducers = () => ({
   premiumContent,
   purchaseContent: purchaseContentReducer,
 
+  // USDC withdrawals
+  withdrawUSDC: withdrawUSDCReducer,
+
   // Collectibles
   collectibles,
 
@@ -377,6 +381,7 @@ export type CommonState = {
   // Premium content
   purchaseContent: ReturnType<typeof purchaseContentReducer>
   premiumContent: ReturnType<typeof premiumContent>
+  withdrawUSDC: ReturnType<typeof withdrawUSDCReducer>
 
   // Collectibles
   collectibles: ReturnType<typeof collectibles>

@@ -2,6 +2,7 @@
 export * from './account'
 export * from './average-color'
 export * from './buy-usdc'
+export * from './withdraw-usdc'
 export * from './cache'
 export * from './cast'
 export * from './challenges'
