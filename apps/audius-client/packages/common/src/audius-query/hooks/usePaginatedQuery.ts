@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { isEqual } from 'lodash'
 import { useCustomCompareEffect } from 'react-use'
 
-import { Status } from 'models/Status'
+import { Status, statusIsNotFinalized } from 'models/Status'
 
 import { QueryHookOptions, QueryHookResults } from '../types'
 
@@ -55,6 +55,7 @@ export const useAllPaginatedQuery = <
   baseArgs: Omit<ArgsType, 'limit' | 'offset'>,
   options: { pageSize: number } & QueryHookOptions
 ) => {
+  const [loadingMore, setLoadingMore] = useState(false)
   const { pageSize, ...queryHookOptions } = options
   const [page, setPage] = useState(0)
   const [allData, setAllData] = useState<Data[]>([])
@@ -64,28 +65,50 @@ export const useAllPaginatedQuery = <
     offset: page * pageSize
   } as ArgsType
   const result = useQueryHook(args, queryHookOptions)
-  useEffect(() => {
-    if (result.status !== Status.SUCCESS) return
-    setAllData((allData) => [...allData, ...result.data])
-  }, [result.status, result.data])
 
   useCustomCompareEffect(
     () => {
       setAllData([])
+      setLoadingMore(false)
     },
     [baseArgs],
     isEqual
   )
+
+  useCustomCompareEffect(
+    () => {
+      if (!statusIsNotFinalized(result.status)) {
+        setLoadingMore(false)
+      }
+      if (result.status !== Status.SUCCESS) return
+      setAllData((allData) => [...allData, ...result.data])
+    },
+    [result.status, args],
+    isEqual
+  )
+
+  const notError = result.status !== Status.ERROR
+  const notStarted = result.status === Status.IDLE && allData.length === 0
+  const hasNotFetched = !result.data && result.status !== Status.SUCCESS
+  const fetchedFullPreviousPage = result.data?.length === pageSize
+
+  const hasMore =
+    notError && (notStarted || hasNotFetched || fetchedFullPreviousPage)
+
+  const loadMore = useCallback(() => {
+    if (loadingMore) {
+      return
+    }
+    setLoadingMore(true)
+    setPage(page + 1)
+  }, [loadingMore, page])
 
   return {
     ...result,
     // TODO: add another status for reloading
     status: allData?.length > 0 ? Status.SUCCESS : result.status,
     data: allData,
-    loadMore: () => setPage(page + 1),
-    hasMore:
-      result.status === Status.IDLE ||
-      (!result.data && result.status === Status.LOADING) ||
-      result.data?.length === pageSize
+    loadMore,
+    hasMore
   }
 }
