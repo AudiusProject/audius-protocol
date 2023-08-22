@@ -79,6 +79,7 @@
 /* Albums */
 .cardsContainer {
   gap: var(--unit-6) var(--unit-4);
+  margin-bottom: var(--unit-4);
 }
 
 .playButtonContainer {
