@@ -130,12 +130,12 @@ func getDatabaseSize(p *pgxpool.Pool) (size uint64, errStr string) {
 }
 
 func getUploadsCount(db *gorm.DB) (count int64, errStr string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	if err := db.WithContext(ctx).Model(&Upload{}).Count(&count).Error; err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			errStr = "timeout getting uploads count within 30s: " + err.Error()
+			errStr = "timeout getting uploads count within 60s: " + err.Error()
 		} else {
 			errStr = "error getting uploads count: " + err.Error()
 		}
