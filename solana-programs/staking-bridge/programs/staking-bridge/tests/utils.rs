@@ -1,3 +1,5 @@
+#![cfg(feature = "test-bpf")]
+
 use anchor_lang::prelude::{
   AccountInfo,
   Pubkey,
