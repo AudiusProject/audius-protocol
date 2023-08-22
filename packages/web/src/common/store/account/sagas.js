@@ -186,6 +186,10 @@ export function* fetchAccountAsync({ isSignUp = false }) {
         reason: 'ACCOUNT_NOT_FOUND'
       })
     )
+    if (!isNativeMobile) {
+      const localStorage = yield getContext('localStorage')
+      yield call([localStorage, 'removeItem'], 'useMetaMask')
+    }
     return
   }
   if (account.is_deactivated) {

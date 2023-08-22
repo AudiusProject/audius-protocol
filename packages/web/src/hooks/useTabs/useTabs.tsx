@@ -755,7 +755,6 @@ const BodyContainer = memo(
     dimensionsAreDirty,
     didSetDimensions
   }: BodyContainerProps) => {
-    console.log('hmm', elements, activeIndex)
     // Get a ref to the element to use for calculating height
     const {
       containerWidth,

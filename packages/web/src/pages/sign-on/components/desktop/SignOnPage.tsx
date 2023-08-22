@@ -143,10 +143,6 @@ const animatedStyle = {
   }
 }
 
-/**
- * TODO: When the user selects the metamask option, set the localStorage key 'useMetaMask' to true
- * Reference the setup function in Audius backend. A new instance of Audiusbackend will have to be created
- */
 const SignOnPage = ({
   title,
   description,
