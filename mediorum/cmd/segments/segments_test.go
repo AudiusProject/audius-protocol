@@ -45,8 +45,10 @@ func generateTestFixtures(m *mediorumClient) {
 	}
 
 	query := `
+	CREATE EXTENSION IF NOT EXISTS pgcrypto;
 	DROP TABLE IF EXISTS "FilesTest";
 	CREATE TABLE "FilesTest" (
+		"fileUUID" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 		"storagePath" TEXT,
 		type TEXT
 	)`
@@ -96,7 +98,12 @@ func TestDropSegments(t *testing.T) {
 		log.Fatalf("Failed to count rows: %v", err)
 	}
 
-	expected := NUM_FIXTURES - NUM_SEGMENTS
+	expected := 0
+	if deleteDBRows {
+		expected = NUM_FIXTURES - NUM_SEGMENTS
+	} else {
+		expected = NUM_FIXTURES
+	}
 	if count != expected {
 		log.Fatalf("Expected row count to be %d, but got %d", expected, count)
 	}

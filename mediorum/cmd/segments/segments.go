@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	batchSize  = 1000
-	numWorkers = 5
+	batchSize         = 1000
+	numWorkers        = 5
+	sleepMilliseconds = 1
+	deleteDBRows      = false
 )
 
 var interrupted bool
@@ -97,38 +99,41 @@ func (m *mediorumClient) scanForSegments(storagePathChan chan<- string) error {
 		tableName = "FilesTest"
 	}
 
-	// type is unindexed and this can be slow query
-	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" = 'track';`, tableName)
-	fmt.Printf("\nPerforming sql: %s\n", sql)
+	lastFileUUID := "00000000-0000-0000-0000-000000000000"
+	for {
+		sql := fmt.Sprintf(`SELECT "storagePath", "type", "fileUUID" FROM "%s" WHERE "fileUUID" > $1 ORDER BY "fileUUID" LIMIT %d;`, tableName, batchSize)
 
-	rows, err := m.db.Query(sql)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	batch := make([]string, 0, batchSize)
-	for rows.Next() {
-		m.dbNumFound++
-		var fileLocation string
-		if err := rows.Scan(&fileLocation); err != nil {
+		rows, err := m.db.Query(sql, lastFileUUID)
+		if err != nil {
 			return err
 		}
 
-		batch = append(batch, fileLocation)
-		if len(batch) >= batchSize {
-			m.processBatch(batch, storagePathChan)
-			batch = batch[:0]
+		batch := make([]string, 0, batchSize)
+		recordsFetched := 0
+		var currentStoragePath, fileType, currentFileUUID string
+		for rows.Next() {
+			recordsFetched++
+			if err := rows.Scan(&currentStoragePath, &fileType, &currentFileUUID); err != nil {
+				rows.Close()
+				return err
+			}
+
+			if fileType == "track" {
+				m.dbNumFound++
+				batch = append(batch, currentStoragePath)
+			}
 		}
-	}
+		rows.Close()
 
-	if err := rows.Err(); err != nil {
-		return err
-	}
+		if len(batch) > 0 {
+			m.processBatch(batch, storagePathChan)
+		}
 
-	// Process remaining batch if any
-	if len(batch) > 0 {
-		m.processBatch(batch, storagePathChan)
+		if recordsFetched < batchSize {
+			break
+		}
+
+		lastFileUUID = currentFileUUID
 	}
 
 	return nil
@@ -154,7 +159,7 @@ func (m *mediorumClient) processSegments(storagePathChan <-chan string) error {
 			batch = batch[:0]
 		}
 	}
-	// process remaining batch if any
+
 	if len(batch) > 0 {
 		if err := m.deleteBatch(batch); err != nil {
 			return err
@@ -187,10 +192,10 @@ func (m *mediorumClient) deleteBatch(batch []string) error {
 			m.diskNumFound++
 			m.mu.Unlock()
 		}
-		time.Sleep(time.Millisecond * 100) // Be kind to i/o
+		time.Sleep(time.Millisecond * sleepMilliseconds) // Be kind to i/o
 	}
 
-	if len(pathsToDelete) > 0 {
+	if len(pathsToDelete) > 0 && deleteDBRows {
 		tableName := "Files"
 		if m.isTest {
 			tableName = "FilesTest"
@@ -221,7 +226,7 @@ func (m *mediorumClient) deleteBatch(batch []string) error {
 func writeToFile(message string) {
 	dir := "/tmp/mediorum"
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755) // Create directory with read/write permissions
+		os.Mkdir(dir, 0755)
 	}
 	file := "/tmp/mediorum/segments.txt"
 
@@ -240,6 +245,10 @@ func writeToFile(message string) {
 
 func cleanup(m *mediorumClient) {
 
+	fmt.Println("\nperforming cleanup()")
+
+	m.close()
+
 	fmt.Printf("\n----------------------------------------------\n")
 
 	fmt.Printf("Found  : %d rows  of type 'track' in the db.\n", m.dbNumFound)
@@ -252,11 +261,7 @@ func cleanup(m *mediorumClient) {
 
 	fmt.Printf("\n----------------------------------------------\n")
 
-	m.close()
-
-	if interrupted {
-		fmt.Println("\nInterrupted.")
-	} else {
+	if !interrupted {
 		completionTime := time.Now()
 		writeToFile(fmt.Sprintf("Completion Time: %s", completionTime))
 		fmt.Println("\nDONE.")
@@ -267,7 +272,6 @@ func Run(c *MediorumClientConfig) {
 	var (
 		err error
 		m   *mediorumClient
-		wg  sync.WaitGroup
 	)
 
 	startTime := time.Now()
@@ -276,18 +280,20 @@ func Run(c *MediorumClientConfig) {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
+	m, err = newMediorumClient(c)
+	if err != nil {
+		log.Println("Error creating new mediorum client:", err)
+		return
+	}
+
+	defer cleanup(m)
+
 	go func() {
 		<-interrupt
 		fmt.Printf("\ntrapped SIGINT...\n\n")
 		interrupted = true
+		cleanup(m)
 	}()
-
-	m, err = newMediorumClient(c)
-	if err != nil {
-		log.Fatalf("Error creating new mediorum client: %v", err)
-	}
-
-	defer cleanup(m)
 
 	if !m.delete {
 		fmt.Println("Performing dry run. Use `--delete` to remove segment files and rows.")
@@ -295,26 +301,16 @@ func Run(c *MediorumClientConfig) {
 
 	storagePathChan := make(chan string, batchSize)
 
-	wg.Add(1)
 	go func() {
-		err = m.scanForSegments(storagePathChan)
 		defer close(storagePathChan) // signal when no more work to be done
+		err = m.scanForSegments(storagePathChan)
 		if err != nil {
-			log.Fatalf("Failed to call segments.Run(): %v", err)
+			log.Println("Failed to call segments.Run():", err)
 		}
-		wg.Done()
 	}()
 
-	wg.Add(numWorkers)
-	for i := 0; i < numWorkers; i++ {
-		go func() {
-			err = m.processSegments(storagePathChan)
-			if err != nil {
-				log.Fatalf("Failed to delete segments and rows: %v", err)
-			}
-			wg.Done()
-		}()
+	err = m.processSegments(storagePathChan)
+	if err != nil {
+		log.Println("Failed to delete segments and rows:", err)
 	}
-
-	wg.Wait()
 }
