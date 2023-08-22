@@ -14,6 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { CoverArt } from './CoverArt';
+import {
+    CoverArtFromJSON,
+    CoverArtFromJSONTyped,
+    CoverArtToJSON,
+} from './CoverArt';
 import type { DownloadMetadata } from './DownloadMetadata';
 import {
     DownloadMetadataFromJSON,
@@ -213,6 +219,12 @@ export interface TrackFull {
      * @memberof TrackFull
      */
     coverArtSizes?: string;
+    /**
+     * 
+     * @type {CoverArt}
+     * @memberof TrackFull
+     */
+    coverArtCids?: CoverArt;
     /**
      * 
      * @type {string}
@@ -427,6 +439,7 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
+        'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : CoverArtFromJSON(json['cover_art_cids']),
         'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
         'creditsSplits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
         'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
@@ -487,6 +500,7 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,
         'cover_art_sizes': value.coverArtSizes,
+        'cover_art_cids': CoverArtToJSON(value.coverArtCids),
         'created_at': value.createdAt,
         'credits_splits': value.creditsSplits,
         'download': DownloadMetadataToJSON(value.download),
