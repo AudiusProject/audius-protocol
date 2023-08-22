@@ -486,6 +486,14 @@ def populate_track_metadata(
     for track in tracks:
         track_id = track["track_id"]
 
+        # Convert cover art cid to cids for each image size variant
+        cover_cid = track.get("cover_art_sizes")
+        if cover_cid:
+            cover_cids = v1Helpers.get_image_cids(
+                track["user"], cover_cid, v1Helpers.COVER_ART_SIZES
+            )
+            track["cover_art_cids"] = cover_cids
+
         if track_has_aggregates:
             aggregate_track = track.get("aggregate_track")
             track[response_name_constants.repost_count] = (
@@ -856,6 +864,15 @@ def populate_playlist_metadata(
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
+
+        # Convert cover art cid to cids for each image size variant
+        cover_cid = playlist.get("cover_art_sizes")
+        if cover_cid:
+            cover_cids = v1Helpers.get_image_cids(
+                playlist["user"], cover_cid, v1Helpers.COVER_ART_SIZES
+            )
+            playlist["cover_art_cids"] = cover_cids
+
         playlist[response_name_constants.repost_count] = count_dict.get(
             playlist_id, {}
         ).get(response_name_constants.repost_count, 0)
