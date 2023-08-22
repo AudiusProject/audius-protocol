@@ -7,9 +7,9 @@ pub mod raydium;
 pub mod wormhole;
 
 use crate::raydium::{
-    check_raydium_programs,
-    check_raydium_token_accounts,
-    check_raydium_pdas,
+    check_swap_programs,
+    check_swap_token_accounts,
+    check_swap_pdas,
     swap
 };
 use crate::wormhole::{
@@ -48,9 +48,22 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_raydium_programs(accounts)?;
-        check_raydium_token_accounts(accounts)?;
-        check_raydium_pdas(
+        let program_id = &accounts.program_id;
+        let serum_program = &accounts.serum_program;
+        let user_source_token_account = &accounts.user_source_token_account;
+        let user_destination_token_account = &accounts.user_destination_token_account;
+        let user_source_owner = &accounts.user_source_owner;
+
+        check_swap_programs(
+            program_id.to_account_info(),
+            serum_program.to_account_info()
+        )?;
+        check_swap_token_accounts(
+            user_source_token_account.to_account_info(),
+            user_destination_token_account.to_account_info(),
+            user_source_owner.to_account_info()
+        )?;
+        check_swap_pdas(
             accounts,
             vault_nonce
         )?;

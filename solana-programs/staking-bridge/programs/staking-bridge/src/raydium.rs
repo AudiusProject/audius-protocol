@@ -24,10 +24,10 @@ use crate::{
  * 1. Verify that we are calling the Raydium AMM program.
  * 2. Verify that the correct Serum DEX program was passed in.
  */
-pub fn check_raydium_programs(accounts: &mut RaydiumSwap) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let serum_program = &accounts.serum_program;
-
+pub fn check_swap_programs(
+    program_id: AccountInfo,
+    serum_program: AccountInfo,
+) -> Result<()> {
     // 1. Verify that we are calling the Raydium AMM program.
     if program_id.key().to_string() != RAYDIUM_AMM_PROGRAM_ADDRESS.to_string() {
         return Err(StakingBridgeErrorCode::NotCallingRaydiumAmmProgram.into());
@@ -45,16 +45,17 @@ pub fn check_raydium_programs(accounts: &mut RaydiumSwap) -> Result<()> {
  * 2. Verify that the source token account is of the USDC mint.
  * 3. Verify that the destination token account is of the AUDIO mint.
  */
-pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
-    let user_source_token_account = &accounts.user_source_token_account;
-    let user_destination_token_account = &accounts.user_destination_token_account;
-    let user_source_owner = &accounts.user_source_owner;
-
+pub fn check_swap_token_accounts(
+    user_source_token_account: AccountInfo,
+    user_destination_token_account: AccountInfo,
+    user_source_owner: AccountInfo,
+) -> Result<()> {
     // 1. Verify PDA ownership of the token accounts.
     // Note that anchor checks for the program ownership of the 'user_source_owner' account,
     // i.e. that the owner of the token accounts is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
     let source_token_data = user_source_token_account.data.borrow();
+    // msg!("source_token_data: {:?}", source_token_data);
     let source_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_owner(&source_token_data)
         .unwrap();
@@ -92,7 +93,7 @@ pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
 /**
  * Verify that the correct PDAs are passed in.
  */
-pub fn check_raydium_pdas(
+pub fn check_swap_pdas(
     accounts: &mut RaydiumSwap,
     vault_nonce: u64
 ) -> Result<()> {
