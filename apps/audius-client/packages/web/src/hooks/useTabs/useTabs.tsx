@@ -839,7 +839,6 @@ const BodyContainer = memo(
         className={cn(
           styles.bodyContainer,
           styles.bodyContainerDesktop,
-          styles.clippedOverflow,
           containerClassName
         )}
         ref={containerCallbackRef}
