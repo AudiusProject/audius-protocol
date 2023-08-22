@@ -5,11 +5,10 @@ use anchor_lang::{
 };
 use anchor_spl::token::Token;
 
-pub mod constant;
 pub mod error;
-pub mod utils;
+pub mod router;
 
-use crate::utils::{
+use crate::router::{
     check_recipient_amounts,
     check_sender,
     execute_transfers
@@ -21,7 +20,7 @@ declare_id!("6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp");
 pub mod payment_router {
     use super::*;
 
-    pub fn create_pda(_ctx: Context<CreatePDA>) -> Result<()> {
+    pub fn create_payment_router_balance_pda(_ctx: Context<CreatePaymentRouterBalancePDA>) -> Result<()> {
         Ok(())
     }
 
@@ -29,17 +28,15 @@ pub mod payment_router {
         ctx: Context<'a, 'b, 'c, 'info, Route<'info>>,
         payment_router_pda_bump: u8,
         amounts: Vec<u64>,
-        total_amount: u64,
-        is_audio: bool,
+        total_amount: u64
     ) -> Result<()> {
-        let sender = &ctx.accounts.sender;
-        let sender_owner = &ctx.accounts.sender_owner;
+        let sender = &ctx.accounts.sender.to_account_info();
+        let sender_owner = &ctx.accounts.sender_owner.to_account_info();
         let remaining_accounts = ctx.remaining_accounts;
 
         check_sender(
-            sender.to_account_info(),
-            sender_owner.to_account_info(),
-            is_audio
+            sender.clone(),
+            sender_owner.clone()
         )?;
         check_recipient_amounts(
             remaining_accounts,
@@ -51,7 +48,6 @@ pub mod payment_router {
             sender_owner.clone(),
             remaining_accounts,
             amounts.clone(),
-            is_audio,
             payment_router_pda_bump
         )?;
 
@@ -60,7 +56,7 @@ pub mod payment_router {
 }
 
 #[derive(Accounts)]
-pub struct CreatePDA<'info> {
+pub struct CreatePaymentRouterBalancePDA<'info> {
     #[account(
         init,
         seeds = [b"payment_router".as_ref()],
@@ -70,23 +66,27 @@ pub struct CreatePDA<'info> {
     )]
     /// CHECK: This is the PDA owned by this program. This account will temporarily hold SOL USDC and SOL AUDIO tokens
     /// before transferring them over to given recipients, all within the same transaction.
-    pub payment_router_pda: AccountInfo<'info>,
+    pub payment_router_pda: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(payment_router_pda_bump: u8, _amounts: Vec<u8>, _total_amount: u64, _is_audio: bool)]
+#[instruction(
+    payment_router_pda_bump: u8,
+    _amounts: Vec<u64>,
+    _total_amount: u64
+)]
 pub struct Route<'info> {
     #[account(mut)]
     /// CHECK: This is the token account owned by the PDA.
-    pub sender: AccountInfo<'info>,
+    pub sender: UncheckedAccount<'info>,
     #[account(
         seeds = [b"payment_router".as_ref()],
         bump = payment_router_pda_bump
     )]
-    /// CHECK: This is the PDA initialized in the CreatePDA instruction.
-    pub sender_owner: AccountInfo<'info>,
+    /// CHECK: This is the PDA initialized in the CreatePaymentRouterBalancePDA instruction.
+    pub sender_owner: UncheckedAccount<'info>,
     pub spl_token: Program<'info, Token>,
 }
