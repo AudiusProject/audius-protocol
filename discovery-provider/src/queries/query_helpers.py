@@ -9,6 +9,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 
 from src import exceptions
+from src.api.v1 import helpers as v1Helpers
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -275,6 +276,21 @@ def populate_user_metadata(
 
     for user in users:
         user_id = user["user_id"]
+
+        # Convert image cid to cids for each image size variant
+        profile_cid = user.get("profile_picture_sizes")
+        if profile_cid:
+            profile_cids = v1Helpers.get_image_cids(
+                user, profile_cid, v1Helpers.PROFILE_PICTURE_SIZES
+            )
+            user["profile_picture_cids"] = profile_cids
+        cover_cid = user.get("cover_photo_sizes")
+        if cover_cid:
+            cover_cids = v1Helpers.get_image_cids(
+                user, cover_cid, v1Helpers.PROFILE_COVER_PHOTO_SIZES
+            )
+            user["cover_photo_cids"] = cover_cids
+
         user_balance = balance_dict.get(user_id, {})
         user[response_name_constants.track_count] = count_dict.get(user_id, {}).get(
             response_name_constants.track_count, 0
