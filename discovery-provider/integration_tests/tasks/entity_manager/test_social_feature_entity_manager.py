@@ -223,8 +223,11 @@ def test_index_valid_social_features(app, mocker):
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
             {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
         ],
-        "playlists": [{"playlist_id": 1, "playlist_owner_id": 11}],
+        "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
         "tracks": [{"track_id": 1, "owner_id": 11}],
+        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 11}],
+        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
         "developer_apps": [
             {
                 "user_id": 1,
@@ -240,14 +243,7 @@ def test_index_valid_social_features(app, mocker):
         ],
     }
 
-    test_social_feature_entities = {
-        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
-        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
-        "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
-    }
-
     populate_mock_db(db, entities)
-    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         # index transactions
@@ -655,15 +651,12 @@ def test_index_entity_update_and_social_feature(app, mocker):
             for i in range(1, 13)
         ],
         "playlists": [{"playlist_id": 1, "playlist_owner_id": 10}],
-    }
-    social_feature_entities = {
         "reposts": [
             {"repost_item_id": 1, "repost_type": "playlist", "user_id": i}
             for i in range(1, 10)
         ],
     }
     populate_mock_db(db, entities)
-    populate_mock_db(db, social_feature_entities)
 
     with db.scoped_session() as session:
         # index transactions

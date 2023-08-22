@@ -56,8 +56,6 @@ basic_entities = {
             },
         },
     ],
-}
-test_social_feature_entities = {
     "follows": [
         {
             "follower_user_id": 1,
@@ -81,7 +79,6 @@ def test_aggregate_counters(app):
         db = get_db()
 
     populate_mock_db(db, basic_entities)
-    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         agg_users: List[AggregateUser] = (
