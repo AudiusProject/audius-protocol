@@ -1,21 +1,29 @@
-import _ from 'lodash'
-
 // Utility Functions to compute confetti physics
 
-export function degreesToRads(degrees) {
+function degreesToRads(degrees) {
   return degrees / (180 * Math.PI)
 }
 
-export function radsToDegrees(radians) {
-  return (radians * 180) / Math.PI
-}
-
-export function randomRange(min, max) {
+function randomRange(min, max) {
   return min + Math.random() * (max - min)
 }
 
-export function randomInt(min, max) {
+function randomInt(min, max) {
   return Math.floor(min + Math.random() * (max - min + 1))
+}
+
+function range(start, end, step) {
+  const arr = []
+  for (let i = start; i < end; i += step) {
+    arr.push(i)
+  }
+  return arr
+}
+
+function sample(array) {
+  if (!Array.isArray(array) || array.length === 0) return undefined
+  const randomIndex = Math.floor(Math.random() * array.length)
+  return array[randomIndex]
 }
 
 const RANDOM_LETTERS =
@@ -26,11 +34,23 @@ const COLUMN_SPACING = 50
 
 // Particle class representing a piece of confetti
 // The particle holds the image, postion, and phsyics for moving in the animation
-export class Particle {
-  constructor(img, x, y, opacity, sizeRatio, friction, gravity, rotate, swing) {
+class Particle {
+  constructor(
+    path,
+    color,
+    x,
+    y,
+    opacity,
+    sizeRatio,
+    friction,
+    gravity,
+    rotate,
+    swing
+  ) {
     this.randomLetter =
       RANDOM_LETTERS[Math.floor(Math.random() * RANDOM_LETTERS.length)]
-    this.img = img
+    this.path = path
+    this.color = color
     this.center = x
     this.maxVx = swing > 0 ? randomRange(-10, 10) * sizeRatio : 0
     this.maxVy = randomRange(-4, -0.3) * sizeRatio
@@ -63,8 +83,10 @@ export class Particle {
     ctx.translate(Math.floor(this.x), Math.floor(this.y))
     ctx.rotate(this.angle)
     ctx.globalAlpha = this.opacity
-    if (this.img) {
-      ctx.drawImage(this.img, 0, 0)
+    if (this.path) {
+      ctx.scale(this.sizeRatio, this.sizeRatio)
+      ctx.fillStyle = this.color
+      ctx.fill(this.path)
     } else {
       // If no image, we must be in matrix mode
 
@@ -92,7 +114,8 @@ export class Particle {
 export default class Confetti {
   constructor(
     canvas,
-    images,
+    paths,
+    colors,
     recycle = false,
     limit = 100,
     friction = 0.99,
@@ -104,12 +127,17 @@ export default class Confetti {
   ) {
     const { clientWidth: width, clientHeight: height } = canvas
     this.width = width
+    this.height = height
+    window.addEventListener('resize', () => {
+      this.width = window.innerWidth
+      this.height = window.innerHeight
+    })
     this.particleRate = particleRate
-    this.images = images
+    this.paths = paths
+    this.colors = colors
     this.runAnimation = false
     this.friction = friction
     this.gravity = gravity
-    this.height = height
     this.limit = limit
     this.rotate = rotate
     this.swing = swing
@@ -121,7 +149,7 @@ export default class Confetti {
 
     // For matrix, generate columns by iterating over width with a
     // COLUMN_SPACING step and then perturbing the values somewhat
-    this.particleColumns = _.range(0, width, COLUMN_SPACING).map(
+    this.particleColumns = range(0, width, COLUMN_SPACING).map(
       (c) => c + Math.random() * COLUMN_SPACING - COLUMN_SPACING * 0.4
     )
   }
@@ -129,31 +157,21 @@ export default class Confetti {
   generateParticle = (source, number) => {
     const x = this.swing
       ? randomRange(0, this.width)
-      : _.sample(this.particleColumns)
+      : sample(this.particleColumns)
     const y = -30 // Start the particle 30px above
     const opacity = this.swing ? randomRange(0.3, 0.9) : randomRange(0.8, 1) // Range from 0.3 to 0.9
     const size = this.swing ? ((opacity + 0.2) * 5) / 6 : 1 // range 0.5 to 1
 
-    let imageCanvas = null
-
-    if (this.images) {
-      const particleImg = this.images[randomInt(0, this.images.length - 1)]
-
-      imageCanvas = document.createElement('canvas')
-      const imageContext = imageCanvas.getContext('2d')
-      imageCanvas.height = particleImg.height * size
-      imageCanvas.width = particleImg.width * size
-      imageContext.drawImage(
-        particleImg,
-        0,
-        0,
-        imageCanvas.width,
-        imageCanvas.height
-      )
-    }
+    const path = this.paths
+      ? this.paths[randomInt(0, this.paths.length - 1)]
+      : null
+    const color = this.colors
+      ? this.colors[randomInt(0, this.colors.length - 1)]
+      : null
 
     return new Particle(
-      imageCanvas,
+      path,
+      color,
       x,
       y,
       opacity,
