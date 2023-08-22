@@ -209,9 +209,16 @@ def process_state_changes(
 @log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
-
         logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
+
+        other_user_events_from_user = (
+            session.query(UserEvent)
+            .filter(UserEvent.user_id == user_events_to_revert.user_id)
+            .all()
+        )
+        for other_user_event in other_user_events_from_user:
+            session.delete(other_user_event)
 
 
 def get_latest_database_block(session: Session) -> Block:
@@ -519,13 +526,11 @@ def revert_block(session: Session, block_to_revert: Block):
 
     # Revert all of above transactions
     for save_to_revert in revert_save_entries:
-
         logger.info(f"Reverting save: {save_to_revert}")
         # Remove outdated save item entry
         session.delete(save_to_revert)
 
     for repost_to_revert in revert_repost_entries:
-
         # Remove outdated repost entry
         logger.info(f"Reverting repost: {repost_to_revert}")
         session.delete(repost_to_revert)
@@ -536,7 +541,6 @@ def revert_block(session: Session, block_to_revert: Block):
         session.delete(follow_to_revert)
 
     for subscription_to_revert in revert_subscription_entries:
-
         logger.info(f"Reverting subscription: {subscription_to_revert}")
         session.delete(subscription_to_revert)
 
@@ -552,7 +556,6 @@ def revert_block(session: Session, block_to_revert: Block):
 
     # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
     for user_to_revert in revert_user_entries:
-
         # Remove outdated user entries
         logger.info(f"Reverting user: {user_to_revert}")
         session.delete(user_to_revert)
@@ -583,7 +586,6 @@ def revert_block(session: Session, block_to_revert: Block):
         session.delete(developer_app_to_revert)
 
     for grant_to_revert in revert_grants:
-
         logger.info(f"Reverting grant {grant_to_revert}")
         session.delete(grant_to_revert)
 

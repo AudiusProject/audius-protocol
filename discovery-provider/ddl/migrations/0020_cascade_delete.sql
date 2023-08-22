@@ -22,8 +22,7 @@ END
 $$ LANGUAGE plpgsql;
 
 SELECT delete_is_current_false_rows(ARRAY[
-    'associated_wallets', 
-    'user_events'
+    'associated_wallets'
 ]
 );
 
