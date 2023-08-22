@@ -178,13 +178,11 @@ async def race_requests(urls, timeout):
     done, pending = await asyncio.wait(
         tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
     )
-    while len(done) > 0:
-        for task in done:
-            response = task.result()
-            if response.status_code == 200:
-                return response
-        if len(done) == len(urls):
-            raise Exception(f"No 200 responses for urls {urls}")
+    for task in done:
+        response = task.result()
+        if response.status_code == 200:
+            return response
+    raise Exception(f"No 200 responses for urls {urls}")
 
 
 # Get cids corresponding to each transcoded variant for the given upload_id.
