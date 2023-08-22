@@ -183,7 +183,8 @@ async def race_requests(urls, timeout):
             response = task.result()
             if response.status_code == 200:
                 return response
-    raise Exception(f"No 200 responses for urls {urls}")
+        if len(done) == len(urls):
+            raise Exception(f"No 200 responses for urls {urls}")
 
 
 # Get cids corresponding to each transcoded variant for the given upload_id.
