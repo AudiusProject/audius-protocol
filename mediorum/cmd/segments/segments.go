@@ -98,7 +98,7 @@ func (m *mediorumClient) scanForSegments(storagePathChan chan<- string) error {
 	}
 
 	// type is unindexed and this can be slow query
-	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" IN ('track', 'metadata');`, tableName)
+	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" = 'track';`, tableName)
 	fmt.Printf("\nPerforming sql: %s\n", sql)
 
 	rows, err := m.db.Query(sql)
