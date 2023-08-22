@@ -91,8 +91,19 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_wormhole_programs(accounts)?;
-        check_wormhole_token_accounts(accounts)?;
+        let program_id = &accounts.program_id;
+        let bridge_id = &accounts.bridge_id;
+        let from = &accounts.from;
+        let from_owner = &accounts.from_owner;
+
+        check_wormhole_programs(
+            program_id.to_account_info(),
+            bridge_id.to_account_info()
+        )?;
+        check_wormhole_token_accounts(
+            from.to_account_info(),
+            from_owner.to_account_info()
+        )?;
         check_wormhole_pdas(
             accounts,
             config_bump,
