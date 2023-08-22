@@ -1,10 +1,12 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './ActivityFull';
+export * from './CollectionActivityFull';
+export * from './CollectionLibraryResponseFull';
+export * from './CoverArt';
 export * from './CoverPhoto';
 export * from './DownloadMetadata';
 export * from './Favorite';
-export * from './FavoritesResponseFull';
 export * from './FieldVisibility';
 export * from './FollowingResponse';
 export * from './FollowingResponseFull';
@@ -32,6 +34,7 @@ export * from './HistoryResponseFull';
 export * from './PlaylistAddedTimestamp';
 export * from './PlaylistArtwork';
 export * from './PlaylistFull';
+export * from './PlaylistFullWithoutTracks';
 export * from './PlaylistLibrary';
 export * from './PremiumContentSignature';
 export * from './ProfilePicture';
@@ -49,10 +52,12 @@ export * from './StemsResponse';
 export * from './SupporterReference';
 export * from './TopGenreUsersResponseFull';
 export * from './TopUsersResponseFull';
+export * from './TrackActivityFull';
 export * from './TrackArtwork';
 export * from './TrackFavoritesResponseFull';
 export * from './TrackFull';
 export * from './TrackId';
+export * from './TrackLibraryResponseFull';
 export * from './TrackRepostsResponseFull';
 export * from './TrackSegment';
 export * from './TransactionDetails';
