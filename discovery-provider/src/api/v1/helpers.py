@@ -176,7 +176,7 @@ async def fetch_url(url):
 async def race_requests(urls, timeout):
     tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
     done, pending = await asyncio.wait(
-        tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
+        tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
     )
     while len(done) > 0:
         for task in done:
