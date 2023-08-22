@@ -176,13 +176,12 @@ async def fetch_url(url):
 async def race_requests(urls, timeout):
     tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
     done, pending = await asyncio.wait(
-        tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
+        tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
     )
-    while len(done) > 0 or len(pending) > 0:
-        for task in done:
-            response = task.result()
-            if response.status_code == 200:
-                return response
+    for task in done:
+        response = task.result()
+        if response.status_code == 200:
+            return response
     raise Exception(f"No 200 responses for urls {urls}")
 
 
