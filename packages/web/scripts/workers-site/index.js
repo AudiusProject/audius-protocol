@@ -3,6 +3,7 @@ import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 /* globals GA, GA_ACCESS_TOKEN, SITEMAP, DISCOVERY_NODES, HTMLRewriter */
 
 const DEBUG = false
+const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 const discoveryNodes = DISCOVERY_NODES.split(',')
 const discoveryNode =
@@ -287,6 +288,19 @@ async function handleEvent(event) {
       .on('head', new SEOHandlerHead(pathname))
       .on('body', new SEOHandlerBody())
       .transform(asset)
+
+    // Adjust browser cache on assets that don't change frequently and/or
+    // are given unique hashes when they do.
+    if (
+      pathname.startsWith('/static') ||
+      pathname.startsWith('/scripts') ||
+      pathname.startsWith('/fonts')
+    ) {
+      const response = new Response(rewritten.body, rewritten)
+      response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
+      return response
+    }
+
     return rewritten
   } catch (e) {
     return new Response(e.message || e.toString(), { status: 500 })
