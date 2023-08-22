@@ -1,7 +1,9 @@
 # TEST
 
 ```
-cd mediorum/cmd
+cd mediorum
+make pg.up
+cd cmd
 go test ./segments -count=1 -timeout 60s -v
 ```
 

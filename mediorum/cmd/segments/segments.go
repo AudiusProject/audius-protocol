@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -14,33 +15,26 @@ import (
 )
 
 const (
-	batchSize = 1000
+	batchSize  = 1000
+	numWorkers = 5
 )
 
+var interrupted bool
+
 type mediorumClient struct {
-	db           *sql.DB
-	isTest       bool
-	delete       bool
-	dbNumFound   int64
-	diskNumFound int64
-	mu           sync.Mutex
+	db             *sql.DB
+	isTest         bool
+	delete         bool
+	dbNumFound     int64
+	dbNumDeleted   int64
+	diskNumFound   int64
+	diskNumDeleted int64
+	mu             sync.Mutex
 }
 
 type MediorumClientConfig struct {
 	isTest bool
 	Delete bool
-}
-
-func init() {
-	// Catch control+c so you can check things are working on a large fs without waiting
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
-	go func() {
-		<-interrupt
-		fmt.Printf("\ntrapped SIGINT...\n\n")
-		os.Exit(0)
-	}()
 }
 
 func waitForPostgresConnection(db *sql.DB) {
@@ -103,7 +97,8 @@ func (m *mediorumClient) scanForSegments(storagePathChan chan<- string) error {
 		tableName = "FilesTest"
 	}
 
-	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" = 'track';`, tableName)
+	// type is unindexed and this can be slow query
+	sql := fmt.Sprintf(`SELECT "storagePath" FROM "%s" WHERE "type" IN ('track', 'metadata');`, tableName)
 	fmt.Printf("\nPerforming sql: %s\n", sql)
 
 	rows, err := m.db.Query(sql)
@@ -170,25 +165,102 @@ func (m *mediorumClient) processSegments(storagePathChan <-chan string) error {
 }
 
 func (m *mediorumClient) deleteBatch(batch []string) error {
+	numDiskDeleted := 0
+	pathsToDelete := make([]string, 0, len(batch))
+
 	for _, path := range batch {
-		time.Sleep(time.Millisecond * 2) // be kind to i/o
 		if _, err := os.Stat(path); err == nil {
 			if m.delete {
 				if err := os.Remove(path); err != nil {
-					if os.IsNotExist(err) {
-						continue
-					} else {
+					if !os.IsNotExist(err) {
 						return err
 					}
 				}
+				m.mu.Lock()
+				m.diskNumDeleted++
+				m.mu.Unlock()
+				numDiskDeleted++
+				escapedPath := fmt.Sprintf("'%s'", path) // Enclose in single quotes for SQL
+				pathsToDelete = append(pathsToDelete, escapedPath)
 			}
 			m.mu.Lock()
 			m.diskNumFound++
 			m.mu.Unlock()
 		}
+		time.Sleep(time.Millisecond * 100) // Be kind to i/o
+	}
+
+	if len(pathsToDelete) > 0 {
+		tableName := "Files"
+		if m.isTest {
+			tableName = "FilesTest"
+		}
+
+		sql := fmt.Sprintf(`DELETE FROM "%s" WHERE "storagePath" IN (%s)`, tableName, strings.Join(pathsToDelete, ","))
+		res, err := m.db.Exec(sql)
+		if err != nil {
+			return err
+		}
+
+		rowCount, err := res.RowsAffected()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		m.mu.Lock()
+		m.dbNumDeleted += rowCount
+		m.mu.Unlock()
+
+		fmt.Printf("\nDeleted: %d rows  of type 'track' from '%s' table.\n", rowCount, tableName)
+		fmt.Printf("Deleted: %d files of type 'track' on disk.\n", numDiskDeleted)
 	}
 
 	return nil
+}
+
+func writeToFile(message string) {
+	dir := "/tmp/mediorum"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755) // Create directory with read/write permissions
+	}
+	file := "/tmp/mediorum/segments.txt"
+
+	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+	defer f.Close()
+
+	if _, err := f.WriteString(message + "\n"); err != nil {
+		log.Fatalf("Failed to write to log file: %v", err)
+	}
+
+	f.Sync()
+}
+
+func cleanup(m *mediorumClient) {
+
+	fmt.Printf("\n----------------------------------------------\n")
+
+	fmt.Printf("Found  : %d rows  of type 'track' in the db.\n", m.dbNumFound)
+	fmt.Printf("Found  : %d files of type 'track' on disk.", m.diskNumFound)
+
+	if m.delete {
+		fmt.Printf("\nDeleted: %d rows  of type 'track' from the db.\n", m.dbNumDeleted)
+		fmt.Printf("Deleted: %d files of type 'track' on disk.", m.diskNumDeleted)
+	}
+
+	fmt.Printf("\n----------------------------------------------\n")
+
+	m.close()
+
+	if interrupted {
+		fmt.Println("\nInterrupted.")
+	} else {
+		completionTime := time.Now()
+		writeToFile(fmt.Sprintf("Completion Time: %s", completionTime))
+		fmt.Println("\nDONE.")
+	}
 }
 
 func Run(c *MediorumClientConfig) {
@@ -198,8 +270,24 @@ func Run(c *MediorumClientConfig) {
 		wg  sync.WaitGroup
 	)
 
+	startTime := time.Now()
+	writeToFile(fmt.Sprintf("Start Time: %s", startTime))
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-interrupt
+		fmt.Printf("\ntrapped SIGINT...\n\n")
+		interrupted = true
+	}()
+
 	m, err = newMediorumClient(c)
-	defer m.close()
+	if err != nil {
+		log.Fatalf("Error creating new mediorum client: %v", err)
+	}
+
+	defer cleanup(m)
 
 	if !m.delete {
 		fmt.Println("Performing dry run. Use `--delete` to remove segment files and rows.")
@@ -217,7 +305,6 @@ func Run(c *MediorumClientConfig) {
 		wg.Done()
 	}()
 
-	numWorkers := 5
 	wg.Add(numWorkers)
 	for i := 0; i < numWorkers; i++ {
 		go func() {
@@ -230,33 +317,4 @@ func Run(c *MediorumClientConfig) {
 	}
 
 	wg.Wait()
-
-	fmt.Printf("\nFound  : %d rows  of type 'track' in the db.\n", m.dbNumFound)
-	fmt.Printf("Found  : %d files of type 'track' on disk.\n", m.diskNumFound)
-
-	// cleanup db in a single op. non spammy
-	if m.delete {
-		tableName := "Files"
-		if m.isTest {
-			tableName = "FilesTest"
-		}
-
-		sql := fmt.Sprintf(`DELETE FROM "%s" WHERE "type" = 'track'`, tableName)
-		fmt.Printf("\nPerforming sql: %s\n", sql)
-
-		res, err := m.db.Exec(sql)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		rowCount, err := res.RowsAffected()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Printf("Deleted: %d rows  of type 'track' from '%s' table.\n", rowCount, tableName)
-		fmt.Printf("Deleted: %d files of type 'track' on disk.\n", m.diskNumFound)
-	}
-
-	fmt.Println("\nDONE.")
 }

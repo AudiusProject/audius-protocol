@@ -18,7 +18,7 @@ func generateTestFixtures(m *mediorumClient) {
 	var err error
 
 	baseDir := "/tmp/mediorum_test"
-	directories := []string{"111", "222", "333", "444", "555", "666", "777"}
+	directories := []string{"000", "111", "222", "333", "444", "555", "666", "777", "888", "999"}
 	files := []string{"Qmaaa", "Qmbbb", "Qmccc"}
 	types := []string{"track", "track", "copy320"}
 
@@ -66,8 +66,8 @@ func generateTestFixtures(m *mediorumClient) {
 
 func TestDropSegments(t *testing.T) {
 
-	NUM_FIXTURES := 21
-	NUM_SEGMENTS := 14
+	NUM_FIXTURES := 30
+	NUM_SEGMENTS := 20
 
 	var (
 		err error
