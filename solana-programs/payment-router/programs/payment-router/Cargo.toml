@@ -1,7 +1,7 @@
 [package]
 name = "payment-router"
 version = "0.1.0"
-description = "This program transfer SOL AUDIO or SOL USDC from its PDA token accont to given recipients."
+description = "This program transfer SOL AUDIO or SOL USDC from its PDA token account to given recipients."
 edition = "2021"
 
 [lib]
@@ -17,3 +17,4 @@ default = []
 
 [dependencies]
 anchor-lang = "0.28.0"
+anchor-spl = "0.28.0"

@@ -99,7 +99,6 @@ describe('staking-bridge', () => {
 
   it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
-    console.log('Serum market info:', JSON.stringify(market))
 
     const poolKeys = await getAssociatedPoolKeys({
       programId: ammProgram,
@@ -108,7 +107,6 @@ describe('staking-bridge', () => {
       baseMint: market.baseMint,
       quoteMint: market.quoteMint
     })
-    console.log('AMM poolKeys: ', JSON.stringify(poolKeys))
 
     const { vaultOwner, vaultNonce } = await getVaultOwnerAndNonce(serumMarketPublicKey, serumDexProgram)
     assert.equal(
@@ -163,7 +161,6 @@ describe('staking-bridge', () => {
       userSourceOwner: stakingBridgePda,
       splTokenProgram: TOKEN_PROGRAM_ID,
     }
-    console.log('Raydium swap accounts:', { accounts })
 
     const tx = await program.methods
       .raydiumSwap(
@@ -309,7 +306,6 @@ describe('staking-bridge', () => {
       splToken: new PublicKey(TOKEN_PROGRAM_ID),
       systemProgram: SystemProgram.programId,
     }
-    console.log('Wormhole transfer accounts:', { accounts })
 
     // Signers
     // fromOwner is also a signer but the program will use

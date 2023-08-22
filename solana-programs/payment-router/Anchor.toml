@@ -13,3 +13,5 @@ wallet = "id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test-create-payment-router-balance-pda= "yarn run ts-mocha -g 'pda' -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test-route= "yarn run ts-mocha -g 'routes' -p ./tsconfig.json -t 1000000 tests/**/*.ts"
