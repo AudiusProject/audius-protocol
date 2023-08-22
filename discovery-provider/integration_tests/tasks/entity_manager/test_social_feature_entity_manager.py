@@ -984,7 +984,7 @@ def test_index_social_feature_playlist_type(app, mocker):
         album_save: List[Save] = (
             session.query(Save).filter(Save.save_item_id == 2).first()
         )
-        assert album_save.save_type == "playlist"
+        assert album_save.save_type == "album"
 
         # Verify repost
         playlist_repost: List[Repost] = (
@@ -995,7 +995,7 @@ def test_index_social_feature_playlist_type(app, mocker):
         album_repost: List[Repost] = (
             session.query(Repost).filter(Repost.repost_item_id == 2).first()
         )
-        assert album_repost.repost_type == "playlist"
+        assert album_repost.repost_type == "album"
 
         aggregate_playlist: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)

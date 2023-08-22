@@ -123,6 +123,15 @@ def get_attribute_from_record_metadata(params, attribute):
     return None
 
 
+def get_social_feature_type(params):
+    save_type = params.entity_type.lower()
+    if params.entity_type == EntityType.PLAYLIST:
+        # discern playlists and albums
+        existing_entity = params.existing_records[params.entity_type][params.entity_id]
+        save_type = "album" if existing_entity.is_album else "playlist"
+    return save_type
+
+
 def create_save(params):
     is_save_of_repost = get_attribute_from_record_metadata(params, "is_save_of_repost")
 
@@ -133,7 +142,7 @@ def create_save(params):
         txhash=params.txhash,
         user_id=params.user_id,
         save_item_id=params.entity_id,
-        save_type=params.entity_type.lower(),
+        save_type=get_social_feature_type(params),
         is_current=True,
         is_delete=False,
         is_save_of_repost=bool(is_save_of_repost),
@@ -152,7 +161,7 @@ def create_repost(params):
         txhash=params.txhash,
         user_id=params.user_id,
         repost_item_id=params.entity_id,
-        repost_type=params.entity_type.lower(),
+        repost_type=get_social_feature_type(params),
         is_repost_of_repost=bool(is_repost_of_repost),
         is_current=True,
         is_delete=False,
