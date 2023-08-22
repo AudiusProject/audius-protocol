@@ -866,7 +866,7 @@ def populate_playlist_metadata(
         playlist_id = playlist["playlist_id"]
 
         # Convert cover art cid to cids for each image size variant
-        cover_cid = playlist.get("cover_art_sizes")
+        cover_cid = playlist.get("playlist_image_sizes_multihash")
         if cover_cid:
             cover_cids = v1Helpers.get_image_cids(
                 playlist["user"], cover_cid, v1Helpers.COVER_ART_SIZES
