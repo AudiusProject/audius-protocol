@@ -211,9 +211,7 @@ class SEOHandlerHead {
       description
     )}" data-react-helmet="true">
 
-    <link rel="canonical" href="https://audius.co${encodeURI(
-      permalink
-    )}" data-react-helmet="true">
+    <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
     <meta property="og:title" content="${clean(title)}">
     <meta property="og:description" content="${clean(ogDescription)}">
     <meta property="og:image" content="${image}">
