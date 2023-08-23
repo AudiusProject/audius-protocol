@@ -770,4 +770,37 @@ export class SolanaWeb3Manager {
 
     return encodedEthAddress
   }
+
+  async createTransferInstructionsFromCurrentUser({
+    amount,
+    feePayerKey,
+    senderSolanaAddress,
+    recipientSolanaAddress,
+    mint = DEFAULT_MINT,
+    instructionIndex = 0
+  }: {
+    amount: BN
+    feePayerKey: PublicKey
+    senderSolanaAddress: PublicKey
+    recipientSolanaAddress: string
+    mint: MintName
+    instructionIndex: number
+  }) {
+    const instructions = await createTransferInstructions({
+      amount,
+      feePayerKey,
+      senderEthAddress: this.web3Manager?.getWalletAddress(),
+      senderEthPrivateKey:
+        this.web3Manager!.getOwnerWalletPrivateKey() as unknown as string,
+      senderSolanaAddress,
+      recipientSolanaAddress,
+      claimableTokenPDA: this.claimableTokenPDAs[mint],
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      mintKey: this.mints[mint],
+      instructionIndex
+    })
+    return instructions
+  }
 }
