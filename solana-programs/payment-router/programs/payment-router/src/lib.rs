@@ -3,7 +3,7 @@ use anchor_lang::{
     AnchorDeserialize,
     AnchorSerialize,
 };
-use anchor_spl::token::Token;
+use anchor_spl::token::{Token, TokenAccount};
 
 pub mod error;
 pub mod router;
@@ -81,7 +81,7 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
 pub struct Route<'info> {
     #[account(mut)]
     /// CHECK: This is the token account owned by the PDA.
-    pub sender: UncheckedAccount<'info>,
+    pub sender: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"payment_router".as_ref()],
         bump = payment_router_pda_bump
