@@ -202,6 +202,8 @@ describe('staking-bridge', () => {
       userSourceTokenAccount: usdcTokenAccount.address,
       userDestinationTokenAccount: audioTokenAccount.address,
       userSourceOwner: stakingBridgePda,
+      usdcMint: SOL_USDC_TOKEN_ADDRESS_KEY,
+      audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
       splTokenProgram: TOKEN_PROGRAM_ID,
     }
 
@@ -332,6 +334,7 @@ describe('staking-bridge', () => {
       message: messagePublicKey,
       from: pdaAtaKey,
       fromOwner: stakingBridgePda,
+      audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
 
       // bridge PDAs
       config,

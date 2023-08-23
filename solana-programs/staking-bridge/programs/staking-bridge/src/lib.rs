@@ -249,18 +249,28 @@ pub struct RaydiumSwap<'info> {
     #[account()]
     /// CHECK: This is the vault signer for the serum market. No check necessary.
     pub serum_vault_signer: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the SOL USDC token account for the PDA, which is checked by the implementation of this method.
-    pub user_source_token_account: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the SOL AUDIO token account for the PDA, which is checked by the implementation of this method.
-    pub user_destination_token_account: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = usdc_mint,
+        associated_token::authority = user_source_owner,
+    )]
+    pub user_source_token_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = audio_mint,
+        associated_token::authority = user_source_owner,
+    )]
+    pub user_destination_token_account: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub user_source_owner: UncheckedAccount<'info>,
+    #[account(address = mint::USDC)]
+    pub usdc_mint: Account<'info, Mint>,
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    pub audio_mint: Account<'info, Mint>,
     pub spl_token_program: Program<'info, Token>,
 }
 
@@ -327,9 +337,14 @@ pub struct PostWormholeMessage<'info> {
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub from_owner: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the associated token account of the PDA, from which the tokens will be transferred
-    pub from: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = audio_mint,
+        associated_token::authority = from_owner,
+    )]
+    pub from: Account<'info, TokenAccount>,
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    pub audio_mint: Account<'info, Mint>,
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,
     pub spl_token: Program<'info, Token>,
