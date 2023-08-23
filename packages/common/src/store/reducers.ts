@@ -80,7 +80,8 @@ import {
   searchUsersModalReducer,
   SearchUsersModalState,
   ToastState,
-  TransactionDetailsState
+  TransactionDetailsState,
+  withdrawUSDCReducer
 } from './ui'
 import addToPlaylistReducer, {
   AddToPlaylistState
@@ -127,7 +128,6 @@ import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
-import { withdrawUSDCReducer } from './withdraw-usdc'
 
 /**
  * A function that creates common reducers. The function takes
@@ -255,8 +255,6 @@ export const reducers = () => ({
   buyUSDC: buyUSDCReducer,
   premiumContent,
   purchaseContent: purchaseContentReducer,
-
-  // USDC withdrawals
   withdrawUSDC: withdrawUSDCReducer,
 
   // Collectibles

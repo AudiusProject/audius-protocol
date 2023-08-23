@@ -43,6 +43,25 @@ export const isValidSolDestinationAddress = async (
   }
 }
 
+export const isSolWallet = async (
+  audiusBackendInstance: AudiusBackend,
+  destinationWallet: SolanaWalletAddress
+) => {
+  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
+  const solanaweb3 = audiusLibs.solanaWeb3Manager?.solanaWeb3
+  if (!solanaweb3) {
+    console.error('No solana web3 found')
+    return false
+  }
+  try {
+    const destination = new solanaweb3.PublicKey(destinationWallet)
+    return solanaweb3.PublicKey.isOnCurve(destination.toBytes())
+  } catch (err) {
+    console.log(err)
+    return false
+  }
+}
+
 export const getRootSolanaAccount = async (
   audiusBackendInstance: AudiusBackend
 ) => {

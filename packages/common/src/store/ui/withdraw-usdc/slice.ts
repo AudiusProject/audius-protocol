@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Status } from '../../models/Status'
+import { Status } from 'models/Status'
 
 type WithdrawUSDCState = {
   withdrawStatus: Status
   destinationAddress?: string
   amount?: number
+  withdrawError?: Error
   destinationError?: Error
   amountError?: Error
 }
@@ -64,6 +65,14 @@ const slice = createSlice({
     beginWithdrawUSDC: (state) => {
       state.withdrawStatus = Status.LOADING
     },
+    withdrawUSDCSucceeded: (state) => {
+      state.withdrawError = undefined
+      state.withdrawStatus = Status.SUCCESS
+    },
+    withdrawUSDCFailed: (state, action: PayloadAction<{ error: Error }>) => {
+      state.withdrawStatus = Status.ERROR
+      state.withdrawError = action.payload.error
+    },
     cleanup: () => initialState
   }
 })
@@ -76,6 +85,8 @@ export const {
   setAmountSucceeded,
   setAmountFailed,
   beginWithdrawUSDC,
+  withdrawUSDCSucceeded,
+  withdrawUSDCFailed,
   cleanup
 } = slice.actions
 

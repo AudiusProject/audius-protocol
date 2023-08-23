@@ -25,7 +25,6 @@ import {
   shareModalUISagas,
   stripeModalUISagas
 } from 'store/ui'
-import { withdrawUSDCSagas } from 'store/withdraw-usdc'
 
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
@@ -45,7 +44,6 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // users: usersSagas,
   account: accountSagas,
   buyUSDC: buyUSDCSagas,
-  withdrawUSDC: withdrawUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
   premiumContent: premiumContentSagas,
