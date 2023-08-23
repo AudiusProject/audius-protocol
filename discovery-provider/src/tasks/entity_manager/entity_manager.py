@@ -368,7 +368,6 @@ def save_new_records(
     session: Session,
 ):
     prev_records: Dict[str, List] = defaultdict(list)
-    records_to_delete = []
     for record_type, record_dict in new_records.items():
         # This is actually a dict, but python has a hard time inferring.
         casted_record_dict = cast(dict, record_dict)
@@ -388,26 +387,12 @@ def save_new_records(
                     # these are an exception since we want to keep is_current false to preserve old slugs
                     original_records[record_type][entity_id].is_current = False
                 else:
-                    records_to_delete.append(original_records[record_type][entity_id])
-                # add the json record for revert blocks
-                prev_records[entity_type_table_mapping[record_type]].append(
-                    existing_records_in_json[record_type][entity_id]
-                )
-
-    if prev_records:
-        revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
-        session.add(revert_block)
-        # flush so revert_block can be used in triggers below for historical state
-        session.flush()
-
-    # delete/insert records after flush 
-    for record_to_delete in records_to_delete:
-        session.delete(record_to_delete)
-    for record_type, record_dict in new_records.items():
-        casted_record_dict = cast(dict, record_dict)
-        for entity_id, records in casted_record_dict.items():
-            if not records:
-                continue
+                    session.delete(original_records[record_type][entity_id])
+                    session.flush()
+                    # add the json record for revert blocks
+                    prev_records[entity_type_table_mapping[record_type]].append(
+                        existing_records_in_json[record_type][entity_id]
+                    )
             # invalidate all new records except the last
             for record in records:
                 if "is_current" in get_record_columns(record):
@@ -421,6 +406,10 @@ def save_new_records(
                 session.add_all(records)
             else:
                 session.add(records[-1])
+
+    if prev_records:
+        revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
+        session.add(revert_block)
 
 
 def copy_original_records(existing_records):

@@ -78,8 +78,6 @@ model_mapping = {
     User.__tablename__: User,
     AssociatedWallet.__tablename__: AssociatedWallet,
     UserEvent.__tablename__: UserEvent,
-    TrackRoute.__tablename__: TrackRoute,
-    PlaylistRoute.__tablename__: PlaylistRoute,
     NotificationSeen.__tablename__: NotificationSeen,
     PlaylistSeen.__tablename__: PlaylistSeen,
     DeveloperApp.__tablename__: DeveloperApp,
@@ -604,6 +602,9 @@ def revert_block(session: Session, block_to_revert: Block):
     # apply reverts
     for record_type in prev_records:
         for json_record in prev_records[record_type]:
+            if record_type not in model_mapping:
+                # skip playlist/track routes reverts 
+                continue
             Model = model_mapping[record_type]
             # filter out unnecessary keys
             filtered_json_record = {
