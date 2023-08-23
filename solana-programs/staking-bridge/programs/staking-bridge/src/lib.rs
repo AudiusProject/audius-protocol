@@ -18,13 +18,11 @@ pub mod wormhole;
 use crate::constant::SOL_AUDIO_TOKEN_ADDRESS;
 use crate::raydium::{
     check_swap_programs,
-    check_swap_token_accounts,
     check_swap_pdas,
     swap
 };
 use crate::wormhole::{
     check_wormhole_programs,
-    check_wormhole_token_accounts,
     check_wormhole_pdas,
     approve_wormhole_transfer,
     execute_wormhole_transfer
@@ -61,18 +59,10 @@ pub mod staking_bridge {
         let accounts = ctx.accounts;
         let program_id = &accounts.program_id;
         let serum_program = &accounts.serum_program;
-        let user_source_token_account = &accounts.user_source_token_account;
-        let user_destination_token_account = &accounts.user_destination_token_account;
-        let user_source_owner = &accounts.user_source_owner;
 
         check_swap_programs(
             program_id.to_account_info(),
             serum_program.to_account_info()
-        )?;
-        check_swap_token_accounts(
-            user_source_token_account.to_account_info(),
-            user_destination_token_account.to_account_info(),
-            user_source_owner.to_account_info()
         )?;
         check_swap_pdas(
             accounts,
@@ -104,16 +94,10 @@ pub mod staking_bridge {
         let accounts = ctx.accounts;
         let program_id = &accounts.program_id;
         let bridge_id = &accounts.bridge_id;
-        let from = &accounts.from;
-        let from_owner = &accounts.from_owner;
 
         check_wormhole_programs(
             program_id.to_account_info(),
             bridge_id.to_account_info()
-        )?;
-        check_wormhole_token_accounts(
-            from.to_account_info(),
-            from_owner.to_account_info()
         )?;
         check_wormhole_pdas(
             accounts,

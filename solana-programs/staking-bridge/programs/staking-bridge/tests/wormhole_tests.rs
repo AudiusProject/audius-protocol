@@ -3,10 +3,7 @@
 use anchor_lang::prelude::Pubkey;
 
 use staking_bridge::error::StakingBridgeErrorCode;
-use staking_bridge::wormhole::{
-    check_wormhole_programs,
-    check_wormhole_token_accounts,
-};
+use staking_bridge::wormhole::check_wormhole_programs;
 use staking_bridge::constant::{
   WORMHOLE_CORE_BRIDGE_ID,
   WORMHOLE_TOKEN_BRIDGE_ID
@@ -62,58 +59,6 @@ fn test_wormhole_programs() {
     let result = check_wormhole_programs(
       token_bridge_program.clone(),
       core_bridge_program.clone(),
-    );
-    assert_eq!(result, Ok(()));
-}
-
-#[test]
-fn test_wormhole_token_accounts() {
-    let from_key = Pubkey::new_unique();
-    let from_owner_key = Pubkey::new_unique();
-    let other_key = Pubkey::new_unique();
-
-    let (from_lamports, from_data) = (&mut 0, &mut vec![]);
-    let from_account_info = &get_initialized_token_account_info(
-      &from_key,
-      from_lamports,
-      from_data,
-      &other_key,
-      &from_owner_key
-    );
-
-    let (from_owner_lamports, from_owner_data) = (&mut 0, &mut vec![]);
-    let from_owner_account_info = &get_initialized_token_account_info(
-      &from_owner_key,
-      from_owner_lamports,
-      from_owner_data,
-      &other_key,
-      &other_key
-    );
-
-    let (bad_lamports, bad_data) = (&mut 0, &mut vec![]);
-    let bad_account_info = &get_initialized_token_account_info(
-      &other_key,
-      bad_lamports,
-      bad_data,
-      &other_key,
-      &other_key
-    );
-
-    let bad_from_result = check_wormhole_token_accounts(
-      bad_account_info.clone(),
-      from_owner_account_info.clone(),
-    );
-    assert_error(bad_from_result, StakingBridgeErrorCode::WormholeTokenAccountNotOwnedByPDA);
-
-    let bad_from_owner_result = check_wormhole_token_accounts(
-      from_account_info.clone(),
-      bad_account_info.clone(),
-    );
-    assert_error(bad_from_owner_result, StakingBridgeErrorCode::WormholeTokenAccountNotOwnedByPDA);
-
-    let result = check_wormhole_token_accounts(
-      from_account_info.clone(),
-      from_owner_account_info.clone(),
     );
     assert_eq!(result, Ok(()));
 }
