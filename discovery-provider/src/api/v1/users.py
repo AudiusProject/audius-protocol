@@ -108,6 +108,7 @@ from src.queries.get_track_library import (
 )
 from src.queries.get_tracks import GetTrackArgs, get_tracks
 from src.queries.get_unclaimed_id import get_unclaimed_id
+from src.queries.get_usdc_purchases import get_usdc_purchases
 from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
@@ -117,7 +118,11 @@ from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
-from src.queries.query_helpers import CollectionLibrarySortMethod
+from src.queries.query_helpers import (
+    CollectionLibrarySortMethod,
+    PurchaseSortMethod,
+    SortDirection,
+)
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
@@ -2081,3 +2086,76 @@ class AuthorizedApps(Resource):
         authorized_apps = get_developer_apps_with_grant_for_user(decoded_id)
         authorized_apps = list(map(format_authorized_app, authorized_apps))
         return success_response(authorized_apps)
+
+
+purchases_and_sales_parser = pagination_with_current_user_parser.copy()
+purchases_and_sales_parser.add_argument(
+    "sort_method",
+    required=False,
+    type=str,
+    choices=PurchaseSortMethod._member_names_,
+    description="The sort direction",
+)
+purchases_and_sales_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+
+
+@full_ns.route("/<string:id>/purchases")
+class FullPurchases(Resource):
+    @full_ns.doc(
+        id="Get Purchases",
+        description="Gets the purchases the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_parser)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = {
+            "buyer_user_id": decoded_id,
+            "limit": limit,
+            "offset": offset,
+            "sort_method": args.get("sort_method", None),
+            "sort_direction": args.get("sort_direction", None)
+        }
+        purchases = get_usdc_purchases(args)
+        return success_response(purchases)
+
+
+@full_ns.route("/<string:id>/sales")
+class FullSales(Resource):
+    @full_ns.doc(
+        id="Get Sales",
+        description="Gets the sales the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_parser)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        args = {
+            "seller_user_id": decoded_id,
+            "limit": limit,
+            "offset": offset,
+            "sort_method": args.get("sort_method", None),
+            "sort_direction": args.get("sort_direction", None)
+        }
+        purchases = get_usdc_purchases(args)
+        return success_response(purchases)

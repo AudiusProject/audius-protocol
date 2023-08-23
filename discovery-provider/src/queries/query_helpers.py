@@ -125,6 +125,12 @@ class SortMethod(str, enum.Enum):
     most_listens_by_user = "most_listens_by_user"
 
 
+class PurchaseSortMethod(str, enum.Enum):
+    content_title = "content_title"
+    artist_name = "artist_name"
+    date = "date"
+
+
 class CollectionLibrarySortMethod(str, enum.Enum):
     added_date = "added_date"
     reposts = "reposts"
