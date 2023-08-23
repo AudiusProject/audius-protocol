@@ -56,10 +56,10 @@ const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
 export const audioTierMapPng: {
   [tier in AudioTiers]: Nullable<ReactElement>
 } = {
-  bronze: <img alt='' src={IconBronzeBadge} />,
-  silver: <img alt='' src={IconSilverBadge} />,
-  gold: <img alt='' src={IconGoldBadge} />,
-  platinum: <img alt='' src={IconPlatinumBadge} />
+  bronze: <img alt='bronze' src={IconBronzeBadge} />,
+  silver: <img alt='silver' src={IconSilverBadge} />,
+  gold: <img alt='gold' src={IconGoldBadge} />,
+  platinum: <img alt='platinum' src={IconPlatinumBadge} />
 }
 
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'

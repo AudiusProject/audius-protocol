@@ -120,9 +120,10 @@ export const Page = (props) => {
             {props.description ? (
               <meta name='description' content={props.description} />
             ) : null}
-            {props.canonicalUrl && (
+            {/* TODO: re-enable once we fix redirects and casing of canonicalUrls */}
+            {/* {props.canonicalUrl && (
               <link rel='canonical' href={props.canonicalUrl} />
-            )}
+            )} */}
             {props.structuredData && (
               <script type='application/ld+json'>
                 {JSON.stringify(props.structuredData)}
