@@ -3,9 +3,10 @@ import { SlashProposalParams } from "../proposal";
 import { Node } from "../audit";
 import * as knex from "knex";
 import { VERSION_DATA_TABLE_NAME, VersionData } from "../db";
+import BN from "bn.js";
 
 const SLASH_AMOUNT = 3000;
-const SLASH_AMOUNT_WEI = SLASH_AMOUNT * 1_000_000_000_000_000_000;
+const SLASH_AMOUNT_WEI = new BN("3000" + "0".repeat(18));
 const TIME_RANGE_MS = 24 * 60 * 60 * 1000;
 
 type AuditResponse = {

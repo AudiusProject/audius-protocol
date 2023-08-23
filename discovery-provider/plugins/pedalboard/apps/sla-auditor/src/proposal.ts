@@ -1,8 +1,9 @@
 import App from "basekit/src/app";
 import { SharedData } from "./config";
+import BN from "bn.js";
 
 export type SlashProposalParams = {
-  amountWei: number;
+  amountWei: BN;
   title: string;
   description: string;
   owner: string;
