@@ -55,7 +55,8 @@ type healthCheckResponseData struct {
 	ListenPort              string                     `json:"listenPort"`
 	TrustedNotifierID       int                        `json:"trustedNotifierId"`
 	CidCursors              []cidCursor                `json:"cidCursors"`
-	PeerHealths             map[string]time.Time       `json:"peerHealths"`
+	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
+	UnreachablePeers        []string                   `json:"unreachablePeers"`
 	StoreAll                bool                       `json:"storeAll"`
 }
 
@@ -83,8 +84,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 
 	var err error
 	// since we're using peerHealth
-	ss.peerHealthMutex.RLock()
-	defer ss.peerHealthMutex.RUnlock()
+	ss.peerHealthsMutex.RLock()
+	defer ss.peerHealthsMutex.RUnlock()
 
 	data := healthCheckResponseData{
 		Healthy:                 healthy,
@@ -115,7 +116,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		WalletIsRegistered:      ss.Config.WalletIsRegistered,
 		TrustedNotifierID:       ss.Config.TrustedNotifierID,
 		CidCursors:              ss.cachedCidCursors,
-		PeerHealths:             ss.peerHealth,
+		PeerHealths:             ss.peerHealths,
+		UnreachablePeers:        ss.unreachablePeers,
 		Signers:                 ss.Config.Signers,
 		StoreAll:                ss.Config.StoreAll,
 	}

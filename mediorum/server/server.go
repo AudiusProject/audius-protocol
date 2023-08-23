@@ -98,12 +98,19 @@ type MediorumServer struct {
 
 	isSeeding bool
 
-	peerHealthMutex  sync.RWMutex
-	peerHealth       map[string]time.Time
+	peerHealthsMutex sync.RWMutex
+	peerHealths      map[string]*PeerHealth
+	unreachablePeers []string
 	cachedCidCursors []cidCursor
 
 	StartedAt time.Time
 	Config    MediorumConfig
+}
+
+type PeerHealth struct {
+	LastReachable  time.Time            `json:"lastReachable"`
+	LastHealthy    time.Time            `json:"lastHealthy"`
+	ReachablePeers map[string]time.Time `json:"reachablePeers"`
 }
 
 var (
@@ -241,7 +248,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealth: map[string]time.Time{},
+		peerHealths: map[string]*PeerHealth{},
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -366,6 +373,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorDiskAndDbStatus()
 
 	go ss.monitorCidCursors()
+
+	go ss.monitorPeerReachability()
 
 	go ss.startQmCidMigration()
 
