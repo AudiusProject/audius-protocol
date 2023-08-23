@@ -1,10 +1,11 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { PaymentRouter } from '../target/types/payment_router'
-import { recipientAmounts } from './utils'
 import { SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS } from './constants'
 import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token'
 import { assert } from 'chai'
@@ -78,10 +79,42 @@ describe('payment-router', () => {
     }
   })
 
+  it('creates the payment router balance audio associated token account', async () => {
+    const audioTokenAccount = getAssociatedTokenAddressSync(
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      paymentRouterPda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+
+    try {
+      const tx = await program.methods
+        .createPaymentRouterBalanceAta(paymentRouterPdaBump)
+        .accounts({
+          paymentRouterPda,
+          audioTokenAccount,
+          audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
+          payer: feePayerPublicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([feePayerKeypair])
+        .rpc()
+      console.log('Your transaction signature', tx)
+    } catch (e) {
+      const timeoutError = 'TransactionExpiredTimeoutError'
+      if (e.toString().includes(timeoutError)) {
+        assert.fail(`The transaction timed out, but the ATAs may have been created.\nError: ${e}`)
+      }
+    }
+
+    const audioAtaAccount = await connection.getAccountInfo(audioTokenAccount)
+    assert.ok(audioAtaAccount, 'Payment Router AUDIO ATA account not found')
+  })
+
   it('routes the amounts to the recipients', async () => {
     // List of 10 recipient token accounts.
     // The keys are some solana token accounts that can be used for testing.
-    // The first key is the token account owned by the staking bridge PDA.
     // https://explorer.solana.com/address/E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp
     const recipients = [
       'E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp',
