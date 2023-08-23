@@ -6,7 +6,7 @@ import { VERSION_DATA_TABLE_NAME, VersionData } from "../db";
 
 const SLASH_AMOUNT = 3000;
 const SLASH_AMOUNT_WEI = SLASH_AMOUNT * 1_000_000_000_000_000_000;
-const TIME_RANGE = 24 * 60 * 60 * 1000;
+const TIME_RANGE_MS = 24 * 60 * 60 * 1000;
 
 type AuditResponse = {
   failedAudit: boolean;
@@ -64,6 +64,13 @@ const writeVersionData = async (db: knex.Knex, versionData: VersionData[]) => {
   await db(VERSION_DATA_TABLE_NAME).insert(versionData);
 };
 
+/**
+ * Formats an audit response into params to create a proposal.
+ * Note that the auditor currently does duplication prevention based on the `title`
+ * string. Do not modify unless you modify the deduplication logic.
+ * @param auditResponse
+ * @returns
+ */
 const formatProposal = (auditResponse: AuditResponse): SlashProposalParams => {
   const { nodeEndpoint, owner, nodeVersion, minVersion } = auditResponse.data!;
   return {
@@ -88,11 +95,11 @@ const audit = async (
   versionData: VersionData
 ): Promise<AuditResponse> => {
   const now = new Date();
-  const before = new Date(now.getTime() - TIME_RANGE);
+  const before = new Date(now.getTime() - TIME_RANGE_MS);
 
   // Find out if this node was ever ok during the entire range we care about.
   // If so, we ca
-  const row = await db(VERSION_DATA_TABLE_NAME)
+  const ok = await db(VERSION_DATA_TABLE_NAME)
     .select("ok")
     .where("nodeEndpoint", versionData.nodeEndpoint)
     .andWhere("timestamp", ">=", before)
@@ -100,7 +107,14 @@ const audit = async (
     .andWhere("ok", true)
     .first();
 
-  const failedAudit = !row;
+  // Ensure that we have data at least dating back 24 hours ago
+  const hasEnoughData = await db(VERSION_DATA_TABLE_NAME)
+    .select("*")
+    .where("nodeEndpoint", versionData.nodeEndpoint)
+    .andWhere("timestamp", "<=", before)
+    .first();
+
+  const failedAudit = hasEnoughData && !ok;
   return {
     failedAudit,
     data: versionData,

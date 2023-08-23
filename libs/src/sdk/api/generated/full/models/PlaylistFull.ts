@@ -215,6 +215,12 @@ export interface PlaylistFull {
     coverArtSizes?: string;
     /**
      * 
+     * @type {PlaylistArtwork}
+     * @memberof PlaylistFull
+     */
+    coverArtCids?: PlaylistArtwork;
+    /**
+     * 
      * @type {number}
      * @memberof PlaylistFull
      */
@@ -286,6 +292,7 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
+        'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : PlaylistArtworkFromJSON(json['cover_art_cids']),
         'trackCount': json['track_count'],
     };
 }
@@ -325,6 +332,7 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
         'cover_art': value.coverArt,
         'cover_art_sizes': value.coverArtSizes,
+        'cover_art_cids': PlaylistArtworkToJSON(value.coverArtCids),
         'track_count': value.trackCount,
     };
 }

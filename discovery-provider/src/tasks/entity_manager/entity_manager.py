@@ -316,16 +316,15 @@ def entity_manager_update(
                     logger.error(f"skipping transaction hash {indexing_error}")
 
         # compile records_to_save
-        records_to_save = get_records_to_save(
+        save_new_records(
             block_timestamp,
             block_number,
             new_records,
             original_records,
             existing_records_in_json,
+            session,
         )
 
-        # insert/update all tracks, playlist records in this block
-        session.add_all(records_to_save)
         num_total_changes += len(new_records)
         # update metrics
         metric_latency.save_time(
@@ -360,14 +359,14 @@ def entity_manager_update(
     return num_total_changes, changed_entity_ids
 
 
-def get_records_to_save(
+def save_new_records(
     block_timestamp: int,
     block_number: int,
     new_records: RecordDict,
     original_records: dict,
     existing_records_in_json: dict[str, dict],
+    session: Session,
 ):
-    records_to_save = []
     prev_records: Dict[str, List] = defaultdict(list)
     for record_type, record_dict in new_records.items():
         # This is actually a dict, but python has a hard time inferring.
@@ -375,6 +374,25 @@ def get_records_to_save(
         for entity_id, records in casted_record_dict.items():
             if not records:
                 continue
+
+            # invalidate old records
+            if (
+                record_type in original_records
+                and entity_id in original_records[record_type]
+                and "is_current"
+                in get_record_columns(original_records[record_type][entity_id])
+                and original_records[record_type][entity_id].is_current
+            ):
+                if record_type == "PlaylistRoute" or record_type == "TrackRoute":
+                    # these are an exception since we want to keep is_current false to preserve old slugs
+                    original_records[record_type][entity_id].is_current = False
+                else:
+                    session.delete(original_records[record_type][entity_id])
+                    session.flush()
+                # add the json record for revert blocks
+                prev_records[entity_type_table_mapping[record_type]].append(
+                    existing_records_in_json[record_type][entity_id]
+                )
             # invalidate all new records except the last
             for record in records:
                 if "is_current" in get_record_columns(record):
@@ -384,29 +402,14 @@ def get_records_to_save(
                     record.updated_at = datetime.utcfromtimestamp(block_timestamp)
             if "is_current" in get_record_columns(records[-1]):
                 records[-1].is_current = True
-            records_to_save.extend(records)
-            # invalidate original record if it already existed in the DB
-            # also add revert_blocks
-            if (
-                record_type in original_records
-                and entity_id in original_records[record_type]
-                and "is_current"
-                in get_record_columns(original_records[record_type][entity_id])
-                and original_records[record_type][entity_id].is_current
-            ):
-                original_records[record_type][entity_id].is_current = False
-                # add the json record for revert blocks
-                prev_records[entity_type_table_mapping[record_type]].append(
-                    existing_records_in_json[record_type][entity_id]
-                )
+            if record_type == "PlaylistRoute" or record_type == "TrackRoute":
+                session.add_all(records)
+            else:
+                session.add(records[-1])
 
-    # prev records may contain records that did not change
-    # how do i handle conflicts?
-    # may need to modify existing_records_in_json keys
     if prev_records:
         revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
-        records_to_save.append(revert_block)
-    return records_to_save
+        session.add(revert_block)
 
 
 def copy_original_records(existing_records):

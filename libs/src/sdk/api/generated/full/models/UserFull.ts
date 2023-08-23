@@ -269,6 +269,12 @@ export interface UserFull {
     coverPhotoSizes?: string;
     /**
      * 
+     * @type {CoverPhoto}
+     * @memberof UserFull
+     */
+    coverPhotoCids?: CoverPhoto;
+    /**
+     * 
      * @type {string}
      * @memberof UserFull
      */
@@ -279,6 +285,12 @@ export interface UserFull {
      * @memberof UserFull
      */
     profilePictureSizes?: string;
+    /**
+     * 
+     * @type {ProfilePicture}
+     * @memberof UserFull
+     */
+    profilePictureCids?: ProfilePicture;
     /**
      * 
      * @type {string}
@@ -400,8 +412,10 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'handleLc': json['handle_lc'],
         'updatedAt': json['updated_at'],
         'coverPhotoSizes': !exists(json, 'cover_photo_sizes') ? undefined : json['cover_photo_sizes'],
+        'coverPhotoCids': !exists(json, 'cover_photo_cids') ? undefined : CoverPhotoFromJSON(json['cover_photo_cids']),
         'coverPhotoLegacy': !exists(json, 'cover_photo_legacy') ? undefined : json['cover_photo_legacy'],
         'profilePictureSizes': !exists(json, 'profile_picture_sizes') ? undefined : json['profile_picture_sizes'],
+        'profilePictureCids': !exists(json, 'profile_picture_cids') ? undefined : ProfilePictureFromJSON(json['profile_picture_cids']),
         'profilePictureLegacy': !exists(json, 'profile_picture_legacy') ? undefined : json['profile_picture_legacy'],
         'metadataMultihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
         'hasCollectibles': json['has_collectibles'],
@@ -457,8 +471,10 @@ export function UserFullToJSON(value?: UserFull | null): any {
         'handle_lc': value.handleLc,
         'updated_at': value.updatedAt,
         'cover_photo_sizes': value.coverPhotoSizes,
+        'cover_photo_cids': CoverPhotoToJSON(value.coverPhotoCids),
         'cover_photo_legacy': value.coverPhotoLegacy,
         'profile_picture_sizes': value.profilePictureSizes,
+        'profile_picture_cids': ProfilePictureToJSON(value.profilePictureCids),
         'profile_picture_legacy': value.profilePictureLegacy,
         'metadata_multihash': value.metadataMultihash,
         'has_collectibles': value.hasCollectibles,

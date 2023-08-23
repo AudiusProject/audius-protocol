@@ -2,7 +2,7 @@ import json
 
 from solders.transaction_status import UiTransactionStatusMeta
 
-from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balance_changes
+from src.utils.helpers import get_solana_tx_token_balance_changes
 
 RECEIVER_ACCOUNT_INDEX = 1
 SENDER_ACCOUNT_INDEX = 2
@@ -96,10 +96,3 @@ def test_get_solana_tx_token_balances():
     assert changes["fake2"]["pre_balance"] == 500000000
     assert changes["fake2"]["post_balance"] == 5623032749
     assert changes["fake2"]["change"] == 5123032749
-
-
-def test_get_solana_tx_owner():
-    root_account = get_solana_tx_owner(mock_meta, RECEIVER_ACCOUNT_INDEX)
-    assert root_account == "5ZiE3vAkrdXBgyFL7KqG3RoEGBws4CjRcXVbABDLZTgx"
-    root_account = get_solana_tx_owner(mock_meta, SENDER_ACCOUNT_INDEX)
-    assert root_account == "GNkt1SGkdzvfaCYVpSKs7yjLxeyLJFKZv32cVYJ3GyHX"

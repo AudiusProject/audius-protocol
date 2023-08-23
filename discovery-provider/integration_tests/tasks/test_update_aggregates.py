@@ -5,6 +5,7 @@ from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
+
 from src.tasks.update_aggregates import _update_aggregates
 from src.utils.db_session import get_db
 
@@ -68,6 +69,8 @@ def test_update_aggregate_playlist(app):
             },
         ],
         "user": [{"user_id": 1}, {"user_id": 2}],
+    }
+    social_feature_entities = {
         "saves": [{"user_id": 2, "save_item_id": 1, "save_type": "playlist"}],
         "reposts": [
             {
@@ -93,6 +96,7 @@ def test_update_aggregate_playlist(app):
     }
 
     populate_mock_db(db, entities)
+    populate_mock_db(db, social_feature_entities)
 
     with db.scoped_session() as session:
         # verify triggers work

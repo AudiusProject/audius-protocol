@@ -583,7 +583,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 9
+        assert len(all_playlists) == 6
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -939,7 +939,7 @@ def test_index_invalid_playlists(app, mocker):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 4
+        assert len(all_playlists) == 2
 
         current_playlist: Playlist = (
             session.query(Playlist)

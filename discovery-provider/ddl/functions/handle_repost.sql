@@ -9,15 +9,20 @@ declare
   is_remix_cosign boolean;
   delta int;
   entity_type text;
+  playlist_row record;
 begin
-
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.repost_type = 'track' then
     insert into aggregate_track (track_id) values (new.repost_item_id) on conflict do nothing;
 
     entity_type := 'track';
   else
-    insert into aggregate_playlist (playlist_id, is_album) values (new.repost_item_id, new.repost_type = 'album') on conflict do nothing;
+    insert into aggregate_playlist (playlist_id, is_album)
+    select p.playlist_id, p.is_album
+    from playlists p
+    where p.playlist_id = new.repost_item_id
+    and p.is_current
+    on conflict do nothing;
 
     entity_type := 'playlist';
   end if;
@@ -31,14 +36,28 @@ begin
 
   -- update agg user
   update aggregate_user 
-  set repost_count = repost_count + delta
+  set repost_count = (
+    select count(*)
+    from reposts r
+    where r.is_current is true
+      and r.is_delete is false
+      and r.user_id = new.user_id
+  )
   where user_id = new.user_id;
 
   -- update agg track or playlist
   if new.repost_type = 'track' then
     milestone_name := 'TRACK_REPOST_COUNT';
     update aggregate_track 
-    set repost_count = repost_count + delta
+    set repost_count = (
+      select count(*)
+      from reposts r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.repost_type = new.repost_type
+          and r.repost_item_id = new.repost_item_id
+    )
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if new.is_delete IS FALSE then
@@ -47,7 +66,15 @@ begin
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
     update aggregate_playlist
-    set repost_count = repost_count + delta
+    set repost_count = (
+      select count(*)
+      from reposts r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.repost_type = new.repost_type
+          and r.repost_item_id = new.repost_item_id
+    )    
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
 
