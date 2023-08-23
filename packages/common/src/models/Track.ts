@@ -182,6 +182,7 @@ export type TrackMetadata = {
   track_segments: TrackSegment[]
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
+  cover_art_cids?: Nullable<CoverArtSizes>
   is_unlisted: boolean
   is_available: boolean
   is_premium: boolean
@@ -267,4 +268,7 @@ export type StemUserTrack = UserTrack & Required<Pick<Track, 'stem_of'>>
 export type RemixTrack = Track & Required<Pick<Track, 'remix_of'>>
 export type RemixUserTrack = UserTrack & Required<Pick<Track, 'remix_of'>>
 
-export type TrackImage = Pick<Track, 'cover_art' | 'cover_art_sizes'>
+export type TrackImage = Pick<
+  Track,
+  'cover_art' | 'cover_art_sizes' | 'cover_art_cids'
+>

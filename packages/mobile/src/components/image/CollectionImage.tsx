@@ -27,6 +27,7 @@ type UseCollectionImageOptions = {
       Collection | SearchPlaylist,
       | 'playlist_id'
       | 'cover_art_sizes'
+      | 'cover_art_cids'
       | 'cover_art'
       | 'playlist_owner_id'
       | '_cover_art_sizes'
@@ -74,7 +75,8 @@ export const useCollectionImage = (options: UseCollectionImageOptions) => {
     cid,
     size,
     fallbackImageSource: imageEmpty,
-    localSource: localSourceUri ? { uri: localSourceUri } : null
+    localSource: localSourceUri ? { uri: localSourceUri } : null,
+    cidMap: collection?.cover_art_cids
   })
 
   return contentNodeSource

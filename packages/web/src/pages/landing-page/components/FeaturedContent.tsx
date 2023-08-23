@@ -137,11 +137,14 @@ type FeaturedContentProps = {
 const getImageUrl = (
   cid: Nullable<string>,
   size: SquareSizes,
-  storageNodeSelector: Maybe<StorageNodeSelectorService>
+  storageNodeSelector: Maybe<StorageNodeSelectorService>,
+  cidMap: Nullable<{ [key: string]: string }> = null
 ) => {
   if (!storageNodeSelector || !cid) return null
   const node = storageNodeSelector.getNodes(cid)[0]
-  return `${node}/content/${cid}/${size}.jpg`
+  return cidMap && cidMap[size]
+    ? `${node}/content/${cidMap[size]}`
+    : `${node}/content/${cid}/${size}.jpg`
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
@@ -194,7 +197,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     imageUrl={getImageUrl(
                       p.cover_art_sizes,
                       SquareSizes.SIZE_150_BY_150,
-                      storageNodeSelector
+                      storageNodeSelector,
+                      p.cover_art_cids
                     )}
                     onClick={handleClickRoute(
                       collectionPage(
@@ -250,7 +254,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     imageUrl={getImageUrl(
                       p.cover_art_sizes,
                       SquareSizes.SIZE_1000_BY_1000,
-                      storageNodeSelector
+                      storageNodeSelector,
+                      p.cover_art_cids
                     )}
                     onClick={handleClickRoute(
                       collectionPage(

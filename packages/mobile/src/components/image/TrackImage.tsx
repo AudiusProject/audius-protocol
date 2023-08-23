@@ -28,7 +28,11 @@ type UseTrackImageOptions = {
   track: Nullable<
     Pick<
       Track | SearchTrack,
-      'track_id' | 'cover_art_sizes' | 'cover_art' | '_cover_art_sizes'
+      | 'track_id'
+      | 'cover_art_sizes'
+      | 'cover_art_cids'
+      | 'cover_art'
+      | '_cover_art_sizes'
     >
   >
   size: SquareSizes
@@ -53,6 +57,7 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
 
 export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
   const cid = track ? track.cover_art_sizes || track.cover_art : null
+
   const optimisticCoverArt = track?._cover_art_sizes?.OVERRIDE
 
   const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
@@ -62,7 +67,8 @@ export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
     cid,
     size,
     fallbackImageSource: imageEmpty,
-    localSource: localSourceUri ? { uri: localSourceUri } : null
+    localSource: localSourceUri ? { uri: localSourceUri } : null,
+    cidMap: track?.cover_art_cids
   })
 
   return contentNodeSource

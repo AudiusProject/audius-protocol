@@ -462,14 +462,28 @@ export const audiusBackend = ({
     }
   }
 
-  async function fetchImageCID(cid: CID, size?: SquareSizes | WidthSizes) {
-    const cidFileName = size ? `${cid}/${size}.jpg` : `${cid}.jpg`
+  async function fetchImageCID(
+    cid: CID,
+    size?: SquareSizes | WidthSizes,
+    cidMap: Nullable<{ [key: string]: string }> = null
+  ) {
+    let cidFileName = size ? `${cid}/${size}.jpg` : `${cid}.jpg`
+    // For v2 CIDs (aka job IDs), cidMap contains cids for each
+    // image variant. Use the CID for the desired image
+    // size from this map to accurately select the preferred
+    // rendezvous node to query.
+    if (size && cidMap && cidMap[size]) {
+      cidFileName = cidMap[size]
+    }
     if (CIDCache.has(cidFileName)) {
       return CIDCache.get(cidFileName) as string
     }
 
     const storageNodeSelector = await getStorageNodeSelector()
-    const storageNodes = storageNodeSelector.getNodes(cid)
+    // Only rendezvous hash the cid for extremely old legacy
+    // images that do not have size variants
+    const cidToHash = size ? cidFileName : cid
+    const storageNodes = storageNodeSelector.getNodes(cidToHash)
     for (const storageNode of storageNodes) {
       const imageUrl = `${storageNode}/content/${cidFileName}`
 
@@ -495,11 +509,12 @@ export const audiusBackend = ({
 
   async function getImageUrl(
     cid: Nullable<CID>,
-    size?: SquareSizes | WidthSizes
+    size?: SquareSizes | WidthSizes,
+    cidMap: Nullable<{ [key: string]: string }> = null
   ) {
     if (!cid) return ''
     try {
-      return await fetchImageCID(cid, size)
+      return await fetchImageCID(cid, size, cidMap)
     } catch (e) {
       console.error(e)
       return ''

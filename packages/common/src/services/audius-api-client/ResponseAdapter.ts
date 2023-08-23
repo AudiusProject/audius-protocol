@@ -78,8 +78,8 @@ export const makeUser = (
     current_user_followee_follow_count,
     does_current_user_follow,
     user_id: decodedUserId,
-    cover_photo: user.cover_photo_sizes || user.cover_photo_legacy,
-    profile_picture: user.profile_picture_sizes || user.profile_picture_legacy,
+    cover_photo: user.cover_photo_legacy,
+    profile_picture: user.profile_picture_legacy,
     metadata_multihash: user.metadata_multihash || null,
     supporter_count,
     supporting_count,
@@ -454,6 +454,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     track_segments: [],
     cover_art: null,
     cover_art_sizes: null,
+    cover_art_cids: null,
     is_unlisted: false,
     stem_of: {
       parent_track_id: parentId,

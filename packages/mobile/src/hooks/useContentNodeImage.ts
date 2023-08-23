@@ -46,20 +46,29 @@ export const createAllImageSources = ({
   cid,
   endpoints,
   size,
-  localSource
+  localSource,
+  cidMap = null
 }: {
   cid: Nullable<CID>
   endpoints: string[]
   size: SquareSizes | WidthSizes
   localSource?: ImageURISource | null
+  cidMap?: Nullable<{ [key: string]: string }>
 }) => {
   if (!cid || !endpoints) {
     return []
   }
+  let cidForSize: Nullable<string> = null
+  if (cidMap && cidMap[size]) {
+    cidForSize = cidMap[size]
+  }
 
   const newImageSources = createImageSourcesForEndpoints({
     endpoints,
-    createUri: (endpoint) => `${endpoint}/content/${cid}/${size}.jpg`
+    createUri: (endpoint) =>
+      cidForSize
+        ? `${endpoint}/content/${cidForSize}`
+        : `${endpoint}/content/${cid}/${size}.jpg`
   })
 
   // These can be removed when all the data on Content Node has
@@ -96,6 +105,7 @@ type UseContentNodeImageOptions = {
   size: SquareSizes | WidthSizes
   fallbackImageSource: ImageSourcePropType
   localSource?: ImageURISource | null
+  cidMap?: Nullable<{ [key: string]: string }>
 }
 
 /**
@@ -113,7 +123,7 @@ type UseContentNodeImageOptions = {
 export const useContentNodeImage = (
   options: UseContentNodeImageOptions
 ): ContentNodeImageSource => {
-  const { cid, size, fallbackImageSource, localSource } = options
+  const { cid, size, fallbackImageSource, localSource, cidMap } = options
   const [imageSourceIndex, setImageSourceIndex] = useState(0)
   const [failedToLoad, setFailedToLoad] = useState(false)
   const { storageNodeSelector } = useAppContext()
@@ -130,9 +140,10 @@ export const useContentNodeImage = (
       cid,
       endpoints,
       localSource,
-      size
+      size,
+      cidMap
     })
-  }, [cid, endpoints, localSource, size])
+  }, [cid, endpoints, localSource, size, cidMap])
 
   const handleError = useCallback(() => {
     if (imageSourceIndex < imageSources.length - 1) {
