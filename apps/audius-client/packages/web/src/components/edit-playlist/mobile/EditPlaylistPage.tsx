@@ -410,7 +410,7 @@ const EditPlaylistPage = g(
                 placeholderValue={messages.placeholderDescription}
                 onChange={onUpdateDescription}
                 centerLeftElement={false}
-                maxLength={256}
+                maxLength={1000}
               />
             </Grouping>
             {trackList && trackList.length > 0 && (

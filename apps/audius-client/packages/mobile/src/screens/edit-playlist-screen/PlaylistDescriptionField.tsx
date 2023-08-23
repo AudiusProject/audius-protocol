@@ -6,7 +6,7 @@ const messages = {
 
 export const PlaylistDescriptionField = () => {
   const name = 'description'
-  const maxLength = 256
+  const maxLength = 1000
 
   return (
     <TextAreaField name={name} label={messages.label} maxLength={maxLength} />

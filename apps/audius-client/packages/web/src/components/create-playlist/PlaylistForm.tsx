@@ -213,6 +213,7 @@ const PlaylistForm = ({
             placeholder='Description'
             onChange={onChangeDescription}
             defaultValue={formFields.description || ''}
+            characterLimit={1000}
           />
         </div>
       </div>
