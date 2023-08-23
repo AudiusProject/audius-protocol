@@ -8,6 +8,7 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 )
@@ -25,10 +26,62 @@ func (ss *MediorumServer) monitorCidCursors() {
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()
-	ticker := time.NewTicker(3 * time.Minute)
+	ticker := time.NewTicker(5 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
 	}
+}
+
+func (ss *MediorumServer) monitorPeerReachability() {
+	ticker := time.NewTicker(1 * time.Minute)
+	for range ticker.C {
+		// find unreachable nodes in the last 2 minutes
+		var unreachablePeers []string
+		for _, peer := range ss.Config.Peers {
+			if peer.Host == ss.Config.Self.Host {
+				continue
+			}
+			if peerHealth, ok := ss.peerHealths[peer.Host]; ok {
+				if peerHealth.LastReachable.Before(time.Now().Add(-2 * time.Minute)) {
+					unreachablePeers = append(unreachablePeers, peer.Host)
+				}
+			} else {
+				unreachablePeers = append(unreachablePeers, peer.Host)
+			}
+		}
+
+		// check if each unreachable node was also unreachable last time we checked (so we ignore temporary downtime from restarts/updates)
+		for _, unreachable := range unreachablePeers {
+			if slices.Contains(ss.unreachablePeers, unreachable) {
+				// we can't reach this peer. self-mark unhealthy if >50% of other nodes can
+				if ss.canMajorityReachHost(unreachable) {
+					// TODO: self-mark unhealthy after nodes upgrade to expose reachable peers
+					break
+				}
+			}
+		}
+
+		ss.peerHealthsMutex.Lock()
+		ss.unreachablePeers = unreachablePeers
+		ss.peerHealthsMutex.Unlock()
+	}
+}
+
+func (ss *MediorumServer) canMajorityReachHost(host string) bool {
+	ss.peerHealthsMutex.RLock()
+	defer ss.peerHealthsMutex.RUnlock()
+
+	twoMinAgo := time.Now().Add(-2 * time.Minute)
+	numCanReach, numTotal := 0, 0
+	for _, peer := range ss.peerHealths {
+		if peer.LastReachable.After(twoMinAgo) {
+			numTotal++
+			if lastReachable, ok := peer.ReachablePeers[host]; ok && lastReachable.After(twoMinAgo) {
+				numCanReach++
+			}
+		}
+	}
+	return numTotal < 5 || numCanReach > numTotal/2
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
