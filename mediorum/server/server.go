@@ -315,6 +315,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+	internalApi.GET("/metrics/segments", ss.getSegmentLog)
 
 	// Qm CID migration
 	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
