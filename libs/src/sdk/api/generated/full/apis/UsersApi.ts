@@ -115,6 +115,15 @@ export interface GetFollowingRequest {
     userId?: string;
 }
 
+export interface GetPurchasesRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetPurchasesSortMethodEnum;
+    sortDirection?: GetPurchasesSortDirectionEnum;
+}
+
 export interface GetRelatedUsersRequest {
     id: string;
     offset?: number;
@@ -134,6 +143,15 @@ export interface GetRepostsByHandleRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+}
+
+export interface GetSalesRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetSalesSortMethodEnum;
+    sortDirection?: GetSalesSortDirectionEnum;
 }
 
 export interface GetSubscribersRequest {
@@ -543,6 +561,55 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /** @hidden
+     * Gets the purchases the user has made
+     */
+    async getPurchasesRaw(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchases.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/purchases`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets the purchases the user has made
+     */
+    async getPurchases(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.getPurchasesRaw(params, initOverrides);
+    }
+
+    /** @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
@@ -666,6 +733,55 @@ export class UsersApi extends runtime.BaseAPI {
     async getRepostsByHandle(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
         const response = await this.getRepostsByHandleRaw(params, initOverrides);
         return await response.value();
+    }
+
+    /** @hidden
+     * Gets the sales the user has made
+     */
+    async getSalesRaw(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSales.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/sales`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets the sales the user has made
+     */
+    async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.getSalesRaw(params, initOverrides);
     }
 
     /** @hidden
@@ -1519,6 +1635,40 @@ export const GetFavoritesSortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetFavoritesSortDirectionEnum = typeof GetFavoritesSortDirectionEnum[keyof typeof GetFavoritesSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetPurchasesSortMethodEnum = {
+    ContentTitle: 'content_title',
+    ArtistName: 'artist_name',
+    Date: 'date'
+} as const;
+export type GetPurchasesSortMethodEnum = typeof GetPurchasesSortMethodEnum[keyof typeof GetPurchasesSortMethodEnum];
+/**
+ * @export
+ */
+export const GetPurchasesSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetPurchasesSortDirectionEnum = typeof GetPurchasesSortDirectionEnum[keyof typeof GetPurchasesSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetSalesSortMethodEnum = {
+    ContentTitle: 'content_title',
+    ArtistName: 'artist_name',
+    Date: 'date'
+} as const;
+export type GetSalesSortMethodEnum = typeof GetSalesSortMethodEnum[keyof typeof GetSalesSortMethodEnum];
+/**
+ * @export
+ */
+export const GetSalesSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetSalesSortDirectionEnum = typeof GetSalesSortDirectionEnum[keyof typeof GetSalesSortDirectionEnum];
 /**
  * @export
  */
