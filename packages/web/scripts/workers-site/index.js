@@ -95,17 +95,13 @@ async function getMetadata(pathname) {
     case 'playlist': {
       const { handle, title } = route.params
       if (!handle || !title) return { metadata: null, name: null }
-      discoveryRequestPath = `v1/resolve?url=${pathname}`
-      // TODO: Uncomment when by_permalink routes are working properly
-      // discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${title}`
+      discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${title}`
       break
     }
     case 'album': {
       const { handle, title } = route.params
       if (!handle || !title) return { metadata: null, name: null }
-      discoveryRequestPath = `v1/resolve?url=${pathname}`
-      // TODO: Uncomment when by_permalink routes are working properly
-      // discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${title}`
+      discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${title}`
       break
     }
     default:
@@ -168,7 +164,7 @@ class SEOHandlerHead {
       case 'user': {
         title = `${metadata.data.name} • Audius`
         h1 = metadata.data.name
-        description = `Play ${metadata.data.name} on Audius and discover followers on Audius`
+        description = `Play ${metadata.data.name} on Audius and discover followers on Audius | Listen and stream tracks, albums, and playlists from your favorite artists on desktop and mobile`
         ogDescription = metadata.data.bio || description
         image = metadata.data.profile_picture
           ? metadata.data.profile_picture['480x480']
@@ -188,7 +184,7 @@ class SEOHandlerHead {
       case 'playlist': {
         title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
         h1 = metadata.data[0].playlist_name
-        description = `Listen to ${metadata.data[0].playlist_name}, a playlist curated by ${metadata.data[0].user.name} on Audius`
+        description = `Listen to ${metadata.data[0].playlist_name}, a playlist curated by ${metadata.data[0].user.name} on Audius | Stream tracks, albums, playlists on desktop and mobile`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
           ? metadata.data[0].artwork['480x480']
@@ -199,7 +195,7 @@ class SEOHandlerHead {
       case 'album': {
         title = `${metadata.data[0].playlist_name} by ${metadata.data[0].user.name} • Audius`
         h1 = metadata.data[0].playlist_name
-        description = `Listen to ${metadata.data[0].playlist_name}, an album by ${metadata.data[0].user.name} on Audius`
+        description = `Listen to ${metadata.data[0].playlist_name}, an album by ${metadata.data[0].user.name} on Audius | Stream tracks, albums, playlists on desktop and mobile`
         ogDescription = metadata.data[0].description || ''
         image = metadata.data[0].artwork
           ? metadata.data[0].artwork['480x480']
@@ -211,14 +207,18 @@ class SEOHandlerHead {
         return
     }
     const tags = `<title>${clean(title)}</title>
-    <meta name="description" content="${clean(description)}">
+    <meta name="description" content="${clean(
+      description
+    )}" data-react-helmet="true">
 
-    <link rel="canonical" href="https://audius.co${encodeURI(permalink)}">
-
+    <link rel="canonical" href="https://audius.co${encodeURI(
+      permalink
+    )}" data-react-helmet="true">
     <meta property="og:title" content="${clean(title)}">
     <meta property="og:description" content="${clean(ogDescription)}">
     <meta property="og:image" content="${image}">
     <meta property="og:url" content="https://audius.co${encodeURI(permalink)}">
+    <meta property="og:type" content="website" />
 
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="${clean(title)}">

@@ -4,7 +4,9 @@
 
 import { fullCollectionPage, fullProfilePage, fullTrackPage } from './route'
 
-export const createSeoDescription = (msg: string) => {
+export const createSeoDescription = (msg: string, userPage?: boolean) => {
+  if (userPage)
+    return `${msg} | Listen and stream tracks, albums, and playlists from your favorite artists on desktop and mobile`
   return `${msg} | Stream tracks, albums, playlists on desktop and mobile`
 }
 
@@ -19,7 +21,8 @@ export const getUserPageSEOFields = ({
 }) => {
   const pageTitle = userName
   const pageDescription = createSeoDescription(
-    `Play ${userName} on Audius and discover followers on Audius`
+    `Play ${userName} on Audius and discover followers on Audius`,
+    true
   )
   const canonicalUrl = fullProfilePage(handle)
   const structuredData = {
@@ -120,7 +123,9 @@ export const getCollectionPageSEOFields = ({
 
   const pageTitle = `${playlistName} by ${userName}`
   const pageDescription = createSeoDescription(
-    `Listen to ${playlistName} by ${userName} on Audius`
+    `Listen to ${playlistName} ${
+      isAlbum ? 'an album' : 'a playlist curated'
+    } by ${userName} on Audius`
   )
   const canonicalUrl = fullCollectionPage(
     userHandle,
