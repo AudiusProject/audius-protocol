@@ -4,7 +4,6 @@ import {
   CommonState,
   ID
 } from '@audius/common'
-import { ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { FavoriteButton } from './FavoriteButton'
@@ -24,23 +23,24 @@ export const ViewerActionButtons = (props: ViewerActionButtonsProps) => {
     getCollection(state, { id: collectionId })
   ) as Collection | null
 
-  const isEmptyPlaylist = !collection || collection.track_count === 0
+  const { track_count, is_private } = collection ?? {}
+  const isDisabled = !collection || track_count === 0 || is_private
 
   return (
     <>
       <ShareButton
+        disabled={isDisabled}
         collectionId={collectionId}
-        type={isEmptyPlaylist ? ButtonType.DISABLED : undefined}
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
       />
       <RepostButton
+        disabled={isDisabled}
         collectionId={collectionId}
-        type={isEmptyPlaylist ? ButtonType.DISABLED : undefined}
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
       <FavoriteButton
+        disabled={isDisabled}
         collectionId={collectionId}
-        type={isEmptyPlaylist ? ButtonType.DISABLED : undefined}
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.fourth}
       />
       <OverflowMenuButton collectionId={collectionId} />

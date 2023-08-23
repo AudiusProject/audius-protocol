@@ -23,6 +23,8 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
   ) as Collection
   const { track_count, is_private, is_album } = collection ?? {}
 
+  const isDisabled = track_count === 0
+
   return collection ? (
     <>
       <EditButton
@@ -31,7 +33,10 @@ export const OwnerActionButtons = (props: OwnerActionButtonProps) => {
       />
       <ShareButton
         collectionId={collectionId}
-        disabled={track_count === 0}
+        disabled={isDisabled}
+        tooltipText={
+          isDisabled ? 'You can’t share an empty playlist.' : undefined
+        }
         widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
       />
       {is_private && !is_album ? (
