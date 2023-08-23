@@ -10,7 +10,10 @@ type UseUserImageOptions = {
   user: Nullable<
     Pick<
       User,
-      'profile_picture_sizes' | 'profile_picture' | 'updatedProfilePicture'
+      | 'profile_picture_sizes'
+      | 'profile_picture_cids'
+      | 'profile_picture'
+      | 'updatedProfilePicture'
     >
   >
   size: SquareSizes
@@ -22,7 +25,8 @@ export const useUserImage = ({ user, size }: UseUserImageOptions) => {
   const contentNodeImage = useContentNodeImage({
     cid,
     size,
-    fallbackImageSource: profilePicEmpty
+    fallbackImageSource: profilePicEmpty,
+    cidMap: user?.profile_picture_cids
   })
 
   if (user?.updatedProfilePicture) {

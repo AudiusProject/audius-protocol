@@ -368,7 +368,8 @@ function* watchFetchCoverArt() {
       const url = yield call(
         audiusBackendInstance.getImageUrl,
         multihash,
-        coverArtSize
+        coverArtSize,
+        track.cover_art_cids
       )
       track = yield select(getTrack, { id: trackId })
       track._cover_art_sizes = {

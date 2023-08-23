@@ -40,6 +40,7 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
   const styles = useStyles()
   const user = useSelectProfile([
     'user_id',
+    'cover_photo_cids',
     'cover_photo_sizes',
     'cover_photo',
     'creator_node_endpoint',

@@ -1,4 +1,4 @@
-import { encodeHashId, User } from '@audius/common'
+import { encodeHashId, User, SquareSizes } from '@audius/common'
 import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
@@ -115,11 +115,28 @@ export const formOAuthResponse = async ({
     const storageNode = storageNodeSelector.getNodes(
       account.profile_picture_sizes
     )[0]
-    const base = `${storageNode}/content/${account.profile_picture_sizes}/`
+    const base = `${storageNode}/content/`
     profilePicture = {
-      '150x150': `${base}150x150.jpg`,
-      '480x480': `${base}480x480.jpg`,
-      '1000x1000': `${base}1000x1000.jpg`
+      '150x150': `${base}${account.profile_picture_sizes}/150x150.jpg`,
+      '480x480': `${base}${account.profile_picture_sizes}/480x480.jpg`,
+      '1000x1000': `${base}${account.profile_picture_sizes}/1000x1000.jpg`
+    }
+    if (account.profile_picture_cids) {
+      if (account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]) {
+        profilePicture['150x150'] = `${base}${
+          account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]
+        }`
+      }
+      if (account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]) {
+        profilePicture['480x480'] = `${base}${
+          account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]
+        }`
+      }
+      if (account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]) {
+        profilePicture['1000x1000'] = `${base}${
+          account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]
+        }`
+      }
     }
   } else if (account.profile_picture) {
     const storageNode = storageNodeSelector.getNodes(account.profile_picture)[0]

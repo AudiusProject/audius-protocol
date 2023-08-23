@@ -191,7 +191,7 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
 }
 
 function* downloadTrackCoverArt(track: TrackMetadata) {
-  const { cover_art_sizes, cover_art, track_id } = track
+  const { cover_art_cids, cover_art_sizes, cover_art, track_id } = track
   const cid = cover_art_sizes ?? cover_art
 
   const storageNodeSelector = yield* call(getStorageNodeSelector)
@@ -199,7 +199,8 @@ function* downloadTrackCoverArt(track: TrackMetadata) {
   const imageSources = createAllImageSources({
     cid,
     endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
-    size: SquareSizes.SIZE_1000_BY_1000
+    size: SquareSizes.SIZE_1000_BY_1000,
+    cidMap: cover_art_cids
   })
 
   const coverArtUris = imageSources.map(({ uri }) => uri).filter(removeNullable)

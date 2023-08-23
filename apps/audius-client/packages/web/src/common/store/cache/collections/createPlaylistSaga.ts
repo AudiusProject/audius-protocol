@@ -187,6 +187,7 @@ function* createAndConfirmPlaylist(
         audiusBackendInstance
       }),
       ...optimisticPlaylist,
+      cover_art_cids: confirmedPlaylist.cover_art_cids,
       playlist_id: confirmedPlaylist.playlist_id
     }
 

@@ -20,6 +20,7 @@ const messages = {
 type ShareToStoryStickerProps = {
   track: Pick<
     Track,
+    | 'cover_art_cids'
     | 'cover_art_sizes'
     | 'cover_art'
     | 'owner_id'

@@ -56,7 +56,8 @@ export const useChromecast = () => {
       if (client && track && owner && streamingUri) {
         const imageUrl = await audiusBackendInstance.getImageUrl(
           track.cover_art_sizes,
-          SquareSizes.SIZE_1000_BY_1000
+          SquareSizes.SIZE_1000_BY_1000,
+          track.cover_art_cids
         )
 
         client.loadMedia({
