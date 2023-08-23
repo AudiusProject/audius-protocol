@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.7-beta.0",
+  "version": "3.0.7-beta.1",
   "audius": {
-    "releaseSHA": "0c49737f4aa1ec24e2c2496348566ca6379ea104"
+    "releaseSHA": "9653fb334c1cdbf24f0cab42ccde8dc7dcf7f729"
   },
   "description": "Audius SDK",
   "keywords": [
