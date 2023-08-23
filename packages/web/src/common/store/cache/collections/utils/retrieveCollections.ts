@@ -11,7 +11,8 @@ import {
   cacheSelectors,
   CommonState,
   getContext,
-  cacheCollectionsActions
+  cacheCollectionsActions,
+  reformatCollection
 } from '@audius/common'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
@@ -22,7 +23,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
-import { reformat } from './reformat'
+
 const { getEntryTimestamp } = cacheSelectors
 const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
@@ -206,7 +207,7 @@ export function* retrieveCollectionByPermalink(
       }
 
       const reformattedCollections = collections.map((c) =>
-        reformat(c, audiusBackendInstance)
+        reformatCollection({ collection: c, audiusBackendInstance })
       )
 
       return reformattedCollections
@@ -305,7 +306,7 @@ export function* retrieveCollections(
       }
 
       const reformattedCollections = metadatas.map((c) =>
-        reformat(c, audiusBackendInstance)
+        reformatCollection({ collection: c, audiusBackendInstance })
       )
 
       return reformattedCollections

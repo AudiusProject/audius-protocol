@@ -14,7 +14,8 @@ import {
   ProgressStatus,
   uploadSelectors,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  reformatCollection
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -32,10 +33,7 @@ import {
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
-import {
-  getUnclaimedPlaylistId,
-  reformat
-} from 'common/store/cache/collections/utils'
+import { getUnclaimedPlaylistId } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
@@ -780,11 +778,10 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
 
         // Add images to the collection since we're not loading it the traditional way with
         // the `fetchCollections` saga
-        confirmedPlaylist = yield call(
-          reformat,
-          confirmedPlaylist,
+        confirmedPlaylist = yield call(reformatCollection, {
+          collection: confirmedPlaylist,
           audiusBackendInstance
-        )
+        })
         const uid = yield makeUid(
           Kind.COLLECTIONS,
           confirmedPlaylist.playlist_id,

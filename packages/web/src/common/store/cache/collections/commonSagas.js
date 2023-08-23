@@ -17,7 +17,8 @@ import {
   cacheTracksSelectors,
   removeNullable,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  reformatCollection
 } from '@audius/common'
 import {
   all,
@@ -44,7 +45,6 @@ import { watchAddTrackToPlaylist } from './addTrackToPlaylistSaga'
 import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createPlaylistSaga } from './createPlaylistSaga'
 import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
-import { reformat } from './utils'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
@@ -146,7 +146,10 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
             {
               id: confirmedPlaylist.playlist_id,
               metadata: {
-                ...reformat(confirmedPlaylist, audiusBackendInstance),
+                ...reformatCollection({
+                  collection: confirmedPlaylist,
+                  audiusBackendInstance
+                }),
                 artwork: {}
               }
             }

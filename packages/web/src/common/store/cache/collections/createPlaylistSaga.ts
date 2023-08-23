@@ -19,7 +19,8 @@ import {
   newCollectionMetadata,
   confirmerActions,
   confirmTransaction,
-  RequestConfirmationError
+  RequestConfirmationError,
+  reformatCollection
 } from '@audius/common'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
@@ -29,7 +30,6 @@ import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { collectionPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { reformat } from './utils'
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 
 const { requestConfirmation } = confirmerActions
@@ -182,7 +182,10 @@ function* createAndConfirmPlaylist(
     const optimisticPlaylist = yield* select(getCollection, { id: playlistId })
 
     const reformattedPlaylist = {
-      ...reformat(confirmedPlaylist, audiusBackendInstance),
+      ...reformatCollection({
+        collection: confirmedPlaylist,
+        audiusBackendInstance
+      }),
       ...optimisticPlaylist,
       playlist_id: confirmedPlaylist.playlist_id
     }

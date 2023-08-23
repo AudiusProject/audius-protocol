@@ -1,3 +1,5 @@
+import type { full } from '@audius/sdk'
+
 import {
   CID,
   FavoriteType,
@@ -210,15 +212,18 @@ export type APIActivity = { timestamp: string } & (
   | { item_type: 'playlist'; item: APIPlaylist }
 )
 
-export type APIActivityV2 = { timestamp: string } & (
-  | { itemType: 'track'; item: APITrack }
-  | { itemType: 'playlist'; item: APIPlaylist }
-)
+export type APIActivityV2 = full.TrackActivityFull | full.CollectionActivityFull
 
 export const isApiActivityV2 = (
   activity: APIActivity | APIActivityV2
 ): activity is APIActivityV2 => {
   return (activity as APIActivityV2).itemType !== undefined
+}
+
+export const isApiActivityV1 = (
+  activity: APIActivity | APIActivityV2
+): activity is APIActivity => {
+  return (activity as APIActivity).item_type !== undefined
 }
 
 export type APISearch = {
