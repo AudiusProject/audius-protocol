@@ -27,8 +27,6 @@ begin
       (playlist->>'playlist_id')::int = new.playlist_id
   limit 1;
 
-  raise log 'old_row %', old_row;
-
   delta := 0;
   if (new.is_delete = true and new.is_current = true) and (old_row.is_delete = false and old_row.is_private = false) then
     delta := -1;

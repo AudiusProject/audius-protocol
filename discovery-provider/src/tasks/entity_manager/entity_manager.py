@@ -402,7 +402,6 @@ def save_new_records(
 
     session.flush()
     for record_type, record_dict in new_records.items():
-        # This is actually a dict, but python has a hard time inferring.
         casted_record_dict = cast(dict, record_dict)
         for entity_id, records in casted_record_dict.items():
             if not records:
