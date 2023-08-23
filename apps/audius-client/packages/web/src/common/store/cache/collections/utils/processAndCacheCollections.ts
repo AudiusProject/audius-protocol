@@ -5,13 +5,13 @@ import {
   UserCollectionMetadata,
   cacheActions,
   getContext,
-  CollectionMetadata
+  CollectionMetadata,
+  reformatCollection
 } from '@audius/common'
 import { put, call } from 'redux-saga/effects'
 
 import { addTracksFromCollections } from './addTracksFromCollections'
 import { addUsersFromCollections } from './addUsersFromCollections'
-import { reformat } from './reformat'
 import { retrieveTracksForCollections } from './retrieveCollections'
 
 function isUserCollections(
@@ -40,7 +40,7 @@ export function* processAndCacheCollections(
   yield addTracksFromCollections(collections)
 
   let reformattedCollections = collections.map((c) =>
-    reformat(c, audiusBackendInstance)
+    reformatCollection({ collection: c, audiusBackendInstance })
   )
 
   if (shouldRetrieveTracks) {
