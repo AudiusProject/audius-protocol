@@ -1,6 +1,10 @@
 package server
 
 import (
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -24,4 +28,15 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	m.SuccessfulLegacyServes = ss.successfulLegacyServes
 
 	return c.JSON(200, m)
+}
+
+func (ss *MediorumServer) getSegmentLog(c echo.Context) error {
+	file := "/tmp/mediorum/segments.txt"
+
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to read log file."})
+	}
+
+	return c.JSON(200, strings.Split(string(data), "\n"))
 }
