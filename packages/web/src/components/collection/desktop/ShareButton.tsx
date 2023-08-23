@@ -16,17 +16,17 @@ import { EntityActionButton } from '../../entity-page/EntityActionButton'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 const messages = {
-  share: 'Share',
-  emptyPlaylistTooltipText: 'You can’t share an empty playlist.'
+  share: 'Share'
 }
 
 type ShareButtonProps = Partial<ButtonProps> & {
   collectionId: SmartCollectionVariant | ID
   userId?: ID
+  tooltipText?: string
 }
 
 export const ShareButton = (props: ShareButtonProps) => {
-  const { collectionId, type, userId, ...other } = props
+  const { collectionId, type, userId, tooltipText, ...other } = props
   const dispatch = useDispatch()
 
   const handleShare = useCallback(() => {
@@ -64,8 +64,8 @@ export const ShareButton = (props: ShareButtonProps) => {
     />
   )
 
-  return other.disabled ? (
-    <Tooltip text={messages.emptyPlaylistTooltipText}>
+  return tooltipText ? (
+    <Tooltip text={tooltipText}>
       <span>{shareButtonElement}</span>
     </Tooltip>
   ) : (
