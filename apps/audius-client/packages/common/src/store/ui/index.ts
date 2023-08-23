@@ -121,6 +121,12 @@ export * from './buy-audio/constants'
 export * as buyAudioSelectors from './buy-audio/selectors'
 
 export {
+  default as withdrawUSDCReducer,
+  actions as withdrawUSDCActions
+} from './withdraw-usdc/slice'
+export * as withdrawUSDCSelectors from './withdraw-usdc/selectors'
+
+export {
   default as transactionDetailsReducer,
   actions as transactionDetailsActions
 } from './transaction-details/slice'

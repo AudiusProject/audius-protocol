@@ -1,24 +1,30 @@
+import {
+  withdrawUSDCActions,
+  withdrawUSDCSelectors,
+  ErrorLevel,
+  SolanaWalletAddress,
+  getTokenAccountInfo,
+  isSolWallet,
+  isValidSolDestinationAddress,
+  getUSDCUserBank,
+  getContext
+} from '@audius/common'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put } from 'typed-redux-saga'
+import { call, put, select } from 'typed-redux-saga'
 
-import { ErrorLevel } from 'models/ErrorReporting'
-import { SolanaWalletAddress } from 'models/Wallet'
-import {
-  getTokenAccountInfo,
-  isValidSolDestinationAddress
-} from 'services/audius-backend/solana'
-import { getUSDCUserBank } from 'store/buy-usdc/utils'
-import { getContext } from 'store/effects'
-
-import {
+const {
+  beginWithdrawUSDC,
   setAmount,
   setAmountFailed,
   setAmountSucceeded,
   setDestinationAddress,
   setDestinationAddressFailed,
-  setDestinationAddressSucceeded
-} from './slice'
+  setDestinationAddressSucceeded,
+  withdrawUSDCFailed
+} = withdrawUSDCActions
+const { getWithdrawDestinationAddress } = withdrawUSDCSelectors
 
 function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -83,6 +89,46 @@ function* doSetDestinationAddress({
   }
 }
 
+function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  try {
+    // Assume destinationAddress and amount have already been validated
+    const destinationAddress = yield* select(getWithdrawDestinationAddress)
+    if (!destinationAddress) {
+      throw new Error('Please enter a destination address')
+    }
+    // const amount = yield* select(getWithdrawAmount)
+    const isDestinationSolAddress = yield* call(
+      isSolWallet,
+      audiusBackendInstance,
+      destinationAddress as SolanaWalletAddress
+    )
+    const destinationPubkey = new PublicKey(destinationAddress)
+    // Destination is an ATA
+    if (!isDestinationSolAddress) {
+      const destinationAccountInfo = yield* call(
+        getTokenAccountInfo,
+        audiusBackendInstance,
+        {
+          mint: 'usdc',
+          tokenAccount: destinationPubkey
+        }
+      )
+      // Destination account does not exist - create and fund
+      if (!destinationAccountInfo) {
+        // TODO
+      }
+    }
+  } catch (e: unknown) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: e as Error
+    })
+    yield* put(withdrawUSDCFailed({ error: e as Error }))
+  }
+}
+
 function* watchSetAmount() {
   yield takeLatest(setAmount, doSetAmount)
 }
@@ -91,6 +137,10 @@ function* watchSetDestinationAddress() {
   yield takeLatest(setDestinationAddress, doSetDestinationAddress)
 }
 
+function* watchBeginWithdrawUSDC() {
+  yield takeLatest(beginWithdrawUSDC, doWithdrawUSDC)
+}
+
 export default function sagas() {
-  return [watchSetAmount, watchSetDestinationAddress]
+  return [watchSetAmount, watchSetDestinationAddress, watchBeginWithdrawUSDC]
 }
