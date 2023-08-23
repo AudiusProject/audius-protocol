@@ -210,7 +210,13 @@ def get_image_cids(user, upload_id, variants):
                 urls = list(
                     map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
                 )
-                resp = asyncio.run(race_requests(urls, 1))
+
+                # Race requests in a new event loop
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                resp = new_loop.run_until_complete(race_requests(urls, 1))
+                new_loop.close()
+
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
                 if not image_cids:
