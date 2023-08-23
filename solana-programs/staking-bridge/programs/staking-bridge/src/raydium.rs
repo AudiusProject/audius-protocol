@@ -11,8 +11,6 @@ use anchor_spl::token::spl_token;
 use crate::constant::{
     RAYDIUM_AMM_PROGRAM_ADDRESS,
     SERUM_DEX_PROGRAM_ADDRESS,
-    SOL_USDC_TOKEN_ADDRESS,
-    SOL_AUDIO_TOKEN_ADDRESS
 };
 use crate::error::StakingBridgeErrorCode;
 use crate::{
@@ -24,10 +22,10 @@ use crate::{
  * 1. Verify that we are calling the Raydium AMM program.
  * 2. Verify that the correct Serum DEX program was passed in.
  */
-pub fn check_raydium_programs(accounts: &mut RaydiumSwap) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let serum_program = &accounts.serum_program;
-
+pub fn check_swap_programs(
+    program_id: AccountInfo,
+    serum_program: AccountInfo,
+) -> Result<()> {
     // 1. Verify that we are calling the Raydium AMM program.
     if program_id.key().to_string() != RAYDIUM_AMM_PROGRAM_ADDRESS.to_string() {
         return Err(StakingBridgeErrorCode::NotCallingRaydiumAmmProgram.into());
@@ -41,58 +39,9 @@ pub fn check_raydium_programs(accounts: &mut RaydiumSwap) -> Result<()> {
 }
 
 /**
- * 1. Verify PDA ownership of the token accounts.
- * 2. Verify that the source token account is of the USDC mint.
- * 3. Verify that the destination token account is of the AUDIO mint.
- */
-pub fn check_raydium_token_accounts(accounts: &mut RaydiumSwap) -> Result<()> {
-    let user_source_token_account = &accounts.user_source_token_account;
-    let user_destination_token_account = &accounts.user_destination_token_account;
-    let user_source_owner = &accounts.user_source_owner;
-
-    // 1. Verify PDA ownership of the token accounts.
-    // Note that anchor checks for the program ownership of the 'user_source_owner' account,
-    // i.e. that the owner of the token accounts is owned by the program.
-    // This is because we use the account macro with seeds and bump for the 'user_source_owner'.
-    let source_token_data = user_source_token_account.data.borrow();
-    let source_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_owner(&source_token_data)
-        .unwrap();
-    if source_token_owner != user_source_owner.key {
-        return Err(StakingBridgeErrorCode::SourceTokenAccountNotOwnedByPDA.into());
-    }
-
-    let destination_token_data = user_destination_token_account.data.borrow();
-    let destination_token_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_owner(&destination_token_data)
-        .unwrap();
-    if destination_token_owner != user_source_owner.key {
-        return Err(StakingBridgeErrorCode::DestinationTokenAccountNotOwnedByPDA.into());
-    }
-
-    // 2. Verify that the source token account is of the USDC mint.
-    let source_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_mint(&source_token_data)
-        .unwrap();
-    if source_token_mint.key().to_string() != SOL_USDC_TOKEN_ADDRESS.to_string() {
-        return Err(StakingBridgeErrorCode::InvalidSourceTokenMint.into());
-    }
-
-    // 3. Verify that the destination token account is of the AUDIO mint.
-    let destination_token_mint= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_mint(&destination_token_data)
-        .unwrap();
-    if destination_token_mint.key().to_string() != SOL_AUDIO_TOKEN_ADDRESS.to_string() {
-        return Err(StakingBridgeErrorCode::InvalidDestinationTokenMint.into());
-    }
-
-    Ok(())
-}
-
-/**
  * Verify that the correct PDAs are passed in.
  */
-pub fn check_raydium_pdas(
+pub fn check_swap_pdas(
     accounts: &mut RaydiumSwap,
     vault_nonce: u64
 ) -> Result<()> {

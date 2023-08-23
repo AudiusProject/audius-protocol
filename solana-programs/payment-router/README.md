@@ -1,9 +1,8 @@
 # Payment Router
 
-This program transfer SOL AUDIO or SOL USDC from its PDA token account to given recipients.
+This program transfers SOL AUDIO or SOL USDC from its PDA token account to given recipients.
 
 The program has a PDA (Program Derived Address) account that will own the tokens.
-The program methods are permissionless, meaning that anyone can interact with them as long as they're willing to pay for the transactions.
 
 Please note that this program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
@@ -20,6 +19,25 @@ anchor build
 Anchor uses Yarn, so please sure you have it installed, and run
 ```
 yarn install
+```
+
+## Running the unit tests
+Use Solana 1.16.1
+```
+solana-install init 1.16.1
+solana -V
+```
+
+and rustc 1.70.0
+```
+rustup install 1.70.0
+rustup default 1.70.0
+rustc -V
+```
+
+Run the tests
+```
+cargo test-bpf
 ```
 
 ## Setting up your Solana cluster and environment

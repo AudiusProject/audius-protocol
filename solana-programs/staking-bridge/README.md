@@ -24,6 +24,25 @@ Anchor uses Yarn, so please sure you have it installed, and run
 yarn install
 ```
 
+## Running the unit tests
+Use Solana 1.16.1
+```
+solana-install init 1.16.1
+solana -V
+```
+
+and rustc 1.70.0
+```
+rustup install 1.70.0
+rustup default 1.70.0
+rustc -V
+```
+
+Run the tests
+```
+cargo test-bpf
+```
+
 ## Setting up your Solana cluster and environment
 We are going to be invoking programs on the Solana mainnet.
 So, for convenience, you can configure your cluster to use the Solana mainnet by default, and also use your chosen keypair file as the default Solana account by running:

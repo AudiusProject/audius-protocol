@@ -28,11 +28,9 @@ use crate::{
  * 2. Verify that we are using the Wormhole Core Bridge program.
  */
 pub fn check_wormhole_programs(
-    accounts: &mut PostWormholeMessage,
+    program_id: AccountInfo,
+    bridge_id: AccountInfo,
 ) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let bridge_id = &accounts.bridge_id;
-
     // 1. Verify that we are calling the Wormhole Token Bridge program.
     if program_id.key().to_string() != WORMHOLE_TOKEN_BRIDGE_ID.to_string() {
         return Err(StakingBridgeErrorCode::NotCallingWormholeTokenBridgeProgram.into());
@@ -40,27 +38,6 @@ pub fn check_wormhole_programs(
     // 2. Verify that we are using the Wormhole Core Bridge program.
     if bridge_id.key().to_string() != WORMHOLE_CORE_BRIDGE_ID.to_string() {
         return Err(StakingBridgeErrorCode::InvalidWormholeCoreBridgeProgram.into());
-    }
-    Ok(())
-}
-
-/**
- * Verify PDA ownership of the 'from' token account.
- * Note that anchor checks for the program ownership of the 'from_owner' account,
- * i.e. that the owner of the 'from' token account is owned by the program.
- * This is because we use the account macro with seeds and bump for 'from_owner'.
- */
-pub fn check_wormhole_token_accounts(
-    accounts: &mut PostWormholeMessage,
-) -> Result<()> {
-    let from = &accounts.from;
-    let from_owner = &accounts.from_owner;
-    let from_account_data = from.data.borrow();
-    let from_account_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_owner(&from_account_data)
-        .unwrap();
-    if from_account_owner != from_owner.key {
-        return Err(StakingBridgeErrorCode::WormholeTokenAccountNotOwnedByPDA.into());
     }
     Ok(())
 }

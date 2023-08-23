@@ -4,8 +4,6 @@ pub const ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES: &str = "00000000000000000000000
 pub const RAYDIUM_AMM_PROGRAM_ADDRESS: &str = "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8";
 // https://github.com/project-serum/serum-dex/blob/master/README.md#program-deployments
 pub const SERUM_DEX_PROGRAM_ADDRESS: &str = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
-// https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
-pub const SOL_USDC_TOKEN_ADDRESS: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 // https://explorer.solana.com/address/9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM
 pub const SOL_AUDIO_TOKEN_ADDRESS: &str = "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM";
 // https://etherscan.io/token/0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998

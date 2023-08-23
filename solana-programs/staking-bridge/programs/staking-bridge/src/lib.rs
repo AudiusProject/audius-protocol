@@ -1,20 +1,28 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    mint,
+    token::
+    {
+        TokenAccount,
+        Mint,
+        Token
+    }
+};
 
 pub mod constant;
 pub mod error;
 pub mod raydium;
 pub mod wormhole;
 
+use crate::constant::SOL_AUDIO_TOKEN_ADDRESS;
 use crate::raydium::{
-    check_raydium_programs,
-    check_raydium_token_accounts,
-    check_raydium_pdas,
+    check_swap_programs,
+    check_swap_pdas,
     swap
 };
 use crate::wormhole::{
     check_wormhole_programs,
-    check_wormhole_token_accounts,
     check_wormhole_pdas,
     approve_wormhole_transfer,
     execute_wormhole_transfer
@@ -26,13 +34,14 @@ declare_id!("HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV");
 pub mod staking_bridge {
     use super::*;
 
-    /**
-     * Creates the PDA.
-     * This instruction can be called by anyone.
-     * Immediately returns successfully because Anchor handles
-     * the PDA creation via the CreateStakingBridgeBalancePda struct account macros.
-     */
     pub fn create_staking_bridge_balance_pda(_ctx: Context<CreateStakingBridgeBalancePda>) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn create_staking_bridge_balance_atas(
+        _ctx: Context<CreateStakingBridgeBalanceAtas>,
+        _staking_bridge_pda_bump: u8
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -48,9 +57,14 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_raydium_programs(accounts)?;
-        check_raydium_token_accounts(accounts)?;
-        check_raydium_pdas(
+        let program_id = &accounts.program_id;
+        let serum_program = &accounts.serum_program;
+
+        check_swap_programs(
+            program_id.to_account_info(),
+            serum_program.to_account_info()
+        )?;
+        check_swap_pdas(
             accounts,
             vault_nonce
         )?;
@@ -78,8 +92,13 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_wormhole_programs(accounts)?;
-        check_wormhole_token_accounts(accounts)?;
+        let program_id = &accounts.program_id;
+        let bridge_id = &accounts.bridge_id;
+
+        check_wormhole_programs(
+            program_id.to_account_info(),
+            bridge_id.to_account_info()
+        )?;
         check_wormhole_pdas(
             accounts,
             config_bump,
@@ -119,6 +138,40 @@ pub struct CreateStakingBridgeBalancePda<'info> {
     pub staking_bridge_pda: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(staking_bridge_pda_bump: u8)]
+pub struct CreateStakingBridgeBalanceAtas<'info> {
+    #[account(
+        seeds = [b"staking_bridge".as_ref()],
+        bump = staking_bridge_pda_bump,
+    )]
+    /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
+    pub staking_bridge_pda: UncheckedAccount<'info>,
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = usdc_mint,
+        associated_token::authority = staking_bridge_pda,
+    )]
+    pub usdc_token_account: Account<'info, TokenAccount>,
+    #[account(address = mint::USDC)]
+    pub usdc_mint: Account<'info, Mint>,
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = audio_mint,
+        associated_token::authority = staking_bridge_pda,
+    )]
+    pub audio_token_account: Account<'info, TokenAccount>,
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    pub audio_mint: Account<'info, Mint>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 
@@ -180,18 +233,28 @@ pub struct RaydiumSwap<'info> {
     #[account()]
     /// CHECK: This is the vault signer for the serum market. No check necessary.
     pub serum_vault_signer: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the SOL USDC token account for the PDA, which is checked by the implementation of this method.
-    pub user_source_token_account: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the SOL AUDIO token account for the PDA, which is checked by the implementation of this method.
-    pub user_destination_token_account: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = usdc_mint,
+        associated_token::authority = user_source_owner,
+    )]
+    pub user_source_token_account: Account<'info, TokenAccount>,
+    #[account(
+        mut,
+        associated_token::mint = audio_mint,
+        associated_token::authority = user_source_owner,
+    )]
+    pub user_destination_token_account: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"staking_bridge".as_ref()],
         bump = staking_bridge_pda_bump
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub user_source_owner: UncheckedAccount<'info>,
+    #[account(address = mint::USDC)]
+    pub usdc_mint: Account<'info, Mint>,
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    pub audio_mint: Account<'info, Mint>,
     pub spl_token_program: Program<'info, Token>,
 }
 
@@ -258,9 +321,14 @@ pub struct PostWormholeMessage<'info> {
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
     pub from_owner: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the associated token account of the PDA, from which the tokens will be transferred
-    pub from: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        associated_token::mint = audio_mint,
+        associated_token::authority = from_owner,
+    )]
+    pub from: Account<'info, TokenAccount>,
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    pub audio_mint: Account<'info, Mint>,
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,
     pub spl_token: Program<'info, Token>,

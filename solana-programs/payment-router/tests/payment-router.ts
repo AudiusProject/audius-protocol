@@ -1,7 +1,6 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { PaymentRouter } from '../target/types/payment_router'
-import { recipientAmounts } from './utils'
 import { SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS } from './constants'
 import {
   TOKEN_PROGRAM_ID,
@@ -81,7 +80,6 @@ describe('payment-router', () => {
   it('routes the amounts to the recipients', async () => {
     // List of 10 recipient token accounts.
     // The keys are some solana token accounts that can be used for testing.
-    // The first key is the token account owned by the staking bridge PDA.
     // https://explorer.solana.com/address/E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp
     const recipients = [
       'E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp',

@@ -17,7 +17,7 @@ pub fn check_sender(
     // i.e. that the owner of the sender account is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'sender_owner'.
     let sender_data = sender.data.borrow();
-    let sender_account_owner= <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
+    let sender_account_owner = <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
         ::unpack_account_owner(&sender_data)
         .unwrap();
     if sender_account_owner != sender_owner.key {

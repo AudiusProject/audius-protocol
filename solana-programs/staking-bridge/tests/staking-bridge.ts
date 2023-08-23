@@ -4,7 +4,9 @@ import { StakingBridge } from '../target/types/staking_bridge'
 import { CHAIN_ID_ETH } from '@certusone/wormhole-sdk'
 import {
   TOKEN_PROGRAM_ID,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
   getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
 } from '@solana/spl-token'
 import {
   ETH_AUDIO_TOKEN_ADDRESS,
@@ -71,7 +73,7 @@ describe('staking-bridge', () => {
     program.programId
   )
 
-  it('creates the staking bridge pda', async () => {
+  it('creates the staking bridge balance pda', async () => {
     try {
       const tx = await program.methods
         .createStakingBridgeBalancePda()
@@ -97,6 +99,48 @@ describe('staking-bridge', () => {
     assert.ok(stakingBridgePdaAccount, 'Staking Bridge balance PDA account not found')
   })
 
+  it('creates the staking bridge balance usdc and audio associated token accounts', async () => {
+    const usdcTokenAccount = getAssociatedTokenAddressSync(
+      SOL_USDC_TOKEN_ADDRESS_KEY,
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    const audioTokenAccount = getAssociatedTokenAddressSync(
+      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      stakingBridgePda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+
+    try {
+      const tx = await program.methods
+        .createStakingBridgeBalanceAtas(stakingBridgePdaBump)
+        .accounts({
+          stakingBridgePda,
+          usdcTokenAccount,
+          usdcMint: SOL_USDC_TOKEN_ADDRESS_KEY,
+          audioTokenAccount,
+          audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
+          payer: feePayerPublicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([feePayerKeypair])
+        .rpc()
+      console.log('Your transaction signature', tx)
+    } catch (e) {
+      const timeoutError = 'TransactionExpiredTimeoutError'
+      if (e.toString().includes(timeoutError)) {
+        assert.fail(`The transaction timed out, but the ATAs may have been created.\nError: ${e}`)
+      }
+    }
+
+    const usdcAtaAccount = await connection.getAccountInfo(usdcTokenAccount)
+    assert.ok(usdcAtaAccount, 'Staking Bridge USDC ATA account not found')
+    const audioAtaAccount = await connection.getAccountInfo(audioTokenAccount)
+    assert.ok(audioAtaAccount, 'Staking Bridge AUDIO ATA account not found')
+  })
+
   it('swaps SOL USDC to SOL AUDIO', async () => {
     const market = await getMarket(connection, serumMarketPublicKey.toString(), serumDexProgram.toString())
 
@@ -116,7 +160,6 @@ describe('staking-bridge', () => {
     )
 
     // Get associated token accounts for the staking bridge PDA.
-    // Create them if they don't exist.
     let usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
@@ -159,6 +202,8 @@ describe('staking-bridge', () => {
       userSourceTokenAccount: usdcTokenAccount.address,
       userDestinationTokenAccount: audioTokenAccount.address,
       userSourceOwner: stakingBridgePda,
+      usdcMint: SOL_USDC_TOKEN_ADDRESS_KEY,
+      audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
       splTokenProgram: TOKEN_PROGRAM_ID,
     }
 
@@ -216,7 +261,7 @@ describe('staking-bridge', () => {
     })
     const amountToTransfer = amount.toNumber()
 
-    // Associated token account owned by the PDA
+    // AUDIO associated token account owned by the PDA
     let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
@@ -289,6 +334,7 @@ describe('staking-bridge', () => {
       message: messagePublicKey,
       from: pdaAtaKey,
       fromOwner: stakingBridgePda,
+      audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
 
       // bridge PDAs
       config,
