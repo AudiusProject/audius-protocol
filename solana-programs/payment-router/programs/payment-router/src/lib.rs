@@ -3,21 +3,12 @@ use anchor_lang::{
     AnchorDeserialize,
     AnchorSerialize,
 };
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::
-    {
-        TokenAccount,
-        Mint,
-        Token
-    }
-};
+use anchor_spl::token::Token;
 
 pub mod error;
 pub mod router;
 
 use crate::router::{
-    SOL_AUDIO_TOKEN_ADDRESS,
     check_recipient_amounts,
     check_sender,
     execute_transfers
@@ -30,13 +21,6 @@ pub mod payment_router {
     use super::*;
 
     pub fn create_payment_router_balance_pda(_ctx: Context<CreatePaymentRouterBalancePDA>) -> Result<()> {
-        Ok(())
-    }
-
-    pub fn create_payment_router_balance_ata(
-        _ctx: Context<CreatePaymentRouterBalanceAta>,
-        _payment_router_pda_bump: u8
-    ) -> Result<()> {
         Ok(())
     }
 
@@ -85,31 +69,6 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
     pub payment_router_pda: UncheckedAccount<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-#[instruction(payment_router_pda_bump: u8)]
-pub struct CreatePaymentRouterBalanceAta<'info> {
-    #[account(
-        seeds = [b"payment_router".as_ref()],
-        bump = payment_router_pda_bump,
-    )]
-    /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
-    pub payment_router_pda: UncheckedAccount<'info>,
-    #[account(
-        init,
-        payer = payer,
-        associated_token::mint = audio_mint,
-        associated_token::authority = payment_router_pda,
-    )]
-    pub audio_token_account: Account<'info, TokenAccount>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
-    pub audio_mint: Account<'info, Mint>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub token_program: Program<'info, Token>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
 }
 

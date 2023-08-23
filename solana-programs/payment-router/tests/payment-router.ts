@@ -3,9 +3,7 @@ import { Program } from '@coral-xyz/anchor'
 import { PaymentRouter } from '../target/types/payment_router'
 import { SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS } from './constants'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token'
 import { assert } from 'chai'
@@ -77,39 +75,6 @@ describe('payment-router', () => {
       assert.ok(e.toString().includes(error), `Error message not expected: ${e}`)
       console.log('Payment Router balance PDA already exists')
     }
-  })
-
-  it('creates the payment router balance audio associated token account', async () => {
-    const audioTokenAccount = getAssociatedTokenAddressSync(
-      SOL_AUDIO_TOKEN_ADDRESS_KEY,
-      paymentRouterPda,
-      true // allowOwnerOffCurve: we need this since the owner is a program
-    )
-
-    try {
-      const tx = await program.methods
-        .createPaymentRouterBalanceAta(paymentRouterPdaBump)
-        .accounts({
-          paymentRouterPda,
-          audioTokenAccount,
-          audioMint: SOL_AUDIO_TOKEN_ADDRESS_KEY,
-          payer: feePayerPublicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-        })
-        .signers([feePayerKeypair])
-        .rpc()
-      console.log('Your transaction signature', tx)
-    } catch (e) {
-      const timeoutError = 'TransactionExpiredTimeoutError'
-      if (e.toString().includes(timeoutError)) {
-        assert.fail(`The transaction timed out, but the ATAs may have been created.\nError: ${e}`)
-      }
-    }
-
-    const audioAtaAccount = await connection.getAccountInfo(audioTokenAccount)
-    assert.ok(audioAtaAccount, 'Payment Router AUDIO ATA account not found')
   })
 
   it('routes the amounts to the recipients', async () => {

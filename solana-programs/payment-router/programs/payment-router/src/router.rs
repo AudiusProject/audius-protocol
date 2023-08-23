@@ -7,9 +7,6 @@ use anchor_spl::token::spl_token;
 
 use crate::error::PaymentRouterErrorCode;
 
-// https://explorer.solana.com/address/9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM
-pub const SOL_AUDIO_TOKEN_ADDRESS: &str = "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM";
-
 // Verify PDA ownership of the sender token account.
 pub fn check_sender(
   sender: AccountInfo,
