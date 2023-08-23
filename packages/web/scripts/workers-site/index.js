@@ -237,6 +237,13 @@ async function handleEvent(event) {
     return Response.redirect(url.origin, 302)
   }
 
+  const isSitemap = pathname.startsWith('/sitemaps')
+  if (isSitemap) {
+    const destinationURL = discoveryNode + pathname + search + hash
+    const newRequest = new Request(destinationURL, event.request)
+    return await fetch(newRequest)
+  }
+
   const userAgent = event.request.headers.get('User-Agent') || ''
 
   const is204 = pathname === '/204'
@@ -256,13 +263,6 @@ async function handleEvent(event) {
     newRequest.headers.set('host', GA)
     newRequest.headers.set('x-access-token', GA_ACCESS_TOKEN)
 
-    return await fetch(newRequest)
-  }
-
-  const isSitemap = pathname.startsWith('/sitemaps')
-  if (isSitemap) {
-    const destinationURL = SITEMAP + pathname + search + hash
-    const newRequest = new Request(destinationURL, event.request)
     return await fetch(newRequest)
   }
 
