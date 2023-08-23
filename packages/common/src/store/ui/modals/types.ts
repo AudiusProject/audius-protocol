@@ -44,6 +44,7 @@ export type Modals =
   | 'CreateChatModal'
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
+  | 'UploadConfirmation'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState

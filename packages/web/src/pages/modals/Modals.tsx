@@ -34,6 +34,7 @@ import ConnectedMobileOverflowModal from 'components/track-overflow-modal/Connec
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
+import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
@@ -60,6 +61,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  UploadConfirmation: UploadConfirmationModal,
   BuyAudio: BuyAudioModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,

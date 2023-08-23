@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { UploadType, uploadActions } from '@audius/common'
+import {
+  UploadType,
+  uploadActions,
+  uploadConfirmationModalUIActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
@@ -13,6 +17,8 @@ import { EditPage } from './pages/EditPage'
 import { UploadFormState } from './types'
 
 const { uploadTracks } = uploadActions
+const { requestOpen: openUploadConfirmationModal } =
+  uploadConfirmationModalUIActions
 
 const messages = {
   selectPageTitle: 'Upload Your Music',
@@ -99,7 +105,11 @@ export const UploadPageNew = () => {
             formState={formState}
             onContinue={(formState: UploadFormState) => {
               setFormState(formState)
-              setPhase(Phase.FINISH)
+              const hasPublicTracks =
+                formState.tracks?.some(
+                  (track) => !track.metadata.is_unlisted
+                ) ?? true
+              openUploadConfirmation(hasPublicTracks)
             }}
           />
         )
@@ -122,6 +132,20 @@ export const UploadPageNew = () => {
         )
       }
   }
+
+  const openUploadConfirmation = useCallback(
+    (hasPublicTracks: boolean) => {
+      dispatch(
+        openUploadConfirmationModal({
+          hasPublicTracks,
+          confirmCallback: () => {
+            setPhase(Phase.FINISH)
+          }
+        })
+      )
+    },
+    [dispatch]
+  )
 
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
