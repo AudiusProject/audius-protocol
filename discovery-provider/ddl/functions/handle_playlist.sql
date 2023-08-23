@@ -11,19 +11,19 @@ begin
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
   with expanded as (
-      select 
-          jsonb_array_elements(prev_records->'playlists') as playlist 
-      from 
+      select
+          jsonb_array_elements(prev_records->'playlists') as playlist
+      from
           revert_blocks
       where blocknumber = new.blocknumber
   )
-  select 
-      playlist->>'is_private' as is_private,
-      playlist->>'is_delete' as is_delete
+  select
+      (playlist->>'is_private')::boolean as is_private,
+      (playlist->>'is_delete')::boolean as is_delete
   into old_row
-  from 
+  from
       expanded
-  where 
+  where
       (playlist->>'playlist_id')::int = new.playlist_id
   limit 1;
 
@@ -40,18 +40,18 @@ begin
 
   if delta != 0 then
     if new.is_album then
-      update aggregate_user 
+      update aggregate_user
       set album_count = album_count + delta
       where user_id = new.playlist_owner_id;
     else
-      update aggregate_user 
+      update aggregate_user
       set playlist_count = playlist_count + delta
       where user_id = new.playlist_owner_id;
     end if;
   end if;
   -- Create playlist notification
   begin
-    if new.is_private = FALSE AND 
+    if new.is_private = FALSE AND
     new.is_delete = FALSE AND
     (
       new.created_at = new.updated_at OR
@@ -59,10 +59,10 @@ begin
     )
     then
       select array(
-        select subscriber_id 
-          from subscriptions 
-          where is_current and 
-          not is_delete and 
+        select subscriber_id
+          from subscriptions
+          where is_current and
+          not is_delete and
           user_id=new.playlist_owner_id
       ) into subscriber_user_ids;
       if array_length(subscriber_user_ids, 1)	> 0 then
@@ -132,5 +132,3 @@ do $$ begin
 exception
   when others then null;
 end $$;
-
-
