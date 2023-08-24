@@ -368,14 +368,15 @@ def save_new_records(
     session: Session,
 ):
     prev_records: Dict[str, List] = defaultdict(list)
-    records_to_delete = []
+    records_to_update = []
     for record_type, record_dict in new_records.items():
         # This is actually a dict, but python has a hard time inferring.
         casted_record_dict = cast(dict, record_dict)
         for entity_id, records in casted_record_dict.items():
             if not records:
                 continue
-
+            record_to_delete = None
+            records_to_add = []
             # invalidate old records
             if (
                 record_type in original_records
@@ -388,24 +389,11 @@ def save_new_records(
                     # these are an exception since we want to keep is_current false to preserve old slugs
                     original_records[record_type][entity_id].is_current = False
                 else:
-                    records_to_delete.append(original_records[record_type][entity_id])
+                    record_to_delete = original_records[record_type][entity_id]
                 # add the json record for revert blocks
                 prev_records[entity_type_table_mapping[record_type]].append(
                     existing_records_in_json[record_type][entity_id]
                 )
-    # flush so revert_block can be used in triggers below for historical state
-    if prev_records:
-        revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
-        session.add(revert_block)
-    for record_to_delete in records_to_delete:
-        session.delete(record_to_delete)
-    session.flush()
-
-    for record_type, record_dict in new_records.items():
-        casted_record_dict = cast(dict, record_dict)
-        for entity_id, records in casted_record_dict.items():
-            if not records:
-                continue
             # invalidate all new records except the last
             for record in records:
                 if "is_current" in get_record_columns(record):
@@ -416,10 +404,19 @@ def save_new_records(
             if "is_current" in get_record_columns(records[-1]):
                 records[-1].is_current = True
             if record_type == "PlaylistRoute" or record_type == "TrackRoute":
-                session.add_all(records)
+                records_to_add.extend(records)
             else:
-                session.add(records[-1])
-
+                records_to_add.append(records[-1])
+            records_to_update.append((record_to_delete, records_to_add))
+    if prev_records:
+        revert_block = RevertBlock(blocknumber=block_number, prev_records=prev_records)
+        session.add(revert_block)
+        session.flush()
+    for record_to_delete, records_to_add in records_to_update:
+        if record_to_delete:
+            session.delete(record_to_delete)
+        session.flush()
+        session.add_all(records_to_add)
 
 def copy_original_records(existing_records):
     original_records = {}
