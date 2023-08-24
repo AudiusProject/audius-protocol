@@ -418,6 +418,7 @@ def save_new_records(
         session.flush()
         session.add_all(records_to_add)
 
+
 def copy_original_records(existing_records):
     original_records = {}
     for entity_type in existing_records:
