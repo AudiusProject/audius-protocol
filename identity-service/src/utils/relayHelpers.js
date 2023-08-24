@@ -1,6 +1,9 @@
 const models = require('../models')
 const config = require('../config')
 const { libs } = require('@audius/sdk')
+const {
+  isUSDCWithdrawalTransaction
+} = require('./withdrawUSDCInstructionsHelpers')
 const SolanaUtils = libs.SolanaUtils
 
 const solanaRewardsManagerProgramId = config.get(
@@ -187,7 +190,7 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
  * @param {Instruction} instruction
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
-const isRelayAllowedInstruction = async (instruction) => {
+export const isRelayAllowedInstruction = async (instruction) => {
   if (instruction.programId === solanaRewardsManagerProgramId) {
     // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
     // Since we've just checked the program ID, this is sufficient as the authority
@@ -233,7 +236,7 @@ const areRelayAllowedInstructions = async (instructions) => {
   )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {
-    return false
+    return isUSDCWithdrawalTransaction(instructions)
   }
   return true
 }
@@ -244,3 +247,313 @@ module.exports = {
   areRelayAllowedInstructions,
   isRelayAllowedProgram
 }
+
+const testInstructions = [
+  {
+    programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+    data: {
+      type: 'Buffer',
+      data: []
+    },
+    keys: [
+      {
+        pubkey: 'HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg',
+        isSigner: true,
+        isWritable: true
+      },
+      {
+        pubkey: 'CgdZKgU2Mj5wwY9THrEPJKknc7nk1YfCq9jXC3opBHRH',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: '11111111111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'SysvarRent111111111111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      }
+    ]
+  },
+  {
+    programId: 'KeccakSecp256k11111111111111111111111111111',
+    data: {
+      type: 'Buffer',
+      data: [
+        1, 32, 0, 1, 12, 0, 1, 97, 0, 48, 0, 1, 56, 90, 209, 59, 139, 18, 138,
+        13, 164, 85, 190, 39, 43, 49, 57, 242, 244, 179, 118, 47, 136, 59, 180,
+        224, 158, 85, 2, 13, 48, 18, 131, 175, 87, 57, 154, 60, 100, 173, 191,
+        34, 97, 170, 225, 240, 97, 192, 173, 238, 15, 168, 131, 250, 100, 231,
+        158, 244, 11, 70, 88, 162, 185, 11, 107, 8, 53, 59, 87, 115, 142, 106,
+        130, 70, 54, 125, 41, 30, 141, 117, 249, 33, 53, 201, 218, 136, 1, 173,
+        151, 139, 14, 109, 104, 52, 1, 172, 110, 139, 116, 238, 173, 13, 80, 43,
+        117, 200, 51, 125, 191, 34, 75, 140, 100, 215, 174, 120, 207, 88, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    keys: []
+  },
+  {
+    programId: '2sjQNmUfkV6yKKi4dPR8gWRgtyma5aiymE3aXL2RAZww',
+    data: {
+      type: 'Buffer',
+      data: [
+        1, 56, 90, 209, 59, 139, 18, 138, 13, 164, 85, 190, 39, 43, 49, 57, 242,
+        244, 179, 118, 47
+      ]
+    },
+    keys: [
+      {
+        pubkey: 'HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg',
+        isSigner: true,
+        isWritable: false
+      },
+      {
+        pubkey: '4hbyJjqpWAbarjCQhY8YSeptZz1WYSS88DGqG4BteE3v',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'CgdZKgU2Mj5wwY9THrEPJKknc7nk1YfCq9jXC3opBHRH',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'EicLvE9mpatE5iSRDFc81X22DPq9Ti87jafLQGJRcbLj',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '87KVRgUiA8cDLxaSBjWnpNxd9fwDDWuSZsF1UhH7fhJd',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'SysvarRent111111111111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'Sysvar1nstructions1111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: '11111111111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        isSigner: false,
+        isWritable: false
+      }
+    ]
+  },
+  {
+    programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+    data: {
+      type: 'Buffer',
+      data: []
+    },
+    keys: [
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: true,
+        isWritable: true
+      },
+      {
+        pubkey: '7YGVxY7ceXosYRi3YcbaEXoWe7q5eujW4AaXZQ8jdt5V',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'So11111111111111111111111111111111111111112',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: '11111111111111111111111111111111',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        isSigner: false,
+        isWritable: false
+      }
+    ]
+  },
+  {
+    programId: 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
+    data: {
+      type: 'Buffer',
+      data: [228, 85, 185, 112, 78, 79, 77, 2]
+    },
+    keys: [
+      {
+        pubkey: '3HmXTbZf6G2oEjN3bPreZmF7YGLbbEXFkgAbVFPaimwU',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7YGVxY7ceXosYRi3YcbaEXoWe7q5eujW4AaXZQ8jdt5V',
+        isSigner: false,
+        isWritable: false
+      }
+    ]
+  },
+  {
+    programId: 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph',
+    data: {
+      type: 'Buffer',
+      data: [
+        123, 229, 184, 63, 12, 0, 92, 145, 1, 47, 167, 0, 0, 0, 0, 0, 0, 208,
+        78, 30, 0, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    keys: [
+      {
+        pubkey: 'whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: true,
+        isWritable: false
+      },
+      {
+        pubkey: '83v8iPyZihDEjDdY8RdZddyZNyUtXngz69Lgo9Kt5d6d',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7YGVxY7ceXosYRi3YcbaEXoWe7q5eujW4AaXZQ8jdt5V',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'D3CDPQLoa9jY1LXCkpUqd3JQDWz8DX1LDE1dhmJt9fq4',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'CgdZKgU2Mj5wwY9THrEPJKknc7nk1YfCq9jXC3opBHRH',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'dwxR9YF7WwnJJu7bPC4UNcWFpcSsooH6fxbpoa3fTbJ',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'Eq6iwsQKwhFvJxbqn4p7Wm7f5xFFsCExdND4GXh7PMPN',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'FjZYAiSNqwkrMxeQ2tZxTVUz8CaaqumWAiZiFKdXP5Ys',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'GNvCR2Ur8tiHMdbW3724FT7Q8Hd1aA1xcBJEEZGgYxLq',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'GwRSc3EPw2fCLJN7zWwcApXgHSrfmj9m4H5sfk1W2SUJ',
+        isSigner: false,
+        isWritable: false
+      },
+      {
+        pubkey: 'HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg',
+        isSigner: false,
+        isWritable: true
+      }
+    ]
+  },
+  {
+    programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    data: {
+      type: 'Buffer',
+      data: [9]
+    },
+    keys: [
+      {
+        pubkey: '7YGVxY7ceXosYRi3YcbaEXoWe7q5eujW4AaXZQ8jdt5V',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: true,
+        isWritable: false
+      }
+    ]
+  },
+  {
+    programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    data: {
+      type: 'Buffer',
+      data: [9]
+    },
+    keys: [
+      {
+        pubkey: 'CgdZKgU2Mj5wwY9THrEPJKknc7nk1YfCq9jXC3opBHRH',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: 'HunCgdP91aVeoh8J7cbKTcFRoUwwhHwqYqVVLVkkqQjg',
+        isSigner: false,
+        isWritable: true
+      },
+      {
+        pubkey: '7i4HiVgC72i4bVKQiPSbEEuMwQF5EA3xP9AbxWeFX84f',
+        isSigner: true,
+        isWritable: false
+      }
+    ]
+  }
+]
+
+const test = async () => {
+  return await areRelayAllowedInstructions(testInstructions)
+}
+console.log(test())
