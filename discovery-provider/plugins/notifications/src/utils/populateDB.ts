@@ -18,7 +18,7 @@ import {
   SupporterRankUpRow,
   USDCPurchaseRow
 } from '../types/dn'
-import { UserRow as IdentityUserRow, UserRow } from '../types/identity'
+import { UserRow as IdentityUserRow } from '../types/identity'
 import {
   enum_NotificationDeviceTokens_deviceType,
   NotificationDeviceTokenRow,
@@ -488,8 +488,7 @@ export const setUserEmailAndSettings = async (
     handle: `user_${userId}`,
     email: `user_${userId}@gmail.com`,
     blockchainUserId: userId,
-    timezone: timezone || null,
-    ...additionalUserSettings,
+    timezone: timezone || null
   }
   await db.insert(user).into('Users')
   await db
