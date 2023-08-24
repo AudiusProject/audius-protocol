@@ -23,7 +23,7 @@ export const useSyncCodepush = () => {
         }
       },
       (newStatus) => {
-        console.log('New CodePush Status: ', newStatus)
+        console.info('New CodePush Status: ', newStatus)
         codePush.getUpdateMetadata(codePush.UpdateState.PENDING).then((res) => {
           if (res != null && res.isMandatory) {
             setIsPendingMandatoryCodePushUpdate(true)

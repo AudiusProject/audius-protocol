@@ -126,7 +126,7 @@ export const createSession = async (config: Config): Promise<any> => {
   } catch (error) {
     const errorMessage = getErrorMessage(error)
     if (errorMessage === 'Modal closed by user') {
-      console.log('closed by user')
+      console.info('Web3 modal closed by user')
     }
   }
 }

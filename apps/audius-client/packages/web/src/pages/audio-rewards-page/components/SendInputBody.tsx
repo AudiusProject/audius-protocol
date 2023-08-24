@@ -114,7 +114,7 @@ const isValidSolDestination = (wallet: SolanaWalletAddress) => {
     const ignored = new solanaweb3.PublicKey(wallet)
     return true
   } catch (err) {
-    console.log(err)
+    console.info(err)
     return false
   }
 }

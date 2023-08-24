@@ -31,16 +31,12 @@ const initSdk = async () => {
 
 export const audiusSdk = async () => {
   if (inProgress) {
-    console.log('SDK in progress...')
     await new Promise((resolve) => {
       sdkEventEmitter.addListener(SDK_LOADED_EVENT_NAME, resolve)
     })
-    console.log('SDK progress finished')
     return await sdkInstance
   } else if (!sdkInstance) {
-    console.log('Making SDK')
     return await initSdk()
   }
-  console.log('found sdk')
   return sdkInstance
 }

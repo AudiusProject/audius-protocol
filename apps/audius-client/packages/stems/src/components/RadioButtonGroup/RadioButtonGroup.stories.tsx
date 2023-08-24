@@ -12,7 +12,7 @@ export default {
 const defaultProps: RadioButtonGroupProps = {
   name: 'Test',
   onChange: (value) => {
-    console.log(value)
+    console.info(value)
   }
 }
 

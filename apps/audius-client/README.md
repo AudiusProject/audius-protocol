@@ -102,6 +102,9 @@ npm run stems
 
 # common in watch mode
 npm run common
+
+# lint and typecheck
+npm run verify
 ```
 
 ### Installing and Updating packages

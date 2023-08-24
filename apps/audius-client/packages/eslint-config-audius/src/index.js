@@ -52,6 +52,7 @@ module.exports = {
     '@typescript-eslint/no-redeclare': ['error'],
 
     'no-use-before-define': 'off',
+    'no-console': ['error', { allow: ['debug', 'info', 'warn', 'error'] }],
     camelcase: 'off',
     'no-unused-vars': 'off',
     'func-call-spacing': 'off',

@@ -728,7 +728,7 @@ export const audiusBackend = ({
 
       sanityChecks(audiusLibs)
     } catch (err) {
-      console.log(err)
+      console.error(err)
       libsError = getErrorMessage(err)
     }
 
@@ -1250,7 +1250,7 @@ export const audiusBackend = ({
       await audiusLibs.User.updateIsVerified(userId, verified)
       return true
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return false
     }
   }
@@ -1259,7 +1259,7 @@ export const audiusBackend = ({
     try {
       return await audiusLibs.EntityManager.followUser(followeeUserId)
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1268,7 +1268,7 @@ export const audiusBackend = ({
     try {
       return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1290,7 +1290,7 @@ export const audiusBackend = ({
         )
       }
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
     }
 
     return followers
@@ -1316,7 +1316,7 @@ export const audiusBackend = ({
       )
       return (playlists || []).map(getCollectionImages)
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return []
     }
   }
@@ -1352,7 +1352,7 @@ export const audiusBackend = ({
     } catch (err) {
       // This code path should never execute
       console.debug('Reached client createPlaylist catch block')
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return { playlistId: null, error: true }
     }
   }
@@ -1503,7 +1503,7 @@ export const audiusBackend = ({
         offset
       )
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return []
     }
   }
@@ -1519,7 +1519,7 @@ export const audiusBackend = ({
         JSON.stringify(metadata)
       )
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1532,7 +1532,7 @@ export const audiusBackend = ({
         blockNumber: txReceipt.blockNumber
       }
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1548,7 +1548,7 @@ export const audiusBackend = ({
         JSON.stringify(metadata)
       )
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1558,7 +1558,7 @@ export const audiusBackend = ({
     try {
       return await audiusLibs.EntityManager.unsaveTrack(trackId)
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -1568,7 +1568,7 @@ export const audiusBackend = ({
     try {
       return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       throw err
     }
   }
@@ -2825,7 +2825,7 @@ export const audiusBackend = ({
     try {
       return await audiusLibs.Notifications.viewPlaylist({ playlistId })
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
     }
   }
 
@@ -2846,7 +2846,7 @@ export const audiusBackend = ({
         body: JSON.stringify({ token })
       }).then((res) => res.json())
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return { error: true }
     }
   }
@@ -2859,7 +2859,7 @@ export const audiusBackend = ({
       audiusLibs.solanaWeb3Manager.feePayerKey = new PublicKey(feePayer)
       return { feePayer }
     } catch (err) {
-      console.log(getErrorMessage(err))
+      console.error(getErrorMessage(err))
       return { error: true }
     }
   }
@@ -2920,7 +2920,7 @@ export const audiusBackend = ({
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (!ownerWAudioBalance) {
-        console.log('Failed to fetch account waudio balance')
+        console.error('Failed to fetch account waudio balance')
         return new BN('0')
       }
       return ownerWAudioBalance
@@ -3202,8 +3202,7 @@ export const audiusBackend = ({
       }
       return res
     } catch (e) {
-      console.log(`Failed in libs call to claim reward`)
-      console.error(e)
+      console.error(`Failed in libs call to claim reward ${e}`)
       return { error: true }
     }
   }
@@ -3404,14 +3403,6 @@ async function getCreateAssociatedTokenAccountTransaction({
     solanaWalletKey,
     mintKey,
     solanaTokenProgramKey
-  })
-  console.log({
-    SYSVAR_RENT_PUBKEY,
-    solanaTokenProgramKey
-  })
-
-  console.log({
-    SystemProgram
   })
   const accounts = [
     // 0. `[sw]` Funding account (must be a system account)

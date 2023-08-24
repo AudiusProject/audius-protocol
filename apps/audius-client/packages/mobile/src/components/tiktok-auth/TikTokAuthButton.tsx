@@ -57,7 +57,7 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
           )
         )
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     })
   }

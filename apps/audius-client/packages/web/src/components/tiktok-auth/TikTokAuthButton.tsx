@@ -47,7 +47,7 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
           const tikTokProfile = resultJson.data.user
           onSuccess(tikTokProfile.open_id, tikTokProfile)
         } catch (e) {
-          console.log(e)
+          console.error(e)
         }
       })
     },

@@ -70,7 +70,6 @@ switch (env) {
     s3Bucket = ''
     break
   case 'staging':
-    console.log('in staging')
     appEnvironment = Environment.STAGING
     scheme = 'audius-staging'
     buildName = 'build-staging'
@@ -482,7 +481,7 @@ ipcMain.on('quit', (event, arg) => {
 
 // We have finished downloading the electron update
 autoUpdater.on('update-downloaded', (info) => {
-  console.log('update-downloaded', info)
+  console.info('update-downloaded', info)
   canUpdate = true
   info.currentVersion = autoUpdater.currentVersion.version
   if (mainWindow) mainWindow.webContents.send('updateDownloaded', info)
@@ -490,7 +489,7 @@ autoUpdater.on('update-downloaded', (info) => {
 
 // We have discovered that there is an available electron update
 autoUpdater.on('update-available', (info) => {
-  console.log('update-available', info)
+  console.info('update-available', info)
   info.currentVersion = autoUpdater.currentVersion.version
   if (mainWindow) mainWindow.webContents.send('updateAvailable', info)
 })
@@ -500,7 +499,7 @@ autoUpdater.on('download-progress', (info) => {
 })
 
 autoUpdater.on('error', (info) => {
-  console.log('update-error', info)
+  console.info('update-error', info)
   if (mainWindow) mainWindow.webContents.send('updateError', info)
 })
 

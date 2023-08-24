@@ -52,8 +52,6 @@ export const CollectibleMedia = (props: CollectibleMediaProps) => {
 
   const VolumeIcon = isMuted ? IconMute : IconVolume
 
-  console.log(mediaType, imageUrl)
-
   const renderByMediaType = {
     // TODO: Implement 3D model viewing on mobile
     [CollectibleMediaType.THREE_D]: () => (

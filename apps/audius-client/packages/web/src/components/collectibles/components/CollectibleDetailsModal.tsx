@@ -114,11 +114,9 @@ const CollectibleMedia = (props: CollectibleMediaProps) => {
           const scrollableAncestorElement = scrollableAncestor as HTMLElement
           const mouseEnterListener = () => {
             scrollableAncestorElement.style.overflowY = 'hidden'
-            console.log(scrollableAncestorElement.style.overflowY)
           }
           const mouseLeaveListener = () => {
             scrollableAncestorElement.style.overflowY = 'scroll'
-            console.log(scrollableAncestorElement.style.overflowY)
           }
           modelViewer.addEventListener('mouseenter', mouseEnterListener)
           modelViewer.addEventListener('mouseleave', mouseLeaveListener)

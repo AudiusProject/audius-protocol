@@ -30,6 +30,13 @@ export const initializeSentry = () => {
     normalizeDepth: 5,
     maxBreadcrumbs: MAX_BREADCRUMBS,
     beforeBreadcrumb: (breadCrumb, hint) => {
+      // filter out info and debug logs
+      if (
+        (breadCrumb.level === 'info' || breadCrumb.level === 'debug') &&
+        breadCrumb.category === 'console'
+      ) {
+        return null
+      }
       // filter out analytics events
       if (hint && hint.xhr) {
         const url = hint.xhr.__sentry_xhr__.url

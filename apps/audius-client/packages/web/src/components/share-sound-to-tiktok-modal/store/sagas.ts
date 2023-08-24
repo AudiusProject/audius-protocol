@@ -90,7 +90,7 @@ async function* handleShare() {
     }
   } catch (error) {
     const errorMessage = getErrorMessage(error)
-    console.log(errorMessage)
+    console.error(errorMessage)
     yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
     yield* put(setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_ERROR }))
   }
@@ -135,7 +135,7 @@ function* handleUpload() {
     yield* put(showConfetti())
   } catch (error) {
     const errorMessage = getErrorMessage(error)
-    console.log(errorMessage)
+    console.error(errorMessage)
     yield* put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: errorMessage }))
     yield* put(setStatus({ status: ShareSoundToTiktokModalStatus.SHARE_ERROR }))
   } finally {

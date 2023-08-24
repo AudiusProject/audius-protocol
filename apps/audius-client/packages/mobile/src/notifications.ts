@@ -54,7 +54,6 @@ class PushNotifications {
   openInitialNotification = async () => {
     const notification = await Notifications.getInitialNotification()
     if (notification) {
-      console.log('Opening initial notification')
       this.onNotification(notification)
     }
   }

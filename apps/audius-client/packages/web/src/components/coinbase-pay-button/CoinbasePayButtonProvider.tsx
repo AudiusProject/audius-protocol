@@ -78,7 +78,7 @@ export const CoinbasePayButtonProvider = ({
           },
           onEvent: (event: any) => {
             // event stream
-            console.log(event)
+            console.info(event)
           },
           experienceLoggedIn: 'embedded',
           experienceLoggedOut: 'popup',

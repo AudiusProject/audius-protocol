@@ -156,7 +156,7 @@ export const CollectiblesPlaylistPageProvider = ({
             v.preload = 'metadata'
             v.src = collectible.animationUrl
             collectible.duration = await duration
-            v.play().catch((e) => console.log('video error', e))
+            v.play().catch((e) => console.error('video error', e))
 
             const videoHasAudio = await new Promise((resolve) => {
               const timeout = 5000

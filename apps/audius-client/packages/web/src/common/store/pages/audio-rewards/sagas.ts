@@ -195,7 +195,7 @@ function* claimChallengeRewardAsync(
     challengeId
   })
   if (challenge.challenge_type !== 'aggregate' && !challenge.is_complete) {
-    console.log('Waiting for challenge completion...')
+    console.info('Waiting for challenge completion...')
     const raceResult: { isComplete?: boolean } = yield* race({
       isComplete: call(
         waitForValue,
