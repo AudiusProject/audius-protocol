@@ -72,7 +72,7 @@ describe('payment-router', () => {
         assert.fail(`The transaction timed out, but the PDA may have been created.\nError: ${e}`)
       }
       const error = `{"err":{"InstructionError":[0,{"Custom":0}]}}`
-      assert.ok(e.toString().includes(error), `Error message not expected: ${e}`)
+      assert.ok(e.toString().includes(error), `Error message not expected: ${e.toString()}`)
       console.log('Payment Router balance PDA already exists')
     }
   })
@@ -117,7 +117,6 @@ describe('payment-router', () => {
     const totalAmount = amounts
       .reduce((a: anchor.BN, b: anchor.BN) => a.add(b), new anchor.BN(0))
 
-    // Add your test here.
     const tx = await program.methods
       .route(
         paymentRouterPdaBump,

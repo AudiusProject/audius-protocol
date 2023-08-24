@@ -49,12 +49,12 @@ const redeem = async ({
         transport: NodeHttpTransport(),
       }
     )
-    await redeemOnEth(
+    const { transactionHash } = await redeemOnEth(
       CONTRACTS.MAINNET.ethereum.token_bridge,
       signer,
       signedVAA
     )
-    console.log('Successfully redeemed the tokens on Ethereum!')
+    console.log(`Successfully redeemed the tokens on Ethereum: ${transactionHash}`)
   } catch (e) {
     console.error(`Caught error: ${e}`)
     if (retries <= 0) {

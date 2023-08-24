@@ -2,13 +2,16 @@
 
 This program has 2 main functions:
 
-1. To swap SOL USDC tokens to SOL AUDIO tokens via the Raydium AMM Program.
-2. To convert SOL AUDIO tokens to ETH AUDIO tokens via the Wormhole Token Bridge.
+1. Swap SPL-USDC tokens to SPL-AUDIO tokens via the Raydium AMM Program.
+2. Convert SPL-AUDIO tokens to ERC20-AUDIO tokens via the Wormhole Token Bridge.
 
-The program has a PDA (Program Derived Address) account that will own the tokens.
-The program methods are permissionless, meaning that anyone can interact with them as long as they're willing to pay for the transactions.
+This program derives a PDA to own tokens as an intermediary between states.
 
-Please note that this program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
+This program's methods are intentionally permissionless, meaning that anyone can interact with them as long as they're willing to pay for the transactions.
+
+The methods of the Staking Bridge are independent to reduce price impact of swaps and fees associated with bridging tokens.
+
+This program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
 Here is the [deployed program](https://explorer.solana.com/address/HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV).
 
@@ -103,7 +106,7 @@ This will send 0.00001 AUDIO tokens to the wormhole for a given recipient to sub
 There is a `scripts/redeemWormholeTokens.ts` you can use to redeem your AUDIO tokens that are in the Wormhole. You will need an eth provider url via which the transaction is sent, an eth private key to sign the transaction, and your Solana transaction ID which executed the transfer of your tokens to the Wormhole, like so:
 
 ```
-ethProviderUrl=<eth-provider-url> ethPrivateKey=<eth-private-key> node scripts/redeemWormholeTokens.ts <transaction-id>
+ethProviderUrl=<eth-provider-url> \
+ethPrivateKey=<eth-private-key> \
+node scripts/redeemWormholeTokens.ts <transaction-id>
 ```
-
-If you get an error redeeming the tokens, please try again a bit later.
