@@ -485,16 +485,6 @@ class CollectionPage extends Component<
     }
   }
 
-  onClickDescriptionExternalLink = (event: any) => {
-    const { record } = this.props
-    record(
-      make(Name.LINK_CLICKING, {
-        url: event.target.href,
-        source: 'collection page'
-      })
-    )
-  }
-
   onClickSave = (record: CollectionPageTrackRecord) => {
     if (!record.has_current_user_saved) {
       this.props.saveTrack(record.track_id)
@@ -736,8 +726,7 @@ class CollectionPage extends Component<
       tracks,
       userId,
       userPlaylists,
-      smartCollection,
-      onClickDescriptionInternalLink
+      smartCollection
     } = this.props
     const { allowReordering } = this.state
     const { playlistId } = this.props
@@ -784,8 +773,6 @@ class CollectionPage extends Component<
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
       onClickRepostTrack: this.onClickRepostTrack,
-      onClickDescriptionExternalLink: this.onClickDescriptionExternalLink,
-      onClickDescriptionInternalLink,
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
       onClickRemove: this.onClickRemove,
@@ -1014,8 +1001,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         openEditCollectionModal({ collectionId, isCollectionViewed: true })
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
-      dispatch(updatedPlaylistViewed({ playlistId })),
-    onClickDescriptionInternalLink: (path: string) => dispatch(pushRoute(path))
+      dispatch(updatedPlaylistViewed({ playlistId }))
   }
 }
 

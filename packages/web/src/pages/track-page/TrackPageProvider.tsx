@@ -383,9 +383,7 @@ class TrackPageProvider extends Component<
       buffering,
       userId,
       pause,
-      downloadTrack,
-      onExternalLinkClick,
-      onInternalLinkClick
+      downloadTrack
     } = this.props
     const heroPlaying =
       playing &&
@@ -476,9 +474,7 @@ class TrackPageProvider extends Component<
       isPlaying: playing,
       isBuffering: buffering,
       play: this.onMoreByArtistTracksPlay,
-      pause,
-      onExternalLinkClick,
-      onInternalLinkClick
+      pause
     }
 
     return (
@@ -608,16 +604,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(setRepost(trackId, RepostType.TRACK)),
     setFavoriteTrackId: (trackId: ID) =>
       dispatch(setFavorite(trackId, FavoriteType.TRACK)),
-    onInternalLinkClick: (route: string) => {
-      dispatch(pushRoute(route))
-    },
-    onExternalLinkClick: (event: any) => {
-      const trackEvent: TrackEvent = make(Name.LINK_CLICKING, {
-        url: event.target.href,
-        source: 'track page' as const
-      })
-      dispatch(trackEvent)
-    },
     record: (event: TrackEvent) => dispatch(event),
     setRepostUsers: (trackID: ID) =>
       dispatch(

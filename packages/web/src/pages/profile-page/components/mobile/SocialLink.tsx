@@ -6,7 +6,7 @@ import styles from './ProfileHeader.module.css'
 
 type SocialLinkProps = {
   onClick: () => void
-  href: string
+  to: string
   icon: ReactElement
 }
 

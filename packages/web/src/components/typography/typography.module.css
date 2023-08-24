@@ -17,6 +17,14 @@
  ```
 */
 
+.inherit {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-decoration: inherit;
+}
+
 .root {
   color: var(--text-color);
 }
@@ -220,12 +228,4 @@
 .link:hover {
   color: var(--focus);
   text-decoration: underline !important;
-}
-
-.inherit {
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  text-decoration: inherit;
 }

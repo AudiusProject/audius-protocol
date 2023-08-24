@@ -2,12 +2,10 @@ import { useCallback } from 'react'
 
 import {
   ID,
-  Name,
   SquareSizes,
   CoverArtSizes,
   FieldVisibility,
   Remix,
-  squashNewLines,
   getCanonicalName,
   formatSeconds,
   formatDate,
@@ -30,10 +28,8 @@ import {
   IconSpecialAccess
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 
 import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
-import { make, useRecord } from 'common/store/analytics/actions'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
@@ -45,7 +41,7 @@ import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
-import typeStyles from 'components/typography/typography.module.css'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
 import { isDarkMode } from 'utils/theme/theme'
@@ -223,19 +219,6 @@ const TrackHeader = ({
     },
     { label: 'Credit', value: credits }
   ].filter(({ isHidden, value }) => !isHidden && !!value)
-
-  const record = useRecord()
-  const onExternalLinkClick = useCallback(
-    (event: { target: { href: string } }) => {
-      record(
-        make(Name.LINK_CLICKING, {
-          url: event.target.href,
-          source: 'track page' as const
-        })
-      )
-    },
-    [record]
-  )
 
   const onClickOverflow = () => {
     const overflowActions = [
@@ -470,18 +453,12 @@ const TrackHeader = ({
         />
       ) : null}
       {description ? (
-        <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
-          <h3
-            className={cn(
-              typeStyles.body,
-              typeStyles.bodyMedium,
-              styles.description,
-              styles.withSectionDivider
-            )}
-          >
-            {squashNewLines(description)}
-          </h3>
-        </Linkify>
+        <UserGeneratedText
+          className={styles.description}
+          linkSource='track page'
+        >
+          {description}
+        </UserGeneratedText>
       ) : null}
       <div className={cn(styles.infoSection, styles.withSectionDivider)}>
         {renderTrackLabels()}

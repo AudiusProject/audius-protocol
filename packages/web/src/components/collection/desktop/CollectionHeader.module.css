@@ -157,19 +157,8 @@
 }
 
 .description {
-  user-select: none;
-  min-height: 22px;
-  white-space: pre-line;
-  color: var(--neutral);
-  font-size: var(--font-xs);
-  font-weight: var(--font-medium);
-  line-height: 18px;
-  margin-top: 14px;
-  margin-bottom: 6px;
-}
-
-.description a {
-  color: var(--primary);
+  margin-top: var(--unit-3);
+  margin-bottom: var(--unit-2);
 }
 
 /* Filter Input */

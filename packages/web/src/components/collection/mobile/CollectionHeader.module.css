@@ -155,21 +155,9 @@
 }
 
 .description {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  white-space: pre-line;
-  line-height: 26px;
   text-align: left;
   width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-
-.description > a {
-  color: var(--primary);
+  margin-bottom: var(--unit-6);
 }
 
 /* Loading */

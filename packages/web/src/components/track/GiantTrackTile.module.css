@@ -346,16 +346,8 @@
 }
 
 .description {
-  padding-top: 13px;
-  white-space: pre-line;
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
+  padding-top: var(--unit-3);
   line-height: 26px;
-}
-
-.description > a {
-  color: var(--primary);
 }
 
 .tagSection {

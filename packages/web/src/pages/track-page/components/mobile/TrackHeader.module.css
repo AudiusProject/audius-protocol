@@ -84,17 +84,17 @@
   width: 100%;
 }
 
-.description {
-  color: var(--neutral);
-  text-align: left;
-  white-space: pre-line;
-  text-overflow: ellipsis;
-  overflow: hidden;
+.withSectionDivider {
   width: 100%;
+  padding-top: var(--unit-4);
+  border-top: 1px solid var(--neutral-light-9);
 }
 
-.description > a {
-  color: var(--primary);
+.description {
+  composes: withSectionDivider;
+  text-align: left;
+  white-space: pre-line;
+  width: 100%;
 }
 
 /* Moible Toast */
@@ -263,10 +263,4 @@
   width: 100%;
   display: flex;
   justify-content: center;
-}
-
-.withSectionDivider {
-  width: 100%;
-  padding-top: var(--unit-4);
-  border-top: 1px solid var(--neutral-light-9);
 }

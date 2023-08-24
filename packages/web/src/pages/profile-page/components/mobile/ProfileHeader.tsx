@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, MouseEvent } from 'react'
 
 import {
   ID,
@@ -8,7 +8,6 @@ import {
   WidthSizes,
   SquareSizes,
   formatCount,
-  squashNewLines,
   imageCoverPhotoBlank
 } from '@audius/common'
 import {
@@ -22,10 +21,10 @@ import {
   IconTikTok
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { FollowButton } from 'components/follow-button/FollowButton'
@@ -34,6 +33,7 @@ import SubscribeButton from 'components/subscribe-button/SubscribeButton'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
@@ -244,18 +244,6 @@ const ProfileHeader = ({
     )
   }, [record, tikTokHandle, handle])
 
-  const onExternalLinkClick = useCallback(
-    (event: { target: { href: string } }) => {
-      record(
-        make(Name.LINK_CLICKING, {
-          url: event.target.href,
-          source: 'profile page' as const
-        })
-      )
-    },
-    [record]
-  )
-
   const onGoToFollowersPage = () => {
     setFollowersUserId(userId)
     goToRoute(FOLLOWERS_USERS_ROUTE)
@@ -281,11 +269,12 @@ const ProfileHeader = ({
     )
   }
 
-  const onDonationLinkClick = useCallback(
-    (event: { target: { href: string } }) => {
+  const handleClickDonationLink = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
       record(
         make(Name.PROFILE_PAGE_CLICK_DONATION, {
           handle,
+          // @ts-expect-error
           donation: event.target.href
         })
       )
@@ -415,60 +404,57 @@ const ProfileHeader = ({
             />
             {twitterHandle ? (
               <SocialLink
-                href={`https://twitter.com/${twitterHandle}`}
+                to={`https://twitter.com/${twitterHandle}`}
                 onClick={onGoToTwitter}
                 icon={<IconTwitterBird />}
               />
             ) : null}
             {instagramHandle ? (
               <SocialLink
-                href={`https://instagram.com/${instagramHandle}`}
+                to={`https://instagram.com/${instagramHandle}`}
                 onClick={onGoToInstagram}
                 icon={<IconInstagram />}
               />
             ) : null}
             {tikTokHandle ? (
               <SocialLink
-                href={`https://tiktok.com/@${tikTokHandle}`}
+                to={`https://tiktok.com/@${tikTokHandle}`}
                 onClick={onGoToTikTok}
                 icon={<IconTikTok />}
               />
             ) : null}
           </div>
+
           {bio ? (
-            <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
-              <p
-                ref={bioRefCb}
-                className={cn(styles.bio, {
-                  [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
-                })}
-              >
-                {squashNewLines(bio)}
-              </p>
-            </Linkify>
+            <UserGeneratedText
+              ref={bioRefCb}
+              color='neutralLight2'
+              size='small'
+              linkSource='profile page'
+              className={cn(styles.bio, {
+                [styles.bioExpanded]: hasEllipsis && !isDescriptionMinimized
+              })}
+            >
+              {bio}
+            </UserGeneratedText>
           ) : null}
           {hasEllipsis && !isDescriptionMinimized && (website || donation) && (
             <div className={styles.sites}>
               {website && (
                 <div className={styles.website} onClick={onGoToWebsite}>
-                  <IconLink className={cn(styles.socialIcon)} />
+                  <Icon icon={IconLink} className={styles.socialIcon} />
                   <span>{website}</span>
                 </div>
               )}
               {donation && (
                 <div className={styles.donation}>
-                  <IconDonate className={cn(styles.socialIcon)} />
-                  <span>
-                    <Linkify
-                      options={{
-                        // https://github.com/Soapbox/linkifyjs/issues/292
-                        // @ts-ignore
-                        attributes: { onClick: onDonationLinkClick }
-                      }}
-                    >
-                      {donation}
-                    </Linkify>
-                  </span>
+                  <Icon icon={IconDonate} className={styles.socialIcon} />
+                  <UserGeneratedText
+                    size='small'
+                    onClickLink={handleClickDonationLink}
+                  >
+                    {donation}
+                  </UserGeneratedText>
                 </div>
               )}
             </div>

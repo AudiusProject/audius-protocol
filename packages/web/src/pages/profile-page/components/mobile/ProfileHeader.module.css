@@ -190,25 +190,14 @@
 }
 
 .bio {
-  flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  white-space: pre-line;
-  width: 100%;
-  margin-top: 14px;
-  color: var(--neutral-light-2);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  transition: all 0.07s ease-in-out;
-  font-weight: var(--font-medium);
-  line-height: 20px;
   text-align: left;
-}
-
-.bio > a {
-  color: var(--primary);
+  width: 100%;
+  margin-top: var(--unit-2);
+  transition: all 0.07s ease-in-out;
 }
 
 .bio:not(.bioExpanded) {

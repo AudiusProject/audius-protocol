@@ -1,16 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  Name,
-  getPathFromAudiusUrl,
-  isAudiusUrl,
-  squashNewLines
-} from '@audius/common'
+import { Name } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
-import Linkify from 'linkify-react'
-import { useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
@@ -19,6 +11,7 @@ import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLin
 import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
+import { UserGeneratedText } from 'components/user-generated-text'
 
 import SocialLink, { Type } from '../SocialLink'
 
@@ -55,7 +48,6 @@ export const ProfileBio = ({
   instagramHandle,
   tikTokHandle
 }: ProfileBioProps) => {
-  const dispatch = useDispatch()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isCollapsible, setIsCollapsible] = useState(false)
   const [bioRef, { height: bioSize }] = useMeasure({
@@ -99,24 +91,6 @@ export const ProfileBio = ({
   }, [isCollapsed, setIsCollapsed])
 
   const record = useRecord()
-
-  const onExternalLinkClick = useCallback(
-    (event: React.MouseEvent<HTMLAnchorElement>) => {
-      record(
-        make(Name.LINK_CLICKING, {
-          url: event.currentTarget.href,
-          source: 'profile page'
-        })
-      )
-    },
-    [record]
-  )
-  const onInternalLinkClick = useCallback(
-    (url: string) => {
-      dispatch(pushRoute(url))
-    },
-    [dispatch]
-  )
 
   const onClickTwitter = useCallback(() => {
     record(
@@ -246,35 +220,16 @@ export const ProfileBio = ({
 
   return (
     <div>
-      <Linkify
-        options={{
-          attributes: {
-            onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-              const url = event.currentTarget.innerText
-
-              if (isAudiusUrl(url)) {
-                const path = getPathFromAudiusUrl(url)
-                event.nativeEvent.preventDefault()
-                onInternalLinkClick(path ?? '/')
-              } else {
-                onExternalLinkClick(event)
-              }
-            }
-          },
-          target: (href, type, tokens) => {
-            return isAudiusUrl(href) ? '' : '_blank'
-          }
-        }}
+      <UserGeneratedText
+        size='xSmall'
+        ref={bioRef}
+        className={cn(styles.description, {
+          [styles.truncated]: isCollapsed
+        })}
+        linkSource='profile page'
       >
-        <div
-          className={cn(styles.description, {
-            [styles.truncated]: isCollapsed
-          })}
-          ref={bioRef}
-        >
-          {squashNewLines(bio)}
-        </div>
-      </Linkify>
+        {bio}
+      </UserGeneratedText>
       {isCollapsed ? (
         <div>
           <OpacityTransition render={renderCollapsedContent} duration={300} />
