@@ -93,9 +93,7 @@ def add_playlist_artwork(playlist):
         return playlist
 
     cid = playlist["playlist_image_sizes_multihash"]
-    cover_cids = get_image_cids(
-        playlist["user"], cid, COVER_ART_SIZES
-    )
+    cover_cids = get_image_cids(playlist["user"], cid, COVER_ART_SIZES)
     playlist["cover_art_cids"] = cover_cids
     endpoint = get_primary_endpoint(playlist["user"], cid)
     artwork = get_image_urls(playlist["user"], cover_cids)
@@ -133,9 +131,7 @@ def add_user_artwork(user):
     profile_cid = user.get("profile_picture_sizes")
     profile_endpoint = get_primary_endpoint(user, profile_cid)
     if profile_cid:
-        profile_cids = get_image_cids(
-            user, profile_cid, PROFILE_PICTURE_SIZES
-        )
+        profile_cids = get_image_cids(user, profile_cid, PROFILE_PICTURE_SIZES)
         user["profile_picture_cids"] = profile_cids
         profile = get_image_urls(user, profile_cids)
         if profile_endpoint and not profile:

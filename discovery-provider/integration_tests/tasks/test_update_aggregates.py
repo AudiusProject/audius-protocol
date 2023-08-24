@@ -5,7 +5,6 @@ from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
-
 from src.tasks.update_aggregates import _update_aggregates
 from src.utils.db_session import get_db
 

@@ -4,7 +4,6 @@ import copy
 import os
 from datetime import datetime
 from typing import Dict, List, Sequence, Tuple, TypedDict, cast
-from src.models.indexing.revert_block import RevertBlock
 
 from hexbytes import HexBytes
 from redis import Redis
@@ -18,6 +17,7 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
+from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -603,7 +603,7 @@ def revert_block(session: Session, block_to_revert: Block):
     for record_type in prev_records:
         for json_record in prev_records[record_type]:
             if record_type not in model_mapping:
-                # skip playlist/track routes reverts 
+                # skip playlist/track routes reverts
                 continue
             Model = model_mapping[record_type]
             # filter out unnecessary keys
