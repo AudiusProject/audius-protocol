@@ -34,7 +34,7 @@ export const main = async () => {
       message: 'type',
       name: 'type',
       type: 'list',
-      choices: ['ios', 'android'],
+      choices: [{ title: 'ios', value: 'ios' }, { title: 'android', value: 'android' }],
       initial: 'ios'
     },
     { message: 'title', name: 'title', type: 'text', initial: 'test message' },
