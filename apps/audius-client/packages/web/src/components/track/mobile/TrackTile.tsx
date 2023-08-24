@@ -327,28 +327,24 @@ const TrackTile = (props: CombinedProps) => {
             <Link
               variant='title'
               color={isActive ? 'primary' : 'neutral'}
-              className={styles.title}
+              className={cn(fadeIn, styles.title)}
               to={permalink}
             >
-              <Text variant='inherit' className={cn(fadeIn, styles.text)}>
+              <Text variant='inherit' className={styles.text}>
                 {props.title}
               </Text>
               {isPlaying ? <IconVolume className={styles.playIcon} /> : null}
-              {(!artworkLoaded || showSkeleton) && (
-                <Skeleton
-                  className={styles.skeleton}
-                  width='80%'
-                  height='80%'
-                />
-              )}
             </Link>
+            {(!artworkLoaded || showSkeleton) && (
+              <Skeleton className={styles.skeleton} width='80%' height='80%' />
+            )}
             <Link
               to={profilePage(artistHandle)}
-              className={styles.artist}
+              className={cn(fadeIn, styles.artist)}
               color={isActive ? 'primary' : 'neutral'}
             >
               <ArtistPopover handle={artistHandle}>
-                <Text variant='inherit' className={cn(fadeIn, styles.text)}>
+                <Text variant='inherit' className={styles.text}>
                   {props.artistName}
                 </Text>
               </ArtistPopover>
@@ -357,14 +353,10 @@ const TrackTile = (props: CombinedProps) => {
                 badgeSize={12}
                 className={styles.iconVerified}
               />
-              {(!artworkLoaded || showSkeleton) && (
-                <Skeleton
-                  className={styles.skeleton}
-                  width='60%'
-                  height='80%'
-                />
-              )}
             </Link>
+            {(!artworkLoaded || showSkeleton) && (
+              <Skeleton className={styles.skeleton} width='60%' height='80%' />
+            )}
           </div>
           {coSign && (
             <div

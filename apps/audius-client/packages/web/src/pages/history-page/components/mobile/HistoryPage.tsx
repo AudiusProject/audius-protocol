@@ -77,6 +77,7 @@ const HistoryPage = ({
       isPlaying: isActive && playing,
       artistName: track.user.name,
       artistHandle: track.user.handle,
+      permalink: track.permalink,
       trackTitle: track.title,
       trackId: track.track_id,
       uid: track.uid,

@@ -130,7 +130,6 @@ const TrackPage = ({
       trackId={defaults.trackId}
       aiAttributionUserId={defaults.aiAttributionUserId}
       userId={user?.user_id ?? 0}
-      artistName={emptyStringGuard(user?.name)}
       artistHandle={emptyStringGuard(user?.handle)}
       coverArtSizes={defaults.coverArtSizes}
       tags={defaults.tags}

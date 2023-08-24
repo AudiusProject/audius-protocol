@@ -17,8 +17,8 @@ import PropTypes from 'prop-types'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import StatsButtonRow from 'pages/track-page/components/mobile/StatsButtonRow'
@@ -80,7 +80,6 @@ const CollectionHeader = ({
   userId,
   title,
   coverArtSizes,
-  artistName,
   description,
   isOwner,
   isReposted,
@@ -95,7 +94,6 @@ const CollectionHeader = ({
   playing,
   saves,
   repostCount,
-  onClickArtistName,
   onPlay,
   onShare,
   onSave,
@@ -198,7 +196,7 @@ const CollectionHeader = ({
           <div className={styles.title}>
             <Loading variant='title' />
           </div>
-          <div className={styles.artist} onClick={onClickArtistName}>
+          <div className={styles.artist}>
             <Loading variant='name' />
           </div>
 
@@ -223,16 +221,13 @@ const CollectionHeader = ({
             )}
           </DynamicImage>
           <h1 className={styles.title}>{title}</h1>
-          {artistName && (
-            <div className={styles.artist} onClick={onClickArtistName}>
-              <h2>{artistName}</h2>
-              <UserBadges
-                userId={userId}
-                badgeSize={16}
-                className={styles.verified}
-              />
-            </div>
-          )}
+          <UserLink
+            userId={userId}
+            color='secondary'
+            size='large'
+            textAs='h2'
+            className={styles.artist}
+          />
           <div className={styles.buttonSection}>
             <PlayButton playing={playing} onPlay={onPlay} />
             <ActionButtonRow
@@ -313,7 +308,6 @@ CollectionHeader.propTypes = {
   repostCount: PropTypes.number,
 
   // Actions
-  onClickArtistName: PropTypes.func,
   onRepost: PropTypes.func,
   onPlay: PropTypes.func,
   onClickFavorites: PropTypes.func,

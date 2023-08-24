@@ -22,6 +22,7 @@ type TrackListProps = {
     artistHandle: string
     artistName: string
     trackTitle: string
+    permalink: string
     trackId: ID
     uid?: string
     time?: number
@@ -99,6 +100,7 @@ const TrackList = ({
           isPremium={track.isPremium}
           artistHandle={track.artistHandle}
           artistName={track.artistName}
+          permalink={track.permalink}
           trackTitle={track.trackTitle}
           coverArtSizes={track.coverArtSizes}
           uid={track.uid}

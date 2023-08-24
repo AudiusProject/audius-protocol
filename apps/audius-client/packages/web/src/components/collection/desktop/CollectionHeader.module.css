@@ -135,13 +135,6 @@
   text-decoration: underline;
 }
 
-.verified {
-  margin-left: 8px;
-  display: inline;
-  position: relative;
-  top: 2px;
-}
-
 .actionButtons {
   margin-top: var(--unit-4);
   display: flex;

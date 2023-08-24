@@ -21,7 +21,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import SectionButton from 'components/section-button/SectionButton'
-import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
+import { getTrackDefaults } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import TrackPageHeader from './TrackHeader'
@@ -161,8 +161,6 @@ const TrackPage = ({
           title={defaults.title}
           trackId={defaults.trackId}
           userId={heroTrack?.owner_id ?? 0}
-          artistName={emptyStringGuard(user?.name)}
-          artistHandle={emptyStringGuard(user?.handle)}
           artistVerified={user?.is_verified ?? false}
           coverArtSizes={defaults.coverArtSizes}
           tags={defaults.tags}

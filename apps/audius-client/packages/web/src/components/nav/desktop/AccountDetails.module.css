@@ -27,20 +27,3 @@
   word-break: keep-all;
   overflow: hidden;
 }
-
-.name {
-  display: inline-flex;
-  align-items: center;
-}
-
-.nameLink {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.badge {
-  flex-shrink: 0;
-  margin-left: 4px;
-}

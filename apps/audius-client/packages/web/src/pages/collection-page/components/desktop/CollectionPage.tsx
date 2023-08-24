@@ -74,7 +74,6 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onHeroTrackClickArtistName: () => void
   onPlay: (record: CollectionPageTrackRecord) => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
@@ -83,8 +82,6 @@ export type CollectionPageProps = {
     trackMetadata: CollectionTrack[]
   ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
-  onClickTrackName: (record: CollectionPageTrackRecord) => void
-  onClickArtistName: (record: CollectionPageTrackRecord) => void
   onClickRepostTrack: (record: CollectionPageTrackRecord) => void
   onSortTracks: (sorters: any) => void
   onReorderTracks: (source: number, destination: number) => void
@@ -114,13 +111,10 @@ const CollectionPage = ({
   userId,
   getFilteredData,
   isQueued,
-  onHeroTrackClickArtistName,
   onFilterChange,
   onPlay,
   onClickRow,
   onClickSave,
-  onClickTrackName,
-  onClickArtistName,
   onClickRepostTrack,
   onSortTracks,
   onReorderTracks,
@@ -204,7 +198,6 @@ const CollectionPage = ({
       saves={playlistSaveCount}
       playing={queuedAndPlaying}
       // Actions
-      onClickArtistName={onHeroTrackClickArtistName}
       onFilterChange={onFilterChange}
       onPlay={onPlay}
       onClickReposts={onClickReposts}
@@ -274,8 +267,6 @@ const CollectionPage = ({
               data={dataSource}
               onClickRow={onClickRow}
               onClickFavorite={onClickSave}
-              onClickTrackName={onClickTrackName}
-              onClickArtistName={onClickArtistName}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onReorderTracks={onReorderTracks}

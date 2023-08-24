@@ -22,7 +22,7 @@ type TextOwnProps<TextComponentType extends ElementType = 'span'> = {
   color?: ColorValue
 }
 
-export type TextProps<TextComponentType extends ElementType> =
+export type TextProps<TextComponentType extends ElementType = 'span'> =
   TextOwnProps<TextComponentType> &
     Omit<ComponentProps<TextComponentType>, keyof TextOwnProps>
 
