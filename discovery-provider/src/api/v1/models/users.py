@@ -155,3 +155,18 @@ user_subscribers = ns.model(
         "subscriber_ids": fields.List(fields.String),
     },
 )
+
+purchase = ns.model(
+    "purchase",
+    {
+        "slot": fields.Integer(required=True),
+        "signature": fields.String(required=True),
+        "seller_user_id": fields.String(required=True),
+        "buyer_user_id": fields.String(required=True),
+        "amount": fields.String(required=True),
+        "content_type": fields.String(required=True),
+        "content_id": fields.String(required=True),
+        "created_at": fields.String(required=True),
+        "updated_at": fields.String(required=True),
+    },
+)
