@@ -163,18 +163,18 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     const idList = Array.from(userIds).join(',')
     const q = `
       select 
-        subscriber_user_id,
+        subscriber_id,
         user_id 
       from subscriptions
       where is_current = true
         and is_delete = false
-        and subscriber_user_id in (${idList})
+        and subscriber_id in (${idList})
       order by created_at desc
     `
     const result = await dialPg().query(q)
-    const grouped = groupBy(result.rows, 'subscriber_user_id')
-    for (let [subscriber_user_id, subscription_rows] of Object.entries(grouped)) {
-      grouped[subscriber_user_id] = subscription_rows.map((r) => r.user_id)
+    const grouped = groupBy(result.rows, 'subscriber_id')
+    for (let [subscriber_id, subscription_rows] of Object.entries(grouped)) {
+      grouped[subscriber_id] = subscription_rows.map((r) => r.user_id)
     }
     return grouped
   }

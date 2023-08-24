@@ -261,7 +261,7 @@ def populate_user_metadata(
                 Subscription.is_current == True,
                 Subscription.is_delete == False,
                 Subscription.user_id.in_(user_ids),
-                Subscription.subscriber_user_id == current_user_id,
+                Subscription.subscriber_id == current_user_id,
             )
             .all()
         )
