@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const preserveLogs =
   window.localStorage && window.localStorage.getItem('preserve-logs')
 

@@ -199,7 +199,7 @@ export const GiantTrackTile = ({
 
   // TODO: https://linear.app/audius/issue/PAY-1590/[webmobileweb]-add-support-for-playing-previews
   const onPreview = useCallback(() => {
-    console.log('Preview Clicked')
+    console.info('Preview Clicked')
   }, [])
 
   const renderCardTitle = (className: string) => {

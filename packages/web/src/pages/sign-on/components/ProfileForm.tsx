@@ -214,7 +214,7 @@ const ProfileForm = (props: ProfileFormProps) => {
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <TwitterLogin
-                  onFailure={console.log}
+                  onFailure={console.error}
                   onSuccess={onTwitterLogin as any}
                   /* @ts-ignore */
                   className={styles.hideTwitterButton}
@@ -236,7 +236,7 @@ const ProfileForm = (props: ProfileFormProps) => {
             {(animProps) => (
               <div style={animProps} className={styles.suggestTwitter}>
                 <InstagramAuth
-                  onFailure={console.log}
+                  onFailure={console.error}
                   onSuccess={onInstagramLogin}
                   className={styles.hideTwitterButton}
                 >

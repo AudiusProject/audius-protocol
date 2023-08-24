@@ -83,7 +83,7 @@ export const RateCtaDrawer = () => {
           // Do things after the popup shows up
         })
         .catch((error) => {
-          console.log(error)
+          console.error(error)
         })
     }
   }, [])

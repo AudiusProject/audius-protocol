@@ -89,7 +89,7 @@ const InstagramAuth = ({
 
         return onSuccess(profileRespJson.username, igUserProfile)
       } catch (err) {
-        console.log(err)
+        console.error(err)
         onFailure((err as Error).message)
         Sentry.captureException(`Instagram getProfile failed with ${err}`)
       }
@@ -108,7 +108,6 @@ const InstagramAuth = ({
 
         const closeDialog = () => {
           clearInterval(pollingInterval)
-          console.log(popup)
           popup.close()
         }
         try {
@@ -158,7 +157,7 @@ const InstagramAuth = ({
         polling(popup)
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
       if (popup) popup.close()
       return onFailure(error)
     }

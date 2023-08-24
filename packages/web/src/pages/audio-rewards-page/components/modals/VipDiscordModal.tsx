@@ -41,8 +41,6 @@ export const VipDiscordModal = () => {
 
   const wm = useWithMobileStyle(styles.mobile)
 
-  console.log('wm?', wm(styles.modalContainer))
-
   return (
     <ModalDrawer
       isOpen={isOpen}

@@ -69,7 +69,7 @@ export function* showPushNotificationConfirmation() {
           yield* put(setBrowerPushPermissionConfirmationModal)
         }
       } catch (err) {
-        console.log(err)
+        console.error(err)
       }
     }
   }

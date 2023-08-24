@@ -303,7 +303,7 @@ export const DetailsTile = ({
       iconPosition='left'
       icon={isPlaying ? IconPause : PlayIcon}
       onPress={() => {
-        console.log('Preview button pressed')
+        console.info('Preview button pressed')
       }}
       disabled={!isPlayable}
       fullWidth

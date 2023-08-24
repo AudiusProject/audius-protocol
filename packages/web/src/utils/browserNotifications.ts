@@ -125,7 +125,7 @@ export const unsubscribePushManagerBrowser = async () => {
     }
     return subscription
   } catch (error) {
-    console.log('Error unsubscribing', error)
+    console.error('Error unsubscribing', error)
     return null
   }
 }

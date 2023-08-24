@@ -41,6 +41,7 @@ export const useRenderingTrace = (
       )
 
     if (Object.keys(changedProps).length > 0) {
+      // eslint-disable-next-line no-console
       console.log(`[${componentName}] changed props:`, changedProps)
     }
 

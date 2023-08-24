@@ -199,7 +199,7 @@ const TrackHeader = ({
     isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
 
   // TODO: https://linear.app/audius/issue/PAY-1590/[webmobileweb]-add-support-for-playing-previews
-  const onPreview = useCallback(() => console.log('Preview Clicked'), [])
+  const onPreview = useCallback(() => console.info('Preview Clicked'), [])
 
   const image = useTrackCoverArt(
     trackId,

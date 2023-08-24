@@ -85,9 +85,7 @@ export const setArtistPick = createCustomAction(
   (trackId: ID) => ({ trackId })
 )
 
-export const unsetArtistPick = createCustomAction(UNSET_ARTIST_PICK, () => {
-  console.log('artist pick ')
-})
+export const unsetArtistPick = createCustomAction(UNSET_ARTIST_PICK, () => {})
 
 export const recordListen = createCustomAction(
   RECORD_LISTEN,

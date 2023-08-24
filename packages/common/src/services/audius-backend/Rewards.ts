@@ -68,7 +68,7 @@ export class ClientRewardsReporter {
           specifier
         })
       } catch (e) {
-        console.log(`Report success failure: ${e}`)
+        console.error(`Report success failure: ${e}`)
       }
     })()
   }
@@ -113,7 +113,7 @@ export class ClientRewardsReporter {
           specifier
         })
       } catch (e) {
-        console.log(`Report retry failure: ${e}`)
+        console.error(`Report retry failure: ${e}`)
       }
     })()
   }
@@ -172,7 +172,7 @@ export class ClientRewardsReporter {
           specifier
         })
       } catch (e) {
-        console.log(`Report failure failure: ${e}`)
+        console.error(`Report failure failure: ${e}`)
       }
     })()
   }
@@ -224,7 +224,7 @@ export class ClientRewardsReporter {
           reason
         })
       } catch (e) {
-        console.log(`Report AAO rejection failure: ${e}`)
+        console.error(`Report AAO rejection failure: ${e}`)
       }
     })()
   }
