@@ -478,8 +478,7 @@ export const setUserEmailAndSettings = async (
   db: Knex,
   frequency: EmailFrequency,
   userId: number,
-  timezone?: string,
-  additionalUserSettings?: Partial<UserRow>
+  timezone?: string
 ): Promise<IdentityUserRow> => {
   const user = {
     createdAt: new Date(Date.now()),
