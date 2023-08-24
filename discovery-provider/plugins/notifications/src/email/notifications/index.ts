@@ -48,7 +48,7 @@ export const getUsersCanNotifyQuery = async (
   frequency: EmailFrequency,
   pageCount: number,
   lastUser: number
-): Promise<{ blockchainUserId: number; email: string }[]> =>
+) =>
   await identityDb
     .with(
       'lastEmailSentAt',
@@ -73,14 +73,6 @@ export const getUsersCanNotifyQuery = async (
       'Users.blockchainUserId'
     )
     .where('Users.isEmailDeliverable', true)
-    // blocked from one or both of these results in the user being deemed abusive
-    .where(function () {
-      this.where('Users.isBlockedFromRelay', '=', false).andWhere(
-        'Users.isBlockedFromNotifications',
-        '=',
-        false
-      )
-    })
     .where(function () {
       this.where('lastEmailSentAt.timestamp', null).orWhere(
         'lastEmailSentAt.timestamp',

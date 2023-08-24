@@ -603,28 +603,4 @@ describe('Email Notifications', () => {
     )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
-
-  test('Do not pull abusive users from the database', async () => {
-    // setup
-    const user1 = 1 // can relay and notify
-    const user2 = 2 // can relay but cannot notify
-    const user3 = 3 // cannot relay but can notify
-    const user4 = 4 // cannot relay nor notify
-
-    const user2AdditionalSettings = { isBlockedFromNotifications: true }
-    const user3AdditionalSettings = { isBlockedFromRelay: true }
-    const user4AdditionalSettings = { isBlockedFromNotifications: true, isBlockedFromRelay: true }
-
-    const frequency = 'daily' // only live matters in this case
-    await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }, { user_id: user3 }, { user_id: user4 }])
-    await setUserEmailAndSettings(identityDB, frequency, user1)
-    await setUserEmailAndSettings(identityDB, frequency, user2, null, user2AdditionalSettings)
-    await setUserEmailAndSettings(identityDB, frequency, user3, null, user3AdditionalSettings)
-    await setUserEmailAndSettings(identityDB, frequency, user4, null, user4AdditionalSettings)
-
-    const startOffset = moment.utc().clone().subtract(15, 'minutes')
-    const users = await getUsersCanNotifyQuery(identityDB, startOffset, frequency, 10, 0)
-    expect(users.length).toBe(1)
-    expect(users[0].blockchainUserId).toBe(1)
-  })
 })
