@@ -8,6 +8,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
+    add_auth_headers_to_parser,
     abort_bad_request_param,
     abort_not_found,
     current_user_parser,
@@ -65,6 +66,7 @@ from src.api.v1.models.users import (
     connected_wallets,
     decoded_user_token,
     encoded_user_id,
+    purchase,
     user_model,
     user_model_full,
     user_replica_set,
@@ -2103,6 +2105,11 @@ purchases_and_sales_parser.add_argument(
     type=str,
     choices=SortDirection._member_names_,
 )
+add_auth_headers_to_parser(purchases_and_sales_parser)
+
+purchases_response = make_full_response(
+    "purchases_response", full_ns, fields.List(fields.Nested(purchase))
+)
 
 
 @full_ns.route("/<string:id>/purchases")
@@ -2113,6 +2120,7 @@ class FullPurchases(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_parser)
+    @full_ns.marshal_with(purchases_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
@@ -2141,6 +2149,7 @@ class FullSales(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_parser)
+    @full_ns.marshal_with(purchases_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
