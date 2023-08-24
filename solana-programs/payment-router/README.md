@@ -1,10 +1,10 @@
 # Payment Router
 
-This program transfers SOL AUDIO or SOL USDC from its PDA token account to given recipients.
+The Payment Router program splits a single SPL token payment to multiple recipients. It is intended to be used with SPL-AUDIO and SPL-USDC. While payments can be made indepdently of the Payment Router program, it is designed to improve space-efficiency and usability off-chain.
 
-The program has a PDA (Program Derived Address) account that will own the tokens.
+The program derives a PDA to own tokens as an intermediary before paying out.
 
-Please note that this program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
+This program and its Anchor tests are set up to only work with the Solana mainnet cluster at the moment.
 
 Here is the [deployed program](https://explorer.solana.com/address/6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp).
 
