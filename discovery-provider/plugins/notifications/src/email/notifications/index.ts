@@ -48,7 +48,7 @@ export const getUsersCanNotifyQuery = async (
   frequency: EmailFrequency,
   pageCount: number,
   lastUser: number
-) =>
+): Promise<{ blockchainUserId: number; email: string }[]> =>
   await identityDb
     .with(
       'lastEmailSentAt',
