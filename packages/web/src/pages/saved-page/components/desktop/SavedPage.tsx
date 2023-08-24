@@ -66,8 +66,6 @@ export type SavedPageProps = {
   fetchMoreTracks: (offset?: number, limit?: number) => void
   onClickRow: (record: TrackRecord) => void
   onClickSave: (record: TrackRecord) => void
-  onClickTrackName: (record: TrackRecord) => void
-  onClickArtistName: (record: TrackRecord) => void
   onClickRepost: (record: TrackRecord) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
@@ -112,8 +110,6 @@ const SavedPage = ({
   onChangeTab,
   onClickRow,
   onClickSave,
-  onClickTrackName,
-  onClickArtistName,
   onClickRepost,
   onSortTracks
 }: SavedPageProps) => {
@@ -212,11 +208,9 @@ const SavedPage = ({
           isVirtualized
           key='favorites'
           loading={tracksLoading || initFetch}
-          onClickArtistName={onClickArtistName}
           onClickFavorite={onClickSave}
           onClickRepost={onClickRepost}
           onClickRow={onClickRow}
-          onClickTrackName={onClickTrackName}
           onSortTracks={allTracksFetched ? onSortTracks : onSortChange}
           playing={queuedAndPlaying}
           playingIndex={playingIndex}

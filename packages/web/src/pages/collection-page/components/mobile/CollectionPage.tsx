@@ -65,7 +65,6 @@ export type CollectionPageProps = {
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
-  onHeroTrackClickArtistName: () => void
   onPlay: (record: any) => void
   onHeroTrackShare: () => void
   onHeroTrackSave?: () => void
@@ -78,7 +77,6 @@ export type CollectionPageProps = {
   ) => void
   onClickFavorites?: () => void
   onClickReposts?: () => void
-  refresh?: () => void
 }
 
 const CollectionPage = ({
@@ -95,7 +93,6 @@ const CollectionPage = ({
   userId,
   userPlaylists,
   isQueued,
-  onHeroTrackClickArtistName,
   onPlay,
   onHeroTrackShare,
   onHeroTrackSave,
@@ -104,8 +101,7 @@ const CollectionPage = ({
   onHeroTrackRepost,
   onClickMobileOverflow,
   onClickFavorites,
-  onClickReposts,
-  refresh
+  onClickReposts
 }: CollectionPageProps) => {
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
@@ -220,6 +216,7 @@ const CollectionPage = ({
       artistName: entry?.user?.name,
       artistHandle: entry?.user?.handle,
       trackTitle: entry.title,
+      permalink: entry.permalink,
       trackId: entry.track_id,
       uid: entry.uid,
       isPremium: entry.is_premium,
@@ -265,7 +262,6 @@ const CollectionPage = ({
             repostCount={playlistRepostCount}
             isReposted={isReposted}
             // Actions
-            onClickArtistName={onHeroTrackClickArtistName}
             onPlay={onPlay}
             onShare={onHeroTrackShare}
             onSave={onHeroTrackSave}

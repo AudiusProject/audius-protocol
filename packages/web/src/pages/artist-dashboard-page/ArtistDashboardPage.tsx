@@ -162,7 +162,6 @@ const TracksTableContainer = ({
           disabledTrackEdit
           columns={tableColumns}
           onClickRow={onClickRow}
-          onClickTrackName={onClickRow}
           loading={tracksStatus === Status.LOADING}
           fetchPage={handleFetchPage}
           pageSize={tablePageSize}
@@ -182,7 +181,6 @@ const TracksTableContainer = ({
           disabledTrackEdit
           columns={tableColumns}
           onClickRow={onClickRow}
-          onClickTrackName={onClickRow}
           loading={tracksStatus === Status.LOADING}
           fetchPage={handleFetchPage}
           pageSize={tablePageSize}

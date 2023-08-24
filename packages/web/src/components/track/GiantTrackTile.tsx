@@ -31,10 +31,9 @@ import cn from 'classnames'
 import Linkify from 'linkify-react'
 
 import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
-import { Link } from 'components/link'
+import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
@@ -44,11 +43,8 @@ import { Tile } from 'components/tile'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
-import { Text } from 'components/typography'
-import UserBadges from 'components/user-badges/UserBadges'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
-import { profilePage } from 'utils/route'
 
 import { AiTrackSection } from './AiTrackSection'
 import Badge from './Badge'
@@ -85,7 +81,6 @@ const messages = {
 export type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
-  artistName: string
   badge: Nullable<string>
   coSign: Nullable<Remix>
   coverArtSizes: Nullable<CoverArtSizes>
@@ -134,7 +129,6 @@ export type GiantTrackTileProps = {
 export const GiantTrackTile = ({
   aiAttributionUserId,
   artistHandle,
-  artistName,
   badge,
   coSign,
   coverArtSizes,
@@ -525,23 +519,15 @@ export const GiantTrackTile = ({
             <div className={styles.artistWrapper}>
               <div className={cn(fadeIn)}>
                 <span>By </span>
-                <ArtistPopover handle={artistHandle}>
-                  <Link
-                    to={profilePage(artistHandle)}
-                    color='secondary'
-                    variant='body'
-                    size='large'
-                  >
-                    <Text as='h2' variant='inherit'>
-                      {artistName}
-                    </Text>
-                    <UserBadges
-                      className={styles.verified}
-                      badgeSize={18}
-                      userId={userId}
-                    />
-                  </Link>
-                </ArtistPopover>
+                <UserLink
+                  color='secondary'
+                  variant='body'
+                  size='large'
+                  textAs='h2'
+                  userId={userId}
+                  badgeSize={18}
+                  popover
+                />
               </div>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />

@@ -13,12 +13,11 @@ import Linkify from 'linkify-react'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Input } from 'components/input'
+import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
 import InfoLabel from 'components/track/InfoLabel'
-import UserBadges from 'components/user-badges/UserBadges'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
 import { Artwork } from './Artwork'
@@ -39,7 +38,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     title,
     coverArtSizes,
     artistName,
-    artistHandle,
     description,
     isOwner,
     modified,
@@ -49,7 +47,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     tracksLoading,
     loading,
     playing,
-    onClickArtistName,
     onClickDescriptionExternalLink,
     onClickDescriptionInternalLink,
     onPlay,
@@ -141,17 +138,13 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
           {artistName && (
             <div className={styles.artistWrapper}>
               <div className={cn(fadeIn)}>
-                <span>By</span>
-                <ArtistPopover handle={artistHandle}>
-                  <h2 className={styles.artist} onClick={onClickArtistName}>
-                    {artistName}
-                    <UserBadges
-                      userId={userId}
-                      badgeSize={16}
-                      className={styles.verified}
-                    />
-                  </h2>
-                </ArtistPopover>
+                <span>By </span>
+                <UserLink
+                  userId={userId}
+                  strength='strong'
+                  popover
+                  textAs='h2'
+                />
               </div>
               {isLoading && (
                 <Skeleton className={styles.skeleton} width='60%' />

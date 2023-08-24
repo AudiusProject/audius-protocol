@@ -40,17 +40,14 @@ import { Size } from 'components/co-sign/types'
 import { DogEar } from 'components/dog-ear'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { Link } from 'components/link'
+import { UserLink } from 'components/link'
 import { SearchTag } from 'components/search/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
-import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/Moods'
-import { profilePage } from 'utils/route'
 import { isDarkMode } from 'utils/theme/theme'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
@@ -114,8 +111,6 @@ type TrackHeaderProps = {
   trackId: ID
   userId: ID
   coverArtSizes: CoverArtSizes | null
-  artistName: string
-  artistHandle: string
   description: string
   released: string
   genre: string
@@ -152,8 +147,6 @@ const TrackHeader = ({
   trackId,
   userId,
   coverArtSizes,
-  artistName,
-  artistHandle,
   description,
   isOwner,
   isFollowing,
@@ -401,21 +394,14 @@ const TrackHeader = ({
       {imageElement}
       <div className={styles.titleArtistSection}>
         <h1 className={styles.title}>{title}</h1>
-        <Link
-          to={profilePage(artistHandle)}
+        <UserLink
+          userId={userId}
           color='secondary'
           variant='body'
           size='large'
-        >
-          <Text as='h2' variant='inherit'>
-            {artistName}
-          </Text>
-          <UserBadges
-            className={styles.verified}
-            badgeSize={16}
-            userId={userId}
-          />
-        </Link>
+          textAs='h2'
+          badgeSize={16}
+        />
       </div>
       {showPlay ? (
         <PlayButton

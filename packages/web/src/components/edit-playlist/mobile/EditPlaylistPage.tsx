@@ -357,6 +357,7 @@ const EditPlaylistPage = g(
           artistName: t.user.name,
           artistHandle: t.user.handle,
           trackTitle: t.title,
+          permalink: t.permalink,
           trackId: t.track_id,
           time: playlistTrack?.time,
           isPremium: t.is_premium,

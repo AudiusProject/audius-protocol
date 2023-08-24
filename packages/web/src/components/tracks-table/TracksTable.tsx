@@ -12,7 +12,7 @@ import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
 
-import { ArtistPopover } from 'components/artist/ArtistPopover'
+import { Link, UserLink } from 'components/link'
 import {
   Table,
   OverflowMenuButton,
@@ -24,7 +24,6 @@ import {
   numericSorter
 } from 'components/table'
 import Tooltip from 'components/tooltip/Tooltip'
-import UserBadges from 'components/user-badges/UserBadges'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
@@ -78,7 +77,6 @@ type TracksTableProps = {
   isPaginated?: boolean
   isReorderable?: boolean
   loading?: boolean
-  onClickArtistName?: (track: any) => void
   onClickFavorite?: (track: any) => void
   onClickRemove?: (
     track: any,
@@ -88,7 +86,6 @@ type TracksTableProps = {
   ) => void
   onClickRepost?: (track: any) => void
   onClickRow?: (track: any, index: number) => void
-  onClickTrackName?: (track: any) => void
   onReorderTracks?: (source: number, destination: number) => void
   onShowMoreToggle?: (setting: boolean) => void
   onSortTracks?: (...props: any[]) => void
@@ -130,12 +127,10 @@ export const TracksTable = ({
   fetchThreshold,
   isVirtualized = false,
   loading = false,
-  onClickArtistName,
   onClickFavorite,
   onClickRemove,
   onClickRepost,
   onClickRow,
-  onClickTrackName,
   onReorderTracks,
   onShowMoreToggle,
   onSortTracks,
@@ -188,6 +183,7 @@ export const TracksTable = ({
       ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
       const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const index = cellInfo.row.index
+      const active = index === playingIndex
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
 
@@ -201,67 +197,47 @@ export const TracksTable = ({
       }
 
       return (
-        <div
-          className={styles.textContainer}
-          onClick={(e) => {
-            e.stopPropagation()
-            if (!isLocked && !deleted) onClickTrackName?.(track)
-          }}
-        >
-          <div
-            className={cn(styles.textCell, {
-              [styles.trackName]: !deleted,
-              [styles.isPlaying]: index === playingIndex
-            })}
+        <div className={styles.textContainer}>
+          <Link
+            variant='inherit'
+            as={isLocked || deleted ? 'span' : undefined}
+            to={isLocked || deleted ? '' : track.permalink}
+            color={active ? 'primary' : 'neutral'}
+            className={styles.trackCell}
           >
-            <span className={cn({ [styles.lockedTrackName]: isLocked })}>
-              {track.name}
-            </span>
-            {!deleted && isLocked ? renderLocked() : null}
+            {track.name}
             {deleted ? ` [Deleted By Artist]` : ''}
-          </div>
+          </Link>
+          {!deleted && isLocked ? renderLocked() : null}
         </div>
       )
     },
-    [trackAccessMap, onClickTrackName, playingIndex]
+    [trackAccessMap, playingIndex]
   )
 
   const renderArtistNameCell = useCallback(
     (cellInfo: TrackCell) => {
-      const track = cellInfo.row.original
-      const index = cellInfo.row.index
-      if (track.user?.is_deactivated) {
-        return `${track.user?.name} [Deactivated]`
+      const { original: track, index } = cellInfo.row
+      const { user } = track
+      if (user?.is_deactivated) {
+        return `${user?.name} [Deactivated]`
       }
 
       return (
         <div className={styles.artistCellContainer}>
-          <ArtistPopover handle={track.user?.handle}>
-            <div
-              className={styles.textContainer}
-              onClick={(e) => {
-                e.stopPropagation()
-                onClickArtistName?.(track)
-              }}
-            >
-              <div
-                className={cn(styles.textCell, styles.artistName, {
-                  [styles.isPlaying]: index === playingIndex
-                })}
-              >
-                {track.artist}
-              </div>
-              <UserBadges
-                userId={track.user.user_id}
-                badgeSize={12}
-                className={styles.badges}
-              />
-            </div>
-          </ArtistPopover>
+          <UserLink
+            className={styles.textCell}
+            userId={user.user_id}
+            size='small'
+            strength='strong'
+            color={index === playingIndex ? 'primary' : 'neutral'}
+            badgeSize={12}
+            popover
+          />
         </div>
       )
     },
-    [onClickArtistName, playingIndex]
+    [playingIndex]
   )
 
   const renderPlaysCell = useCallback((cellInfo: TrackCell) => {

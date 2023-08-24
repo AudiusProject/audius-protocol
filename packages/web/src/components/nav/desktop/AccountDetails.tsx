@@ -1,9 +1,8 @@
 import { accountSelectors } from '@audius/common'
 
 import { Avatar } from 'components/avatar'
-import { Link } from 'components/link'
+import { Link, UserLink } from 'components/link'
 import { Text } from 'components/typography'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
@@ -29,22 +28,13 @@ export const AccountDetails = () => {
         <div className={styles.userInfo}>
           {account ? (
             <>
-              <div className={styles.name}>
-                <Link
-                  to={profileLink}
-                  variant='title'
-                  size='small'
-                  strength='weak'
-                  className={styles.nameLink}
-                >
-                  {account.name}
-                </Link>
-                <UserBadges
-                  userId={account.user_id}
-                  badgeSize={12}
-                  className={styles.badge}
-                />
-              </div>
+              <UserLink
+                variant='title'
+                size='small'
+                strength='weak'
+                userId={account.user_id}
+                badgeSize={12}
+              />
               <Link
                 variant='body'
                 size='xSmall'

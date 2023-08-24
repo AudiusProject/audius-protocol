@@ -1,6 +1,9 @@
 import { MouseEvent, forwardRef, useCallback } from 'react'
 
+import cn from 'classnames'
 import { LinkProps } from 'react-router-dom'
+
+import styles from './SeoLink.module.css'
 
 type SeoLinkProps = Omit<LinkProps, 'to'> & { to: string }
 
@@ -9,7 +12,7 @@ type SeoLinkProps = Omit<LinkProps, 'to'> & { to: string }
  */
 export const SeoLink = forwardRef<HTMLAnchorElement, SeoLinkProps>(
   function SeoLink(props, ref) {
-    const { to, onClick, ...other } = props
+    const { to, onClick, className, ...other } = props
 
     const handleClick = useCallback(
       (event: MouseEvent<HTMLAnchorElement>) => {
@@ -19,6 +22,14 @@ export const SeoLink = forwardRef<HTMLAnchorElement, SeoLinkProps>(
       [onClick]
     )
 
-    return <a ref={ref} href={to} onClick={handleClick} {...other} />
+    return (
+      <a
+        ref={ref}
+        href={to}
+        onClick={handleClick}
+        className={cn(styles.root, className)}
+        {...other}
+      />
+    )
   }
 )

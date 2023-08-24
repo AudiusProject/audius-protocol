@@ -12,12 +12,16 @@
   line-height: 1.2;
 }
 
+.trackCell {
+  composes: textCell;
+  display: block;
+}
+
 .trackName {
   display: flex;
   align-items: center;
 }
 
-.artistName:hover,
 .trackName:hover:not(:has(.locked)) {
   cursor: pointer;
   transition: color 0.07s ease-out;
