@@ -28,6 +28,7 @@ import type {
   FullTracks,
   FullUserResponse,
   HistoryResponseFull,
+  PurchasesResponse,
   RelatedArtistResponseFull,
   TopGenreUsersResponseFull,
   TopUsersResponseFull,
@@ -59,6 +60,8 @@ import {
     FullUserResponseToJSON,
     HistoryResponseFullFromJSON,
     HistoryResponseFullToJSON,
+    PurchasesResponseFromJSON,
+    PurchasesResponseToJSON,
     RelatedArtistResponseFullFromJSON,
     RelatedArtistResponseFullToJSON,
     TopGenreUsersResponseFullFromJSON,
@@ -117,6 +120,8 @@ export interface GetFollowingRequest {
 
 export interface GetPurchasesRequest {
     id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -147,6 +152,8 @@ export interface GetRepostsByHandleRequest {
 
 export interface GetSalesRequest {
     id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
     offset?: number;
     limit?: number;
     userId?: string;
@@ -563,9 +570,17 @@ export class UsersApi extends runtime.BaseAPI {
     /** @hidden
      * Gets the purchases the user has made
      */
-    async getPurchasesRaw(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async getPurchasesRaw(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchases.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchases.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchases.');
         }
 
         const queryParameters: any = {};
@@ -592,6 +607,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/purchases`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -599,14 +622,15 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets the purchases the user has made
      */
-    async getPurchases(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getPurchasesRaw(params, initOverrides);
+    async getPurchases(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
+        const response = await this.getPurchasesRaw(params, initOverrides);
+        return await response.value();
     }
 
     /** @hidden
@@ -738,9 +762,17 @@ export class UsersApi extends runtime.BaseAPI {
     /** @hidden
      * Gets the sales the user has made
      */
-    async getSalesRaw(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async getSalesRaw(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSales.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSales.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSales.');
         }
 
         const queryParameters: any = {};
@@ -767,6 +799,14 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
         const response = await this.request({
             path: `/users/{id}/sales`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
             method: 'GET',
@@ -774,14 +814,15 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets the sales the user has made
      */
-    async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getSalesRaw(params, initOverrides);
+    async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
+        const response = await this.getSalesRaw(params, initOverrides);
+        return await response.value();
     }
 
     /** @hidden

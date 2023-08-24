@@ -37,6 +37,12 @@ export interface GetPlaylistRequest {
     userId?: string;
 }
 
+export interface GetPlaylistByHandleAndSlugRequest {
+    handle: string;
+    slug: string;
+    userId?: string;
+}
+
 export interface GetPlaylistTracksRequest {
     playlistId: string;
 }
@@ -85,6 +91,44 @@ export class PlaylistsApi extends runtime.BaseAPI {
      */
     async getPlaylist(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistResponse> {
         const response = await this.getPlaylistRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
+     * Get a playlist by handle and slug
+     */
+    async getPlaylistByHandleAndSlugRaw(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistResponse>> {
+        if (params.handle === null || params.handle === undefined) {
+            throw new runtime.RequiredError('handle','Required parameter params.handle was null or undefined when calling getPlaylistByHandleAndSlug.');
+        }
+
+        if (params.slug === null || params.slug === undefined) {
+            throw new runtime.RequiredError('slug','Required parameter params.slug was null or undefined when calling getPlaylistByHandleAndSlug.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/playlists/by_permalink/{handle}/{slug}`.replace(`{${"handle"}}`, encodeURIComponent(String(params.handle))).replace(`{${"slug"}}`, encodeURIComponent(String(params.slug))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a playlist by handle and slug
+     */
+    async getPlaylistByHandleAndSlug(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistResponse> {
+        const response = await this.getPlaylistByHandleAndSlugRaw(params, initOverrides);
         return await response.value();
     }
 

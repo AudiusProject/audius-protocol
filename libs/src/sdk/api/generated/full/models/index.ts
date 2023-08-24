@@ -38,6 +38,8 @@ export * from './PlaylistFullWithoutTracks';
 export * from './PlaylistLibrary';
 export * from './PremiumContentSignature';
 export * from './ProfilePicture';
+export * from './Purchase';
+export * from './PurchasesResponse';
 export * from './RelatedArtistResponseFull';
 export * from './RemixesResponse';
 export * from './RemixesResponseFull';
