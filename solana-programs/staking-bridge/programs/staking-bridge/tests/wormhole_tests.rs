@@ -1,4 +1,4 @@
-#![cfg(feature = "test-bpf")]
+#![cfg(feature = "test-sbf")]
 
 use anchor_lang::prelude::Pubkey;
 
@@ -11,7 +11,6 @@ use staking_bridge::constant::{
 
 mod utils;
 use utils::{
-  get_initialized_token_account_info,
   make_readonly_account_info,
   assert_error
 };
