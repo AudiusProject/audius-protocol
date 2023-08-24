@@ -14,10 +14,7 @@ from src.tasks.entity_manager.entity_manager import (
     ENABLE_DEVELOPMENT_FEATURES,
     entity_manager_update,
 )
-from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_DESCRIPTION,
-    TRACK_ID_OFFSET,
-)
+from src.tasks.entity_manager.utils import CHARACTER_LIMIT_DESCRIPTION, TRACK_ID_OFFSET
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
