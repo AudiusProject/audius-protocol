@@ -256,7 +256,7 @@ def populate_user_metadata(
 
         # collect all outgoing subscription edges for current user
         current_user_subscribed_rows = (
-            session.query(Subscription.user_id)
+            session.query(Subscription)
             .filter(
                 Subscription.is_current == True,
                 Subscription.is_delete == False,
@@ -265,8 +265,8 @@ def populate_user_metadata(
             )
             .all()
         )
-        for user_id in current_user_subscribed_rows:
-            current_user_subscribed_user_ids[user_id] = True
+        for subscription in current_user_subscribed_rows:
+            current_user_subscribed_user_ids[subscription.user_id] = True
 
         # build dict of user id --> followee follow count
         current_user_followees = (
