@@ -55,6 +55,9 @@ pub mod payment_router {
     }
 }
 
+#[account]
+pub struct Empty {}
+
 #[derive(Accounts)]
 pub struct CreatePaymentRouterBalancePDA<'info> {
     #[account(
@@ -66,7 +69,7 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
     )]
     /// CHECK: This is the PDA owned by this program. This account will temporarily hold SOL USDC and SOL AUDIO tokens
     /// before transferring them over to given recipients, all within the same transaction.
-    pub payment_router_pda: UncheckedAccount<'info>,
+    pub payment_router_pda: Account<'info, Empty>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -87,6 +90,6 @@ pub struct Route<'info> {
         bump = payment_router_pda_bump
     )]
     /// CHECK: This is the PDA initialized in the CreatePaymentRouterBalancePDA instruction.
-    pub sender_owner: UncheckedAccount<'info>,
+    pub sender_owner: Account<'info, Empty>,
     pub spl_token: Program<'info, Token>,
 }

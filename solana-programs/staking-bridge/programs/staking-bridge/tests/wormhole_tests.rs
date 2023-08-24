@@ -11,7 +11,6 @@ use staking_bridge::constant::{
 
 mod utils;
 use utils::{
-  get_initialized_token_account_info,
   make_readonly_account_info,
   assert_error
 };

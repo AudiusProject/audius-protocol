@@ -10,9 +10,7 @@ use staking_bridge::constant::{
 };
 
 mod utils;
-mod wormhole_tests;
 use utils::{
-  get_initialized_token_account_info,
   make_readonly_account_info,
   assert_error
 };

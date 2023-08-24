@@ -91,7 +91,7 @@ describe('staking-bridge', () => {
         assert.fail(`The transaction timed out, but the PDA may have been created.\nError: ${e}`)
       }
       const error = `{"err":{"InstructionError":[0,{"Custom":0}]}}`
-      assert.ok(e.toString().includes(error), `Error message not expected: ${e}`)
+      assert.ok(e.toString().includes(error), `Error message not expected: ${e.toString()}`)
       console.log('Staking Bridge balance PDA already exists')
     }
 

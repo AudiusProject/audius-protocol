@@ -125,6 +125,9 @@ pub mod staking_bridge {
     }
 }
 
+#[account]
+pub struct Empty {}
+
 #[derive(Accounts)]
 pub struct CreateStakingBridgeBalancePda<'info> {
     #[account(
@@ -135,7 +138,7 @@ pub struct CreateStakingBridgeBalancePda<'info> {
         space = 8
     )]
     /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
-    pub staking_bridge_pda: UncheckedAccount<'info>,
+    pub staking_bridge_pda: Account<'info, Empty>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
