@@ -2127,7 +2127,7 @@ class FullPurchases(Resource):
             "limit": limit,
             "offset": offset,
             "sort_method": args.get("sort_method", None),
-            "sort_direction": args.get("sort_direction", None)
+            "sort_direction": args.get("sort_direction", None),
         }
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
@@ -2155,7 +2155,7 @@ class FullSales(Resource):
             "limit": limit,
             "offset": offset,
             "sort_method": args.get("sort_method", None),
-            "sort_direction": args.get("sort_direction", None)
+            "sort_direction": args.get("sort_direction", None),
         }
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
