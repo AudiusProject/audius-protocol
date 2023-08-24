@@ -93,8 +93,6 @@ export type CollectionPageProps = {
   ) => void
   onClickReposts?: () => void
   onClickFavorites?: () => void
-  onClickDescriptionExternalLink: (e: any) => void
-  onClickDescriptionInternalLink: (e: any) => void
 }
 
 const CollectionPage = ({
@@ -120,9 +118,7 @@ const CollectionPage = ({
   onReorderTracks,
   onClickRemove,
   onClickReposts,
-  onClickFavorites,
-  onClickDescriptionExternalLink,
-  onClickDescriptionInternalLink
+  onClickFavorites
 }: CollectionPageProps) => {
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const { isEnabled: arePlaylistUpdatesEnabled } = useFlag(
@@ -202,8 +198,6 @@ const CollectionPage = ({
       onPlay={onPlay}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
-      onClickDescriptionExternalLink={onClickDescriptionExternalLink}
-      onClickDescriptionInternalLink={onClickDescriptionInternalLink}
       // Smart collection
       variant={variant}
       gradient={gradient}

@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 
-import { Maybe } from '@audius/common'
 import {
   IconTwitterBird,
   IconInstagram,
@@ -9,10 +8,12 @@ import {
   IconTikTokInverted
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 
+import { Icon } from 'components/Icon'
 import { ExternalLink } from 'components/link'
 import Tooltip from 'components/tooltip/Tooltip'
+import { Text } from 'components/typography'
+import { UserGeneratedText } from 'components/user-generated-text'
 
 import styles from './SocialLink.module.css'
 
@@ -41,6 +42,14 @@ const singleLinkTypes = [
   Type.WEBSITE
 ]
 
+const socialIcons = {
+  [Type.TWITTER]: IconTwitterBird,
+  [Type.INSTAGRAM]: IconInstagram,
+  [Type.TIKTOK]: IconTikTokInverted,
+  [Type.WEBSITE]: IconLink,
+  [Type.DONATION]: IconDonate
+}
+
 const isHandleType = (type: Type): type is HandleType =>
   handleTypes.includes(type)
 
@@ -55,39 +64,17 @@ const SocialLink = (props: SocialLinkProps) => {
   const { type, link, onClick, iconOnly = false } = props
   const isSingleLink = singleLinkTypes.includes(type)
 
-  let icon: ReactNode
-  switch (type) {
-    case Type.TWITTER:
-      icon = (
-        <IconTwitterBird
-          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
-        />
-      )
-      break
-    case Type.INSTAGRAM:
-      icon = (
-        <IconInstagram
-          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
-        />
-      )
-      break
-    case Type.TIKTOK:
-      icon = (
-        <IconTikTokInverted
-          className={cn(styles.icon, { [styles.iconOnly]: iconOnly })}
-        />
-      )
-      break
-    case Type.WEBSITE:
-      icon = <IconLink className={styles.icon} />
-      break
-    case Type.DONATION:
-      icon = (
-        <Tooltip text='Donate'>
-          <IconDonate className={styles.icon} />
-        </Tooltip>
-      )
-      break
+  const SocialIcon = socialIcons[type]
+
+  let icon = (
+    <Icon
+      icon={SocialIcon}
+      size={iconOnly ? 'large' : 'medium'}
+      className={isSingleLink ? styles.icon : undefined}
+    />
+  )
+  if (type === Type.DONATION) {
+    icon = <Tooltip text='Donate'>{icon}</Tooltip>
   }
 
   let text: ReactNode
@@ -96,23 +83,11 @@ const SocialLink = (props: SocialLinkProps) => {
   } else {
     text = link.replace(/((?:https?):\/\/)|www./g, '')
     if (type === Type.DONATION) {
-      text = (
-        <Linkify
-          // https://github.com/Soapbox/linkifyjs/issues/292
-          // @ts-ignore
-          options={{
-            attributes: { onClick },
-            target: '_blank',
-            rel: 'noreferrer'
-          }}
-        >
-          {text}
-        </Linkify>
-      )
+      text = <UserGeneratedText size='small'>{text}</UserGeneratedText>
     }
   }
 
-  let href: Maybe<string>
+  let href = ''
 
   if (isHandleType(type)) {
     href = `${SITE_URL_MAP[type]}${link}`
@@ -124,28 +99,21 @@ const SocialLink = (props: SocialLinkProps) => {
     }
   }
 
-  const socialLinkContent = (
-    <div
-      className={cn(styles.wrapper, {
-        [styles.singleLink]: isSingleLink
-      })}
-    >
+  const Root = href ? ExternalLink : Text
+
+  return (
+    <Root to={href} onClick={onClick} size='small' className={styles.root}>
       {icon}
-      {!iconOnly && <div className={styles.text}>{text}</div>}
-    </div>
-  )
-
-  const rootProps = {
-    onClick,
-    className: styles.socialLink
-  }
-
-  return href ? (
-    <ExternalLink href={href} {...rootProps}>
-      {socialLinkContent}
-    </ExternalLink>
-  ) : (
-    <div {...rootProps}>{socialLinkContent}</div>
+      {iconOnly ? null : (
+        <Text
+          variant='inherit'
+          id='hello'
+          className={cn(styles.text, isSingleLink && styles.singleLink)}
+        >
+          {text}
+        </Text>
+      )}
+    </Root>
   )
 }
 

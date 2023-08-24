@@ -1,4 +1,10 @@
-import { ComponentProps, ElementType, ReactNode } from 'react'
+import {
+  ComponentProps,
+  ElementType,
+  ForwardedRef,
+  forwardRef,
+  ReactNode
+} from 'react'
 
 import {
   ColorValue,
@@ -19,32 +25,49 @@ type TextOwnProps<TextComponentType extends ElementType = 'span'> = {
   variant?: TextVariant
   size?: TextSize
   strength?: TextStrength
+  component?: ElementType
   color?: ColorValue
+  innerRef?: ForwardedRef<HTMLElement>
 }
 
 export type TextProps<TextComponentType extends ElementType = 'span'> =
   TextOwnProps<TextComponentType> &
     Omit<ComponentProps<TextComponentType>, keyof TextOwnProps>
 
-export const Text = <TextComponentType extends ElementType = 'span'>(
-  props: TextProps<TextComponentType>
-) => {
+export const Text = forwardRef(function Text<
+  TextComponentType extends ElementType = 'span'
+>(props: TextProps<TextComponentType>, ref: ForwardedRef<HTMLElement>) {
   const {
     className,
     children,
     variant = 'body',
-    strength = 'default',
-    size = 'medium',
-    color = 'neutral',
+    strength: strengthProp,
+    size: sizeProp,
+    color: colorProp,
+    component,
     as,
+    innerRef,
+    style: styleProp,
     ...otherProps
   } = props
 
-  const Tag: ElementType = as ?? variantTagMap[variant][size] ?? 'p'
+  const strength =
+    strengthProp ?? (variant === 'inherit' ? undefined : 'default')
 
-  const styleObject: CSSCustomProperties = {
-    '--text-color': `var(${toCSSVariableName(color)})`
-  }
+  const size = sizeProp ?? (variant === 'inherit' ? undefined : 'medium')
+  const color = colorProp ?? (variant === 'inherit' ? undefined : 'neutral')
+
+  const Tag: ElementType =
+    as ?? component ?? (size ? variantTagMap[variant][size] ?? 'p' : 'p')
+
+  const style: CSSCustomProperties = color
+    ? {
+        ...styleProp,
+        '--text-color': `var(${toCSSVariableName(color)})`
+      }
+    : styleProp
+
+  const rootClassName = color ? styles.root : undefined
 
   type TextClass = keyof typeof styles
   const variantClassNames = [
@@ -55,11 +78,12 @@ export const Text = <TextComponentType extends ElementType = 'span'>(
 
   return (
     <Tag
-      className={cn(styles.root, ...variantClassNames, className)}
-      style={styleObject}
+      ref={innerRef ?? ref}
+      className={cn(rootClassName, ...variantClassNames, className)}
+      style={style}
       {...otherProps}
     >
       {children}
     </Tag>
   )
-}
+})

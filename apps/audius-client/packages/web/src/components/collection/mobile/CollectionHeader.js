@@ -1,24 +1,21 @@
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 
 import {
-  Name,
   Variant,
   SquareSizes,
   formatCount,
-  squashNewLines,
   formatSecondsAsText,
   formatDate,
   OverflowAction
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 import PropTypes from 'prop-types'
 
-import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import StatsButtonRow from 'pages/track-page/components/mobile/StatsButtonRow'
@@ -139,19 +136,6 @@ const CollectionHeader = ({
     SquareSizes.SIZE_1000_BY_1000
   )
 
-  const record = useRecord()
-  const onDescriptionExternalLink = useCallback(
-    (event) => {
-      record(
-        make(Name.LINK_CLICKING, {
-          url: event.target.href,
-          source: 'collection page'
-        })
-      )
-    },
-    [record]
-  )
-
   const collectionLabels = [
     {
       label: 'Tracks',
@@ -269,13 +253,12 @@ const CollectionHeader = ({
             {renderCollectionLabels()}
           </div>
           {description ? (
-            <Linkify
-              options={{ attributes: { onClick: onDescriptionExternalLink } }}
+            <UserGeneratedText
+              className={styles.description}
+              linkSource='collection page'
             >
-              <div className={styles.description}>
-                {squashNewLines(description)}
-              </div>
-            </Linkify>
+              {description}
+            </UserGeneratedText>
           ) : null}
         </>
       )}

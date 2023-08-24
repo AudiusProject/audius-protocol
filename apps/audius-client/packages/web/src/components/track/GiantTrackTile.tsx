@@ -1,14 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import {
-  squashNewLines,
   getCanonicalName,
   formatDate,
   formatSeconds,
   Genre,
   FeatureFlags,
-  isAudiusUrl,
-  getPathFromAudiusUrl,
   Nullable,
   Remix,
   CoverArtSizes,
@@ -28,7 +25,6 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 
 import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
@@ -43,6 +39,7 @@ import { Tile } from 'components/tile'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement } from 'components/types'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/Moods'
 
@@ -61,7 +58,6 @@ const BUTTON_COLLAPSE_WIDTHS = {
   second: 1190,
   third: 1286
 }
-
 // Toast timeouts in ms
 const REPOST_TIMEOUT = 1000
 const SAVED_TIMEOUT = 1000
@@ -106,8 +102,6 @@ export type GiantTrackTileProps = {
   onClickFavorites: () => void
   onClickReposts: () => void
   onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
-  onExternalLinkClick: (event: React.MouseEvent<HTMLAnchorElement>) => void
-  onInternalLinkClick: (url: string) => void
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
@@ -153,9 +147,7 @@ export const GiantTrackTile = ({
   onClickFavorites,
   onClickReposts,
   onDownload,
-  onExternalLinkClick,
   onFollow,
-  onInternalLinkClick,
   onMakePublic,
   onPlay,
   onSave,
@@ -643,30 +635,13 @@ export const GiantTrackTile = ({
           ) : null}
         </div>
         {description ? (
-          <Linkify
-            options={{
-              attributes: {
-                onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-                  const url = event.currentTarget.href
-
-                  if (isAudiusUrl(url)) {
-                    const path = getPathFromAudiusUrl(url)
-                    event.nativeEvent.preventDefault()
-                    onInternalLinkClick(path ?? '/')
-                  } else {
-                    onExternalLinkClick(event)
-                  }
-                }
-              },
-              target: (href, type, tokens) => {
-                return isAudiusUrl(href) ? '' : '_blank'
-              }
-            }}
+          <UserGeneratedText
+            component='h3'
+            size='small'
+            className={styles.description}
           >
-            <h3 className={styles.description}>
-              {squashNewLines(description)}
-            </h3>
-          </Linkify>
+            {description}
+          </UserGeneratedText>
         ) : null}
         {renderTags()}
         {renderDownloadButtons()}

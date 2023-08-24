@@ -1,15 +1,8 @@
-import { ChangeEvent, useCallback, useState, MouseEvent } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
-import {
-  squashNewLines,
-  formatSecondsAsText,
-  formatDate,
-  getPathFromAudiusUrl,
-  isAudiusUrl
-} from '@audius/common'
+import { formatSecondsAsText, formatDate } from '@audius/common'
 import { IconHidden, IconPencil } from '@audius/stems'
 import cn from 'classnames'
-import Linkify from 'linkify-react'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
@@ -18,6 +11,7 @@ import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Skeleton from 'components/skeleton/Skeleton'
 import InfoLabel from 'components/track/InfoLabel'
+import { UserGeneratedText } from 'components/user-generated-text'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
 import { Artwork } from './Artwork'
@@ -47,8 +41,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     tracksLoading,
     loading,
     playing,
-    onClickDescriptionExternalLink,
-    onClickDescriptionInternalLink,
     onPlay,
     variant,
     gradient,
@@ -172,30 +164,13 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
               labelValue={numTracks}
             />
           </div>
-          <div className={cn(styles.description, fadeIn)}>
-            <Linkify
-              options={{
-                attributes: {
-                  onClick: (event: MouseEvent<HTMLAnchorElement>) => {
-                    const url = event.currentTarget.href
-
-                    if (isAudiusUrl(url)) {
-                      const path = getPathFromAudiusUrl(url)
-                      event.nativeEvent.preventDefault()
-                      onClickDescriptionInternalLink(path ?? '/')
-                    } else {
-                      onClickDescriptionExternalLink(event)
-                    }
-                  }
-                },
-                target: (href: string) => {
-                  return isAudiusUrl(href) ? '' : '_blank'
-                }
-              }}
-            >
-              {squashNewLines(description)}
-            </Linkify>
-          </div>
+          <UserGeneratedText
+            size='xSmall'
+            className={cn(styles.description, fadeIn)}
+            linkSource='collection page'
+          >
+            {description}
+          </UserGeneratedText>
           <div className={cn(styles.statsRow, fadeIn)}>
             {renderStatsRow(isLoading)}
           </div>

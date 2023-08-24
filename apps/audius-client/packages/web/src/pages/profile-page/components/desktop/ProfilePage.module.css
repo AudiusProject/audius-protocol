@@ -87,7 +87,6 @@
   margin-bottom: 14px;
 }
 
-.info .description,
 .info .location,
 .info .joined {
   color: var(--neutral);
@@ -97,12 +96,12 @@
   user-select: none;
 }
 
-.info .description {
-  margin-bottom: 16px;
-  white-space: pre-line;
+.description {
+  margin-bottom: var(--unit-4);
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 /* truncates the content at a maximum of 4 lines */
 /* works on modern browsers */
 .truncated {
@@ -113,13 +112,11 @@
   line-clamp: 4;
   -webkit-box-orient: vertical;
 }
-.info .description > a {
-  color: var(--primary);
-}
 
 .socials {
   display: flex;
   flex-direction: column;
+  row-gap: var(--unit-4);
   padding-bottom: var(--unit-2);
 }
 .info .socialsTruncated {
