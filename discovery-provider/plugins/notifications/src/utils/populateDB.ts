@@ -89,7 +89,7 @@ export const createTestDB = async (
     connectionString.lastIndexOf('/')
   )
   const postgresConnection = `${connection}/postgres`
-  const db = await getDB(postgresConnection)
+  const db = getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.raw('CREATE DATABASE :test_name: TEMPLATE :template:', {
     test_name: testName,
@@ -107,7 +107,7 @@ export const dropTestDB = async (
     connectionString.lastIndexOf('/')
   )
   const postgresConnection = `${connection}/postgres`
-  const db = await getDB(postgresConnection)
+  const db = getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
 }
