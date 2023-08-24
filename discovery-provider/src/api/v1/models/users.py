@@ -69,6 +69,7 @@ user_model_full = ns.clone(
         "creator_node_endpoint": fields.String,
         "current_user_followee_follow_count": fields.Integer(required=True),
         "does_current_user_follow": fields.Boolean(required=True),
+        "does_current_user_subscribe": fields.Boolean(required=True),
         "handle_lc": fields.String(required=True),
         "updated_at": fields.String(required=True),
         "cover_photo_sizes": fields.String,

@@ -36,6 +36,7 @@ export type UserMetadata = {
   creator_node_endpoint: string
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
+  does_current_user_subscribe: boolean
   followee_count: number
   follower_count: number
   supporter_count: number

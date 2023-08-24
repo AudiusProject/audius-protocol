@@ -15,6 +15,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
+from src.models.social.subscription import Subscription
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
@@ -156,7 +157,7 @@ class LibraryFilterType(str, enum.Enum):
 
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
-#   if current_user_id available, populates does_current_user_follow, followee_follows
+#   if current_user_id available, populates does_current_user_follow, followee_follows, does_current_user_subscribe
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
@@ -225,9 +226,10 @@ def populate_user_metadata(
 
     follows_current_user_set = set()
     current_user_followed_user_ids = {}
+    current_user_subscribed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
-        # collect all incoming and outgoing follow edges for current user.
+        # collect all incoming and outgoing follow edges for current user
         current_user_follow_rows = (
             session.query(Follow.follower_user_id, Follow.followee_user_id)
             .filter(
@@ -251,6 +253,20 @@ def populate_user_metadata(
                 current_user_followed_user_ids[following_id] = True
             else:
                 follows_current_user_set.add(follower_id)
+
+        # collect all outgoing subscription edges for current user
+        current_user_subscribed_rows = (
+            session.query(Subscription.user_id)
+            .filter(
+                Subscription.is_current == True,
+                Subscription.is_delete == False,
+                Subscription.user_id.in_(user_ids),
+                Subscription.subscriber_id == current_user_id,
+            )
+            .all()
+        )
+        for user_id in current_user_subscribed_rows:
+            current_user_subscribed_user_ids[user_id] = True
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -333,6 +349,9 @@ def populate_user_metadata(
         user[
             response_name_constants.does_current_user_follow
         ] = current_user_followed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.does_current_user_subscribe
+        ] = current_user_subscribed_user_ids.get(user_id, False)
         user[
             response_name_constants.current_user_followee_follow_count
         ] = current_user_followee_follow_count_dict.get(user_id, 0)
