@@ -4,6 +4,7 @@ const { libs } = require('@audius/sdk')
 const {
   isUSDCWithdrawalTransaction
 } = require('./withdrawUSDCInstructionsHelpers')
+const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const SolanaUtils = libs.SolanaUtils
 
 const solanaRewardsManagerProgramId = config.get(
@@ -230,13 +231,18 @@ const isRelayAllowedInstruction = async (instruction) => {
  * @param {Instruction[]} instructions
  * @returns true if all the instructions have allowed authorities/base accounts
  */
-const areRelayAllowedInstructions = async (instructions) => {
+const areRelayAllowedInstructions = async (instructions, optimizelyClient) => {
   const results = await Promise.all(
     instructions.map((instruction) => isRelayAllowedInstruction(instruction))
   )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {
-    return isUSDCWithdrawalTransaction(instructions)
+    if (
+      getFeatureFlag(optimizelyClient, FEATURE_FLAGS.USDC_WITHDRAWAL_ENABLED)
+    ) {
+      return isUSDCWithdrawalTransaction(instructions)
+    }
+    return false
   }
   return true
 }
