@@ -41,10 +41,10 @@ full_response = ns.model(
 )
 
 
-# This mapper ensure that we output a lowercase version of the _member name_ of
-# a StrEnum. The default `fields.String` marshaller wraps enums with str(),
+# This mapper ensures that we output a lowercase version of the _member name_ of
+# a Enum. The default `fields.String` marshaller wraps enums with str(),
 # which will cause it to output Enum.member ('PurchaseType.track' instead of
 # just 'track').
-class StrEnumNameToLower(fields.String):
+class StringEnumToLower(fields.String):
     def format(self, value: str):
         return value.lower()
