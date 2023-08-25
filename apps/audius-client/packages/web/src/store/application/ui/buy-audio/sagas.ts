@@ -54,9 +54,6 @@ import {
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
-  getRootAccountRentExemptionMinimum,
-  getRootSolanaAccount,
-  getSolanaConnection,
   getUserBankTransactionMetadata,
   pollForAudioBalanceChange,
   pollForNewTransaction,
@@ -65,6 +62,11 @@ import {
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import {
+  getRootAccountRentExemptionMinimum,
+  getRootSolanaAccount,
+  getSolanaConnection
+} from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 

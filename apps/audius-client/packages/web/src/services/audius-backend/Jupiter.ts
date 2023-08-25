@@ -5,6 +5,7 @@ import {
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { Jupiter as JupiterInstance } from '@jup-ag/core'
+import { SwapMode } from '@jup-ag/core'
 import { Cluster, Connection, PublicKey, Transaction } from '@solana/web3.js'
 import JSBI from 'jsbi'
 
@@ -56,31 +57,38 @@ const getQuote = async ({
   outputTokenSymbol,
   inputAmount,
   forceFetch,
-  slippage
+  slippage,
+  swapMode = SwapMode.ExactIn,
+  onlyDirectRoutes = false
 }: {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
   inputAmount: number
   forceFetch?: boolean
   slippage: number
+  swapMode?: SwapMode
+  onlyDirectRoutes?: boolean
 }) => {
   const inputToken = TOKEN_LISTING_MAP[inputTokenSymbol]
   const outputToken = TOKEN_LISTING_MAP[outputTokenSymbol]
-  const amount = JSBI.BigInt(Math.ceil(inputAmount * 10 ** inputToken.decimals))
   if (!inputToken || !outputToken) {
     throw new Error(
       `Tokens not found: ${inputTokenSymbol} => ${outputTokenSymbol}`
     )
   }
+  const amount =
+    swapMode === SwapMode.ExactIn
+      ? JSBI.BigInt(Math.ceil(inputAmount * 10 ** inputToken.decimals))
+      : JSBI.BigInt(Math.floor(inputAmount * 10 ** outputToken.decimals))
   const jup = await getInstance()
-  const { SwapMode } = await import('@jup-ag/core')
   const routes = await jup.computeRoutes({
     inputMint: new PublicKey(inputToken.address),
     outputMint: new PublicKey(outputToken.address),
     amount,
     slippage,
-    swapMode: SwapMode.ExactIn,
-    forceFetch
+    swapMode,
+    forceFetch,
+    onlyDirectRoutes
   })
   const bestRoute = routes.routesInfos[0]
 

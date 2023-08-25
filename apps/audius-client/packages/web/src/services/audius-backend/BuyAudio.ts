@@ -1,5 +1,4 @@
 import { InAppAudioPurchaseMetadata } from '@audius/common'
-import { AudiusLibs } from '@audius/sdk'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Token,
@@ -14,14 +13,12 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-// @ts-ignore
-const libs = (): AudiusLibs => window.audiusLibs
+import { getLibs } from 'services/audius-libs'
+import { getSolanaConnection } from 'services/solana/solana'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
-const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
 const MEMO_PROGRAM_ID = new PublicKey(
@@ -33,31 +30,8 @@ const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-export const getRootSolanaAccount = async () => {
-  await waitForLibsInit()
-  return libs().solanaWeb3Manager!.solanaWeb3.Keypair.fromSeed(
-    libs().Account!.hedgehog.wallet!.getPrivateKey()
-  )
-}
-
-export const getSolanaConnection = async () => {
-  await waitForLibsInit()
-  return libs().solanaWeb3Manager!.connection
-}
-
-export const getRootAccountRentExemptionMinimum = async () => {
-  await waitForLibsInit()
-  const connection = await getSolanaConnection()
-  return (
-    (await connection.getMinimumBalanceForRentExemption(
-      ROOT_ACCOUNT_SIZE,
-      'processed'
-    )) + 15000 // Allows for 3 transaction fees
-  )
-}
-
+// TODO: duplicated with similar fn in WithdrawUSDC.ts
 export const getAssociatedTokenRentExemptionMinimum = async () => {
-  await waitForLibsInit()
   const connection = await getSolanaConnection()
   return await connection.getMinimumBalanceForRentExemption(
     ATA_SIZE,
@@ -72,7 +46,6 @@ export const getAssociatedTokenAccountInfo = async ({
   rootAccount: PublicKey
   mintKey: PublicKey
 }) => {
-  await waitForLibsInit()
   const connection = await getSolanaConnection()
   const [associatedTokenAccountAddress] = await PublicKey.findProgramAddress(
     [rootAccount.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey.toBuffer()],
@@ -101,8 +74,8 @@ export const getAudioAccount = async ({
 }: {
   rootAccount: PublicKey
 }) => {
-  await waitForLibsInit()
-  return await libs().solanaWeb3Manager!.findAssociatedTokenAddress(
+  const libs = await getLibs()
+  return await libs.solanaWeb3Manager!.findAssociatedTokenAddress(
     rootAccount.toString()
   )
 }
@@ -112,8 +85,8 @@ export const getAudioAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
 }) => {
-  await waitForLibsInit()
-  return await libs().solanaWeb3Manager!.getTokenAccountInfo(
+  const libs = await getLibs()
+  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
     tokenAccount.toString()
   )
 }
@@ -255,8 +228,8 @@ export const createTransferToUserBankTransaction = async ({
   amount: u64
   memo: string
 }) => {
-  await waitForLibsInit()
-  const mintPublicKey = new PublicKey(libs().solanaWeb3Config.mintAddress)
+  const libs = await getLibs()
+  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
   const associatedTokenAccount = await getAudioAccount({
     rootAccount: fromAccount
   })
@@ -295,16 +268,16 @@ export const saveUserBankTransactionMetadata = async ({
   transactionSignature: string
   metadata: InAppAudioPurchaseMetadata
 }) => {
-  await waitForLibsInit()
-  return await libs().identityService!.saveUserBankTransactionMetadata({
+  const libs = await getLibs()
+  return await libs.identityService!.saveUserBankTransactionMetadata({
     transactionSignature,
     metadata
   })
 }
 
 export const getUserBankTransactionMetadata = async (transactionId: string) => {
-  await waitForLibsInit()
-  return await libs().identityService!.getUserBankTransactionMetadata(
+  const libs = await getLibs()
+  return await libs.identityService!.getUserBankTransactionMetadata(
     transactionId
   )
 }
@@ -318,8 +291,8 @@ export const createStripeSession = async ({
   amount: string
   destinationCurrency?: 'sol' | 'usdc'
 }) => {
-  await waitForLibsInit()
-  return await libs().identityService!.createStripeSession({
+  const libs = await getLibs()
+  return await libs.identityService!.createStripeSession({
     destinationWallet,
     amount,
     destinationCurrency

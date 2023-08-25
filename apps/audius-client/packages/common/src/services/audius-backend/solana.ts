@@ -10,8 +10,9 @@ import { AudiusBackend } from './AudiusBackend'
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
-type MintName = 'audio' | 'usdc'
-const DEFAULT_MINT: MintName = 'audio'
+// TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
+export type MintName = 'audio' | 'usdc'
+export const DEFAULT_MINT: MintName = 'audio'
 
 type UserBankConfig = {
   ethAddress?: string
@@ -22,45 +23,6 @@ const delay = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
-
-export const isValidSolDestinationAddress = async (
-  audiusBackendInstance: AudiusBackend,
-  destinationWallet: SolanaWalletAddress
-) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const solanaweb3 = audiusLibs.solanaWeb3Manager?.solanaWeb3
-  if (!solanaweb3) {
-    console.error('No solana web3 found')
-    return false
-  }
-  try {
-    // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-    const ignored = new solanaweb3.PublicKey(destinationWallet)
-    return true
-  } catch (err) {
-    console.debug(err)
-    return false
-  }
-}
-
-export const isSolWallet = async (
-  audiusBackendInstance: AudiusBackend,
-  destinationWallet: SolanaWalletAddress
-) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const solanaweb3 = audiusLibs.solanaWeb3Manager?.solanaWeb3
-  if (!solanaweb3) {
-    console.error('No solana web3 found')
-    return false
-  }
-  try {
-    const destination = new solanaweb3.PublicKey(destinationWallet)
-    return solanaweb3.PublicKey.isOnCurve(destination.toBytes())
-  } catch (err) {
-    console.debug(err)
-    return false
-  }
-}
 
 export const getRootSolanaAccount = async (
   audiusBackendInstance: AudiusBackend

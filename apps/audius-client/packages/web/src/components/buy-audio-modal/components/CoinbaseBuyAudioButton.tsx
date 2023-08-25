@@ -12,7 +12,7 @@ import { useAsync } from 'react-use'
 import { CoinbasePayContext } from 'components/coinbase-pay-button'
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
-import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
+import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './CoinbaseBuyAudioButton.module.css'
 
