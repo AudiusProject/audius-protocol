@@ -15,13 +15,7 @@ const allowedProgramIds = [
 ]
 
 const isRelayAllowedProgram = (instructions) => {
-  console.log(`REED isRelayAllowedProgram ${JSON.stringify(instructions)}`)
   for (const instruction of instructions) {
-    console.log(
-      `REED checking ${
-        instruction.programId
-      } using allowedProgramIds ${JSON.stringify(allowedProgramIds)}`
-    )
     if (!allowedProgramIds.includes(instruction.programId)) {
       return false
     }
@@ -36,9 +30,6 @@ const checkCreateAccountInstruction = (instruction) => {
 }
 
 const checkCloseAccountInstruction = (instruction) => {
-  console.log(
-    `REED checkCloseAccountInstruction ${JSON.stringify(instruction)}`
-  )
   const feePayerKeypairs = config.get('solanaFeePayerWallets')
   const feePayerPubkeys = feePayerKeypairs.map((wallet) =>
     Keypair.fromSecretKey(
@@ -53,7 +44,6 @@ const checkCloseAccountInstruction = (instruction) => {
   const isFeePayerReimbursed = feePayerPubkeys.includes(
     instruction.keys[1].pubkey
   )
-  console.log(`REED feePayerPubkeys ${feePayerPubkeys}`)
   return isCloseInstruction && isFeePayerReimbursed
 }
 
@@ -70,8 +60,6 @@ const isUSDCWithdrawalTransaction = (instructions) => {
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )
 
-  console.log(`REED validations ${validations}`)
-  console.log(`REED returning ${validations.every((validation) => validation)}`)
   return validations.every((validation) => validation)
 }
 
