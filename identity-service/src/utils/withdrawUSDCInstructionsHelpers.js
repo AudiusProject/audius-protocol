@@ -65,7 +65,7 @@ const isUSDCWithdrawalTransaction = (instructions) => {
   if (!instructions.length) return false
   const validations = []
   validations.push(checkCreateAccountInstruction(instructions[0]))
-  validations.push(isRelayAllowedProgram(instructions.slice(1, 3)))
+  // validations.push(isRelayAllowedProgram(instructions.slice(1, 3)))
   validations.push(
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )

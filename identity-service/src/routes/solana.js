@@ -60,6 +60,8 @@ solanaRouter.post(
     } = req.body
 
     // Allowed relay checks
+    console.log(`REED req.body ${JSON.stringify(req.body)}`)
+    console.log(`REED relay ${JSON.stringify(instructions)}`)
     const isRelayAllowed = await areRelayAllowedInstructions(instructions)
     if (!isRelayAllowed) {
       return errorResponseServerError(`Invalid relay instructions`, {
