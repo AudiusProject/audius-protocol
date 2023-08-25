@@ -1,6 +1,6 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
-/* globals GA, GA_ACCESS_TOKEN, SITEMAP, DISCOVERY_NODES, HTMLRewriter */
+/* globals GA, GA_ACCESS_TOKEN, EMBED, DISCOVERY_NODES, HTMLRewriter */
 
 const DEBUG = false
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
@@ -253,13 +253,20 @@ async function handleEvent(event) {
   }
 
   const isBot = checkIsBot(userAgent)
-  const isEmbed = pathname.startsWith('/embed')
 
-  if (isBot || isEmbed) {
+  if (isBot) {
     const destinationURL = GA + pathname + search + hash
     const newRequest = new Request(destinationURL, event.request)
     newRequest.headers.set('host', GA)
     newRequest.headers.set('x-access-token', GA_ACCESS_TOKEN)
+
+    return await fetch(newRequest)
+  }
+
+  const isEmbed = pathname.startsWith('/embed')
+  if (isEmbed) {
+    const destinationURL = EMBED + pathname + search + hash
+    const newRequest = new Request(destinationURL, event.request)
 
     return await fetch(newRequest)
   }
