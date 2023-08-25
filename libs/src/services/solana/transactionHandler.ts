@@ -207,7 +207,9 @@ export class TransactionHandler {
       })
     }
 
+    console.log('REED before serialize:', tx)
     const rawTransaction = tx.serialize()
+    console.log('REED after serialize:', rawTransaction)
 
     // Send the txn
 
@@ -225,6 +227,7 @@ export class TransactionHandler {
       txid = await sendRawTransaction()
     } catch (e) {
       // Rarely, this intiial send will fail
+      console.log('REED initial send failed:', e)
       logger.warn(`transactionHandler: Initial send failed: ${e}`)
       let errorCode = null
       let error = null
@@ -288,6 +291,7 @@ export class TransactionHandler {
         error = e.message
         errorCode = this._parseSolanaErrorCode(error)
       }
+      console.log('REED returning error:', error, errorCode)
       return {
         res: null,
         error,
