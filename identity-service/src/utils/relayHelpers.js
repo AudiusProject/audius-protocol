@@ -1,77 +1,22 @@
 const models = require('../models')
-const config = require('../config')
 const { libs } = require('@audius/sdk')
-const SolanaUtils = libs.SolanaUtils
-
-const solanaRewardsManagerProgramId = config.get(
-  'solanaRewardsManagerProgramId'
-)
-const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
-
-const solanaClaimableTokenProgramAddress = config.get(
-  'solanaClaimableTokenProgramAddress'
-)
-const solanaMintAddress = config.get('solanaMintAddress')
-const usdcMintAddress = config.get('solanaUSDCMintAddress')
-const solanaAudiusAnchorDataProgramId = config.get(
-  'solanaAudiusAnchorDataProgramId'
-)
-
-const allowedProgramIds = new Set([
+const {
+  isUSDCWithdrawalTransaction
+} = require('./withdrawUSDCInstructionsHelpers')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
+const {
+  allowedProgramIds,
   solanaClaimableTokenProgramAddress,
+  solanaMintAddress,
+  solanaRewardsManager,
   solanaRewardsManagerProgramId,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111',
-  /* memo */ 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
-])
-
-if (solanaAudiusAnchorDataProgramId) {
-  allowedProgramIds.add(solanaAudiusAnchorDataProgramId)
-}
-
-/**
- * @typedef Instruction
- * @property {string} programId
- * @property {{data: number[], type: string}} data
- * @property {{pubkey: string, isSigner: boolean, isWriteable: boolean}[]} keys
- */
-
-/**
- * Maps the instruction enum to the index of the rewards manager account (the base account of the program)
- * A value of -1 means the instruction is not allowed.
- *
- * @see {@link [../../../solana-programs/reward-manager/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/db31fe03f2c8cff357379b84130539d51ccca213/solana-programs/reward-manager/program/src/instruction.rs#L60)}
- * @type {Record<number, number | null>}
- */
-const rewardManagerBaseAccountIndices = {
-  0: -1, // InitRewardManager
-  1: -1, // ChangeManagerAccount
-  2: -1, // CreateSender
-  3: -1, // DeleteSender
-  4: 0, // CreateSenderPublic
-  5: 0, // DeleteSenderPublic
-  6: 1, // SubmitAttestations
-  7: 1 // EvaluateAttestations
-}
-
-/**
- * Maps the instruction enum to the index of the claimable token authority account (derived from the base token account and the program id)
- * A value of -1 means the instruction is not allowed.
- *
- * @see {@link [../../../solana-programs/claimable-tokens/program/src/instruction.rs](https://github.com/AudiusProject/audius-protocol/blob/2c93f29596a1d6cc8ca4e76ef1f0d2e57f0e09e6/solana-programs/claimable-tokens/program/src/instruction.rs#L21)}
- */
-const claimableTokenAuthorityIndices = {
-  0: 2, // CreateTokenAccount
-  1: 4 // Transfer
-}
-
-const isRelayAllowedProgram = (instructions) => {
-  for (const instruction of instructions) {
-    if (!allowedProgramIds.has(instruction.programId)) {
-      return false
-    }
-  }
-  return true
-}
+  rewardManagerBaseAccountIndices,
+  usdcMintAddress,
+  claimableTokenAuthorityIndices,
+  isRelayAllowedProgram,
+  getInstructionEnum
+} = require('./relayUtils')
+const SolanaUtils = libs.SolanaUtils
 
 const isSendInstruction = (instr) =>
   instr.length &&
@@ -117,22 +62,6 @@ const getClaimableTokenAuthority = async (mint) => {
     claimableTokenAuthority[mint] = await deriveClaimableTokenAuthority(mint)
   }
   return claimableTokenAuthority[mint]
-}
-
-/**
- * Gets the enum identifier of the instruction as determined by the first element of the data buffer
- * @param {Instruction} instruction
- * @returns the enum value of the given instruction
- */
-const getInstructionEnum = (instruction) => {
-  if (
-    instruction.data &&
-    instruction.data.data &&
-    instruction.data.data.length > 0
-  ) {
-    return instruction.data.data[0]
-  }
-  return null
 }
 
 /**
@@ -227,12 +156,16 @@ const isRelayAllowedInstruction = async (instruction) => {
  * @param {Instruction[]} instructions
  * @returns true if all the instructions have allowed authorities/base accounts
  */
-const areRelayAllowedInstructions = async (instructions) => {
+const areRelayAllowedInstructions = async (instructions, optimizelyClient) => {
   const results = await Promise.all(
     instructions.map((instruction) => isRelayAllowedInstruction(instruction))
   )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {
+    // Special case for USDC withdraw transactions
+    if (getFeatureFlag(optimizelyClient, FEATURE_FLAGS.USDC_PURCHASES)) {
+      return isUSDCWithdrawalTransaction(instructions)
+    }
     return false
   }
   return true
@@ -241,6 +174,5 @@ const areRelayAllowedInstructions = async (instructions) => {
 module.exports = {
   isSendInstruction,
   doesUserHaveSocialProof,
-  areRelayAllowedInstructions,
-  isRelayAllowedProgram
+  areRelayAllowedInstructions
 }
