@@ -48,8 +48,9 @@ export const getUsersCanNotifyQuery = async (
   frequency: EmailFrequency,
   pageCount: number,
   lastUser: number
-) =>
-  await identityDb
+) => {
+  const userIds = Array.from({ length: pageCount }, (_, index) => index + lastUser + 1)
+  return await identityDb
     .with(
       'lastEmailSentAt',
       identityDb.raw(`
@@ -57,6 +58,7 @@ export const getUsersCanNotifyQuery = async (
           "userId",
           "timestamp"
         FROM "NotificationEmails"
+        WHERE "userId" IN (${userIds.join(', ')})
         ORDER BY "userId", "timestamp" DESC
       `)
     )
@@ -102,6 +104,7 @@ export const getUsersCanNotifyQuery = async (
     .where('Users.blockchainUserId', '>', lastUser)
     .limit(pageCount)
     .orderBy('Users.blockchainUserId')
+}
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
