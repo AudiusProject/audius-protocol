@@ -76,6 +76,9 @@ def get_usdc_transactions_history_count(user_id: int):
 def _get_usdc_transactions_history(session: Session, args: GetUSDCTransactionsArgs):
     transaction_type = args.get("transaction_type", None)
     transaction_method = args.get("transaction_method", None)
+    sort_method = args.get("sort_method")
+    sort_direction = args.get("sort_direction")
+
     query: Query = (
         session.query(USDCTransactionsHistory)
         .select_from(User)
@@ -93,8 +96,6 @@ def _get_usdc_transactions_history(session: Session, args: GetUSDCTransactionsAr
     if transaction_method is not None:
         query = query.filter(USDCTransactionsHistory.method == transaction_method)
 
-    sort_method = args.get("sort_method")
-    sort_direction = args.get("sort_direction")
     sort_fn = desc if sort_direction == SortDirection.desc else asc
     if sort_method == TransactionSortMethod.date:
         query = query.order_by(sort_fn(USDCTransactionsHistory.transaction_created_at))
