@@ -4,7 +4,7 @@ const {
 } = require('@solana/spl-token')
 const { Keypair } = require('@solana/web3.js')
 const config = require('../config')
-const { isRelayAllowedProgram, Instruction } = require('./relayHelpers')
+const { isRelayAllowedProgram } = require('./relayHelpers')
 
 const checkCreateAccountInstruction = (instruction) => {
   const isCreateInstruction =
