@@ -181,6 +181,8 @@ const getNotifications = async (
   })
   let appNotifications: EmailNotification[] = appNotificationsResp.rows
 
+  logger.info(`got app notifs resp ${startOffset}`)
+
   // filter for only enabled notifications in MappingFeatureName
   // on optimizely
   appNotifications = appNotifications.filter((notification) => {
@@ -226,6 +228,7 @@ const getNotifications = async (
     end_offset: messageEndOffset,
     user_ids: [[messageUserIds]]
   })
+  logger.info(`got msg notifs resp ${startOffset}`)
   const messages: { sender_user_id: number; receiver_user_id: number }[] =
     messagesResp.rows
   const messageNotifications: DMEmailNotification[] = messages.map((n) => ({
@@ -238,6 +241,8 @@ const getNotifications = async (
     end_offset: messageEndOffset,
     user_ids: [[messageUserIds]]
   })
+
+  logger.info(`got reaction notifs resp ${startOffset}`)
   const reactions: { sender_user_id: number; receiver_user_id: number }[] =
     reactionsResp.rows
   const reactionNotifications: DMEmailNotification[] = reactions.map((n) => ({
@@ -406,6 +411,8 @@ const processGroupOfEmails = async (
     Object.keys(users).map(Number)
   )
 
+  logger.info(`got notification settings for users ${startOffset}`)
+
   const notifications = await getNotifications(
     dnDb,
     frequency,
@@ -413,6 +420,7 @@ const processGroupOfEmails = async (
     Object.keys(users),
     remoteConfig
   )
+  logger.info(`got notifications for users ${startOffset}`)
   const groupedNotifications = groupNotifications(notifications, users)
 
   const currentUtcTime = moment.utc()
