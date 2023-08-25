@@ -226,6 +226,13 @@ class GetUSDCTransactionHistoryCount(Resource):
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
             abort_forbidden()
-        transactions_count = get_usdc_transactions_history_count(authed_user_id)
+        args = usdc_transaction_history_parser.parse_args()
+        transactions_count = get_usdc_transactions_history_count(
+            {
+                "user_id": authed_user_id,
+                "transaction_type": args.get("type", None),
+                "transaction_method": args.get("method", None),
+            }
+        )
         response = success_response(transactions_count)
         return response

@@ -23,6 +23,12 @@ from src.utils.db_session import get_db_read_replica
 logger = logging.getLogger(__name__)
 
 
+class GetUSDCTransactionsCountArgs(TypedDict):
+    user_id: int
+    transaction_type: Optional[USDCTransactionType]
+    transaction_method: Optional[USDCTransactionMethod]
+
+
 class GetUSDCTransactionsArgs(TypedDict):
     user_id: int
     sort_direction: SortDirection
@@ -40,7 +46,12 @@ class GetUSDCTransactionsArgs(TypedDict):
 # WHERE users.user_id = <user_id> AND users.is_current = TRUE
 
 
-def _get_usdc_transactions_history_count(session: Session, user_id: int):
+def _get_usdc_transactions_history_count(
+    session: Session, args: GetUSDCTransactionsCountArgs
+):
+    user_id = args.get("user_id")
+    transaction_type = args.get("transaction_type", None)
+    transaction_method = args.get("transaction_method", None)
     query: Query = (
         session.query(USDCTransactionsHistory)
         .select_from(User)
@@ -54,14 +65,20 @@ def _get_usdc_transactions_history_count(session: Session, user_id: int):
             USDCTransactionsHistory.user_bank == USDCUserBankAccount.bank_account,
         )
     )
+    if transaction_type is not None:
+        query = query.filter(
+            USDCTransactionsHistory.transaction_type == transaction_type
+        )
+    if transaction_method is not None:
+        query = query.filter(USDCTransactionsHistory.method == transaction_method)
     count: int = query.count()
     return count
 
 
-def get_usdc_transactions_history_count(user_id: int):
+def get_usdc_transactions_history_count(args: GetUSDCTransactionsCountArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        count = _get_usdc_transactions_history_count(session, user_id)
+        count = _get_usdc_transactions_history_count(session, args)
         return count
 
 
