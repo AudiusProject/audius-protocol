@@ -447,12 +447,6 @@ def revert_block(session: Session, block_to_revert: Block):
     revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
-    revert_save_entries = (
-        session.query(Save).filter(Save.blocknumber == revert_block_number).all()
-    )
-    revert_repost_entries = (
-        session.query(Repost).filter(Repost.blocknumber == revert_block_number).all()
-    )
     revert_follow_entries = (
         session.query(Follow).filter(Follow.blocknumber == revert_block_number).all()
     )
@@ -516,18 +510,6 @@ def revert_block(session: Session, block_to_revert: Block):
     )
 
     # Revert all of above transactions
-    for save_to_revert in revert_save_entries:
-
-        logger.info(f"Reverting save: {save_to_revert}")
-        # Remove outdated save item entry
-        session.delete(save_to_revert)
-
-    for repost_to_revert in revert_repost_entries:
-
-        # Remove outdated repost entry
-        logger.info(f"Reverting repost: {repost_to_revert}")
-        session.delete(repost_to_revert)
-
     for follow_to_revert in revert_follow_entries:
         # remove outdated follow entry
         logger.info(f"Reverting follow: {follow_to_revert}")
