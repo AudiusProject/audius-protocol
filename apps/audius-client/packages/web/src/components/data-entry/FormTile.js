@@ -8,17 +8,7 @@ import {
   creativeCommons,
   FeatureFlags
 } from '@audius/common'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCollectible,
-  IconDownload,
-  IconHidden,
-  IconIndent,
-  IconSpecialAccess,
-  IconVisibilityPublic
-} from '@audius/stems'
+import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
@@ -34,20 +24,18 @@ import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import TextArea from 'components/data-entry/TextArea'
 import { GatedContentUploadPromptModal } from 'components/gated-content-upload-prompt-modal/GatedContentUploadPromptModal'
-import LabeledButton from 'components/labeled-button/LabeledButton'
 import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
 import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
 import Switch from 'components/switch/Switch'
-import TrackAvailabilityModal from 'components/track-availability-modal/TrackAvailabilityModal'
-import UnlistedTrackModal from 'components/unlisted-track-modal/UnlistedTrackModal'
 import PreviewButton from 'components/upload/PreviewButton'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
+import { AccessAndSaleModalLegacy } from './AccessAndSaleModalLegacy'
 import styles from './FormTile.module.css'
 
 const {
@@ -79,99 +67,6 @@ const Divider = (props) => {
       {props.label ? <div className={styles.label}>{props.label}</div> : null}
       <div className={styles.border} />
     </div>
-  )
-}
-
-// This is temporary. Will be removed along with feature flag after launch.
-// https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
-const TrackAvailabilityButton = (props) => {
-  const { availabilityButtonTitle, setIsAvailabilityModalOpen } = props
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-
-  let LeftIcon
-
-  switch (availabilityButtonTitle) {
-    case messages.public:
-      LeftIcon = IconVisibilityPublic
-      break
-    case messages.collectibleGated:
-      LeftIcon = IconCollectible
-      break
-    case messages.specialAccess:
-      LeftIcon = IconSpecialAccess
-      break
-    case messages.hidden:
-      LeftIcon = IconHidden
-      break
-    default:
-      LeftIcon = IconVisibilityPublic
-      break
-  }
-
-  if (isGatedContentEnabled) {
-    return (
-      <LabeledButton
-        type={ButtonType.COMMON_ALT}
-        name='setUnlisted'
-        text={availabilityButtonTitle}
-        label={messages.availability}
-        className={cn({ [styles.error]: props.error })}
-        size={ButtonSize.SMALL}
-        onClick={() => {
-          setIsAvailabilityModalOpen(true)
-        }}
-        leftIcon={<LeftIcon />}
-      />
-    )
-  }
-
-  return (
-    <LabeledButton
-      type={ButtonType.COMMON_ALT}
-      name='setUnlisted'
-      text={props.availabilityButtonTitle}
-      label={messages.trackVisibility}
-      className={styles.hiddenTrackButton}
-      textClassName={styles.hiddenTrackButtonText}
-      onClick={() => {
-        props.setIsAvailabilityModalOpen(true)
-      }}
-    />
-  )
-}
-
-// This is temporary. Will be removed along with feature flag after launch.
-// https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
-const TrackAvailabilityModalContainer = (props) => {
-  const { isEnabled: isGatedContentEnabled } = useFlag(
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-
-  if (isGatedContentEnabled) {
-    return (
-      <TrackAvailabilityModal
-        isOpen={props.isAvailabilityModalOpen}
-        onClose={() => props.setIsAvailabilityModalOpen(false)}
-        didUpdateState={props.didUpdateAvailabilityState}
-        metadataState={props.availabilityState}
-        isRemix={props.isRemix}
-        isUpload={props.isUpload}
-        initialForm={props.initialForm}
-        onChangeField={props.onChangeField}
-      />
-    )
-  }
-
-  return (
-    <UnlistedTrackModal
-      showHideTrackSwitch={props.showHideTrackSectionInModal}
-      isOpen={props.isAvailabilityModalOpen}
-      onClose={() => props.setIsAvailabilityModalOpen(false)}
-      didUpdateState={props.didUpdateAvailabilityState}
-      metadataState={props.availabilityState}
-    />
   )
 }
 
@@ -454,10 +349,10 @@ const AdvancedForm = (props) => {
     setIsRemix
   } = props
 
-  let availabilityButtonTitle
   let availabilityState = {
     is_premium: props.defaultFields.is_premium,
-    premium_conditions: props.defaultFields.premium_conditions
+    premium_conditions: props.defaultFields.premium_conditions,
+    preview_start_seconds: props.defaultFields.preview_start_seconds
   }
   const showAvailability = props.type === 'track' && props.showUnlistedToggle
   if (showAvailability) {
@@ -470,27 +365,13 @@ const AdvancedForm = (props) => {
       share: props.defaultFields.field_visibility.share,
       plays: props.defaultFields.field_visibility.play_count
     }
-
-    availabilityButtonTitle = messages.public
-    if (availabilityState.unlisted) {
-      availabilityButtonTitle = messages.hidden
-    } else if (availabilityState.is_premium) {
-      if (
-        availabilityState.premium_conditions &&
-        'nft_collection' in availabilityState.premium_conditions
-      ) {
-        availabilityButtonTitle = messages.collectibleGated
-      } else {
-        availabilityButtonTitle = messages.specialAccess
-      }
-    }
   }
 
-  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false)
   const [hideRemixes, setHideRemixes] = useState(
     !(props.defaultFields?.field_visibility?.remixes ?? true)
   )
 
+  // TODO: migrate this logic into the new modal before merge
   // Update fields in the metadata.
   const didUpdateAvailabilityState = (newState) => {
     props.onChangeField('is_unlisted', newState.unlisted)
@@ -503,6 +384,7 @@ const AdvancedForm = (props) => {
       remixes: !hideRemixes
     })
     props.onChangeField('is_premium', newState.is_premium)
+
     // Check whether the field is invalid if premium track is collectible-gated
     // so that the user cannot proceed until they pick an nft collection.
     const isInvalidNFTCollection =
@@ -513,6 +395,7 @@ const AdvancedForm = (props) => {
       newState.premium_conditions,
       isInvalidNFTCollection
     )
+    props.onChangeField('preview_start_seconds', newState.preview_start_seconds)
   }
 
   const didToggleHideRemixesState = () => {
@@ -594,23 +477,11 @@ const AdvancedForm = (props) => {
         <GatedContentUploadPromptModal
           onSubmit={() => {
             props.toggleAdvanced()
-            setIsAvailabilityModalOpen(true)
+            // TODO: re-enable this before merge
+            // setIsAvailabilityModalOpen(true)
           }}
         />
       ) : null}
-      {showAvailability && (
-        <TrackAvailabilityModalContainer
-          showHideTrackSectionInModal={props.showHideTrackSectionInModal}
-          isAvailabilityModalOpen={isAvailabilityModalOpen}
-          setIsAvailabilityModalOpen={setIsAvailabilityModalOpen}
-          didUpdateAvailabilityState={didUpdateAvailabilityState}
-          onChangeField={props.onChangeField}
-          availabilityState={availabilityState}
-          isRemix={!!props.defaultFields.remix_of?.tracks?.length}
-          isUpload={props.isUpload}
-          initialForm={props.initialForm}
-        />
-      )}
       <div
         className={cn(styles.advanced, {
           [styles.show]: props.advancedShow,
@@ -631,10 +502,13 @@ const AdvancedForm = (props) => {
             />
           </div>
           {showAvailability && (
-            <TrackAvailabilityButton
-              availabilityButtonTitle={availabilityButtonTitle}
-              setIsAvailabilityModalOpen={setIsAvailabilityModalOpen}
-              error={props.invalidFields.premium_conditions}
+            <AccessAndSaleModalLegacy
+              didUpdateState={didUpdateAvailabilityState}
+              metadataState={availabilityState}
+              trackLength={props.trackLength}
+              isRemix={!!props.defaultFields.remix_of?.tracks?.length}
+              isUpload={props.isUpload}
+              initialForm={props.initialForm}
             />
           )}
           {props.type === 'track' && (
@@ -1019,6 +893,11 @@ FormTile.propTypes = {
    * in the download selection modal.
    */
   stems: PropTypes.array,
+
+  /**
+   * Track length in seconds
+   */
+  trackLength: PropTypes.number,
 
   /**
    * Optional callback for selecting a stem category.

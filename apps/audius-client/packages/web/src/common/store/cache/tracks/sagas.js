@@ -30,6 +30,7 @@ import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
+import { processTracksForUpload } from 'common/store/upload/sagaHelpers'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -111,10 +112,14 @@ function* editTrackAsync(action) {
     )
   }
 
+  const [{ metadata: trackForEdit }] = yield processTracksForUpload([
+    { metadata: action.formFields }
+  ])
+
   yield call(
     confirmEditTrack,
     action.trackId,
-    action.formFields,
+    trackForEdit,
     wasDownloadable,
     isNowDownloadable,
     wasUnlisted,
@@ -122,7 +127,7 @@ function* editTrackAsync(action) {
     currentTrack
   )
 
-  const track = { ...action.formFields }
+  const track = { ...trackForEdit }
   track.track_id = action.trackId
   if (track.artwork?.file) {
     track._cover_art_sizes = {

@@ -41,6 +41,7 @@ export type SingleTrackEditValues = TrackMetadata & {
 }
 
 export type TrackEditFormValues = {
+  tracks: TrackForUpload[]
   trackMetadatas: SingleTrackEditValues[]
   trackMetadatasIndex: number
 }

@@ -105,10 +105,15 @@ export const TrackMetadataSchema = SdkTrackMetadataSchema.merge(
       })
       .nullable()
   })
-).refine((form) => form.artwork !== null, {
-  message: messages.artworkRequiredError,
-  path: ['artwork']
-})
+)
+
+export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
+  (form) => form.artwork !== null,
+  {
+    message: messages.artworkRequiredError,
+    path: ['artwork']
+  }
+)
 
 export type TrackMetadata = z.input<typeof TrackMetadataSchema>
 

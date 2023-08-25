@@ -71,6 +71,7 @@ const LEARN_MORE_URL =
 const defaultAvailabilityFields = {
   is_premium: false,
   premium_conditions: null,
+  preview_start_seconds: null,
   unlisted: false,
   genre: true,
   mood: true,
