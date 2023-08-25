@@ -42,7 +42,6 @@ const App = () => {
   const [appolloClient, setApolloClient] = useState(client)
   const didClientError = useSelector(getDidGraphError)
   useEffect(() => {
-    console.log('test log')
     if (didClientError) {
       const backupClient = getBackupClient()
       if (backupClient) {

@@ -1,9 +1,10 @@
 import { Utils } from '@audius/libs'
 import { formatNumber, formatAudString } from 'utils/format'
 import AudiusClient from './AudiusClient'
-import { Permission, BigNumber } from 'types'
+import { Permission, BigNumber, Proposal } from 'types'
 import { fetchWithTimeout } from 'utils/fetch'
 import BN from 'bn.js'
+import { weiAudToAud } from 'utils/numeric'
 
 // Helpers
 export async function hasPermissions(
@@ -177,4 +178,34 @@ export async function getContentNodeMetadata(
     // Try legacy method:
     return await getNodeMetadata(endpoint)
   }
+}
+
+export function decodeCallData(types: string[], callData: string) {
+  // TODO: Like methods above and throughout, move to better pattern
+  const web3 = window.audiusLibs.ethWeb3Manager.web3
+  return web3.eth.abi.decodeParameters(types, callData)
+}
+
+export function decodeProposalCallData(proposal: Proposal) {
+  const signatureSplit = proposal.functionSignature.split('(')
+  const functionName = signatureSplit?.[0]
+
+  const types = signatureSplit?.[1]?.split(')')?.[0]?.split(',')
+  if (!types) {
+    return null
+  }
+  const decoded: { [key: string]: string } = AudiusClient.decodeCallData(
+    types,
+    proposal.callData
+  )
+  delete decoded['__length__']
+
+  const parsedCallData = Object.values(decoded).map((v: string) =>
+    v.replace(/0+$/, '')
+  )
+  if (functionName === 'slash') {
+    parsedCallData[0] = weiAudToAud(new BN(parsedCallData[0])).toString()
+  }
+  const joinedCallData = parsedCallData.join(',')
+  return joinedCallData
 }
