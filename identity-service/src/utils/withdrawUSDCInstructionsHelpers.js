@@ -4,31 +4,32 @@ const {
 } = require('@solana/spl-token')
 const { Keypair } = require('@solana/web3.js')
 const config = require('../config')
+const { isRelayAllowedProgram, getInstructionEnum } = require('./relayUtils')
 
-const solanaClaimableTokenProgramAddress = config.get(
-  'solanaClaimableTokenProgramAddress'
-)
+const CLOSE_ACCOUNT_INSTRUCTION = 9
+const FEE_PAYER_ACCOUNT_INDEX = 1
+const CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 0
+const USER_BANK_TRANSFER_INDEX_START = 1
+const USER_BANK_TRANSFER_INDEX_END = 3
+const ACCOUNT_TO_CREATE_INDEX = 1
+const ACCOUNT_TO_CLOSE_INDEX = 0
 
-const allowedProgramIds = [
-  solanaClaimableTokenProgramAddress,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111'
-]
-
-const isRelayAllowedProgram = (instructions) => {
-  for (const instruction of instructions) {
-    if (!allowedProgramIds.includes(instruction.programId)) {
-      return false
-    }
-  }
-  return true
-}
-
+/**
+ * Checks that the instruction is a create account instruction for an associated token account.
+ * @param {Instruction} instruction to check
+ * @returns true if validation passes
+ */
 const checkCreateAccountInstruction = (instruction) => {
-  const isCreateInstruction =
-    instruction.programId === ASSOCIATED_TOKEN_PROGRAM_ID.toString()
-  return isCreateInstruction
+  return (
+    instruction.programId === ASSOCIATED_TOKEN_PROGRAM_ID.toString() &&
+    getInstructionEnum(instruction) === null
+  )
 }
 
+/**
+ * @param {Instruction} instruction to check
+ * @returns true if validation passes
+ */
 const checkCloseAccountInstruction = (instruction) => {
   const feePayerKeypairs = config.get('solanaFeePayerWallets')
   const feePayerPubkeys = feePayerKeypairs.map((wallet) =>
@@ -38,24 +39,49 @@ const checkCloseAccountInstruction = (instruction) => {
   )
   const isCloseInstruction =
     instruction.programId === TOKEN_PROGRAM_ID.toString() &&
-    instruction.data &&
-    instruction.data.data &&
-    instruction.data.data[0] === 9
+    getInstructionEnum(instruction) === CLOSE_ACCOUNT_INSTRUCTION
   const isFeePayerReimbursed = feePayerPubkeys.includes(
-    instruction.keys[1].pubkey
+    instruction.keys[FEE_PAYER_ACCOUNT_INDEX].pubkey
   )
   return isCloseInstruction && isFeePayerReimbursed
 }
 
 /**
+ * Checks that the account to create in the create account instruction matches the account to close
+ * in the close instruction.
+ * @param {Instruction[]} instructions to check
+ * @returns true if validation passes
+ */
+const checkCreateAccountMatchesClose = (instructions) => {
+  const createAccountInstruction =
+    instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
+  const closeAccountInstruction = instructions[instructions.length - 1]
+  return (
+    createAccountInstruction.keys[ACCOUNT_TO_CREATE_INDEX].pubkey ===
+    closeAccountInstruction.keys[ACCOUNT_TO_CLOSE_INDEX].pubkey
+  )
+}
+
+/**
  * Checks if the given instructions are a USDC withdrawal swap transaction. This is a special case
  * where a USDC associated token account is created, used for swapping USDC for SOL, and then closed.
+ * @param {Instruction[]} instructions to check
+ * @returns true if validation passes
  */
 const isUSDCWithdrawalTransaction = (instructions) => {
   if (!instructions.length) return false
   const validations = []
-  validations.push(checkCreateAccountInstruction(instructions[0]))
-  // validations.push(isRelayAllowedProgram(instructions.slice(1, 3)))
+  validations.push(
+    checkCreateAccountInstruction(
+      instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
+    )
+  )
+  const transferInstructions = instructions.slice(
+    USER_BANK_TRANSFER_INDEX_START,
+    USER_BANK_TRANSFER_INDEX_END
+  )
+  validations.push(isRelayAllowedProgram(transferInstructions))
+  validations.push(checkCreateAccountMatchesClose(instructions))
   validations.push(
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )
