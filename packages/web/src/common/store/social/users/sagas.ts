@@ -273,6 +273,17 @@ export function* subscribeToUserAsync(userId: ID) {
     return
   }
 
+  yield* put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: userId,
+        metadata: {
+          does_current_user_subscribe: true
+        }
+      }
+    ])
+  )
+
   yield* call(confirmSubscribeToUser, userId, accountId)
 }
 
@@ -306,6 +317,16 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
             timeout ? 'Timeout' : message
           )
         )
+        yield* put(
+          cacheActions.update(Kind.USERS, [
+            {
+              id: userId,
+              metadata: {
+                does_current_user_subscribe: false
+              }
+            }
+          ])
+        )
       }
     )
   )
@@ -319,6 +340,16 @@ export function* unsubscribeFromUserAsync(userId: ID) {
     return
   }
 
+  yield* put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: userId,
+        metadata: {
+          does_current_user_subscribe: false
+        }
+      }
+    ])
+  )
   yield* call(confirmUnsubscribeFromUser, userId, accountId)
 }
 
@@ -351,6 +382,16 @@ export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
             userId,
             timeout ? 'Timeout' : message
           )
+        )
+        yield* put(
+          cacheActions.update(Kind.USERS, [
+            {
+              id: userId,
+              metadata: {
+                does_current_user_subscribe: true
+              }
+            }
+          ])
         )
       }
     )

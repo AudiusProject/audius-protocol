@@ -47,6 +47,7 @@ export type APIUser = {
   creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
+  does_current_user_subscribe?: boolean
   handle_lc: string
   updated_at: string
   cover_photo_sizes: Nullable<CID>
@@ -73,6 +74,7 @@ export type APISearchUser = Omit<
   | 'track_count'
   | 'current_user_followee_follow_count'
   | 'does_current_user_follow'
+  | 'does_current_user_subscribe'
 >
 
 export type APIRepost = {
