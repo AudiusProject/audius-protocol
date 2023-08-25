@@ -260,12 +260,16 @@ export interface GetUSDCTransactionHistoryRequest {
     limit?: number;
     sortMethod?: GetUSDCTransactionHistorySortMethodEnum;
     sortDirection?: GetUSDCTransactionHistorySortDirectionEnum;
+    type?: GetUSDCTransactionHistoryTypeEnum;
+    method?: GetUSDCTransactionHistoryMethodEnum;
 }
 
 export interface GetUSDCTransactionHistoryCountRequest {
     id: string;
     encodedDataMessage: string;
     encodedDataSignature: string;
+    type?: GetUSDCTransactionHistoryCountTypeEnum;
+    method?: GetUSDCTransactionHistoryCountMethodEnum;
 }
 
 export interface GetUserRequest {
@@ -1430,6 +1434,14 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['sort_direction'] = params.sortDirection;
         }
 
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.method !== undefined) {
+            queryParameters['method'] = params.method;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
@@ -1476,6 +1488,14 @@ export class UsersApi extends runtime.BaseAPI {
         }
 
         const queryParameters: any = {};
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.method !== undefined) {
+            queryParameters['method'] = params.method;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -2107,6 +2127,40 @@ export const GetUSDCTransactionHistorySortDirectionEnum = {
     Desc: 'desc'
 } as const;
 export type GetUSDCTransactionHistorySortDirectionEnum = typeof GetUSDCTransactionHistorySortDirectionEnum[keyof typeof GetUSDCTransactionHistorySortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionHistoryTypeEnum = {
+    PurchaseContent: 'purchase_content',
+    Transfer: 'transfer',
+    PurchaseStripe: 'purchase_stripe'
+} as const;
+export type GetUSDCTransactionHistoryTypeEnum = typeof GetUSDCTransactionHistoryTypeEnum[keyof typeof GetUSDCTransactionHistoryTypeEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionHistoryMethodEnum = {
+    Send: 'send',
+    Receive: 'receive'
+} as const;
+export type GetUSDCTransactionHistoryMethodEnum = typeof GetUSDCTransactionHistoryMethodEnum[keyof typeof GetUSDCTransactionHistoryMethodEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionHistoryCountTypeEnum = {
+    PurchaseContent: 'purchase_content',
+    Transfer: 'transfer',
+    PurchaseStripe: 'purchase_stripe'
+} as const;
+export type GetUSDCTransactionHistoryCountTypeEnum = typeof GetUSDCTransactionHistoryCountTypeEnum[keyof typeof GetUSDCTransactionHistoryCountTypeEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionHistoryCountMethodEnum = {
+    Send: 'send',
+    Receive: 'receive'
+} as const;
+export type GetUSDCTransactionHistoryCountMethodEnum = typeof GetUSDCTransactionHistoryCountMethodEnum[keyof typeof GetUSDCTransactionHistoryCountMethodEnum];
 /**
  * @export
  */
