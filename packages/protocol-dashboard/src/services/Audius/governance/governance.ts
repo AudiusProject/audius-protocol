@@ -1,4 +1,5 @@
 import { AudiusClient } from '../AudiusClient'
+import { AudiusABIDecoder } from '@audius/libs'
 
 import BN from 'bn.js'
 

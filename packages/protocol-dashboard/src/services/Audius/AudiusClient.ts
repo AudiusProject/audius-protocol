@@ -25,7 +25,8 @@ import {
   getBlockNearTimestamp,
   toChecksumAddress,
   onSetup,
-  onSetupFinished
+  onSetupFinished,
+  decodeCallData
 } from './helpers'
 import { getUserDelegates } from './wrappers'
 
@@ -89,6 +90,7 @@ export class AudiusClient {
   static getWei = getWei
   static getDiscoveryNodeMetadata = getDiscoveryNodeMetadata
   static getContentNodeMetadata = getContentNodeMetadata
+  static decodeCallData = decodeCallData
 }
 
 window.AudiusClient = AudiusClient
