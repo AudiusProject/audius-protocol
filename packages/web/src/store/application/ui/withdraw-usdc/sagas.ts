@@ -1,18 +1,29 @@
 import {
   withdrawUSDCActions,
   withdrawUSDCSelectors,
+  solanaSelectors,
   ErrorLevel,
   SolanaWalletAddress,
-  getTokenAccountInfo,
-  isSolWallet,
-  isValidSolDestinationAddress,
   getUSDCUserBank,
   getContext
 } from '@audius/common'
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  Token
+} from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, select } from 'typed-redux-saga'
+
+import { getLibs } from 'services/audius-libs'
+import { getSwapUSDCUserBankInstructions } from 'services/solana/WithdrawUSDC'
+import {
+  isSolWallet,
+  getTokenAccountInfo,
+  isValidSolAddress
+} from 'services/solana/solana'
 
 const {
   beginWithdrawUSDC,
@@ -25,9 +36,9 @@ const {
   withdrawUSDCFailed
 } = withdrawUSDCActions
 const { getWithdrawDestinationAddress } = withdrawUSDCSelectors
+const { getFeePayer } = solanaSelectors
 
 function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const amountBN = new BN(amount)
     if (amountBN.lte(new BN(0))) {
@@ -35,14 +46,10 @@ function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
     }
     // get user bank
     const userBank = yield* call(getUSDCUserBank)
-    const tokenAccountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        mint: 'usdc',
-        tokenAccount: userBank
-      }
-    )
+    const tokenAccountInfo = yield* call(getTokenAccountInfo, {
+      tokenAccount: userBank,
+      mint: 'usdc'
+    })
     if (!tokenAccountInfo) {
       throw new Error('Failed to fetch USDC token account info')
     }
@@ -65,14 +72,12 @@ function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
 function* doSetDestinationAddress({
   payload: { destinationAddress }
 }: ReturnType<typeof setDestinationAddress>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     if (!destinationAddress) {
       throw new Error('Please enter a destination address')
     }
     const isValidAddress = yield* call(
-      isValidSolDestinationAddress,
-      audiusBackendInstance,
+      isValidSolAddress,
       destinationAddress as SolanaWalletAddress
     )
     if (!isValidAddress) {
@@ -90,35 +95,65 @@ function* doSetDestinationAddress({
 }
 
 function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
+    const libs = yield* call(getLibs)
     // Assume destinationAddress and amount have already been validated
     const destinationAddress = yield* select(getWithdrawDestinationAddress)
     if (!destinationAddress) {
       throw new Error('Please enter a destination address')
     }
-    // const amount = yield* select(getWithdrawAmount)
+    const destinationPubkey = new PublicKey(destinationAddress)
+    const feePayer = yield* select(getFeePayer)
+    if (feePayer === null) {
+      throw new Error('Fee payer not set')
+    }
+    const feePayerPubkey = new PublicKey(feePayer)
+
     const isDestinationSolAddress = yield* call(
       isSolWallet,
-      audiusBackendInstance,
       destinationAddress as SolanaWalletAddress
     )
-    const destinationPubkey = new PublicKey(destinationAddress)
-    // Destination is an ATA
-    if (!isDestinationSolAddress) {
-      const destinationAccountInfo = yield* call(
-        getTokenAccountInfo,
-        audiusBackendInstance,
-        {
-          mint: 'usdc',
-          tokenAccount: destinationPubkey
-        }
+
+    // Destination is a sol address - check for associated token account
+    if (isDestinationSolAddress) {
+      const destinationAssociatedTokenAccount = yield* call(
+        [Token, Token.getAssociatedTokenAddress],
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        libs.solanaWeb3Manager!.mints.usdc,
+        destinationPubkey
       )
-      // Destination account does not exist - create and fund
-      if (!destinationAccountInfo) {
-        // TODO
+      const destinationAccountInfo = yield* call(getTokenAccountInfo, {
+        tokenAccount: destinationAssociatedTokenAccount,
+        mint: 'usdc'
+      })
+
+      // Destination associated token account does not exist - create and fund it
+      if (destinationAccountInfo === null) {
+        const swapInstructions = yield* call(
+          getSwapUSDCUserBankInstructions,
+          destinationAddress,
+          feePayerPubkey
+        )
+
+        const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
+        if (!transactionHandler) {
+          throw new Error('Failed to get transaction handler')
+        }
+        const { error: swapError } = yield* call(
+          [transactionHandler, transactionHandler.handleTransaction],
+          {
+            instructions: swapInstructions,
+            feePayerOverride: feePayerPubkey,
+            skipPreflight: false
+          }
+        )
+        if (swapError) {
+          throw new Error(`Swap transaction failed: ${swapError}`)
+        }
       }
     }
+    // TODO: handle case where destination is a USDC associated token account
   } catch (e: unknown) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

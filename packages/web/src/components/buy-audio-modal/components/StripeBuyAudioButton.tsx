@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
-import { getRootSolanaAccount } from 'services/audius-backend/BuyAudio'
+import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './StripeBuyAudioButton.module.css'
 const { setVisibility } = modalsActions
