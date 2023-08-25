@@ -1,4 +1,4 @@
-.description {
+.description, .callData {
   min-height: 160px;
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   margin-top: 16px;
 }
 
-.descriptionTitleContainer {
+.descriptionTitleContainer, .callDataTitleContainer {
   padding: 28px 32px;
   border-bottom: 1px solid var(--neutral-light-8);
   display: inline-flex;
@@ -16,14 +16,14 @@
   box-sizing: border-box;
 }
 
-.descriptionTitle {
+.descriptionTitle, .callDataTitle {
   font-weight: bold;
   font-size: 20px;
   line-height: 25px;
   color: var(--neutral);
 }
 
-.descriptionBody {
+.descriptionBody, .callDataBody {
   box-sizing: border-box;
   padding: 0 32px;
   margin: 8px 0;
@@ -34,8 +34,25 @@
   text-align: left;
 }
 
-.descriptionBody a {
+.descriptionBody a, .callDataBody a {
   color: var(--primary-dark-1);
+}
+
+.callDataSectionHeader {
+  box-sizing: border-box;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+  text-transform: uppercase;
+  width: 100%;
+  text-align: left;
+}
+
+.callDataSectionBody {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral);
 }
 
 .votes {
