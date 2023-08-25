@@ -318,7 +318,8 @@ export default class ServiceProviderClient {
       serviceType,
       endpoint,
       amount,
-      delegateOwnerWallet
+      delegateOwnerWallet,
+      false // performHealthCheck
     )
     return registeredService
   }
@@ -332,7 +333,8 @@ export default class ServiceProviderClient {
     const registeredService = await this.getContract().register(
       serviceType,
       endpoint,
-      amount
+      amount,
+      false // performHealthCheck
     )
     return registeredService
   }
