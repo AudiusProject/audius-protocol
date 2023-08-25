@@ -190,7 +190,7 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
  * @param {Instruction} instruction
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
-export const isRelayAllowedInstruction = async (instruction) => {
+const isRelayAllowedInstruction = async (instruction) => {
   if (instruction.programId === solanaRewardsManagerProgramId) {
     // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
     // Since we've just checked the program ID, this is sufficient as the authority
