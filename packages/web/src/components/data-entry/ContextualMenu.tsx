@@ -108,6 +108,7 @@ type ContextualMenuProps<FormValues extends FormikValues> = {
   menuFields: ReactNode
   error?: boolean
   errorMessage?: string
+  previewOverride?: (toggleMenu: () => void) => ReactNode
 } & FormikConfig<FormValues>
 
 export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
@@ -122,11 +123,14 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     onSubmit,
     error,
     errorMessage,
+    previewOverride,
     ...formikProps
   } = props
   const [isMenuOpen, toggleMenu] = useToggle(false)
 
-  const preview = (
+  const preview = previewOverride ? (
+    previewOverride(toggleMenu)
+  ) : (
     <Tile onClick={toggleMenu} className={styles.root} elevation='flat'>
       <div className={styles.header}>
         <div className={styles.title}>

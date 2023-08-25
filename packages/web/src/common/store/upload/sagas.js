@@ -36,6 +36,10 @@ import { make } from 'common/store/analytics/actions'
 import { getUnclaimedPlaylistId } from 'common/store/cache/collections/utils'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
+import {
+  processTracksForUpload,
+  reportResultEvents
+} from 'common/store/upload/sagaHelpers'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -44,7 +48,6 @@ import { processAndCacheTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
 
 import { watchUploadErrors } from './errorSagas'
-import { reportResultEvents } from './sagaHelpers'
 
 const { getUser } = cacheUsersSelectors
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
@@ -1184,22 +1187,18 @@ function* uploadTracksAsync(action) {
   })
   yield put(recordEvent)
 
+  const tracks = yield call(processTracksForUpload, action.tracks)
+
   // Upload content.
   const isPlaylist = action.uploadType === UploadType.PLAYLIST
   const isAlbum = action.uploadType === UploadType.ALBUM
-  const isSingleTrack = action.tracks.length === 1
+  const isSingleTrack = tracks.length === 1
   if (isPlaylist || isAlbum) {
-    yield call(
-      uploadCollection,
-      action.tracks,
-      user.user_id,
-      action.metadata,
-      isAlbum
-    )
+    yield call(uploadCollection, tracks, user.user_id, action.metadata, isAlbum)
   } else if (isSingleTrack) {
-    yield call(uploadSingleTrack, action.tracks[0])
+    yield call(uploadSingleTrack, tracks[0])
   } else {
-    yield call(uploadMultipleTracks, action.tracks)
+    yield call(uploadMultipleTracks, tracks)
   }
 }
 

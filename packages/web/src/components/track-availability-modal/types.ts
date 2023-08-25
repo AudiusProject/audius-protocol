@@ -6,7 +6,8 @@ import {
 
 export enum PremiumTrackMetadataField {
   IS_PREMIUM = 'is_premium',
-  PREMIUM_CONDITIONS = 'premium_conditions'
+  PREMIUM_CONDITIONS = 'premium_conditions',
+  PREVIEW = 'preview_start_seconds'
 }
 
 export enum UnlistedTrackMetadataField {
@@ -21,6 +22,7 @@ export enum UnlistedTrackMetadataField {
 export type TrackMetadataState = {
   [PremiumTrackMetadataField.IS_PREMIUM]: boolean
   [PremiumTrackMetadataField.PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
+  [PremiumTrackMetadataField.PREVIEW]: Nullable<number>
   [UnlistedTrackMetadataField.UNLISTED]: boolean
   [UnlistedTrackMetadataField.GENRE]: boolean
   [UnlistedTrackMetadataField.MOOD]: boolean

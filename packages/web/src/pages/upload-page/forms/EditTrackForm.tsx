@@ -57,6 +57,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const initialValues: TrackEditFormValues = useMemo(
     () => ({
       trackMetadatasIndex: 0,
+      tracks,
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
         artwork: null,
@@ -120,7 +121,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               <ReleaseDateField />
               <RemixSettingsField />
               <SourceFilesField />
-              <AccessAndSaleField />
+              <AccessAndSaleField isUpload />
               <AttributionField />
             </div>
             <PreviewButton playing={false} onClick={() => {}} />

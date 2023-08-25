@@ -26,6 +26,8 @@ import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
 import { useSelector } from 'react-redux'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
   ContextualMenu,
@@ -50,7 +52,7 @@ import {
 import { UsdcPurchaseFields } from '../fields/availability/UsdcPurchaseFields'
 import { CollectibleGatedDescription } from '../fields/availability/collectible-gated/CollectibleGatedDescription'
 import { CollectibleGatedFields } from '../fields/availability/collectible-gated/CollectibleGatedFields'
-import { useTrackField } from '../hooks'
+import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
@@ -96,7 +98,6 @@ const messages = {
     play_count: 'Show Play Count',
     remixes: 'Show Remixes'
   },
-
   followersOnly: 'Followers Only',
   supportersOnly: 'Supporters Only',
   ownersOf: 'Owners Of',
@@ -104,17 +105,29 @@ const messages = {
     price.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
   preview: (seconds: number) => {
     return `${seconds.toString()} seconds`
+  },
+  errors: {
+    price: {
+      tooLow: 'Price must be at least $0.99',
+      tooHigh: 'Price must be less than $9.99'
+    },
+    preview: {
+      tooEarly: 'Preview must start during the track',
+      tooLate:
+        'Preview must start at lest 15 seconds before the end of the track'
+    }
   }
 }
 
-const IS_UNLISTED = 'is_unlisted'
-const IS_PREMIUM = 'is_premium'
+export const IS_UNLISTED = 'is_unlisted'
+export const IS_PREMIUM = 'is_premium'
 export const PREMIUM_CONDITIONS = 'premium_conditions'
 
 export const AVAILABILITY_TYPE = 'availability_type'
-const SPECIAL_ACCESS_TYPE = 'special_access_type'
+export const SPECIAL_ACCESS_TYPE = 'special_access_type'
 export const FIELD_VISIBILITY = 'field_visibility'
 export const PRICE = 'premium_conditions.usdc_purchase.price'
+export const PRICE_HUMANIZED = 'price_humanized'
 export const PREVIEW = 'preview_start_seconds'
 
 export type AccessAndSaleFormValues = {
@@ -123,10 +136,46 @@ export type AccessAndSaleFormValues = {
   [PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
   [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
   [FIELD_VISIBILITY]: FieldVisibility
+  [PRICE_HUMANIZED]: string
   [PREVIEW]?: number
 }
 
-export const AccessAndSaleField = () => {
+const AccessAndSaleFormSchema = (trackLength: number) =>
+  z.object({
+    [PREMIUM_CONDITIONS]: z.nullable(
+      z.object({
+        // TODO: there are other types
+        usdc_purchase: z.object({
+          price: z
+            .number()
+            .lte(999, messages.errors.price.tooHigh)
+            .gte(99, messages.errors.price.tooLow)
+        })
+      })
+    ),
+    [PREVIEW]: z.optional(
+      z
+        .number()
+        .gte(0, messages.errors.preview.tooEarly)
+        .lte(trackLength - 15, messages.errors.preview.tooLate)
+    )
+  })
+
+type AccessAndSaleFieldProps = {
+  isUpload?: boolean
+  trackLength?: number
+}
+
+export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
+  const { isUpload } = props
+
+  const [{ value: index }] = useField('trackMetadatasIndex')
+  const [{ value: trackLength }] = useIndexedField<number>(
+    'tracks',
+    index,
+    'preview.duration'
+  )
+
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
     useTrackField<SingleTrackEditValues[typeof IS_UNLISTED]>(IS_UNLISTED)
@@ -166,6 +215,11 @@ export const AccessAndSaleField = () => {
     let availabilityType = TrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
       availabilityType = TrackAvailabilityType.USDC_PURCHASE
+      set(
+        initialValues,
+        PRICE_HUMANIZED,
+        (Number(premiumConditions.usdc_purchase.price || 0) / 100).toFixed(2)
+      )
     }
     if (isFollowGated || isTipGated) {
       availabilityType = TrackAvailabilityType.SPECIAL_ACCESS
@@ -197,14 +251,11 @@ export const AccessAndSaleField = () => {
         get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.USDC_PURCHASE
       ) {
         setPreviewValue(get(values, PREVIEW))
-        const priceStr = get(values, PRICE)
-        const price = priceStr ? parseFloat(priceStr) : 0
+        setIsPremiumValue(true)
         setPremiumConditionsValue({
-          // @ts-ignore
+          // @ts-ignore splits get added in saga
           usdc_purchase: {
-            price
-            // TODO: splits value
-            // splits: price * 1000
+            price: Math.round(get(values, PRICE))
           }
         })
       }
@@ -274,7 +325,7 @@ export const AccessAndSaleField = () => {
     if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
       selectedValues = [
         {
-          label: messages.price(premiumConditions.usdc_purchase.price),
+          label: messages.price(premiumConditions.usdc_purchase.price / 100),
           icon: IconCart
         }
       ]
@@ -323,9 +374,13 @@ export const AccessAndSaleField = () => {
       initialValues={initialValues}
       onSubmit={onSubmit}
       renderValue={renderValue}
+      validationSchema={toFormikValidationSchema(
+        AccessAndSaleFormSchema(trackLength)
+      )}
       menuFields={
         <AccessAndSaleMenuFields
           isRemix={isRemix}
+          isUpload={isUpload}
           premiumConditions={premiumConditions}
         />
       }
@@ -336,10 +391,15 @@ export const AccessAndSaleField = () => {
 type AccesAndSaleMenuFieldsProps = {
   premiumConditions: SingleTrackEditValues[typeof PREMIUM_CONDITIONS]
   isRemix: boolean
+  isUpload?: boolean
+  isInitiallyUnlisted?: boolean
+  initialPremiumConditions?: PremiumConditions
 }
 
-const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
-  const { isRemix } = props
+export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
+  const { isRemix, isUpload, isInitiallyUnlisted, initialPremiumConditions } =
+    props
+
   const accountUserId = useSelector(getUserId)
   const { isEnabled: isUsdcEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
   const { isEnabled: isCollectibleGatedEnabled } = useFlag(
@@ -368,6 +428,7 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const [availabilityField, , { setValue: setAvailabilityValue }] = useField({
     name: AVAILABILITY_TYPE
   })
+
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
   )
@@ -375,9 +436,29 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasCollectibles = numEthCollectibles + numSolCollectibles > 0
 
-  const noCollectibleGate = !hasCollectibles
-  const noSpecialAccess = isRemix
-  const noUsdcPurchase = isRemix // TODO: support edit
+  const noUsdcPurchase =
+    !isUpload &&
+    !isPremiumContentUSDCPurchaseGated(initialPremiumConditions) &&
+    !isInitiallyUnlisted
+
+  const noCollectibleGate =
+    isRemix ||
+    !hasCollectibles ||
+    (!isUpload &&
+      !isPremiumContentCollectibleGated(initialPremiumConditions) &&
+      !isInitiallyUnlisted)
+  const noCollectibleDropdown =
+    noCollectibleGate || (!isUpload && !isInitiallyUnlisted)
+
+  const noSpecialAccess =
+    !isUpload &&
+    !isPremiumContentFollowGated(initialPremiumConditions) &&
+    !isPremiumContentTipGated(initialPremiumConditions) &&
+    !isInitiallyUnlisted
+  const noSpecialAccessOptions =
+    noSpecialAccess || (!isUpload && !isInitiallyUnlisted)
+
+  const noHidden = !isUpload && !isInitiallyUnlisted
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -455,7 +536,7 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             description={messages.usdcPurchaseSubtitle}
             value={TrackAvailabilityType.USDC_PURCHASE}
             disabled={noUsdcPurchase}
-            checkedContent={<UsdcPurchaseFields disabled={noSpecialAccess} />}
+            checkedContent={<UsdcPurchaseFields disabled={noUsdcPurchase} />}
           />
         ) : null}
 
@@ -466,7 +547,9 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             description={messages.specialAccessSubtitle}
             value={TrackAvailabilityType.SPECIAL_ACCESS}
             disabled={noSpecialAccess}
-            checkedContent={<SpecialAccessFields disabled={noSpecialAccess} />}
+            checkedContent={
+              <SpecialAccessFields disabled={noSpecialAccessOptions} />
+            }
           />
         ) : null}
         {isCollectibleGatedEnabled ? (
@@ -482,7 +565,7 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
               />
             }
             checkedContent={
-              <CollectibleGatedFields disabled={noCollectibleGate} />
+              <CollectibleGatedFields disabled={noCollectibleDropdown} />
             }
           />
         ) : null}
@@ -491,6 +574,7 @@ const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           label={messages.hidden}
           value={TrackAvailabilityType.HIDDEN}
           description={messages.hiddenSubtitle}
+          disabled={noHidden}
           checkedContent={<HiddenAvailabilityFields />}
         />
       </RadioButtonGroup>
