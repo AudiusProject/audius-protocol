@@ -143,6 +143,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -234,6 +235,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

@@ -105,7 +105,7 @@ def test_index_update_user_replica_set_from_sp(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 2
+        assert len(all_users) == 1
 
         user_1: User = (
             session.query(User)
@@ -187,7 +187,7 @@ def test_index_update_user_replica_set(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 2
+        assert len(all_users) == 1
 
         user_1: User = (
             session.query(User)

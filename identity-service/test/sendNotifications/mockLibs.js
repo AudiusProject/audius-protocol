@@ -91,6 +91,7 @@ const userTemplate = (id) => ({
   'creator_node_endpoint': 'https://creatornode3.audius.co,,',
   'current_user_followee_follow_count': 0,
   'does_current_user_follow': false,
+  'does_current_user_subscribe': false,
   'followee_count': 559,
   'follower_count': 655,
   'handle': 'rayjacobson',

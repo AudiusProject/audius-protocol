@@ -17,7 +17,12 @@ begin
 
     entity_type := 'track';
   else
-    insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
+    insert into aggregate_playlist (playlist_id, is_album)
+    select p.playlist_id, p.is_album
+    from playlists p
+    where p.playlist_id = new.save_item_id
+    and p.is_current
+    on conflict do nothing;
     
     entity_type := 'playlist';
   end if;
@@ -33,22 +38,31 @@ begin
   if new.save_type = 'track' then
     milestone_name := 'TRACK_SAVE_COUNT';
 
-  update
-    aggregate_track
-    set save_count = save_count + delta
-  where
-    track_id = new.save_item_id
-  returning
-    save_count into new_val;
-
+    update aggregate_track 
+    set save_count = (
+      select count(*)
+      from saves r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.save_type = new.save_type
+          and r.save_item_id = new.save_item_id
+    )
+    where track_id = new.save_item_id
+    returning save_count into new_val;
 
     -- update agg user
-    update
-      aggregate_user
-    set track_save_count = track_save_count + delta
-    where
-      user_id = new.user_id;
-
+    update aggregate_user 
+    set track_save_count = (
+      select count(*)
+      from saves r
+      where r.is_current is true
+        and r.is_delete is false
+        and r.user_id = new.user_id
+        and r.save_type = new.save_type
+    )
+    where user_id = new.user_id;
+    
   	if new.is_delete IS FALSE then
 		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.save_item_id;
 	  end if;
@@ -56,7 +70,15 @@ begin
     milestone_name := 'PLAYLIST_SAVE_COUNT';
 
     update aggregate_playlist
-    set save_count = save_count + delta
+    set save_count = (
+      select count(*)
+      from saves r
+      where
+          r.is_current is true
+          and r.is_delete is false
+          and r.save_type = new.save_type
+          and r.save_item_id = new.save_item_id
+    )
     where playlist_id = new.save_item_id
     returning save_count into new_val;
 

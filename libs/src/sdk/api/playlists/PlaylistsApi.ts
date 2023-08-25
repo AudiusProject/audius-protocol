@@ -108,6 +108,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.CREATE,
       metadata: JSON.stringify({
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -514,6 +515,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           entityId: trackId,
           action: Action.CREATE,
           metadata: JSON.stringify({
+            cid: '',
             data: snakecaseKeys(updatedMetadata)
           }),
           auth: this.auth,
@@ -547,6 +549,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.CREATE,
       metadata: JSON.stringify({
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -617,6 +620,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

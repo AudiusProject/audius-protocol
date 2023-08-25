@@ -45,6 +45,9 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         is_deactivated: { type: 'boolean' },
         location: lowerKeyword,
 
+        // subscribed
+        subscribed_ids: { type: 'keyword' },
+
         // following
         following_ids: { type: 'keyword' },
         following_count: { type: 'integer' },
@@ -112,14 +115,16 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
   async withBatch(rows: UserDoc[]) {
     // attach user's tracks
     const userIds = rows.map((r) => r.user_id)
-    const [tracksByOwnerId, followMap] = await Promise.all([
+    const [tracksByOwnerId, followMap, subscriptionsMap] = await Promise.all([
       this.userTracks(userIds),
       this.userFollows(userIds),
+      this.userSubscriptions(userIds),
     ])
     for (let user of rows) {
       user.tracks = tracksByOwnerId[user.user_id] || []
       user.track_count = user.tracks.length
       user.following_ids = followMap[user.user_id] || []
+      user.subscribed_ids = subscriptionsMap[user.user_id] || []
     }
   }
 
@@ -147,6 +152,29 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
     const grouped = groupBy(result.rows, 'follower_user_id')
     for (let [user_id, follow_rows] of Object.entries(grouped)) {
       grouped[user_id] = follow_rows.map((r) => r.followee_user_id)
+    }
+    return grouped
+  }
+
+  private async userSubscriptions(
+    userIds: number[]
+  ): Promise<Record<number, number[]>> {
+    if (!userIds.length) return {}
+    const idList = Array.from(userIds).join(',')
+    const q = `
+      select 
+        subscriber_id,
+        user_id 
+      from subscriptions
+      where is_current = true
+        and is_delete = false
+        and subscriber_id in (${idList})
+      order by created_at desc
+    `
+    const result = await dialPg().query(q)
+    const grouped = groupBy(result.rows, 'subscriber_id')
+    for (let [subscriber_id, subscription_rows] of Object.entries(grouped)) {
+      grouped[subscriber_id] = subscription_rows.map((r) => r.user_id)
     }
     return grouped
   }

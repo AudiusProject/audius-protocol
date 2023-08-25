@@ -70,7 +70,7 @@ class GetTransactionHistory(Resource):
     )
     @full_user_ns.expect(transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware(required=True, namespace=full_ns)
+    @auth_middleware()
     def get(self, id, authed_user_id=None):
         self._get(id, authed_user_id)
 
@@ -102,7 +102,7 @@ class LegacyGetTransactionHistory(GetTransactionHistory):
     )
     @full_ns.expect(transaction_history_parser)
     @full_ns.marshal_with(transaction_history_response)
-    @full_ns.auth_middleware()
+    @auth_middleware()
     def get(self, authed_user_id=None):
         self._get(authed_user_id, authed_user_id)
 
@@ -147,7 +147,7 @@ class LegacyGetTransactionHistoryCount(Resource):
     )
     @full_ns.expect(transaction_history_count_parser)
     @full_ns.marshal_with(transaction_history_count_response)
-    @full_ns.authenticated()
+    @auth_middleware()
     def get(self, authed_user_id=None):
         if authed_user_id is None:
             abort_bad_request_param(None, full_ns)
@@ -165,7 +165,7 @@ class GetUSDCTransactionHistory(Resource):
     )
     @full_user_ns.expect(transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
-    @auth_middleware(required=True)
+    @auth_middleware()
     def get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_ns)
         if authed_user_id is None:

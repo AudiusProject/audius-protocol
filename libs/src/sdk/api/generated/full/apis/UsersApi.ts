@@ -16,7 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
-  FavoritesResponseFull,
+  CollectionLibraryResponseFull,
   FollowingResponseFull,
   FullBulkSubscribersResponse,
   FullFollowersResponse,
@@ -28,14 +28,16 @@ import type {
   FullTracks,
   FullUserResponse,
   HistoryResponseFull,
+  PurchasesResponse,
   RelatedArtistResponseFull,
   TopGenreUsersResponseFull,
   TopUsersResponseFull,
+  TrackLibraryResponseFull,
   UsersByContentNode,
 } from '../models';
 import {
-    FavoritesResponseFullFromJSON,
-    FavoritesResponseFullToJSON,
+    CollectionLibraryResponseFullFromJSON,
+    CollectionLibraryResponseFullToJSON,
     FollowingResponseFullFromJSON,
     FollowingResponseFullToJSON,
     FullBulkSubscribersResponseFromJSON,
@@ -58,12 +60,16 @@ import {
     FullUserResponseToJSON,
     HistoryResponseFullFromJSON,
     HistoryResponseFullToJSON,
+    PurchasesResponseFromJSON,
+    PurchasesResponseToJSON,
     RelatedArtistResponseFullFromJSON,
     RelatedArtistResponseFullToJSON,
     TopGenreUsersResponseFullFromJSON,
     TopGenreUsersResponseFullToJSON,
     TopUsersResponseFullFromJSON,
     TopUsersResponseFullToJSON,
+    TrackLibraryResponseFullFromJSON,
+    TrackLibraryResponseFullToJSON,
     UsersByContentNodeFromJSON,
     UsersByContentNodeToJSON,
 } from '../models';
@@ -112,6 +118,17 @@ export interface GetFollowingRequest {
     userId?: string;
 }
 
+export interface GetPurchasesRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetPurchasesSortMethodEnum;
+    sortDirection?: GetPurchasesSortDirectionEnum;
+}
+
 export interface GetRelatedUsersRequest {
     id: string;
     offset?: number;
@@ -131,6 +148,17 @@ export interface GetRepostsByHandleRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+}
+
+export interface GetSalesRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    sortMethod?: GetSalesSortMethodEnum;
+    sortDirection?: GetSalesSortDirectionEnum;
 }
 
 export interface GetSubscribersRequest {
@@ -210,6 +238,32 @@ export interface GetUserRequest {
 export interface GetUserByHandleRequest {
     handle: string;
     userId?: string;
+}
+
+export interface GetUserLibraryAlbumsRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    query?: string;
+    sortDirection?: GetUserLibraryAlbumsSortDirectionEnum;
+    type?: GetUserLibraryAlbumsTypeEnum;
+    sortMethod?: GetUserLibraryAlbumsSortMethodEnum;
+}
+
+export interface GetUserLibraryPlaylistsRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    query?: string;
+    sortDirection?: GetUserLibraryPlaylistsSortDirectionEnum;
+    type?: GetUserLibraryPlaylistsTypeEnum;
+    sortMethod?: GetUserLibraryPlaylistsSortMethodEnum;
 }
 
 export interface GetUserLibraryTracksRequest {
@@ -378,7 +432,7 @@ export class UsersApi extends runtime.BaseAPI {
     /** @hidden
      * Gets a user\'s favorite tracks
      */
-    async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+    async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackLibraryResponseFull>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getFavorites.');
         }
@@ -418,13 +472,13 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => FavoritesResponseFullFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackLibraryResponseFullFromJSON(jsonValue));
     }
 
     /**
      * Gets a user\'s favorite tracks
      */
-    async getFavorites(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+    async getFavorites(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getFavoritesRaw(params, initOverrides);
         return await response.value();
     }
@@ -510,6 +564,72 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getFollowing(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FollowingResponseFull> {
         const response = await this.getFollowingRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
+     * Gets the purchases the user has made
+     */
+    async getPurchasesRaw(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchases.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchases.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchases.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/purchases`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the purchases the user has made
+     */
+    async getPurchases(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
+        const response = await this.getPurchasesRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -636,6 +756,72 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getRepostsByHandle(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullReposts> {
         const response = await this.getRepostsByHandleRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
+     * Gets the sales the user has made
+     */
+    async getSalesRaw(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSales.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSales.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSales.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the sales the user has made
+     */
+    async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
+        const response = await this.getSalesRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1110,10 +1296,162 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /** @hidden
+     * Gets a user\'s saved/reposted/purchased/all albums
+     * Fetch a user\'s full library playlists
+     */
+    async getUserLibraryAlbumsRaw(params: GetUserLibraryAlbumsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectionLibraryResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryAlbums.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryAlbums.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryAlbums.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/library/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectionLibraryResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a user\'s saved/reposted/purchased/all albums
+     * Fetch a user\'s full library playlists
+     */
+    async getUserLibraryAlbums(params: GetUserLibraryAlbumsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectionLibraryResponseFull> {
+        const response = await this.getUserLibraryAlbumsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
+     * Gets a user\'s saved/reposted/purchased/all playlists
+     * Fetch a user\'s full library playlists
+     */
+    async getUserLibraryPlaylistsRaw(params: GetUserLibraryPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectionLibraryResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryPlaylists.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUserLibraryPlaylists.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUserLibraryPlaylists.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.query !== undefined) {
+            queryParameters['query'] = params.query;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/library/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectionLibraryResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a user\'s saved/reposted/purchased/all playlists
+     * Fetch a user\'s full library playlists
+     */
+    async getUserLibraryPlaylists(params: GetUserLibraryPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectionLibraryResponseFull> {
+        const response = await this.getUserLibraryPlaylistsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /** @hidden
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
-    async getUserLibraryTracksRaw(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponseFull>> {
+    async getUserLibraryTracksRaw(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackLibraryResponseFull>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserLibraryTracks.');
         }
@@ -1173,14 +1511,14 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => FavoritesResponseFullFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackLibraryResponseFullFromJSON(jsonValue));
     }
 
     /**
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
-    async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FavoritesResponseFull> {
+    async getUserLibraryTracks(params: GetUserLibraryTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackLibraryResponseFull> {
         const response = await this.getUserLibraryTracksRaw(params, initOverrides);
         return await response.value();
     }
@@ -1292,7 +1630,6 @@ export const GetAIAttributedTracksByUserHandleSortMethodEnum = {
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
@@ -1325,7 +1662,6 @@ export const GetFavoritesSortMethodEnum = {
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
@@ -1343,6 +1679,40 @@ export type GetFavoritesSortDirectionEnum = typeof GetFavoritesSortDirectionEnum
 /**
  * @export
  */
+export const GetPurchasesSortMethodEnum = {
+    ContentTitle: 'content_title',
+    ArtistName: 'artist_name',
+    Date: 'date'
+} as const;
+export type GetPurchasesSortMethodEnum = typeof GetPurchasesSortMethodEnum[keyof typeof GetPurchasesSortMethodEnum];
+/**
+ * @export
+ */
+export const GetPurchasesSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetPurchasesSortDirectionEnum = typeof GetPurchasesSortDirectionEnum[keyof typeof GetPurchasesSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetSalesSortMethodEnum = {
+    ContentTitle: 'content_title',
+    ArtistName: 'artist_name',
+    Date: 'date'
+} as const;
+export type GetSalesSortMethodEnum = typeof GetSalesSortMethodEnum[keyof typeof GetSalesSortMethodEnum];
+/**
+ * @export
+ */
+export const GetSalesSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetSalesSortDirectionEnum = typeof GetSalesSortDirectionEnum[keyof typeof GetSalesSortDirectionEnum];
+/**
+ * @export
+ */
 export const GetTracksByUserSortEnum = {
     Date: 'date',
     Plays: 'plays'
@@ -1357,7 +1727,6 @@ export const GetTracksByUserSortMethodEnum = {
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
@@ -1398,7 +1767,6 @@ export const GetTracksByUserHandleSortMethodEnum = {
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
@@ -1425,13 +1793,66 @@ export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandle
 /**
  * @export
  */
+export const GetUserLibraryAlbumsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUserLibraryAlbumsSortDirectionEnum = typeof GetUserLibraryAlbumsSortDirectionEnum[keyof typeof GetUserLibraryAlbumsSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryAlbumsTypeEnum = {
+    All: 'all',
+    Repost: 'repost',
+    Favorite: 'favorite',
+    Purchase: 'purchase'
+} as const;
+export type GetUserLibraryAlbumsTypeEnum = typeof GetUserLibraryAlbumsTypeEnum[keyof typeof GetUserLibraryAlbumsTypeEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryAlbumsSortMethodEnum = {
+    AddedDate: 'added_date',
+    Reposts: 'reposts',
+    Saves: 'saves'
+} as const;
+export type GetUserLibraryAlbumsSortMethodEnum = typeof GetUserLibraryAlbumsSortMethodEnum[keyof typeof GetUserLibraryAlbumsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryPlaylistsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUserLibraryPlaylistsSortDirectionEnum = typeof GetUserLibraryPlaylistsSortDirectionEnum[keyof typeof GetUserLibraryPlaylistsSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryPlaylistsTypeEnum = {
+    All: 'all',
+    Repost: 'repost',
+    Favorite: 'favorite',
+    Purchase: 'purchase'
+} as const;
+export type GetUserLibraryPlaylistsTypeEnum = typeof GetUserLibraryPlaylistsTypeEnum[keyof typeof GetUserLibraryPlaylistsTypeEnum];
+/**
+ * @export
+ */
+export const GetUserLibraryPlaylistsSortMethodEnum = {
+    AddedDate: 'added_date',
+    Reposts: 'reposts',
+    Saves: 'saves'
+} as const;
+export type GetUserLibraryPlaylistsSortMethodEnum = typeof GetUserLibraryPlaylistsSortMethodEnum[keyof typeof GetUserLibraryPlaylistsSortMethodEnum];
+/**
+ * @export
+ */
 export const GetUserLibraryTracksSortMethodEnum = {
     Title: 'title',
     ArtistName: 'artist_name',
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',
@@ -1465,7 +1886,6 @@ export const GetUsersTrackHistorySortMethodEnum = {
     ReleaseDate: 'release_date',
     LastListenDate: 'last_listen_date',
     AddedDate: 'added_date',
-    Length: 'length',
     Plays: 'plays',
     Reposts: 'reposts',
     Saves: 'saves',

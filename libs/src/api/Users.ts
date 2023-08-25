@@ -86,6 +86,7 @@ export class Users extends Base {
    *  {Integer} repost_count - repost count for given user
    *  {Integer} track_blocknumber - blocknumber of latest track for user
    *  {Boolean} does_current_user_follow - does current user follow given user
+   *  {Boolean} does_current_user_subscribe - does current user subscribe to given user
    *  {Array} followee_follows - followees of current user that follow given user
    * @example
    * await getUsers()

@@ -423,6 +423,19 @@ def tranform_stream_cache(stream_url):
     return redirect(stream_url)
 
 
+def get_stream_url_from_content_node(content_node: str, path: str):
+    stream_url = urljoin(content_node, path)
+    headers = {"Range": "bytes=0-1"}
+    try:
+        response = requests.get(
+            stream_url + "&skip_play_count=True", headers=headers, timeout=0.5
+        )
+        if response.status_code == 206:
+            return stream_url
+    except:
+        pass
+
+
 @ns.route("/<string:track_id>/stream")
 class TrackStream(Resource):
     @record_metrics
@@ -463,18 +476,6 @@ class TrackStream(Resource):
 
         cid = cid.strip()
         redis = redis_connection.get_redis()
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
-            logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
-            )
-            abort_not_found(track_id, ns)
-
-        rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-        )
-        content_nodes = rendezvous.get_n(5, cid)
-
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
@@ -504,17 +505,35 @@ class TrackStream(Resource):
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
 
+        # we cache track cid -> content node so we can avoid
+        # checking multiple content nodes for a track
+        # if we already know where to look
+        redis_key = f"track_cid:{cid}"
+        cached_content_node = redis.get(redis_key)
+        stream_url = None
+        if cached_content_node:
+            cached_content_node = cached_content_node.decode("utf-8")
+            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            if stream_url:
+                return stream_url
+
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
+            logger.error(
+                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+        content_nodes = rendezvous.get_n(5, cid)
         for content_node in content_nodes:
-            stream_url = urljoin(content_node, path)
-            headers = {"Range": "bytes=0-1"}
-            try:
-                response = requests.get(
-                    stream_url + "&skip_play_count=True", headers=headers, timeout=0.5
-                )
-                if response.status_code == 206:
-                    return stream_url
-            except:
-                pass
+            stream_url = get_stream_url_from_content_node(content_node, path)
+            if stream_url:
+                redis.set(redis_key, content_node)
+                redis.expire(redis_key, 120)  # 2 min ttl
+                return stream_url
         abort_not_found(track_id, ns)
 
 
