@@ -113,7 +113,7 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
-    waudio_token,
+    waudio_token: Token | None,
 ):
     with db.scoped_session() as session:
         # lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[
@@ -263,17 +263,7 @@ def refresh_user_ids(
                                 )
 
                                 bal_info = waudio_token.get_balance(derived_account)
-                                if (
-                                    "error" in bal_info
-                                    and "code" in bal_info["error"]
-                                    and bal_info["error"]["code"] == -32602
-                                ):
-                                    # Error is 'Invalid param: could not find account'
-                                    # meaning that the token account does not exist
-                                    continue
-                                associated_waudio_balance: str = bal_info["result"][
-                                    "value"
-                                ]["amount"]
+                                associated_waudio_balance = bal_info.value.amount
                                 associated_sol_balance += int(associated_waudio_balance)
                             except Exception as e:
                                 logger.error(
@@ -297,7 +287,7 @@ def refresh_user_ids(
                         bal_info = waudio_token.get_balance(
                             Pubkey.from_string(wallets["bank_account"])
                         )
-                        waudio_balance = bal_info["result"]["value"]["amount"]
+                        waudio_balance = bal_info.value.amount
 
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
