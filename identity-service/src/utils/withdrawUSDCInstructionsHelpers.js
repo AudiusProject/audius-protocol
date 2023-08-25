@@ -34,7 +34,7 @@ const checkCloseAccountInstruction = (instruction) => {
  * Checks if the given instructions are a USDC withdrawal swap transaction. This is a special case
  * where a USDC associated token account is created, used for swapping USDC for SOL, and then closed.
  */
-export const isUSDCWithdrawalTransaction = (instructions) => {
+const isUSDCWithdrawalTransaction = (instructions) => {
   if (!instructions.length) return false
   const validations = []
   validations.push(checkCreateAccountInstruction(instructions[0]))
@@ -49,4 +49,8 @@ export const isUSDCWithdrawalTransaction = (instructions) => {
   console.log(`REED validations ${validations}`)
   console.log(`REED returning ${validations.every((validation) => validation)}`)
   return validations.every((validation) => validation)
+}
+
+module.exports = {
+  isUSDCWithdrawalTransaction
 }
