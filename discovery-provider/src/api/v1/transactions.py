@@ -15,6 +15,10 @@ from src.api.v1.helpers import (
     success_response,
 )
 from src.api.v1.users import full_ns as full_user_ns
+from src.models.users.usdc_transactions_history import (
+    USDCTransactionMethod,
+    USDCTransactionType,
+)
 from src.queries.get_audio_transactions_history import (
     get_audio_transactions_history,
     get_audio_transactions_history_count,
@@ -156,6 +160,25 @@ class LegacyGetTransactionHistoryCount(Resource):
         return response
 
 
+usdc_transaction_history_parser = transaction_history_parser.copy()
+usdc_transaction_history_parser.add_argument(
+    "type",
+    required=False,
+    description="Filters the type of transactions to show",
+    type=str,
+    choices=USDCTransactionType._member_names_,
+    default=None,
+)
+usdc_transaction_history_parser.add_argument(
+    "method",
+    required=False,
+    description="Filters the method (sent/received) of transactions to show",
+    type=str,
+    choices=USDCTransactionMethod._member_names_,
+    default=None,
+)
+
+
 @full_user_ns.route("/<string:id>/transactions/usdc")
 class GetUSDCTransactionHistory(Resource):
     @full_user_ns.doc(
@@ -163,7 +186,7 @@ class GetUSDCTransactionHistory(Resource):
         description="""Gets the user's $USDC transaction history within the App""",
         params={"id": "A User ID"},
     )
-    @full_user_ns.expect(transaction_history_parser)
+    @full_user_ns.expect(usdc_transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
@@ -192,7 +215,7 @@ class GetUSDCTransactionHistoryCount(Resource):
         description="""Gets the count of the user's $USDC transaction history within the App""",
         params={"id": "A User ID"},
     )
-    @full_user_ns.expect(transaction_history_count_parser)
+    @full_user_ns.expect(usdc_transaction_history_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
