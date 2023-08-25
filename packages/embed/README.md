@@ -13,13 +13,12 @@ npm run start:stage
 
 # Run against production Audius services
 npm run start:prod
-```
+
 
 ## Deploying
-```
-# First have to create the build
-npm run build:<env> 
 
-# Then deploy changes
-npm run deploy:<env>
+Deployed via CI
+
+```
+npx wrangler publish --env staging
 ```

@@ -11,7 +11,7 @@ commands:
           name: Combine package-lock.json files to single file and also adds a random value at the end to cache bust if needed
           command: |
             ls -d -- packages/*/*-lock.json | awk -F packages '{printf "\"packages%s\" ", $2}' | xargs cat > << parameters.filename >>
-            echo cache-bust-v1 >> <<parameters.filename >>
+            echo cache-bust-1692933717156 >> <<parameters.filename >>
 
   create_concatenated_patch_file:
     description: "Concatenate all patch-files recognized by lerna.js into single file. File is used as checksum source for part of caching key."
@@ -85,6 +85,7 @@ jobs:
             - ./packages/stems/node_modules
             - ./packages/common/node_modules
             - ./packages/probers/node_modules
+            - ./packages/embed/node_modules
 
       - save_cache:
           key: cache-{{ .Revision }}
@@ -142,9 +143,11 @@ workflows:
             packages/mobile/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true
             packages/stems/.* run-web-workflow true
+            packages/embed/.* run-embed-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-stems-workflow true
+            .circleci/.* run-embed-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-stems-workflow true
