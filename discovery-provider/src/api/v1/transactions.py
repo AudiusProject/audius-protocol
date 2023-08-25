@@ -160,23 +160,27 @@ class LegacyGetTransactionHistoryCount(Resource):
         return response
 
 
+def add_transaction_history_filters(parser: reqparse.RequestParser):
+    parser.add_argument(
+        "type",
+        required=False,
+        description="Filters the type of transactions to show",
+        type=str,
+        choices=USDCTransactionType._member_names_,
+        default=None,
+    )
+    parser.add_argument(
+        "method",
+        required=False,
+        description="Filters the method (sent/received) of transactions to show",
+        type=str,
+        choices=USDCTransactionMethod._member_names_,
+        default=None,
+    )
+
+
 usdc_transaction_history_parser = transaction_history_parser.copy()
-usdc_transaction_history_parser.add_argument(
-    "type",
-    required=False,
-    description="Filters the type of transactions to show",
-    type=str,
-    choices=USDCTransactionType._member_names_,
-    default=None,
-)
-usdc_transaction_history_parser.add_argument(
-    "method",
-    required=False,
-    description="Filters the method (sent/received) of transactions to show",
-    type=str,
-    choices=USDCTransactionMethod._member_names_,
-    default=None,
-)
+add_transaction_history_filters(usdc_transaction_history_parser)
 
 
 @full_user_ns.route("/<string:id>/transactions/usdc")
@@ -210,6 +214,13 @@ class GetUSDCTransactionHistory(Resource):
         return success_response(list(map(extend_transaction_details, transactions)))
 
 
+usdc_transaction_history_count_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+add_transaction_history_filters(usdc_transaction_history_count_parser)
+add_auth_headers_to_parser(usdc_transaction_history_count_parser)
+
+
 @full_user_ns.route("/<string:id>/transactions/usdc/count")
 class GetUSDCTransactionHistoryCount(Resource):
     @full_user_ns.doc(
@@ -217,7 +228,7 @@ class GetUSDCTransactionHistoryCount(Resource):
         description="""Gets the count of the user's $USDC transaction history within the App""",
         params={"id": "A User ID"},
     )
-    @full_user_ns.expect(usdc_transaction_history_parser)
+    @full_user_ns.expect(usdc_transaction_history_count_parser)
     @full_user_ns.marshal_with(transaction_history_count_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
@@ -226,7 +237,7 @@ class GetUSDCTransactionHistoryCount(Resource):
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
             abort_forbidden()
-        args = usdc_transaction_history_parser.parse_args()
+        args = usdc_transaction_history_count_parser.parse_args()
         transactions_count = get_usdc_transactions_history_count(
             {
                 "user_id": authed_user_id,
