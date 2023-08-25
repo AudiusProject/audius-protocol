@@ -87,11 +87,19 @@ solanaRouter.post(
       }
     }
 
+    console.log(`REED got past social proof checks`)
     const reqBodySHA = crypto
       .createHash('sha256')
       .update(JSON.stringify({ instructions }))
       .digest('hex')
+    console.log(`REED reqBodySHA ${reqBodySHA}`)
 
+    console.log(`REED about to filter instructions: ${instructions.length}`)
+    console.log(
+      `REED filtered instructions: ${
+        instructions.filter(isValidInstruction).length
+      }`
+    )
     instructions = instructions.filter(isValidInstruction).map((instr) => {
       const keys = instr.keys.map((key) => ({
         pubkey: new PublicKey(key.pubkey),
@@ -106,6 +114,7 @@ solanaRouter.post(
     })
 
     const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+    console.log(`REED got transactionHandler`)
 
     const {
       res: transactionSignature,
@@ -130,6 +139,7 @@ solanaRouter.post(
         60 /* seconds */ * 60 /* minutes */ * 24 /* hours */,
         JSON.stringify(req.body)
       )
+      console.log(`REED got error ${JSON.stringify(error)}`)
       req.logger.error('Error in solana transaction:', error, reqBodySHA)
       const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
       return errorResponseServerError(errorString, { errorCode, error })
