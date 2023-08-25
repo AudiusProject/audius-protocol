@@ -27,6 +27,6 @@ def get_track_stream_info(track_id: int):
         )
 
         if not info:
-            return {"creator_nodes": None, "track": None}
+            return {"creator_nodes": None, "track": {}}
 
         return {"creator_nodes": info[0], "track": helpers.model_to_dictionary(info[1])}
