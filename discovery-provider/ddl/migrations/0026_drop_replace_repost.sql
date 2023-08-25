@@ -30,10 +30,8 @@ where is_current = true and save_type = 'album';
 drop materialized view if exists trending_params;
 drop table reposts;
 alter table reposts_new rename to reposts;
-alter table reposts add constraint reposts_blocknumber_fkey foreign key (blocknumber) references blocks (number) on delete cascade;
 
-drop table saves;
-alter table saves_new rename to saves;
+alter table reposts add constraint reposts_blocknumber_fkey foreign key (blocknumber) references blocks (number) on delete cascade;
 alter table saves add constraint saves_blocknumber_fkey foreign key (blocknumber) references blocks (number) on delete cascade;
 
 
@@ -272,6 +270,5 @@ END;
 $$
 LANGUAGE plpgsql;
 
-select recreate_trending_params();
 
 commit;
