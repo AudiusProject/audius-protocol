@@ -67,7 +67,7 @@ const messages = {
   isRemix:
     'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done',
-  public: 'Public (Default)',
+  public: 'Public (Free to Stream)',
   publicSubtitle:
     'Public tracks are visible to all users and appear throughout Audius.',
   usdcPurchase: 'Premium (Pay-to-Unlock)',

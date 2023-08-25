@@ -41,18 +41,59 @@
   display: none;
 }
 
-.datePickerField :global(.CalendarDay) {
+/* New Styles for date picker */
+:global(.CalendarMonth_caption) {
+  color: var(--neutral);
+  text-align: center;
+  font-family: Avenir Next LT Pro;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: var(--font-demi-bold);
+}
+
+:global(.CalendarDay) {
   font-family: var(--font-family);
   line-height: 38px;
   color: var(--neutral);
   font-size: var(--font-s);
-  font-weight: var(--font-bold);
+  font-weight: var(--font-demi-bold);
+  border: 1px solid var(--border-strong);
+  background: #fff;
 }
 
-.datePickerField :global(.CalendarDay.CalendarDay__blocked_out_of_range) {
+:global(.CalendarDay):hover {
+  background: var(--neutral-light-8);
+}
+
+:global(.CalendarDay__selected) {
+  background-color: var(--secondary);
+  color: var(--static-white);
+  border: 1px solid var(--border-strong);
+}
+
+:global(.CalendarDay__selected):hover {
+  background-color: var(--secondary);
+  color: var(--static-white);
+  border: 1px solid var(--border-strong);
+}
+
+:global(.CalendarDay__blocked_out_of_range) {
   color: var(--neutral-light-7);
 }
 
-.datePickerField :global(.DayPicker_weekHeader) {
-  margin-top: -8px;
+:global(.CalendarDay__blocked_out_of_range):hover {
+  color: var(--neutral-light-7);
+  background: #fff;
+}
+
+:global(.DayPicker_weekHeader) {
+  top: 60px;
+}
+
+:global(.DayPickerNavigation_button__horizontalDefault) {
+  padding: 2px 16px;
+}
+
+:global(.CalendarMonth_caption) {
+  padding-bottom: 40px;
 }

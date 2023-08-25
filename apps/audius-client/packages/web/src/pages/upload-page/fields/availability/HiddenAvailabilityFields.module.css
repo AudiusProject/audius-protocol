@@ -1,13 +1,17 @@
 .root {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--unit-2) var(--unit-6);
+  flex-direction: column;
+  gap: var(--unit-4);
   padding: var(--unit-4);
   background: var(--background-surface-1);
   border: 1px solid var(--border-strong);
   border-radius: var(--unit-2);
-  font-size: var(--font-l);
-  font-weight: var(--font-demi-bold);
+}
+
+.switchContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--unit-2) var(--unit-6);
 }
 
 .switchRow {
@@ -15,8 +19,7 @@
   min-width: 200px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  line-height: 22px;
+  gap: var(--unit-2);
 }
 
 .switchLabel {

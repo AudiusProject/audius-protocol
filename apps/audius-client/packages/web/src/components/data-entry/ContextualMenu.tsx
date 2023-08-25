@@ -82,8 +82,8 @@ export const SelectedValue = (props: SelectedValueProps) => {
     <span className={styles.selectedValue}>
       {icon ? <Icon icon={icon} size='small' /> : null}
       {label ? (
-        <Text variant='body' strength='strong'>
-          {label}
+        <Text className={styles.selectedValueText} strength='strong'>
+          {label.toLowerCase()}
         </Text>
       ) : null}
       {children}
