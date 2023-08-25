@@ -97,7 +97,7 @@ class GetTransactionHistory(Resource):
 class LegacyGetTransactionHistory(GetTransactionHistory):
     @full_ns.doc(
         id="""Get Audio Transaction History""",
-        description="""Deprecated: Use `/users/{id}/transactions/audio` instead. Gets the user's $AUDIO transaction history within the App""",
+        description="""Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactionHistory()` instead. Gets the user's $AUDIO transaction history within the App""",
         deprecated=True,
     )
     @full_ns.expect(transaction_history_parser)
@@ -142,7 +142,7 @@ class GetTransactionHistoryCount(Resource):
 class LegacyGetTransactionHistoryCount(Resource):
     @full_ns.doc(
         id="""Get Audio Transaction History Count""",
-        description="""Deprecated: Use `/users/{id}/transactions/audio/count` instead. Gets the count of the user's $AUDIO transaction history within the App.""",
+        description="""Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionHistoryCount()` instead. Gets the count of the user's $AUDIO transaction history within the App.""",
         deprecated=True,
     )
     @full_ns.expect(transaction_history_count_parser)
