@@ -9,14 +9,20 @@ const solanaClaimableTokenProgramAddress = config.get(
   'solanaClaimableTokenProgramAddress'
 )
 
-const allowedProgramIds = new Set([
+const allowedProgramIds = [
   solanaClaimableTokenProgramAddress,
   /* secp */ 'KeccakSecp256k11111111111111111111111111111'
-])
+]
 
 const isRelayAllowedProgram = (instructions) => {
+  console.log(`REED isRelayAllowedProgram ${JSON.stringify(instructions)}`)
   for (const instruction of instructions) {
-    if (!allowedProgramIds.has(instruction.programId)) {
+    console.log(
+      `REED checking ${
+        instruction.programId
+      } using allowedProgramIds ${JSON.stringify(allowedProgramIds)}`
+    )
+    if (!allowedProgramIds.includes(instruction.programId)) {
       return false
     }
   }
@@ -30,6 +36,9 @@ const checkCreateAccountInstruction = (instruction) => {
 }
 
 const checkCloseAccountInstruction = (instruction) => {
+  console.log(
+    `REED checkCloseAccountInstruction ${JSON.stringify(instruction)}`
+  )
   const feePayerKeypairs = config.get('solanaFeePayerWallets')
   const feePayerPubkeys = feePayerKeypairs.map((wallet) =>
     Keypair.fromSecretKey(
@@ -44,6 +53,7 @@ const checkCloseAccountInstruction = (instruction) => {
   const isFeePayerReimbursed = feePayerPubkeys.includes(
     instruction.keys[1].pubkey
   )
+  console.log(`REED feePayerPubkeys ${feePayerPubkeys}`)
   return isCloseInstruction && isFeePayerReimbursed
 }
 
@@ -55,13 +65,10 @@ const isUSDCWithdrawalTransaction = (instructions) => {
   if (!instructions.length) return false
   const validations = []
   validations.push(checkCreateAccountInstruction(instructions[0]))
+  validations.push(isRelayAllowedProgram(instructions.slice(1, 3)))
   validations.push(
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )
-  console.log(
-    `REED instructions.slice(1, 2) ${JSON.stringify(instructions.slice(1, 2))}`
-  )
-  validations.push(isRelayAllowedProgram(instructions.slice(1, 2)))
 
   console.log(`REED validations ${validations}`)
   console.log(`REED returning ${validations.every((validation) => validation)}`)
