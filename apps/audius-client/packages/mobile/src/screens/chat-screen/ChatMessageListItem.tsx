@@ -322,7 +322,6 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       ]}
                     >
                       <Hyperlink
-                        warnExternal
                         text={message.message}
                         styles={{
                           root: [
