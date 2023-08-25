@@ -1,16 +1,19 @@
 import { Switch } from '@audius/stems'
 import { useField } from 'formik'
 
+import { Text } from 'components/typography'
+
 import { FIELD_VISIBILITY } from '../AccessAndSaleField'
 
 import styles from './HiddenAvailabilityFields.module.css'
 
 const messages = {
-  showGenre: 'Show Genre',
-  showMood: 'Show Mood',
-  showTags: 'Show Tags',
-  showShareButton: 'Show Share Button',
-  showPlayCount: 'Show Play Count'
+  title: 'Visible Track Details',
+  showGenre: 'Genre',
+  showMood: 'Mood',
+  showTags: 'Tags',
+  showShareButton: 'Share Button',
+  showPlayCount: 'Play Count'
 }
 
 export enum UnlistedTrackMetadataField {
@@ -43,11 +46,16 @@ const unlistedTrackMetadataOrder = [
 export const HiddenAvailabilityFields = () => {
   return (
     <div className={styles.root}>
-      {unlistedTrackMetadataOrder.map((fieldName) => {
-        return <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
-      })}
-      {/* Dummy row for spacing consistency */}
-      <div className={styles.switchRow}></div>
+      <Text variant='title'>{messages.title}</Text>
+      <div className={styles.switchContainer}>
+        {unlistedTrackMetadataOrder.map((fieldName) => {
+          return (
+            <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
+          )
+        })}
+        {/* Dummy row for spacing consistency */}
+        <div className={styles.switchRow}></div>
+      </div>
     </div>
   )
 }
@@ -73,10 +81,10 @@ const AvailabilityToggleField = (props: AvailabilityToggleFieldProps) => {
   })
   return (
     <div className={styles.switchRow}>
-      <span className={styles.switchLabel}>
-        {messageByFieldName[fieldName]}
-      </span>
       <Switch {...field} />
+      <Text className={styles.switchLabel}>
+        {messageByFieldName[fieldName]}
+      </Text>
     </div>
   )
 }

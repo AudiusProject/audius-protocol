@@ -97,7 +97,7 @@ const BoxedTextField = (props: BoxedTextFieldProps) => {
     >
       <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
         <Text variant='title'>{title}</Text>
-        <Text variant='body'>{description}</Text>
+        <Text>{description}</Text>
       </div>
       <TextField {...inputProps} />
     </div>

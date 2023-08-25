@@ -87,7 +87,7 @@ export const InputV2 = (props: InputV2Props) => {
 
   const input = (
     <div className={cn(styles.inputRow, layoutStyles.row)}>
-      <div className={layoutStyles.row}>
+      <div className={cn(layoutStyles.row, styles.inputContainer)}>
         {startAdornment ? (
           <Text variant='label' size='large' color='neutralLight2'>
             {startAdornment}

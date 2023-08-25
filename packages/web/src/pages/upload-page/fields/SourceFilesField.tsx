@@ -109,7 +109,7 @@ export const SourceFilesField = () => {
     if (followerGatedValue) {
       values.push(messages.values.followerGated)
     }
-    const stemsCategories = stemsValue.map((stem) => stem.category)
+    const stemsCategories = stemsValue?.map((stem) => stem.category) ?? []
     values = [...values, ...stemsCategories]
     return (
       <SelectedValues>

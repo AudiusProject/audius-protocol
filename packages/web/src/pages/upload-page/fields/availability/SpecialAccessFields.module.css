@@ -6,8 +6,6 @@
   background: var(--background-surface-1);
   border: 1px solid var(--border-strong);
   border-radius: var(--unit-2);
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-l);
 }
 
 .radio {

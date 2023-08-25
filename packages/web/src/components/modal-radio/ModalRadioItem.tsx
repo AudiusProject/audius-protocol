@@ -42,7 +42,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
 
   return (
     <label className={cn(styles.root, layoutStyles.col, layoutStyles.gap2)}>
-      <div className={cn(layoutStyles.row)}>
+      <div className={cn(layoutStyles.row, layoutStyles.gap4)}>
         <RadioButton
           className={styles.radio}
           inputClassName={styles.input}
@@ -50,10 +50,10 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           value={value}
           disabled={disabled}
         />
-        <div className={styles.optionTitle}>
+        <Text className={styles.optionTitle} variant='title' size='large'>
           {icon}
           <span>{title ?? label}</span>
-        </div>
+        </Text>
       </div>
       {checkedContent || description ? (
         <div
@@ -64,7 +64,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           aria-hidden={isCollapsed}
         >
           <div ref={ref} className={cn(layoutStyles.col, layoutStyles.gap4)}>
-            <Text size='medium'>{description}</Text>
+            <Text>{description}</Text>
             {checkedContent}
           </div>
         </div>

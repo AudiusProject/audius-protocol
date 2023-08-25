@@ -82,6 +82,10 @@
   justify-content: space-between;
 }
 
+.inputContainer {
+  flex: 1 1 0;
+}
+
 /** 
  * Flex container so that the absolutely positioned elevated placeholder
  * starts out centered vertically

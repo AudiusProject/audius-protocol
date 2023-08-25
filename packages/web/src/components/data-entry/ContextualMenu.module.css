@@ -2,6 +2,7 @@
   gap: var(--unit-4);
   padding: var(--unit-4) var(--unit-6);
   flex-direction: column;
+  cursor: pointer;
 }
 
 .preview {
@@ -40,4 +41,8 @@
   border-radius: 2px;
   border: 1px solid var(---border-strong);
   background: var(--neutral-light-8);
+}
+
+.selectedValueText {
+  text-transform: capitalize;
 }

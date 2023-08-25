@@ -7,6 +7,7 @@ import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
 import Tooltip from 'components/tooltip/Tooltip'
+import { Text } from 'components/typography'
 
 import {
   AccessAndSaleFormValues,
@@ -74,7 +75,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
           value={SpecialAccessType.FOLLOW}
           disabled={disabled}
         />
-        <span>{messages.followersOnly}</span>
+        <Text>{messages.followersOnly}</Text>
       </label>
       <label className={cn(styles.row, { [styles.disabled]: disabled })}>
         <RadioButton
@@ -82,7 +83,7 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
           value={SpecialAccessType.TIP}
           disabled={disabled}
         />
-        <span>{messages.supportersOnly}</span>
+        <Text>{messages.supportersOnly}</Text>
         <Tooltip
           className={styles.tooltip}
           text={messages.supportersInfo}
