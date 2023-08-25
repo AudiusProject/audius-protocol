@@ -4,7 +4,24 @@ const {
 } = require('@solana/spl-token')
 const { Keypair } = require('@solana/web3.js')
 const config = require('../config')
-const { isRelayAllowedProgram } = require('./relayHelpers')
+
+const solanaClaimableTokenProgramAddress = config.get(
+  'solanaClaimableTokenProgramAddress'
+)
+
+const allowedProgramIds = new Set([
+  solanaClaimableTokenProgramAddress,
+  /* secp */ 'KeccakSecp256k11111111111111111111111111111'
+])
+
+const isRelayAllowedProgram = (instructions) => {
+  for (const instruction of instructions) {
+    if (!allowedProgramIds.has(instruction.programId)) {
+      return false
+    }
+  }
+  return true
+}
 
 const checkCreateAccountInstruction = (instruction) => {
   const isCreateInstruction =
@@ -41,10 +58,10 @@ const isUSDCWithdrawalTransaction = (instructions) => {
   validations.push(
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )
-  validations.push(
-    isRelayAllowedProgram(instructions[1]) &&
-      isRelayAllowedProgram(instructions[2])
+  console.log(
+    `REED instructions.slice(1, 2) ${JSON.stringify(instructions.slice(1, 2))}`
   )
+  validations.push(isRelayAllowedProgram(instructions.slice(1, 2)))
 
   console.log(`REED validations ${validations}`)
   console.log(`REED returning ${validations.every((validation) => validation)}`)
