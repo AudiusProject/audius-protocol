@@ -195,14 +195,16 @@ class GetUSDCTransactionHistory(Resource):
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
             abort_forbidden()
-        args = transaction_history_parser.parse_args()
+        args = usdc_transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
         transactions = get_usdc_transactions_history(
             {
-                "user_id": 705666888,
+                "user_id": authed_user_id,
                 "sort_method": sort_method,
                 "sort_direction": sort_direction,
+                "transaction_type": args.get("type", None),
+                "transaction_method": args.get("method", None),
             }
         )
         return success_response(list(map(extend_transaction_details, transactions)))
