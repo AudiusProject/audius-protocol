@@ -48,8 +48,8 @@ export const getUsersCanNotifyQuery = async (
   frequency: EmailFrequency,
   pageCount: number,
   lastUser: number
-) =>
-  await identityDb
+) => {
+  const query = identityDb
     .with(
       'lastEmailSentAt',
       identityDb.raw(`
@@ -102,6 +102,9 @@ export const getUsersCanNotifyQuery = async (
     .where('Users.blockchainUserId', '>', lastUser)
     .limit(pageCount)
     .orderBy('Users.blockchainUserId')
+    logger.info({ query: query.toSQL().toNative() })
+    return await query
+  }
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
@@ -341,6 +344,7 @@ export async function processEmailNotifications(
       logger.info(
         `processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${pageCount}`
       )
+      logger.info({ startOffset, frequency, pageCount, lastUser })
       const userRows: { blockchainUserId: number; email: string }[] =
         await getUsersCanNotifyQuery(
           identityDb,
