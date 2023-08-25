@@ -40,6 +40,8 @@
 .domain {
   padding: var(--unit-1) var(--unit-4);
   background-color: var(--neutral-light-10);
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .text {
@@ -54,6 +56,8 @@
   font-weight: var(--font-bold);
   font-size: var(--font-l);
   line-height: 150%;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .description {

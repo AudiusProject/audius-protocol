@@ -52,7 +52,6 @@ export const Hyperlink = (props: HyperlinkProps) => {
     source,
     styles: stylesProp,
     style,
-    warnExternal,
     ...other
   } = props
   const styles = useStyles()
@@ -99,13 +98,13 @@ export const Hyperlink = (props: HyperlinkProps) => {
 
   const handlePress = useCallback(
     (url) => {
-      if (warnExternal && !isAudiusUrl(url)) {
+      if (!isAudiusUrl(url)) {
         openLeavingAudiusModal({ link: url })
       } else {
         openLink(url)
       }
     },
-    [openLink, warnExternal, openLeavingAudiusModal]
+    [openLink, openLeavingAudiusModal]
   )
 
   const renderLink = useCallback(

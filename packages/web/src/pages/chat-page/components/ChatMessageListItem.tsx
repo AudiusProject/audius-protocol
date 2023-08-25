@@ -9,24 +9,20 @@ import {
   ReactionTypes,
   useProxySelector,
   formatMessageDate,
-  isAudiusUrl,
-  getPathFromAudiusUrl,
   isTrackUrl,
   isCollectionUrl,
   ChatMessageWithExtras,
   Status,
-  useCanSendMessage,
-  useLeavingAudiusModal
+  useCanSendMessage
 } from '@audius/common'
 import { IconError, IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
-import Linkify from 'linkify-react'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { reactionMap } from 'components/notification/Notification/components/Reaction'
+import { UserGeneratedText } from 'components/user-generated-text'
 
 import { ReactComponent as ChatTail } from '../../../assets/img/ChatTail.svg'
 
@@ -59,7 +55,6 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   // State
   const [isReactionPopupVisible, setReactionPopupVisible] = useState(false)
   const [emptyUnfurl, setEmptyUnfurl] = useState(false)
-  const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
 
   // Selectors
   const userId = useSelector(getUserId)
@@ -108,19 +103,6 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       handleCloseReactionPopup()
     },
     [dispatch, handleCloseReactionPopup, userId, chatId, message]
-  )
-
-  const onClickInternalLink = useCallback(
-    (url: string) => {
-      dispatch(pushRoute(url))
-    },
-    [dispatch]
-  )
-  const onClickExternalLink = useCallback(
-    (url: string) => {
-      openLeavingAudiusModal({ link: url })
-    },
-    [openLeavingAudiusModal]
   )
 
   const handleResendClicked = useCallback(() => {
@@ -226,28 +208,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           ) : null}
           {!hideMessage ? (
             <div className={styles.text}>
-              <Linkify
-                options={{
-                  attributes: {
-                    onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
-                      const url = event.currentTarget.href
-                      event.nativeEvent.preventDefault()
-                      if (isAudiusUrl(url)) {
-                        const path = getPathFromAudiusUrl(url)
-                        onClickInternalLink(path ?? '/')
-                      } else {
-                        onClickExternalLink(url)
-                      }
-                    }
-                  },
-                  rel: 'noreferrer noopener',
-                  target: (href) => {
-                    return isAudiusUrl(href) ? '' : '_blank'
-                  }
-                }}
-              >
-                {message.message}
-              </Linkify>
+              <UserGeneratedText>{message.message}</UserGeneratedText>
             </div>
           ) : null}
         </div>
