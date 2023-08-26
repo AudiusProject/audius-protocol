@@ -40,7 +40,7 @@ alter table saves add constraint saves_blocknumber_fkey foreign key (blocknumber
 -- recreate trending params
 
 CREATE OR REPLACE FUNCTION recreate_trending_params()
-RETURNS return_data_type AS
+RETURNS void AS
 $$
 BEGIN
     create materialized view public.trending_params as
@@ -273,5 +273,11 @@ $$
 LANGUAGE plpgsql;
 
 select recreate_trending_params();
+
+-- re-enable triggers
+CREATE TRIGGER trg_reposts AFTER INSERT OR UPDATE ON public.reposts FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
+CREATE TRIGGER on_repost AFTER INSERT ON public.reposts FOR EACH ROW EXECUTE PROCEDURE public.handle_repost();
+CREATE TRIGGER trg_saves AFTER INSERT OR UPDATE ON public.saves FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
+CREATE TRIGGER on_save AFTER INSERT ON public.saves FOR EACH ROW EXECUTE PROCEDURE public.handle_save();
 
 commit;
