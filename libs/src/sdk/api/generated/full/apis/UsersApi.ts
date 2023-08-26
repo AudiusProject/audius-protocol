@@ -33,6 +33,8 @@ import type {
   TopGenreUsersResponseFull,
   TopUsersResponseFull,
   TrackLibraryResponseFull,
+  TransactionHistoryCountResponse,
+  TransactionHistoryResponse,
   UsersByContentNode,
 } from '../models';
 import {
@@ -70,6 +72,10 @@ import {
     TopUsersResponseFullToJSON,
     TrackLibraryResponseFullFromJSON,
     TrackLibraryResponseFullToJSON,
+    TransactionHistoryCountResponseFromJSON,
+    TransactionHistoryCountResponseToJSON,
+    TransactionHistoryResponseFromJSON,
+    TransactionHistoryResponseToJSON,
     UsersByContentNodeFromJSON,
     UsersByContentNodeToJSON,
 } from '../models';
@@ -92,6 +98,22 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+}
+
+export interface GetAudioTransactionCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+}
+
+export interface GetAudioTransactionsRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    sortMethod?: GetAudioTransactionsSortMethodEnum;
+    sortDirection?: GetAudioTransactionsSortDirectionEnum;
 }
 
 export interface GetFavoritesRequest {
@@ -230,6 +252,26 @@ export interface GetTracksByUserHandleRequest {
     filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
+export interface GetUSDCTransactionCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    type?: GetUSDCTransactionCountTypeEnum;
+    method?: GetUSDCTransactionCountMethodEnum;
+}
+
+export interface GetUSDCTransactionsRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    offset?: number;
+    limit?: number;
+    sortMethod?: GetUSDCTransactionsSortMethodEnum;
+    sortDirection?: GetUSDCTransactionsSortDirectionEnum;
+    type?: GetUSDCTransactionsTypeEnum;
+    method?: GetUSDCTransactionsMethodEnum;
+}
+
 export interface GetUserRequest {
     id: string;
     userId?: string;
@@ -299,7 +341,8 @@ export interface GetUsersTrackHistoryRequest {
  */
 export class UsersApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that subscribe to the provided users
      */
     async bulkGetSubscribersRaw(params: BulkGetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
@@ -333,7 +376,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get all users that subscribe to the users listed in the JSON request
      */
     async bulkGetSubscribersViaJSONRequestRaw(params: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullBulkSubscribersResponse>> {
@@ -367,7 +411,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
     async getAIAttributedTracksByUserHandleRaw(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -429,7 +474,118 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionCountRaw(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionCount.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionCount.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionCount.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/audio/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionCount(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getAudioTransactionCountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionsRaw(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactions.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactions.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactions.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/audio`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactions(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getAudioTransactionsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets a user\'s favorite tracks
      */
     async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackLibraryResponseFull>> {
@@ -483,7 +639,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that follow the provided user
      */
     async getFollowersRaw(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullFollowersResponse>> {
@@ -525,7 +682,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that the provided user follows
      */
     async getFollowingRaw(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponseFull>> {
@@ -567,7 +725,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the purchases the user has made
      */
     async getPurchasesRaw(params: GetPurchasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
@@ -633,7 +792,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
@@ -675,7 +835,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the given user\'s reposts
      */
     async getRepostsRaw(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
@@ -717,7 +878,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the user\'s reposts by the user handle
      */
     async getRepostsByHandleRaw(params: GetRepostsByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullReposts>> {
@@ -759,7 +921,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the sales the user has made
      */
     async getSalesRaw(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesResponse>> {
@@ -825,7 +988,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that subscribe to the provided user
      */
     async getSubscribersRaw(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullSubscribersResponse>> {
@@ -867,7 +1031,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the specified supporter of the given user
      */
     async getSupporterRaw(params: GetSupporterRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporter>> {
@@ -905,7 +1070,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the supporters of the given user
      */
     async getSupportersRaw(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporters>> {
@@ -947,7 +1113,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the support from the given user to the supported user
      */
     async getSupportingRaw(params: GetSupportingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
@@ -985,7 +1152,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the users that the given user supports
      */
     async getSupportingsRaw(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullGetSupporting>> {
@@ -1027,7 +1195,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the Top Users having at least one track by follower count
      */
     async getTopUsersRaw(params: GetTopUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopUsersResponseFull>> {
@@ -1065,7 +1234,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the Top Users for a Given Genre
      */
     async getTopUsersInGenreRaw(params: GetTopUsersInGenreRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TopGenreUsersResponseFull>> {
@@ -1103,7 +1273,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the tracks created by a user using their user ID
      */
     async getTracksByUserRaw(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -1165,7 +1336,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the tracks created by a user using the user\'s handle
      */
     async getTracksByUserHandleRaw(params: GetTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracks>> {
@@ -1227,7 +1399,134 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
+     * Gets the count of the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactionCountRaw(params: GetUSDCTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionCount.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionCount.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionCount.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.method !== undefined) {
+            queryParameters['method'] = params.method;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/usdc/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactionCount(params: GetUSDCTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getUSDCTransactionCountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactionsRaw(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactions.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactions.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactions.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.sortMethod !== undefined) {
+            queryParameters['sort_method'] = params.sortMethod;
+        }
+
+        if (params.sortDirection !== undefined) {
+            queryParameters['sort_direction'] = params.sortDirection;
+        }
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.method !== undefined) {
+            queryParameters['method'] = params.method;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/usdc`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactions(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getUSDCTransactionsRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets a single user by their user ID
      */
     async getUserRaw(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
@@ -1261,7 +1560,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a single user by their handle
      */
     async getUserByHandleRaw(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullUserResponse>> {
@@ -1295,7 +1595,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a user\'s saved/reposted/purchased/all albums
      * Fetch a user\'s full library playlists
      */
@@ -1371,7 +1672,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a user\'s saved/reposted/purchased/all playlists
      * Fetch a user\'s full library playlists
      */
@@ -1447,7 +1749,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a user\'s saved/reposted/purchased/all tracks
      * Fetch a user\'s full library tracks
      */
@@ -1523,7 +1826,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the user\'s replica set
      */
     async getUserReplicaSetRaw(params: GetUserReplicaSetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersByContentNode>> {
@@ -1557,7 +1861,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the tracks the user recently listened to.
      */
     async getUsersTrackHistoryRaw(params: GetUsersTrackHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<HistoryResponseFull>> {
@@ -1653,6 +1958,22 @@ export const GetAIAttributedTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttributedTracksByUserHandleFilterTracksEnum[keyof typeof GetAIAttributedTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetAudioTransactionsSortMethodEnum = {
+    Date: 'date',
+    TransactionType: 'transaction_type'
+} as const;
+export type GetAudioTransactionsSortMethodEnum = typeof GetAudioTransactionsSortMethodEnum[keyof typeof GetAudioTransactionsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetAudioTransactionsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetAudioTransactionsSortDirectionEnum = typeof GetAudioTransactionsSortDirectionEnum[keyof typeof GetAudioTransactionsSortDirectionEnum];
 /**
  * @export
  */
@@ -1790,6 +2111,56 @@ export const GetTracksByUserHandleFilterTracksEnum = {
     Unlisted: 'unlisted'
 } as const;
 export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandleFilterTracksEnum[keyof typeof GetTracksByUserHandleFilterTracksEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionCountTypeEnum = {
+    PurchaseContent: 'purchase_content',
+    Transfer: 'transfer',
+    PurchaseStripe: 'purchase_stripe'
+} as const;
+export type GetUSDCTransactionCountTypeEnum = typeof GetUSDCTransactionCountTypeEnum[keyof typeof GetUSDCTransactionCountTypeEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionCountMethodEnum = {
+    Send: 'send',
+    Receive: 'receive'
+} as const;
+export type GetUSDCTransactionCountMethodEnum = typeof GetUSDCTransactionCountMethodEnum[keyof typeof GetUSDCTransactionCountMethodEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionsSortMethodEnum = {
+    Date: 'date',
+    TransactionType: 'transaction_type'
+} as const;
+export type GetUSDCTransactionsSortMethodEnum = typeof GetUSDCTransactionsSortMethodEnum[keyof typeof GetUSDCTransactionsSortMethodEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionsSortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetUSDCTransactionsSortDirectionEnum = typeof GetUSDCTransactionsSortDirectionEnum[keyof typeof GetUSDCTransactionsSortDirectionEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionsTypeEnum = {
+    PurchaseContent: 'purchase_content',
+    Transfer: 'transfer',
+    PurchaseStripe: 'purchase_stripe'
+} as const;
+export type GetUSDCTransactionsTypeEnum = typeof GetUSDCTransactionsTypeEnum[keyof typeof GetUSDCTransactionsTypeEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionsMethodEnum = {
+    Send: 'send',
+    Receive: 'receive'
+} as const;
+export type GetUSDCTransactionsMethodEnum = typeof GetUSDCTransactionsMethodEnum[keyof typeof GetUSDCTransactionsMethodEnum];
 /**
  * @export
  */

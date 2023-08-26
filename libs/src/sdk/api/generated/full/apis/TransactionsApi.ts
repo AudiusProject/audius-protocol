@@ -45,7 +45,10 @@ export interface GetAudioTransactionHistoryCountRequest {
  */
 export class TransactionsApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
+     * @deprecated
+     * Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
      * Gets the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryRaw(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
@@ -96,6 +99,8 @@ export class TransactionsApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
+     * Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
      * Gets the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
@@ -103,7 +108,10 @@ export class TransactionsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
+     * @deprecated
+     * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryCountRaw(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
@@ -138,6 +146,8 @@ export class TransactionsApi extends runtime.BaseAPI {
     }
 
     /**
+     * @deprecated
+     * Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
