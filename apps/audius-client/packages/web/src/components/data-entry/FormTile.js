@@ -23,7 +23,6 @@ import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import TextArea from 'components/data-entry/TextArea'
-import { GatedContentUploadPromptModal } from 'components/gated-content-upload-prompt-modal/GatedContentUploadPromptModal'
 import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
 import { RemixSettingsModalTrigger } from 'components/remix-settings-modal/RemixSettingsModalTrigger'
@@ -469,19 +468,6 @@ const AdvancedForm = (props) => {
 
   return (
     <>
-      {/*
-        Render the gated content upload prompt component which is responsible
-        for whether or its content will modal will be displayed.
-      */}
-      {props.allowPromptModal ? (
-        <GatedContentUploadPromptModal
-          onSubmit={() => {
-            props.toggleAdvanced()
-            // TODO: re-enable this before merge
-            // setIsAvailabilityModalOpen(true)
-          }}
-        />
-      ) : null}
       <div
         className={cn(styles.advanced, {
           [styles.show]: props.advancedShow,
@@ -869,9 +855,6 @@ FormTile.propTypes = {
   /** Whether we are in the track upload flow */
   isUpload: PropTypes.bool,
 
-  /** Whether we allow showing the gated track upload prompt modal */
-  allowPromptModal: PropTypes.bool,
-
   /** Initial form for in case we are in the edit track modal */
   initialForm: PropTypes.object,
 
@@ -923,7 +906,6 @@ FormTile.defaultProps = {
   onChangeOrder: () => {},
   onChangeField: () => {},
   isUpload: true,
-  allowPromptModal: false,
   initialForm: {},
   showUnlistedToggle: true,
   showHideTrackSectionInModal: true,
