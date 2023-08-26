@@ -101,13 +101,16 @@ class GetTransactionHistory(Resource):
 class LegacyGetTransactionHistory(GetTransactionHistory):
     @full_ns.doc(
         id="""Get Audio Transaction History""",
-        description="""Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactionHistory()` instead. Gets the user's $AUDIO transaction history within the App""",
         deprecated=True,
     )
     @full_ns.expect(transaction_history_parser)
     @full_ns.marshal_with(transaction_history_response)
     @auth_middleware()
     def get(self, authed_user_id=None):
+        """Gets the user's $AUDIO transaction history within the App
+
+        Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactionHistory()` instead.
+        """
         self._get(authed_user_id, authed_user_id)
 
 
@@ -146,13 +149,16 @@ class GetTransactionHistoryCount(Resource):
 class LegacyGetTransactionHistoryCount(Resource):
     @full_ns.doc(
         id="""Get Audio Transaction History Count""",
-        description="""Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionHistoryCount()` instead. Gets the count of the user's $AUDIO transaction history within the App.""",
         deprecated=True,
     )
     @full_ns.expect(transaction_history_count_parser)
     @full_ns.marshal_with(transaction_history_count_response)
     @auth_middleware()
     def get(self, authed_user_id=None):
+        """Gets the count of the user's $AUDIO transaction history within the App.
+
+        Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionHistoryCount()` instead.
+        """
         if authed_user_id is None:
             abort_bad_request_param(None, full_ns)
         transactions_count = get_audio_transactions_history_count(authed_user_id)
