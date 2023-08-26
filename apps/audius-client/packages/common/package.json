@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.5.38",
+  "version": "1.5.39",
   "description": "Common utilities and store for web and mobile.",
   "private": "true",
   "author": "Audius",
@@ -59,7 +59,7 @@
     "@types/react-redux": "7.1.7",
     "@types/redux-saga": "0.10.5",
     "eslint": "8.19.0",
-    "eslint-config-audius": "^1.1.13-alpha1",
+    "eslint-config-audius": "1.5.39",
     "patch-package": "6.4.7",
     "react": "18.2.0",
     "react-redux": "8.0.5",
