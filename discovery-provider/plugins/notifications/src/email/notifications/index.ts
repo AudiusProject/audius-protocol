@@ -356,7 +356,7 @@ export async function processEmailNotifications(
       const now = Date.now()
       if (now > timeout) return
       logger.info(
-        `processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${pageCount}`
+        `processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${lastUser} ${pageCount}`
       )
       const userRows: { blockchainUserId: number; email: string }[] =
         await getUsersCanNotifyQuery(
@@ -387,7 +387,7 @@ export async function processEmailNotifications(
       logger.info(
         `processEmailNotifications | Beginning processing ${
           Object.keys(emailUsers).length
-        } users at ${frequency} frequency`
+        } users at ${frequency} frequency [${lastUser}-${lastUser + Object.keys(emailUsers).length}]`
       )
 
       await processGroupOfEmails(
