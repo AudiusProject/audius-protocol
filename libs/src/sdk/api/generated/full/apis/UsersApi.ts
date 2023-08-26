@@ -100,20 +100,20 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
 }
 
-export interface GetAudioTransactionHistoryRequest {
+export interface GetAudioTransactionCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+}
+
+export interface GetAudioTransactionsRequest {
     id: string;
     encodedDataMessage: string;
     encodedDataSignature: string;
     offset?: number;
     limit?: number;
-    sortMethod?: GetAudioTransactionHistorySortMethodEnum;
-    sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
-}
-
-export interface GetAudioTransactionHistoryCountRequest {
-    id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
+    sortMethod?: GetAudioTransactionsSortMethodEnum;
+    sortDirection?: GetAudioTransactionsSortDirectionEnum;
 }
 
 export interface GetFavoritesRequest {
@@ -252,24 +252,24 @@ export interface GetTracksByUserHandleRequest {
     filterTracks?: GetTracksByUserHandleFilterTracksEnum;
 }
 
-export interface GetUSDCTransactionHistoryRequest {
+export interface GetUSDCTransactionCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    type?: GetUSDCTransactionCountTypeEnum;
+    method?: GetUSDCTransactionCountMethodEnum;
+}
+
+export interface GetUSDCTransactionsRequest {
     id: string;
     encodedDataMessage: string;
     encodedDataSignature: string;
     offset?: number;
     limit?: number;
-    sortMethod?: GetUSDCTransactionHistorySortMethodEnum;
-    sortDirection?: GetUSDCTransactionHistorySortDirectionEnum;
-    type?: GetUSDCTransactionHistoryTypeEnum;
-    method?: GetUSDCTransactionHistoryMethodEnum;
-}
-
-export interface GetUSDCTransactionHistoryCountRequest {
-    id: string;
-    encodedDataMessage: string;
-    encodedDataSignature: string;
-    type?: GetUSDCTransactionHistoryCountTypeEnum;
-    method?: GetUSDCTransactionHistoryCountMethodEnum;
+    sortMethod?: GetUSDCTransactionsSortMethodEnum;
+    sortDirection?: GetUSDCTransactionsSortDirectionEnum;
+    type?: GetUSDCTransactionsTypeEnum;
+    method?: GetUSDCTransactionsMethodEnum;
 }
 
 export interface GetUserRequest {
@@ -476,19 +476,66 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the user\'s $AUDIO transaction history within the App
+     * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryRaw(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+    async getAudioTransactionCountRaw(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
         if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionHistory.');
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionCount.');
         }
 
         if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionCount.');
         }
 
         if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistory.');
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionCount.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/audio/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionCount(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getAudioTransactionCountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionsRaw(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactions.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactions.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactions.');
         }
 
         const queryParameters: any = {};
@@ -532,55 +579,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistory(params: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
-        const response = await this.getAudioTransactionHistoryRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets the count of the user\'s $AUDIO transaction history within the App
-     */
-    async getAudioTransactionHistoryCountRaw(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAudioTransactionHistoryCount.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getAudioTransactionHistoryCount.');
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
-
-        const response = await this.request({
-            path: `/users/{id}/transactions/audio/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the count of the user\'s $AUDIO transaction history within the App
-     */
-    async getAudioTransactionHistoryCount(params: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
-        const response = await this.getAudioTransactionHistoryCountRaw(params, initOverrides);
+    async getAudioTransactions(params: GetAudioTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getAudioTransactionsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1401,19 +1401,74 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the user\'s $USDC transaction history within the App
+     * Gets the count of the user\'s $USDC transaction history within the App
      */
-    async getUSDCTransactionHistoryRaw(params: GetUSDCTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+    async getUSDCTransactionCountRaw(params: GetUSDCTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
         if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionHistory.');
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionCount.');
         }
 
         if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionHistory.');
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionCount.');
         }
 
         if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionHistory.');
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionCount.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.type !== undefined) {
+            queryParameters['type'] = params.type;
+        }
+
+        if (params.method !== undefined) {
+            queryParameters['method'] = params.method;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/transactions/usdc/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactionCount(params: GetUSDCTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getUSDCTransactionCountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the user\'s $USDC transaction history within the App
+     */
+    async getUSDCTransactionsRaw(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactions.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactions.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactions.');
         }
 
         const queryParameters: any = {};
@@ -1465,63 +1520,8 @@ export class UsersApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $USDC transaction history within the App
      */
-    async getUSDCTransactionHistory(params: GetUSDCTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
-        const response = await this.getUSDCTransactionHistoryRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets the count of the user\'s $USDC transaction history within the App
-     */
-    async getUSDCTransactionHistoryCountRaw(params: GetUSDCTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUSDCTransactionHistoryCount.');
-        }
-
-        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
-            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getUSDCTransactionHistoryCount.');
-        }
-
-        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
-            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getUSDCTransactionHistoryCount.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.type !== undefined) {
-            queryParameters['type'] = params.type;
-        }
-
-        if (params.method !== undefined) {
-            queryParameters['method'] = params.method;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
-
-        const response = await this.request({
-            path: `/users/{id}/transactions/usdc/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the count of the user\'s $USDC transaction history within the App
-     */
-    async getUSDCTransactionHistoryCount(params: GetUSDCTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
-        const response = await this.getUSDCTransactionHistoryCountRaw(params, initOverrides);
+    async getUSDCTransactions(params: GetUSDCTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getUSDCTransactionsRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1961,19 +1961,19 @@ export type GetAIAttributedTracksByUserHandleFilterTracksEnum = typeof GetAIAttr
 /**
  * @export
  */
-export const GetAudioTransactionHistorySortMethodEnum = {
+export const GetAudioTransactionsSortMethodEnum = {
     Date: 'date',
     TransactionType: 'transaction_type'
 } as const;
-export type GetAudioTransactionHistorySortMethodEnum = typeof GetAudioTransactionHistorySortMethodEnum[keyof typeof GetAudioTransactionHistorySortMethodEnum];
+export type GetAudioTransactionsSortMethodEnum = typeof GetAudioTransactionsSortMethodEnum[keyof typeof GetAudioTransactionsSortMethodEnum];
 /**
  * @export
  */
-export const GetAudioTransactionHistorySortDirectionEnum = {
+export const GetAudioTransactionsSortDirectionEnum = {
     Asc: 'asc',
     Desc: 'desc'
 } as const;
-export type GetAudioTransactionHistorySortDirectionEnum = typeof GetAudioTransactionHistorySortDirectionEnum[keyof typeof GetAudioTransactionHistorySortDirectionEnum];
+export type GetAudioTransactionsSortDirectionEnum = typeof GetAudioTransactionsSortDirectionEnum[keyof typeof GetAudioTransactionsSortDirectionEnum];
 /**
  * @export
  */
@@ -2114,53 +2114,53 @@ export type GetTracksByUserHandleFilterTracksEnum = typeof GetTracksByUserHandle
 /**
  * @export
  */
-export const GetUSDCTransactionHistorySortMethodEnum = {
+export const GetUSDCTransactionCountTypeEnum = {
+    PurchaseContent: 'purchase_content',
+    Transfer: 'transfer',
+    PurchaseStripe: 'purchase_stripe'
+} as const;
+export type GetUSDCTransactionCountTypeEnum = typeof GetUSDCTransactionCountTypeEnum[keyof typeof GetUSDCTransactionCountTypeEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionCountMethodEnum = {
+    Send: 'send',
+    Receive: 'receive'
+} as const;
+export type GetUSDCTransactionCountMethodEnum = typeof GetUSDCTransactionCountMethodEnum[keyof typeof GetUSDCTransactionCountMethodEnum];
+/**
+ * @export
+ */
+export const GetUSDCTransactionsSortMethodEnum = {
     Date: 'date',
     TransactionType: 'transaction_type'
 } as const;
-export type GetUSDCTransactionHistorySortMethodEnum = typeof GetUSDCTransactionHistorySortMethodEnum[keyof typeof GetUSDCTransactionHistorySortMethodEnum];
+export type GetUSDCTransactionsSortMethodEnum = typeof GetUSDCTransactionsSortMethodEnum[keyof typeof GetUSDCTransactionsSortMethodEnum];
 /**
  * @export
  */
-export const GetUSDCTransactionHistorySortDirectionEnum = {
+export const GetUSDCTransactionsSortDirectionEnum = {
     Asc: 'asc',
     Desc: 'desc'
 } as const;
-export type GetUSDCTransactionHistorySortDirectionEnum = typeof GetUSDCTransactionHistorySortDirectionEnum[keyof typeof GetUSDCTransactionHistorySortDirectionEnum];
+export type GetUSDCTransactionsSortDirectionEnum = typeof GetUSDCTransactionsSortDirectionEnum[keyof typeof GetUSDCTransactionsSortDirectionEnum];
 /**
  * @export
  */
-export const GetUSDCTransactionHistoryTypeEnum = {
+export const GetUSDCTransactionsTypeEnum = {
     PurchaseContent: 'purchase_content',
     Transfer: 'transfer',
     PurchaseStripe: 'purchase_stripe'
 } as const;
-export type GetUSDCTransactionHistoryTypeEnum = typeof GetUSDCTransactionHistoryTypeEnum[keyof typeof GetUSDCTransactionHistoryTypeEnum];
+export type GetUSDCTransactionsTypeEnum = typeof GetUSDCTransactionsTypeEnum[keyof typeof GetUSDCTransactionsTypeEnum];
 /**
  * @export
  */
-export const GetUSDCTransactionHistoryMethodEnum = {
+export const GetUSDCTransactionsMethodEnum = {
     Send: 'send',
     Receive: 'receive'
 } as const;
-export type GetUSDCTransactionHistoryMethodEnum = typeof GetUSDCTransactionHistoryMethodEnum[keyof typeof GetUSDCTransactionHistoryMethodEnum];
-/**
- * @export
- */
-export const GetUSDCTransactionHistoryCountTypeEnum = {
-    PurchaseContent: 'purchase_content',
-    Transfer: 'transfer',
-    PurchaseStripe: 'purchase_stripe'
-} as const;
-export type GetUSDCTransactionHistoryCountTypeEnum = typeof GetUSDCTransactionHistoryCountTypeEnum[keyof typeof GetUSDCTransactionHistoryCountTypeEnum];
-/**
- * @export
- */
-export const GetUSDCTransactionHistoryCountMethodEnum = {
-    Send: 'send',
-    Receive: 'receive'
-} as const;
-export type GetUSDCTransactionHistoryCountMethodEnum = typeof GetUSDCTransactionHistoryCountMethodEnum[keyof typeof GetUSDCTransactionHistoryCountMethodEnum];
+export type GetUSDCTransactionsMethodEnum = typeof GetUSDCTransactionsMethodEnum[keyof typeof GetUSDCTransactionsMethodEnum];
 /**
  * @export
  */

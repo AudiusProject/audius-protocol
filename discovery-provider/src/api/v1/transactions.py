@@ -68,7 +68,7 @@ add_auth_headers_to_parser(transaction_history_parser)
 @full_user_ns.route("/<string:id>/transactions/audio")
 class GetTransactionHistory(Resource):
     @full_user_ns.doc(
-        id="""Get Audio Transaction History""",
+        id="""Get Audio Transactions""",
         description="""Gets the user's $AUDIO transaction history within the App""",
         params={"id": "A User ID"},
     )
@@ -124,7 +124,7 @@ add_auth_headers_to_parser(transaction_history_count_parser)
 @full_user_ns.route("/<string:id>/transactions/audio/count")
 class GetTransactionHistoryCount(Resource):
     @full_user_ns.doc(
-        id="""Get Audio Transaction History Count""",
+        id="""Get Audio Transaction Count""",
         description="""Gets the count of the user's $AUDIO transaction history within the App""",
         params={"id": "A User ID"},
     )
@@ -186,7 +186,7 @@ add_transaction_history_filters(usdc_transaction_history_parser)
 @full_user_ns.route("/<string:id>/transactions/usdc")
 class GetUSDCTransactionHistory(Resource):
     @full_user_ns.doc(
-        id="""Get USDC Transaction History""",
+        id="""Get USDC Transactions""",
         description="""Gets the user's $USDC transaction history within the App""",
         params={"id": "A User ID"},
     )
@@ -224,7 +224,7 @@ add_auth_headers_to_parser(usdc_transaction_history_count_parser)
 @full_user_ns.route("/<string:id>/transactions/usdc/count")
 class GetUSDCTransactionHistoryCount(Resource):
     @full_user_ns.doc(
-        id="""Get USDC Transaction History Count""",
+        id="""Get USDC Transaction Count""",
         description="""Gets the count of the user's $USDC transaction history within the App""",
         params={"id": "A User ID"},
     )
