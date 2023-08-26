@@ -20,6 +20,7 @@ import {
   ScheduledEmailPluginMappings
 } from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
+import { NotificationRow } from '../../types/dn'
 
 // blockchainUserId => email
 export type EmailUsers = {
@@ -106,35 +107,48 @@ export const getUsersCanNotifyQuery = async (
     .orderBy('Users.blockchainUserId')
 }
 
-const appNotificationsSql = `
-WITH latest_user_seen AS (
-  SELECT DISTINCT ON (user_id)
-    user_id,
-    seen_at
-  FROM
-    notification_seen
-  WHERE
-    user_id = ANY(:user_ids) AND
-    (seen_at IS NULL OR seen_at <= :start_offset)
-  ORDER BY
-    user_id,
-    seen_at desc
-)
-SELECT
-  n.*,
-  unnest(n.user_ids) AS receiver_user_id
-FROM (
-  SELECT *
-  FROM notification
-  WHERE
-    notification.timestamp > :start_offset AND
-    notification.user_ids && (:user_ids)
-) AS n
-LEFT JOIN latest_user_seen ON latest_user_seen.user_id = ANY(n.user_ids)
-WHERE
-  latest_user_seen.seen_at is NULL OR
-  latest_user_seen.seen_at < n.timestamp
-`
+const appNotificationsQuery = async (dnDb: Knex, startOffset: moment.Moment, userIds: string[]): Promise<EmailNotification[]> => {
+  const latestUserSeen = await dnDb('notification_seen')
+      .distinctOn('user_id')
+      .select('user_id', 'seen_at')
+      .whereIn('user_id', userIds)
+      .andWhere(builder => {
+          builder.whereNull('seen_at').orWhere('seen_at', '<=', startOffset);
+      })
+      .orderBy('user_id')
+      .orderBy('seen_at', 'desc');
+
+  const lastSeenUserIds = latestUserSeen.map((user) => user.user_id)
+  const notifications: NotificationRow[] = await dnDb('notification')
+      .select('*')
+      .where('notification.timestamp', '>', startOffset)
+      .andWhere(builder => {
+          builder.whereRaw('notification.user_ids && ?', [lastSeenUserIds]);
+      });
+
+  const emailNotifs: EmailNotification[] = []
+
+  // for each individual notification
+  for (const notification of notifications) {
+      // for each receiver attached to the notification
+      for (const receiverUserId of notification.user_ids) {
+          // if that receiver is in our group of last seen
+          if (notification.user_ids && lastSeenUserIds.includes(receiverUserId)) {
+              // construct their email notif
+              const emailNotif = {
+                  ...notification,
+                  receiver_user_id: receiverUserId,
+                  // otherwise we're keeping large user id lists in mem for no reason
+                  // this also may be what's maxing out the heap
+                  userIds: null
+              }
+              emailNotifs.push(emailNotif)
+          }
+      }
+  }
+  return emailNotifs
+}
+
 const messageNotificationsSql = `
 WITH members_can_notify AS (
   SELECT user_id, chat_id
@@ -174,12 +188,7 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
-  // NOTE: Temp while testing DM notifs on staging
-  const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
-    start_offset: startOffset,
-    user_ids: [[userIds]]
-  })
-  let appNotifications: EmailNotification[] = appNotificationsResp.rows
+  let appNotifications = await appNotificationsQuery(dnDb, startOffset, userIds)
 
   logger.info(`got app notifs resp ${startOffset}`)
 
