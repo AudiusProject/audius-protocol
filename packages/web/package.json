@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.38",
+  "version": "1.5.39",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -53,9 +53,9 @@
     "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
   },
   "dependencies": {
-    "@audius/common": "1.5.38",
+    "@audius/common": "1.5.39",
     "@audius/sdk": "3.0.7-beta.3",
-    "@audius/stems": "1.5.38",
+    "@audius/stems": "1.5.39",
     "@coinbase/cbpay-js": "1.2.0",
     "@craco/craco": "7.0.0-alpha.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
@@ -250,7 +250,7 @@
     "electron-notarize": "0.1.1",
     "env-cmd": "8.0.2",
     "eslint": "8.19.0",
-    "eslint-config-audius": "1.5.26",
+    "eslint-config-audius": "1.5.39",
     "fetch-mock": "9.9.1",
     "fs": "0.0.1-security",
     "fs-extra": "8.1.0",
