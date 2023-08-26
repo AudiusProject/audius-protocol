@@ -109,7 +109,7 @@ class LegacyGetTransactionHistory(GetTransactionHistory):
     def get(self, authed_user_id=None):
         """Gets the user's $AUDIO transaction history within the App
 
-        Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactionHistory()` instead.
+        Deprecated: Use `/users/{id}/transactions/audio` or `sdk.full.users.getAudioTransactions()` instead.
         """
         self._get(authed_user_id, authed_user_id)
 
@@ -157,7 +157,7 @@ class LegacyGetTransactionHistoryCount(Resource):
     def get(self, authed_user_id=None):
         """Gets the count of the user's $AUDIO transaction history within the App.
 
-        Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionHistoryCount()` instead.
+        Deprecated: Use `/users/{id}/transactions/audio/count` or `sdk.full.users.getAudioTransactionCount()` instead.
         """
         if authed_user_id is None:
             abort_bad_request_param(None, full_ns)
