@@ -146,9 +146,6 @@ func migrateOpsData(db *sql.DB) error {
 		if err := rows.Scan(&ops); err != nil {
 			return err
 		}
-		if err = rows.Err(); err != nil {
-			return err
-		}
 		rows.Close()
 
 		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
