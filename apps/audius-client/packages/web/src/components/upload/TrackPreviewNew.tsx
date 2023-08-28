@@ -3,6 +3,7 @@ import numeral from 'numeral'
 
 import iconFileAiff from 'assets/img/iconFileAiff.svg'
 import iconFileFlac from 'assets/img/iconFileFlac.svg'
+import iconFileM4a from 'assets/img/iconFileM4a.svg'
 import iconFileMp3 from 'assets/img/iconFileMp3.svg'
 import iconFileOgg from 'assets/img/iconFileOgg.svg'
 import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
@@ -16,6 +17,8 @@ const fileTypeIcon = (type: string) => {
     case 'audio/mpeg':
     case 'audio/mp3':
       return iconFileMp3
+    case 'audio/x-m4a':
+      return iconFileM4a
     case 'audio/aiff':
       return iconFileAiff
     case 'audio/flac':
