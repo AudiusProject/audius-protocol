@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"mediorum/cidutil"
+	"mediorum/crudr"
 	"strings"
 	"sync"
 	"time"
@@ -33,9 +34,10 @@ var mediorumMigrationTable = `
 
 func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
+
+	migratePartitionOps(db) // TODO: Remove after every node runs this
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
-
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
 }
@@ -65,6 +67,113 @@ func mustExec(db *sql.DB, ddl string, va ...interface{}) {
 func md5string(s string) string {
 	hash := md5.Sum([]byte(s))
 	return hex.EncodeToString(hash[:])
+}
+
+func migratePartitionOps(db *sql.DB) {
+	h := "partitionOps"
+	var alreadyRan bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
+	if alreadyRan {
+		fmt.Printf("hash %s exists, skipping ddl\n", h)
+		return
+	}
+
+	fmt.Println("starting partitioning of ops")
+	start := time.Now()
+
+	mustExec(
+		db,
+		`begin;
+		-- Kill all long-running sql queries
+		SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE state = 'active' AND now() - query_start > interval '1 minute';
+
+    -- Rename ops to old_ops if this has not already been done
+		DO $$ 
+		BEGIN
+				IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'old_ops') THEN
+						ALTER TABLE IF EXISTS ops RENAME TO old_ops;
+				END IF;
+		END $$;
+
+		-- Create the new ops parent table
+		CREATE TABLE IF NOT EXISTS ops (
+			"ulid" TEXT,
+			"host" TEXT,
+			"action" TEXT,
+			"table" TEXT,
+			"data" JSONB,
+			"transient" BOOLEAN
+		) PARTITION BY HASH ("host");
+
+		DO $$ 
+		DECLARE 
+			i INTEGER;
+			partition_name TEXT;
+		BEGIN 
+			FOR i IN 0..100 LOOP -- 101 partitions
+				partition_name := 'ops_' || i;
+				EXECUTE 'CREATE TABLE IF NOT EXISTS' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 101, REMAINDER ' || i || ');';
+				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
+			END LOOP; 
+		END $$;
+
+		commit;`,
+	)
+
+	err := migrateOpsData(db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mustExec(db, `DROP TABLE old_ops`)
+
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
+	fmt.Printf("finished partitioning ops. took %gm\n", time.Since(start).Minutes())
+}
+
+// copy data from old_ops to ops
+func migrateOpsData(db *sql.DB) error {
+	lastUlid := ""
+	pageSize := 1000
+	rowsMigrated := 0
+
+	for {
+		rows, err := db.Query(`SELECT "ulid", "host", "action", "table", "data", "transient" FROM old_ops WHERE ulid > $1 ORDER BY "ulid" ASC LIMIT $2`, lastUlid, pageSize)
+		if err != nil {
+			return err
+		}
+		var ops []crudr.Op
+		if err := rows.Scan(&ops); err != nil {
+			return err
+		}
+		if err = rows.Err(); err != nil {
+			return err
+		}
+		rows.Close()
+
+		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
+		rowsMigrated += len(ops)
+		noRows := len(ops) > 0
+
+		// delete all rows that we migrated
+		var ulidsToDelete []string
+		for _, op := range ops {
+			ulidsToDelete = append(ulidsToDelete, op.ULID)
+		}
+		if len(ulidsToDelete) > 0 {
+			mustExec(db, `DELETE FROM old_ops WHERE ulid = ANY($1)`, ulidsToDelete)
+		}
+
+		// check if we've processed all rows
+		if noRows {
+			return nil
+		}
+
+		// keep paginating
+		lastUlid = ops[len(ops)-1].ULID
+
+		time.Sleep(time.Second * 10)
+	}
 }
 
 func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
