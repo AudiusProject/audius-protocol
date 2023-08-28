@@ -8,9 +8,9 @@ from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
-    add_auth_headers_to_parser,
     abort_bad_request_param,
     abort_not_found,
+    add_auth_headers_to_parser,
     current_user_parser,
     decode_with_abort,
     extend_activity,
@@ -110,7 +110,12 @@ from src.queries.get_track_library import (
 )
 from src.queries.get_tracks import GetTrackArgs, get_tracks
 from src.queries.get_unclaimed_id import get_unclaimed_id
-from src.queries.get_usdc_purchases import get_usdc_purchases
+from src.queries.get_usdc_purchases import (
+    GetUSDCPurchasesArgs,
+    GetUSDCPurchasesCountArgs,
+    get_usdc_purchases,
+    get_usdc_purchases_count,
+)
 from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
@@ -2107,8 +2112,18 @@ purchases_and_sales_parser.add_argument(
 )
 add_auth_headers_to_parser(purchases_and_sales_parser)
 
+
+purchases_and_sales_count_parser = current_user_parser.copy()
+add_auth_headers_to_parser(purchases_and_sales_count_parser)
+
+
 purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
+)
+
+
+purchases_count_response = make_full_response(
+    "purchases_count_response", full_ns, fields.Integer()
 )
 
 
@@ -2130,7 +2145,7 @@ class FullPurchases(Resource):
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
-        args = {
+        args: GetUSDCPurchasesArgs = {
             "buyer_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
@@ -2139,6 +2154,29 @@ class FullPurchases(Resource):
         }
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
+
+
+@full_ns.route("/<string:id>/purchases/count")
+class FullPurchasesCount(Resource):
+    @full_ns.doc(
+        id="Get Purchases Count",
+        description="Gets the count of purchases the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_count_parser)
+    @full_ns.marshal_with(purchases_count_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_count_parser.parse_args()
+        args: GetUSDCPurchasesCountArgs = {
+            "buyer_user_id": decoded_id,
+        }
+        count = get_usdc_purchases_count(args)
+        return success_response(count)
 
 
 @full_ns.route("/<string:id>/sales")
@@ -2159,7 +2197,7 @@ class FullSales(Resource):
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
-        args = {
+        args: GetUSDCPurchasesArgs = {
             "seller_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
@@ -2168,3 +2206,26 @@ class FullSales(Resource):
         }
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
+
+
+@full_ns.route("/<string:id>/sales/count")
+class FullSalesCount(Resource):
+    @full_ns.doc(
+        id="Get Sales Count",
+        description="Gets the count of sales the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_count_parser)
+    @full_ns.marshal_with(purchases_count_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_count_parser.parse_args()
+        args: GetUSDCPurchasesCountArgs = {
+            "seller_user_id": decoded_id,
+        }
+        count = get_usdc_purchases_count(args)
+        return success_response(count)

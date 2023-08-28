@@ -15,6 +15,13 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 
+class GetUSDCPurchasesCountArgs(TypedDict):
+    seller_user_id: Optional[int]
+    buyer_user_id: Optional[int]
+    content_ids: Optional[List[int]]
+    content_type: Optional[PurchaseType]
+
+
 class GetUSDCPurchasesArgs(TypedDict):
     seller_user_id: Optional[int]
     buyer_user_id: Optional[int]
@@ -26,7 +33,7 @@ class GetUSDCPurchasesArgs(TypedDict):
     sort_direction: Optional[SortDirection]
 
 
-def _get_usdc_purchases(session, args: GetUSDCPurchasesArgs):
+def _get_usdc_purchases(session, args: GetUSDCPurchasesCountArgs):
     base_query = session.query(USDCPurchase)
     buyer_user_id = args.get("buyer_user_id")
     seller_user_id = args.get("seller_user_id")
@@ -34,8 +41,6 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesArgs):
     content_type = args.get("content_type")
     sort_method = args.get("sort_method", PurchaseSortMethod.date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
-    limit = args.get("limit")
-    offset = args.get("offset")
 
     # Basic filters
     if content_ids:
@@ -110,8 +115,15 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesArgs):
     else:
         base_query = base_query.order_by(sort_fn(USDCPurchase.created_at))
 
-    results = add_query_pagination(base_query, limit, offset).all()
-    return helpers.query_result_to_list(results)
+    return base_query
+
+
+def get_usdc_purchases_count(args: GetUSDCPurchasesCountArgs):
+    """Gets the count of all the USDC purchase entries fitting the given criteria."""
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        query = _get_usdc_purchases(session, args)
+        return query.count()
 
 
 def get_usdc_purchases(args: GetUSDCPurchasesArgs):
@@ -120,4 +132,9 @@ def get_usdc_purchases(args: GetUSDCPurchasesArgs):
     Does not include any other entity metadatas (no tracks, users, playlists)."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        return _get_usdc_purchases(session, args)
+        query = _get_usdc_purchases(session, args)
+        limit = args.get("limit")
+        offset = args.get("offset")
+
+        results = add_query_pagination(query, limit, offset).all()
+        return helpers.query_result_to_list(results)
