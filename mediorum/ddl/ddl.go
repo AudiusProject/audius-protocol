@@ -114,7 +114,8 @@ func migratePartitionOps(db *sql.DB) {
 
 	mustExec(
 		db,
-		`begin;
+		`BEGIN;
+
 		-- Kill all long-running sql queries
 		SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE state = 'active' AND now() - query_start > interval '1 minute';
 
@@ -148,7 +149,7 @@ func migratePartitionOps(db *sql.DB) {
 			END LOOP; 
 		END $$;
 
-		commit;`,
+		COMMIT;`,
 	)
 
 	err := migrateOpsData(db, logfileName)
@@ -159,10 +160,10 @@ func migratePartitionOps(db *sql.DB) {
 
 	mustExec(
 		db,
-		`begin;
+		`BEGIN;
 		DROP TABLE old_ops;
-		insert into mediorum_migrations values ($1, now()) on conflict do nothing;
-		commit;`,
+		INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING;
+		COMMIT;`,
 		partition_ops_completed,
 	)
 
@@ -193,7 +194,15 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 			return nil
 		}
 
-		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[]) ON CONFLICT DO NOTHING`, ops)
+		mustExec(
+			db,
+			`INSERT INTO ops (ulid, host, action, table, data)
+			SELECT * FROM unnest(
+			  ARRAY[`+constructOpsBulkInsertValuesString(ops)+`]
+			) AS t(ulid, host, action, table, data)
+			ON CONFLICT DO NOTHING`,
+			ops,
+		)
 		rowsMigrated += len(ops)
 		lastUlid = ops[len(ops)-1].ULID
 
@@ -203,6 +212,17 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 		// keep paginating
 		time.Sleep(time.Second * 10)
 	}
+}
+
+func constructOpsBulkInsertValuesString(ops []crudr.Op) string {
+	values := ""
+	for i, op := range ops {
+		values += "('" + op.ULID + "', '" + op.Host + "', '" + op.Action + "', '" + op.Table + "', '" + string(op.Data) + "')"
+		if i < len(ops)-1 {
+			values += ", "
+		}
+	}
+	return values
 }
 
 func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
