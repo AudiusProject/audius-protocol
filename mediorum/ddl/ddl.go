@@ -133,6 +133,7 @@ func migratePartitionOps(db *sql.DB) {
 
 // copy data from old_ops to ops
 func migrateOpsData(db *sql.DB) error {
+	fmt.Println("starting ops data migration")
 	lastUlid := ""
 	pageSize := 1000
 	rowsMigrated := 0
@@ -149,22 +150,21 @@ func migrateOpsData(db *sql.DB) error {
 		rows.Close()
 
 		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
+
+		if len(ops) == 0 {
+			// we've migrated all rows
+			fmt.Printf("successfully migrated %d ops rows\n", rowsMigrated)
+			return nil
+		}
+
 		rowsMigrated += len(ops)
-		noRows := len(ops) == 0
 
 		// delete all rows that we migrated
 		var ulidsToDelete []string
 		for _, op := range ops {
 			ulidsToDelete = append(ulidsToDelete, op.ULID)
 		}
-		if len(ulidsToDelete) > 0 {
-			mustExec(db, `DELETE FROM old_ops WHERE ulid = ANY($1)`, ulidsToDelete)
-		}
-
-		// check if we've processed all rows
-		if noRows {
-			return nil
-		}
+		mustExec(db, `DELETE FROM old_ops WHERE ulid = ANY($1)`, ulidsToDelete)
 
 		// keep paginating
 		lastUlid = ops[len(ops)-1].ULID
