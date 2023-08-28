@@ -9,7 +9,9 @@ import {
 } from '@audius/common'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
+import IconRemix from 'app/assets/images/iconRemix.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import UserBadges from 'app/components/user-badges'
@@ -57,21 +59,27 @@ export const TrackRemixesScreen = () => {
   const track = useSelector(getTrack)
   const user = useSelector(getUser)
   const dispatch = useDispatch()
+  const trackId = track?.track_id
 
   const styles = useStyles()
   const { params } = useRoute<'TrackRemixes'>()
 
-  const trackId = params.id
+  useEffectOnce(() => {
+    dispatch(fetchTrack(params))
+  })
+
   useEffect(() => {
-    dispatch(fetchTrack({ id: trackId }))
-    dispatch(
-      tracksActions.fetchLineupMetadatas(0, 10, false, {
-        trackId: trackId ?? null
-      })
-    )
-    return function cleanup() {
-      dispatch(reset())
-      dispatch(tracksActions.reset())
+    if (trackId) {
+      dispatch(
+        tracksActions.fetchLineupMetadatas(0, 10, false, {
+          trackId
+        })
+      )
+
+      return function cleanup() {
+        dispatch(reset())
+        dispatch(tracksActions.reset())
+      }
     }
   }, [dispatch, trackId])
 
@@ -92,11 +100,13 @@ export const TrackRemixesScreen = () => {
 
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(
-        tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
-          trackId: trackId ?? null
-        })
-      )
+      if (trackId) {
+        dispatch(
+          tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
+            trackId
+          })
+        )
+      }
     },
     [dispatch, trackId]
   )
@@ -106,7 +116,7 @@ export const TrackRemixesScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader text={messages.header} />
+      <ScreenHeader text={messages.header} icon={IconRemix} />
       <ScreenContent>
         <Lineup
           lineup={lineup}

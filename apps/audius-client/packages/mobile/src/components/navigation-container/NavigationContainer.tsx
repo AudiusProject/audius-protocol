@@ -105,6 +105,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                       screens: {
                         Feed: 'feed',
                         Collection: ':handle/collection/:collectionName',
+                        TrackRemixes: ':handle/:slug/remixes',
                         Track: 'track/:handle/:slug',
                         Profile: {
                           path: ':handle',
