@@ -108,13 +108,13 @@ const messages = {
   },
   errors: {
     price: {
-      tooLow: 'Price must be at least $0.99',
-      tooHigh: 'Price must be less than $9.99'
+      tooLow: 'Price must be at least $0.99.',
+      tooHigh: 'Price must be less than $9.99.'
     },
     preview: {
-      tooEarly: 'Preview must start during the track',
+      tooEarly: 'Preview must start during the track.',
       tooLate:
-        'Preview must start at lest 15 seconds before the end of the track'
+        'Preview must start at lest 15 seconds before the end of the track.'
     }
   }
 }

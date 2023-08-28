@@ -9,17 +9,17 @@ import {
 import { z } from 'zod'
 
 const messages = {
-  invalidReleaseDateError: 'Release date should not be in the future',
-  artworkRequiredError: 'Artwork is required',
-  genreRequiredError: 'Genre is required',
+  invalidReleaseDateError: 'Release date should not be in the future.',
+  artworkRequiredError: 'Artwork is required.',
+  genreRequiredError: 'Genre is required.',
   track: {
-    titleRequiredError: 'Your track must have a name'
+    titleRequiredError: 'Your track must have a name.'
   },
   playlist: {
-    nameRequiredError: 'Your playlist must have a name'
+    nameRequiredError: 'Your playlist must have a name.'
   },
   album: {
-    nameRequiredError: 'Your album must have a name'
+    nameRequiredError: 'Your album must have a name.'
   }
 }
 
