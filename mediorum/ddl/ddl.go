@@ -157,17 +157,12 @@ func migrateOpsData(db *sql.DB) error {
 
 		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[]) ON CONFLICT DO NOTHING`, ops)
 		rowsMigrated += len(ops)
-
-		// delete all rows that we migrated
-		var ulidsToDelete []string
-		for _, op := range ops {
-			ulidsToDelete = append(ulidsToDelete, op.ULID)
-		}
-		mustExec(db, `DELETE FROM old_ops WHERE ulid = ANY($1)`, ulidsToDelete)
-
-		// keep paginating
 		lastUlid = ops[len(ops)-1].ULID
 
+		// delete all rows that we migrated
+		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1`, lastUlid)
+
+		// keep paginating
 		time.Sleep(time.Second * 10)
 	}
 }
