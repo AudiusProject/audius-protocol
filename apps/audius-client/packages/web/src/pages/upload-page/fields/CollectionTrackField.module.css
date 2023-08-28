@@ -43,6 +43,10 @@
   gap: var(--unit-12);
 }
 
+.actionButton {
+  color: var(--text-subdued);
+}
+
 .trackInformation {
   display: flex;
   padding-left: 72px;

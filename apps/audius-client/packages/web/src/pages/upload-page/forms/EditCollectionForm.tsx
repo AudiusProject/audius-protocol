@@ -104,6 +104,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
                 maxLength={1000}
                 showMaxLength
                 className={styles.description}
+                grows
               />
             </div>
           </div>

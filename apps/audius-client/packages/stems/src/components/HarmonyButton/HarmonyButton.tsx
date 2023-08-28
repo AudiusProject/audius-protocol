@@ -36,8 +36,7 @@ const TYPE_STYLE_MAP: { [k in HarmonyButtonType]: string } = {
   [HarmonyButtonType.SECONDARY]: styles.secondary,
   [HarmonyButtonType.TERTIARY]: styles.tertiary,
   [HarmonyButtonType.DESTRUCTIVE]: styles.destructive,
-  [HarmonyButtonType.GHOST]: styles.ghost,
-  [HarmonyButtonType.PLAIN]: styles.plain
+  [HarmonyButtonType.GHOST]: styles.ghost
 }
 
 /**

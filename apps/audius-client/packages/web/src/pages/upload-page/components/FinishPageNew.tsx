@@ -9,9 +9,7 @@ import {
   uploadSelectors
 } from '@audius/common'
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
+  HarmonyPlainButton,
   IconArrow,
   IconError,
   IconUpload,
@@ -180,17 +178,13 @@ export const FinishPageNew = (props: FinishPageProps) => {
         </div>
         {uploadComplete ? (
           <div className={styles.uploadFooter}>
-            <HarmonyButton
-              size={HarmonyButtonSize.SMALL}
+            <HarmonyPlainButton
               onClick={handleUploadMoreClick}
-              variant={HarmonyButtonType.PLAIN}
               text={messages.uploadMore}
               iconLeft={IconUpload}
             />
-            <HarmonyButton
-              variant={HarmonyButtonType.PLAIN}
+            <HarmonyPlainButton
               onClick={handleVisitProfileClick}
-              size={HarmonyButtonSize.SMALL}
               text={messages.visitProfile}
               iconRight={IconArrow}
             />
