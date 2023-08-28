@@ -157,9 +157,15 @@ func migratePartitionOps(db *sql.DB) {
 		log.Fatal(err)
 	}
 
-	mustExec(db, `DROP TABLE old_ops`)
+	mustExec(
+		db,
+		`begin;
+		DROP TABLE old_ops;
+		insert into mediorum_migrations values ($1, now()) on conflict do nothing;
+		commit;`,
+		partition_ops_completed,
+	)
 
-	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partition_ops_completed)
 	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), logfileName)
 }
 
