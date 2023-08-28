@@ -46,6 +46,7 @@ models/PlaylistLibrary.ts
 models/PremiumContentSignature.ts
 models/ProfilePicture.ts
 models/Purchase.ts
+models/PurchasesCountResponse.ts
 models/PurchasesResponse.ts
 models/RelatedArtistResponseFull.ts
 models/RemixesResponse.ts

@@ -28,6 +28,7 @@ import type {
   FullTracks,
   FullUserResponse,
   HistoryResponseFull,
+  PurchasesCountResponse,
   PurchasesResponse,
   RelatedArtistResponseFull,
   TopGenreUsersResponseFull,
@@ -62,6 +63,8 @@ import {
     FullUserResponseToJSON,
     HistoryResponseFullFromJSON,
     HistoryResponseFullToJSON,
+    PurchasesCountResponseFromJSON,
+    PurchasesCountResponseToJSON,
     PurchasesResponseFromJSON,
     PurchasesResponseToJSON,
     RelatedArtistResponseFullFromJSON,
@@ -151,6 +154,13 @@ export interface GetPurchasesRequest {
     sortDirection?: GetPurchasesSortDirectionEnum;
 }
 
+export interface GetPurchasesCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
 export interface GetRelatedUsersRequest {
     id: string;
     offset?: number;
@@ -181,6 +191,13 @@ export interface GetSalesRequest {
     userId?: string;
     sortMethod?: GetSalesSortMethodEnum;
     sortDirection?: GetSalesSortDirectionEnum;
+}
+
+export interface GetSalesCountRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
 }
 
 export interface GetSubscribersRequest {
@@ -794,6 +811,57 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the count of purchases the user has made
+     */
+    async getPurchasesCountRaw(params: GetPurchasesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesCountResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPurchasesCount.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getPurchasesCount.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getPurchasesCount.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/purchases/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of purchases the user has made
+     */
+    async getPurchasesCount(params: GetPurchasesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesCountResponse> {
+        const response = await this.getPurchasesCountRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponseFull>> {
@@ -985,6 +1053,57 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getSales(params: GetSalesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesResponse> {
         const response = await this.getSalesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the count of sales the user has made
+     */
+    async getSalesCountRaw(params: GetSalesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PurchasesCountResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getSalesCount.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling getSalesCount.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling getSalesCount.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/count`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PurchasesCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of sales the user has made
+     */
+    async getSalesCount(params: GetSalesCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PurchasesCountResponse> {
+        const response = await this.getSalesCountRaw(params, initOverrides);
         return await response.value();
     }
 
