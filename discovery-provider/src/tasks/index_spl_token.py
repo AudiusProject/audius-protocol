@@ -40,7 +40,6 @@ from src.utils.cache_solana_program import (
 from src.utils.config import shared_config
 from src.utils.helpers import (
     get_account_index,
-    get_solana_tx_owner,
     get_solana_tx_token_balance_changes,
     get_valid_instruction,
     has_log,
@@ -53,8 +52,8 @@ from src.utils.redis_constants import (
 from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
-SPL_TOKEN_PROGRAM = shared_config["solana"]["waudio_mint"]
-SPL_TOKEN_PUBKEY = Pubkey.from_string(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
+WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
+WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_PUBKEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
@@ -95,7 +94,7 @@ class SplTokenTransactionInfo(TypedDict):
     vendor: Optional[str]
     prebalance: int
     postbalance: int
-    sender_wallet: str
+    sender_wallet: Optional[str]
     root_accounts: List[str]
     token_accounts: List[str]
 
@@ -150,13 +149,17 @@ def decode_memo_and_extract_vendor(memo_encoded: str) -> str:
 def parse_spl_token_transaction(
     solana_client_manager: SolanaClientManager,
     tx_sig: str,
-) -> Optional[SplTokenTransactionInfo]:
+) -> Optional[List[SplTokenTransactionInfo]]:
+    # Fork on v0 transaction.
+    # If v0 transaction, look for the balance changes with the mint we care about
+    # Index those into an array of SplTokenTransactionInfo
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         result = tx_info.value
         if not result:
             raise Exception(f"No txinfo value {tx_info}")
 
+        version = result.transaction.version
         meta = result.transaction.meta
         if not meta:
             raise Exception(f"No transaction meta {meta}")
@@ -170,53 +173,83 @@ def parse_spl_token_transaction(
                 f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
             )
             return None
+
         tx_message = cast(Transaction, result.transaction.transaction).message
-        instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
-        if not instruction:
-            logger.error(
-                f"index_spl_token.py | {tx_sig} No valid instruction for spl token program found"
-            )
-            return None
+        account_keys = list(map(lambda key: str(key), tx_message.account_keys))
 
         memo_encoded = parse_memo_instruction(tx_message)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
-        sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
-        receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
-        account_keys = list(map(lambda key: str(key), tx_message.account_keys))
-        sender_token_account = str(account_keys[sender_idx])
-        receiver_token_account = str(account_keys[receiver_idx])
-        sender_root_account = get_solana_tx_owner(meta, sender_idx)
-        receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
-        balance_changes = get_solana_tx_token_balance_changes(
-            meta=meta, account_keys=account_keys
-        )
+        receiver_spl_tx_info: SplTokenTransactionInfo
 
-        # Balance is expected to change if there is a transfer instruction.
-        if receiver_token_account not in balance_changes:
-            logger.error(
-                f"index_spl_token.py | {tx_sig} error while parsing pre and post balances"
+        if version == 0:
+            balance_changes = get_solana_tx_token_balance_changes(
+                meta=meta, account_keys=account_keys, mint=WAUDIO_MINT
             )
-            return None
-        if balance_changes[receiver_token_account]["change"] == 0:
-            logger.error(f"index_spl_token.py | {tx_sig} no balance change found")
-            return None
+            tx_infos: list[SplTokenTransactionInfo] = []
+            sender_token_accounts: list[str] = []
+            sender_root_accounts: list[str] = []
+            for key, balance_change in balance_changes.items():
+                if balance_change["change"] < 0:  # Only get senders
+                    sender_token_accounts.append(key)
+                    sender_root_accounts.append(balance_changes[key]["owner"])
 
-        receiver_spl_tx_info: SplTokenTransactionInfo = {
-            "user_bank": receiver_token_account,
-            "signature": tx_sig,
-            "slot": result.slot,
-            "timestamp": datetime.datetime.utcfromtimestamp(
-                float(result.block_time or 0)
-            ),
-            "vendor": vendor,
-            "prebalance": balance_changes[receiver_token_account]["pre_balance"],
-            "postbalance": balance_changes[receiver_token_account]["post_balance"],
-            "sender_wallet": sender_root_account,
-            "root_accounts": [sender_root_account, receiver_root_account],
-            "token_accounts": [sender_token_account, receiver_token_account],
-        }
-        return receiver_spl_tx_info
+            for key, balance_change in balance_changes.items():
+                if balance_change["change"] > 0:  # Only get receivers
+                    receiver_spl_tx_info = {
+                        "user_bank": key,
+                        "signature": tx_sig,
+                        "slot": result.slot,
+                        "timestamp": datetime.datetime.utcfromtimestamp(
+                            float(result.block_time or 0)
+                        ),
+                        "vendor": vendor,
+                        "prebalance": balance_changes[key]["pre_balance"],
+                        "postbalance": balance_changes[key]["post_balance"],
+                        "root_accounts": sender_root_accounts
+                        + [balance_changes[key]["owner"]],
+                        "token_accounts": sender_token_accounts + [key],
+                        # The specific sender may be ambigous in the case of a Address Lookup Table
+                        "sender_wallet": None,
+                    }
+                    tx_infos.append(receiver_spl_tx_info)
+            return tx_infos
+        else:
+            instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
+            if not instruction:
+                logger.error(
+                    f"index_spl_token.py | {tx_sig} No valid instruction for spl token program found"
+                )
+                return None
+            balance_changes = get_solana_tx_token_balance_changes(
+                meta=meta, account_keys=account_keys
+            )
+            sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
+            receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
+            sender_token_account = str(account_keys[sender_idx])
+            receiver_token_account = str(account_keys[receiver_idx])
+            sender_root_account = balance_changes[sender_token_account]["owner"]
+            receiver_root_account = balance_changes[receiver_token_account]["owner"]
+
+            if balance_changes[receiver_token_account]["change"] == 0:
+                logger.error(f"index_spl_token.py | {tx_sig} no balance change found")
+                return None
+
+            receiver_spl_tx_info = {
+                "user_bank": receiver_token_account,
+                "signature": tx_sig,
+                "slot": result.slot,
+                "timestamp": datetime.datetime.utcfromtimestamp(
+                    float(result.block_time or 0)
+                ),
+                "vendor": vendor,
+                "prebalance": balance_changes[receiver_token_account]["pre_balance"],
+                "postbalance": balance_changes[receiver_token_account]["post_balance"],
+                "sender_wallet": sender_root_account,
+                "root_accounts": [sender_root_account, receiver_root_account],
+                "token_accounts": [sender_token_account, receiver_token_account],
+            }
+            return [receiver_spl_tx_info]
 
     except SolanaTransactionFetchError:
         return None
@@ -333,15 +366,16 @@ def parse_sol_tx_batch(
                 parse_sol_tx_futures, timeout=45
             ):
                 try:
-                    tx_info = future.result()
+                    tx_infos = future.result()
                 except Exception as e:
                     logger.error(f"index_spl_token.py | {e}")
                     continue
-                if not tx_info:
+                if not tx_infos:
                     continue
-                updated_root_accounts.update(tx_info["root_accounts"])
-                updated_token_accounts.update(tx_info["token_accounts"])
-                spl_token_txs.append(tx_info)
+                for tx_info in tx_infos:
+                    updated_root_accounts.update(tx_info["root_accounts"])
+                    updated_token_accounts.update(tx_info["token_accounts"])
+                    spl_token_txs.append(tx_info)
 
         except Exception as exc:
             logger.error(
@@ -370,7 +404,7 @@ def parse_sol_tx_batch(
 
         if updated_root_accounts:
             # Remove the user bank owner
-            user_bank_owner, _ = get_base_address(SPL_TOKEN_PUBKEY, USER_BANK_PUBKEY)
+            user_bank_owner, _ = get_base_address(WAUDIO_MINT_PUBKEY, USER_BANK_PUBKEY)
             updated_root_accounts.discard(str(user_bank_owner))
 
             associated_wallet_result = (
@@ -474,11 +508,11 @@ def process_spl_token_tx(
     solana_logger = SolanaIndexingLogger("index_spl_token")
     solana_logger.start_time("fetch_batches")
     try:
-        base58.b58decode(SPL_TOKEN_PROGRAM)
+        base58.b58decode(WAUDIO_MINT)
     except ValueError:
         logger.error(
             f"index_spl_token.py"
-            f"Invalid Token program ({SPL_TOKEN_PROGRAM}) configured, exiting."
+            f"Invalid Token program ({WAUDIO_MINT}) configured, exiting."
         )
         return
 
@@ -514,7 +548,7 @@ def process_spl_token_tx(
             f"Requesting {fetch_size} transactions before {last_tx_signature}"
         )
         transactions_history = solana_client_manager.get_signatures_for_address(
-            SPL_TOKEN_PROGRAM,
+            WAUDIO_MINT,
             before=last_tx_signature,
             limit=fetch_size,
         )
@@ -615,7 +649,7 @@ def index_spl_token(self):
         fetch_and_cache_latest_program_tx_redis(
             solana_client_manager,
             redis,
-            SPL_TOKEN_PROGRAM,
+            WAUDIO_MINT,
             latest_sol_spl_token_program_tx_key,
         )
         # Attempt to acquire lock - do not block if unable to acquire

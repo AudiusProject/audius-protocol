@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"mediorum/cidutil"
+	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -24,15 +25,19 @@ func (ss *MediorumServer) startRepairer() {
 		}
 
 		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
-		repairStart := time.Now()
-
-		logger.Info("repair starting")
-		err := ss.runRepair(cleanupMode)
-		took := time.Since(repairStart)
-		if err != nil {
-			logger.Error("repair failed", "err", err, "took", took)
+		took := time.Duration(0)
+		if ss.shouldRunRepair() {
+			repairStart := time.Now()
+			logger.Info("repair starting")
+			err := ss.runRepair(cleanupMode)
+			took = time.Since(repairStart)
+			if err != nil {
+				logger.Error("repair failed", "err", err, "took", took)
+			} else {
+				logger.Info("repair OK", "took", took)
+			}
 		} else {
-			logger.Info("repair OK", "took", took)
+			logger.Warn("disk has <200GB remaining. skipping repair")
 		}
 
 		// sleep for as long as the job took
@@ -44,6 +49,21 @@ func (ss *MediorumServer) startRepairer() {
 		time.Sleep(sleep)
 
 	}
+}
+
+// If the node is using local storage, do not run repair if there is <200GB remaining (i.e. 10% of 2TB)
+func (ss *MediorumServer) shouldRunRepair() bool {
+	if strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") {
+		_, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
+		if err == nil {
+			if free/uint64(1e9) < 200 {
+				return false
+			}
+		} else {
+			ss.logger.With("task", "repair").Error("getDiskStatus failed", "err", err)
+		}
+	}
+	return true
 }
 
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {

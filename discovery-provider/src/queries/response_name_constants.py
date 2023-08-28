@@ -53,6 +53,8 @@ supporting_count = "supporting_count"
 # current user specific
 # boolean - does current user follow given user
 does_current_user_follow = "does_current_user_follow"
+# boolean - does current user subscribe to given user
+does_current_user_subscribe = "does_current_user_subscribe"
 # boolean - does given user follow current user
 does_follow_current_user = "does_follow_current_user"
 # integer - number of followees of current user that also follow given user

@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ActivityFull } from './ActivityFull';
+import type { CollectionActivityFull } from './CollectionActivityFull';
 import {
-    ActivityFullFromJSON,
-    ActivityFullFromJSONTyped,
-    ActivityFullToJSON,
-} from './ActivityFull';
+    CollectionActivityFullFromJSON,
+    CollectionActivityFullFromJSONTyped,
+    CollectionActivityFullToJSON,
+} from './CollectionActivityFull';
 import type { VersionMetadata } from './VersionMetadata';
 import {
     VersionMetadataFromJSON,
@@ -30,63 +30,63 @@ import {
 /**
  * 
  * @export
- * @interface FavoritesResponseFull
+ * @interface CollectionLibraryResponseFull
  */
-export interface FavoritesResponseFull {
+export interface CollectionLibraryResponseFull {
     /**
      * 
      * @type {number}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     latestChainBlock: number;
     /**
      * 
      * @type {number}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     latestIndexedBlock: number;
     /**
      * 
      * @type {number}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     latestChainSlotPlays: number;
     /**
      * 
      * @type {number}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     latestIndexedSlotPlays: number;
     /**
      * 
      * @type {string}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     signature: string;
     /**
      * 
      * @type {string}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     timestamp: string;
     /**
      * 
      * @type {VersionMetadata}
-     * @memberof FavoritesResponseFull
+     * @memberof CollectionLibraryResponseFull
      */
     version: VersionMetadata;
     /**
      * 
-     * @type {Array<ActivityFull>}
-     * @memberof FavoritesResponseFull
+     * @type {Array<CollectionActivityFull>}
+     * @memberof CollectionLibraryResponseFull
      */
-    data?: Array<ActivityFull>;
+    data?: Array<CollectionActivityFull>;
 }
 
 /**
- * Check if a given object implements the FavoritesResponseFull interface.
+ * Check if a given object implements the CollectionLibraryResponseFull interface.
  */
-export function instanceOfFavoritesResponseFull(value: object): boolean {
+export function instanceOfCollectionLibraryResponseFull(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "latestChainBlock" in value;
     isInstance = isInstance && "latestIndexedBlock" in value;
@@ -99,11 +99,11 @@ export function instanceOfFavoritesResponseFull(value: object): boolean {
     return isInstance;
 }
 
-export function FavoritesResponseFullFromJSON(json: any): FavoritesResponseFull {
-    return FavoritesResponseFullFromJSONTyped(json, false);
+export function CollectionLibraryResponseFullFromJSON(json: any): CollectionLibraryResponseFull {
+    return CollectionLibraryResponseFullFromJSONTyped(json, false);
 }
 
-export function FavoritesResponseFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): FavoritesResponseFull {
+export function CollectionLibraryResponseFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): CollectionLibraryResponseFull {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -116,11 +116,11 @@ export function FavoritesResponseFullFromJSONTyped(json: any, ignoreDiscriminato
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ActivityFullFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(CollectionActivityFullFromJSON)),
     };
 }
 
-export function FavoritesResponseFullToJSON(value?: FavoritesResponseFull | null): any {
+export function CollectionLibraryResponseFullToJSON(value?: CollectionLibraryResponseFull | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -136,7 +136,7 @@ export function FavoritesResponseFullToJSON(value?: FavoritesResponseFull | null
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ActivityFullToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(CollectionActivityFullToJSON)),
     };
 }
 

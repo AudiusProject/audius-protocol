@@ -1,6 +1,7 @@
 #![cfg(feature = "test-bpf")]
 
 use claimable_tokens::error::ClaimableProgramError;
+use claimable_tokens::instruction::CreateTokenAccount;
 use claimable_tokens::state::{NonceAccount, TransferInstructionData};
 use claimable_tokens::utils::program::{
     find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
@@ -20,13 +21,13 @@ use borsh::BorshSerialize;
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
+    feature_set::FeatureSet,
     secp256k1_instruction::{
         construct_eth_pubkey, new_secp256k1_instruction, SecpSignatureOffsets,
     },
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
-    feature_set::FeatureSet,
 };
 use std::sync::Arc;
 
@@ -326,6 +327,71 @@ async fn init_instruction() {
         spl_token::state::Account::unpack(&token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(token_account.mint, mint_account.pubkey());
+}
+
+// Verify that someone cannot block an account creation
+#[tokio::test]
+async fn create_account_with_seed_denial() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        _priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        _user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let mint_pubkey = mint_account.pubkey();
+    create_mint(
+        &mut program_context,
+        &mint_account,
+        rent.minimum_balance(spl_token::state::Mint::LEN),
+        &mint_authority.pubkey(),
+    )
+    .await
+    .unwrap();
+
+    // Derive account to create
+    let pair = find_address_pair(&id(), &mint_pubkey, eth_address).unwrap();
+    let account_to_create = pair.derive.address;
+
+    // Transfer 1 lamport to account to be created to potentially deny its creation
+    let send_lamports_instruction =
+        system_instruction::transfer(&program_context.payer.pubkey(), &account_to_create, 1);
+    let mut send_lamports_transaction = Transaction::new_with_payer(
+        &[send_lamports_instruction],
+        Some(&program_context.payer.pubkey()),
+    );
+    send_lamports_transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(send_lamports_transaction)
+        .await
+        .unwrap();
+
+    // Send a transaction to create a token account
+    let create_token_account_instruction = instruction::init(
+        &id(),
+        &program_context.payer.pubkey(),
+        &mint_pubkey,
+        CreateTokenAccount { eth_address },
+    )
+    .unwrap();
+    let mut create_token_account_transaction = Transaction::new_with_payer(
+        &[create_token_account_instruction],
+        Some(&program_context.payer.pubkey()),
+    );
+    create_token_account_transaction
+        .sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(create_token_account_transaction)
+        .await
+        .unwrap();
 }
 
 // Transfer ALL tokens from an existing account
@@ -884,6 +950,169 @@ async fn transfer_replay_instruction() {
         .process_transaction(transaction2)
         .await;
     assert_custom_error(tx_result, 1, ClaimableProgramError::NonceVerificationError);
+}
+
+// Verify that someone cannot cause a transfer denial by sending lamports to a nonce account
+// before it is used.
+#[tokio::test]
+async fn transfer_nonce_account_denial_with_lamports() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let mint_pubkey = mint_account.pubkey();
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount / 2);
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
+
+    // Transfer 1 lamport to nonce_account to potentially deny its creation
+    let send_lamports_instruction =
+        system_instruction::transfer(&program_context.payer.pubkey(), &nonce_account, 1);
+    let mut send_lamports_transaction = Transaction::new_with_payer(
+        &[send_lamports_instruction],
+        Some(&program_context.payer.pubkey()),
+    );
+    send_lamports_transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(send_lamports_transaction)
+        .await
+        .unwrap();
+
+    // Send a transfer instruction
+    let current_user_nonce = 0;
+
+    let transfer_instr_data1 = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce,
+    };
+
+    let encoded1 = transfer_instr_data1.try_to_vec().unwrap();
+    let secp256_program_instruction1 = new_secp256k1_instruction(&priv_key, &encoded1);
+
+    let instructions1 = [
+        secp256_program_instruction1.clone(),
+        instruction::transfer(
+            &id(),
+            &program_context.payer.pubkey(),
+            &user_bank_account,
+            &user_token_account.pubkey(),
+            &nonce_account,
+            &base_acc,
+            eth_address.clone(),
+        )
+        .unwrap(),
+    ];
+
+    let mut transaction1 =
+        Transaction::new_with_payer(&instructions1, Some(&program_context.payer.pubkey()));
+
+    transaction1.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(transaction1)
+        .await
+        .unwrap();
+
+    let final_user_nonce1 = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(transfer_instr_data1.nonce + 1, final_user_nonce1);
+
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
+    let bank_token_account =
+        spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
+    // check that program sent required number tokens from bank token account to user token account
+    assert_eq!(bank_token_account.amount, tokens_amount - transfer_amount);
+
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
+    let user_token_account_amount =
+        spl_token::state::Account::unpack(&user_token_account_data.data.as_slice())
+            .unwrap()
+            .amount;
+
+    assert_eq!(user_token_account_amount, transfer_amount);
+
+    // Test a subsequent transaction
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+
+    let transfer_instr_data2 = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce,
+    };
+
+    let encoded2 = transfer_instr_data2.try_to_vec().unwrap();
+    let secp256_program_instruction2 = new_secp256k1_instruction(&priv_key, &encoded2);
+
+    let instructions2 = [
+        secp256_program_instruction2.clone(),
+        instruction::transfer(
+            &id(),
+            &program_context.payer.pubkey(),
+            &user_bank_account,
+            &user_token_account.pubkey(),
+            &nonce_account,
+            &base_acc,
+            eth_address.clone(),
+        )
+        .unwrap(),
+    ];
+
+    let mut transaction2 =
+        Transaction::new_with_payer(&instructions2, Some(&program_context.payer.pubkey()));
+
+    transaction2.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(transaction2)
+        .await
+        .unwrap();
+
+    let final_user_nonce2 = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(transfer_instr_data2.nonce + 1, final_user_nonce2);
+
+    let bank_token_account_data2 = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
+    let bank_token_account =
+        spl_token::state::Account::unpack(&bank_token_account_data2.data.as_slice()).unwrap();
+    // check that program sent required number tokens from bank token account to user token account
+    assert_eq!(
+        bank_token_account.amount,
+        tokens_amount - 2 * transfer_amount
+    );
+
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
+    let user_token_account_amount =
+        spl_token::state::Account::unpack(&user_token_account_data.data.as_slice())
+            .unwrap()
+            .amount;
+
+    assert_eq!(user_token_account_amount, 2 * transfer_amount);
 }
 
 #[tokio::test]

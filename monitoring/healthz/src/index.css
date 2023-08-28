@@ -1,56 +1,100 @@
 * {
   box-sizing: border-box;
+}
 
+/* Default / light mode */
+:root {
+  --background-color: #ffffff;
+  --body-background-color: #f5f5f5;
+  --border-color: #e0e0e0;
+  --table-border-color: #ccc;
+  --text-color: #000000;
+  --link-color: #007bff;
+  --hover-background-color: #f0f0f0;
+  --is-behind-color: #fff0f0;
+  --is-behind-hover-color: rgba(255, 200, 200, 0.4);
+  --matrix-hover-color: #fff5cc;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #1a1a1a;
+    --body-background-color: #121212;
+    --border-color: #333333;
+    --table-border-color: #666;
+    --text-color: #f5f5f5;
+    --link-color: #1e90ff;
+    --hover-background-color: #222222;
+    --is-behind-color: #440000;
+    --is-behind-hover-color: rgba(255, 50, 50, 0.4);
+    --matrix-hover-color: #333300;
+  }
 }
 
 body {
   margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: var(--body-background-color);
+  color: var(--text-color);
 }
 
 .table {
+  background: var(--background-color);
+  border: 1px solid var(--table-border-color);
+  border-radius: 5px;
   border-collapse: collapse;
   min-width: 100%;
 }
+
 .table td,
 .table th {
-  border: 1px solid #ccc;
+  border: 1px solid var(--table-border-color);
   padding: 4px;
 }
+
 .table tbody tr:hover td {
-  background: lightyellow;
+  background: var(--hover-background-color);
 }
 
 .is-behind {
-  background: #ffebe9;
-}
-table tr:hover td.is-behind {
-  background: rgba(255, 129, 130, 0.4);
+  background: var(--is-behind-color);
 }
 
-table .spun span {
-  -ms-writing-mode: tb-rl;
-  -webkit-writing-mode: vertical-rl;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  white-space: nowrap;
+table tr:hover td.is-behind {
+  background: var(--is-behind-hover-color);
 }
-td.matrix-cell {
-  text-align: right;
-  font-family: monospace;
-}
+
 td.matrix-cell:hover {
-  background: yellow !important;
-  cursor: pointer;
+  background: var(--matrix-hover-color) !important;
+}
+
+.table tr:first-child th,
+.table tr:first-child td {
+  border-top: 1px solid var(--table-border-color);
+}
+
+.table th:last-child,
+.table td:last-child {
+  border-right: 1px solid var(--table-border-color);
+}
+
+.table tr:last-child th,
+.table tr:last-child td {
+  border-bottom: 1px solid var(--table-border-color);
+}
+
+.table th:first-child,
+.table td:first-child {
+  border-left: 1px solid var(--table-border-color);
 }
 
 a,
 a:visited {
-  color: blue;
-  text-decoration: none;
+  color: var(--link-color);
 }
+
 a:hover {
-  background: yellow;
-  text-decoration: underline;
+  background: var(--matrix-hover-color);
 }

@@ -4,6 +4,7 @@ import {
 } from './components/EnvironmentSelector'
 import { SP, useServiceProviders } from './useServiceProviders'
 import { RelTime } from './misc'
+import './DiscoveryHealth.css'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -85,12 +86,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   let healthyPeers2m = 0
   if (health?.peerHealths) {
     for (const endpoint of Object.keys(health.peerHealths)) {
-      const healthDate = new Date(health.peerHealths[endpoint])
+      const peerHealth = health.peerHealths[endpoint]
+      const healthDate = new Date(peerHealth?.lastHealthy)
       if (!isNaN(healthDate.getTime()) && healthDate > twoMinutesAgoDate) {
         healthyPeers2m++
       }
     }
   }
+  const unreachablePeers = health.unreachablePeers?.join(', ')
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const composeSha =
@@ -177,7 +180,12 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         <RelTime date={health?.startedAt} />
       </td>)}
       {isContent && <td>{metrics?.uploads}</td>}
-      {isContent && <td>{healthyPeers2m}</td>}
+      {isContent && (
+        <td className="unreachable-peers">
+          {healthyPeers2m}
+          {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
+        </td>
+      )}
       {isContent && (
         <td>
           <a href={sp.endpoint + '/internal/metrics'} target="_blank">

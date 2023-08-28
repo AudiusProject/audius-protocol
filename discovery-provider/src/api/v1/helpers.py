@@ -31,6 +31,11 @@ redis = get_redis()
 logger = logging.getLogger(__name__)
 
 
+PROFILE_PICTURE_SIZES = ["150x150", "480x480", "1000x1000"]
+PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
+COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
+
+
 def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
@@ -68,14 +73,11 @@ def add_track_artwork(track):
     if "user" not in track:
         return track
     cid = track["cover_art_sizes"]
-    endpoint = get_primary_endpoint(track["user"], cid)
-    if not endpoint:
-        return track
-
-    cover_cids = get_image_cids(track["user"], cid, ["150x150", "480x480", "1000x1000"])
+    cover_cids = get_image_cids(track["user"], cid, COVER_ART_SIZES)
     track["cover_art_cids"] = cover_cids
+    endpoint = get_primary_endpoint(track["user"], cid)
     artwork = get_image_urls(track["user"], cover_cids)
-    if not artwork:
+    if endpoint and not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
@@ -89,17 +91,13 @@ def add_track_artwork(track):
 def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
-    cid = playlist["playlist_image_sizes_multihash"]
-    endpoint = get_primary_endpoint(playlist["user"], cid)
-    if not endpoint:
-        return playlist
 
-    cover_cids = get_image_cids(
-        playlist["user"], cid, ["150x150", "480x480", "1000x1000"]
-    )
+    cid = playlist["playlist_image_sizes_multihash"]
+    cover_cids = get_image_cids(playlist["user"], cid, COVER_ART_SIZES)
     playlist["cover_art_cids"] = cover_cids
+    endpoint = get_primary_endpoint(playlist["user"], cid)
     artwork = get_image_urls(playlist["user"], cover_cids)
-    if not artwork:
+    if endpoint and not artwork:
         # Fallback to legacy image url format with dumb endpoint
         artwork = {
             "150x150": make_image(endpoint, cid, 150, 150),
@@ -132,15 +130,11 @@ def add_user_artwork(user):
 
     profile_cid = user.get("profile_picture_sizes")
     profile_endpoint = get_primary_endpoint(user, profile_cid)
-    cover_cid = user.get("cover_photo_sizes")
-    cover_endpoint = get_primary_endpoint(user, cover_cid)
-    if profile_endpoint and profile_cid:
-        profile_cids = get_image_cids(
-            user, profile_cid, ["150x150", "480x480", "1000x1000"]
-        )
+    if profile_cid:
+        profile_cids = get_image_cids(user, profile_cid, PROFILE_PICTURE_SIZES)
         user["profile_picture_cids"] = profile_cids
         profile = get_image_urls(user, profile_cids)
-        if not profile:
+        if profile_endpoint and not profile:
             # Fallback to legacy image url format with dumb endpoint
             profile = {
                 "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
@@ -148,17 +142,20 @@ def add_user_artwork(user):
                 "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
             }
         user["profile_picture"] = profile
-    if cover_endpoint and cover_cid:
-        cover_cids = get_image_cids(user, cover_cid, ["640x", "2000x"])
+    cover_cid = user.get("cover_photo_sizes")
+    cover_endpoint = get_primary_endpoint(user, cover_cid)
+    if cover_cid:
+        cover_cids = get_image_cids(user, cover_cid, PROFILE_COVER_PHOTO_SIZES)
         user["cover_photo_cids"] = cover_cids
         cover = get_image_urls(user, cover_cids)
-        if not cover:
+        if cover_endpoint and not cover:
             # Fallback to legacy image url format with dumb endpoint
             cover = {
                 "640x": make_image(cover_endpoint, cover_cid, 640),
                 "2000x": make_image(cover_endpoint, cover_cid, 2000),
             }
         user["cover_photo"] = cover
+
     return user
 
 
@@ -175,13 +172,12 @@ async def fetch_url(url):
 async def race_requests(urls, timeout):
     tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
     done, pending = await asyncio.wait(
-        tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
+        tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
     )
-    while len(done) > 0 or len(pending) > 0:
-        for task in done:
-            response = task.result()
-            if response.status_code == 200:
-                return response
+    for task in done:
+        response = task.result()
+        if response.status_code == 200:
+            return response
     raise Exception(f"No 200 responses for urls {urls}")
 
 
@@ -210,7 +206,13 @@ def get_image_cids(user, upload_id, variants):
                 urls = list(
                     map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
                 )
-                resp = asyncio.run(race_requests(urls, 1))
+
+                # Race requests in a new event loop
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                resp = new_loop.run_until_complete(race_requests(urls, 1))
+                new_loop.close()
+
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
                 if not image_cids:
@@ -515,7 +517,8 @@ def extend_transaction_details(transaction_details):
     new_transaction_details["transaction_date"] = transaction_details[
         "transaction_created_at"
     ]
-    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
+    if "metadata" in new_transaction_details:
+        new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
     return new_transaction_details
 
 
@@ -529,6 +532,14 @@ def abort_bad_request_param(param, namespace):
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
+
+
+def abort_unauthorized(namespace):
+    namespace.abort(401, "Oh no! User is not authorized.")
+
+
+def abort_forbidden(namespace):
+    namespace.abort(403, "Oh no! User does not have access to that resource.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:

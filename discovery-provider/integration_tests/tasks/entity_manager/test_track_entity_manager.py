@@ -14,10 +14,7 @@ from src.tasks.entity_manager.entity_manager import (
     ENABLE_DEVELOPMENT_FEATURES,
     entity_manager_update,
 )
-from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_DESCRIPTION,
-    TRACK_ID_OFFSET,
-)
+from src.tasks.entity_manager.utils import CHARACTER_LIMIT_DESCRIPTION, TRACK_ID_OFFSET
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -370,7 +367,7 @@ def test_index_valid_track(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 7
+        assert len(all_tracks) == 4
 
         track_1: Track = (
             session.query(Track)
@@ -888,7 +885,7 @@ def test_index_invalid_tracks(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 2
+        assert len(all_tracks) == 1
         current_track: List[Track] = (
             session.query(Track).filter(Track.is_current == True).first()
         )

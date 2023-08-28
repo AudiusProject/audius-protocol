@@ -426,7 +426,7 @@ def test_index_valid_user(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 8
+        assert len(all_users) == 5
 
         user_1: User = (
             session.query(User)
@@ -1198,7 +1198,7 @@ def test_index_empty_bio(app, mocker):
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 5
+        assert len(all_users) == 3
 
         user_2: User = (
             session.query(User)

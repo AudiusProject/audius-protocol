@@ -11,6 +11,7 @@ use rand::Rng;
 use solana_program::instruction::InstructionError;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
+use solana_program::system_instruction;
 use solana_sdk::{
     secp256k1_instruction::construct_eth_pubkey,
     signature::Keypair,
@@ -21,8 +22,8 @@ use solana_sdk::{
 use std::mem::MaybeUninit;
 use utils::*;
 
+// Test successfully creating a sender (decentralized)
 #[tokio::test]
-/// Test successfully creating a sender (decentralized)
 async fn success_create_sender_public() {
     let TestConstants {
         reward_manager,
@@ -106,8 +107,8 @@ async fn success_create_sender_public() {
     );
 }
 
+// Test failure to create an existing sender
 #[tokio::test]
-/// Test failure to create an existing sender
 async fn failure_create_duplicate_sender() {
     let TestConstants {
         reward_manager,
@@ -222,9 +223,9 @@ async fn failure_create_duplicate_sender() {
     assert!(failed_tx_result.is_err());
 }
 
+// Test that creating a sender fails if the signatures
+// don't match known senders
 #[tokio::test]
-/// Test that creating a sender fails if the signatures
-/// don't match known senders
 async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     let TestConstants {
         reward_manager,
@@ -302,8 +303,8 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     }
 }
 
+// Test adding sender fails if the senders don't match the signers
 #[tokio::test]
-/// Test adding sender fails if the senders don't match the signers
 async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
     let TestConstants {
         reward_manager,
@@ -384,8 +385,8 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
     }
 }
 
+// Test creating sender doesn't work if insufficient number of attestations
 #[tokio::test]
-/// Test creating sender doesn't work if insufficient number of attestations
 async fn failure_create_sender_missing_attestations() {
     let TestConstants {
         reward_manager,
@@ -455,8 +456,8 @@ async fn failure_create_sender_missing_attestations() {
     );
 }
 
+// Test creating sender fails if there are duplicate attestation senders
 #[tokio::test]
-/// Test creating sender fails if there are duplicate attestation senders
 async fn failure_create_sender_duplicate_attestation_senders() {
     let TestConstants {
         reward_manager,
@@ -533,7 +534,7 @@ async fn failure_create_sender_duplicate_attestation_senders() {
     )
 }
 
-/// Test duplicate operators fail
+// Test duplicate operators fail
 #[tokio::test]
 async fn failure_duplicate_operators() {
     let TestConstants {
@@ -601,5 +602,104 @@ async fn failure_duplicate_operators() {
         res,
         3,
         audius_reward_manager::error::AudiusProgramError::OperatorCollision,
+    );
+}
+
+// Verify that someone cannot cause a create sender public denial by sending lamports
+// before it is used.
+#[tokio::test]
+async fn success_create_sender_public_denial_with_lamports() {
+    let TestConstants {
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    // Address that will be added through create_sender_public
+    let eth_address: EthereumAddress = rng.gen();
+    let operator: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    // Bootstrap senders through manager
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
+        signers[i] = derived_address;
+    }
+
+    let (_, derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+
+    // Transfer 1 lamport to sender_info to potentially deny its creation
+    let send_lamports_instruction = system_instruction::transfer(
+        &context.payer.pubkey(),
+        &derived_address,
+        1
+    );
+    let mut send_lamports_transaction = Transaction::new_with_payer(
+        &[send_lamports_instruction],
+        Some(&context.payer.pubkey())
+    );
+    send_lamports_transaction.sign(&[&context.payer], context.last_blockhash);
+    context.banks_client.process_transaction(send_lamports_transaction).await.unwrap();
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Insert signed instructions
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions.push(inst);
+    }
+
+    instructions.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    assert_eq!(
+        SenderAccount::new(reward_manager.pubkey(), eth_address, operator),
+        context
+            .banks_client
+            .get_account_data_with_borsh(derived_address)
+            .await
+            .unwrap()
     );
 }
