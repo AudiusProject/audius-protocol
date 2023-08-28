@@ -10,9 +10,16 @@ import (
 
 func (ss *MediorumServer) rendezvous(h string) ([]string, bool) {
 	hosts := ss.findHealthyPeers(5 * time.Minute)
+	if slices.Index(hosts, ss.Config.Self.Host) == -1 {
+		hosts = append(hosts, ss.Config.Self.Host)
+	}
+
 	hashRing := rendezvous.New(hosts...)
 	orderedHosts := hashRing.GetN(len(hosts), h)
-	isMine := slices.Index(orderedHosts, ss.Config.Self.Host) < ss.Config.ReplicationFactor
+
+	myRank := slices.Index(orderedHosts, ss.Config.Self.Host)
+	isMine := myRank >= 0 && myRank < ss.Config.ReplicationFactor
+
 	if ss.Config.StoreAll {
 		isMine = true
 	} else if cidutil.IsLegacyCID(h) {
