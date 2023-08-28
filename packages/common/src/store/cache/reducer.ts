@@ -87,7 +87,9 @@ const unwrapEntry = (entry: { metadata: any }) => {
 const forceUpdateKeys = new Set([
   'field_visibility',
   'followee_reposts',
-  'followee_saves'
+  'followee_saves',
+  'associated_wallets',
+  'associated_sol_wallets'
 ])
 
 // Customize lodash recursive merge to never merge
@@ -116,12 +118,10 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
     return objValue
   }
 
-  if (key === 'associated_wallets') {
-    return srcValue
-  }
-
-  if (key === 'associated_sol_wallets') {
-    return srcValue
+  // Not every user request provides collectible lists,
+  // so always prefer it's existence, starting with latest
+  if (key === 'collectibleList' || key === 'solanaCollectibleList') {
+    return srcValue || objValue
   }
 
   // For playlist_contents, this is trickier.
