@@ -134,7 +134,6 @@ func migratePartitionOps(db *sql.DB) {
 			"action" TEXT,
 			"table" TEXT,
 			"data" JSONB,
-			"transient" BOOLEAN
 		) PARTITION BY HASH ("host");
 
 		DO $$ 
@@ -196,10 +195,8 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 
 		mustExec(
 			db,
-			`INSERT INTO ops (ulid, host, action, table, data)
-			SELECT * FROM unnest(
-			  ARRAY[`+constructOpsBulkInsertValuesString(ops)+`]
-			) AS t(ulid, host, action, table, data)
+			`INSERT INTO ops ("ulid", "host", "action", "table", "data")
+			VALUES `+constructOpsBulkInsertValuesString(ops)+`
 			ON CONFLICT DO NOTHING`,
 			ops,
 		)
@@ -210,7 +207,7 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1`, lastUlid)
 
 		// keep paginating
-		time.Sleep(time.Second * 10)
+		time.Sleep(time.Millisecond * 100)
 	}
 }
 
