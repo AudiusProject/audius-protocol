@@ -14,6 +14,9 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+} from './';
+
 /**
  * 
  * @export
@@ -101,6 +104,8 @@ export function PurchaseFromJSON(json: any): Purchase {
 export function PurchaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): Purchase {
     if ((json === undefined) || (json === null)) {
         return json;
+    }
+    if (!ignoreDiscriminator) {
     }
     return {
         
