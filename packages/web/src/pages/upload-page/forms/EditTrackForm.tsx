@@ -60,7 +60,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       tracks,
       trackMetadatas: tracks.map((track) => ({
         ...track.metadata,
-        artwork: null,
         description: '',
         releaseDate: new Date(moment().startOf('day').toString()),
         tags: '',
