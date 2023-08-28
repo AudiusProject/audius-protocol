@@ -36,8 +36,8 @@ var mediorumMigrationTable = `
 `
 
 // TODO: Remove after every node runs the ops partition migration
-var partiton_ops_scheduled = "partition_ops_scheduled"
-var partiton_ops_completed = "partitioned_ops"
+var partition_ops_scheduled = "partition_ops_scheduled"
+var partition_ops_completed = "partitioned_ops"
 
 func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
@@ -48,7 +48,7 @@ func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
 
-	schedulePartitonOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
+	schedulepartitionOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -78,21 +78,21 @@ func md5string(s string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func schedulePartitonOpsMigration(db *sql.DB) {
+func schedulepartitionOpsMigration(db *sql.DB) {
 	// stagger between 1-8hrs
 	min := 60
 	max := 60 * 8
 	randomTime := time.Minute * time.Duration(rand.Intn(max-min+1)+min)
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partiton_ops_completed).Scan(&partitioned)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_completed).Scan(&partitioned)
 	if partitioned {
 		slog.Info("already partitioned ops, skipping migration scheduling")
 	} else {
 		slog.Info("scheduling partition ops migration", "time", randomTime)
 		time.AfterFunc(randomTime, func() {
 			slog.Info("marking migrations table to partition ops after we restart...")
-			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partiton_ops_scheduled)
+			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partition_ops_scheduled)
 			os.Exit(0)
 		})
 	}
@@ -101,7 +101,7 @@ func schedulePartitonOpsMigration(db *sql.DB) {
 func migratePartitionOps(db *sql.DB) {
 	slog.Info("checking if it's time to partition ops...")
 	var scheduled bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partiton_ops_scheduled).Scan(&scheduled)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_scheduled).Scan(&scheduled)
 	if !scheduled {
 		fmt.Println("partition ops migration not scheduled, skipping ddl")
 		return
@@ -159,7 +159,7 @@ func migratePartitionOps(db *sql.DB) {
 
 	mustExec(db, `DROP TABLE old_ops`)
 
-	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partiton_ops_completed)
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partition_ops_completed)
 	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), logfileName)
 }
 
