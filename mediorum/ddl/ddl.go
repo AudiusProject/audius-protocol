@@ -171,7 +171,7 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 	rowsMigrated := 0
 
 	for {
-		rows, err := db.Query(`SELECT "ulid", "host", "action", "table", "data", "transient" FROM old_ops WHERE ulid > $1 ORDER BY "ulid" ASC LIMIT $2`, lastUlid, pageSize)
+		rows, err := db.Query(`SELECT * FROM old_ops WHERE ulid > $1 ORDER BY "ulid" ASC LIMIT $2`, lastUlid, pageSize)
 		if err != nil {
 			return err
 		}
