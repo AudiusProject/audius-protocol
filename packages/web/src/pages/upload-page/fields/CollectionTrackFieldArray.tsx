@@ -34,7 +34,11 @@ export const CollectionTrackFieldArray = () => {
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                       >
-                        <CollectionTrackField index={index} remove={remove} />
+                        <CollectionTrackField
+                          index={index}
+                          remove={remove}
+                          disableDelete={tracks.length === 1}
+                        />
                       </div>
                     )}
                   </Draggable>

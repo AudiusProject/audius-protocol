@@ -32,10 +32,11 @@ const messages = {
 type CollectionTrackFieldProps = {
   index: number
   remove: (index: number) => void
+  disableDelete: boolean
 }
 
 export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
-  const { index, remove } = props
+  const { disableDelete = false, index, remove } = props
   const [{ value: track }] = useField<CollectionTrackForUpload>(
     `tracks.${index}`
   )
@@ -94,6 +95,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
             iconLeft={IconPlay}
           />
           <HarmonyButton
+            disabled={disableDelete}
             variant={HarmonyButtonType.GHOST}
             size={HarmonyButtonSize.SMALL}
             text={messages.delete}
