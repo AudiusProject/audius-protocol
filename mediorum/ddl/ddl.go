@@ -155,7 +155,7 @@ func migrateOpsData(db *sql.DB) error {
 			return nil
 		}
 
-		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
+		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[]) ON CONFLICT DO NOTHING`, ops)
 		rowsMigrated += len(ops)
 
 		// delete all rows that we migrated
