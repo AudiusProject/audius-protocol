@@ -2149,7 +2149,7 @@ class FullPurchases(Resource):
             "buyer_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
-            "sort_method": args.get("sort_method", None),
+            "sort_method": args.get("sort_method", PurchaseSortMethod.date),
             "sort_direction": args.get("sort_direction", None),
         }
         purchases = get_usdc_purchases(args)
@@ -2201,7 +2201,7 @@ class FullSales(Resource):
             "seller_user_id": decoded_id,
             "limit": limit,
             "offset": offset,
-            "sort_method": args.get("sort_method", None),
+            "sort_method": args.get("sort_method", PurchaseSortMethod.date),
             "sort_direction": args.get("sort_direction", None),
         }
         purchases = get_usdc_purchases(args)
