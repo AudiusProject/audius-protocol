@@ -149,14 +149,13 @@ func migrateOpsData(db *sql.DB) error {
 		}
 		rows.Close()
 
-		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
-
 		if len(ops) == 0 {
 			// we've migrated all rows
 			fmt.Printf("successfully migrated %d ops rows\n", rowsMigrated)
 			return nil
 		}
 
+		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
 		rowsMigrated += len(ops)
 
 		// delete all rows that we migrated
