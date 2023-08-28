@@ -145,10 +145,7 @@
 }
 
 .arrow {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
+  margin-right: 4px;
   height: 6px;
   width: 10px;
   cursor: pointer;

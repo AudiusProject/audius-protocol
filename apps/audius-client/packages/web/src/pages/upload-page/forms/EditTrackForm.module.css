@@ -2,8 +2,6 @@
   width: 100%;
   background-color: var(--white);
 
-  display: flex;
-  flex-direction: column;
   border-radius: 8px;
   box-shadow: var(--shadow-far);
 }

@@ -148,7 +148,8 @@ class DropdownInput extends Component {
             placeholder={
               <div className={styles.placeholder}>{placeholder}</div>
             }
-            showArrow={false}
+            showArrow={true}
+            suffixIcon={<IconCaretDown className={styles.arrow} />}
             defaultActiveFirstOption={false}
             optionFilterProp='children'
             onSelect={this.onSelect}
@@ -162,7 +163,6 @@ class DropdownInput extends Component {
           >
             {options}
           </Select>
-          <IconCaretDown className={styles.arrow} />
         </div>
         {helperText ? (
           <HelperText error={error}>{helperText}</HelperText>

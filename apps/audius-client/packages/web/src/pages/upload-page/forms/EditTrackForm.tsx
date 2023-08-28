@@ -113,9 +113,15 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   return (
     <Form>
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-        <div className={styles.formContainer}>
+        <div className={cn(styles.formContainer, layoutStyles.col)}>
           {isMultiTrack ? <MultiTrackHeader /> : null}
-          <div className={styles.trackEditForm}>
+          <div
+            className={cn(
+              styles.trackEditForm,
+              layoutStyles.col,
+              layoutStyles.gap4
+            )}
+          >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               <ReleaseDateField />
