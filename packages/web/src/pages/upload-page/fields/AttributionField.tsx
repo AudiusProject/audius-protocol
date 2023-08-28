@@ -45,17 +45,17 @@ const messages = {
     description:
       'If your AI generated track was trained on an existing Audius artist, you can give them credit here. Only users who have opted-in will appear in this list.',
     placeholder: 'Search for Users',
-    requiredError: 'Valid user must be selected'
+    requiredError: 'Valid user must be selected.'
   },
   isrc: {
     header: 'ISRC',
     placeholder: 'CC-XXX-YY-NNNNN',
-    validError: 'Must be valid ISRC format'
+    validError: 'Must be valid ISRC format.'
   },
   iswc: {
     header: 'ISWC',
     placeholder: 'T-345246800-1',
-    validError: 'Must be valid ISWC format'
+    validError: 'Must be valid ISWC format.'
   },
   licenseType: 'License Type',
   allowAttribution: {

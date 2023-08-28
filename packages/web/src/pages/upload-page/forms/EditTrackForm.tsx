@@ -31,9 +31,9 @@ import { TrackMetadataSchema } from '../validation'
 import styles from './EditTrackForm.module.css'
 
 const messages = {
-  titleError: 'Your track must have a name',
-  artworkError: 'Artwork is required',
-  genreError: 'Genre is required',
+  titleError: 'Your track must have a name.',
+  artworkError: 'Artwork is required.',
+  genreError: 'Genre is required.',
   multiTrackCount: (index: number, total: number) =>
     `TRACK ${index} of ${total}`,
   prev: 'Prev',

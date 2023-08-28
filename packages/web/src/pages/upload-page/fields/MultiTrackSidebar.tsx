@@ -55,7 +55,6 @@ export const MultiTrackSidebar = () => {
                 className={styles.iconError}
                 icon={IconError}
                 size='xSmall'
-                fill='accentRed'
               />
               <Text size='xSmall' color='accentRed'>
                 {messages.fixErrors}

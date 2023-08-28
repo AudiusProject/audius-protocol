@@ -27,6 +27,10 @@
   width: 12px;
 }
 
+.iconError path {
+  fill: var(--accent-red);
+}
+
 /* Track */
 .tracks {
   margin: 0 calc(-1 * var(--unit-4));
