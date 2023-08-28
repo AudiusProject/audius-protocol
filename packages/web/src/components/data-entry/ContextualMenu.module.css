@@ -42,7 +42,3 @@
   border: 1px solid var(---border-strong);
   background: var(--neutral-light-8);
 }
-
-.selectedValueText {
-  text-transform: capitalize;
-}

@@ -4,7 +4,8 @@ import {
   Download,
   StemCategory,
   StemUpload,
-  removeNullable
+  removeNullable,
+  stemCategoryFriendlyNames
 } from '@audius/common'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
@@ -109,7 +110,8 @@ export const SourceFilesField = () => {
     if (followerGatedValue) {
       values.push(messages.values.followerGated)
     }
-    const stemsCategories = stemsValue?.map((stem) => stem.category) ?? []
+    const stemsCategories =
+      stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
     values = [...values, ...stemsCategories]
     return (
       <SelectedValues>
