@@ -83,6 +83,7 @@ type MediorumServer struct {
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+	storagePathFree uint64
 	storagePathUsed uint64
 	storagePathSize uint64
 

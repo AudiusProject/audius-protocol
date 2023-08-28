@@ -87,6 +87,7 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 func (ss *MediorumServer) updateDiskAndDbStatus() {
 	total, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
 	if err == nil {
+		ss.storagePathFree = free
 		ss.storagePathUsed = total - free
 		ss.storagePathSize = total
 	} else {
