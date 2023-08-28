@@ -37,7 +37,7 @@ func (ss *MediorumServer) startRepairer() {
 				logger.Info("repair OK", "took", took)
 			}
 		} else {
-			logger.Info("disk has <20GB remaining. skipping repair")
+			logger.Info("disk has <100GB remaining. skipping repair")
 		}
 
 		// sleep for as long as the job took
@@ -51,13 +51,13 @@ func (ss *MediorumServer) startRepairer() {
 	}
 }
 
-// If the node is using local storage, do not run repair if there is <20GB remaining
+// If the node is using local storage, do not run repair if there is <100GB remaining (i.e. 5% of 2TB)
 // on disk
 func (ss *MediorumServer) shouldRunRepair() bool {
 	if strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") {
 		_, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
 		if err == nil {
-			if free/uint64(1e9) < 20 {
+			if free/uint64(1e9) < 100 {
 				return false
 			}
 		} else {
