@@ -21,7 +21,7 @@ import { FFmpegKit, FFmpegKitConfig, ReturnCode } from 'ffmpeg-kit-react-native'
 import { Platform, View } from 'react-native'
 import Config from 'react-native-config'
 import RNFS from 'react-native-fs'
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions'
+import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import Share from 'react-native-share'
 import {
   init as initTikTokShare,
@@ -291,30 +291,31 @@ export const useShareToStory = ({
         activateKeepAwake()
         dispatch(setCancel(() => cancelStory(platform)))
         toggleProgressDrawer(true, platform)
+        dispatch(setProgress(10))
 
-        // Step 1: Render and take a screenshot of the sticker:
-        // Note: We have to capture the sticker image first because it doesn't work if you get the dominant colors first (mysterious).
-        const encodedTrackId = encodeHashId(content.track.track_id)
-        const streamMp3Url = apiClient.makeUrl(
-          `/tracks/${encodedTrackId}/stream`
-        )
-        const storyVideoPath = path.join(
-          RNFS.TemporaryDirectoryPath,
-          `storyVideo-${uuid()}.mp4`
-        )
-        const audioStartOffsetConfig =
-          content.track.duration && content.track.duration >= 20
-            ? '-ss 10 '
-            : ''
-
+        // Step 1: Render and take a screenshot of the sticker
         let stickerUri: string | undefined
 
+        // Step 2: Calculate the dominant colors of the cover art:
+        let rawDominantColorsResult: Color[] | string | undefined // `getDominantRgb` returns a string containing a single default color if it couldn't find dominant colors
+
         try {
-          stickerUri = await captureStickerImage()
+          // Execute Steps 1 and 2 concurrently:
+          ;[rawDominantColorsResult, stickerUri] = await Promise.all([
+            trackImageUri
+              ? getDominantRgb(trackImageUri)
+              : Promise.resolve(undefined),
+            captureStickerImage()
+          ])
         } catch (e) {
-          handleError(platform, e, 'Error at generate sticker step')
+          handleError(
+            platform,
+            e,
+            'Error at generate sticker + dominant colors step'
+          )
           return
         }
+
         if (!stickerUri) {
           handleError(
             platform,
@@ -323,30 +324,18 @@ export const useShareToStory = ({
           )
           return
         }
-        dispatch(setProgress(10))
-        // Step 2: Calculate the dominant colors of the cover art
-        let rawDominantColorsResult: Color[] | string // `getDominantRgb` returns a string containing a single default color if it couldn't find dominant colors
-        let dominantColorHex1: string
-        let dominantColorHex2: string
-        if (trackImageUri) {
-          try {
-            rawDominantColorsResult = await getDominantRgb(trackImageUri)
-          } catch (e) {
-            handleError(platform, e, 'Error at calculate dominant colors step')
-            return
-          }
-          const finalDominantColorsResult =
-            Array.isArray(rawDominantColorsResult) &&
-            rawDominantColorsResult.length > 0
-              ? pickTwoMostDominantAndVibrant(rawDominantColorsResult).map(
-                  (c: Color) => convertRGBToHex(c)
-                )
-              : DEFAULT_DOMINANT_COLORS
-          dominantColorHex1 = finalDominantColorsResult[0]
-          dominantColorHex2 = finalDominantColorsResult[1]
-        } else {
-          ;[dominantColorHex1, dominantColorHex2] = DEFAULT_DOMINANT_COLORS
-        }
+
+        const finalDominantColorsResult =
+          rawDominantColorsResult &&
+          Array.isArray(rawDominantColorsResult) &&
+          rawDominantColorsResult.length > 0
+            ? pickTwoMostDominantAndVibrant(rawDominantColorsResult).map(
+                (c: Color) => convertRGBToHex(c)
+              )
+            : DEFAULT_DOMINANT_COLORS
+        const dominantColorHex1 = finalDominantColorsResult[0]
+        const dominantColorHex2 = finalDominantColorsResult[1]
+
         if (cancelRef.current) {
           cleanup()
           return
@@ -361,6 +350,19 @@ export const useShareToStory = ({
         }
         // For simplicity, assume that calculating dominant colors and generating the sticker takes 20% of the total loading time:
         dispatch(setProgress(20))
+
+        const encodedTrackId = encodeHashId(content.track.track_id)
+        const streamMp3Url = apiClient.makeUrl(
+          `/tracks/${encodedTrackId}/stream`
+        )
+        const storyVideoPath = path.join(
+          RNFS.TemporaryDirectoryPath,
+          `storyVideo-${uuid()}.mp4`
+        )
+        const audioStartOffsetConfig =
+          content.track.duration && content.track.duration >= 20
+            ? '-ss 10 '
+            : ''
 
         // Step 3: Generate the background video using FFmpeg
         FFmpegKitConfig.enableStatisticsCallback((statistics) => {
@@ -596,7 +598,11 @@ export const ShareToStoryProgressDrawer = () => {
   }
 
   return (
-    <NativeDrawer drawerName='ShareToStoryProgress' onClose={handleCancel}>
+    <NativeDrawer
+      zIndex={10}
+      drawerName='ShareToStoryProgress'
+      onClose={handleCancel}
+    >
       <View style={styles.container}>
         <View style={styles.title}>
           <IconWavform

@@ -25,6 +25,7 @@ type ActionSheetModalProps = {
   title?: string
   renderTitle?: () => React.ReactNode
   styles?: { row?: ViewStyle }
+  disableAutoClose?: boolean
 }
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
@@ -57,19 +58,28 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
 const ActionDrawer = (props: ActionSheetModalProps) => {
-  const { modalName, rows, title, renderTitle, styles: stylesProp } = props
+  const {
+    modalName,
+    rows,
+    title,
+    renderTitle,
+    styles: stylesProp,
+    disableAutoClose
+  } = props
   const styles = useStyles()
   const { onClose } = useDrawerState(modalName)
 
   const didSelectRow = useCallback(
     (index: number) => {
       const { callback } = rows[index]
-      onClose()
+      if (!disableAutoClose) {
+        onClose()
+      }
       if (callback) {
         callback()
       }
     },
-    [rows, onClose]
+    [rows, onClose, disableAutoClose]
   )
 
   const { neutralLight9 } = useThemeColors()
