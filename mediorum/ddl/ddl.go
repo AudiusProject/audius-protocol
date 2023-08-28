@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"mediorum/cidutil"
 	"mediorum/crudr"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +19,7 @@ import (
 	_ "embed"
 
 	"gocloud.dev/blob"
+	"golang.org/x/exp/slog"
 )
 
 //go:embed delist_statuses.sql
@@ -32,6 +35,10 @@ var mediorumMigrationTable = `
 	);
 `
 
+// TODO: Remove after every node runs the ops partition migration
+var partiton_ops_scheduled = "partition_ops_scheduled"
+var partiton_ops_completed = "partitioned_ops"
+
 func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
 
@@ -40,6 +47,8 @@ func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
+
+	schedulePartitonOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -69,16 +78,38 @@ func md5string(s string) string {
 	return hex.EncodeToString(hash[:])
 }
 
+func schedulePartitonOpsMigration(db *sql.DB) {
+	// stagger between 1-8hrs
+	min := 60
+	max := 60 * 8
+	randomTime := time.Minute * time.Duration(rand.Intn(max-min+1)+min)
+	slog.Info("checking if we need to schedule the partition ops migration...")
+	var partitioned bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partiton_ops_completed).Scan(&partitioned)
+	if partitioned {
+		slog.Info("already partitioned ops, skipping migration scheduling")
+	} else {
+		slog.Info("scheduling partition ops migration", "time", randomTime)
+		time.AfterFunc(randomTime, func() {
+			slog.Info("marking migrations table to partition ops after we restart...")
+			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partiton_ops_scheduled)
+			os.Exit(0)
+		})
+	}
+}
+
 func migratePartitionOps(db *sql.DB) {
-	h := "partitionOps"
-	var alreadyRan bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, h).Scan(&alreadyRan)
-	if alreadyRan {
-		fmt.Printf("hash %s exists, skipping ddl\n", h)
+	slog.Info("checking if it's time to partition ops...")
+	var scheduled bool
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partiton_ops_scheduled).Scan(&scheduled)
+	if !scheduled {
+		fmt.Println("partition ops migration not scheduled, skipping ddl")
 		return
 	}
 
-	fmt.Println("starting partitioning of ops")
+	logfileName := "partition_ops.txt"
+
+	logAndWriteToFile(fmt.Sprint("starting partitioning of ops"), logfileName)
 	start := time.Now()
 
 	mustExec(
@@ -110,9 +141,9 @@ func migratePartitionOps(db *sql.DB) {
 			i INTEGER;
 			partition_name TEXT;
 		BEGIN 
-			FOR i IN 0..100 LOOP -- 101 partitions
+			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
-				EXECUTE 'CREATE TABLE IF NOT EXISTS' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 101, REMAINDER ' || i || ');';
+				EXECUTE 'CREATE TABLE IF NOT EXISTS' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
 				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
 			END LOOP; 
 		END $$;
@@ -120,20 +151,21 @@ func migratePartitionOps(db *sql.DB) {
 		commit;`,
 	)
 
-	err := migrateOpsData(db)
+	err := migrateOpsData(db, logfileName)
 	if err != nil {
+		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
 	}
 
 	mustExec(db, `DROP TABLE old_ops`)
 
-	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
-	fmt.Printf("finished partitioning ops. took %gm\n", time.Since(start).Minutes())
+	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partiton_ops_completed)
+	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), logfileName)
 }
 
 // copy data from old_ops to ops
-func migrateOpsData(db *sql.DB) error {
-	fmt.Println("starting ops data migration")
+func migrateOpsData(db *sql.DB, logfileName string) error {
+	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), logfileName)
 	lastUlid := ""
 	pageSize := 1000
 	rowsMigrated := 0
@@ -151,7 +183,7 @@ func migrateOpsData(db *sql.DB) error {
 
 		if len(ops) == 0 {
 			// we've migrated all rows
-			fmt.Printf("successfully migrated %d ops rows\n", rowsMigrated)
+			logAndWriteToFile(fmt.Sprintf("successfully migrated %d ops rows\n", rowsMigrated), logfileName)
 			return nil
 		}
 
@@ -230,4 +262,26 @@ func migrateShardBucket(db *sql.DB, bucket *blob.Bucket) {
 
 	mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, h)
 	fmt.Printf("finished sharding CDK bucket. took %gm\n", time.Since(start).Minutes())
+}
+
+func logAndWriteToFile(message string, fileName string) {
+	dir := "/tmp/mediorum"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
+	}
+	filePath := fmt.Sprintf("/tmp/mediorum/%s", fileName)
+
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file %s: %v", filePath, err)
+	}
+	defer f.Close()
+
+	fmt.Println(message)
+
+	if _, err := f.WriteString(message + "\n"); err != nil {
+		log.Fatalf("Failed to write to log file %s: %v", filePath, err)
+	}
+
+	f.Sync()
 }

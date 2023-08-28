@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -23,8 +24,8 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	return c.JSON(200, m)
 }
 
-func (ss *MediorumServer) getSegmentLog(c echo.Context) error {
-	file := "/tmp/mediorum/segments.txt"
+func (ss *MediorumServer) getLogfile(c echo.Context, fileName string) error {
+	file := fmt.Sprintf("/tmp/mediorum/%s", fileName)
 
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -32,4 +33,12 @@ func (ss *MediorumServer) getSegmentLog(c echo.Context) error {
 	}
 
 	return c.JSON(200, strings.Split(string(data), "\n"))
+}
+
+func (ss *MediorumServer) getSegmentLog(c echo.Context) error {
+	return ss.getLogfile(c, "segments.txt")
+}
+
+func (ss *MediorumServer) getPartitionOpsLog(c echo.Context) error {
+	return ss.getLogfile(c, "partition_ops.txt")
 }
