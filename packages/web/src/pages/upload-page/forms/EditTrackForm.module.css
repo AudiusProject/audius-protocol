@@ -40,7 +40,3 @@
   background: var(--background-surface-1);
   justify-content: space-between;
 }
-
-.multiTrackFooter .disabled {
-  opacity: 0.5;
-}

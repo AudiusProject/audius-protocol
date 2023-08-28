@@ -46,6 +46,7 @@ export const TrackMetadataFields = () => {
           placeholder={messages.description}
           maxLength={1000}
           showMaxLength
+          grows
         />
       </div>
     </div>

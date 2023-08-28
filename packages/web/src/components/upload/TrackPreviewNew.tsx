@@ -1,4 +1,4 @@
-import { HarmonyButton, HarmonyButtonType, IconTrash } from '@audius/stems'
+import { HarmonyPlainButton, IconTrash } from '@audius/stems'
 import numeral from 'numeral'
 
 import iconFileAiff from 'assets/img/iconFileAiff.svg'
@@ -72,8 +72,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       <Text className={styles.fileSizeText} size='small' color='neutralLight2'>
         {numeral(fileSize).format('0.0 b')}
       </Text>
-      <HarmonyButton
-        variant={HarmonyButtonType.PLAIN}
+      <HarmonyPlainButton
         iconRight={IconTrash}
         onClick={onRemove}
         className={styles.removeButton}
