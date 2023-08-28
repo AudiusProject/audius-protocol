@@ -79,10 +79,9 @@ func md5string(s string) string {
 }
 
 func schedulepartitionOpsMigration(db *sql.DB) {
-	// stagger between 1-8hrs
-	min := 60
-	max := 60 * 8
-	randomTime := time.Minute * time.Duration(rand.Intn(max-min+1)+min)
+	// stagger between 0-12hrs
+	max := 60 * 12
+	randomTime := time.Minute * time.Duration(rand.Intn(max+1))
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
 	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_completed).Scan(&partitioned)
@@ -173,7 +172,7 @@ func migratePartitionOps(db *sql.DB) {
 func migrateOpsData(db *sql.DB, logfileName string) error {
 	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), logfileName)
 	lastUlid := ""
-	pageSize := 1000
+	pageSize := 3000
 	rowsMigrated := 0
 
 	for {
