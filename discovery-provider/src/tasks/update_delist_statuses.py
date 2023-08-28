@@ -20,6 +20,7 @@ UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 DELIST_BATCH_SIZE = 5000
 DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
+ALTERNATE_DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S+00"
 
 
 def query_users_by_user_ids(session: Session, user_ids: Set[int]) -> List[User]:
@@ -60,9 +61,16 @@ def update_user_is_available_statuses(
     for user in users:
         user_id = user["userId"]
         delisted = user["delisted"]
-        delist_timestamp = datetime.strptime(
-            user["createdAt"], DATETIME_FORMAT_STRING
-        ).timestamp()
+
+        try:
+            delist_timestamp = datetime.strptime(
+                user["createdAt"], DATETIME_FORMAT_STRING
+            ).timestamp()
+        except ValueError:
+            delist_timestamp = datetime.strptime(
+                user["createdAt"], ALTERNATE_DATETIME_FORMAT_STRING
+            ).timestamp()
+
         user_delist_map[user_id] = {
             "delisted": delisted,
             "delist_timestamp": delist_timestamp,
@@ -135,9 +143,16 @@ def update_track_is_available_statuses(
     for track in tracks:
         track_id = track["trackId"]
         delisted = track["delisted"]
-        delist_timestamp = datetime.strptime(
-            track["createdAt"], DATETIME_FORMAT_STRING
-        ).timestamp()
+
+        try:
+            delist_timestamp = datetime.strptime(
+                track["createdAt"], DATETIME_FORMAT_STRING
+            ).timestamp()
+        except ValueError:
+            delist_timestamp = datetime.strptime(
+                track["createdAt"], ALTERNATE_DATETIME_FORMAT_STRING
+            ).timestamp()
+
         track_delist_map[track_id] = {
             "delisted": delisted,
             "delist_timestamp": delist_timestamp,
