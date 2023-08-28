@@ -9,6 +9,8 @@ import UploadArtwork, {
 } from 'components/upload/UploadArtwork'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
+import styles from './ArtworkField.module.css'
+
 type ArtworkFieldProps = Partial<UploadArtworkProps> & {
   name: string
 }
@@ -39,6 +41,7 @@ export const ArtworkField = (props: ArtworkFieldProps) => {
   return (
     <div>
       <UploadArtwork
+        className={styles.uploadArtwork}
         {...otherField}
         artworkUrl={value?.url}
         onDropArtwork={handleDropArtwork}
