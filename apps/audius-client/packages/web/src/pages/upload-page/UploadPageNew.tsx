@@ -187,7 +187,15 @@ export const UploadPageNew = () => {
       title='Upload'
       description='Upload and publish audio content to the Audius platform'
       contentClassName={styles.upload}
-      header={<Header primary={pageTitle} />}
+      header={
+        <Header
+          primary={pageTitle}
+          showBackButton={phase === Phase.EDIT}
+          onClickBack={() => {
+            setPhase(Phase.SELECT)
+          }}
+        />
+      }
     >
       {page}
     </Page>
