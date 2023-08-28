@@ -618,7 +618,7 @@ export const Drawer: DrawerComponent = ({
     return (
       <View
         pointerEvents={isOpen ? undefined : 'none'}
-        style={styles.backgroundRoot}
+        style={[styles.backgroundRoot, { zIndex }]}
       >
         <TouchableWithoutFeedback
           onPress={isGestureSupported ? onClose : undefined}

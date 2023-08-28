@@ -32,6 +32,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
 import { Text } from '../core'
+import { useDrawerState } from '../drawer/AppDrawer'
 
 import { ShareToStorySticker } from './ShareToStorySticker'
 import { messages } from './messages'
@@ -91,6 +92,7 @@ export const ShareDrawer = () => {
   const { isEnabled: isShareSoundToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
+  const { onClose } = useDrawerState('Share')
 
   const { secondary, neutralLight2 } = useThemeColors()
   const dispatch = useDispatch()
@@ -180,23 +182,33 @@ export const ShareDrawer = () => {
     isShareSoundToTikTokEnabled && isOwner && isShareableTrack
   )
 
+  const performActionAndClose = useCallback(
+    (action: () => void) => {
+      return () => {
+        action()
+        onClose()
+      }
+    },
+    [onClose]
+  )
+
   const getRows = useCallback(() => {
     const shareToChatAction = {
       icon: <IconMessage fill={secondary} height={26} width={26} />,
       text: messages.directMessage,
-      callback: handleShareToDirectMessage
+      callback: performActionAndClose(handleShareToDirectMessage)
     }
 
     const shareToTwitterAction = {
       icon: <IconTwitterBird fill={secondary} height={20} width={26} />,
       text: messages.twitter,
-      callback: handleShareToTwitter
+      callback: performActionAndClose(handleShareToTwitter)
     }
 
     const shareSoundToTiktokAction = {
       text: messages.tikTokSound,
       icon: <TikTokIcon height={26} width={26} />,
-      callback: handleShareSoundToTikTok
+      callback: performActionAndClose(handleShareSoundToTikTok)
     }
 
     const shareVideoToTiktokAction = {
@@ -208,13 +220,13 @@ export const ShareDrawer = () => {
     const copyLinkAction = {
       text: messages.copyLink,
       icon: <IconLink height={26} width={26} fill={secondary} />,
-      callback: handleCopyLink
+      callback: performActionAndClose(handleCopyLink)
     }
 
     const shareSheetAction = {
       text: messages.shareSheet,
       icon: <IconShare height={26} width={26} fill={secondary} />,
-      callback: handleOpenShareSheet
+      callback: performActionAndClose(handleOpenShareSheet)
     }
 
     const shareToSnapchatAction = {
@@ -250,17 +262,18 @@ export const ShareDrawer = () => {
 
     return result
   }, [
+    secondary,
+    performActionAndClose,
+    handleShareToDirectMessage,
     handleShareToTwitter,
     handleShareSoundToTikTok,
-    secondary,
+    handleShareVideoToTiktok,
     handleCopyLink,
     handleOpenShareSheet,
     handleShareToSnapchat,
     handleShareToInstagramStory,
     shouldIncludeTikTokSoundAction,
-    isShareableTrack,
-    handleShareVideoToTiktok,
-    handleShareToDirectMessage
+    isShareableTrack
   ])
 
   return (
@@ -281,6 +294,7 @@ export const ShareDrawer = () => {
         </ViewShot>
       ) : null}
       <ActionDrawer
+        disableAutoClose={true}
         modalName='Share'
         rows={getRows()}
         renderTitle={() => (
