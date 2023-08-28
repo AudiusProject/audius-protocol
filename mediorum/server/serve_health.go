@@ -14,11 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type cidCursor struct {
-	Host      string    `json:"host"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 type healthCheckResponse struct {
 	Data      healthCheckResponseData `json:"data"`
 	Signer    string                  `json:"signer"`
@@ -54,7 +49,6 @@ type healthCheckResponseData struct {
 	MoveFromBlobStorePrefix string                     `json:"moveFromBlobStorePrefix"`
 	ListenPort              string                     `json:"listenPort"`
 	TrustedNotifierID       int                        `json:"trustedNotifierId"`
-	CidCursors              []cidCursor                `json:"cidCursors"`
 	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
 	UnreachablePeers        []string                   `json:"unreachablePeers"`
 	StoreAll                bool                       `json:"storeAll"`
@@ -115,7 +109,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Self:                    ss.Config.Self,
 		WalletIsRegistered:      ss.Config.WalletIsRegistered,
 		TrustedNotifierID:       ss.Config.TrustedNotifierID,
-		CidCursors:              ss.cachedCidCursors,
 		PeerHealths:             ss.peerHealths,
 		UnreachablePeers:        ss.unreachablePeers,
 		Signers:                 ss.Config.Signers,

@@ -6,23 +6,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 )
-
-func (ss *MediorumServer) monitorCidCursors() {
-	ticker := time.NewTicker(10 * time.Second)
-	for range ticker.C {
-		cidCursors := []cidCursor{}
-		ctx := context.Background()
-		if err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
-			ss.cachedCidCursors = cidCursors
-		}
-	}
-}
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()
@@ -85,7 +73,7 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
-	total, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
+	total, free, err := getDiskStatus("/")
 	if err == nil {
 		ss.storagePathUsed = total - free
 		ss.storagePathSize = total

@@ -43,7 +43,6 @@ export function DiscoveryHealth() {
             {isContent && <th>Started</th>}
             {isContent && <th>Uploads</th>}
             {isContent && <th>Healthy Peers {'<'}2m</th>}
-            {isContent && <th>Legacy Served</th>}
             <th>Registered Wallet</th>
           </tr>
         </thead>
@@ -184,13 +183,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         <td className="unreachable-peers">
           {healthyPeers2m}
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
-        </td>
-      )}
-      {isContent && (
-        <td>
-          <a href={sp.endpoint + '/internal/metrics'} target="_blank">
-            {metrics?.attempted_legacy_serves?.length || 0} | {metrics?.successful_legacy_serves?.length || 0}
-          </a>
         </td>
       )}
       <td>
