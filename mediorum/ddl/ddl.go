@@ -153,7 +153,7 @@ func migrateOpsData(db *sql.DB) error {
 
 		mustExec(db, `INSERT INTO ops ("ulid", "host", "action", "table", "data") SELECT * FROM unnest($1::ops_type[])`, ops)
 		rowsMigrated += len(ops)
-		noRows := len(ops) > 0
+		noRows := len(ops) == 0
 
 		// delete all rows that we migrated
 		var ulidsToDelete []string
