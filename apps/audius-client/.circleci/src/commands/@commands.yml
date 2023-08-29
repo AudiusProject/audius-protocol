@@ -1,17 +1,5 @@
-create_concatenated_package_lock:
-  description: "Concatenate all package-lock.json files recognized by lerna.js into single file. File is used as checksum source for part of caching key."
-  parameters:
-    filename:
-      type: string
-  steps:
-    - run:
-        name: Combine package-lock.json files to single file and also adds a random value at the end to cache bust if needed
-        command: |
-          ls -d -- packages/*/*-lock.json | awk -F packages '{printf "\"packages%s\" ", $2}' | xargs cat > << parameters.filename >>
-          echo cache-bust-1692933717156 >> <<parameters.filename >>
-
 create_concatenated_patch_file:
-  description: "Concatenate all patch-files recognized by lerna.js into single file. File is used as checksum source for part of caching key."
+  description: 'Concatenate all patch-files into single file. File is used as checksum source for part of caching key.'
   parameters:
     filename:
       type: string

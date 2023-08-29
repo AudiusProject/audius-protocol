@@ -20,6 +20,9 @@ cd ..
 # Create the ios bundle. Should only have to run once.
 npm run bundle:ios
 
+# Start the react-native server
+npm run mobile
+
 # Run a simulator using a prod configuration
 npm run ios
 # Run a simulator using a stage configuration
@@ -36,6 +39,9 @@ xcrun xctrace list devices
 ## Running Android
 
 ```bash
+# Start the react-native server
+npm run mobile
+
 # Run a simulator using a prod configuration
 npm run android
 # Run a simulator using a stage configuration
@@ -64,6 +70,7 @@ cd android && ./gradlew clean && cd ..
 > Note as of time of writing, flipper is not signed correctly, and macos will prevent Flipper from opening. To override this, follow the resulting popup's instructions (go to security and confirm you want to open Flipper)
 
 We use a few different plugins as a team, make sure to install and enable the various plugins in flipper GUI
+
 - Hermes (default)
 - React Devtools (default)
 - Network Inspector (default)
@@ -74,7 +81,6 @@ We use a few different plugins as a team, make sure to install and enable the va
 - [performance](https://github.com/oblador/react-native-performance)
 - [react-native-performance-monitor](https://github.com/bamlab/react-native-flipper-performance-monitor)
 
-
 On Android, you can use the adb Android Studio tool or
 
 ```bash
@@ -83,7 +89,6 @@ adb logcat '*:V'
 ```
 
 - Sometimes the app will crash due a configuration error or something outside of the realm of JS and you won't get any helpful information from React Native. In those cases, it's time to break open XCode and run from there to pinpoint the issue.
-
 
 ## Helpful
 

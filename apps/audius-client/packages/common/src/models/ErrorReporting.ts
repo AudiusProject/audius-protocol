@@ -1,5 +1,4 @@
 export enum ErrorLevel {
-  'Critical' = 'Critical',
   'Warning' = 'Warning',
   'Fatal' = 'Fatal',
   'Debug' = 'Debug',

@@ -15,7 +15,7 @@ web-pr-comment:
     - run:
         command: |
           sudo apt-get update
-          sudo apt-get install -y --force-yes ruby-full
+          sudo apt-get install -y --force-yes ruby-full=1:2.7+1
         name: Install Ruby
     - run:
         command: |
@@ -108,7 +108,6 @@ web-distribute:
         command: |
           cd packages/web
           npm run dist:<< parameters.build-type >>
-
 
 web-install-wrangler:
   steps:

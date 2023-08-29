@@ -1,6 +1,5 @@
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
-import { signTypedData } from 'eth-sig-util'
 
 import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
@@ -18,6 +17,8 @@ export const auth = {
     )
   },
   signTransaction: async (data: any) => {
+    const { signTypedData } = await import('eth-sig-util')
+
     await waitForLibsInit()
     return signTypedData(
       Buffer.from(

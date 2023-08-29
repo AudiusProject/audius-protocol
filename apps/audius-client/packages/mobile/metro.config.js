@@ -7,7 +7,7 @@ const commonPath = path.resolve(__dirname, '../common')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
 
 const resolveModule = (module) =>
-  path.resolve(__dirname, 'node_modules', module)
+  path.resolve(__dirname, '../../node_modules', module)
 
 const getClientAliases = () => {
   const clientAbsolutePaths = [
@@ -46,7 +46,11 @@ module.exports = (async () => {
       }),
       babelTransformerPath: require.resolve('react-native-svg-transformer')
     },
-    watchFolders: [clientPath, commonPath],
+    watchFolders: [
+      path.resolve(__dirname, '../../node_modules'),
+      clientPath,
+      commonPath
+    ],
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
       sourceExts: [...sourceExts, 'svg', 'cjs'],

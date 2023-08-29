@@ -1,7 +1,7 @@
 probers-test-stage:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:latest-browsers
+    - image: cimg/node:latest-browsers
   steps:
     - checkout
     - run:

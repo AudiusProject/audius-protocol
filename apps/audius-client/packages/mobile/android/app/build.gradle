@@ -57,7 +57,7 @@ project.ext.envConfigFiles = [
     releasecandidaterelease: ".env.prod"
 ]
 
-apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+apply from: "../../../../node_modules/react-native-code-push/android/codepush.gradle"
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
@@ -262,7 +262,7 @@ dependencies {
     }
 }
 
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: file("../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 
 // Google Services Gradle plugin
 apply plugin: 'com.google.gms.google-services' 

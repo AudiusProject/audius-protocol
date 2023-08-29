@@ -22,7 +22,7 @@ jobs:
   coverage:
     working_directory: ~/
     docker:
-      - image: circleci/node:14.18-browsers
+      - image: cimg/node:18.17-browsers
     resource_class: large
     steps:
       - attach_workspace:
@@ -61,7 +61,7 @@ workflows:
   hourly:
     triggers:
       - schedule:
-          cron: "17 * * * *"
+          cron: '17 * * * *'
           filters:
             branches:
               only:
