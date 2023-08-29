@@ -522,6 +522,14 @@ def extend_transaction_details(transaction_details):
     return new_transaction_details
 
 
+def extend_purchase(purchase):
+    new_purchase = purchase.copy()
+    new_purchase["buyer_user_id"] = encode_int_id(purchase["buyer_user_id"])
+    new_purchase["seller_user_id"] = encode_int_id(purchase["seller_user_id"])
+    new_purchase["content_id"] = encode_int_id(purchase["content_id"])
+    return new_purchase
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 

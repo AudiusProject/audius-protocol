@@ -2,17 +2,16 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"mediorum/cidutil"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRepair(t *testing.T) {
 	replicationFactor := 5
-	crudrWait := time.Millisecond * 300
 
 	runTestNetworkRepair := func(cleanup bool) {
 		wg := sync.WaitGroup{}
@@ -28,6 +27,18 @@ func TestRepair(t *testing.T) {
 		wg.Wait()
 	}
 
+	findHostsWithBlob := func(cid string) []string {
+		ctx := context.Background()
+		key := cidutil.ShardCID(cid)
+		result := []string{}
+		for _, s := range testNetwork {
+			if ok, _ := s.bucket.Exists(ctx, key); ok {
+				result = append(result, s.Config.Self.Host)
+			}
+		}
+		return result
+	}
+
 	ss := testNetwork[0]
 
 	// first, write a blob only to my storage
@@ -37,26 +48,24 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
-	time.Sleep(crudrWait)
+	// force sweep (since blob changes SkipBroadcast)
+	for _, s := range testNetwork {
+		s.crud.ForceSweep()
+	}
 
 	// assert it only exists on 1 host
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Len(t, blobs, 1)
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, 1)
 	}
 
 	// tell all servers do repair
 	runTestNetworkRepair(false)
 
-	// wait for crud replication
-	time.Sleep(crudrWait)
-
 	// assert it exists on R hosts
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Len(t, blobs, replicationFactor)
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, replicationFactor)
 	}
 
 	// --------------------------
@@ -67,27 +76,19 @@ func TestRepair(t *testing.T) {
 		ss.replicateFileToHost(server.Config.Self.Host, cid, bytes.NewReader(data))
 	}
 
-	// wait for crud
-	time.Sleep(crudrWait)
-
 	// assert over-replicated
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.True(t, len(blobs) == len(testNetwork))
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, len(testNetwork))
 	}
 
 	// tell all servers do cleanup
 	runTestNetworkRepair(true)
 
-	// wait for crud replication
-	time.Sleep(crudrWait)
-
 	// assert R copies
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Equal(t, replicationFactor, len(blobs))
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, replicationFactor)
 	}
 
 	// ----------------------

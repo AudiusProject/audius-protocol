@@ -364,11 +364,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		host, err := ss.findNodeToServeBlob(key)
 		if err != nil {
 			c.Response().Header().Set("x-find-node-err", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets. return `err` instead
-			c.SetParamNames("dirCid", "fileName")
-			c.SetParamValues(jobID, variant)
-			return ss.serveLegacyDirCid(c)
-			// return err
+			return err
 		} else if host != "" {
 			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 			dest := ss.replaceHost(c, host)
@@ -378,11 +374,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			return c.Redirect(302, dest.String())
 		} else {
 			c.Response().Header().Set("x-find-node-not-found", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			// TODO: remove this legacy fallback once we've migrated all Qm CIDs to CDK buckets
-			c.SetParamNames("dirCid", "fileName")
-			c.SetParamValues(jobID, variant)
-			return ss.serveLegacyDirCid(c)
-			// return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
+			return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
 		}
 	} else {
 		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup

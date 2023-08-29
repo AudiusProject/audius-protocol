@@ -2,16 +2,15 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mediorum/cidutil"
+	"mediorum/crudr"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -78,7 +77,7 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 			Host:      ss.Config.Self.Host,
 			Key:       fileName,
 			CreatedAt: time.Now().UTC(),
-		})
+		}, crudr.WithSkipBroadcast())
 	}
 
 	return nil
@@ -100,7 +99,7 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
 	if found.Error == nil {
 		logger.Info("deleting blob record")
-		return ss.crud.Delete(existingBlob)
+		return ss.crud.Delete(existingBlob, crudr.WithSkipBroadcast())
 	}
 
 	return nil
@@ -242,36 +241,6 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 
 	return ss.replicateToMyBucket(cid, resp.Body)
-}
-
-func (ss *MediorumServer) moveFromDiskToMyBucket(diskPath string, key string, checkIsMetadata bool) error {
-	source, err := os.Open(diskPath)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	// ignore this file if it's a metadata file
-	if checkIsMetadata {
-		bytes, err := io.ReadAll(source)
-		if err != nil {
-			return err
-		}
-		var jsonData map[string]interface{}
-		err = json.Unmarshal(bytes, &jsonData)
-		if err == nil {
-			// if unmarshal is successful, it's a JSON/metadata file (not an image or track)
-			return nil
-		}
-	}
-
-	// write to bucket, record in blobs table that we have it, and delete the original file from disk
-	err = ss.replicateToMyBucket(key, source)
-	if err == nil {
-		return os.Remove(diskPath)
-	} else {
-		return err
-	}
 }
 
 // if the node is using local (disk) storage, do not replicate if there is <200GB remaining (i.e. 10% of 2TB)

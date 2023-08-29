@@ -14,11 +14,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type cidCursor struct {
-	Host      string    `json:"host"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 type healthCheckResponse struct {
 	Data      healthCheckResponseData `json:"data"`
 	Signer    string                  `json:"signer"`
@@ -36,9 +31,11 @@ type healthCheckResponseData struct {
 	SPOwnerWallet           string                     `json:"spOwnerWallet"`
 	Git                     string                     `json:"git"`
 	AudiusDockerCompose     string                     `json:"audiusDockerCompose"`
-	StoragePathUsed         uint64                     `json:"storagePathUsed"` // bytes
-	StoragePathSize         uint64                     `json:"storagePathSize"` // bytes
-	DatabaseSize            uint64                     `json:"databaseSize"`    // bytes
+	StoragePathUsed         uint64                     `json:"storagePathUsed"`  // bytes
+	StoragePathSize         uint64                     `json:"storagePathSize"`  // bytes
+	MediorumPathUsed        uint64                     `json:"mediorumPathUsed"` // bytes
+	MediorumPathSize        uint64                     `json:"mediorumPathSize"` // bytes
+	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
 	DbSizeErr               string                     `json:"dbSizeErr"`
 	UploadsCount            int64                      `json:"uploadsCount"`
 	UploadsCountErr         string                     `json:"uploadsCountErr"`
@@ -54,7 +51,6 @@ type healthCheckResponseData struct {
 	MoveFromBlobStorePrefix string                     `json:"moveFromBlobStorePrefix"`
 	ListenPort              string                     `json:"listenPort"`
 	TrustedNotifierID       int                        `json:"trustedNotifierId"`
-	CidCursors              []cidCursor                `json:"cidCursors"`
 	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
 	UnreachablePeers        []string                   `json:"unreachablePeers"`
 	StoreAll                bool                       `json:"storeAll"`
@@ -100,6 +96,8 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		AudiusDockerCompose:     ss.Config.AudiusDockerCompose,
 		StoragePathUsed:         ss.storagePathUsed,
 		StoragePathSize:         ss.storagePathSize,
+		MediorumPathUsed:        ss.mediorumPathUsed,
+		MediorumPathSize:        ss.mediorumPathSize,
 		DatabaseSize:            ss.databaseSize,
 		DbSizeErr:               ss.dbSizeErr,
 		UploadsCount:            ss.uploadsCount,
@@ -115,7 +113,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		Self:                    ss.Config.Self,
 		WalletIsRegistered:      ss.Config.WalletIsRegistered,
 		TrustedNotifierID:       ss.Config.TrustedNotifierID,
-		CidCursors:              ss.cachedCidCursors,
 		PeerHealths:             ss.peerHealths,
 		UnreachablePeers:        ss.unreachablePeers,
 		Signers:                 ss.Config.Signers,

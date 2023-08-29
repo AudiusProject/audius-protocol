@@ -55,7 +55,6 @@ type MediorumConfig struct {
 	BlobStoreDSN         string `json:"-"`
 	MoveFromBlobStoreDSN string `json:"-"`
 	PostgresDSN          string `json:"-"`
-	LegacyFSRoot         string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
 	TrustedNotifierID    int
@@ -76,16 +75,18 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	storagePathFree uint64
-	storagePathUsed uint64
-	storagePathSize uint64
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	storagePathFree  uint64
+	storagePathUsed  uint64
+	storagePathSize  uint64
+	mediorumPathUsed uint64
+	mediorumPathSize uint64
 
 	databaseSize uint64
 	dbSizeErr    string
@@ -93,16 +94,11 @@ type MediorumServer struct {
 	uploadsCount    int64
 	uploadsCountErr string
 
-	attemptedLegacyServes  []string
-	successfulLegacyServes []string
-	legacyServesMu         sync.RWMutex
-
 	isSeeding bool
 
 	peerHealthsMutex sync.RWMutex
 	peerHealths      map[string]*PeerHealth
 	unreachablePeers []string
-	cachedCidCursors []cidCursor
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -213,6 +209,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud, bucket)
+	dbPruneOldOps(db, config.Self.Host)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -325,10 +322,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/metrics/segments", ss.getSegmentLog)
 
-	// Qm CID migration
-	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
-	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
-
 	return ss, nil
 
 }
@@ -374,11 +367,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.monitorDiskAndDbStatus()
 
-	go ss.monitorCidCursors()
-
 	go ss.monitorPeerReachability()
-
-	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

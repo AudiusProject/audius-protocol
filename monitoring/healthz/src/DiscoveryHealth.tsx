@@ -31,7 +31,9 @@ export function DiscoveryHealth() {
             <th>Compose</th>
             <th>Auto Upgrade</th>
             {isContent && <th>Backend</th>}
-            <th>Storage</th>
+            {isDiscovery && <th>Storage</th>}
+            {isContent && <th>Storage (legacy)</th>}
+            {isContent && <th>Storage (mediorum)</th>}
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
@@ -43,7 +45,6 @@ export function DiscoveryHealth() {
             {isContent && <th>Started</th>}
             {isContent && <th>Uploads</th>}
             {isContent && <th>Healthy Peers {'<'}2m</th>}
-            {isContent && <th>Legacy Served</th>}
             <th>Registered Wallet</th>
           </tr>
         </thead>
@@ -103,6 +104,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const fsSize =
     bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
+  const mediorumUsed = bytesToGb(health.mediorumPathUsed)
+  const mediorumSize = bytesToGb(health.mediorumPathSize)
+  const mediorumPercent = mediorumUsed / mediorumSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
@@ -166,6 +170,15 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {fsUsed} / {fsSize} GB
         </span>
       </td>
+      {isContent && (
+        <td>
+          <progress value={mediorumPercent} />
+          <br></br>
+          <span>
+            {mediorumUsed} / {mediorumSize} GB
+          </span>
+        </td>
+      )}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
       {!isContent && (<td>{health.chain_health?.status}</td>)}
@@ -184,13 +197,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         <td className="unreachable-peers">
           {healthyPeers2m}
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
-        </td>
-      )}
-      {isContent && (
-        <td>
-          <a href={sp.endpoint + '/internal/metrics'} target="_blank">
-            {metrics?.attempted_legacy_serves?.length || 0} | {metrics?.successful_legacy_serves?.length || 0}
-          </a>
         </td>
       )}
       <td>

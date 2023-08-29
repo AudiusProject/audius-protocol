@@ -3,6 +3,19 @@
 -- delete is_current false
 begin;
 
+-- terminate all active queries to avoid
+SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
+
+CREATE OR REPLACE FUNCTION log_message(message_text text)
+RETURNS void AS
+$$
+BEGIN
+    RAISE NOTICE '% %', pg_backend_pid(), message_text;
+END;
+$$
+LANGUAGE plpgsql;
+
+SELECT log_message('replacing reposts');
 
 -- replace reposts
 alter table reposts drop constraint if exists reposts_blocknumber_fkey;
@@ -15,6 +28,8 @@ select blockhash, blocknumber, user_id, repost_item_id,
 from reposts
 where is_current = true and repost_type = 'album';
 
+SELECT log_message('replacing saves');
+
 -- replace saves
 alter table saves drop constraint if exists saves_blocknumber_fkey;
 create table saves_new (like saves including all);
@@ -26,6 +41,7 @@ select blockhash, blocknumber, user_id, save_item_id,
 from saves
 where is_current = true and save_type = 'album';
 
+SELECT log_message('drop and replace tables');
 
 drop materialized view if exists trending_params;
 drop table reposts;
