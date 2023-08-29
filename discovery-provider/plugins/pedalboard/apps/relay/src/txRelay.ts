@@ -32,10 +32,13 @@ export const relayTransaction = async (
     entityManagerContractRegistryKey,
     aao,
   } = config;
+
   const senderWallet = operatorWallet
   const address = await senderWallet.getAddress();
+
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
   logger.info(obj, msg, address, requestId, ...args);
+  
   const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
 
