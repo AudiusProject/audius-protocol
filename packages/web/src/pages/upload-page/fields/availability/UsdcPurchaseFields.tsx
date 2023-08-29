@@ -103,7 +103,7 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
       // Conditionally render the decimal part, and only for the number of decimals specified
       const stringAmount = dot
-        ? `${whole}.${decimal.substring(0, PRECISION)}`
+        ? `${whole}.${(decimal ?? '').substring(0, PRECISION)}`
         : whole
       setHumanizedValue(stringAmount)
       setPrice(Number(stringAmount) * 100)
@@ -116,10 +116,10 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
       const precision = 2
       const [whole, decimal] = e.target.value.split('.')
 
-      const paddedDecimal = decimal
+      const paddedDecimal = (decimal ?? '')
         .substring(0, precision)
         .padEnd(precision, '0')
-      setHumanizedValue(`${whole}.${paddedDecimal}`)
+      setHumanizedValue(`${whole.length > 0 ? whole : '0'}.${paddedDecimal}`)
     },
     []
   )
