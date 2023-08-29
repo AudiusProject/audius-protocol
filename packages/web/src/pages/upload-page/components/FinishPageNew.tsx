@@ -38,7 +38,8 @@ const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
-  visitProfile: 'Visit Your Profile'
+  visitProfile: 'Visit Your Profile',
+  finishingUpload: 'Finializing Upload'
 }
 
 const ProgressIndicator = (props: { status?: ProgressStatus }) => {
@@ -138,7 +139,9 @@ export const FinishPageNew = (props: FinishPageProps) => {
             </Text>
             <div className={styles.headerProgressInfo}>
               <Text variant='label' size='small'>
-                {round(fullUploadPercent)}%
+                {fullUploadPercent === 100 && !uploadComplete
+                  ? messages.finishingUpload
+                  : `${round(fullUploadPercent)}%`}
               </Text>
               <ProgressIndicator
                 status={
