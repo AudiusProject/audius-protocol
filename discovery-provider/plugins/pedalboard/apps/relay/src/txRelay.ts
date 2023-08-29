@@ -33,7 +33,7 @@ export const relayTransaction = async (
     aao,
     delegatePrivateKey,
   } = config;
-  const senderWallet = new Wallet(delegatePrivateKey);
+  const senderWallet = new Wallet(delegatePrivateKey, web3);
   const address = await senderWallet.getAddress();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
   logger.info(obj, msg, address, requestId, ...args);
