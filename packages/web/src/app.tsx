@@ -32,6 +32,7 @@ const AudiusApp = () => {
           apiClient,
           audiusBackend: audiusBackendInstance,
           audiusSdk,
+          dispatch: store.dispatch,
           reportToSentry
         }}
       >
