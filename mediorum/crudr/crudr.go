@@ -93,6 +93,13 @@ func (c *Crudr) StartClients() {
 	}
 }
 
+// used for testing
+func (c *Crudr) ForceSweep() {
+	for _, p := range c.peerClients {
+		p.doSweep()
+	}
+}
+
 // RegisterModels accepts a instance of a GORM model and registers it
 // to work with Op apply.
 func (c *Crudr) RegisterModels(tables ...interface{}) *Crudr {
@@ -259,7 +266,7 @@ func (c *Crudr) ApplyOp(op *Op) error {
 	}
 
 	// broadcast if this host is origin...
-	if op.Host == c.host {
+	if op.Host == c.host && !op.SkipBroadcast {
 		msg, _ := json.Marshal(op)
 		c.broadcast(msg)
 	}
