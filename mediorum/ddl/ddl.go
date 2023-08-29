@@ -36,8 +36,8 @@ var mediorumMigrationTable = `
 `
 
 // TODO: Remove after every node runs the ops partition migration
-var partition_ops_scheduled = "partition_ops_scheduled"
-var partition_ops_completed = "partitioned_ops"
+var partition_ops_scheduled = "partitionOpsScheduled"
+var partition_ops_completed = "partitionedOps"
 
 func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
@@ -220,7 +220,7 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 		}
 
 		writeOpsToTempFile(ops)
-		mustExec(db, `COPY ops("ulid", "host", "action", "table", "data") FROM $1 WITH (DELIMITER ',', HEADER true)`, tmpFile)
+		mustExec(db, `COPY ops("ulid", "host", "action", "table", "data") FROM /tmp/mediorum/ops_migration WITH (DELIMITER ',', HEADER true)`)
 
 		// mustExec(
 		// 	db,
