@@ -7,6 +7,7 @@ import {
   Name,
   shareModalUISelectors,
   shareSoundToTiktokModalActions,
+  ShareSource,
   tracksSocialActions,
   usersSocialActions
 } from '@audius/common'
@@ -22,6 +23,7 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import IconSnapchat from 'app/assets/images/iconSnapchat.svg'
 import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
@@ -53,7 +55,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingBottom: spacing(4)
   },
   title: {
-    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -93,6 +94,7 @@ export const ShareDrawer = () => {
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
   const { onClose } = useDrawerState('Share')
+  const { onClose: onCloseNowPlaying } = useDrawer('NowPlaying')
 
   const { secondary, neutralLight2 } = useThemeColors()
   const dispatch = useDispatch()
@@ -115,7 +117,10 @@ export const ShareDrawer = () => {
       defaultUserList: 'chats'
     })
     track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'share' }))
-  }, [content, navigation])
+    if (source === ShareSource.NOW_PLAYING) {
+      onCloseNowPlaying()
+    }
+  }, [content, navigation, source, onCloseNowPlaying])
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return
