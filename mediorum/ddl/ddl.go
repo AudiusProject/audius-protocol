@@ -19,6 +19,7 @@ import (
 
 	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
+	"gorm.io/gorm"
 )
 
 //go:embed delist_statuses.sql
@@ -38,10 +39,10 @@ var mediorumMigrationTable = `
 var partition_ops_scheduled = "partition_ops_scheduled"
 var partition_ops_completed = "partitioned_ops"
 
-func Migrate(db *sql.DB, bucket *blob.Bucket) {
+func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
 
-	migratePartitionOps(db) // TODO: Remove after every node runs this
+	migratePartitionOps(db, gormDB) // TODO: Remove after every node runs this
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
@@ -97,7 +98,7 @@ func schedulePartitionOpsMigration(db *sql.DB) {
 	}
 }
 
-func migratePartitionOps(db *sql.DB) {
+func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	slog.Info("checking if it's time to partition ops...")
 	var scheduled bool
 	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_scheduled).Scan(&scheduled)
@@ -142,14 +143,14 @@ func migratePartitionOps(db *sql.DB) {
 			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
 				EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
-				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
+				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD CONSTRAINT IF NOT EXISTS ulid_pk PRIMARY KEY ("ulid");';
 			END LOOP; 
 		END $$;
 
 		COMMIT;`,
 	)
 
-	err := migrateOpsData(db, logfileName)
+	err := migrateOpsData(db, logfileName, gormDB)
 	if err != nil {
 		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
@@ -168,31 +169,18 @@ func migratePartitionOps(db *sql.DB) {
 }
 
 // copy data from old_ops to ops
-func migrateOpsData(db *sql.DB, logfileName string) error {
+func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), logfileName)
-	lastUlid := ""
+	lastULID := ""
 	pageSize := 3000
 	rowsMigrated := 0
 
 	for {
-		rows, err := db.Query(`SELECT * FROM old_ops WHERE ulid > $1 ORDER BY "ulid" ASC LIMIT $2`, lastUlid, pageSize)
-		if err != nil {
-			return err
-		}
 		var ops []crudr.Op
-		for rows.Next() {
-			var op crudr.Op
-			err = rows.Scan(&op)
-			if err != nil {
-				return err
-			}
-			ops = append(ops, op)
-		}
-		if err := rows.Close(); err != nil {
-			return err
-		}
 
-		if err = rows.Err(); err != nil {
+		// select a batch of rows starting from the lastULID
+		err := gormDB.Table("old_ops").Where("ulid > ?", lastULID).Order("ulid asc").Limit(pageSize).Find(&ops).Error
+		if err != nil {
 			return err
 		}
 
@@ -210,10 +198,10 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 			ops,
 		)
 		rowsMigrated += len(ops)
-		lastUlid = ops[len(ops)-1].ULID
+		lastULID = ops[len(ops)-1].ULID
 
 		// delete all rows that we migrated
-		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1`, lastUlid)
+		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1`, lastULID)
 
 		// keep paginating
 		time.Sleep(time.Millisecond * 100)
