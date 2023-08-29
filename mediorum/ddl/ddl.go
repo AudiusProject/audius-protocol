@@ -101,9 +101,9 @@ func schedulePartitionOpsMigration(db *sql.DB) {
 func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	slog.Info("checking if it's time to partition ops...")
 	var scheduled bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_scheduled).Scan(&scheduled)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1;`, partition_ops_scheduled).Scan(&scheduled)
 	if !scheduled {
-		fmt.Println("partition ops migration not scheduled, skipping ddl")
+		slog.Info("partition ops migration not scheduled, skipping ddl")
 		return
 	}
 
@@ -164,22 +164,25 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
+		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
 	}
 	defer tx.Rollback()
 	_, err = tx.ExecContext(
 		ctx,
-		`DROP TABLE old_ops`,
+		`DROP TABLE old_ops;`,
 	)
 	_, err = tx.ExecContext(
 		ctx,
-		`INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING`,
+		`INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING;`,
 		partition_ops_completed,
 	)
 	if err != nil {
+		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
 	}
 	if err = tx.Commit(); err != nil {
+		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
 	}
 
@@ -192,6 +195,7 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 	lastULID := ""
 	pageSize := 3000
 	rowsMigrated := 0
+	tmpFile := "/tmp/mediorum/ops_migration.csv"
 
 	for {
 		var ops []crudr.Op
@@ -204,26 +208,63 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 
 		if len(ops) == 0 {
 			// we've migrated all rows
+			_, err := os.Stat(tmpFile)
+			if err == nil {
+				err = os.Remove(tmpFile)
+				if err != nil {
+					slog.Error(fmt.Sprintf("Error removing temp file %s", tmpFile), "err", err)
+				}
+			}
 			logAndWriteToFile(fmt.Sprintf("successfully migrated %d ops rows\n", rowsMigrated), logfileName)
 			return nil
 		}
 
-		mustExec(
-			db,
-			`INSERT INTO ops ("ulid", "host", "action", "table", "data")
-			VALUES `+constructOpsBulkInsertValuesString(ops)+`
-			ON CONFLICT DO NOTHING`,
-			ops,
-		)
+		writeOpsToTempFile(ops)
+		mustExec(db, `COPY ops ("ulid", "host", "action", "table", "data") FROM $1 WITH (FORMAT csv, HEADER true)`, tmpFile)
+
+		// mustExec(
+		// 	db,
+		// 	`INSERT INTO ops ("ulid", "host", "action", "table", "data")
+		// 	VALUES `+constructOpsBulkInsertValuesString(ops)+`
+		// 	ON CONFLICT DO NOTHING`,
+		// 	ops,
+		// )
 		rowsMigrated += len(ops)
 		lastULID = ops[len(ops)-1].ULID
 
 		// delete all rows that we migrated
-		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1`, lastULID)
+		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1;`, lastULID)
 
 		// keep paginating
 		time.Sleep(time.Millisecond * 100)
 	}
+}
+
+func writeOpsToTempFile(ops []crudr.Op) {
+	dir := "/tmp/mediorum"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
+	}
+	file := "/tmp/mediorum/ops_migration.csv"
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open file %s: %v", file, err)
+	}
+	defer f.Close()
+
+	rows := "ulid,host,action,table,data\n"
+	for i, op := range ops {
+		rows += op.ULID + "," + op.Host + "," + op.Action + "," + op.Table + "," + string(op.Data)
+		if i < len(ops)-1 {
+			rows += "\n"
+		}
+	}
+
+	if _, err := f.WriteString(rows); err != nil {
+		log.Fatalf("Failed to write to file %s: %v", file, err)
+	}
+
+	f.Sync()
 }
 
 func constructOpsBulkInsertValuesString(ops []crudr.Op) string {
@@ -315,7 +356,7 @@ func logAndWriteToFile(message string, fileName string) {
 	}
 	defer f.Close()
 
-	fmt.Println(message)
+	slog.Info(message)
 
 	if _, err := f.WriteString(message + "\n"); err != nil {
 		log.Fatalf("Failed to write to log file %s: %v", filePath, err)
