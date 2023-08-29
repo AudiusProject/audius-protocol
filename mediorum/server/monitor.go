@@ -73,12 +73,20 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
-	total, free, err := getDiskStatus("/")
+	total, free, err := getDiskStatus("/file_storage")
 	if err == nil {
 		ss.storagePathUsed = total - free
 		ss.storagePathSize = total
 	} else {
-		slog.Error("Error getting disk status", "err", err)
+		slog.Error("Error getting legacy disk status", "err", err)
+	}
+
+	total, free, err = getDiskStatus(ss.Config.Dir)
+	if err == nil {
+		ss.mediorumPathUsed = total - free
+		ss.mediorumPathSize = total
+	} else {
+		slog.Error("Error getting mediorum disk status", "err", err)
 	}
 
 	dbSize, errStr := getDatabaseSize(ss.pgPool)

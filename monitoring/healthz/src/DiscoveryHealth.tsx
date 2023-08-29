@@ -31,7 +31,9 @@ export function DiscoveryHealth() {
             <th>Compose</th>
             <th>Auto Upgrade</th>
             {isContent && <th>Backend</th>}
-            <th>Storage</th>
+            {isDiscovery && <th>Storage</th>}
+            {isContent && <th>Storage (legacy)</th>}
+            {isContent && <th>Storage (mediorum)</th>}
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
@@ -102,6 +104,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const fsSize =
     bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
+  const mediorumUsed = bytesToGb(health.mediorumPathUsed)
+  const mediorumSize = bytesToGb(health.mediorumPathSize)
+  const mediorumPercent = mediorumUsed / mediorumSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
@@ -165,6 +170,15 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {fsUsed} / {fsSize} GB
         </span>
       </td>
+      {isContent && (
+        <td>
+          <progress value={mediorumPercent} />
+          <br></br>
+          <span>
+            {mediorumUsed} / {mediorumSize} GB
+          </span>
+        </td>
+      )}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
       {!isContent && (<td>{health.chain_health?.status}</td>)}

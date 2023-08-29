@@ -75,15 +75,17 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	storagePathUsed uint64
-	storagePathSize uint64
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	storagePathUsed  uint64
+	storagePathSize  uint64
+	mediorumPathUsed uint64
+	mediorumPathSize uint64
 
 	databaseSize uint64
 	dbSizeErr    string
