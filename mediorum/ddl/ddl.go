@@ -118,7 +118,6 @@ func migratePartitionOps(db *sql.DB) {
 		-- Kill all long-running sql queries
 		SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE state = 'active' AND now() - query_start > interval '1 minute';
 
-    -- Rename ops to old_ops if this has not already been done
 		DO $$ 
 		BEGIN
 				IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'old_ops') THEN
@@ -132,8 +131,8 @@ func migratePartitionOps(db *sql.DB) {
 			"host" TEXT,
 			"action" TEXT,
 			"table" TEXT,
-			"data" JSONB,
-		) PARTITION BY HASH ("host");
+			"data" JSONB)
+			PARTITION BY HASH ("host");
 
 		DO $$ 
 		DECLARE 
@@ -142,7 +141,7 @@ func migratePartitionOps(db *sql.DB) {
 		BEGIN 
 			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
-				EXECUTE 'CREATE TABLE IF NOT EXISTS' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
+				EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
 				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
 			END LOOP; 
 		END $$;
@@ -181,10 +180,21 @@ func migrateOpsData(db *sql.DB, logfileName string) error {
 			return err
 		}
 		var ops []crudr.Op
-		if err := rows.Scan(&ops); err != nil {
+		for rows.Next() {
+			var op crudr.Op
+			err = rows.Scan(&op)
+			if err != nil {
+				return err
+			}
+			ops = append(ops, op)
+		}
+		if err := rows.Close(); err != nil {
 			return err
 		}
-		rows.Close()
+
+		if err = rows.Err(); err != nil {
+			return err
+		}
 
 		if len(ops) == 0 {
 			// we've migrated all rows
