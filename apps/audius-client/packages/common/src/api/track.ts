@@ -59,4 +59,5 @@ const trackApi = createApi({
 
 export const { useGetTrackById, useGetTrackByPermalink, useGetTracksByIds } =
   trackApi.hooks
+export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer

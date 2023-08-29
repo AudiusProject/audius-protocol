@@ -50,6 +50,15 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
       ) => void
     ) => ThunkAction<any, any, any, any>
   }
+  /**
+   * Allows for pre-fetching of related data into the cache. Does not return the data.
+   */
+  fetch: {
+    [Property in keyof EndpointDefinitions]: (
+      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+      context: AudiusQueryContextType
+    ) => Promise<void>
+  }
 }
 
 export type CreateApiConfig = {

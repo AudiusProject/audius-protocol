@@ -1,29 +1,23 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import {
+  FeatureFlags,
   Status,
   USDCPurchaseDetails,
   accountSelectors,
+  combineStatuses,
   statusIsNotFinalized,
   useAllPaginatedQuery,
-  useGetPurchases
+  useGetPurchases,
+  useGetPurchasesCount
 } from '@audius/common'
 import { full } from '@audius/sdk'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconCart
-} from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { Icon } from 'components/Icon'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { useSelector } from 'utils/reducer'
@@ -35,6 +29,7 @@ import {
   PurchasesTableSortDirection,
   PurchasesTableSortMethod
 } from './PurchasesTable'
+import { NoPurchasesContent } from './components/NoPurchasesContent'
 
 const { getUserId } = accountSelectors
 
@@ -74,23 +69,12 @@ const NoPurchases = () => {
   }, [dispatch])
 
   return (
-    <Tile elevation='far' size='large' className={styles.noPurchasesTile}>
-      <div className={styles.noPurchasesContent}>
-        <Icon icon={IconCart} color='neutralLight4' size='xxxLarge' />
-        <Text variant='heading' size='small'>
-          {messages.noPurchasesHeader}
-        </Text>
-        <Text variant='body' size='large'>
-          {messages.noPurchasesBody}
-        </Text>
-      </div>
-      <HarmonyButton
-        variant={HarmonyButtonType.SECONDARY}
-        size={HarmonyButtonSize.SMALL}
-        text={messages.findSongs}
-        onClick={handleClickFindSongs}
-      />
-    </Tile>
+    <NoPurchasesContent
+      headerText={messages.noPurchasesHeader}
+      bodyText={messages.noPurchasesBody}
+      ctaText={messages.findSongs}
+      onCTAClicked={handleClickFindSongs}
+    />
   )
 }
 
@@ -106,26 +90,21 @@ const RenderPurchasesPage = () => {
     useState<full.GetPurchasesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
   const { mainContentRef } = useContext(MainContentContext)
 
-  const [count, setCount] = useState(0)
-
   const {
-    status,
-    data: purchases
-    // hasMore,
-    // loadMore
+    status: dataStatus,
+    data: purchases,
+    hasMore,
+    loadMore
   } = useAllPaginatedQuery(
     useGetPurchases,
     { userId, sortMethod, sortDirection },
     { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
   )
+  const { status: countStatus, data: count } = useGetPurchasesCount({ userId })
 
-  // Mocking count functionality until we have are returning it from
-  // the API. This stabilizes the sort behavior of the table
-  useEffect(() => {
-    if (status === Status.SUCCESS) {
-      setCount(purchases.length)
-    }
-  }, [status, purchases])
+  const status = combineStatuses([dataStatus, countStatus])
+
+  // TODO: Should fetch users before rendering the table
 
   const onSort = useCallback(
     (
@@ -138,15 +117,14 @@ const RenderPurchasesPage = () => {
     []
   )
 
-  // TODO: Remove this short circuit once count is implemented
-  const fetchMore = useCallback(() => {}, [])
-  // const fetchMore = useCallback(() => {
-  //   if (hasMore) {
-  //     loadMore()
-  //   }
-  // }, [hasMore, loadMore])
+  const fetchMore = useCallback(() => {
+    if (hasMore) {
+      loadMore()
+    }
+  }, [hasMore, loadMore])
 
   const onClickRow = useCallback((txDetails: USDCPurchaseDetails) => {
+    // https://linear.app/audius/issue/PAY-1757/[web]-click-to-view-purchasesale-details-in-table
     // TODO: Show details modal on row click
   }, [])
 
@@ -172,8 +150,6 @@ const RenderPurchasesPage = () => {
             fetchMore={fetchMore}
             isVirtualized={true}
             scrollRef={mainContentRef}
-            // TODO: When count endpoint is implemented, update this to enable
-            // loading beyond the first batch
             totalRowCount={count}
             fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
           />
@@ -184,5 +160,9 @@ const RenderPurchasesPage = () => {
 }
 
 export const PurchasesPage = () => {
-  return useIsUSDCEnabled() ? <RenderPurchasesPage /> : <NotFoundPage />
+  const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
+
+  // Return null if flag isn't loaded yet to prevent flash of 404 page
+  if (!isLoaded) return null
+  return isEnabled ? <RenderPurchasesPage /> : <NotFoundPage />
 }

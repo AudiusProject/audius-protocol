@@ -157,11 +157,11 @@
     ```
 1. Export hooks (same process as query endpoints)
 
-1. Use hook in your component  
+1. Use hook in your component
     ```typescript
     const [updateSomeData, result] = useUpdateSomeData()
     const { data: someData, status, errorMessage } = result
-    
+
 
     return (
       <Button text="Update some data" onClick={updateSomeData} />
@@ -208,6 +208,59 @@ const api = createApi({
 ```
 
 
+## Pre-fetching related entities
+
+Many endpoints return related data as nested fields (ex. Tracks including a user field with basic info about a user). However, some endpoints only return identifiers pointing to the related entities. In cases where we know we will need that information before rendering, there are a couple of options.
+
+### Cascading hooks
+
+The simpler and more common usage is to use the output of one hook as the input for another:
+
+```typescript
+const {data: firstDataset, status: firstDatasetStatus} = useFirstDataset()
+const {data: secondDataset, status: secondDatasetStatus} = useSecondDataset(firstDataset, {
+  disabled: firstDatasetStatus !== Status.Success
+})
+
+return secondDatasetStatus === Status.Success ? (
+  <SomeMultiDatasetComponent firstSet={firstDataset} secondSet={secondDataset} />
+) : null
+
+```
+
+### Pre-fetching in endpoint implementations
+
+The cascading hooks approach works well if you are loading a set of information, mapping it with another fetch, then
+rendering the data. However, it falls apart a bit if you are working with _paginated data_. Fetching the first page and
+mapping it is the same as before. But when fetching subsequent pages, we need some pretty messy logic to defer adding the
+new page of data until its related entities have been fetched.
+
+API definitions can opt in to exposing raw fetch functions by exporting the `api.fetch` property:
+```typescript
+const tracksApi = createApi(...)
+
+export const tracksFetchApi = tracksApi.fetch
+```
+
+The raw fetch implementations are designed to be called from other API endpoint definitions and will require passing in the `AudiusQueryContext`.
+
+The following approach works well for fetching pages of data, then pre-fetching related data that will be queried via other api hooks in child components. For example, the Purchases table fetches a list of records that include content IDs, and then each individual row will attempt to look up the content by ID using the appropriate useGetTrackById() hook. Since the data has already been pre-fetched, the hooks in child components should hit cached values. If they happen to miss, they will go ahead and fetch.
+
+```typescript
+import {tracksFetchApi} from './tracksApi'
+
+const purchasesApi = createApi({
+  endpoints:
+    getPurchases: async (args, context, options) => {
+      //... fetch purchases
+      const trackIdsToFetch = purchases.map(extractTrackIds)
+      await tracksFetchApi.getTracksByIds({ids: trackIdsToFetch}, context)
+      return purchases
+    }
+})
+```
+
+Note that in the above code, we're simply issuing a fetch for the related tracks, which will be inserted into the cache, before returning our original data. This is merely a performance optimization.
 
 
 ## Query Hook options
