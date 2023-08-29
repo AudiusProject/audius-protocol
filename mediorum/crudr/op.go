@@ -12,7 +12,8 @@ type Op struct {
 	Table  string          `json:"table"`
 	Data   json.RawMessage `json:"data"`
 
-	Transient bool `json:"transient" gorm:"-"`
+	Transient     bool `json:"transient" gorm:"-"`
+	SkipBroadcast bool `json:"-" gorm:"-"`
 }
 
 type withOption = func(op *Op)
@@ -20,6 +21,12 @@ type withOption = func(op *Op)
 func WithTransient() withOption {
 	return func(op *Op) {
 		op.Transient = true
+	}
+}
+
+func WithSkipBroadcast() withOption {
+	return func(op *Op) {
+		op.SkipBroadcast = true
 	}
 }
 
