@@ -858,6 +858,7 @@ def get_user_collections(
         filter_type=filter_type,
         sort_direction=sort_direction,
         sort_method=sort_method,
+        filter_deleted=True,
     )
     library_collections = get_collection_library(get_collection_args)
     collections = list(map(extend_activity, library_collections))
@@ -2145,13 +2146,15 @@ class FullPurchases(Resource):
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
-        args: GetUSDCPurchasesArgs = {
-            "buyer_user_id": decoded_id,
-            "limit": limit,
-            "offset": offset,
-            "sort_method": args.get("sort_method", PurchaseSortMethod.date),
-            "sort_direction": args.get("sort_direction", None),
-        }
+        sort_method = args.get("sort_method", PurchaseSortMethod.date)
+        sort_direction = args.get("sort_direction", None)
+        args: GetUSDCPurchasesArgs(
+            buyer_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
 
@@ -2172,9 +2175,9 @@ class FullPurchasesCount(Resource):
             full_ns.abort(403)
             return
         args = purchases_and_sales_count_parser.parse_args()
-        args: GetUSDCPurchasesCountArgs = {
-            "buyer_user_id": decoded_id,
-        }
+        args: GetUSDCPurchasesCountArgs(
+            buyer_user_id=decoded_id,
+        )
         count = get_usdc_purchases_count(args)
         return success_response(count)
 
@@ -2197,13 +2200,15 @@ class FullSales(Resource):
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
-        args: GetUSDCPurchasesArgs = {
-            "seller_user_id": decoded_id,
-            "limit": limit,
-            "offset": offset,
-            "sort_method": args.get("sort_method", PurchaseSortMethod.date),
-            "sort_direction": args.get("sort_direction", None),
-        }
+        sort_method = args.get("sort_method", PurchaseSortMethod.date)
+        sort_direction = args.get("sort_direction", None)
+        args = GetUSDCPurchasesArgs(
+            seller_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
         purchases = get_usdc_purchases(args)
         return success_response(purchases)
 
@@ -2224,8 +2229,8 @@ class FullSalesCount(Resource):
             full_ns.abort(403)
             return
         args = purchases_and_sales_count_parser.parse_args()
-        args: GetUSDCPurchasesCountArgs = {
-            "seller_user_id": decoded_id,
-        }
+        args = GetUSDCPurchasesCountArgs(
+            seller_user_id=decoded_id,
+        )
         count = get_usdc_purchases_count(args)
         return success_response(count)
