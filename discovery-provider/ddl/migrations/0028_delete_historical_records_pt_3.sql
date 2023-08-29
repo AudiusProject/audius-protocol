@@ -1,4 +1,5 @@
 -- delete is_current false
+-- add fkey cascade delete
 begin;
 SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
 
@@ -10,7 +11,6 @@ DECLARE
 BEGIN
    FOREACH _table_name IN ARRAY _table_names
    LOOP
-      -- Logging the action
       RAISE NOTICE 'Dropping foreign key constraint to table %', _table_name;
 
       EXECUTE format('ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s', 
@@ -30,7 +30,6 @@ DECLARE
 BEGIN
    FOREACH _table_name IN ARRAY _table_names
    LOOP
-      -- Logging the deletion
       RAISE NOTICE 'Deleting rows from table % where is_current is false', _table_name;
 
       EXECUTE format('DELETE FROM %s WHERE is_current = false', 
@@ -60,13 +59,16 @@ END
 $$ LANGUAGE plpgsql;
 
 SELECT drop_fk_constraints(ARRAY[
+    'associated_wallets', 
     'developer_apps', 
     'follows', 
     'grants', 
     'playlists', 
-    'playlist_seen', 
+    'playlist_seen',
+    'notification_seen',
     'subscriptions', 
-    'tracks']
+    'tracks', 
+    'user_events']
 );
 
 SELECT delete_rows(ARRAY[

@@ -40,9 +40,11 @@ migrate_dir() {
 
     for file in $migration_files; do
         md5=$(cat $file | tr -d "[:space:]" | md5sum | awk '{print $1}')
+        echo "migrating $file"
 
         if [[ $md5s =~ $md5 ]]; then
           # echo "... skipping $file $md5"
+          echo "skipping $file"
           continue
         fi
 
@@ -99,6 +101,7 @@ run_tests() {
 }
 
 main() {
+    echo "main"
     case "$1" in
         "test") run_tests;;
         *) migrate
