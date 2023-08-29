@@ -145,7 +145,8 @@ import {
   TOP_SUPPORTERS_USERS_ROUTE,
   publicSiteRoutes,
   CHAT_PAGE,
-  PROFILE_PAGE_AI_ATTRIBUTED_TRACKS
+  PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
+  PURCHASES_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -167,6 +168,7 @@ import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
+import { PurchasesPage } from './purchases-page'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
@@ -449,8 +451,8 @@ class App extends Component {
           <DownloadAppBanner />
           <DirectMessagesBanner />
           <Web3ErrorBanner />
-          {/* Other banners' logic is self-contained, but since this one uses the IPC 
-            and can result in either required or optional updates, keeping the visibility 
+          {/* Other banners' logic is self-contained, but since this one uses the IPC
+            and can result in either required or optional updates, keeping the visibility
             controlled from this parent for now */}
           {showWebUpdateBanner ? (
             <UpdateAppBanner
@@ -718,6 +720,7 @@ class App extends Component {
                   isMobile={isMobileClient}
                   component={AudioTransactionsPage}
                 />
+                <Route exact path={PURCHASES_PAGE} component={PurchasesPage} />
                 <Route
                   exact
                   path={CHAT_PAGE}

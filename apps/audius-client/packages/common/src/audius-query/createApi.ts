@@ -244,7 +244,11 @@ const useCacheData = <Args, Data>(
       endpoint.options.kind,
       hookOptions?.shallow
     )
-    return denormalize(nonNormalizedData, apiResponseSchema, entityMap) as Data
+    return (
+      endpoint.options.schemaKey
+        ? denormalize(nonNormalizedData, apiResponseSchema, entityMap)
+        : nonNormalizedData
+    ) as Data
   }, isEqual)
 }
 

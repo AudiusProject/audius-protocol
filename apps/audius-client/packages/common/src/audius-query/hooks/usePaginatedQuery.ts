@@ -58,6 +58,7 @@ export const useAllPaginatedQuery = <
   const [loadingMore, setLoadingMore] = useState(false)
   const { pageSize, ...queryHookOptions } = options
   const [page, setPage] = useState(0)
+  const [status, setStatus] = useState<Status>(Status.IDLE)
   const [allData, setAllData] = useState<Data[]>([])
   const args = {
     ...baseArgs,
@@ -80,7 +81,9 @@ export const useAllPaginatedQuery = <
       if (!statusIsNotFinalized(result.status)) {
         setLoadingMore(false)
       }
+      setStatus(result.status)
       if (result.status !== Status.SUCCESS) return
+
       setAllData((allData) => [...allData, ...result.data])
     },
     [result.status, args],
@@ -106,7 +109,7 @@ export const useAllPaginatedQuery = <
   return {
     ...result,
     // TODO: add another status for reloading
-    status: allData?.length > 0 ? Status.SUCCESS : result.status,
+    status: allData?.length > 0 ? Status.SUCCESS : status,
     data: allData,
     loadMore,
     hasMore

@@ -25,7 +25,17 @@ export type InAppUSDCPurchaseMetadata = {
 }
 
 export enum USDCContentPurchaseType {
-  TRACK = 'TRACK'
+  TRACK = 'track'
+}
+
+export type USDCPurchaseDetails = {
+  signature: string
+  sellerUserId: number
+  buyerUserId: number
+  amount: StringUSDC
+  contentType: USDCContentPurchaseType
+  contentId: number
+  createdAt: string
 }
 
 export type USDCPurchaseContentMetadata = {

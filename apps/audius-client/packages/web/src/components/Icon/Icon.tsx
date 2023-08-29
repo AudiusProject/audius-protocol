@@ -13,6 +13,7 @@ type IconSize =
   | 'large' // 24
   | 'xLarge' // 30
   | 'xxLarge' // 32
+  | 'xxxLarge' // 40
 
 type IconProps = {
   color?: ColorValue
@@ -29,6 +30,7 @@ type IconProps = {
  * - large: 24
  * - xLarge: 30
  * - xxLarge: 32
+ * - xxxLarge: 40
  */
 export const Icon = (props: IconProps) => {
   const {
