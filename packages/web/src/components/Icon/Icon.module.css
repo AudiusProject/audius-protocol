@@ -27,3 +27,6 @@
 .xxLarge {
   --icon-size: var(--unit-8);
 }
+.xxxLarge {
+  --icon-size: var(--unit-10);
+}

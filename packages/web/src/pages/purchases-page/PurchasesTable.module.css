@@ -1,0 +1,35 @@
+.loadingTile {
+  align-items: center;
+  justify-content: center;
+  padding: var(--unit-10);
+  width: 100%;
+}
+
+.spinner {
+  width: var(--unit-6);
+  height: var(--unit-6);
+}
+
+.spinner path {
+  fill: var(--neutral-light-4);
+}
+
+.contentName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-6);
+}
+
+.artwork {
+  height: var(--unit-10);
+  width: var(--unit-10);
+  border-radius: var(--unit-1);
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+}
+
+.artistName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-1);
+}
