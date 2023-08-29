@@ -207,7 +207,6 @@ def process_state_changes(
 @log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
-
         logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
 
@@ -452,6 +451,48 @@ def revert_block(session: Session, block_to_revert: Block):
         .filter(RevertBlock.blocknumber == revert_block_number)
         .first()
     )
+    revert_track_routes = (
+        session.query(TrackRoute)
+        .filter(TrackRoute.blocknumber == revert_block_number)
+        .all()
+    )
+    revert_playlist_routes = (
+        session.query(PlaylistRoute)
+        .filter(PlaylistRoute.blocknumber == revert_block_number)
+        .all()
+    )
+
+    for track_route_to_revert in revert_track_routes:
+        track_id = track_route_to_revert.track_id
+        previous_track_route_entry = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.track_id == track_id,
+                TrackRoute.blocknumber < revert_block_number,
+            )
+            .order_by(TrackRoute.blocknumber.desc(), TrackRoute.slug.asc())
+            .first()
+        )
+        if previous_track_route_entry:
+            previous_track_route_entry.is_current = True
+        logger.info(f"Reverting track route {track_route_to_revert}")
+        session.delete(track_route_to_revert)
+
+    for playlist_route_to_revert in revert_playlist_routes:
+        playlist_id = playlist_route_to_revert.playlist_id
+        previous_playlist_route_entry = (
+            session.query(PlaylistRoute)
+            .filter(
+                PlaylistRoute.playlist_id == playlist_id,
+                PlaylistRoute.blocknumber < revert_block_number,
+            )
+            .order_by(PlaylistRoute.blocknumber.desc(), PlaylistRoute.slug.asc())
+            .first()
+        )
+        if previous_playlist_route_entry:
+            previous_playlist_route_entry.is_current = True
+        logger.info(f"Reverting playlist route {playlist_route_to_revert}")
+        session.delete(playlist_route_to_revert)
 
     # delete block record and cascade delete from tables ^
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
