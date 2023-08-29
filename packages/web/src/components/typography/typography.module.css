@@ -67,6 +67,12 @@
   font-weight: var(--font-bold);
 }
 
+/* 40 / 44 */
+.headingXxLarge {
+  font-size: var(--unit-10);
+  line-height: var(--unit-11);
+}
+
 /* 36 / 40 */
 .headingXLarge {
   font-size: var(--unit-9);

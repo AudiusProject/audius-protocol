@@ -12,7 +12,13 @@ export type FontWeight =
 
 export type TextStrength = 'weak' | 'default' | 'strong'
 
-export type TextSize = 'xLarge' | 'large' | 'medium' | 'small' | 'xSmall'
+export type TextSize =
+  | 'xxLarge'
+  | 'xLarge'
+  | 'large'
+  | 'medium'
+  | 'small'
+  | 'xSmall'
 
 export type TextVariant =
   | 'display'
