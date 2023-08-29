@@ -82,11 +82,11 @@ type MediorumServer struct {
 	pgPool           *pgxpool.Pool
 	quit             chan os.Signal
 	trustedNotifier  *ethcontracts.NotifierInfo
-	storagePathFree  uint64
 	storagePathUsed  uint64
 	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
+	mediorumPathFree uint64
 
 	databaseSize uint64
 	dbSizeErr    string
