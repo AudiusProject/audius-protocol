@@ -150,7 +150,7 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		COMMIT;`,
 	)
 
-	err := migrateOpsData(db, logfileName, gormDB)
+	err := migrateOpsData(db, gormDB, logfileName)
 	if err != nil {
 		logAndWriteToFile(err.Error(), logfileName)
 		log.Fatal(err)
