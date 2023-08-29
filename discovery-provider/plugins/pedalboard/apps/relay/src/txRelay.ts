@@ -26,8 +26,6 @@ export const relayTransaction = async (
   rep: FastifyReply
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
-  const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
-    logger.info(obj, msg, requestId, ...args);
   const { web3, config } = app.viewAppData();
   const {
     entityManagerContractAddress,
@@ -35,6 +33,10 @@ export const relayTransaction = async (
     aao,
     delegatePrivateKey,
   } = config;
+  const senderWallet = new Wallet(delegatePrivateKey);
+  const address = await senderWallet.getAddress();
+  const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
+  logger.info(obj, msg, address, requestId, ...args);
   const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
 
@@ -58,8 +60,6 @@ export const relayTransaction = async (
     contractRegistryKey
   );
   await validateTransactionData(encodedABI);
-  const senderWallet = new Wallet(delegatePrivateKey);
-  const address = await senderWallet.getAddress();
 
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
