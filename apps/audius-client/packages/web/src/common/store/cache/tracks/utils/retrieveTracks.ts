@@ -159,44 +159,6 @@ export function* retrieveTracks({
     ? (trackIds as UnlistedTrackRequest[]).map(({ id }) => id)
     : (trackIds as ID[])
 
-  if (canBeUnlisted && withStems) {
-    yield* spawn(function* () {
-      if (ids.length > 1) {
-        console.warn('Stems endpoint only supports fetching single tracks')
-        return
-      }
-      const trackId = ids[0]
-      if (!trackId) return
-      yield* call(fetchAndProcessStems, trackId)
-    })
-  }
-
-  if (withRemixes) {
-    yield* spawn(function* () {
-      if (ids.length > 1) {
-        console.warn('Remixes endpoint only supports fetching single tracks')
-        return
-      }
-      const trackId = ids[0]
-      if (!trackId) return
-      yield* call(fetchAndProcessRemixes, trackId)
-    })
-  }
-
-  if (withRemixParents) {
-    yield* spawn(function* () {
-      if (ids.length > 1) {
-        console.warn(
-          'Remix parents endpoint only supports fetching single tracks'
-        )
-        return
-      }
-      const trackId = ids[0]
-      if (!trackId) return
-      yield* call(fetchAndProcessRemixParents, trackId)
-    })
-  }
-
   // @ts-ignore retrieve should be refactored to ts first
   const tracks: { entries: { [id: number]: Track } } = yield* call(retrieve, {
     ids,
@@ -259,6 +221,41 @@ export function* retrieveTracks({
       return tracks.map((track) => reformat(track, audiusBackendInstance))
     }
   })
+
+  const trackId = ids[0]
+  const track = tracks.entries[trackId]
+
+  if (canBeUnlisted && withStems) {
+    yield* spawn(function* () {
+      if (ids.length > 1 && track) {
+        console.warn('Stems endpoint only supports fetching single tracks')
+        return
+      }
+      yield* call(fetchAndProcessStems, trackId)
+    })
+  }
+
+  if (withRemixes) {
+    yield* spawn(function* () {
+      if (ids.length > 1 && track) {
+        console.warn('Remixes endpoint only supports fetching single tracks')
+        return
+      }
+      yield* call(fetchAndProcessRemixes, trackId)
+    })
+  }
+
+  if (withRemixParents) {
+    yield* spawn(function* () {
+      if (ids.length > 1 && track) {
+        console.warn(
+          'Remix parents endpoint only supports fetching single tracks'
+        )
+        return
+      }
+      yield* call(fetchAndProcessRemixParents, trackId)
+    })
+  }
 
   return ids.map((id) => tracks.entries[id]).filter(Boolean)
 }
