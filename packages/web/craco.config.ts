@@ -18,7 +18,7 @@ type ModuleScopePlugin = ResolvePluginInstance & {
 }
 
 function resolveModule(moduleName: string) {
-  return path.resolve(`./node_modules/${moduleName}`)
+  return path.resolve(`../../node_modules/${moduleName}`)
 }
 
 /**
@@ -85,10 +85,13 @@ export default {
         },
         plugins: [
           ...(config.plugins ?? []),
-          new ProvidePlugin({
-            process: 'process/browser',
-            Buffer: ['buffer', 'Buffer']
-          }),
+          // Can't get ProvidePlugin to work even with a fully
+          // specified path. Defining `process` and `Buffer` in
+          // in index.tsx manually
+          // new ProvidePlugin({
+          //   process: 'process/browser',
+          //   Buffer: ['buffer', 'Buffer']
+          // }),
           ...(isProd
             ? [
                 new SourceMapDevToolPlugin({
@@ -151,5 +154,8 @@ export default {
   },
   typescript: {
     enableTypeChecking: false
+  },
+  devServer: {
+    client: { overlay: { errors: true, warnings: false, runtimeErrors: false } }
   }
 }

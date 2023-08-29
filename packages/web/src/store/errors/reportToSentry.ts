@@ -1,14 +1,14 @@
 import { getErrorMessage, ReportToSentryArgs, ErrorLevel } from '@audius/common'
 import * as Sentry from '@sentry/browser'
+import type { SeverityLevel } from '@sentry/types'
 
-const Levels: { [level in ErrorLevel]: Sentry.Severity } = {
-  Critical: Sentry.Severity.Critical,
-  Warning: Sentry.Severity.Warning,
-  Fatal: Sentry.Severity.Fatal,
-  Debug: Sentry.Severity.Debug,
-  Error: Sentry.Severity.Error,
-  Info: Sentry.Severity.Info,
-  Log: Sentry.Severity.Log
+const Levels: { [level in ErrorLevel]: SeverityLevel } = {
+  Warning: 'warning',
+  Fatal: 'fatal',
+  Debug: 'debug',
+  Error: 'error',
+  Info: 'info',
+  Log: 'log'
 }
 
 export const reportToSentry = async ({

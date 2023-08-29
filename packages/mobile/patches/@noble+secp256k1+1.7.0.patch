@@ -12,16 +12,16 @@ index e207e74..eb41a50 100644
  const TAGS = {
      challenge: 'BIP0340/challenge',
 diff --git a/node_modules/@noble/secp256k1/package.json b/node_modules/@noble/secp256k1/package.json
-index ea9e97d..8706f1b 100644
+index 422d3c8..85b4d95 100644
 --- a/node_modules/@noble/secp256k1/package.json
 +++ b/node_modules/@noble/secp256k1/package.json
-@@ -29,6 +29,9 @@
+@@ -27,6 +27,9 @@
    "browser": {
      "crypto": false
    },
 +  "react-native": {
 +    "crypto": "crypto"
 +  },
-   "bugs": {
-     "url": "https://github.com/paulmillr/noble-secp256k1/issues"
-   },
+   "devDependencies": {
+     "@noble/hashes": "1.1.2",
+     "@rollup/plugin-commonjs": "22.0.0",

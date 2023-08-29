@@ -1,17 +1,17 @@
 import type { ReportToSentryArgs, ErrorLevel } from '@audius/common'
 import { getErrorMessage } from '@audius/common'
-import * as Sentry from '@sentry/react-native'
+import { captureException, withScope } from '@sentry/react-native'
+import type { SeverityLevel } from '@sentry/types'
 
 import { versionInfo } from './appVersionWithCodepush'
 
-const Levels: { [level in ErrorLevel]: Sentry.Severity } = {
-  Critical: Sentry.Severity.Critical,
-  Warning: Sentry.Severity.Warning,
-  Fatal: Sentry.Severity.Fatal,
-  Debug: Sentry.Severity.Debug,
-  Error: Sentry.Severity.Error,
-  Info: Sentry.Severity.Info,
-  Log: Sentry.Severity.Log
+const Levels: { [level in ErrorLevel]: SeverityLevel } = {
+  Warning: 'warning',
+  Fatal: 'fatal',
+  Debug: 'debug',
+  Error: 'error',
+  Info: 'info',
+  Log: 'log'
 }
 
 export const reportToSentry = async ({
@@ -21,11 +21,10 @@ export const reportToSentry = async ({
   name
 }: ReportToSentryArgs) => {
   try {
-    Sentry.withScope((scope) => {
+    withScope((scope) => {
       scope.setExtra('mobileClientVersionInclOTA', versionInfo ?? 'unknown')
       if (level) {
-        const sentryLevel = Levels[level]
-        scope.setLevel(sentryLevel)
+        scope.setLevel(Levels[level])
       }
       if (additionalInfo) {
         console.debug(
@@ -36,7 +35,7 @@ export const reportToSentry = async ({
       if (name) {
         error.name = name
       }
-      Sentry.captureException(error)
+      captureException(error)
     })
   } catch (error) {
     console.error(`Got error trying to log error: ${getErrorMessage(error)}`)

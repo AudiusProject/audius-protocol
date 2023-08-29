@@ -31,7 +31,6 @@
   },
   "devDependencies": {
     "eslint": "8.19.0",
-    "eslint-config-audius": "1.5.39",
     "eslint-plugin-cypress": "2.12.1"
   }
 }

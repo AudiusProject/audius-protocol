@@ -1,5 +1,5 @@
-require_relative '../node_modules/react-native/scripts/react_native_pods'
-require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+require_relative '../../../node_modules/react-native/scripts/react_native_pods'
+require_relative '../../../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
 platform :ios, '14.0'
 prepare_react_native_project!
@@ -19,18 +19,13 @@ project 'AudiusReactNative',
 'Prod.Release' => :release
 
 target 'AudiusReactNative' do
-  permissions_path = '../node_modules/react-native-permissions/ios'
+  permissions_path = '../../../node_modules/react-native-permissions/ios'
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
   pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
 
-  pod 'React-logger', :path => '../node_modules/react-native/ReactCommon/logger'
-  pod 'React-perflogger', :path => '../node_modules/react-native/ReactCommon/reactperflogger'
-  pod 'React-runtimeexecutor', :path => '../node_modules/react-native/ReactCommon/runtimeexecutor'
-  pod 'SRSRadialGradient', :path => '../node_modules/react-native-radial-gradient/ios'
-
-  pod 'boost', :podspec => '../node_modules/react-native/third-party-podspecs/boost.podspec'
-  pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
-  pod 'react-native-flipper', :path => '../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
+  pod 'SRSRadialGradient', :path => '../../../node_modules/react-native-radial-gradient/ios'
+  pod 'ffmpeg-kit-react-native', :subspecs => ['https-gpl-lts'], :podspec => '../../../node_modules/ffmpeg-kit-react-native/ffmpeg-kit-react-native.podspec'
+  pod 'react-native-flipper', :path => '../../../node_modules/react-native-flipper', :configuration => ['Debug', 'Staging.Debug']
 
   config = use_native_modules!
 

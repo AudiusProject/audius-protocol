@@ -57,7 +57,7 @@ mobile-prepare-ios:
           - packages/mobile/ios/pods
     - run:
         name: update bundler
-        command: gem install bundler:1.17.3
+        command: sudo gem install bundler:1.17.3
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
     - run: cd packages/mobile/ios && (bundle check || bundle install --path vendor/bundle)
@@ -124,7 +124,7 @@ mobile-prepare-android:
           cd packages/mobile && npm run jetifier
     - run:
         name: update bundler
-        command: gem install bundler:1.17.3
+        command: sudo gem install bundler:1.17.3
     - restore_cache:
         key: 1-gems-{{ checksum "packages/mobile/android/Gemfile.lock" }}
     - run: cd packages/mobile/android && (bundle check || bundle install --path vendor/bundle)
@@ -189,7 +189,6 @@ mobile-release-android:
           cd packages/mobile/android
           bundle exec fastlane <<parameters.upload-type>> track:<<parameters.track>>
 
-
 # Deploy Solana saga dApp store
 mobile-release-saga-dapp-store:
   parameters:
@@ -238,7 +237,7 @@ mobile-release-saga-dapp-store:
         command: |
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
-    - run: 
+    - run:
         name: Build Android
         command: |
           cd packages/mobile/android

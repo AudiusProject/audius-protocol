@@ -21,16 +21,16 @@ index c1b9cb5..73f4049 100644
          const plaintext = decipher.update(ciphertext);
          const final = Uint8Array.from(decipher.final());
 diff --git a/node_modules/micro-aes-gcm/package.json b/node_modules/micro-aes-gcm/package.json
-index c9f8ade..7bdd3f4 100644
+index fbd0ac8..2cc7d49 100644
 --- a/node_modules/micro-aes-gcm/package.json
 +++ b/node_modules/micro-aes-gcm/package.json
-@@ -28,6 +28,9 @@
+@@ -14,6 +14,9 @@
    "browser": {
      "crypto": false
    },
 +  "react-native": {
 +    "crypto": "crypto"
 +  },
-   "bugs": {
-     "url": "https://github.com/paulmillr/micro-aes-gcm/issues"
-   },
+   "scripts": {
+     "build": "tsc",
+     "test": "node test.mjs"

@@ -106,7 +106,7 @@ const statePruner = (state: AppState) => {
 // If we discover we want specific action bodies in the future for Sentry
 // debuggability, those should be whitelisted here.
 const actionSanitizer = (action: Action) => ({ type: action.type })
-const sentryMiddleware = createSentryMiddleware(Sentry, {
+const sentryMiddleware = createSentryMiddleware(Sentry as any, {
   actionTransformer: actionSanitizer,
   stateTransformer: statePruner
 })

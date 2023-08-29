@@ -42,11 +42,6 @@ export default {
             'src/assets/styles/shadows.css',
             'src/assets/styles/transforms.css'
           ]
-        }),
-        postcssCustomProperties({
-          // Don't preserve var names so they cannot be overridden
-          preserve: false,
-          importFrom: []
         })
       ],
       minimize: true,

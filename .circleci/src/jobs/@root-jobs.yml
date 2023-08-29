@@ -2,7 +2,7 @@
 root-publish-npm-packages:
   working_directory: ~/audius-client
   docker:
-    - image: circleci/node:14.18
+    - image: cimg/node:18.17
   steps:
     - checkout
     - run:
@@ -12,7 +12,7 @@ root-publish-npm-packages:
         name: Publish packages
         command: |
           npm i
-          npx lerna publish from-git --yes
+          npm publish -ws
 
 # Publish github release for the current tag
 root-publish-github-release:
@@ -24,8 +24,8 @@ root-publish-github-release:
     - attach_workspace:
         at: ./
     - run:
-        name: "Publish Release on GitHub"
+        name: 'Publish Release on GitHub'
         command: |
-          VERSION=$(jq -r .version ./lerna.json)
+          VERSION=$(jq -r .version ./package.json)
           CHANGELOG=$(git log --format=%B -n 1)
           ghr -t ${GHI_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -b "${CHANGELOG}" v${VERSION} ./
