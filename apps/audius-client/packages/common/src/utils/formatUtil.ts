@@ -35,6 +35,36 @@ export const formatCount = (count: number) => {
 }
 
 /**
+ * The format any currency should be:
+ * - show 0 if 0
+ * - don't show decimal places if input is a round number
+ * - show only up to 2 decimal places if input is not a round number
+ * - round down to nearest thousand if input is greater than 10000
+ * ie.
+ * 0 => 0
+ * 8 => 8
+ * 8.01 => 8.01
+ * 8.10 => 8.10
+ * 4,210 => 4210
+ * 9,999.99 => 9999.99
+ * 56,010 => 56K
+ * 443,123 => 443K
+ */
+export const formatCurrencyBalance = (amount: number) => {
+  if (amount === 0) {
+    return '0'
+  } else if (amount >= 9999.995) {
+    const roundedAmount = Math.floor(amount / 1000)
+    return `${roundedAmount}k`
+  } else if (Number.isInteger(amount)) {
+    return amount.toString()
+  } else {
+    const decimalCount = amount > 10000 ? 0 : 2
+    return amount.toFixed(decimalCount)
+  }
+}
+
+/**
  * Formats a number of bytes into a nice looking string.
  * ie.
  * 1024 => 1.00 KB

@@ -13,10 +13,24 @@ import {
   Theme,
   Track,
   User,
+  formatCurrencyBalance,
   formatCount,
-  themeSelectors
+  themeSelectors,
+  FeatureFlags
 } from '@audius/common'
-import { IconFilter, IconNote, IconHidden } from '@audius/stems'
+import {
+  IconFilter,
+  IconNote,
+  IconHidden,
+  IconKebabHorizontal,
+  IconQuestionCircle,
+  HarmonyButton,
+  HarmonyButtonType,
+  PopupMenu,
+  PopupMenuItem,
+  HarmonyPlainButton,
+  HarmonyPlainButtonType
+} from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { each } from 'lodash'
@@ -25,12 +39,15 @@ import { connect, useDispatch, useSelector } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { Icon } from 'components/Icon'
 import Header from 'components/header/desktop/Header'
 import { Input } from 'components/input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { Text } from 'components/typography'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { AppState } from 'store/types'
 import lazyWithPreload from 'utils/lazyWithPreload'
 import { profilePage, TRENDING_PAGE } from 'utils/route'
@@ -86,7 +103,13 @@ export const messages = {
   publicTracksTabTitle: 'PUBLIC TRACKS',
   unlistedTracksTabTitle: 'HIDDEN TRACKS',
   filterInputPlacehoder: 'Filter Tracks',
-  thisYear: 'This Year'
+  thisYear: 'This Year',
+  usdc: 'USDC',
+  earn: 'Earn USDC by selling your music',
+  learnMore: 'Learn More',
+  withdraw: 'Withdraw Funds',
+  salesSummary: 'Sales Summary',
+  withdrawalHistory: 'Withdrawal History'
 }
 
 const tableColumns: TracksTableColumn[] = [
@@ -227,6 +250,89 @@ const TracksTableContainer = ({
         <div className={styles.tabContainer}>{tabs}</div>
       </div>
       {body}
+    </div>
+  )
+}
+
+const USDCSection = ({ account }: { account: User }) => {
+  if (!account) return null
+
+  // TODO: wire up balance https://linear.app/audius/issue/PAY-1761/wire-up-usdc-balance-in-artist-dashboard
+  const balance = 10.29
+
+  const menuItems: PopupMenuItem[] = [
+    {
+      text: messages.salesSummary,
+      // TODO: link to sales page https://linear.app/audius/issue/PAY-1763/wire-up-salespurchases-pages-on-artist-dashboard
+      onClick: () => {}
+    },
+    {
+      text: messages.withdrawalHistory,
+      // TODO: link to withdraw history page https://linear.app/audius/issue/PAY-1763/wire-up-salespurchases-pages-on-artist-dashboard
+      onClick: () => {}
+    }
+  ]
+
+  return (
+    <div className={styles.usdcContainer}>
+      <div className={styles.backgroundBlueGradient}>
+        <div className={styles.usdcTitleContainer}>
+          <div className={styles.usdcTitle}>
+            {/* TODO: update icon https://linear.app/audius/issue/PAY-1764/update-icons-in-usdc-tile */}
+            <Icon icon={IconNote} size='xxxLarge' color='staticWhite' />
+            <div className={styles.usdc}>
+              <Text
+                variant='heading'
+                size='xxLarge'
+                color='staticWhite'
+                strength='strong'
+              >
+                {messages.usdc}
+              </Text>
+            </div>
+          </div>
+          <Text
+            variant='heading'
+            color='staticWhite'
+            strength='strong'
+            size='xxLarge'
+          >
+            ${formatCurrencyBalance(balance)}
+          </Text>
+        </div>
+        <div className={styles.usdcInfo}>
+          <Text color='staticWhite'>{messages.earn}</Text>
+          <HarmonyPlainButton
+            // TODO: wire up learn more link https://linear.app/audius/issue/PAY-1762/wire-up-learn-more-link
+            onClick={() => {}}
+            iconLeft={IconQuestionCircle}
+            variant={HarmonyPlainButtonType.INVERTED}
+            text={messages.learnMore}
+          />
+        </div>
+      </div>
+      <div className={styles.withdrawContainer}>
+        <HarmonyButton
+          variant={HarmonyButtonType.SECONDARY}
+          text={messages.withdraw}
+          // TODO: update leftIcon and wire up withdraw modal https://linear.app/audius/issue/PAY-1754/usdc-withdrawal-flow-ui
+          iconLeft={() => <Icon icon={IconNote} size='medium' />}
+          onClick={() => {}}
+        />
+        <PopupMenu
+          transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+          items={menuItems}
+          renderTrigger={(anchorRef, triggerPopup) => (
+            <HarmonyButton
+              ref={anchorRef}
+              variant={HarmonyButtonType.SECONDARY}
+              iconLeft={IconKebabHorizontal}
+              onClick={triggerPopup}
+            />
+          )}
+        />
+      </div>
     </div>
   )
 }
@@ -383,6 +489,7 @@ export class ArtistDashboardPage extends Component<
   render() {
     const { account, status } = this.props
     const header = <Header primary='Dashboard' />
+    const isUSDCEnabled = getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
     return (
       <Page
@@ -396,6 +503,7 @@ export class ArtistDashboardPage extends Component<
         ) : (
           <>
             {this.renderProfileSection()}
+            {isUSDCEnabled ? <USDCSection account={account} /> : null}
             {this.renderCreatorContent()}
           </>
         )}
