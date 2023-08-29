@@ -220,7 +220,7 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 		}
 
 		writeOpsToTempFile(ops)
-		mustExec(db, `COPY ops("ulid", "host", "action", "table", "data") FROM /tmp/mediorum/ops_migration WITH (DELIMITER ',', HEADER true)`)
+		mustExec(db, `COPY ops("ulid", "host", "action", "table", "data") FROM '/tmp/mediorum/ops_migration.csv' WITH (DELIMITER ',', HEADER true);`)
 
 		// mustExec(
 		// 	db,
