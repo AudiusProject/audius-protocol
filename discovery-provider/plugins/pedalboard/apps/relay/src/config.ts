@@ -7,6 +7,7 @@ export type Config = {
   rpcEndpoint: string;
   rpcEndpointFallback: string;
   acdcChainId?: string;
+  delegatePrivateKey: string;
   discoveryDbConnectionString: string;
   entityManagerContractAddress: string;
   entityManagerContractRegistryKey: string;
@@ -24,7 +25,7 @@ const readDotEnv = () => {
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
-  dotenvConfig(environment)
+  dotenvConfig(environment);
 };
 
 export const readConfig = (): Config => {
@@ -36,6 +37,7 @@ export const readConfig = (): Config => {
     audius_contracts_entity_manager_address: str(),
     audius_web3_localhost: str(),
     audius_web3_host: str(),
+    audius_delegate_private_key: str(),
     audius_db_url: str(),
     audius_aao_endpoint: str(),
     audius_use_aao: bool(),
@@ -47,6 +49,7 @@ export const readConfig = (): Config => {
     environment: env.audius_discprov_env,
     rpcEndpoint: env.audius_web3_localhost,
     rpcEndpointFallback: env.audius_web3_host,
+    delegatePrivateKey: env.audius_delegate_private_key,
     discoveryDbConnectionString: env.audius_db_url,
     entityManagerContractAddress: env.audius_contracts_entity_manager_address,
     entityManagerContractRegistryKey: "EntityManager",

@@ -12,7 +12,7 @@ import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { FastifyReply } from "fastify";
 import { errorResponseForbidden } from "./error";
-import { ethers } from "ethers";
+import { Wallet, ethers } from "ethers";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -28,11 +28,12 @@ export const relayTransaction = async (
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
-  const { web3, wallets, config } = app.viewAppData();
+  const { web3, config } = app.viewAppData();
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
     aao,
+    delegatePrivateKey,
   } = config;
   const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
@@ -57,7 +58,7 @@ export const relayTransaction = async (
     contractRegistryKey
   );
   await validateTransactionData(encodedABI);
-  const senderWallet = wallets.selectNextWallet();
+  const senderWallet = new Wallet(delegatePrivateKey);
   const address = await senderWallet.getAddress();
 
   // gather some transaction params

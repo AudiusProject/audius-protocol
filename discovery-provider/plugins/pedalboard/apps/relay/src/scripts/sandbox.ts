@@ -1,4 +1,3 @@
-import { decodeAbi } from "../abi";
 import {
   DiscoveryNodeSelector,
   EntityManager,
