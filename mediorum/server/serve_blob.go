@@ -176,11 +176,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return c.Redirect(302, dest.String())
 	}
 
-	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
-	if cidutil.IsLegacyCID(cid) {
-		return ss.serveLegacyCid(c)
-	}
-
 	if err != nil {
 		logger.Warn("error finding node to serve blob", "err", err)
 		return err
@@ -190,17 +185,18 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	hostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
-	hostWithBlob := ss.raceHostHasBlob(key, hostsWithBlob)
-	if hostWithBlob != "" {
-		return hostWithBlob, nil
+	cuckooHostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
+	cuckooHostWithBlob := ss.raceHostHasBlob(key, cuckooHostsWithBlob)
+	if cuckooHostWithBlob != "" {
+		return cuckooHostWithBlob, nil
 	}
 
 	// TODO: remove this fallback blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
 	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
+	healthyHostsNotCuckoo := diff(healthyHosts, cuckooHostsWithBlob)
 	var blobs []Blob
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, diff(healthyHosts, hostsWithBlob)).
+		Where("key = ? and host in ?", key, healthyHostsNotCuckoo).
 		Find(&blobs).Error
 	if err != nil {
 		return "", err
@@ -214,7 +210,14 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 		return fallbackHostWithBlob, nil
 	}
 
-	// try unhealthy hosts as a last resort
+	// try remaining healthy hosts
+	healthyHostsNotCuckooNotFallback := diff(healthyHostsNotCuckoo, fallbackHealthyHosts)
+	healthyHostWithBlob := ss.raceHostHasBlob(key, healthyHostsNotCuckooNotFallback)
+	if healthyHostWithBlob != "" {
+		return healthyHostWithBlob, nil
+	}
+
+	// we've tried all healthy hosts. now try unhealthy hosts as a last resort
 	unhealthyHosts := []string{}
 	for _, peer := range ss.Config.Peers {
 		if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {

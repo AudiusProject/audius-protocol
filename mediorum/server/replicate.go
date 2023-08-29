@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +10,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -241,34 +239,4 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 
 	return ss.replicateToMyBucket(cid, resp.Body)
-}
-
-func (ss *MediorumServer) moveFromDiskToMyBucket(diskPath string, key string, checkIsMetadata bool) error {
-	source, err := os.Open(diskPath)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	// ignore this file if it's a metadata file
-	if checkIsMetadata {
-		bytes, err := io.ReadAll(source)
-		if err != nil {
-			return err
-		}
-		var jsonData map[string]interface{}
-		err = json.Unmarshal(bytes, &jsonData)
-		if err == nil {
-			// if unmarshal is successful, it's a JSON/metadata file (not an image or track)
-			return nil
-		}
-	}
-
-	// write to bucket, record in blobs table that we have it, and delete the original file from disk
-	err = ss.replicateToMyBucket(key, source)
-	if err == nil {
-		return os.Remove(diskPath)
-	} else {
-		return err
-	}
 }
