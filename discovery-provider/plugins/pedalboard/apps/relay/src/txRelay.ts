@@ -26,14 +26,13 @@ export const relayTransaction = async (
   rep: FastifyReply
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
-  const { web3, config } = app.viewAppData();
+  const { web3, config, operatorWallet } = app.viewAppData();
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
     aao,
-    delegatePrivateKey,
   } = config;
-  const senderWallet = new Wallet(delegatePrivateKey, web3);
+  const senderWallet = operatorWallet
   const address = await senderWallet.getAddress();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
   logger.info(obj, msg, address, requestId, ...args);

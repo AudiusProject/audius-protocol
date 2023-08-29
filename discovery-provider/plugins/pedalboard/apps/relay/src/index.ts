@@ -1,7 +1,7 @@
 import App from "basekit/src/app";
 import { webServer } from "./server";
 import { Config, readConfig } from "./config";
-import { ethers } from "ethers";
+import { Wallet, ethers } from "ethers";
 import { logger } from "./logger";
 import { initializeDiscoveryDb } from "basekit/src";
 import { connectWeb3 } from "./web3";
@@ -9,6 +9,7 @@ import { connectWeb3 } from "./web3";
 export type SharedData = {
   config: Config;
   web3: ethers.providers.JsonRpcProvider;
+  operatorWallet: Wallet;
 };
 
 export const config = readConfig();
@@ -25,9 +26,12 @@ const main = async () => {
   const { web3, chainId } = await connectWeb3(config);
   config.acdcChainId = chainId.toString();
 
+  const operatorWallet = new Wallet(config.delegatePrivateKey, web3)
+
   const appData = {
     config,
     web3,
+    operatorWallet
   };
 
   const app = new App<SharedData>({ appData, discoveryDb })
