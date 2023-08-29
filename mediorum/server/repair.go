@@ -54,7 +54,7 @@ func (ss *MediorumServer) startRepairer() {
 // If the node is using local storage, do not run repair if there is <200GB remaining (i.e. 10% of 2TB)
 func (ss *MediorumServer) shouldRunRepair() bool {
 	if strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") {
-		_, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
+		_, free, err := getDiskStatus("/file_storage")
 		if err == nil {
 			if free/uint64(1e9) < 200 {
 				return false

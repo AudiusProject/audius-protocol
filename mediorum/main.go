@@ -130,7 +130,6 @@ func startStagingOrProd(isProd bool) {
 		PostgresDSN:          os.Getenv("dbUrl"),
 		BlobStoreDSN:         os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		MoveFromBlobStoreDSN: os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
-		LegacyFSRoot:         getenvWithDefault("storagePath", "/file_storage"),
 		TrustedNotifierID:    trustedNotifierID,
 		SPID:                 spID,
 		SPOwnerWallet:        os.Getenv("spOwnerWallet"),
@@ -186,7 +185,6 @@ func startDevInstance() {
 		GitSHA:              os.Getenv("GIT_SHA"),
 		AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
-		LegacyFSRoot:        "/file_storage",
 		VersionJson:         GetVersionJson(),
 	}
 
@@ -243,7 +241,6 @@ func startDevCluster() {
 			GitSHA:              os.Getenv("GIT_SHA"),
 			AudiusDockerCompose: os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 			AutoUpgradeEnabled:  os.Getenv("autoUpgradeEnabled") == "true",
-			LegacyFSRoot:        "/file_storage",
 			VersionJson:         GetVersionJson(),
 		}
 		privKeyEnvVar := fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)

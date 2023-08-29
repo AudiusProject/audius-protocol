@@ -18,9 +18,6 @@ import (
 	"gocloud.dev/blob"
 )
 
-//go:embed cid_lookup.sql
-var cidLookupDDL string
-
 //go:embed delist_statuses.sql
 var delistStatusesDDL string
 
@@ -36,7 +33,6 @@ var mediorumMigrationTable = `
 
 func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
-	runMigration(db, cidLookupDDL) // TODO: Remove after every node migrates Qm CIDs to CDK (i.e., when /internal/qm/unmigrated/count/Qm is 0 for every node)
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
 
