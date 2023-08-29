@@ -12,7 +12,8 @@
     "comms",
     "notifications",
     "chain",
-    "mediorum"
+    "mediorum",
+    "relay"
   ]
   exclude_containers = [
     # System containers
