@@ -143,8 +143,12 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
 				EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
-				EXECUTE 'ALTER TABLE ' || partition_name || ' DROP CONSTRAINT IF EXISTS "ulid_pk";';
-				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD CONSTRAINT "ulid_pk" PRIMARY KEY ("ulid");';
+
+        BEGIN
+					EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
+					EXCEPTION WHEN invalid_table_definition THEN NULL;
+				END;
+
 			END LOOP; 
 		END $$;
 
@@ -157,14 +161,27 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		log.Fatal(err)
 	}
 
-	mustExec(
-		db,
-		`BEGIN;
-		DROP TABLE old_ops;
-		INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING;
-		COMMIT;`,
+	ctx := context.Background()
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tx.Rollback()
+	_, err = tx.ExecContext(
+		ctx,
+		`DROP TABLE old_ops`,
+	)
+	_, err = tx.ExecContext(
+		ctx,
+		`INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING`,
 		partition_ops_completed,
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = tx.Commit(); err != nil {
+		log.Fatal(err)
+	}
 
 	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), logfileName)
 }
