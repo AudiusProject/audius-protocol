@@ -143,7 +143,8 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
 				EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
-				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD CONSTRAINT IF NOT EXISTS ulid_pk PRIMARY KEY ("ulid");';
+				EXECUTE 'ALTER TABLE ' || partition_name || ' DROP CONSTRAINT IF EXISTS "ulid_pk";';
+				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD CONSTRAINT "ulid_pk" PRIMARY KEY ("ulid");';
 			END LOOP; 
 		END $$;
 
