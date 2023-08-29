@@ -87,7 +87,7 @@
 }
 
 :global(.DayPicker_weekHeader) {
-  top: 60px;
+  top: 58px;
 }
 
 :global(.DayPickerNavigation_button__horizontalDefault) {
@@ -96,4 +96,9 @@
 
 :global(.CalendarMonth_caption) {
   padding-bottom: 40px;
+}
+
+:global(.DayPickerNavigation_svg__horizontal) path {
+  stroke-width: 64px;
+  stroke: var(--neutral);
 }
