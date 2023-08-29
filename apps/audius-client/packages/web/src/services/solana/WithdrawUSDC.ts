@@ -1,4 +1,4 @@
-import { SwapMode } from '@jup-ag/core'
+import type { SwapMode } from '@jup-ag/core'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Token,
@@ -56,7 +56,7 @@ export const getSwapUSDCUserBankInstructions = async (
     outputTokenSymbol: 'SOL',
     inputAmount: feeAmount,
     slippage: USDC_SLIPPAGE,
-    swapMode: SwapMode.ExactOut,
+    swapMode: 'ExactOut' as SwapMode,
     onlyDirectRoutes: true
   })
   const usdcNeededAmount = quoteRoute.inputAmount
