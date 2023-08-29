@@ -48,7 +48,7 @@ func Migrate(db *sql.DB, bucket *blob.Bucket) {
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
 
-	schedulepartitionOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
+	schedulePartitionOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -78,7 +78,7 @@ func md5string(s string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func schedulepartitionOpsMigration(db *sql.DB) {
+func schedulePartitionOpsMigration(db *sql.DB) {
 	// stagger between 0-12hrs
 	max := 60 * 12
 	randomTime := time.Minute * time.Duration(rand.Intn(max+1))
