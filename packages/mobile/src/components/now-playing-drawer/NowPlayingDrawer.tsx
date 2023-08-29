@@ -133,10 +133,6 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     }
   }, [isPlaying, isPlayBarShowing])
 
-  const handleDrawerCloseFromSwipe = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   const onDrawerOpen = useCallback(() => {
     Keyboard.dismiss()
     onOpen()
@@ -268,23 +264,23 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
       return
     }
     navigation?.push('Profile', { handle: user.handle })
-    handleDrawerCloseFromSwipe()
-  }, [handleDrawerCloseFromSwipe, navigation, user])
+    onClose()
+  }, [onClose, navigation, user])
 
   const handlePressTitle = useCallback(() => {
     if (!trackId) {
       return
     }
     navigation?.push('Track', { id: trackId })
-    handleDrawerCloseFromSwipe()
-  }, [handleDrawerCloseFromSwipe, navigation, trackId])
+    onClose()
+  }, [onClose, navigation, trackId])
 
   return (
     <Drawer
       // Appears below bottom bar whereas normally drawers appear above
       zIndex={3}
       isOpen={isOpen}
-      onClose={handleDrawerCloseFromSwipe}
+      onClose={onClose}
       onOpen={onDrawerOpen}
       initialOffsetPosition={BOTTOM_BAR_HEIGHT + PLAY_BAR_HEIGHT}
       shouldCloseToInitialOffset={isPlayBarShowing}
@@ -318,7 +314,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
         </View>
         <Logo translationAnim={translationAnim} />
         <View style={styles.titleBarContainer}>
-          <TitleBar onClose={handleDrawerCloseFromSwipe} />
+          <TitleBar onClose={onClose} />
         </View>
         <Pressable onPress={handlePressTitle} style={styles.artworkContainer}>
           <Artwork track={track} />
