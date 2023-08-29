@@ -1,6 +1,11 @@
 {
   "name": "audius-protocol",
   "description": "Giving everyone the freedom to distribute, monetize, and stream unstoppable audio",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "dependencies": {
     "pre-commit": "1.2.2"
   },
