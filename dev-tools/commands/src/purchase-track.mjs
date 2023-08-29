@@ -7,10 +7,7 @@ program
   .command("purchase-track")
   .description("Purchases a track using USDC")
   .argument("<trackId>", "The track to purchase")
-  .requiredOption(
-    "-f, --from <from>",
-    "The account purchasing the track (handle)"
-  )
+  .option("-f, --from [from]", "The account purchasing the track (handle)")
   .action(async (trackId, { from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
     const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0];
