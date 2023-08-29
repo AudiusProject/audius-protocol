@@ -88,7 +88,8 @@ SELECT add_fk_constraints(ARRAY[
     'follows', 
     'grants', 
     'playlists', 
-    'playlist_seen', 
+    'playlist_seen',
+    'notification_seen',
     'subscriptions', 
     'tracks', 
     'user_events'
