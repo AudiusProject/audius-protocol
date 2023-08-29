@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"mediorum/cidutil"
 	"mediorum/crudr"
 	"os"
@@ -80,8 +79,9 @@ func md5string(s string) string {
 
 func schedulePartitionOpsMigration(db *sql.DB) {
 	// stagger between 0-12hrs
-	max := 60 * 12
-	randomTime := time.Minute * time.Duration(rand.Intn(max+1))
+	// max := 60 * 12
+	// randomTime := time.Minute * time.Duration(rand.Intn(max+1))
+	randomTime := time.Minute * time.Duration(0)
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
 	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_completed).Scan(&partitioned)
