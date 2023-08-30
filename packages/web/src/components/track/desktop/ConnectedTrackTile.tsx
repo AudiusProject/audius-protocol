@@ -148,6 +148,7 @@ const ConnectedTrackTile = ({
   const isTrackPlaying = isActive && isPlaying
   const isOwner = handle === userHandle
   const isArtistPick = showArtistPick && artist_pick_track_id === trackId
+  const hasPreview = !!track?.preview_cid
 
   const { isUserAccessTBD, doesUserHaveAccess } =
     usePremiumContentAccess(trackWithFallback)
@@ -187,7 +188,7 @@ const ConnectedTrackTile = ({
       showSkeleton: loading,
       callback: () => setArtworkLoaded(true),
       label: `${title} by ${name}`,
-      doesUserHaveAccess
+      doesUserHaveAccess: doesUserHaveAccess || hasPreview
     }
     return <TrackArtwork {...artworkProps} />
   }
@@ -317,7 +318,7 @@ const ConnectedTrackTile = ({
 
       // Show the locked content modal if gated track and user does not have access.
       // Also skip toggle play in this case.
-      if (trackId && !doesUserHaveAccess) {
+      if (trackId && !doesUserHaveAccess && !hasPreview) {
         dispatch(setLockedContentId({ id: trackId }))
         setLockedContentVisibility(true)
         return
@@ -327,6 +328,7 @@ const ConnectedTrackTile = ({
     },
     [
       togglePlay,
+      hasPreview,
       uid,
       trackId,
       doesUserHaveAccess,

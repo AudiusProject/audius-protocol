@@ -44,8 +44,15 @@ export type OwnProps = {
   heroTrack: Track | null
   user: User | null
   heroPlaying: boolean
+  previewing: boolean
   userId: ID | null
-  onHeroPlay: (isPlaying: boolean) => void
+  onHeroPlay: ({
+    isPlaying,
+    isPreview
+  }: {
+    isPlaying: boolean
+    isPreview?: boolean
+  }) => void
   onHeroShare: (trackId: ID) => void
   goToAllRemixesPage: () => void
   goToParentRemixesPage: () => void
@@ -78,6 +85,7 @@ const TrackPage = ({
   heroTrack,
   user,
   heroPlaying,
+  previewing,
   userId,
   onHeroPlay,
   onHeroShare,
@@ -120,7 +128,9 @@ const TrackPage = ({
     usePremiumContentAccess(heroTrack)
   const loading = !heroTrack || isUserAccessTBD
 
-  const onPlay = () => onHeroPlay(heroPlaying)
+  const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
+  const onPreview = () =>
+    onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
   const onSave = isOwner
     ? () => {}
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
@@ -156,6 +166,7 @@ const TrackPage = ({
         <TrackPageHeader
           isLoading={loading}
           isPlaying={heroPlaying}
+          isPreviewing={previewing}
           isReposted={isReposted}
           isFollowing={isFollowing}
           title={defaults.title}
@@ -179,6 +190,7 @@ const TrackPage = ({
           // Actions (Wire up once we add backend integrations)
           onClickMobileOverflow={onClickMobileOverflow}
           onPlay={onPlay}
+          onPreview={onPreview}
           onSave={onSave}
           onShare={onShare}
           onRepost={onRepost}

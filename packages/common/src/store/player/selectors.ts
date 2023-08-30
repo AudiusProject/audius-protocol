@@ -11,6 +11,7 @@ export const getTrackId = (state: CommonState) => state.player.trackId
 export const getCollectible = (state: CommonState) => state.player.collectible
 
 export const getPlaying = (state: CommonState) => state.player.playing
+export const getPreviewing = (state: CommonState) => state.player.previewing
 export const getPaused = (state: CommonState) => !state.player.playing
 export const getCounter = (state: CommonState) => state.player.counter
 export const getBuffering = (state: CommonState) => state.player.buffering

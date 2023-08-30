@@ -66,11 +66,12 @@ const { getIsReachable } = reachabilitySelectors
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
 const RECORD_LISTEN_INTERVAL = 1000
+const PREVIEW_LENGTH_SECONDS = 30
 
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, onEnd } = action.payload ?? {}
+    const { uid, trackId, isPreview, onEnd } = action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
@@ -113,6 +114,19 @@ export function* watchPlay() {
         audiusBackendInstance,
         premiumContentSignature
       })
+
+      let trackDuration = track.duration
+
+      if (isPreview) {
+        // Add preview query string and calculate preview duration for use later
+        const previewStartSeconds = track.preview_start_seconds || 0
+        queryParams.preview = true
+        trackDuration = Math.min(
+          track.duration - previewStartSeconds,
+          PREVIEW_LENGTH_SECONDS
+        )
+      }
+
       const mp3Url = apiClient.makeUrl(
         `/tracks/${encodedTrackId}/stream`,
         queryParams
@@ -124,7 +138,7 @@ export function* watchPlay() {
       const currentUserId = yield* select(getUserId)
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
-          track.duration ||
+          trackDuration ||
             track.track_segments.reduce(
               (duration, segment) => duration + parseFloat(segment.duration),
               0
@@ -182,7 +196,7 @@ export function* watchPlay() {
             )
           } else {
             audioPlayer.play()
-            yield* put(playSucceeded({ uid, trackId }))
+            yield* put(playSucceeded({ uid, trackId, isPreview }))
             yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
             return
           }
@@ -196,9 +210,9 @@ export function* watchPlay() {
     // Play if user has access to track.
     const track = yield* select(getTrack, { id: trackId })
     const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
-    if (doesUserHaveAccess) {
+    if (doesUserHaveAccess || isPreview) {
       audioPlayer.play()
-      yield* put(playSucceeded({ uid, trackId }))
+      yield* put(playSucceeded({ uid, trackId, isPreview }))
     } else {
       yield* put(queueActions.next({}))
     }

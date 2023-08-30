@@ -99,6 +99,7 @@ const PreviewButton = ({ playing, onPlay }: PlayButtonProps) => {
 type TrackHeaderProps = {
   isLoading: boolean
   isPlaying: boolean
+  isPreviewing: boolean
   isOwner: boolean
   isSaved: boolean
   isReposted: boolean
@@ -130,6 +131,7 @@ type TrackHeaderProps = {
     overflowActions: OverflowAction[]
   ) => void
   onPlay: () => void
+  onPreview: () => void
   onShare: () => void
   onSave: () => void
   onRepost: () => void
@@ -150,6 +152,7 @@ const TrackHeader = ({
   duration,
   isLoading,
   isPlaying,
+  isPreviewing,
   isSaved,
   isReposted,
   isUnlisted,
@@ -168,6 +171,7 @@ const TrackHeader = ({
   tags,
   aiAttributedUserId,
   onPlay,
+  onPreview,
   onShare,
   onSave,
   onRepost,
@@ -186,9 +190,6 @@ const TrackHeader = ({
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
   const showListenCount =
     isOwner || (!isPremium && (isUnlisted || fieldVisibility.play_count))
-
-  // TODO: https://linear.app/audius/issue/PAY-1590/[webmobileweb]-add-support-for-playing-previews
-  const onPreview = useCallback(() => console.info('Preview Clicked'), [])
 
   const image = useTrackCoverArt(
     trackId,
@@ -389,7 +390,7 @@ const TrackHeader = ({
       {showPlay ? (
         <PlayButton
           disabled={!doesUserHaveAccess}
-          playing={isPlaying}
+          playing={isPlaying && !isPreviewing}
           onPlay={onPlay}
         />
       ) : null}
@@ -407,7 +408,7 @@ const TrackHeader = ({
         />
       ) : null}
       {showPreview ? (
-        <PreviewButton playing={isPlaying} onPlay={onPreview} />
+        <PreviewButton playing={isPlaying && isPreviewing} onPlay={onPreview} />
       ) : null}
       <ActionButtonRow
         showRepost={showSocials}

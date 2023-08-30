@@ -200,7 +200,8 @@ export type TrackMetadata = {
     category: StemCategory
   }
   remix_of: Nullable<RemixOf>
-  preview_start_seconds?: number
+  preview_cid?: Nullable<CID>
+  preview_start_seconds?: Nullable<number>
 
   // Added fields
   dateListened?: string

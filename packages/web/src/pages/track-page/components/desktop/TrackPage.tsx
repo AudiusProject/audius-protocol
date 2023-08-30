@@ -41,9 +41,16 @@ export type OwnProps = {
   hasValidRemixParent: boolean
   user: User | null
   heroPlaying: boolean
+  previewing: boolean
   userId: ID | null
   badge: string | null
-  onHeroPlay: (isPlaying: boolean) => void
+  onHeroPlay: ({
+    isPlaying,
+    isPreview
+  }: {
+    isPlaying: boolean
+    isPreview?: boolean
+  }) => void
   goToAllRemixesPage: () => void
   goToParentRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
@@ -75,6 +82,7 @@ const TrackPage = ({
   heroTrack,
   user,
   heroPlaying,
+  previewing,
   userId,
   badge,
   onHeroPlay,
@@ -108,7 +116,10 @@ const TrackPage = ({
     usePremiumContentAccess(heroTrack)
   const loading = !heroTrack || isUserAccessTBD
 
-  const onPlay = () => onHeroPlay(heroPlaying)
+  const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
+  const onPreview = () =>
+    onHeroPlay({ isPlaying: heroPlaying, isPreview: true })
+
   const onSave = isOwner
     ? () => {}
     : () => heroTrack && onSaveTrack(isSaved, heroTrack.track_id)
@@ -122,6 +133,7 @@ const TrackPage = ({
     <GiantTrackTile
       loading={loading}
       playing={heroPlaying}
+      previewing={previewing}
       trackTitle={defaults.title}
       trackId={defaults.trackId}
       aiAttributionUserId={defaults.aiAttributionUserId}
@@ -158,6 +170,7 @@ const TrackPage = ({
       coSign={defaults.coSign}
       // Actions
       onPlay={onPlay}
+      onPreview={onPreview}
       onShare={onShare}
       onRepost={onRepost}
       onSave={onSave}

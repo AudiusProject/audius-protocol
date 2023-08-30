@@ -14,7 +14,8 @@ import {
   queueSelectors,
   getContext,
   FeatureFlags,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  doesUserHaveTrackAccess
 } from '@audius/common'
 import {
   all,
@@ -350,6 +351,14 @@ function* updateQueueLineup(lineupPrefix, source, lineupEntries) {
 function* play(lineupActions, lineupSelector, prefix, action) {
   const lineup = yield select(lineupSelector)
   const requestedPlayTrack = yield select(getTrack, { uid: action.uid })
+  let isPreview = !!action.isPreview
+
+  // If preview isn't forced, check for track acccess and switch to preview
+  // if the user doesn't have access but the track is previewable
+  if (!isPreview && requestedPlayTrack.is_premium) {
+    const hasAccess = yield call(doesUserHaveTrackAccess, requestedPlayTrack)
+    isPreview = !hasAccess && !!requestedPlayTrack.preview_cid
+  }
 
   if (action.uid) {
     const source = yield select(getSource)
@@ -370,6 +379,7 @@ function* play(lineupActions, lineupSelector, prefix, action) {
   yield put(
     queueActions.play({
       uid: action.uid,
+      isPreview,
       trackId: requestedPlayTrack && requestedPlayTrack.track_id,
       source: prefix
     })
