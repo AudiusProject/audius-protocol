@@ -15,6 +15,7 @@ import {
 import { sendBrowserNotification } from '../../web'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { capitalize } from 'lodash'
 
 type TastemakerNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TastemakerNotification
@@ -91,7 +92,8 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       .first()
 
     const entityName = track.title
-
+    const entityId = track.track_id
+    const entityType = 'track'
     const devices: Device[] = userNotificationSettings.getDevices(
       this.receiverUserId
     )
@@ -112,7 +114,6 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
         receiverUserId: this.receiverUserId
       })
     ) {
-      // If the user's settings for the reposts notification is set to true, proceed
       const pushes = await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
@@ -125,7 +126,15 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
             {
               title,
               body,
-              data: {}
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                userIds: [this.receiverUserId],
+                type: 'Tastemaker',
+                entityId,
+                entityType: capitalize(entityType)
+              }
             }
           )
         })

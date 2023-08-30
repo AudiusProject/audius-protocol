@@ -2149,7 +2149,7 @@ class FullPurchases(Resource):
         offset = get_default_max(args.get("offset"), 0)
         sort_method = args.get("sort_method", PurchaseSortMethod.date)
         sort_direction = args.get("sort_direction", None)
-        args: GetUSDCPurchasesArgs(
+        args = GetUSDCPurchasesArgs(
             buyer_user_id=decoded_id,
             limit=limit,
             offset=offset,
@@ -2176,7 +2176,7 @@ class FullPurchasesCount(Resource):
             full_ns.abort(403)
             return
         args = purchases_and_sales_count_parser.parse_args()
-        args: GetUSDCPurchasesCountArgs(
+        args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
         )
         count = get_usdc_purchases_count(args)
