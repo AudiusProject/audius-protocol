@@ -527,7 +527,11 @@ class TrackStream(Resource):
         rendezvous = RendezvousHash(
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
-        content_nodes = rendezvous.get_n(5, cid)
+
+        # change from 5 -> 500 to try all nodes
+        # since Qm CIDs are not migrated to rendezvous location yet
+        # can be made 5 when that is done
+        content_nodes = rendezvous.get_n(500, cid)
         for content_node in content_nodes:
             stream_url = get_stream_url_from_content_node(content_node, path)
             if stream_url:
