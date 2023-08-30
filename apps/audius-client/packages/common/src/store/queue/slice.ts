@@ -48,6 +48,7 @@ export const initialState: State = {
 
 type PlayPayload = {
   uid?: Nullable<UID>
+  isPreview?: boolean
   trackId?: Nullable<ID>
   collectible?: Collectible
   source?: Nullable<string>

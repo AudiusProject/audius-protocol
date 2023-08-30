@@ -16,6 +16,9 @@ export type PlayerState = {
   // object to allow components to subscribe to changes.
   playing: boolean
 
+  // Indicates that current playback session is a track preview
+  previewing: boolean
+
   // Keep 'buffering' in the store separately from the audio
   // object to allow components to subscribe to changes.
   buffering: boolean
@@ -42,6 +45,7 @@ export const initialState: PlayerState = {
   collectible: null,
 
   playing: false,
+  previewing: false,
   buffering: false,
   counter: 0,
   playbackRate: '1x',
@@ -52,10 +56,12 @@ export const initialState: PlayerState = {
 type PlayPayload = Maybe<{
   uid?: Nullable<UID>
   trackId?: ID
+  isPreview?: boolean
   onEnd?: (...args: any) => any
 }>
 
 type PlaySucceededPayload = {
+  isPreview?: boolean
   uid?: Nullable<UID>
   trackId?: ID
 }
@@ -122,6 +128,7 @@ const slice = createSlice({
       state.trackId = trackId || state.trackId
       state.collectible = null
       state.counter = state.counter + 1
+      state.previewing = !!action.payload.isPreview
     },
     playCollectible: (
       _state,

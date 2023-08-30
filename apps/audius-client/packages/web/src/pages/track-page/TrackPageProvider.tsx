@@ -67,7 +67,7 @@ import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
 import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
 const { makeGetCurrent } = queueSelectors
-const { getPlaying, getBuffering } = playerSelectors
+const { getPlaying, getPreviewing, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -242,10 +242,17 @@ class TrackPageProvider extends Component<
     }
   }
 
-  onHeroPlay = (heroPlaying: boolean) => {
+  onHeroPlay = ({
+    isPlaying,
+    isPreview
+  }: {
+    isPlaying: boolean
+    isPreview?: boolean
+  }) => {
     const {
       play,
       pause,
+      previewing,
       currentQueueItem,
       moreByArtist: { entries },
       record
@@ -253,7 +260,7 @@ class TrackPageProvider extends Component<
     if (!entries || !entries[0]) return
     const track = entries[0]
 
-    if (heroPlaying) {
+    if (isPlaying && previewing === isPreview) {
       pause()
       record(
         make(Name.PLAYBACK_PAUSE, {
@@ -270,14 +277,16 @@ class TrackPageProvider extends Component<
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
+          isPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
     } else if (track) {
-      play(track.uid)
+      play(track.uid, { isPreview })
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${track.id}`,
+          isPreview,
           source: PlaybackSource.TRACK_PAGE
         })
       )
@@ -380,6 +389,7 @@ class TrackPageProvider extends Component<
       moreByArtist,
       currentQueueItem,
       playing,
+      previewing,
       buffering,
       userId,
       pause,
@@ -456,6 +466,7 @@ class TrackPageProvider extends Component<
       heroPlaying,
       userId,
       badge,
+      previewing,
       onHeroPlay: this.onHeroPlay,
       goToAllRemixesPage: this.goToAllRemixesPage,
       goToParentRemixesPage: this.goToParentRemixesPage,
@@ -512,6 +523,7 @@ function makeMapStateToProps() {
 
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
+      previewing: getPreviewing(state),
       buffering: getBuffering(state),
       trackRank: getTrackRank(state),
       isMobile: isMobile(),
@@ -543,7 +555,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     reset: (source?: string) => dispatch(tracksActions.reset(source)),
-    play: (uid?: string) => dispatch(tracksActions.play(uid)),
+    play: (uid?: string, options: { isPreview?: boolean } = {}) =>
+      dispatch(tracksActions.play(uid, options)),
     recordPlayMoreByArtist: (trackId: ID) => {
       const trackEvent: TrackEvent = make(Name.TRACK_PAGE_PLAY_MORE, {
         id: trackId

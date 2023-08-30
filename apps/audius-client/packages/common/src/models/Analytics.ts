@@ -1034,6 +1034,7 @@ export enum PlaybackSource {
 type PlaybackPlay = {
   eventName: Name.PLAYBACK_PLAY
   id?: string
+  isPreview?: boolean
   source: PlaybackSource
 }
 type PlaybackPause = {

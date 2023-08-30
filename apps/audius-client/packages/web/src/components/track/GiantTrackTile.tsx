@@ -105,11 +105,13 @@ export type GiantTrackTileProps = {
   onMakePublic: (trackId: ID) => void
   onFollow: () => void
   onPlay: () => void
+  onPreview: () => void
   onRepost: () => void
   onSave: () => void
   onShare: () => void
   onUnfollow: () => void
   playing: boolean
+  previewing: boolean
   premiumConditions: Nullable<PremiumConditions>
   released: string
   repostCount: number
@@ -150,6 +152,7 @@ export const GiantTrackTile = ({
   onFollow,
   onMakePublic,
   onPlay,
+  onPreview,
   onSave,
   onShare,
   onRepost,
@@ -158,6 +161,7 @@ export const GiantTrackTile = ({
   repostCount,
   saveCount,
   playing,
+  previewing,
   premiumConditions,
   tags,
   trackId,
@@ -182,11 +186,6 @@ export const GiantTrackTile = ({
   const showPreview = isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess)
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
-
-  // TODO: https://linear.app/audius/issue/PAY-1590/[webmobileweb]-add-support-for-playing-previews
-  const onPreview = useCallback(() => {
-    console.info('Preview Clicked')
-  }, [])
 
   const renderCardTitle = (className: string) => {
     return (
@@ -531,14 +530,14 @@ export const GiantTrackTile = ({
             {showPlay ? (
               <PlayPauseButton
                 disabled={!doesUserHaveAccess}
-                playing={playing}
+                playing={playing && !previewing}
                 onPlay={onPlay}
                 trackId={trackId}
               />
             ) : null}
             {showPreview ? (
               <PlayPauseButton
-                playing={playing}
+                playing={playing && previewing}
                 onPlay={onPreview}
                 trackId={trackId}
                 isPreview

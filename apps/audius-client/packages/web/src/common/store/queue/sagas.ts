@@ -44,7 +44,11 @@ const {
   getUndershot
 } = queueSelectors
 
-const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
+const {
+  getTrackId: getPlayerTrackId,
+  getUid: getPlayerUid,
+  getPreviewing: getPlayerPreviewing
+} = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
   queueActions
@@ -144,11 +148,13 @@ function* handleQueueAutoplay({
  */
 export function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
-    const { uid, trackId, collectible } = action.payload
+    const { uid, trackId, isPreview, collectible } = action.payload
 
     // Play a specific uid
     const playerUid = yield* select(getPlayerUid)
     const playerTrackId = yield* select(getPlayerTrackId)
+    const playerIsPreviewing = yield* select(getPlayerPreviewing)
+
     if (uid || trackId) {
       const playActionTrack = yield* select(
         getTrack,
@@ -181,13 +187,16 @@ export function* watchPlay() {
       const noTrackPlaying = !playerTrackId
       const trackIsDifferent = playerTrackId !== playActionTrack.track_id
       const trackIsSameButDifferentUid =
-        playerTrackId === playActionTrack.track_id && uid !== playerUid
+        playerTrackId === playActionTrack.track_id &&
+        (uid !== playerUid || !!isPreview !== playerIsPreviewing)
       if (noTrackPlaying || trackIsDifferent || trackIsSameButDifferentUid) {
         yield* put(
           playerActions.play({
             uid,
+            isPreview,
             trackId: playActionTrack.track_id,
-            onEnd: next
+            // Don't auto-advance after previews
+            onEnd: isPreview ? playerActions.stop : next
           })
         )
       } else {
