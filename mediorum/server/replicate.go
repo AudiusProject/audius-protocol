@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -240,4 +241,14 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	}
 
 	return ss.replicateToMyBucket(cid, resp.Body)
+}
+
+// if the node is using local (disk) storage, do not replicate if there is <200GB remaining (i.e. 10% of 2TB)
+func (ss *MediorumServer) shouldReplicate() bool {
+	// don't worry about running out of space on dev or stage
+	if ss.Config.Env != "prod" {
+		return true
+	}
+
+	return !strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") || ss.mediorumPathFree/uint64(1e9) > 200
 }
