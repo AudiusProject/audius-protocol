@@ -142,7 +142,7 @@ export const AccessAndSaleModalLegacy = (
       case TrackAvailabilityType.PUBLIC: {
         newState.is_premium = false
         newState.unlisted = false
-        newState.premium_conditions = {}
+        newState.premium_conditions = null
         break
       }
       case TrackAvailabilityType.USDC_PURCHASE: {
@@ -169,7 +169,7 @@ export const AccessAndSaleModalLegacy = (
       newState = {
         ...newState,
         ...(get(values, FIELD_VISIBILITY) ?? undefined),
-        premium_conditions: {},
+        premium_conditions: null,
         unlisted: true
       }
     } else {

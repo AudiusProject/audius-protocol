@@ -519,10 +519,10 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isPremiumContentCollectibleGated(premiumConditionsValue)
           )
             break
-          setPremiumConditionsValue({})
+          setPremiumConditionsValue(null)
           break
         case TrackAvailabilityType.HIDDEN:
-          setPremiumConditionsValue({})
+          setPremiumConditionsValue(null)
           if (!fieldVisibilityValue) break
           setfieldVisibilityValue({
             ...fieldVisibilityValue,
