@@ -16,7 +16,7 @@ export type SharedData = {
 export const config = readConfig();
 
 if (!config.aao.useAao) {
-  logger.warn("anti abuse not configured and won't be enforced")
+  logger.warn("anti abuse not configured and won't be enforced");
 }
 
 export const discoveryDb = initializeDiscoveryDb(

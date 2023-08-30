@@ -10,9 +10,9 @@ import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
-import { FastifyReply } from "fastify";
-import { errorResponseForbidden } from "./error";
+import { FastifyError, FastifyErrorCodes, FastifyReply } from "fastify";
 import { ethers } from "ethers";
+import { CustomErrorCodes, createError } from "./error";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -24,7 +24,7 @@ export const relayTransaction = async (
   headers: RelayRequestHeaders,
   req: RelayRequestType,
   rep: FastifyReply
-): Promise<RelayedTransaction> => {
+): Promise<RelayedTransaction | FastifyError> => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
@@ -46,7 +46,7 @@ export const relayTransaction = async (
   });
   const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
   if (isBlockedFromRelay) {
-    errorResponseForbidden(rep);
+    return createError({ statusCode: 403, name: CustomErrorCodes.UNAUTHORIZED })
   }
 
   log({ msg: "new relay request", req });

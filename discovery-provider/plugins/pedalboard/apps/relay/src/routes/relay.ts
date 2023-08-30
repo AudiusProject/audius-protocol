@@ -7,7 +7,10 @@ import {
 import { SharedData } from "..";
 import { relayTransaction } from "../txRelay";
 import { FastifyReply } from "fastify";
-import { errorResponseInternalServerError } from "../error";
+import {
+  handleError,
+  isError,
+} from "../error";
 import { logger } from "../logger";
 
 export const relayHandler = async (
@@ -16,16 +19,15 @@ export const relayHandler = async (
   req: RelayRequestType,
   rep: FastifyReply
 ): Promise<RelayResponseType | undefined> => {
-  try {
-    const { receipt } = await relayTransaction(app, headers, req, rep);
+  const relay = await relayTransaction(app, headers, req, rep);
+  if (!isError(relay)) {
+    const { receipt } = relay;
     return {
       receipt: {
         blockHash: receipt.blockHash,
         blockNumber: receipt.blockNumber,
       },
     };
-  } catch (e) {
-    logger.error({ error_msg: "relay.ts | internal server error", error: e, request: req })
-    errorResponseInternalServerError(rep)
   }
+  handleError(relay, rep);
 };
