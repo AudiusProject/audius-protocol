@@ -320,7 +320,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
-	internalApi.GET("/metrics/segments", ss.getSegmentLog)
+	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
+	internalApi.GET("/logs/reaper", ss.getReaperLog)
 
 	return ss, nil
 
