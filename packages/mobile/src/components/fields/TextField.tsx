@@ -1,6 +1,6 @@
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 
 import type { TextInputProps } from 'app/components/core'
 import { TextInput, InputErrorMessage } from 'app/components/core'
@@ -18,7 +18,9 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   label: { marginBottom: spacing(2) },
   input: {
     fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.demiBold
+    fontFamily: typography.fontByWeight.demiBold,
+    lineHeight:
+      Platform.OS === 'ios' ? typography.fontSize.xl : typography.fontSize.large
   },
   labelText: {
     fontSize: typography.fontSize.large,
@@ -33,6 +35,7 @@ export const TextField = (props: TextFieldProps) => {
     label: labelProp,
     required,
     errorMessage: errorMessageProp,
+    style,
     styles: stylesProp,
     ...other
   } = props
@@ -44,7 +47,7 @@ export const TextField = (props: TextFieldProps) => {
     errorMessageProp || (error ? `${capitalize(name)} ${error}` : undefined)
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       <TextInput
         label={label}
         styles={{
