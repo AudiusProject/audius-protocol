@@ -92,7 +92,7 @@ func TestRepair(t *testing.T) {
 	}
 
 	// ----------------------
-	// now make one of the servers "loose" a file
+	// now make one of the servers "lose" a file
 	{
 		byHost := map[string]*MediorumServer{}
 		for _, s := range testNetwork {
@@ -100,7 +100,7 @@ func TestRepair(t *testing.T) {
 		}
 
 		rendezvousOrder := []*MediorumServer{}
-		preferred, _ := ss.rendezvous(cid)
+		preferred, _ := ss.rendezvousAllHosts(cid)
 		for _, h := range preferred {
 			rendezvousOrder = append(rendezvousOrder, byHost[h])
 		}
