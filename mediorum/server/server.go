@@ -208,8 +208,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud, bucket)
 	dbPruneOldOps(db, config.Self.Host)
+	dbMigrate(crud, bucket, config.Self.Host)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -321,6 +321,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/metrics/segments", ss.getSegmentLog)
+	internalApi.GET("/metrics/partition-ops", ss.getPartitionOpsLog)
 
 	return ss, nil
 
