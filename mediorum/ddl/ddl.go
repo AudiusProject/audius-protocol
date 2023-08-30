@@ -36,8 +36,9 @@ var mediorumMigrationTable = `
 `
 
 // TODO: Remove after every node runs the ops partition migration
-var partition_ops_scheduled = "partitionOpsScheduled"
-var partition_ops_completed = "partitionedOps"
+var partitionOpsScheduled = "partitionOpsScheduled"
+var partitionOpsCompleted = "partitionedOps"
+var partitionOpsLogFile = "partition_ops.txt"
 
 func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket) {
 	mustExec(db, mediorumMigrationTable)
@@ -85,35 +86,37 @@ func schedulePartitionOpsMigration(db *sql.DB) {
 	randomTime := time.Minute * time.Duration(0)
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partition_ops_completed).Scan(&partitioned)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partitionOpsCompleted).Scan(&partitioned)
 	if partitioned {
 		slog.Info("already partitioned ops, skipping migration scheduling")
 	} else {
 		slog.Info("scheduling partition ops migration", "time", randomTime)
 		time.AfterFunc(randomTime, func() {
 			slog.Info("marking migrations table to partition ops after we restart...")
-			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partition_ops_scheduled)
+			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partitionOpsScheduled)
 			os.Exit(0)
 		})
 	}
 }
 
+func migratePartitionOpsError(db *sql.DB, err error) {
+	logAndWriteToFile(err.Error(), partitionOpsLogFile)
+	log.Fatal(err)
+}
+
 func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	slog.Info("checking if it's time to partition ops...")
 	var scheduled bool
-	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1;`, partition_ops_scheduled).Scan(&scheduled)
+	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1;`, partitionOpsScheduled).Scan(&scheduled)
 	if !scheduled {
 		slog.Info("partition ops migration not scheduled, skipping ddl")
 		return
 	}
 
-	logfileName := "partition_ops.txt"
-
-	logAndWriteToFile(fmt.Sprint("starting partitioning of ops"), logfileName)
+	logAndWriteToFile(fmt.Sprint("starting partitioning of ops"), partitionOpsLogFile)
 	start := time.Now()
 
-	mustExec(
-		db,
+	_, err := db.Exec(
 		`BEGIN;
 
 		-- Kill all long-running sql queries
@@ -154,18 +157,19 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 
 		COMMIT;`,
 	)
-
-	err := migrateOpsData(db, gormDB, logfileName)
 	if err != nil {
-		logAndWriteToFile(err.Error(), logfileName)
-		log.Fatal(err)
+		migratePartitionOpsError(db, err)
+	}
+
+	err = migrateOpsData(db, gormDB)
+	if err != nil {
+		migratePartitionOpsError(db, err)
 	}
 
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		logAndWriteToFile(err.Error(), logfileName)
-		log.Fatal(err)
+		migratePartitionOpsError(db, err)
 	}
 	defer tx.Rollback()
 	_, err = tx.ExecContext(
@@ -175,27 +179,24 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	_, err = tx.ExecContext(
 		ctx,
 		`INSERT INTO mediorum_migrations VALUES ($1, now()) ON CONFLICT DO NOTHING;`,
-		partition_ops_completed,
+		partitionOpsCompleted,
 	)
 	if err != nil {
-		logAndWriteToFile(err.Error(), logfileName)
-		log.Fatal(err)
+		migratePartitionOpsError(db, err)
 	}
 	if err = tx.Commit(); err != nil {
-		logAndWriteToFile(err.Error(), logfileName)
-		log.Fatal(err)
+		migratePartitionOpsError(db, err)
 	}
 
-	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), logfileName)
+	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), partitionOpsLogFile)
 }
 
 // copy data from old_ops to ops
-func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
-	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), logfileName)
+func migrateOpsData(db *sql.DB, gormDB *gorm.DB) error {
+	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), partitionOpsLogFile)
 	lastULID := ""
 	pageSize := 3000
 	rowsMigrated := 0
-	tmpFile := "/tmp/mediorum/ops_migration.csv"
 
 	for {
 		var ops []crudr.Op
@@ -208,69 +209,34 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB, logfileName string) error {
 
 		if len(ops) == 0 {
 			// we've migrated all rows
-			_, err := os.Stat(tmpFile)
-			if err == nil {
-				err = os.Remove(tmpFile)
-				if err != nil {
-					slog.Error(fmt.Sprintf("Error removing temp file %s", tmpFile), "err", err)
-				}
-			}
-			logAndWriteToFile(fmt.Sprintf("successfully migrated %d ops rows\n", rowsMigrated), logfileName)
+			logAndWriteToFile(fmt.Sprintf("successfully migrated %d ops rows\n", rowsMigrated), partitionOpsLogFile)
 			return nil
 		}
 
-		writeOpsToTempFile(ops)
-		mustExec(db, `COPY ops("ulid", "host", "action", "table", "data") FROM '/tmp/mediorum/ops_migration.csv' WITH (DELIMITER ',', HEADER true);`)
-
-		// mustExec(
-		// 	db,
-		// 	`INSERT INTO ops ("ulid", "host", "action", "table", "data")
-		// 	VALUES `+constructOpsBulkInsertValuesString(ops)+`
-		// 	ON CONFLICT DO NOTHING`,
-		// 	ops,
-		// )
+		mustExec(
+			db,
+			`INSERT INTO ops ("ulid", "host", "action", "table", "data") VALUES `+constructOpsBulkInsertValuesString(ops)+` ON CONFLICT DO NOTHING`,
+			ops,
+		)
 		rowsMigrated += len(ops)
 		lastULID = ops[len(ops)-1].ULID
 
 		// delete all rows that we migrated
-		mustExec(db, `DELETE FROM old_ops WHERE ulid <= $1;`, lastULID)
+		_, err = db.Exec(`DELETE FROM old_ops WHERE ulid <= $1;`, lastULID)
+		if err != nil {
+			return err
+		}
 
 		// keep paginating
 		time.Sleep(time.Millisecond * 100)
 	}
 }
 
-func writeOpsToTempFile(ops []crudr.Op) {
-	dir := "/tmp/mediorum"
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0755)
-	}
-	file := "/tmp/mediorum/ops_migration.csv"
-	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		log.Fatalf("Failed to open file %s: %v", file, err)
-	}
-	defer f.Close()
-
-	rows := "ulid,host,action,table,data\n"
-	for i, op := range ops {
-		rows += op.ULID + "," + op.Host + "," + op.Action + "," + op.Table + "," + string(op.Data)
-		if i < len(ops)-1 {
-			rows += "\n"
-		}
-	}
-
-	if _, err := f.WriteString(rows); err != nil {
-		log.Fatalf("Failed to write to file %s: %v", file, err)
-	}
-
-	f.Sync()
-}
-
 func constructOpsBulkInsertValuesString(ops []crudr.Op) string {
 	values := ""
 	for i, op := range ops {
-		values += "('" + op.ULID + "', '" + op.Host + "', '" + op.Action + "', '" + op.Table + "', '" + string(op.Data) + "')"
+		formattedData := strings.ReplaceAll(string(string(op.Data)), "'", "''")
+		values += "('" + op.ULID + "', '" + op.Host + "', '" + op.Action + "', '" + op.Table + "', '" + formattedData + "')"
 		if i < len(ops)-1 {
 			values += ", "
 		}
@@ -352,14 +318,16 @@ func logAndWriteToFile(message string, fileName string) {
 
 	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("Failed to open log file %s: %v", filePath, err)
+		slog.Error(fmt.Sprintf("Error opening %s", fileName), "err", err)
+		return
 	}
 	defer f.Close()
 
 	slog.Info(message)
 
 	if _, err := f.WriteString(message + "\n"); err != nil {
-		log.Fatalf("Failed to write to log file %s: %v", filePath, err)
+		slog.Error(fmt.Sprintf("Error writing to %s", fileName), "err", err)
+		return
 	}
 
 	f.Sync()
