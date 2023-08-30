@@ -5,27 +5,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 	log.SetOutput(logFile)
 
-	endpoint := os.Getenv("creatorNodeEndpoint")
-	skipEndpoints := []string{
-		"https://content-node.audius.co",
-		"https://creatornode.audius.co",
-		"https://creatornode2.audius.co",
-		"https://creatornode3.audius.co",
-		"https://usermetadata.audius.co",
-	}
-
-	for _, skipEndpoint := range skipEndpoints {
-		if endpoint == skipEndpoint {
-			log.Printf("Skipping deletion due to matched endpoint: %s", endpoint)
-			time.Sleep(10000 * time.Hour)
-			return nil
-		}
+	if _, exists := os.LookupEnv("NO_LEGACY_REAPER"); exists || strings.HasSuffix(os.Getenv("creatorNodeEndpoint"), ".audius.co") {
+		log.Printf("Skipping deletion due to NO_LEGACY_REAPER env var present.")
+		log.Printf("Sleeping.")
+		time.Sleep(10000 * time.Hour)
+		return nil
 	}
 
 	entries, err := os.ReadDir(path)
