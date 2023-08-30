@@ -22,7 +22,6 @@ export const TOKEN_LISTING_MAP: Record<string, JupiterTokenListing> = {
     logoURI:
       'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
   },
-
   USDC: {
     chainId: 101,
     address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
