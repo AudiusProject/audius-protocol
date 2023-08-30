@@ -235,7 +235,7 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB) error {
 func constructOpsBulkInsertValuesString(ops []crudr.Op) string {
 	values := ""
 	for i, op := range ops {
-		formattedData := strings.ReplaceAll(string(string(op.Data)), "'", "''")
+		formattedData := strings.ReplaceAll(string(op.Data), "'", "''")
 		values += "('" + op.ULID + "', '" + op.Host + "', '" + op.Action + "', '" + op.Table + "', '" + formattedData + "')"
 		if i < len(ops)-1 {
 			values += ", "
