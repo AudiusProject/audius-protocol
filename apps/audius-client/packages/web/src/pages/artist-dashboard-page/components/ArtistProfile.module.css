@@ -1,3 +1,11 @@
+.profileContainer {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: stretch;
+  margin: 12px 0px 36px;
+}
+
 .artistProfileContainer {
   flex: 1 0 auto;
   height: 88px;
