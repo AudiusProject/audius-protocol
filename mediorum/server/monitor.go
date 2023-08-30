@@ -109,7 +109,7 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
 		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
 	}
-	ss.logger.Info("diskStatus", status)
+	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
