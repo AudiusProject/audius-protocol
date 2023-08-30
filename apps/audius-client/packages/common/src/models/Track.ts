@@ -97,6 +97,7 @@ export type PremiumConditionsUSDCPurchase = {
 }
 
 export type PremiumConditions =
+  | {}
   | PremiumConditionsCollectibleGated
   | PremiumConditionsFollowGated
   | PremiumConditionsTipGated

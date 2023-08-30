@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash'
+
 import { DogEarType } from 'models/DogEar'
 import { PremiumConditions } from 'models/Track'
 
@@ -33,7 +35,11 @@ export const getDogEarType = ({
   }
 
   // Show premium variants for track owners or if user does not yet have access
-  if ((isOwner || !doesUserHaveAccess) && premiumConditions != null) {
+  if (
+    (isOwner || !doesUserHaveAccess) &&
+    premiumConditions != null &&
+    !isEmpty(premiumConditions)
+  ) {
     if ('usdc_purchase' in premiumConditions) {
       return DogEarType.USDC_PURCHASE
     } else if ('nft_collection' in premiumConditions) {

@@ -109,12 +109,12 @@ const messages = {
   errors: {
     price: {
       tooLow: 'Price must be at least $0.99.',
-      tooHigh: 'Price must be less than $9.99.'
+      tooHigh: 'Price must be less than $9999.99.'
     },
     preview: {
       tooEarly: 'Preview must start during the track.',
       tooLate:
-        'Preview must start at lest 15 seconds before the end of the track.'
+        'Preview must start at least 30 seconds before the end of the track.'
     }
   }
 }
@@ -140,26 +140,47 @@ export type AccessAndSaleFormValues = {
   [PREVIEW]?: number
 }
 
-const AccessAndSaleFormSchema = (trackLength: number) =>
-  z.object({
-    [PREMIUM_CONDITIONS]: z.nullable(
-      z.object({
-        // TODO: there are other types
-        usdc_purchase: z.object({
-          price: z
-            .number()
-            .lte(999, messages.errors.price.tooHigh)
-            .gte(99, messages.errors.price.tooLow)
+export const AccessAndSaleFormSchema = (trackLength: number) =>
+  z
+    .object({
+      [PREMIUM_CONDITIONS]: z.nullable(
+        z.object({
+          // TODO: there are other types
+          usdc_purchase: z.optional(
+            z.object({
+              price: z
+                .number()
+                .lte(999999, messages.errors.price.tooHigh)
+                .gte(99, messages.errors.price.tooLow)
+            })
+          )
         })
-      })
-    ),
-    [PREVIEW]: z.optional(
-      z
-        .number()
-        .gte(0, messages.errors.preview.tooEarly)
-        .lte(trackLength - 15, messages.errors.preview.tooLate)
+      ),
+      [PREVIEW]: z.optional(z.nullable(z.number()))
+    })
+    .refine(
+      (values) => {
+        const formValues = values as AccessAndSaleFormValues
+        if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
+          return formValues[PREVIEW] !== undefined && formValues[PREVIEW] >= 0
+        }
+        return true
+      },
+      { message: messages.errors.preview.tooEarly, path: [PREVIEW] }
     )
-  })
+    .refine(
+      (values) => {
+        const formValues = values as AccessAndSaleFormValues
+        if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
+          return (
+            formValues[PREVIEW] === undefined ||
+            (formValues[PREVIEW] >= 0 && formValues[PREVIEW] < trackLength - 30)
+          )
+        }
+        return true
+      },
+      { message: messages.errors.preview.tooLate, path: [PREVIEW] }
+    )
 
 type AccessAndSaleFieldProps = {
   isUpload?: boolean
@@ -470,8 +491,14 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         }
         case TrackAvailabilityType.USDC_PURCHASE: {
           if (!isPremiumContentUSDCPurchaseGated(premiumConditionsValue)) {
-            setPremiumConditionsValue(null)
+            setPremiumConditionsValue({
+              // @ts-ignore splits added in saga
+              usdc_purchase: {
+                price: 0
+              }
+            })
           }
+
           if (!previewValue) {
             setPreviewValue(0)
           }
@@ -492,9 +519,10 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isPremiumContentCollectibleGated(premiumConditionsValue)
           )
             break
-          setPremiumConditionsValue(null)
+          setPremiumConditionsValue({})
           break
         case TrackAvailabilityType.HIDDEN:
+          setPremiumConditionsValue({})
           if (!fieldVisibilityValue) break
           setfieldVisibilityValue({
             ...fieldVisibilityValue,

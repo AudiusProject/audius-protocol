@@ -18,14 +18,14 @@ import {
   IconSpecialAccess,
   IconVisibilityPublic
 } from '@audius/stems'
-import { set, isEmpty, get } from 'lodash'
-import { z } from 'zod'
+import { set, get } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { TrackMetadataState } from 'components/track-availability-modal/types'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
   AVAILABILITY_TYPE,
+  AccessAndSaleFormSchema,
   AccessAndSaleFormValues,
   AccessAndSaleMenuFields,
   FIELD_VISIBILITY,
@@ -54,36 +54,15 @@ const messages = {
   errors: {
     price: {
       tooLow: 'Price must be at least $0.99',
-      tooHigh: 'Price must be less than $9.99'
+      tooHigh: 'Price must be less than $9999.99'
     },
     preview: {
       tooEarly: 'Preview must start during the track',
       tooLate:
-        'Preview must start at lest 15 seconds before the end of the track'
+        'Preview must start at least 30 seconds before the end of the track'
     }
   }
 }
-
-const AccessAndSaleFormSchema = (trackLength: number) =>
-  z.object({
-    [PREMIUM_CONDITIONS]: z.nullable(
-      z.object({
-        // TODO: there are other types
-        usdc_purchase: z.object({
-          price: z
-            .number()
-            .lte(999, messages.errors.price.tooHigh)
-            .gte(99, messages.errors.price.tooLow)
-        })
-      })
-    ),
-    [PREVIEW]: z.optional(
-      z
-        .number()
-        .gte(0, messages.errors.preview.tooEarly)
-        .lte(trackLength - 15, messages.errors.preview.tooLate)
-    )
-  })
 
 type AccessAndSaleModalLegacyProps = {
   isRemix: boolean
@@ -155,23 +134,34 @@ export const AccessAndSaleModalLegacy = (
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
     let newState = {
-      ...metadataState,
-      is_premium: !isEmpty(values[PREMIUM_CONDITIONS]),
-      premium_conditions: values[PREMIUM_CONDITIONS],
-      unlisted: values.is_unlisted,
-      preview_start_seconds: values[PREVIEW] ?? 0
+      ...metadataState
     }
 
-    if (
-      get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.USDC_PURCHASE
-    ) {
-      newState.is_premium = true
-      const price = Math.round(get(values, PRICE))
-      newState.premium_conditions = {
-        // @ts-ignore splits get added in saga
-        usdc_purchase: {
-          price
+    const availabilityType = get(values, AVAILABILITY_TYPE)
+    switch (availabilityType) {
+      case TrackAvailabilityType.PUBLIC: {
+        newState.is_premium = false
+        newState.unlisted = false
+        newState.premium_conditions = {}
+        break
+      }
+      case TrackAvailabilityType.USDC_PURCHASE: {
+        newState.is_premium = true
+        const price = Math.round(get(values, PRICE))
+        newState.premium_conditions = {
+          // @ts-ignore splits get added in saga
+          usdc_purchase: {
+            price
+          }
         }
+        newState.preview_start_seconds = get(values, PREVIEW) ?? 0
+        break
+      }
+      case TrackAvailabilityType.COLLECTIBLE_GATED:
+      case TrackAvailabilityType.SPECIAL_ACCESS: {
+        newState.is_premium = true
+        newState.premium_conditions = get(values, PREMIUM_CONDITIONS)
+        break
       }
     }
 
@@ -179,6 +169,7 @@ export const AccessAndSaleModalLegacy = (
       newState = {
         ...newState,
         ...(get(values, FIELD_VISIBILITY) ?? undefined),
+        premium_conditions: {},
         unlisted: true
       }
     } else {
@@ -218,7 +209,6 @@ export const AccessAndSaleModalLegacy = (
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
-        // @ts-ignore
         AccessAndSaleFormSchema(trackLength)
       )}
       menuFields={
