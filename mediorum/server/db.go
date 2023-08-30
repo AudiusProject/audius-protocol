@@ -63,7 +63,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
+func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Blob{}, &Upload{})
@@ -78,7 +78,7 @@ func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
 	gormDB := crud.DB
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, gormDB, bucket)
+	ddl.Migrate(sqlDb, gormDB, bucket, myHost)
 
 	slog.Info("db: migrate done")
 

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"mediorum/cidutil"
 	"mediorum/crudr"
 	"os"
@@ -40,7 +41,7 @@ var partitionOpsScheduled = "partitionOpsScheduled"
 var partitionOpsCompleted = "partitionedOps"
 var partitionOpsLogFile = "partition_ops.txt"
 
-func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket) {
+func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket, myHost string) {
 	mustExec(db, mediorumMigrationTable)
 
 	migratePartitionOps(db, gormDB) // TODO: Remove after every node runs this
@@ -49,7 +50,7 @@ func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket) {
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
 
-	schedulePartitionOpsMigration(db) // TODO: Remove after every node runs the partition ops migration
+	schedulePartitionOpsMigration(db, myHost) // TODO: Remove after every node runs the partition ops migration
 }
 
 func runMigration(db *sql.DB, ddl string) {
@@ -79,11 +80,18 @@ func md5string(s string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func schedulePartitionOpsMigration(db *sql.DB) {
+func schedulePartitionOpsMigration(db *sql.DB, myHost string) {
 	// stagger between 0-12hrs
-	// max := 60 * 12
-	// randomTime := time.Minute * time.Duration(rand.Intn(max+1))
-	randomTime := time.Minute * time.Duration(0)
+	max := 60 * 12
+	randomTime := time.Minute * time.Duration(rand.Intn(max+1))
+	// manually schedule foundation nodes so can disable monitoring
+	// appropriately
+	if myHost == "https://creatornode.audius.co" || myHost == "https://creatornode2.audius.co" {
+		randomTime = time.Minute * time.Duration(0)
+	}
+	if myHost == "https://creatornode3.audius.co" || myHost == "https://usermetadata.audius.co" {
+		randomTime = time.Minute * time.Duration(90)
+	}
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
 	db.QueryRow(`select count(*) = 1 from mediorum_migrations where hash = $1`, partitionOpsCompleted).Scan(&partitioned)
