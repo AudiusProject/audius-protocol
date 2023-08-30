@@ -15,6 +15,7 @@ x-discovery: &discovery
     args:
       GOARCH: arm64
   restart: unless-stopped
+  # command: 'comms discovery'
   stop_signal: SIGKILL
   volumes:
     - ${PROJECT_ROOT}/comms/discovery:/app/discovery
@@ -23,7 +24,7 @@ x-discovery: &discovery
     db:
       condition: service_started
   profiles:
-    - comms
+    - not_comms
 
 services:
   # DISCOVERY (comms, not a full discovery provider)
@@ -67,7 +68,7 @@ services:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       AUDIUS_TEST_HOST: "audius-protocol-nats-storage-1"
       audius_db_url: "postgresql://postgres:postgres@db:5432/comms_test?sslmode=disable"
-    command: -c .air.test.toml
+    # command: sh -c 'sleep 1s'
     volumes:
       - ${PROJECT_ROOT}/comms/:/app
     depends_on:
@@ -82,4 +83,4 @@ services:
       comms-discovery-3:
         condition: service_started
     profiles:
-      - comms
+      - not_comms
