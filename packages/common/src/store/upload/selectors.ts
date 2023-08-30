@@ -9,13 +9,17 @@ export const getIsUploading = (state: CommonState) => state.upload.uploading
 
 export const getUploadPercentage = (state: CommonState) => {
   const uploadProgress = getUploadProgress(state)
-  const fullProgress = uploadProgress
-    ? uploadProgress.reduce((acc, progress) => acc + progress.loaded, 0)
-    : 0
+  if (uploadProgress === null) return 0
 
-  const totalProgress = uploadProgress
-    ? uploadProgress.reduce((acc, progress) => acc + progress.total, 0)
-    : 1
+  const fullProgress = uploadProgress.reduce(
+    (acc, progress) => acc + progress.loaded,
+    0
+  )
+
+  const totalProgress = uploadProgress.reduce(
+    (acc, progress) => acc + progress.total,
+    0
+  )
 
   return (fullProgress / totalProgress) * 100
 }
