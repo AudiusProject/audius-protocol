@@ -99,7 +99,7 @@ func schedulePartitionOpsMigration(db *sql.DB) {
 	}
 }
 
-func migratePartitionOpsError(db *sql.DB, err error) {
+func migratePartitionOpsError(err error) {
 	logAndWriteToFile(err.Error(), partitionOpsLogFile)
 	log.Fatal(err)
 }
@@ -158,18 +158,18 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		COMMIT;`,
 	)
 	if err != nil {
-		migratePartitionOpsError(db, err)
+		migratePartitionOpsError(err)
 	}
 
 	err = migrateOpsData(db, gormDB)
 	if err != nil {
-		migratePartitionOpsError(db, err)
+		migratePartitionOpsError(err)
 	}
 
 	ctx := context.Background()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
-		migratePartitionOpsError(db, err)
+		migratePartitionOpsError(err)
 	}
 	defer tx.Rollback()
 	_, err = tx.ExecContext(
@@ -182,10 +182,10 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		partitionOpsCompleted,
 	)
 	if err != nil {
-		migratePartitionOpsError(db, err)
+		migratePartitionOpsError(err)
 	}
 	if err = tx.Commit(); err != nil {
-		migratePartitionOpsError(db, err)
+		migratePartitionOpsError(err)
 	}
 
 	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), partitionOpsLogFile)
@@ -213,11 +213,10 @@ func migrateOpsData(db *sql.DB, gormDB *gorm.DB) error {
 			return nil
 		}
 
-		mustExec(
-			db,
-			`INSERT INTO ops ("ulid", "host", "action", "table", "data") VALUES `+constructOpsBulkInsertValuesString(ops)+` ON CONFLICT DO NOTHING`,
-			ops,
-		)
+		_, err = db.Exec(`INSERT INTO ops ("ulid", "host", "action", "table", "data") VALUES ` + constructOpsBulkInsertValuesString(ops) + ` ON CONFLICT DO NOTHING`)
+		if err != nil {
+			return err
+		}
 		rowsMigrated += len(ops)
 		lastULID = ops[len(ops)-1].ULID
 
