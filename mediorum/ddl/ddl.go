@@ -113,7 +113,7 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		return
 	}
 
-	logAndWriteToFile(fmt.Sprint("starting partitioning of ops"), partitionOpsLogFile)
+	logAndWriteToFile("starting partitioning of ops", partitionOpsLogFile)
 	start := time.Now()
 
 	_, err := db.Exec(
@@ -184,16 +184,24 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 	if err != nil {
 		migratePartitionOpsError(err)
 	}
+	_, err = tx.ExecContext(
+		ctx,
+		`DELETE FROM mediorum_migrations WHERE hash = $1;`,
+		partitionOpsScheduled,
+	)
+	if err != nil {
+		migratePartitionOpsError(err)
+	}
 	if err = tx.Commit(); err != nil {
 		migratePartitionOpsError(err)
 	}
 
-	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm\n", time.Since(start).Minutes()), partitionOpsLogFile)
+	logAndWriteToFile(fmt.Sprintf("finished partitioning ops. took %gm", time.Since(start).Minutes()), partitionOpsLogFile)
 }
 
 // copy data from old_ops to ops
 func migrateOpsData(db *sql.DB, gormDB *gorm.DB) error {
-	logAndWriteToFile(fmt.Sprintln("starting ops data migration"), partitionOpsLogFile)
+	logAndWriteToFile("starting ops data migration", partitionOpsLogFile)
 	lastULID := ""
 	pageSize := 3000
 	rowsMigrated := 0
