@@ -1,4 +1,4 @@
-import { GENRES } from '@audius/common'
+import { convertGenreLabelToValue, GENRES } from '@audius/common'
 
 import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 
@@ -10,7 +10,12 @@ type SelectGenreFieldProps = Partial<DropdownFieldProps> & {
   name: string
 }
 
-const menu = { items: GENRES }
+const menu = {
+  items: GENRES.map((genre) => {
+    const el = <p>{genre}</p>
+    return { el, text: genre, value: convertGenreLabelToValue(genre) }
+  })
+}
 
 export const SelectGenreField = (props: SelectGenreFieldProps) => {
   return (
@@ -18,7 +23,6 @@ export const SelectGenreField = (props: SelectGenreFieldProps) => {
       aria-label={messages.genre}
       placeholder={messages.genre}
       mount='parent'
-      // TODO: Use correct value for Genres based on label (see `convertGenreLabelToValue`)
       menu={menu}
       size='large'
       {...props}
