@@ -81,9 +81,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     color: palette.neutralLight7
   },
   startAdornment: {},
-  endAdornment: {
-    alignSelf: 'flex-end'
-  },
+  endAdornment: {},
   inputAccessory: {
     flexDirection: 'row',
     justifyContent: 'flex-end'
