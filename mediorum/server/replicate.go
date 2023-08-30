@@ -21,7 +21,7 @@ func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
 	success := []string{}
-	preferred, _ := ss.rendezvous(fileName)
+	preferred, _ := ss.rendezvousHealthyHosts(fileName)
 	for _, peer := range preferred {
 		logger := logger.With("to", peer)
 
