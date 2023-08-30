@@ -82,7 +82,7 @@ describe('Tastemaker Notification', () => {
         body: `track_title_3 is now trending thanks to you! Great work 🙌🏽`,
         data: {
           id: 'timestamp:1589373217:group_id:tastemaker_user_id:10:tastemaker_item_id:3',
-          type: 'FavoriteOfRepost',
+          type: 'Tastemaker',
           userIds: [10],
           entityType: 'Track',
           entityId: 3
