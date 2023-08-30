@@ -98,7 +98,7 @@ func schedulePartitionOpsMigration(db *sql.DB, myHost string) {
 	if partitioned {
 		slog.Info("already partitioned ops, skipping migration scheduling")
 	} else {
-		slog.Info("scheduling partition ops migration", "time", randomTime)
+		slog.Info("scheduling partition ops migration", "time", randomTime.String())
 		time.AfterFunc(randomTime, func() {
 			slog.Info("marking migrations table to partition ops after we restart...")
 			mustExec(db, `insert into mediorum_migrations values ($1, now()) on conflict do nothing`, partitionOpsScheduled)
