@@ -40,3 +40,4 @@ export type ColorValue =
   | 'specialLightGreen'
   | 'darkmodeStaticWhite'
   | 'staticWhite'
+  | 'staticNeutral'

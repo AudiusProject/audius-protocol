@@ -20,7 +20,6 @@
   display: inline-block;
   max-width: 448px;
   filter: var(--drop-shadow-near);
-  color: var(--static-netural);
   transition: background-color var(--expressive), filter var(--expressive);
 }
 
@@ -40,7 +39,6 @@
 }
 
 .isAuthor .bubble {
-  color: var(--static-white);
   --bubble-color: var(--secondary-light-2);
 }
 
