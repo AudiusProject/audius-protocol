@@ -48,6 +48,7 @@ type Crudr struct {
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
+	// TODO: change to partitioned schema after all nodes have migrated
 	opDDL := `
 	create table if not exists ops (
 		ulid text primary key,
