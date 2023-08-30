@@ -11,6 +11,23 @@ import (
 func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 	log.SetOutput(logFile)
 
+	endpoint := os.Getenv("creatorNodeEndpoint")
+	skipEndpoints := []string{
+		"https://content-node.audius.co",
+		"https://creatornode.audius.co",
+		"https://creatornode2.audius.co",
+		"https://creatornode3.audius.co",
+		"https://usermetadata.audius.co",
+	}
+
+	for _, skipEndpoint := range skipEndpoints {
+		if endpoint == skipEndpoint {
+			log.Printf("Skipping deletion due to matched endpoint: %s", endpoint)
+			time.Sleep(10000 * time.Hour)
+			return nil
+		}
+	}
+
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
@@ -27,8 +44,7 @@ func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 				log.Printf("Failed to delete file: %s, error: %s", childPath, err)
 				return err
 			}
-			log.Printf("Deleted file %s", childPath)
-			time.Sleep(50 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
 		}
 	}
 
@@ -41,13 +57,13 @@ func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 	return nil
 }
 
-func main() {
-	if err := os.MkdirAll("/cmd/logs", 0755); err != nil {
+func Run() {
+	if err := os.MkdirAll("/tmp/mediorum/cmd/logs", 0755); err != nil {
 		fmt.Printf("Error creating directory: %v\n", err)
 		return
 	}
 
-	logFile, err := os.OpenFile("/cmd/logs/file_storage.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	logFile, err := os.OpenFile("/tmp/mediorum/cmd/logs/reaper.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return

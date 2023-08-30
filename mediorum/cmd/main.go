@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"mediorum/cmd/loadtest"
+	"mediorum/cmd/reaper"
 	"mediorum/cmd/segments"
 	"mediorum/registrar"
 	"mediorum/server"
@@ -82,7 +83,9 @@ func main() {
 		}
 
 		segments.Run(c)
+	case "reaper":
+		reaper.Run()
 	default:
-		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments>`")
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments|reaper>`")
 	}
 }
