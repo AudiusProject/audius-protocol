@@ -29,16 +29,16 @@ func (ss *MediorumServer) getLogfile(c echo.Context, fileName string) error {
 
 	data, err := os.ReadFile(file)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to read log file."})
+		return c.JSON(http.StatusNotFound, map[string]string{"err": fmt.Sprintf("%s not found.", fileName)})
 	}
 
 	return c.JSON(200, strings.Split(string(data), "\n"))
 }
 
-func (ss *MediorumServer) getSegmentLog(c echo.Context) error {
-	return ss.getLogfile(c, "segments.txt")
-}
-
 func (ss *MediorumServer) getPartitionOpsLog(c echo.Context) error {
 	return ss.getLogfile(c, "partition_ops.txt")
+}
+
+func (ss *MediorumServer) getReaperLog(c echo.Context) error {
+	return ss.getLogfile(c, "reaper.txt")
 }

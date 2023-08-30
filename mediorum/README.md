@@ -12,14 +12,14 @@ If you want to move data between providers (e.g., from your disk to AWS or GCS),
 4. Remove the `AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM` env var and restart the server. You're good to go!
 
 ### Configuring GCS Backend
-1. Createa  new Service Account and JSON key for it. `scp` the key onto your server and `mv` the key to `/var/k8s/creator-node-backend/google-application-credentials.json`.
+1. Createa  new Service Account and JSON key for it. `scp` the key onto your server and `mv` the key to `/var/k8s/mediorum/google-application-credentials.json`.
 2. Create a GCS bucket:
    * Non-public access (enforce public access prevention)
    * Uniform access control
    * No protection tools
 3. In the bucket permissions, grant access for Storage Legacy Bucket Owner and Storage Legacy Object Owner for the Service Account (set the principal to the Service Account’s email).
 4. Set these env vars in `audius-docker-compose/creator-node/override.env`:
-    * `GOOGLE_APPLICATION_CREDENTIALS="/file_storage/google-application-credentials.json"`
+    * `GOOGLE_APPLICATION_CREDENTIALS="/tmp/mediorum/google-application-credentials.json"`
     * `AUDIUS_STORAGE_DRIVER_URL="gs://<your bucket's name>"`
 
 ### Configuring AWS Backend
