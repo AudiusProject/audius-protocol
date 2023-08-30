@@ -6,7 +6,9 @@ import {
   Track,
   formatCount,
   themeSelectors,
-  FeatureFlags
+  FeatureFlags,
+  combineStatuses,
+  useUSDCBalance
 } from '@audius/common'
 import cn from 'classnames'
 import { each } from 'lodash'
@@ -82,8 +84,10 @@ export const ArtistDashboardPage = () => {
     makeGetDashboard()
   )
   const listenData = useSelector(getDashboardListenData)
-  const status = useSelector(getDashboardStatus)
+  const dashboardStatus = useSelector(getDashboardStatus)
   const isMatrix = useSelector(getTheme) === Theme.MATRIX
+  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const status = combineStatuses([dashboardStatus, balanceStatus])
 
   const header = <Header primary='Dashboard' />
 
@@ -201,7 +205,7 @@ export const ArtistDashboardPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!account || status === Status.LOADING ? (
+      {!account || !balance || status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
@@ -213,7 +217,7 @@ export const ArtistDashboardPage = () => {
             handle={account.handle}
             onViewProfile={() => goToRoute(profilePage(account.handle))}
           />
-          {isUSDCEnabled ? <USDCTile balance={0} /> : null}
+          {isUSDCEnabled ? <USDCTile balance={balance} /> : null}
           {renderCreatorContent()}
         </>
       )}

@@ -1,4 +1,8 @@
-import { formatCurrencyBalance } from '@audius/common'
+import {
+  BNUSDC,
+  formatCurrencyBalance,
+  formatUSDCWeiToNumber
+} from '@audius/common'
 import {
   IconNote,
   IconKebabHorizontal,
@@ -10,6 +14,7 @@ import {
   HarmonyPlainButton,
   HarmonyPlainButtonType
 } from '@audius/stems'
+import BN from 'bn.js'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
@@ -25,8 +30,9 @@ const messages = {
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCTile = ({ balance }: { balance: number }) => {
-  // TODO: wire up balance https://linear.app/audius/issue/PAY-1761/wire-up-usdc-balance-in-artist-dashboard
+export const USDCTile = ({ balance }: { balance: BNUSDC }) => {
+  const balanceNumber = formatUSDCWeiToNumber((balance ?? new BN(0)) as BNUSDC)
+  const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -65,7 +71,7 @@ export const USDCTile = ({ balance }: { balance: number }) => {
             strength='strong'
             size='xxLarge'
           >
-            ${formatCurrencyBalance(balance)}
+            ${balanceFormatted}
           </Text>
         </div>
         <div className={styles.usdcInfo}>

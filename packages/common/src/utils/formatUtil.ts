@@ -55,7 +55,7 @@ export const formatCurrencyBalance = (amount: number) => {
     return '0'
   } else if (amount >= 9999.995) {
     const roundedAmount = Math.floor(amount / 1000)
-    return `${roundedAmount}k`
+    return `${roundedAmount}K`
   } else if (Number.isInteger(amount)) {
     return amount.toString()
   } else {

@@ -155,11 +155,18 @@ export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
   // with BN, divide by $1 Wei, ceiling up to the nearest cent,
   //  and then convert to JS number and divide back down before formatting to
   // two decimal places.
-  const cents =
-    ceilingBNUSDCToNearestCent(new BN(amount) as BNUSDC)
-      .div(BN_USDC_CENT_WEI)
-      .toNumber() / 100
+  const cents = formatUSDCWeiToNumber(new BN(amount) as BNUSDC)
   return formatNumberCommas(cents.toFixed(precision))
+}
+
+/**
+ * Formats a USDC BN (full precision) to a number suitable for display as a dollar amount.
+ * Note: will lose precision by rounding _up_ to nearest cent.
+ */
+export const formatUSDCWeiToNumber = (amount: BNUSDC) => {
+  return (
+    ceilingBNUSDCToNearestCent(amount).div(BN_USDC_CENT_WEI).toNumber() / 100
+  )
 }
 
 /** General Wallet Utils */
