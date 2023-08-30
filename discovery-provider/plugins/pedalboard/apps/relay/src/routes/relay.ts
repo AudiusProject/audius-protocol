@@ -6,15 +6,16 @@ import {
 } from "../types/relay";
 import { SharedData } from "..";
 import { relayTransaction } from "../txRelay";
-import { IncomingHttpHeaders } from "http";
 import { FastifyReply } from "fastify";
+import { errorResponseInternalServerError } from "../error";
+import { logger } from "../logger";
 
 export const relayHandler = async (
   app: App<SharedData>,
   headers: RelayRequestHeaders,
   req: RelayRequestType,
   rep: FastifyReply
-): Promise<RelayResponseType> => {
+): Promise<RelayResponseType | undefined> => {
   try {
     const { receipt } = await relayTransaction(app, headers, req, rep);
     return {
@@ -24,8 +25,7 @@ export const relayHandler = async (
       },
     };
   } catch (e) {
-    // return useful error back to caller from here
-    console.error("relay error = ", e);
-    throw e;
+    logger.error({ error_msg: "relay.ts | internal server error", error: e, request: req })
+    errorResponseInternalServerError(rep)
   }
 };

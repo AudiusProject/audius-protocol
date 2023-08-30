@@ -11,6 +11,7 @@ import {
 } from "./types/relay";
 import { SharedData } from ".";
 import { relayRateLimiter } from "./middleware/rateLimiter";
+import { errorResponseInternalServerError } from "./error";
 
 export const webServer = async (app: App<SharedData>) => {
   const fastify = Fastify({
