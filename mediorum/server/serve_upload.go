@@ -151,6 +151,10 @@ type UpdateUploadBody struct {
 }
 
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
+	if !ss.shouldReplicate() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
+	}
+
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
@@ -208,6 +212,10 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
+	if !ss.shouldReplicate() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
+	}
+
 	// Parse X-User-Wallet header
 	userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
 	userWallet := sql.NullString{Valid: false}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"mediorum/cidutil"
-	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -18,6 +17,7 @@ func (ss *MediorumServer) startRepairer() {
 	time.Sleep(time.Minute * 10)
 
 	for i := 1; ; i++ {
+		replicateMode := ss.shouldReplicate()
 		// 10% percent of time... clean up over-replicated
 		cleanupMode := false
 		if i%10 == 0 {
@@ -26,10 +26,10 @@ func (ss *MediorumServer) startRepairer() {
 
 		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
 		took := time.Duration(0)
-		if ss.shouldRunRepair() {
+		if replicateMode || cleanupMode {
 			repairStart := time.Now()
 			logger.Info("repair starting")
-			err := ss.runRepair(cleanupMode)
+			err := ss.runRepair(replicateMode, cleanupMode)
 			took = time.Since(repairStart)
 			if err != nil {
 				logger.Error("repair failed", "err", err, "took", took)
@@ -37,7 +37,7 @@ func (ss *MediorumServer) startRepairer() {
 				logger.Info("repair OK", "took", took)
 			}
 		} else {
-			logger.Warn("disk has <200GB remaining. skipping repair")
+			logger.Warn("disk has <200GB remaining and is not in cleanup mode. skipping repair")
 		}
 
 		// sleep for as long as the job took
@@ -51,25 +51,10 @@ func (ss *MediorumServer) startRepairer() {
 	}
 }
 
-// If the node is using local storage, do not run repair if there is <200GB remaining (i.e. 10% of 2TB)
-func (ss *MediorumServer) shouldRunRepair() bool {
-	if strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") {
-		_, free, err := getDiskStatus("/file_storage")
-		if err == nil {
-			if free/uint64(1e9) < 200 {
-				return false
-			}
-		} else {
-			ss.logger.With("task", "repair").Error("getDiskStatus failed", "err", err)
-		}
-	}
-	return true
-}
-
-func (ss *MediorumServer) runRepair(cleanupMode bool) error {
+func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 	ctx := context.Background()
 
-	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
+	logger := ss.logger.With("task", "repair", "replicateMode", replicateMode, "cleanupMode", cleanupMode)
 
 	// check that network is valid (should have more peers than replication factor)
 	if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
@@ -138,7 +123,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			}
 
 			// get blobs that I should have
-			if isMine && !alreadyHave {
+			if replicateMode && isMine && !alreadyHave {
 				success := false
 				for _, host := range preferredHosts {
 					if host == ss.Config.Self.Host {
@@ -187,7 +172,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			// even tho this blob isn't "mine"
 			// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
 			// and pull file if under-replicated
-			if cleanupMode && !isMine && !alreadyHave && myRank < ss.Config.ReplicationFactor*2 {
+			if replicateMode && cleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {

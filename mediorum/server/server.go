@@ -86,6 +86,7 @@ type MediorumServer struct {
 	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
+	mediorumPathFree uint64
 
 	databaseSize uint64
 	dbSizeErr    string
