@@ -58,12 +58,7 @@ func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 }
 
 func Run() {
-	if err := os.MkdirAll("/tmp/mediorum/cmd/logs", 0755); err != nil {
-		fmt.Printf("Error creating directory: %v\n", err)
-		return
-	}
-
-	logFile, err := os.OpenFile("/tmp/mediorum/cmd/logs/reaper.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	logFile, err := os.OpenFile("/tmp/mediorum/reaper.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Printf("Error opening log file: %v\n", err)
 		return

@@ -12,6 +12,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type diskStatus struct {
+	StoragePathSizeGB uint64 `json:"storagePathSizeGB"`
+	StoragePathUsedGB uint64 `json:"storagePathUsedGB"`
+	DatabaseSizeGB    uint64 `json:"databaseSizeGB"`
+}
+
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
 	ss.updateDiskAndDbStatus()
 	ticker := time.NewTicker(5 * time.Minute)
@@ -98,7 +104,12 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	ss.uploadsCount = uploadsCount
 	ss.uploadsCountErr = errStr
 
-	ss.logger.Info("updateDiskAndDbStatus", "storagePathUsed", ss.storagePathUsed, "databaseSize", ss.databaseSize)
+	status := diskStatus{
+		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
+		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
+		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
+	}
+	ss.logger.Info("diskStatus", status)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
