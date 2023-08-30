@@ -97,6 +97,8 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
 	ss.uploadsCount = uploadsCount
 	ss.uploadsCountErr = errStr
+
+	ss.logger.Info("updateDiskAndDbStatus", "storagePathUsed", ss.storagePathUsed, "databaseSize", ss.databaseSize)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
