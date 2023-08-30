@@ -27,6 +27,8 @@ const messages = {
   searchTagsDisabled: () => 'Search Tags'
 }
 
+const maxLength = 500
+
 const TagSearchPopup = ({ tag, style, onClick, disabled, focused }) => (
   <div
     style={style}
@@ -88,14 +90,15 @@ class SearchBar extends Component {
   }
 
   onSearch = (value, action) => {
-    this.setState({ value, valueFromParent: false })
+    const trimmedValue = value.slice(0, maxLength)
+    this.setState({ value: trimmedValue, valueFromParent: false })
 
     // Set the search state but don't actually call search
-    this.props.onSearch(value, false)
+    this.props.onSearch(trimmedValue, false)
     // Set a debounce timer for 100ms to actually send the search
     this.setState({
       debounce: setTimeout(() => {
-        this.props.onSearch(value, true)
+        this.props.onSearch(trimmedValue, true)
       }, 100)
     })
   }
@@ -281,7 +284,7 @@ class SearchBar extends Component {
                       ? Kind.TRACKS
                       : Kind.COLLECTIONS
                   }
-                  id={opt.id}
+                  id={String(opt.id)}
                   userId={opt.userId}
                   sizes={opt.sizes}
                   imageMultihash={opt.imageMultihash}
@@ -393,7 +396,6 @@ class SearchBar extends Component {
             prefix={<IconSearch />}
             onKeyDown={this.onKeyDown}
             spellCheck={false}
-            maxLength={500}
           />
         </AutoComplete>
         <Transition
