@@ -207,6 +207,7 @@ def process_state_changes(
 @log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
+
         logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
 
