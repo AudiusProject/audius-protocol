@@ -5,6 +5,7 @@ import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
@@ -14,6 +15,7 @@ type ModalRadioItemProps = {
   label: string
   title?: ReactNode
   description?: ReactNode
+  hintText?: string
   value: any
   disabled?: boolean
   icon?: ReactNode
@@ -21,8 +23,16 @@ type ModalRadioItemProps = {
 }
 
 export const ModalRadioItem = (props: ModalRadioItemProps) => {
-  const { icon, label, title, description, value, disabled, checkedContent } =
-    props
+  const {
+    icon,
+    label,
+    hintText,
+    title,
+    description,
+    value,
+    disabled,
+    checkedContent
+  } = props
   const [isCollapsed, setIsCollapsed] = useState(true)
   const radioGroup = useContext(RadioGroupContext)
 
@@ -55,6 +65,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           <span>{title ?? label}</span>
         </Text>
       </div>
+      {hintText ? <HelpCallout content={hintText} /> : null}
       {checkedContent || description ? (
         <div
           className={cn(styles.collapsibleContainer, {
