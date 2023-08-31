@@ -5,7 +5,7 @@ import { Text, Link } from 'app/components/core'
 import { makeStyles, shadow } from 'app/styles'
 
 const AUDIUS_AI_BLOG_LINK =
-  'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius'
+  'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius-0a5a8'
 
 const messages = {
   title: 'Share Your AI-Generated Tracks',
