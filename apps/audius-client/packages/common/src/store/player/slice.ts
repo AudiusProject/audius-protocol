@@ -91,6 +91,7 @@ type SetBufferingPayload = {
 type SetPayload = {
   uid: UID
   trackId: ID
+  previewing?: boolean
 }
 
 type SeekPayload = {
@@ -139,6 +140,7 @@ const slice = createSlice({
       action: PayloadAction<PlayCollectibleSucceededPayload>
     ) => {
       const { collectible } = action.payload
+      state.previewing = false
       state.playing = true
       state.uid = null
       state.trackId = null
@@ -158,15 +160,17 @@ const slice = createSlice({
       state.counter = state.counter + 1
     },
     set: (state, action: PayloadAction<SetPayload>) => {
-      const { uid, trackId } = action.payload
+      const { previewing, uid, trackId } = action.payload
       state.uid = uid
       state.trackId = trackId
+      state.previewing = !!previewing
     },
     reset: (_state, _action: PayloadAction<ResetPayload>) => {},
     resetSucceeded: (state, action: PayloadAction<ResetSucceededPayload>) => {
       const { shouldAutoplay } = action.payload
       state.playing = shouldAutoplay
       state.counter = state.counter + 1
+      state.previewing = false
     },
     seek: (state, action: PayloadAction<SeekPayload>) => {
       const { seconds } = action.payload

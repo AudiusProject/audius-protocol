@@ -86,6 +86,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 type PlayBarProps = {
   track: Nullable<Track>
+  duration: number
   user: Nullable<User>
   onPress: () => void
   translationAnim: Animated.Value
@@ -93,7 +94,7 @@ type PlayBarProps = {
 }
 
 export const PlayBar = (props: PlayBarProps) => {
-  const { track, user, onPress, translationAnim, mediaKey } = props
+  const { duration, track, user, onPress, translationAnim, mediaKey } = props
   const styles = useStyles()
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
@@ -136,7 +137,7 @@ export const PlayBar = (props: PlayBarProps) => {
   return (
     <Animated.View style={[styles.root, { opacity: rootOpacityAnimation }]}>
       <TrackingBar
-        duration={track?.duration ?? 0}
+        duration={duration}
         mediaKey={mediaKey}
         translateYAnimation={translationAnim}
       />
