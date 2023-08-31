@@ -397,6 +397,7 @@ export class TransactionHandler {
   _parseSolanaErrorCode(errorMessage: string) {
     if (!errorMessage) return null
     // Match on custom solana program errors
+
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
     if (res && res.length === 2)
