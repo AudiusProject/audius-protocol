@@ -148,7 +148,7 @@ class EventScanner:
         # and each one of those gets their own log index
 
         log_index = event["logIndex"]  # Log index within the block
-        if not log_index:
+        if log_index is None:
             raise Exception(f"logIndex not found on event {log_index}")
         txhash = event["transactionHash"]  # Transaction hash
         if not txhash:

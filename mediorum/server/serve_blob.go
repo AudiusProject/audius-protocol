@@ -23,7 +23,7 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	locations := []Blob{}
 	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
-	preferred, _ := ss.rendezvous(cid)
+	preferred, _ := ss.rendezvousAllHosts(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"locations": locations,
@@ -164,6 +164,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 		return nil
+	}
+
+	if strings.ToLower(c.QueryParam("localOnly")) == "true" {
+		return c.String(404, "blob not found")
 	}
 
 	// redirect to it
