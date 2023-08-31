@@ -220,8 +220,9 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
         if key == "premium_conditions":
-            if "premium_conditions" in track_metadata and is_valid_json_field(
-                track_metadata, "premium_conditions"
+            if "premium_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "premium_conditions")
+                or track_metadata.get("premium_conditions") is None
             ):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
 
