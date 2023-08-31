@@ -247,6 +247,7 @@ def get_purchase_metadata_from_memo(
 ) -> Union[PurchaseMetadataDict, None]:
     """Checks the list of memos for one matching the format of a purchase's content_metadata, and then uses that content_metadata to find the premium_conditions associated with that content to get the price"""
     for memo in memos:
+        logger.debug(f"index_user_bank.py | MEMO {memo}")
         try:
             content_metadata = memo.split(":")
             if len(content_metadata) == 3:
@@ -262,18 +263,11 @@ def get_purchase_metadata_from_memo(
                 price = None
                 splits = None
                 if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
                     result = (
-                        query.filter(
+                        session.query(TrackPriceHistory)
+                        .filter(
                             TrackPriceHistory.track_id == id,
+                            TrackPriceHistory.block_timestamp < timestamp,
                         )
                         .order_by(desc(TrackPriceHistory.block_timestamp))
                         .first()

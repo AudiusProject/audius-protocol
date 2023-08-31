@@ -517,8 +517,7 @@ def extend_transaction_details(transaction_details):
     new_transaction_details["transaction_date"] = transaction_details[
         "transaction_created_at"
     ]
-    if "metadata" in new_transaction_details:
-        new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
+    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
     return new_transaction_details
 
 
@@ -532,14 +531,6 @@ def abort_bad_request_param(param, namespace):
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
-
-
-def abort_unauthorized(namespace):
-    namespace.abort(401, "Oh no! User is not authorized.")
-
-
-def abort_forbidden(namespace):
-    namespace.abort(403, "Oh no! User does not have access to that resource.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:

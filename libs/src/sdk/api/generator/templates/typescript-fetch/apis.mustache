@@ -91,11 +91,7 @@ export class {{classname}} extends runtime.BaseAPI {
 {{/withInterfaces}}
 
     {{#operation}}
-    /**
-     * @hidden
-    {{#isDeprecated}}
-     * @deprecated
-    {{/isDeprecated}}
+    /** @hidden
      {{#notes}}
      * {{&notes}}
      {{/notes}}
@@ -335,9 +331,6 @@ export class {{classname}} extends runtime.BaseAPI {
     }
 
     /**
-    {{#isDeprecated}}
-     * @deprecated
-    {{/isDeprecated}}
      {{#notes}}
      * {{&notes}}
      {{/notes}}

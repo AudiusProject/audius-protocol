@@ -18,12 +18,10 @@ import "./repost-playlist.mjs";
 import "./unrepost-playlist.mjs";
 import "./upload-track.mjs";
 import "./edit-track.mjs";
-import "./mint-tokens.mjs";
+import "./mint-audio.mjs";
 import "./tip-audio.mjs";
 import "./auth-headers.mjs";
 import "./get-audio-balance.mjs";
-import "./create-user-bank.mjs";
-import "./purchase-track.mjs";
 
 async function main() {
   program.parseAsync(process.argv);

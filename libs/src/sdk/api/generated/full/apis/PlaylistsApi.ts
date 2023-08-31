@@ -81,8 +81,7 @@ export interface GetUsersFromPlaylistRepostsRequest {
  */
 export class PlaylistsApi extends runtime.BaseAPI {
 
-    /**
-     * @hidden
+    /** @hidden
      * Get a playlist by ID
      */
     async getPlaylistRaw(params: GetPlaylistRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
@@ -116,8 +115,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Get a playlist by handle and slug
      */
     async getPlaylistByHandleAndSlugRaw(params: GetPlaylistByHandleAndSlugRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistResponse>> {
@@ -155,8 +153,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Fetch tracks within a playlist.
      */
     async getPlaylistTracksRaw(params: GetPlaylistTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullPlaylistTracksResponse>> {
@@ -186,8 +183,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Returns trending playlists for a time period
      */
     async getTrendingPlaylistsRaw(params: GetTrendingPlaylistsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
@@ -229,8 +225,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Returns trending playlists for a time period based on the given trending version
      */
     async getTrendingPlaylistsWithVersionRaw(params: GetTrendingPlaylistsWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTrendingPlaylistsResponse>> {
@@ -276,8 +271,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Get users that favorited a playlist
      */
     async getUsersFromPlaylistFavoritesRaw(params: GetUsersFromPlaylistFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
@@ -319,8 +313,7 @@ export class PlaylistsApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /**
-     * @hidden
+    /** @hidden
      * Get users that reposted a playlist
      */
     async getUsersFromPlaylistRepostsRaw(params: GetUsersFromPlaylistRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
