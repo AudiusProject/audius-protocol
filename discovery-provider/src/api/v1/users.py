@@ -16,7 +16,6 @@ from src.api.v1.helpers import (
     extend_activity,
     extend_challenge_response,
     extend_favorite,
-    extend_purchase,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -2157,7 +2156,7 @@ class FullPurchases(Resource):
             sort_direction=sort_direction,
         )
         purchases = get_usdc_purchases(args)
-        return success_response(list(map(extend_purchase, purchases)))
+        return success_response(purchases)
 
 
 @full_ns.route("/<string:id>/purchases/count")
@@ -2211,7 +2210,7 @@ class FullSales(Resource):
             sort_direction=sort_direction,
         )
         purchases = get_usdc_purchases(args)
-        return success_response(list(map(extend_purchase, purchases)))
+        return success_response(purchases)
 
 
 @full_ns.route("/<string:id>/sales/count")
