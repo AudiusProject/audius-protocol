@@ -22,6 +22,7 @@ import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
 import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 import fetch from 'cross-fetch'
+import type { TransactionReceipt } from 'web3-core'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -1066,6 +1067,18 @@ export class DiscoveryProvider {
       false,
       blockNumber
     )
+  }
+
+  async relay(senderAddress: string, encodedABI: string): Promise<{ receipt: TransactionReceipt } | null | undefined> {
+    const req = {
+      endpoint: 'relay',
+      method: 'post',
+      data: {
+        senderAddress,
+        encodedABI
+      }
+    }
+    return await this._makeRequest(req, true, 3, true)
   }
 
   /**
