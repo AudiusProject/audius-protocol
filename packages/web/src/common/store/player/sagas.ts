@@ -19,7 +19,8 @@ import {
   QueryParams,
   Genre,
   doesUserHaveTrackAccess,
-  getQueryParams
+  getQueryParams,
+  getTrackPreviewDuration
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -66,7 +67,6 @@ const { getIsReachable } = reachabilitySelectors
 const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
 const RECORD_LISTEN_INTERVAL = 1000
-const PREVIEW_LENGTH_SECONDS = 30
 
 export function* watchPlay() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -119,12 +119,8 @@ export function* watchPlay() {
 
       if (isPreview) {
         // Add preview query string and calculate preview duration for use later
-        const previewStartSeconds = track.preview_start_seconds || 0
         queryParams.preview = true
-        trackDuration = Math.min(
-          track.duration - previewStartSeconds,
-          PREVIEW_LENGTH_SECONDS
-        )
+        trackDuration = getTrackPreviewDuration(track)
       }
 
       const mp3Url = apiClient.makeUrl(

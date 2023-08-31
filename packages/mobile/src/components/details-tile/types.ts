@@ -12,6 +12,7 @@ export type DetailsTileDetail = {
   isHidden?: boolean
   label: string
   value: ReactNode
+
   valueStyle?: TextStyle
 }
 
@@ -64,6 +65,9 @@ export type DetailsTileProps = {
   /** Is the item playing */
   isPlaying?: boolean
 
+  /** Is the currently playing item a preview */
+  isPreviewing?: boolean
+
   /** Is the item loaded and in a playable state */
   isPlayable?: boolean
 
@@ -87,6 +91,9 @@ export type DetailsTileProps = {
 
   /** Function to call when play button is pressed */
   onPressPlay: GestureResponderHandler
+
+  /** Function to call when preview button is pressed */
+  onPressPreview?: GestureResponderHandler
 
   /** Function to call when publish button is pressed */
   onPressPublish?: GestureResponderHandler

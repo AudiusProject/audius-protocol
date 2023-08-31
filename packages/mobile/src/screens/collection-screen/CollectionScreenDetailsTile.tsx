@@ -128,6 +128,7 @@ type CollectionScreenDetailsTileProps = {
   | 'details'
   | 'headerText'
   | 'onPressPlay'
+  | 'onPressPreview'
   | 'collectionId'
 >
 

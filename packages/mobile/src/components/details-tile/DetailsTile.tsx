@@ -161,6 +161,7 @@ export const DetailsTile = ({
   hideRepostCount,
   hideShare,
   isPlaying,
+  isPreviewing,
   isPlayable = true,
   isPlaylist = false,
   isPublished = true,
@@ -169,6 +170,7 @@ export const DetailsTile = ({
   onPressFavorites,
   onPressOverflow,
   onPressPlay,
+  onPressPreview,
   onPressPublish,
   onPressRepost,
   onPressReposts,
@@ -213,6 +215,12 @@ export const DetailsTile = ({
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
 
+  const isPlayingPreview = isPreviewing && isPlaying
+  const isPlayingFullAccess = isPlaying && !isPreviewing
+
+  const showPreviewButton =
+    isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) && onPressPreview
+
   const handlePressArtistName = useCallback(() => {
     if (!user) {
       return
@@ -228,6 +236,11 @@ export const DetailsTile = ({
     light()
     onPressPlay()
   }, [onPressPlay])
+
+  const handlePressPreview = useCallback(() => {
+    light()
+    onPressPreview?.()
+  }, [onPressPreview])
 
   const renderDogEar = () => {
     const dogEarType = getDogEarType({
@@ -298,13 +311,11 @@ export const DetailsTile = ({
         text: styles.playButtonText,
         icon: styles.playButtonIcon
       }}
-      title={isPlaying ? messages.pause : messages.preview}
+      title={isPlayingPreview ? messages.pause : messages.preview}
       size='large'
       iconPosition='left'
-      icon={isPlaying ? IconPause : PlayIcon}
-      onPress={() => {
-        console.info('Preview button pressed')
-      }}
+      icon={isPlayingPreview ? IconPause : PlayIcon}
+      onPress={handlePressPreview}
       disabled={!isPlayable}
       fullWidth
     />
@@ -365,10 +376,10 @@ export const DetailsTile = ({
                   text: styles.playButtonText,
                   icon: styles.playButtonIcon
                 }}
-                title={isPlaying ? messages.pause : playText}
+                title={isPlayingFullAccess ? messages.pause : playText}
                 size='large'
                 iconPosition='left'
-                icon={isPlaying ? IconPause : PlayIcon}
+                icon={isPlayingFullAccess ? IconPause : PlayIcon}
                 onPress={handlePressPlay}
                 disabled={!isPlayable}
                 fullWidth
@@ -381,9 +392,7 @@ export const DetailsTile = ({
                 trackArtist={user}
               />
             ) : null}
-            {isUSDCPurchaseGated && (isOwner || !doesUserHaveAccess) ? (
-              <PreviewButton />
-            ) : null}
+            {showPreviewButton ? <PreviewButton /> : null}
             <DetailsTileActionButtons
               hasReposted={!!hasReposted}
               hasSaved={!!hasSaved}

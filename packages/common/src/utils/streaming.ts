@@ -8,6 +8,8 @@ import { Nullable } from './typeUtils'
 
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
+const PREVIEW_LENGTH_SECONDS = 30
+
 export async function generateUserSignature(
   audiusBackendInstance: AudiusBackend
 ) {
@@ -49,4 +51,9 @@ export function* doesUserHaveTrackAccess(track: Nullable<Track>) {
     !!(trackId && premiumTrackSignatureMap[trackId])
 
   return !isPremium || hasPremiumContentSignature
+}
+
+export function getTrackPreviewDuration(track: Track) {
+  const previewStartSeconds = track.preview_start_seconds || 0
+  return Math.min(track.duration - previewStartSeconds, PREVIEW_LENGTH_SECONDS)
 }

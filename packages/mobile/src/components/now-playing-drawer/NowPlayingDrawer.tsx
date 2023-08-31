@@ -45,6 +45,7 @@ import { PlayBar } from './PlayBar'
 import { TitleBar } from './TitleBar'
 import { TrackInfo } from './TrackInfo'
 import { PLAY_BAR_HEIGHT } from './constants'
+import { useCurrentTrackDuration } from './useCurrentTrackDuration'
 const { seek, reset } = playerActions
 
 const { getPlaying, getCurrentTrack, getCounter, getUid } = playerSelectors
@@ -208,8 +209,8 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   const [isGestureEnabled, setIsGestureEnabled] = useState(true)
 
   const track = useSelector(getCurrentTrack)
+  const trackDuration = useCurrentTrackDuration()
   const trackId = track?.track_id
-  const trackDuration = track?.duration ?? 0
 
   const user = useSelector((state) =>
     getUser(state, track ? { id: track.owner_id } : {})
@@ -306,6 +307,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
         <View style={styles.playBarContainer}>
           <PlayBar
             mediaKey={`${mediaKey}`}
+            duration={trackDuration}
             track={track}
             user={user}
             onPress={onDrawerOpen}
