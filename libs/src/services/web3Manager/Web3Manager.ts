@@ -245,8 +245,16 @@ export class Web3Manager {
           try {
             if (this.discoveryProvider !== null) {
               // use discovery relay
-              const res = await this.discoveryProvider?.relay(this.ownerWallet!.getAddressString(),
-              encodedABI)
+              const res = await this.discoveryProvider?.relay({
+                contractRegistryKey,
+                contractAddress,
+                senderAddress: this.ownerWallet!.getAddressString(),
+                encodedABI,
+                gasLimit,
+                handle: this.userSuppliedHandle,
+                nethermindContractAddress,
+                nethermindEncodedAbi
+              })
               if (res === null || res === undefined) {
                 throw new Error("discovery relay returned empty response")
               }

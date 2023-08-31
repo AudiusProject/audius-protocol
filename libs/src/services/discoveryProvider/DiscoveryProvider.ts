@@ -94,6 +94,17 @@ type DiscoveryNodeChallenge = {
   completed_blocknumber: number
 }
 
+export type DiscoveryRelayBody = {
+  contractRegistryKey?: string | null;
+  contractAddress?: string | null;
+  senderAddress?: string | null;
+  encodedABI?: string | null;
+  gasLimit?: number | null;
+  handle?: string | null;
+  nethermindContractAddress?: string | null;
+  nethermindEncodedAbi?: string | null;
+}
+
 /**
  * Constructs a service class for a discovery node
  * @param whitelist whether or not to only include specified nodes in selection
@@ -1069,14 +1080,11 @@ export class DiscoveryProvider {
     )
   }
 
-  async relay(senderAddress: string, encodedABI: string): Promise<{ receipt: TransactionReceipt } | null | undefined> {
+  async relay(data: DiscoveryRelayBody): Promise<{ receipt: TransactionReceipt } | null | undefined> {
     const req = {
       endpoint: 'relay',
       method: 'post',
-      data: {
-        senderAddress,
-        encodedABI
-      }
+      data
     }
     return await this._makeRequest(req, true, 3, true)
   }
