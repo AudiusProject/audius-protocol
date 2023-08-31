@@ -62,7 +62,7 @@ def test_index_valid_track(app, mocker):
             "is_current": True,
             "is_unlisted": True,
             "is_premium": False,
-            "premium_conditions": "fake dataaa",
+            "premium_conditions": {},
             "field_visibility": {
                 "mood": True,
                 "tags": True,
