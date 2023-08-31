@@ -1,4 +1,4 @@
-import type { ComponentType, ReactElement, ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { useState, useRef, forwardRef, useCallback } from 'react'
 
 import { BlurView } from '@react-native-community/blur'
@@ -42,6 +42,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     alignItems: 'center',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 2,
     borderRadius: 8,
     borderWidth: 1,
     paddingVertical: spacing(2),
@@ -99,7 +100,7 @@ export type TextInputProps = RNTextInputProps & {
    */
   Icon?: ComponentType<SvgProps>
   startAdornment?: ReactNode
-  endAdornment?: ReactElement
+  endAdornment?: ReactNode
   /**
    * Whether or not the search input should show a clear icon
    */
@@ -150,7 +151,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const styles = useStyles()
 
     const [isFocused, setIsFocused] = useState(Boolean(autoFocus))
-    const isLabelActive = isFocused || value
+    const isLabelActive = isFocused || value || startAdornment
     const labelY = useRef(
       new Animated.Value(isLabelActive ? activeLabelY : inactiveLabelY)
     )
@@ -221,7 +222,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
 
         animations.push(borderFocusCompositeAnim)
 
-        if (isFocused && !value) {
+        if (isFocused && !value && !startAdornment) {
           const labelYAnimation = Animated.spring(labelY.current, {
             toValue: inactiveLabelY,
             useNativeDriver: true
@@ -242,7 +243,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
         }
         Animated.parallel(animations).start()
       },
-      [onBlur, isFocused, value]
+      [onBlur, isFocused, value, startAdornment]
     )
 
     const handlePressRoot = useCallback(() => {
@@ -320,7 +321,9 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
             value={value}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            placeholder={label && !isFocused ? undefined : placeholder}
+            placeholder={
+              label && !isFocused && !startAdornment ? undefined : placeholder
+            }
             inputAccessoryViewID={
               hideInputAccessory ? undefined : inputAccessoryViewID
             }

@@ -10,18 +10,38 @@ import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
 const EditTrackSchema = Yup.object().shape({
-  title: Yup.string().required('Required'),
+  title: Yup.string().required('Your track must have a name.'),
   artwork: Yup.object({
     url: Yup.string()
   })
     .when('trackArtwork', {
       is: undefined,
-      then: Yup.object().required('Required').nullable()
+      then: Yup.object().required('Artwork is required.').nullable()
     })
     .nullable(),
   trackArtwork: Yup.string().nullable(),
-  genre: Yup.string().required('Required'),
-  description: Yup.string().max(1000).nullable()
+  genre: Yup.string().required('Genre is required.'),
+  description: Yup.string().max(1000).nullable(),
+  premium_conditions: Yup.object({
+    usdc_purchase: Yup.object({
+      price: Yup.number()
+        .positive()
+        .min(0.99, 'Price must be at least $0.99.')
+        .max(9999.99, 'Price must be less than $9999.99.')
+        .required('Required')
+    }).nullable()
+  }).nullable(),
+  duration: Yup.number(),
+  preview_start_seconds: Yup.number()
+    .max(
+      (Yup.ref('duration') as unknown as number) > 30
+        ? (Yup.ref('duration') as unknown as number) - 30
+        : 0,
+      (Yup.ref('duration') as unknown as number)
+        ? 'Preview must start at least 30 seconds before the end of the track.'
+        : 'Preview must start at 0 since the track is less than 30 seconds'
+    )
+    .nullable()
 })
 
 export type EditTrackParams = UploadTrack

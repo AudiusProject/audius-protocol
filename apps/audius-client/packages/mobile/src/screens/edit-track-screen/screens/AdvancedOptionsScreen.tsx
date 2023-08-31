@@ -7,8 +7,7 @@ import {
   IsrcField,
   LicenseTypeField,
   ReleaseDateField,
-  SubmenuList,
-  TrackVisibilityField
+  SubmenuList
 } from '../fields'
 
 const messages = {
@@ -24,9 +23,6 @@ export const AdvancedOptionsScreen = () => {
       variant='white'
     >
       <View>
-        <SubmenuList>
-          <TrackVisibilityField />
-        </SubmenuList>
         <ReleaseDateField />
         <SubmenuList>
           <IsrcField />

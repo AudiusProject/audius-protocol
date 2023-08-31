@@ -6,10 +6,11 @@ import {
   newTrackMetadata
 } from '@audius/common'
 import type { DocumentPickerResponse } from 'react-native-document-picker'
+import TrackPlayer from 'react-native-track-player'
 
-export const processTrackFile = (
+export const processTrackFile = async (
   trackFile: DocumentPickerResponse
-): UploadTrack => {
+): Promise<UploadTrack> => {
   const { name, size, fileCopyUri, uri, type } = trackFile
   if (size && size > ALLOWED_MAX_AUDIO_SIZE_BYTES) {
     throw new Error('File too large')
@@ -28,6 +29,16 @@ export const processTrackFile = (
     throw new Error('File must be an audio file')
   }
 
+  await TrackPlayer.add(
+    {
+      id: 'uploadTrack',
+      url: fileCopyUri ?? uri
+    },
+    0
+  )
+
+  const duration = await TrackPlayer.getDuration()
+
   const title = name?.replace(/\.[^/.]+$/, '') ?? null // strip file extension
 
   return {
@@ -35,7 +46,8 @@ export const processTrackFile = (
     preview: null,
     metadata: newTrackMetadata({
       title,
-      artwork: null
+      artwork: null,
+      duration
     })
   }
 }

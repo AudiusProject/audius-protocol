@@ -7,6 +7,7 @@ const defaultTrackAvailabilityFields = {
   is_premium: false,
   premium_conditions: null as Nullable<PremiumConditions>,
   is_unlisted: false,
+  preview_start_seconds: null as Nullable<Number>,
   'field_visibility.genre': true,
   'field_visibility.mood': true,
   'field_visibility.tags': true,
@@ -23,6 +24,9 @@ export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [, , { setValue: setIsUnlisted }] = useField<boolean>('is_unlisted')
+  const [, , { setValue: setPreviewStartSeconds }] = useField<number>(
+    'preview_start_seconds'
+  )
   const [, , { setValue: setGenre }] = useField<boolean>(
     'field_visibility.genre'
   )
@@ -43,6 +47,7 @@ export const useSetTrackAvailabilityFields = () => {
       is_premium: setIsPremium,
       premium_conditions: setPremiumConditions,
       is_unlisted: setIsUnlisted,
+      preview_start_seconds: setPreviewStartSeconds,
       'field_visibility.genre': setGenre,
       'field_visibility.mood': setMood,
       'field_visibility.tags': setTags,

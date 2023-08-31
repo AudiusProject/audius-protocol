@@ -6,28 +6,32 @@ import {
   collectiblesSelectors,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
-  isPremiumContentCollectibleGated
+  isPremiumContentCollectibleGated,
+  FeatureFlags,
+  removeNullable
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
 
-import IconHidden from 'app/assets/images/iconHidden.svg'
+import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
 import { HiddenAvailability } from '../components/HiddenAvailability'
-import { PublicAvailability } from '../components/PublicAvailability'
 import { SpecialAccessAvailability } from '../components/SpecialAccessAvailability'
+import { PremiumRadioField } from '../fields/AccessAndSaleField/PremiumRadioField/PremiumRadioField'
+import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
-  title: 'Availability',
+  title: 'Access & Sale',
   description:
     "Hidden tracks won't show up on your profile. Anyone who has the link will be able to listen.",
   hideTrack: 'Hide Track',
@@ -44,6 +48,7 @@ const messages = {
 const { getSupportedUserCollections } = collectiblesSelectors
 
 const publicAvailability = TrackAvailabilityType.PUBLIC
+const premiumAvailability = TrackAvailabilityType.USDC_PURCHASE
 const specialAccessAvailability = TrackAvailabilityType.SPECIAL_ACCESS
 const collectibleGatedAvailability = TrackAvailabilityType.COLLECTIBLE_GATED
 const hiddenAvailability = TrackAvailabilityType.HIDDEN
@@ -68,7 +73,7 @@ const MarkedAsRemix = () => {
   ) : null
 }
 
-export const TrackAvailabilityScreen = () => {
+export const AccessAndSaleScreen = () => {
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
   const [{ value: isPremium }] = useField<boolean>('is_premium')
@@ -77,6 +82,10 @@ export const TrackAvailabilityScreen = () => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
+
+  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -141,6 +150,9 @@ export const TrackAvailabilityScreen = () => {
 
   const data: ListSelectionData[] = [
     { label: publicAvailability, value: publicAvailability },
+    isUsdcEnabled
+      ? { label: premiumAvailability, value: premiumAvailability }
+      : null,
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
@@ -152,15 +164,24 @@ export const TrackAvailabilityScreen = () => {
       disabled: noCollectibleGate
     },
     { label: hiddenAvailability, value: hiddenAvailability, disabled: noHidden }
-  ]
+  ].filter(removeNullable)
 
   const items = {
     [publicAvailability]: (
-      <PublicAvailability
+      <PublicAvailabilityRadioField
         selected={availability === TrackAvailabilityType.PUBLIC}
       />
     )
   }
+
+  if (isUsdcEnabled) {
+    items[premiumAvailability] = (
+      <PremiumRadioField
+        selected={availability === TrackAvailabilityType.USDC_PURCHASE}
+      />
+    )
+  }
+
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
       selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
@@ -169,6 +190,7 @@ export const TrackAvailabilityScreen = () => {
       previousPremiumConditions={previousPremiumConditions}
     />
   )
+
   items[collectibleGatedAvailability] = (
     <CollectibleGatedAvailability
       selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
@@ -177,6 +199,7 @@ export const TrackAvailabilityScreen = () => {
       previousPremiumConditions={previousPremiumConditions}
     />
   )
+
   items[hiddenAvailability] = (
     <HiddenAvailability
       selected={availability === TrackAvailabilityType.HIDDEN}
@@ -204,7 +227,7 @@ export const TrackAvailabilityScreen = () => {
       data={data}
       renderItem={({ item }) => items[item.label]}
       screenTitle={messages.title}
-      icon={IconHidden}
+      icon={IconCart}
       value={availability}
       onChange={setAvailability}
       disableSearch

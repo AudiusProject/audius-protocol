@@ -1,5 +1,4 @@
 import { useField } from 'formik'
-import { capitalize } from 'lodash'
 import { Platform, View } from 'react-native'
 
 import type { TextInputProps } from 'app/components/core'
@@ -34,7 +33,6 @@ export const TextField = (props: TextFieldProps) => {
     name,
     label: labelProp,
     required,
-    errorMessage: errorMessageProp,
     style,
     styles: stylesProp,
     ...other
@@ -43,8 +41,6 @@ export const TextField = (props: TextFieldProps) => {
   const styles = useStyles()
   const [{ value, onChange, onBlur }, { touched, error }] = useField(name)
   const label = required ? `${labelProp} *` : labelProp
-  const errorMessage =
-    errorMessageProp || (error ? `${capitalize(name)} ${error}` : undefined)
 
   return (
     <View style={[styles.root, style]}>
@@ -61,9 +57,7 @@ export const TextField = (props: TextFieldProps) => {
         returnKeyType='done'
         {...other}
       />
-      {error && touched && errorMessage ? (
-        <InputErrorMessage message={errorMessage} />
-      ) : null}
+      {error && touched ? <InputErrorMessage message={error} /> : null}
     </View>
   )
 }

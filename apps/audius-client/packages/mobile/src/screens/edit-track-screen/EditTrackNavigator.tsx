@@ -5,14 +5,15 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { EditTrackForm } from './EditTrackForm'
+import { accessAndSaleScreenName } from './fields'
 import {
+  AccessAndSaleScreen,
   AdvancedOptionsScreen,
   IsrcIswcScreen,
   LicenseTypeScreen,
   RemixSettingsScreen,
   SelectGenreScreen,
-  SelectMoodScreen,
-  TrackAvailabilityScreen
+  SelectMoodScreen
 } from './screens'
 import { NFTCollectionsScreen } from './screens/NFTCollectionsScreen'
 import type { EditTrackFormProps } from './types'
@@ -39,7 +40,10 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           name='AdvancedOptions'
           component={AdvancedOptionsScreen}
         />
-        <Stack.Screen name='Availability' component={TrackAvailabilityScreen} />
+        <Stack.Screen
+          name={accessAndSaleScreenName}
+          component={AccessAndSaleScreen}
+        />
         <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
         <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
         <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
