@@ -200,6 +200,7 @@ export class TransactionHandler {
     instructions[1]!.keys[1]!.pubkey = new PublicKey(
       'FgMM3AG1qfpEEdYUiw4Zk9ouqsTkheC3rsu4RjvKtyEB'
     )
+
     instructions.forEach((i) => tx.add(i))
     tx.feePayer = feePayerAccount.publicKey
     tx.sign(feePayerAccount)
