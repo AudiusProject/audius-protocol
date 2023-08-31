@@ -122,8 +122,7 @@ export const getTransferTransactionFee = async (
  */
 export const getAssociatedTokenAccountRent = async () => {
   const connection = await getSolanaConnection()
-  const rent = await Token.getMinBalanceRentForExemptAccount(connection)
-  return rent
+  return await Token.getMinBalanceRentForExemptAccount(connection)
 }
 
 /**
@@ -160,4 +159,28 @@ export const getSignatureForTransaction = async ({
   transaction.feePayer = feePayer
   transaction.partialSign(signer)
   return transaction.signatures.filter((s) => s.signature !== null)
+}
+
+/**
+ * Creates an instruction for creating a new associated token account.
+ */
+export const createAssociatedTokenAccountInstruction = ({
+  associatedTokenAccount,
+  owner,
+  mint,
+  feePayer
+}: {
+  associatedTokenAccount: PublicKey
+  owner: PublicKey
+  mint: PublicKey
+  feePayer: PublicKey
+}) => {
+  return Token.createAssociatedTokenAccountInstruction(
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    mint,
+    associatedTokenAccount,
+    owner,
+    feePayer
+  )
 }

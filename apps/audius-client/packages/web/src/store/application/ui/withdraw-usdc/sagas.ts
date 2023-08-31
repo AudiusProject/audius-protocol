@@ -12,7 +12,11 @@ import {
   TOKEN_PROGRAM_ID,
   Token
 } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import {
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction
+} from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, select } from 'typed-redux-saga'
@@ -25,6 +29,7 @@ import {
   isValidSolAddress,
   getRootSolanaAccount,
   getSignatureForTransaction,
+  createAssociatedTokenAccountInstruction,
   getRecentBlockhash
 } from 'services/solana/solana'
 
@@ -119,7 +124,7 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
       throw new Error('Failed to get transaction handler')
     }
 
-    let destinationPubkey = new PublicKey(destinationAddress)
+    const destinationPubkey = new PublicKey(destinationAddress)
     const feePayerPubkey = new PublicKey(feePayer)
 
     const isDestinationSolAddress = yield* call(
@@ -128,16 +133,15 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
     )
     // Destination is a sol address - check for associated token account
     if (isDestinationSolAddress) {
-      const destinationTokenPubkey = yield* call(
+      const destinationTokenAccountPubkey = yield* call(
         [Token, Token.getAssociatedTokenAddress],
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
         libs.solanaWeb3Manager!.mints.usdc,
         destinationPubkey
       )
-      destinationPubkey = destinationTokenPubkey
       const tokenAccountInfo = yield* call(getTokenAccountInfo, {
-        tokenAccount: destinationTokenPubkey,
+        tokenAccount: destinationTokenAccountPubkey,
         mint: 'usdc'
       })
       // Destination associated token account does not exist - create and fund it
@@ -150,12 +154,12 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
           destinationAddress,
           feePayer: feePayerPubkey
         })
-        const recentBlockhash = yield* call(getRecentBlockhash)
+        const swapRecentBlockhash = yield* call(getRecentBlockhash)
         const signatureWithPubkey = yield* call(getSignatureForTransaction, {
           instructions: swapInstructions,
           signer: rootSolanaAccount,
           feePayer: feePayerPubkey,
-          recentBlockhash
+          recentBlockhash: swapRecentBlockhash
         })
         const { res: swapRes, error: swapError } = yield* call(
           [transactionHandler, transactionHandler.handleTransaction],
@@ -167,16 +171,39 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
               signature: s.signature!,
               publicKey: s.publicKey.toString()
             })),
-            recentBlockhash
+            recentBlockhash: swapRecentBlockhash
           }
         )
         if (swapError) {
           throw new Error(`Swap transaction failed: ${swapError}`)
         }
         console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
+
+        // Then create and fund the destination associated token account.
+        const createRecentBlockhash = yield* call(getRecentBlockhash)
+        const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
+        const createTokenAccountInstruction = yield* call(
+          createAssociatedTokenAccountInstruction,
+          {
+            associatedTokenAccount: destinationTokenAccountPubkey,
+            owner: destinationPubkey,
+            mint: libs.solanaWeb3Manager!.mints.usdc,
+            feePayer: rootSolanaAccount.publicKey
+          }
+        )
+        yield* call([tx, tx.add], createTokenAccountInstruction)
+        yield* call(
+          sendAndConfirmTransaction,
+          libs.solanaWeb3Manager!.connection,
+          tx,
+          [rootSolanaAccount]
+        )
+        console.debug(
+          'Withdraw USDC - successfully created destination associated token account'
+        )
       }
     }
-    // TODO: handle case where destination is a USDC associated token account
+    // TODO: transfer USDC to destination associated token account
   } catch (e: unknown) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
