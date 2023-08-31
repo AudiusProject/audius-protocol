@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { isEqual } from 'lodash'
 import { useCustomCompareEffect } from 'react-use'
 
-import { Status, statusIsNotFinalized } from 'models/Status'
+import { Status } from 'models/Status'
 
 import { QueryHookOptions, QueryHookResults } from '../types'
 
@@ -60,6 +60,17 @@ export const useAllPaginatedQuery = <
   const [page, setPage] = useState(0)
   const [status, setStatus] = useState<Status>(Status.IDLE)
   const [allData, setAllData] = useState<Data[]>([])
+
+  useCustomCompareEffect(
+    () => {
+      setAllData([])
+      setPage(0)
+      setLoadingMore(false)
+    },
+    [baseArgs],
+    isEqual
+  )
+
   const args = {
     ...baseArgs,
     limit: pageSize,
@@ -69,48 +80,45 @@ export const useAllPaginatedQuery = <
 
   useCustomCompareEffect(
     () => {
-      setAllData([])
-      setLoadingMore(false)
-    },
-    [baseArgs],
-    isEqual
-  )
-
-  useCustomCompareEffect(
-    () => {
-      if (!statusIsNotFinalized(result.status)) {
+      setStatus(result.status)
+      if (result.status === Status.ERROR) {
+        setLoadingMore(false)
+        return
+      }
+      if (result.status === Status.SUCCESS) {
+        setAllData((allData) => [...allData, ...result.data])
         setLoadingMore(false)
       }
-      setStatus(result.status)
-      if (result.status !== Status.SUCCESS) return
-
-      setAllData((allData) => [...allData, ...result.data])
     },
     [result.status, args],
     isEqual
   )
 
   const notError = result.status !== Status.ERROR
+  const stillLoadingCurrentPage =
+    loadingMore || result.status === Status.LOADING
   const notStarted = result.status === Status.IDLE && allData.length === 0
   const hasNotFetched = !result.data && result.status !== Status.SUCCESS
   const fetchedFullPreviousPage = result.data?.length === pageSize
 
   const hasMore =
-    notError && (notStarted || hasNotFetched || fetchedFullPreviousPage)
+    notError &&
+    !stillLoadingCurrentPage &&
+    (notStarted || hasNotFetched || fetchedFullPreviousPage)
 
   const loadMore = useCallback(() => {
-    if (loadingMore) {
+    if (stillLoadingCurrentPage) {
       return
     }
     setLoadingMore(true)
     setPage(page + 1)
-  }, [loadingMore, page])
-
+  }, [stillLoadingCurrentPage, page])
   return {
     ...result,
     // TODO: add another status for reloading
     status: allData?.length > 0 ? Status.SUCCESS : status,
     data: allData,
+    isLoadingMore: stillLoadingCurrentPage,
     loadMore,
     hasMore
   }
