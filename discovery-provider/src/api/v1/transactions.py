@@ -76,10 +76,10 @@ class GetTransactionHistory(Resource):
     @full_user_ns.marshal_with(transaction_history_response)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
-        self._get(id, authed_user_id)
-
-    def _get(self, id, authed_user_id=None):
         user_id = decode_with_abort(id, full_user_ns)
+        self._get(user_id, authed_user_id)
+
+    def _get(self, user_id, authed_user_id=None):
         if authed_user_id is None:
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
