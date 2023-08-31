@@ -1,5 +1,5 @@
 import { App } from "basekit/src/index";
-import { SharedData } from ".";
+import { config, discoveryDb, web3 } from ".";
 import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
 import {
   TransactionReceipt,
@@ -12,7 +12,7 @@ import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { FastifyReply } from "fastify";
 import { errorResponseForbidden } from "./error";
-import { ethers } from "ethers";
+import { Wallet, ethers } from "ethers";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -20,7 +20,6 @@ export type RelayedTransaction = {
 };
 
 export const relayTransaction = async (
-  app: App<SharedData>,
   headers: RelayRequestHeaders,
   req: RelayRequestType,
   rep: FastifyReply
@@ -28,7 +27,6 @@ export const relayTransaction = async (
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
-  const { web3, wallets, config } = app.viewAppData();
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
@@ -37,7 +35,6 @@ export const relayTransaction = async (
   const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
 
-  const discoveryDb = app.getDnDb();
   const { chainId } = await web3.getNetwork();
   const sender = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
@@ -57,7 +54,7 @@ export const relayTransaction = async (
     contractRegistryKey
   );
   await validateTransactionData(encodedABI);
-  const senderWallet = wallets.selectNextWallet();
+  const senderWallet = Wallet.createRandom().connect(web3);
   const address = await senderWallet.getAddress();
 
   // gather some transaction params

@@ -9,24 +9,23 @@ import {
   RelayResponse,
   RelayResponseType,
 } from "./types/relay";
-import { SharedData } from ".";
+import { config } from ".";
 import { relayRateLimiter } from "./middleware/rateLimiter";
 
-export const webServer = async (app: App<SharedData>) => {
+export const webServer = async () => {
   const fastify = Fastify({
     logger: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   fastify.get(
     "/relay/health",
-    async (req, rep) => await healthCheck(app, req, rep)
+    async (req, rep) => await healthCheck(req, rep)
   );
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
     "/relay",
     relayPostConfig,
     async (req, rep) =>
       await relayHandler(
-        app,
         { reqIp: req.socket.remoteAddress! },
         req.body,
         rep
@@ -34,9 +33,8 @@ export const webServer = async (app: App<SharedData>) => {
   );
 
   try {
-    const {
-      config: { serverHost, serverPort },
-    } = app.viewAppData();
+    const serverPort = config.serverPort
+    const serverHost = config.serverHost
     await fastify.listen({ port: serverPort, host: serverHost });
   } catch (err) {
     fastify.log.error(`fastify server crashed ${err}`);
