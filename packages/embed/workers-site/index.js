@@ -1,5 +1,7 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
+/** Globals GA */
+
 const DEBUG = false
 
 addEventListener('fetch', (event) => {
@@ -18,8 +20,17 @@ addEventListener('fetch', (event) => {
 })
 
 async function handleEvent(event) {
-  const options = {}
+  const url = new URL(event.request.url)
+  const { pathname, search, hash } = url
+  
+  if (pathname.startsWith('/embed/api')) {
+    const destinationURL = GA + pathname + search + hash
+    const newRequest = new Request(destinationURL, event.request)
 
+    return await fetch(newRequest)
+  }
+  
+  const options = {}
   // Always map requests to `/` since this is an SPA
   options.mapRequestToAsset = (request) => {
     const cleanedUrl = request.url.replace('/embed/', '/')
@@ -45,12 +56,6 @@ async function handleEvent(event) {
     const response = new Response(page.body, page)
 
     response.headers.set('Access-Control-Allow-Origin', '*')
-    response.headers.set('X-XSS-Protection', '1; mode=block')
-    response.headers.set('X-Content-Type-Options', 'nosniff')
-    response.headers.set('X-Frame-Options', 'DENY')
-    response.headers.set('Referrer-Policy', 'unsafe-url')
-    response.headers.set('Feature-Policy', 'none')
-
     return response
   } catch (e) {
     return new Response(e.message || e.toString(), { status: 500 })
