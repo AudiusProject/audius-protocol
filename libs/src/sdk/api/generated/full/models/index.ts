@@ -39,7 +39,6 @@ export * from './PlaylistLibrary';
 export * from './PremiumContentSignature';
 export * from './ProfilePicture';
 export * from './Purchase';
-export * from './PurchasesCountResponse';
 export * from './PurchasesResponse';
 export * from './RelatedArtistResponseFull';
 export * from './RemixesResponse';
