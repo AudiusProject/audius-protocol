@@ -72,3 +72,6 @@ buck-out/
 
 # TypeScript
 tsconfig.tsbuildinfo
+
+# Watchman
+.watchman*
