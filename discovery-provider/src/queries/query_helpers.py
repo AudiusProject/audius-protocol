@@ -129,7 +129,6 @@ class SortMethod(str, enum.Enum):
 class PurchaseSortMethod(str, enum.Enum):
     content_title = "content_title"
     artist_name = "artist_name"
-    buyer_name = "buyer_name"
     date = "date"
 
 

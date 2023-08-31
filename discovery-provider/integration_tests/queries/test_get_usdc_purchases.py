@@ -149,9 +149,7 @@ def test_get_purchases(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, test_entities)
-        sales = get_usdc_purchases(
-            {"seller_user_id": 10, "sort_method": PurchaseSortMethod.date}
-        )
+        sales = get_usdc_purchases({"seller_user_id": 10})
         assert len(sales) == 5
         assert sales[0]["content_id"] == 3
         assert sales[1]["content_id"] == 2
@@ -159,18 +157,12 @@ def test_get_purchases(app):
         assert not any(purchase["content_id"] == 5 for purchase in sales)
         assert all(purchase["seller_user_id"] == 10 for purchase in sales)
 
-        purchases = get_usdc_purchases(
-            {"buyer_user_id": 20, "sort_method": PurchaseSortMethod.date}
-        )
+        purchases = get_usdc_purchases({"buyer_user_id": 20})
         assert len(purchases) == 3
         assert all(purchase["buyer_user_id"] == 20 for purchase in purchases)
 
         specific_sale = get_usdc_purchases(
-            {
-                "content_ids": 3,
-                "content_type": PurchaseType.track,
-                "sort_method": PurchaseSortMethod.date,
-            }
+            {"content_ids": 3, "content_type": PurchaseType.track}
         )
         assert len(specific_sale) == 2
         assert specific_sale[0]["content_id"] == 3

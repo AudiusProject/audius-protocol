@@ -2122,7 +2122,6 @@ export type GetFavoritesSortDirectionEnum = typeof GetFavoritesSortDirectionEnum
 export const GetPurchasesSortMethodEnum = {
     ContentTitle: 'content_title',
     ArtistName: 'artist_name',
-    BuyerName: 'buyer_name',
     Date: 'date'
 } as const;
 export type GetPurchasesSortMethodEnum = typeof GetPurchasesSortMethodEnum[keyof typeof GetPurchasesSortMethodEnum];
@@ -2140,7 +2139,6 @@ export type GetPurchasesSortDirectionEnum = typeof GetPurchasesSortDirectionEnum
 export const GetSalesSortMethodEnum = {
     ContentTitle: 'content_title',
     ArtistName: 'artist_name',
-    BuyerName: 'buyer_name',
     Date: 'date'
 } as const;
 export type GetSalesSortMethodEnum = typeof GetSalesSortMethodEnum[keyof typeof GetSalesSortMethodEnum];

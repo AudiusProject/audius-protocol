@@ -39,7 +39,7 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesCountArgs):
     seller_user_id = args.get("seller_user_id")
     content_ids = args.get("content_ids")
     content_type = args.get("content_type")
-    sort_method = args.get("sort_method", None)
+    sort_method = args.get("sort_method", PurchaseSortMethod.date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
 
     # Basic filters
@@ -53,10 +53,7 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesCountArgs):
         base_query = base_query.filter(USDCPurchase.content_type == content_type)
 
     sort_fn = desc if sort_direction == SortDirection.desc else asc
-    if (
-        sort_method == PurchaseSortMethod.artist_name
-        or sort_method == PurchaseSortMethod.content_title
-    ):
+    if sort_method != PurchaseSortMethod.date:
         # If we're sorting by content related fields we need to join to get those fields
         # First get the playlists
         playlists_query = (
@@ -115,14 +112,7 @@ def _get_usdc_purchases(session, args: GetUSDCPurchasesCountArgs):
                     sort_fn(USDCPurchase.created_at),
                 )
             )
-    elif sort_method == PurchaseSortMethod.buyer_name:
-        # Join users to get buyers and sort by username
-        base_query = (
-            base_query.join(User, User.user_id == USDCPurchase.buyer_user_id)
-            .filter(User.is_current == True)
-            .order_by(sort_fn(User.name), sort_fn(USDCPurchase.created_at))
-        )
-    elif sort_method == PurchaseSortMethod.date:
+    else:
         base_query = base_query.order_by(sort_fn(USDCPurchase.created_at))
 
     return base_query
