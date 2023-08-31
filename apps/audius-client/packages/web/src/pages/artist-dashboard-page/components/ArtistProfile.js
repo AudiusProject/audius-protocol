@@ -9,6 +9,10 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistProfile.module.css'
 
+/**
+ * @deprecated
+ * TODO(USDC): delete when launched
+ */
 const ArtistProfile = (props) => {
   const profilePicture = useUserProfilePicture(
     props.userId,

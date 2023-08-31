@@ -19,7 +19,7 @@ import BN from 'bn.js'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 
-import styles from './USDCTile.module.css'
+import styles from './USDCCard.module.css'
 
 const messages = {
   usdc: 'USDC',
@@ -30,7 +30,7 @@ const messages = {
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCTile = ({ balance }: { balance: BNUSDC }) => {
+export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const balanceNumber = formatUSDCWeiToNumber((balance ?? new BN(0)) as BNUSDC)
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
@@ -86,13 +86,16 @@ export const USDCTile = ({ balance }: { balance: BNUSDC }) => {
         </div>
       </div>
       <div className={styles.withdrawContainer}>
-        <HarmonyButton
-          variant={HarmonyButtonType.SECONDARY}
-          text={messages.withdraw}
-          // TODO: update leftIcon and wire up withdraw modal https://linear.app/audius/issue/PAY-1754/usdc-withdrawal-flow-ui
-          iconLeft={() => <Icon icon={IconNote} size='medium' />}
-          onClick={() => {}}
-        />
+        <div className={styles.withdrawButton}>
+          <HarmonyButton
+            variant={HarmonyButtonType.SECONDARY}
+            text={messages.withdraw}
+            fullWidth
+            // TODO: update leftIcon and wire up withdraw modal https://linear.app/audius/issue/PAY-1754/usdc-withdrawal-flow-ui
+            iconLeft={() => <Icon icon={IconNote} size='medium' />}
+            onClick={() => {}}
+          />
+        </div>
         <PopupMenu
           transformOrigin={{ horizontal: 'center', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}

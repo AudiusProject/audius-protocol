@@ -3,12 +3,19 @@ import {
   WidthSizes,
   useImageSize,
   cacheUsersActions,
-  imageCoverPhotoBlank
+  imageCoverPhotoBlank,
+  cacheUsersSelectors
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-const { fetchCoverPhoto } = cacheUsersActions
+import { useSelector } from 'utils/reducer'
 
+const { fetchCoverPhoto } = cacheUsersActions
+const { getUser } = cacheUsersSelectors
+
+/**
+ * @deprecated Use useCoverPhoto instead
+ */
 export const useUserCoverPhoto = (
   userId: number | null,
   coverPhotoSizes: CoverPhotoSizes | null,
@@ -24,6 +31,27 @@ export const useUserCoverPhoto = (
     size,
     action: fetchCoverPhoto,
     defaultImage
+  })
+}
+
+export const useCoverPhoto = (
+  userId: number | null,
+  size: WidthSizes,
+  defaultImage: string = imageCoverPhotoBlank as string,
+  load = true
+) => {
+  const dispatch = useDispatch()
+  const coverPhotoSizes = useSelector(
+    (state) => getUser(state, { id: userId })?._cover_photo_sizes
+  )
+  return useImageSize({
+    dispatch,
+    id: userId,
+    sizes: coverPhotoSizes ?? null,
+    size,
+    action: fetchCoverPhoto,
+    defaultImage,
+    load
   })
 }
 

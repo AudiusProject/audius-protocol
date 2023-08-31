@@ -24,13 +24,14 @@ import lazyWithPreload from 'utils/lazyWithPreload'
 import { profilePage, TRENDING_PAGE } from 'utils/route'
 
 import styles from './ArtistDashboardPage.module.css'
+import { ArtistCard } from './components/ArtistCard'
 import ArtistProfile from './components/ArtistProfile'
 import {
   TracksTableContainer,
   DataSourceTrack,
   tablePageSize
 } from './components/TracksTableContainer'
-import { USDCTile } from './components/USDCTile'
+import { USDCCard } from './components/USDCCard'
 import {
   fetchDashboard,
   fetchDashboardListenData,
@@ -209,15 +210,25 @@ export const ArtistDashboardPage = () => {
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
-          <ArtistProfile
-            userId={account.user_id}
-            profilePictureSizes={account._profile_picture_sizes}
-            isVerified={account.is_verified}
-            name={account.name}
-            handle={account.handle}
-            onViewProfile={() => goToRoute(profilePage(account.handle))}
-          />
-          {isUSDCEnabled ? <USDCTile balance={balance} /> : null}
+          {isUSDCEnabled ? (
+            <div className={cn(styles.sectionContainer, styles.topSection)}>
+              <ArtistCard
+                userId={account.user_id}
+                handle={account.handle}
+                name={account.name}
+              />
+              <USDCCard balance={balance} />
+            </div>
+          ) : (
+            <ArtistProfile
+              userId={account.user_id}
+              profilePictureSizes={account._profile_picture_sizes}
+              isVerified={account.is_verified}
+              name={account.name}
+              handle={account.handle}
+              onViewProfile={() => goToRoute(profilePage(account.handle))}
+            />
+          )}
           {renderCreatorContent()}
         </>
       )}
