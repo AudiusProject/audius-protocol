@@ -121,31 +121,6 @@ services:
       service: relay
     <<: *common
 
-  # Comms (aka dms)
-
-  comms-discovery-1:
-    extends:
-      file: docker-compose.comms.yml
-      service: comms-discovery-1
-    <<: *common
-
-  comms-discovery-2:
-    extends:
-      file: docker-compose.comms.yml
-      service: comms-discovery-2
-    <<: *common
-
-  comms-discovery-3:
-    extends:
-      file: docker-compose.comms.yml
-      service: comms-discovery-3
-    <<: *common
-
-  comms-test:
-    extends:
-      file: docker-compose.comms.yml
-      service: comms-test
-    <<: *common
 
   # Storage v2
 

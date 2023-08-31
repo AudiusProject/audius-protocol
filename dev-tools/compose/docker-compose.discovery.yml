@@ -40,9 +40,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    # profiles:
-    #   - notifications
-    #   - comms
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
