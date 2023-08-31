@@ -62,7 +62,7 @@ def test_index_valid_track(app, mocker):
             "is_current": True,
             "is_unlisted": True,
             "is_premium": False,
-            "premium_conditions": {},
+            "premium_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,
@@ -205,7 +205,6 @@ def test_index_valid_track(app, mocker):
         "QmUpdateTrack1": {
             "title": "track 1 2",
             "description": "updated description",
-            "premium_conditions": None,
         },
         "QmUpdateTrack2": {"is_unlisted": False},
     }
@@ -383,7 +382,6 @@ def test_index_valid_track(app, mocker):
         assert track_1.is_unlisted
         assert track_1.is_delete == True
         assert track_1.duration == 100
-        assert track_1.premium_conditions == None
 
         track_2: Track = (
             session.query(Track)
