@@ -244,7 +244,7 @@ class TrackPageProvider extends Component<
 
   onHeroPlay = ({
     isPlaying,
-    isPreview
+    isPreview = false
   }: {
     isPlaying: boolean
     isPreview?: boolean
