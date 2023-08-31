@@ -28,6 +28,7 @@ export type InputV2Props = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
     | RefCallback<HTMLInputElement>
   warning?: boolean
   error?: boolean
+  inputRootClassName?: string
   inputClassName?: string
   label?: string
   helperText?: string
@@ -40,6 +41,7 @@ export const InputV2 = (props: InputV2Props) => {
     required,
     label: labelProp,
     className,
+    inputRootClassName,
     maxLength,
     showMaxLength,
     size = InputV2Size.MEDIUM,
@@ -119,7 +121,7 @@ export const InputV2 = (props: InputV2Props) => {
 
   return (
     <div className={cn(styles.root, className)}>
-      <div className={cn(styles.inputRoot, style)}>
+      <div className={cn(styles.inputRoot, inputRootClassName, style)}>
         {elevatePlaceholder ? (
           <label className={styles.elevatedLabel}>
             <span

@@ -155,7 +155,7 @@ const BoxedTextField = (props: BoxedTextFieldProps) => {
         <Text variant='title'>{title}</Text>
         <Text>{description}</Text>
       </div>
-      <TextField {...inputProps} />
+      <TextField inputRootClassName={styles.inputRoot} {...inputProps} />
     </div>
   )
 }

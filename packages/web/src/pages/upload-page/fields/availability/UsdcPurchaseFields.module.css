@@ -5,3 +5,7 @@
   border: 1px solid var(--border-strong);
   background: var(--background-surface-1);
 }
+
+.inputRoot {
+  background: var(--background-white);
+}
