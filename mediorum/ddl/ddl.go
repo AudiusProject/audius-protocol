@@ -81,8 +81,8 @@ func md5string(s string) string {
 }
 
 func schedulePartitionOpsMigration(db *sql.DB, myHost string) {
-	// stagger between 1-12hrs
-	min := 1
+	// stagger between 0.5-12hrs
+	min := 30
 	max := 60 * 12
 	randomTime := time.Minute * time.Duration(rand.Intn(max+1-min)+min)
 	// manually schedule foundation nodes so can disable monitoring
