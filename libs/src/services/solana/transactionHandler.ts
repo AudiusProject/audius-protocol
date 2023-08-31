@@ -195,7 +195,6 @@ export class TransactionHandler {
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
 
     // Construct the txn
-
     const tx = new Transaction({ recentBlockhash })
     instructions.forEach((i) => tx.add(i))
     tx.feePayer = feePayerAccount.publicKey
