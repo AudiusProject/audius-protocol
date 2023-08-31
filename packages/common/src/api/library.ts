@@ -12,6 +12,7 @@ type GetLibraryItemsArgs = {
   userId: number
   offset: number
   limit: number
+  category: full.GetUserLibraryAlbumsTypeEnum
   query?: string
   sortMethod?: full.GetUserLibraryAlbumsSortMethodEnum
   sortDirection?: full.GetUserLibraryAlbumsSortDirectionEnum
@@ -35,6 +36,7 @@ const fetchLibraryCollections = async ({
     userId,
     offset,
     limit,
+    category,
     query = '',
     sortMethod = 'added_date',
     sortDirection = 'desc'
@@ -42,7 +44,7 @@ const fetchLibraryCollections = async ({
   const sdk = await audiusSdk()
   const { data, signature } = await audiusBackend.signDiscoveryNodeRequest()
 
-  const getCollectionsParams = {
+  const requestParams = {
     id: encodeHashId(userId),
     userId: encodeHashId(userId),
     offset,
@@ -50,14 +52,14 @@ const fetchLibraryCollections = async ({
     query,
     sortMethod,
     sortDirection,
-    type: 'all' as full.GetUserLibraryAlbumsTypeEnum,
+    type: category,
     encodedDataMessage: data,
     encodedDataSignature: signature
   }
   const { data: rawCollections = [] } =
     collectionType === 'album'
-      ? await sdk.full.users.getUserLibraryAlbums(getCollectionsParams)
-      : await sdk.full.users.getUserLibraryPlaylists(getCollectionsParams)
+      ? await sdk.full.users.getUserLibraryAlbums(requestParams)
+      : await sdk.full.users.getUserLibraryPlaylists(requestParams)
   const collections = rawCollections
     .map((r: APIActivityV2) => makeActivity(r))
     .filter(removeNullable) as UserCollectionMetadata[]
