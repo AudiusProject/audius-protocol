@@ -26,7 +26,8 @@ import {
   TagField,
   SubmenuList,
   RemixSettingsField,
-  AdvancedOptionsField
+  AdvancedOptionsField,
+  AccessAndSaleField
 } from './fields'
 import type { EditTrackFormProps } from './types'
 
@@ -128,12 +129,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         <KeyboardAwareScrollView>
           <Tile style={styles.tile}>
             <PickArtworkField name='artwork' />
-            <TextField
-              name='title'
-              label={messages.trackName}
-              required
-              errorMessage={messages.trackNameError}
-            />
+            <TextField name='title' label={messages.trackName} required />
             <SubmenuList>
               <SelectGenreField />
               <SelectMoodField />
@@ -141,6 +137,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
             <TagField />
             <DescriptionField />
             <SubmenuList removeBottomDivider>
+              <AccessAndSaleField />
               <RemixSettingsField />
               <AdvancedOptionsField />
             </SubmenuList>
