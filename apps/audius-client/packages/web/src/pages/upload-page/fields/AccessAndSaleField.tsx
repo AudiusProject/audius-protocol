@@ -586,6 +586,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.collectibleGated}
             value={TrackAvailabilityType.COLLECTIBLE_GATED}
             disabled={noCollectibleGate}
+            hintText={noCollectibleGate ? messages.noCollectibles : undefined}
             description={
               <CollectibleGatedDescription
                 hasCollectibles={hasCollectibles}
