@@ -126,7 +126,7 @@ export const AUDIUS_MERCH_LINK = 'https://merch.audius.co/'
 export const AUDIUS_REMIX_CONTESTS_LINK = 'https://remix.audius.co/'
 export const AUDIUS_BLOG_LINK = 'https://blog.audius.co/'
 export const AUDIUS_AI_BLOG_LINK =
-  'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius'
+  'https://help.audius.co/help/What-should-I-know-about-AI-generated-music-on-Audius-0a5a8'
 export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
