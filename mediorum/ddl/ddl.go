@@ -81,16 +81,17 @@ func md5string(s string) string {
 }
 
 func schedulePartitionOpsMigration(db *sql.DB, myHost string) {
-	// stagger between 0-12hrs
+	// stagger between 0.5-12hrs
+	min := 30
 	max := 60 * 12
-	randomTime := time.Minute * time.Duration(rand.Intn(max+1))
+	randomTime := time.Minute * time.Duration(rand.Intn(max+1-min)+min)
 	// manually schedule foundation nodes so can disable monitoring
 	// appropriately
 	if myHost == "https://creatornode.audius.co" || myHost == "https://creatornode2.audius.co" {
-		randomTime = time.Minute * time.Duration(0)
+		randomTime = time.Minute * time.Duration(20)
 	}
 	if myHost == "https://creatornode3.audius.co" || myHost == "https://usermetadata.audius.co" {
-		randomTime = time.Minute * time.Duration(90)
+		randomTime = time.Minute * time.Duration(110)
 	}
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool
