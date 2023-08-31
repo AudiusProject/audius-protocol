@@ -216,7 +216,6 @@ async function createTrackListenInstructions({
       signature: sigObj.signature,
       recoveryId: sigObj.recid
     })
-
   const listenInstruction = new solanaWeb3.TransactionInstruction({
     keys: [
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
