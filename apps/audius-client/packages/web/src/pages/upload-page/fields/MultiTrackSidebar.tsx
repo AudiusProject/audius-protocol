@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { MouseEvent, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
 import {
@@ -102,12 +102,17 @@ const TrackRow = (props: TrackRowProps) => {
   const isSelected = index === selectedIndex
 
   const handleRemoveTrack = useCallback(
-    (index: number) => {
+    (e: MouseEvent<HTMLDivElement>, index: number) => {
+      e.stopPropagation()
       const newTrackMetadatas = [...values.trackMetadatas]
+      const newTracks = [...values.tracks]
       newTrackMetadatas.splice(index, 1)
-      const newIndex = selectedIndex === index ? Math.max(index - 1, 0) : index
+      newTracks.splice(index, 1)
+      const newIndex =
+        selectedIndex === index ? Math.max(index - 1, 0) : selectedIndex
       setValues({
         ...values,
+        tracks: newTracks,
         trackMetadatas: newTrackMetadatas,
         trackMetadatasIndex: newIndex
       })
@@ -166,11 +171,11 @@ const TrackRow = (props: TrackRowProps) => {
             </Text>
           </div>
           {values.trackMetadatas.length > 1 ? (
-            <div className={styles.iconRemove}>
-              <IconTrash
-                fill='--default'
-                onClick={() => handleRemoveTrack(index)}
-              />
+            <div
+              className={styles.iconRemove}
+              onClick={(e) => handleRemoveTrack(e, index)}
+            >
+              <IconTrash fill='--default' />
             </div>
           ) : null}
         </div>
