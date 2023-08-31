@@ -166,6 +166,10 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return nil
 	}
 
+	if strings.ToLower(c.QueryParam("localOnly")) == "true" {
+		return c.String(404, "blob not found")
+	}
+
 	// redirect to it
 	host, err := ss.findNodeToServeBlob(cid)
 	if err == nil && host != "" {
