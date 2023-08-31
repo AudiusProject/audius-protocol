@@ -36,10 +36,13 @@ const getWithdrawUSDCFees = async (account: PublicKey) => {
  * Creates instructions to swap USDC from a user bank into
  * SOL, which is deposited into the user's root solana account.
  */
-export const getSwapUSDCUserBankInstructions = async (
-  destinationAddress: string,
+export const getSwapUSDCUserBankInstructions = async ({
+  destinationAddress,
+  feePayer
+}: {
+  destinationAddress: string
   feePayer: PublicKey
-): Promise<TransactionInstruction[]> => {
+}): Promise<TransactionInstruction[]> => {
   const libs = await getLibs()
 
   // Destination associated token account does not exist - create and fund it

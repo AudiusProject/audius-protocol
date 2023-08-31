@@ -22,7 +22,10 @@ import { getSwapUSDCUserBankInstructions } from 'services/solana/WithdrawUSDC'
 import {
   isSolWallet,
   getTokenAccountInfo,
-  isValidSolAddress
+  isValidSolAddress,
+  getRootSolanaAccount,
+  getSignatureForTransaction,
+  getRecentBlockhash
 } from 'services/solana/solana'
 
 const {
@@ -102,55 +105,75 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
     if (!destinationAddress) {
       throw new Error('Please enter a destination address')
     }
-    const destinationPubkey = new PublicKey(destinationAddress)
     const feePayer = yield* select(getFeePayer)
     if (feePayer === null) {
       throw new Error('Fee payer not set')
     }
+    const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
+    const connection = libs.solanaWeb3Manager?.connection
+    if (!connection) {
+      throw new Error('Failed to get connection')
+    }
+    const rootSolanaAccount = yield* call(getRootSolanaAccount)
+    if (!transactionHandler) {
+      throw new Error('Failed to get transaction handler')
+    }
+
+    let destinationPubkey = new PublicKey(destinationAddress)
     const feePayerPubkey = new PublicKey(feePayer)
 
     const isDestinationSolAddress = yield* call(
       isSolWallet,
       destinationAddress as SolanaWalletAddress
     )
-
     // Destination is a sol address - check for associated token account
     if (isDestinationSolAddress) {
-      const destinationAssociatedTokenAccount = yield* call(
+      const destinationTokenPubkey = yield* call(
         [Token, Token.getAssociatedTokenAddress],
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
         libs.solanaWeb3Manager!.mints.usdc,
         destinationPubkey
       )
-      const destinationAccountInfo = yield* call(getTokenAccountInfo, {
-        tokenAccount: destinationAssociatedTokenAccount,
+      destinationPubkey = destinationTokenPubkey
+      const tokenAccountInfo = yield* call(getTokenAccountInfo, {
+        tokenAccount: destinationTokenPubkey,
         mint: 'usdc'
       })
-
       // Destination associated token account does not exist - create and fund it
-      if (destinationAccountInfo === null) {
-        const swapInstructions = yield* call(
-          getSwapUSDCUserBankInstructions,
-          destinationAddress,
-          feePayerPubkey
+      if (tokenAccountInfo === null) {
+        console.debug(
+          'Withdraw USDC - destination associated token account does not exist'
         )
-
-        const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
-        if (!transactionHandler) {
-          throw new Error('Failed to get transaction handler')
-        }
-        const { error: swapError } = yield* call(
+        // First swap some USDC for SOL to fund the destination associated token account
+        const swapInstructions = yield* call(getSwapUSDCUserBankInstructions, {
+          destinationAddress,
+          feePayer: feePayerPubkey
+        })
+        const recentBlockhash = yield* call(getRecentBlockhash)
+        const signatureWithPubkey = yield* call(getSignatureForTransaction, {
+          instructions: swapInstructions,
+          signer: rootSolanaAccount,
+          feePayer: feePayerPubkey,
+          recentBlockhash
+        })
+        const { res: swapRes, error: swapError } = yield* call(
           [transactionHandler, transactionHandler.handleTransaction],
           {
             instructions: swapInstructions,
             feePayerOverride: feePayerPubkey,
-            skipPreflight: false
+            skipPreflight: false,
+            signatures: signatureWithPubkey.map((s) => ({
+              signature: s.signature!,
+              publicKey: s.publicKey.toString()
+            })),
+            recentBlockhash
           }
         )
         if (swapError) {
           throw new Error(`Swap transaction failed: ${swapError}`)
         }
+        console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
       }
     }
     // TODO: handle case where destination is a USDC associated token account
