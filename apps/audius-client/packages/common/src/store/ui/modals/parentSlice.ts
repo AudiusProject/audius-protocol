@@ -43,7 +43,8 @@ export const initialState: BasicModalsState = {
   CreateChatModal: { isOpen: false },
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
-  UploadConfirmation: { isOpen: false }
+  UploadConfirmation: { isOpen: false },
+  WithdrawUSDCModal: { isOpen: false }
 }
 
 const slice = createSlice({
