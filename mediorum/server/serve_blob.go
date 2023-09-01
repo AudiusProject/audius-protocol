@@ -235,7 +235,7 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
