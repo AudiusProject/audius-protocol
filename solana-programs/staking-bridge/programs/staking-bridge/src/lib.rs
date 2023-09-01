@@ -62,7 +62,9 @@ pub mod staking_bridge {
 
         check_swap_programs(
             program_id.to_account_info(),
-            serum_program.to_account_info()
+            serum_program.to_account_info(),
+            accounts.amm.to_account_info(),
+            accounts.serum_market.to_account_info()
         )?;
         check_swap_pdas(
             accounts,
