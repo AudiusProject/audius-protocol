@@ -5,9 +5,7 @@ import { healthCheck } from "./routes/health";
 import { relayHandler } from "./routes/relay";
 import {
   RelayRequest,
-  RelayRequestType,
   RelayResponse,
-  RelayResponseType,
 } from "./types/relay";
 import { SharedData } from ".";
 import { relayRateLimiter } from "./middleware/rateLimiter";
@@ -21,7 +19,7 @@ export const webServer = async (app: App<SharedData>) => {
     "/relay/health",
     async (req, rep) => await healthCheck(app, req, rep)
   );
-  fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
+  fastify.post<{ Body: RelayRequest; Reply: RelayResponse }>(
     "/relay",
     relayPostConfig,
     async (req, rep) =>
@@ -44,12 +42,6 @@ export const webServer = async (app: App<SharedData>) => {
 };
 
 const relayPostConfig = {
-  schema: {
-    body: RelayRequest,
-    response: {
-      200: RelayResponse,
-    },
-  },
   // middlewares
   preHandler: [relayRateLimiter],
 };

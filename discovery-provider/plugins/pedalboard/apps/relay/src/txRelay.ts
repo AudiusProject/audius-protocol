@@ -1,11 +1,10 @@
 import { App } from "basekit/src/index";
 import { SharedData } from ".";
-import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
+import { RelayRequest, RelayRequestHeaders } from "./types/relay";
 import {
   TransactionReceipt,
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
-import { validateSupportedContract, validateTransactionData } from "./validate";
 import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
@@ -13,6 +12,7 @@ import { AudiusABIDecoder } from "@audius/sdk";
 import { FastifyReply } from "fastify";
 import { errorResponseForbidden } from "./error";
 import { ethers } from "ethers";
+import { validateRequestParams } from "./validate";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -22,7 +22,7 @@ export type RelayedTransaction = {
 export const relayTransaction = async (
   app: App<SharedData>,
   headers: RelayRequestHeaders,
-  req: RelayRequestType,
+  req: RelayRequest,
   rep: FastifyReply
 ): Promise<RelayedTransaction> => {
   const requestId = uuidv4();
@@ -31,16 +31,17 @@ export const relayTransaction = async (
   const { web3, wallets, config } = app.viewAppData();
   const {
     entityManagerContractAddress,
-    entityManagerContractRegistryKey,
     aao,
   } = config;
-  const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
+  const { gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
+
+  const { encodedAbi } = validateRequestParams(req)
 
   const discoveryDb = app.getDnDb();
   const { chainId } = await web3.getNetwork();
   const sender = AudiusABIDecoder.recoverSigner({
-    encodedAbi: encodedABI,
+    encodedAbi,
     entityManagerAddress: entityManagerContractAddress,
     chainId: chainId.toString(),
   });
@@ -51,12 +52,6 @@ export const relayTransaction = async (
 
   log({ msg: "new relay request", req });
 
-  // validate transaction and select wallet
-  validateSupportedContract(
-    [entityManagerContractRegistryKey],
-    contractRegistryKey
-  );
-  await validateTransactionData(encodedABI);
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
 
@@ -64,7 +59,7 @@ export const relayTransaction = async (
   const nonce = await web3.getTransactionCount(address);
   const to = entityManagerContractAddress;
   const value = "0x00";
-  const data = encodedABI;
+  const data = encodedAbi;
 
   log({ msg: "gathered tx params", nonce });
 
@@ -100,3 +95,7 @@ const confirm = async (
 const delay = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+const isEntityManager = (contractName: string): boolean => {
+  return contractName === "EntityManager"
+}
