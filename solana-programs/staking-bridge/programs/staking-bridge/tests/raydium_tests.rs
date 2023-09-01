@@ -7,8 +7,8 @@ use staking_bridge::raydium::check_swap_programs;
 use staking_bridge::constant::{
     RAYDIUM_AMM_PROGRAM_ADDRESS,
     SERUM_DEX_PROGRAM_ADDRESS,
-    USDC_AUDIO_OPENBOOK_AMM_ADDRESS,
-    SERUM_MARKET_ADDRESS
+    AUDIO_USDC_RAYDIUM_AMM_ADDRESS,
+    AUDIO_USDC_SERUM_MARKET_ADDRESS
 };
 
 mod utils;
@@ -21,8 +21,8 @@ use utils::{
 fn test_swap_programs() {
     let raydium_key = &RAYDIUM_AMM_PROGRAM_ADDRESS.parse::<Pubkey>().unwrap();
     let serum_key = &SERUM_DEX_PROGRAM_ADDRESS.parse::<Pubkey>().unwrap();
-    let amm_key = &USDC_AUDIO_OPENBOOK_AMM_ADDRESS.parse::<Pubkey>().unwrap();
-    let market_key = &SERUM_MARKET_ADDRESS.parse::<Pubkey>().unwrap();
+    let amm_key = &AUDIO_USDC_RAYDIUM_AMM_ADDRESS.parse::<Pubkey>().unwrap();
+    let market_key = &AUDIO_USDC_SERUM_MARKET_ADDRESS.parse::<Pubkey>().unwrap();
     let other_key = &Pubkey::new_unique();
 
     let (raydium_lamports, raydium_data) = (&mut 0, &mut vec![]);
