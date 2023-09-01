@@ -75,10 +75,10 @@ export const SearchBar = (props: SearchBarProps) => {
   }, [searchInput, searchQuery, handleChangeText])
 
   const handleSubmit = useCallback(() => {
-    if (searchQuery.startsWith('#')) {
-      navigation.push('TagSearch', { query: searchQuery })
+    if (searchInput.startsWith('#')) {
+      navigation.push('TagSearch', { query: searchInput })
     }
-  }, [searchQuery, navigation])
+  }, [searchInput, navigation])
 
   const handleClear = useCallback(() => {
     dispatch(clearSearch())
