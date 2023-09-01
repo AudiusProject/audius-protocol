@@ -6,6 +6,7 @@ export const getUploadProgress = (state: CommonState) =>
 export const getUploadSuccess = (state: CommonState) => state.upload.success
 export const getTracks = (state: CommonState) => state.upload.tracks
 export const getIsUploading = (state: CommonState) => state.upload.uploading
+export const getShouldReset = (state: CommonState) => state.upload.shouldReset
 
 export const getUploadPercentage = (state: CommonState) => {
   const uploadProgress = getUploadProgress(state)

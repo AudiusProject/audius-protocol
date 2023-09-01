@@ -3,9 +3,10 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   UploadType,
   uploadActions,
-  uploadConfirmationModalUIActions
+  uploadConfirmationModalUIActions,
+  uploadSelectors
 } from '@audius/common'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
@@ -16,9 +17,10 @@ import SelectPageNew from './components/SelectPageNew'
 import { EditPage } from './pages/EditPage'
 import { UploadFormState } from './types'
 
-const { uploadTracks } = uploadActions
+const { uploadTracks, undoResetState } = uploadActions
 const { requestOpen: openUploadConfirmationModal } =
   uploadConfirmationModalUIActions
+const { getShouldReset } = uploadSelectors
 
 const messages = {
   selectPageTitle: 'Upload Your Music',
@@ -39,14 +41,17 @@ const uploadTypeStringMap: Record<UploadType, string> = {
   [UploadType.PLAYLIST]: 'Playlist'
 }
 
+const initialFormState = {
+  uploadType: undefined,
+  metadata: undefined,
+  tracks: undefined
+}
+
 export const UploadPageNew = () => {
   const dispatch = useDispatch()
   const [phase, setPhase] = useState(Phase.SELECT)
-  const [formState, setFormState] = useState<UploadFormState>({
-    uploadType: undefined,
-    metadata: undefined,
-    tracks: undefined
-  })
+  const [formState, setFormState] = useState<UploadFormState>(initialFormState)
+  const shouldResetState = useSelector(getShouldReset)
 
   const { tracks, uploadType } = formState
 
@@ -154,6 +159,14 @@ export const UploadPageNew = () => {
     },
     [dispatch]
   )
+
+  useEffect(() => {
+    if (shouldResetState) {
+      setFormState(initialFormState)
+      setPhase(Phase.SELECT)
+      dispatch(undoResetState())
+    }
+  }, [dispatch, shouldResetState])
 
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
