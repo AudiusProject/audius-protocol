@@ -10,7 +10,8 @@ import {
   purchaseContentSelectors,
   PurchaseContentStage,
   Track,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Name
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -23,6 +24,7 @@ import {
 } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
@@ -46,6 +48,8 @@ const messages = {
   error: 'Your purchase was unsuccessful.',
   // TODO: PAY-1723
   shareButtonContent: 'I just purchased a track on Audius!',
+  shareTwitterText: (trackTitle: string, handle: string, trackUrl: string) =>
+    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium ${trackUrl}`,
   viewTrack: 'View Track'
 }
 
@@ -86,6 +90,8 @@ export const PurchaseDetailsPage = ({
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const isPurchased = stage === PurchaseContentStage.FINISH
+  const { handle } = track.user
+  const { permalink, title } = track
 
   const onClickBuy = useCallback(() => {
     if (isUnlocking) return
@@ -99,6 +105,17 @@ export const PurchaseDetailsPage = ({
   }, [isUnlocking, dispatch, track.track_id])
 
   useNavigateOnSuccess(track, stage)
+
+  const handleTwitterShare = useCallback(
+    (handle: string) => {
+      const shareText = messages.shareTwitterText(title, handle, permalink)
+      const analytics = make(Name.PURCHASE_CONTENT_TWITTER_SHARE, {
+        text: shareText
+      })
+      return { shareText, analytics }
+    },
+    [permalink, title]
+  )
 
   if (!isPremiumContentUSDCPurchaseGated(track.premium_conditions)) {
     console.error(
@@ -150,8 +167,9 @@ export const PurchaseDetailsPage = ({
           </div>
           <TwitterShareButton
             fullWidth
-            type='static'
-            shareText={messages.shareButtonContent}
+            type='dynamic'
+            shareData={handleTwitterShare}
+            handle={handle}
           />
           <HarmonyPlainButton
             onClick={onViewTrackClicked}

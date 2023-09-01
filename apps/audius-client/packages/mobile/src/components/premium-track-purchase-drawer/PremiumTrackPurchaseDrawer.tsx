@@ -166,7 +166,7 @@ export const PremiumTrackPurchaseDrawer = () => {
             isPurchaseSuccessful={isPurchaseSuccessful}
           />
           {isPurchaseSuccessful ? (
-            <PurchaseSuccess />
+            <PurchaseSuccess track={track} />
           ) : (
             <>
               <View>
