@@ -37,6 +37,7 @@ import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import ChallengeRewardsModal from 'pages/audio-rewards-page/components/modals/ChallengeRewards'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
@@ -78,7 +79,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   PremiumContentPurchase: PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
-  InboxUnavailableModal
+  InboxUnavailableModal,
+  WithdrawUSDCModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

@@ -6,6 +6,7 @@ import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { Modals, ModalsState } from './types'
+import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
 
 /**
  * Create a bunch of reducers that do nothing, so that the state is maintained and not lost through the child reducers
@@ -24,7 +25,8 @@ const combinedReducers = combineReducers({
   ...noOpReducers,
   CreateChatModal: createChatModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
-  LeavingAudiusModal: leavingAudiusModalReducer
+  LeavingAudiusModal: leavingAudiusModalReducer,
+  WithdrawUSDCModal: withdrawUSDCModalReducer
 })
 
 /**

@@ -1,0 +1,27 @@
+.root {
+  padding: var(--unit-3) var(--unit-4);
+  display: flex;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--neutral-light-9);
+  gap: var(--unit-4);
+}
+
+.icon path {
+  fill: var(--neutral);
+}
+
+.text {
+  margin-bottom: 14px;
+}
+
+.link {
+  color: var(--secondary);
+  font-size: var(--font-m);
+  font-weight: var(--font-regular);
+  text-decoration: underline !important;
+}
+
+.link:hover {
+  color: var(--secondary);
+}
