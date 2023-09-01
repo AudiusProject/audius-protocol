@@ -137,11 +137,12 @@ export const pluralize = (
  * @returns The formatted $AUDIO amount
  */
 export const formatAudio = (amount: string, decimals?: number) => {
-  const amount_num: number = parseFloat(amount)
-  let aud = (amount_num / AUDIO).toString()
+  // remove negative sign if present.
+  const amountPos = amount.replace('-', '')
+  let audio = (parseFloat(amountPos) / AUDIO).toString()
   const formatString = '0,0' + (decimals ? '.' + '0'.repeat(decimals!) : '')
-  aud = numeral(aud).format(formatString)
-  return aud
+  audio = numeral(audio).format(formatString)
+  return audio
 }
 
 // Wei -> Audio
