@@ -352,33 +352,23 @@ export class CreatorNode {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
-   * Makes an axios request to this.creatorNodeEndpoint
+   * Makes an axios request to each storage node sequentially until 1 succeeds or all fail
    * @return response body
    */
   async _makeRequestV2(axiosRequestObj: AxiosRequestConfig) {
-    // TODO: This might want to have other error handling, request UUIDs, etc...
-    //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
-    axiosRequestObj.baseURL = this.creatorNodeEndpoint
-    try {
-      return await axios(axiosRequestObj)
-    } catch (e: any) {
-      const wallet = this.userStateManager.getCurrentUser()?.wallet
-      const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
-
-      for (const storageNode of storageNodes) {
-        try {
-          axiosRequestObj.baseURL = storageNode
-          return await axios(axiosRequestObj)
-        } catch (e) {
-          // continue
-        }
+    let lastErr
+    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+      axiosRequestObj.baseURL = selectedNode!
+      try {
+        return await axios(axiosRequestObj)
+      } catch (e: any) {
+        lastErr = e // keep trying other nodes
       }
-
-      const requestId = axiosRequestObj.headers['X-Request-ID']
-      const msg = `Error sending storagev2 request for X-Request-ID=${requestId}, tried all storage nodes: ${e}`
-      console.error(msg)
-      throw new Error(msg)
     }
+    const requestId = axiosRequestObj.headers['X-Request-ID']
+    const msg = `Error sending storagev2 request for X-Request-ID=${requestId}, tried all healthy storage nodes. Last error: ${lastErr}`
+    console.error(msg)
+    throw new Error(msg)
   }
 
   /**

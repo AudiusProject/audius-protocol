@@ -166,7 +166,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return nil
 	}
 
-	if strings.ToLower(c.QueryParam("localOnly")) == "true" {
+	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+	if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
 		return c.String(404, "blob not found")
 	}
 

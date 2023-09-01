@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import re
@@ -5,7 +6,7 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
-import requests
+from aiohttp import ClientSession, TCPConnector
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
@@ -73,7 +74,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import redis_connection
-from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
+from src.utils.get_all_other_nodes import get_all_other_content_nodes_cached
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.rendezvous import RendezvousHash
@@ -423,20 +424,37 @@ def tranform_stream_cache(stream_url):
     return redirect(stream_url)
 
 
-def get_stream_url_from_content_node(content_node: str, path: str):
+async def try_stream_first_byte(session, content_node, path, queue, timeout_sec):
     stream_url = urljoin(content_node, path)
     headers = {"Range": "bytes=0-1"}
     try:
-        response = requests.get(
-            stream_url + "&skip_play_count=true&localOnly=true",
+        async with session.get(
+            stream_url + "&skip_play_count=True&localOnly=True",
             allow_redirects=False,
             headers=headers,
-            timeout=0.5,
-        )
-        if response.status_code == 206:
-            return stream_url
+            timeout=timeout_sec,
+        ) as response:
+            if response.status == 206:
+                await queue.put((stream_url, content_node))
     except:
         pass
+
+
+# Race content nodes, 5 at a time, to see which one responds first with a 206 for the first byte of a track
+async def get_first_stream_url(content_nodes, path):
+    async with ClientSession(connector=TCPConnector(limit=5)) as session:
+        queue = asyncio.Queue()
+
+        tasks = [
+            try_stream_first_byte(session, node, path, queue, timeout_sec=2)
+            for node in content_nodes
+        ]
+        _, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
+        for task in pending:
+            task.cancel()
+
+        return await queue.get() if not queue.empty() else (None, None)
 
 
 @ns.route("/<string:track_id>/stream")
@@ -515,32 +533,35 @@ class TrackStream(Resource):
         cached_content_node = redis.get(redis_key)
         stream_url = None
         if cached_content_node:
-            cached_content_node = cached_content_node.decode("utf-8")
-            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            stream_url, _ = try_stream_first_byte(
+                ClientSession(),
+                cached_content_node.decode("utf-8"),
+                path,
+                asyncio.Queue(),
+                timeout_sec=2,
+            )
             if stream_url:
                 return stream_url
 
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if not healthy_nodes:
+        all_content_nodes = get_all_other_content_nodes_cached(redis)
+        if not all_content_nodes:
             logger.error(
-                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
+                f"tracks.py | stream | No Content Nodes found when streaming track ID {track_id}. Please investigate."
             )
             abort_not_found(track_id, ns)
 
         rendezvous = RendezvousHash(
-            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in all_content_nodes]
         )
-
-        # change from 5 -> 500 to try all nodes
-        # since Qm CIDs are not migrated to rendezvous location yet
-        # can be made 5 when that is done
-        content_nodes = rendezvous.get_n(500, cid)
-        for content_node in content_nodes:
-            stream_url = get_stream_url_from_content_node(content_node, path)
-            if stream_url:
-                redis.set(redis_key, content_node)
-                redis.expire(redis_key, 120)  # 2 min ttl
-                return stream_url
+        content_nodes = rendezvous.get_n(9999999, cid)
+        loop = asyncio.get_event_loop()
+        stream_url, content_node = loop.run_until_complete(
+            get_first_stream_url(content_nodes, path)
+        )
+        if stream_url:
+            redis.set(redis_key, content_node)
+            redis.expire(redis_key, 120)  # 2 min ttl
+            return stream_url
         abort_not_found(track_id, ns)
 
 

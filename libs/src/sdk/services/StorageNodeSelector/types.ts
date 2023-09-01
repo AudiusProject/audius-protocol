@@ -3,8 +3,9 @@ import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
 export type StorageNodeSelectorService = {
-  getSelectedNode: () => Promise<string | null>
+  getSelectedNode: (forceReselect?: boolean) => Promise<string | null>
   getNodes: (cid: string) => string[]
+  triedSelectingAllNodes: () => boolean
 }
 
 export type StorageNode = {
