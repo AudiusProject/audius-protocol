@@ -14,7 +14,6 @@ var rootPath string
 func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 
 	if rootPath == "" {
-		// set here so works with `go test`
 		rootPath = path
 	}
 
@@ -34,7 +33,7 @@ func deleteFilesAndEmptyDirs(path string, logFile *os.File) error {
 				log.Printf("Failed to delete file: %s, error: %s", childPath, err)
 				return err
 			}
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 
@@ -56,7 +55,6 @@ func Run() {
 		return
 	}
 	defer logFile.Close()
-
 	log.SetOutput(logFile)
 
 	if _, exists := os.LookupEnv("NO_LEGACY_REAPER"); exists || strings.HasSuffix(os.Getenv("creatorNodeEndpoint"), ".audius.co") {
@@ -66,5 +64,12 @@ func Run() {
 		return
 	}
 
-	deleteFilesAndEmptyDirs(rootPath, logFile)
+	log.Printf("Start: %s", time.Now())
+
+	err = deleteFilesAndEmptyDirs("/file_storage", logFile)
+	if err != nil {
+		log.Printf("Err  : %s", err)
+	}
+
+	log.Printf("End  : %s", time.Now())
 }
