@@ -1,7 +1,5 @@
-import { App } from "basekit/src";
 import { logger } from "./logger";
 import { Wallet, providers } from "ethers";
-import { SharedData } from ".";
 
 export class WalletManager {
   private walletQueue: Wallet[];
@@ -31,14 +29,8 @@ export class WalletManager {
   }
 
   private generateWallets(): Wallet[] {
-    return [...Array(30).keys()].map((_) =>
+    return [...Array(10).keys()].map((_) =>
       Wallet.createRandom().connect(this.web3)
     );
   }
 }
-
-export const regenerateWallets = async (app: App<SharedData>) => {
-  const { wallets } = app.viewAppData();
-  wallets.regenerateAllWallets();
-  logger.info("regenerated all signing wallets");
-};

@@ -1,5 +1,4 @@
-import { App } from "basekit/src/index";
-import { SharedData } from ".";
+import { config, discoveryDb, wallets, web3 } from ".";
 import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
 import {
   TransactionReceipt,
@@ -20,7 +19,6 @@ export type RelayedTransaction = {
 };
 
 export const relayTransaction = async (
-  app: App<SharedData>,
   headers: RelayRequestHeaders,
   req: RelayRequestType,
   rep: FastifyReply
@@ -28,7 +26,6 @@ export const relayTransaction = async (
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
-  const { web3, wallets, config } = app.viewAppData();
   const {
     entityManagerContractAddress,
     entityManagerContractRegistryKey,
@@ -37,7 +34,6 @@ export const relayTransaction = async (
   const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
   const { reqIp } = headers;
 
-  const discoveryDb = app.getDnDb();
   const { chainId } = await web3.getNetwork();
   const sender = AudiusABIDecoder.recoverSigner({
     encodedAbi: encodedABI,
