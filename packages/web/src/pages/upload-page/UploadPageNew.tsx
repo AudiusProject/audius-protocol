@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { createContext, useCallback, useEffect, useState } from 'react'
 
 import {
   UploadType,
@@ -47,7 +47,14 @@ const initialFormState = {
   tracks: undefined
 }
 
-export const UploadPageNew = () => {
+type UploadPageProps = {
+  scrollToTop: () => void
+}
+
+export const UploadFormScrollContext = createContext(() => {})
+
+export const UploadPageNew = (props: UploadPageProps) => {
+  const { scrollToTop } = props
   const dispatch = useDispatch()
   const [phase, setPhase] = useState(Phase.SELECT)
   const [formState, setFormState] = useState<UploadFormState>(initialFormState)
@@ -210,7 +217,9 @@ export const UploadPageNew = () => {
         />
       }
     >
-      {page}
+      <UploadFormScrollContext.Provider value={scrollToTop}>
+        {page}
+      </UploadFormScrollContext.Provider>
     </Page>
   )
 }
