@@ -15,6 +15,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
+import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
 import PreviewButton from 'components/upload/PreviewButton'
 
@@ -38,7 +39,13 @@ const messages = {
   multiTrackCount: (index: number, total: number) =>
     `TRACK ${index} of ${total}`,
   prev: 'Prev',
-  next: 'Next Track'
+  next: 'Next Track',
+  navigationPrompt: {
+    title: 'Discard upload?',
+    body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
+    cancel: 'Cancel',
+    proceed: 'Discard'
+  }
 }
 
 type EditTrackFormProps = {
@@ -107,11 +114,12 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 }
 
 const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
-  const { values } = props
+  const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
 
   return (
     <Form>
+      <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
       <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
         <div className={cn(styles.formContainer, layoutStyles.col)}>
           {isMultiTrack ? <MultiTrackHeader /> : null}
