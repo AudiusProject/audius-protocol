@@ -1,7 +1,5 @@
-import { FastifyReply, FastifyRequest } from "fastify";
 import { logger } from "../logger";
-import { RelayRequestType } from "../types/relay";
-import { RelayRateLimiter, ValidLimits } from "./rateLimitConfig";
+import { RelayRateLimiter, ValidLimits } from "../config/rateLimitConfig";
 import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
@@ -10,13 +8,8 @@ import { config, discoveryDb } from "..";
 
 const globalRateLimiter = new RelayRateLimiter();
 
-export const relayRateLimiter = async (
-  req: FastifyRequest<{ Body: RelayRequestType }>,
-  rep: FastifyReply
-): Promise<void> => {
-  const {
-    body: { encodedABI },
-  } = req;
+export const relayRateLimiter = async (): Promise<void> => {
+  const encodedABI = "FIX ME"
 
   const operation = getEntityManagerActionKey(encodedABI);
   const chainId = config.acdcChainId;
@@ -30,7 +23,7 @@ export const relayRateLimiter = async (
   });
 
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
-  if (isBlockedFromRelay) errorResponseUnauthorized(rep);
+  if (isBlockedFromRelay) throw new Error("blocked from relay")
 
   const limit = await determineLimit(
     discoveryDb,
@@ -45,14 +38,14 @@ export const relayRateLimiter = async (
       signer,
       limit,
     });
-    insertReplyHeaders(rep, res);
+    insertReplyHeaders({}, res);
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders(rep, e as RateLimiterRes);
-      errorResponseRateLimited(rep);
+      insertReplyHeaders({}, e as RateLimiterRes);
+      errorResponseRateLimited({});
     }
     logger.error({ msg: "rate limit internal error", e });
-    errorResponseInternal(rep);
+    errorResponseInternal({});
   }
 };
 
@@ -66,19 +59,19 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
   return action + entityType;
 };
 
-const errorResponseUnauthorized = (rep: FastifyReply) => {
+const errorResponseUnauthorized = (rep: any) => {
   rep.code(403).send();
 };
 
-const errorResponseRateLimited = (rep: FastifyReply) => {
+const errorResponseRateLimited = (rep: any) => {
   rep.code(429).send("Too many requests, please try again later");
 };
 
-const errorResponseInternal = (rep: FastifyReply) => {
+const errorResponseInternal = (rep: any) => {
   rep.code(500).send();
 };
 
-const insertReplyHeaders = (rep: FastifyReply, data: RateLimiterRes) => {
+const insertReplyHeaders = (rep: any, data: RateLimiterRes) => {
   const { msBeforeNext, remainingPoints, consumedPoints } = data;
   rep.header("Retry-After", msBeforeNext / 1000);
   rep.header("X-RateLimit-Remaining", remainingPoints);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AntiAbuseConfig } from "./config";
+import { AntiAbuseConfig } from "./config/config";
 import { logger } from "./logger";
 import { Table, Users } from "storage/src";
 import { Knex } from "knex";

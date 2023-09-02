@@ -1,4 +1,4 @@
-import { Config, readConfig } from "./config";
+import { Config, readConfig } from "./config/config";
 import { ethers, providers } from "ethers";
 import { WalletManager } from "./walletManager";
 import { logger } from "./logger";
