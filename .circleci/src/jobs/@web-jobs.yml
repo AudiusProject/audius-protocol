@@ -261,6 +261,7 @@ web-dist-mac-staging:
         command: rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish
+        install-license: true
 
 web-dist-win-staging:
   working_directory: ~/audius-client
@@ -290,6 +291,7 @@ web-dist-mac-production:
         command: rbenv global 2.7.7 && rbenv rehash
     - web-distribute:
         build-type: mac-publish-production
+        install-license: true
 
 web-dist-win-production:
   working_directory: ~/audius-client
