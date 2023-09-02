@@ -207,6 +207,7 @@ const addEntries = (state: CacheState, entries: any[], replace?: boolean) => {
     ) {
       // do nothing
     } else if (existing) {
+      delete existing.local
       let newMetadata = mergeWith(
         {},
         existing,

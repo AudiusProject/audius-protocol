@@ -69,7 +69,7 @@ export function* rehydrateOfflineDataSaga() {
     collectionsToCache.push({
       id,
       uid: makeUid(Kind.COLLECTIONS, id),
-      metadata: collection
+      metadata: { ...collection, local: true }
     })
 
     if (user) {
@@ -77,7 +77,7 @@ export function* rehydrateOfflineDataSaga() {
       usersToCache.push({
         id: user_id,
         uid: makeUid(Kind.USERS, user_id),
-        metadata: user
+        metadata: { ...user, local: true }
       })
     }
   }
@@ -103,7 +103,7 @@ export function* rehydrateOfflineDataSaga() {
     tracksToCache.push({
       id: track_id,
       uid: makeUid(Kind.TRACKS, track_id),
-      metadata: track
+      metadata: { ...track, local: true }
     })
 
     if (user) {
@@ -111,7 +111,7 @@ export function* rehydrateOfflineDataSaga() {
       usersToCache.push({
         id: user_id,
         uid: makeUid(Kind.USERS, user_id),
-        metadata: user
+        metadata: { ...user, local: true }
       })
     }
   }

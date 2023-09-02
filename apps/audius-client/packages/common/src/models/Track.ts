@@ -208,6 +208,7 @@ export type TrackMetadata = {
   duration: number
 
   offline?: OfflineTrackMetadata
+  local?: boolean
 } & Timestamped
 
 export type DownloadReason = {

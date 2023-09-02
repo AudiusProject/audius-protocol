@@ -57,6 +57,7 @@ export type CollectionMetadata = {
   playlist_image_multihash?: string
   playlist_image_sizes_multihash?: string
   offline?: OfflineCollectionMetadata
+  local?: boolean
 }
 
 export type CollectionDownloadReason = { is_from_favorites: boolean }
