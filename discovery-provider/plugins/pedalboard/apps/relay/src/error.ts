@@ -14,14 +14,6 @@ export const isAppError = (obj: any): obj is AppError => {
   return obj && "isAppError" in obj;
 };
 
-export const canThrow = <T>(next: NextFunction, fn: () => T): T | void => {
-  try {
-    return fn();
-  } catch (e) {
-    next(e);
-  }
-};
-
 /** Calls express next function to advance middleware to error handling. */
 export const customError = (next: NextFunction, error: AppError) => {
   next({ ...error, isAppError: true });
