@@ -1,7 +1,12 @@
 import dotenv from "dotenv";
 import { logger } from "../logger";
 import { bool, cleanEnv, num, str } from "envalid";
-import { AntiAbuseConfig, allowListPublicKeys, blockListPublicKeys, newAntiAbuseConfig } from "./antiAbuseConfig";
+import {
+  AntiAbuseConfig,
+  allowListPublicKeys,
+  blockListPublicKeys,
+  newAntiAbuseConfig,
+} from "./antiAbuseConfig";
 
 export type Config = {
   environment: string;
@@ -25,7 +30,7 @@ const readDotEnv = () => {
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
-  dotenvConfig(environment)
+  dotenvConfig(environment);
 };
 
 export const readConfig = (): Config => {

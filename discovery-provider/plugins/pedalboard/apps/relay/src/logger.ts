@@ -8,15 +8,21 @@ export const logger = pino({
 });
 
 export const logRequest = () => {
-  logger.info({
-    req: {}
-  }, 'incoming request')
-}
+  logger.info(
+    {
+      req: {},
+    },
+    "incoming request"
+  );
+};
 
 export const logResponse = () => {
-  logger.info({
-    res: {},
-    req: {},
-    responseTime: ""
-  }, 'request completed')
-}
+  logger.info(
+    {
+      res: {},
+      req: {},
+      responseTime: "",
+    },
+    "request completed"
+  );
+};

@@ -16,10 +16,7 @@ export type RelayedTransaction = {
   transaction: TransactionRequest;
 };
 
-export const relayTransaction = async (
-  req: Request,
-  res: Response
-) => {
+export const relayTransaction = async (req: Request, res: Response) => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
@@ -39,7 +36,7 @@ export const relayTransaction = async (
   });
   const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
   if (isBlockedFromRelay) {
-    throw new Error("blocked from relay")
+    throw new Error("blocked from relay");
   }
 
   log({ msg: "new relay request", req });

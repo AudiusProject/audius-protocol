@@ -9,7 +9,7 @@ import { config, discoveryDb } from "..";
 const globalRateLimiter = new RelayRateLimiter();
 
 export const relayRateLimiter = async (): Promise<void> => {
-  const encodedABI = "FIX ME"
+  const encodedABI = "FIX ME";
 
   const operation = getEntityManagerActionKey(encodedABI);
   const chainId = config.acdcChainId;
@@ -23,7 +23,7 @@ export const relayRateLimiter = async (): Promise<void> => {
   });
 
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
-  if (isBlockedFromRelay) throw new Error("blocked from relay")
+  if (isBlockedFromRelay) throw new Error("blocked from relay");
 
   const limit = await determineLimit(
     discoveryDb,
