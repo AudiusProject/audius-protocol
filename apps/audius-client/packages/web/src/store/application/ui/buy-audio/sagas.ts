@@ -65,7 +65,8 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import {
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
-  getSolanaConnection
+  getSolanaConnection,
+  getTransferTransactionFee
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -100,6 +101,7 @@ const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const DEFAULT_SLIPPAGE = 3 // The default slippage amount to allow for exchanges, overridden in optimizely
 const BUY_AUDIO_LOCAL_STORAGE_KEY = 'buy-audio-transaction-details'
+const NUM_TRANSFER_TRANSACTIONS = 3
 
 const MEMO_MESSAGES = {
   [OnRampProvider.COINBASE]: 'In-App $AUDIO Purchase: Coinbase Pay',
@@ -280,7 +282,14 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
   const feesCache = yield* select(getFeesCache)
   const rootAccount = yield* call(getRootSolanaAccount)
 
-  const rootAccountMinBalance = yield* call(getRootAccountRentExemptionMinimum)
+  const transferFee = yield* call(
+    getTransferTransactionFee,
+    rootAccount.publicKey
+  )
+  // Allows for 3 transaction fees
+  const rootAccountMinBalance =
+    (yield* call(getRootAccountRentExemptionMinimum)) +
+    transferFee * NUM_TRANSFER_TRANSACTIONS
 
   const associatedAccountCreationFees = yield* call(
     getAssociatedAccountCreationFees,

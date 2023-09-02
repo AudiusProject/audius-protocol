@@ -71,11 +71,9 @@ export const isValidSolAddress = async (address: SolanaWalletAddress) => {
  */
 export const getRootAccountRentExemptionMinimum = async () => {
   const connection = await getSolanaConnection()
-  return (
-    (await connection.getMinimumBalanceForRentExemption(
-      ROOT_ACCOUNT_SIZE,
-      'processed'
-    )) + 15000 // Allows for 3 transaction fees
+  return await connection.getMinimumBalanceForRentExemption(
+    ROOT_ACCOUNT_SIZE,
+    'processed'
   )
 }
 

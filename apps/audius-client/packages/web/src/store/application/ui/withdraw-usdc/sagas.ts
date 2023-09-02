@@ -5,7 +5,8 @@ import {
   ErrorLevel,
   SolanaWalletAddress,
   getUSDCUserBank,
-  getContext
+  getContext,
+  TOKEN_LISTING_MAP
 } from '@audius/common'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -43,7 +44,8 @@ const {
   setDestinationAddressSucceeded,
   withdrawUSDCFailed
 } = withdrawUSDCActions
-const { getWithdrawDestinationAddress } = withdrawUSDCSelectors
+const { getWithdrawDestinationAddress, getWithdrawAmount } =
+  withdrawUSDCSelectors
 const { getFeePayer } = solanaSelectors
 
 function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
@@ -105,17 +107,21 @@ function* doSetDestinationAddress({
 function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
   try {
     const libs = yield* call(getLibs)
+    if (!libs.solanaWeb3Manager) {
+      throw new Error('Failed to get solana web3 manager')
+    }
     // Assume destinationAddress and amount have already been validated
     const destinationAddress = yield* select(getWithdrawDestinationAddress)
-    if (!destinationAddress) {
-      throw new Error('Please enter a destination address')
+    const amount = yield* select(getWithdrawAmount)
+    if (!destinationAddress || !amount) {
+      throw new Error('Please enter a valid destination address and amount')
     }
     const feePayer = yield* select(getFeePayer)
     if (feePayer === null) {
       throw new Error('Fee payer not set')
     }
-    const transactionHandler = libs.solanaWeb3Manager?.transactionHandler
-    const connection = libs.solanaWeb3Manager?.connection
+    const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+    const connection = libs.solanaWeb3Manager.connection
     if (!connection) {
       throw new Error('Failed to get connection')
     }
@@ -133,11 +139,12 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
     )
     // Destination is a sol address - check for associated token account
     if (isDestinationSolAddress) {
+      // First check that the destination actually exists and has enough lamports for rent
       const destinationTokenAccountPubkey = yield* call(
         [Token, Token.getAssociatedTokenAddress],
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
-        libs.solanaWeb3Manager!.mints.usdc,
+        libs.solanaWeb3Manager.mints.usdc,
         destinationPubkey
       )
       const tokenAccountInfo = yield* call(getTokenAccountInfo, {
@@ -161,6 +168,7 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
           feePayer: feePayerPubkey,
           recentBlockhash: swapRecentBlockhash
         })
+        // Send swap instructions to relay
         const { res: swapRes, error: swapError } = yield* call(
           [transactionHandler, transactionHandler.handleTransaction],
           {
@@ -179,7 +187,10 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
         }
         console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
 
-        // Then create and fund the destination associated token account.
+        // Then create and fund the destination associated token account
+        // using funds from the root solana account that we just swapped for.
+        // TODO: use existing funds if possible
+        // https://linear.app/audius/issue/PAY-1793/use-existing-sol-funds-for-withdraw-usdc-fees
         const createRecentBlockhash = yield* call(getRecentBlockhash)
         const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
         const createTokenAccountInstruction = yield* call(
@@ -187,14 +198,14 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
           {
             associatedTokenAccount: destinationTokenAccountPubkey,
             owner: destinationPubkey,
-            mint: libs.solanaWeb3Manager!.mints.usdc,
+            mint: libs.solanaWeb3Manager.mints.usdc,
             feePayer: rootSolanaAccount.publicKey
           }
         )
         yield* call([tx, tx.add], createTokenAccountInstruction)
         yield* call(
           sendAndConfirmTransaction,
-          libs.solanaWeb3Manager!.connection,
+          libs.solanaWeb3Manager.connection,
           tx,
           [rootSolanaAccount]
         )
@@ -203,8 +214,53 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
         )
       }
     }
-    // TODO: transfer USDC to destination associated token account
+    // TODO: math.min(amount, balance)
+    // https://linear.app/audius/issue/PAY-1794/account-for-usdc-used-for-fees-before-withdrawing
+    let destinationTokenAccount = destinationAddress
+    if (isDestinationSolAddress) {
+      const destinationTokenAccountPubkey = yield* call(
+        [Token, Token.getAssociatedTokenAddress],
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+        TOKEN_PROGRAM_ID,
+        libs.solanaWeb3Manager.mints.usdc,
+        destinationPubkey
+      )
+      destinationTokenAccount = destinationTokenAccountPubkey.toString()
+    }
+    const amountWei = new BN(amount).mul(
+      new BN(TOKEN_LISTING_MAP.usdc.decimals)
+    )
+    const usdcUserBank = yield* call(getUSDCUserBank)
+    const transferInstructions = yield* call(
+      [
+        libs.solanaWeb3Manager,
+        libs.solanaWeb3Manager.createTransferInstructionsFromCurrentUser
+      ],
+      {
+        amount: amountWei,
+        feePayerKey: rootSolanaAccount.publicKey,
+        senderSolanaAddress: usdcUserBank,
+        recipientSolanaAddress: destinationTokenAccount,
+        mint: 'usdc'
+      }
+    )
+    const recentBlockhash = yield* call(getRecentBlockhash)
+    const tx = new Transaction({ recentBlockhash })
+    for (const inst of transferInstructions) {
+      yield* call([tx, tx.add], inst)
+    }
+    const transferSignature = yield* call(
+      sendAndConfirmTransaction,
+      libs.solanaWeb3Manager.connection,
+      tx,
+      [rootSolanaAccount]
+    )
+    console.debug(
+      'Withdraw USDC - successfully transferred USDC - tx hash',
+      transferSignature
+    )
   } catch (e: unknown) {
+    console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       level: ErrorLevel.Error,

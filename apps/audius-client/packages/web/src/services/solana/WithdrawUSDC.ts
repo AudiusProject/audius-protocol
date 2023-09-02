@@ -109,27 +109,3 @@ export const getSwapUSDCUserBankInstructions = async ({
     closeInstruction
   ]
 }
-
-export const createUSDCTransferInstructions = async ({
-  amount,
-  destinationAddress,
-  feePayer
-}: {
-  amount: number
-  destinationAddress: string
-  feePayer: PublicKey
-}) => {
-  const libs = await getLibs()
-  const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
-    mint: 'usdc'
-  })
-  const instructions =
-    await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
-      amount: new BN(amount),
-      feePayerKey: feePayer,
-      senderSolanaAddress: usdcUserBank,
-      recipientSolanaAddress: destinationAddress,
-      mint: 'usdc'
-    })
-  return instructions
-}
