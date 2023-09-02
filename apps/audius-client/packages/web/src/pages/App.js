@@ -698,7 +698,9 @@ class App extends Component {
                 <DesktopRoute
                   path={UPLOAD_PAGE}
                   isMobile={isMobileClient}
-                  component={UploadPage}
+                  render={(props) => (
+                    <UploadPage {...props} scrollToTop={this.scrollToTop} />
+                  )}
                 />
 
                 <Route exact path={SAVED_PAGE} component={SavedPage} />

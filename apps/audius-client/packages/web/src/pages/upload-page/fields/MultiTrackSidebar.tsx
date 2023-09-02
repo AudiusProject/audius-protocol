@@ -1,4 +1,4 @@
-import { MouseEvent, useCallback } from 'react'
+import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
 import {
@@ -17,6 +17,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
+import { UploadFormScrollContext } from '../UploadPageNew'
 import { useIndexedField } from '../hooks'
 import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 
@@ -85,6 +86,7 @@ type TrackRowProps = {
 
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
+  const scrollToTop = useContext(UploadFormScrollContext)
   const { values, setValues, errors } = useFormikContext<TrackEditFormValues>()
   const [{ value: title }] = useIndexedField<SingleTrackEditValues['title']>(
     'trackMetadatas',
@@ -101,6 +103,14 @@ const TrackRow = (props: TrackRowProps) => {
   )
   const isSelected = index === selectedIndex
 
+  const handleClickTrack = useCallback(
+    (index: number) => {
+      setIndex(index)
+      scrollToTop()
+    },
+    [scrollToTop, setIndex]
+  )
+
   const handleRemoveTrack = useCallback(
     (e: MouseEvent<HTMLDivElement>, index: number) => {
       e.stopPropagation()
@@ -116,15 +126,16 @@ const TrackRow = (props: TrackRowProps) => {
         trackMetadatas: newTrackMetadatas,
         trackMetadatasIndex: newIndex
       })
+      scrollToTop()
     },
-    [selectedIndex, setValues, values]
+    [scrollToTop, selectedIndex, setValues, values]
   )
 
   const isTitleMissing = isEmpty(title)
   const hasError = !isEmpty(errors.trackMetadatas?.[index])
 
   return (
-    <div className={styles.trackRoot} onClick={() => setIndex(index)}>
+    <div className={styles.trackRoot} onClick={() => handleClickTrack(index)}>
       {isSelected ? <div className={styles.selectedIndicator} /> : null}
       <div className={cn(styles.track, layoutStyles.row)}>
         <div

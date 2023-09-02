@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import {
   HarmonyButton,
@@ -18,6 +18,7 @@ import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
 import PreviewButton from 'components/upload/PreviewButton'
+import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
 
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
@@ -173,6 +174,7 @@ const MultiTrackHeader = () => {
 }
 
 const MultiTrackFooter = () => {
+  const scrollToTop = useContext(UploadFormScrollContext)
   const [{ value: index }, , { setValue: setIndex }] = useField(
     'trackMetadatasIndex'
   )
@@ -180,10 +182,12 @@ const MultiTrackFooter = () => {
 
   const goPrev = useCallback(() => {
     setIndex(Math.max(index - 1, 0))
-  }, [index, setIndex])
+    scrollToTop()
+  }, [index, scrollToTop, setIndex])
   const goNext = useCallback(() => {
     setIndex(Math.min(index + 1, trackMetadatas.length - 1))
-  }, [index, setIndex, trackMetadatas.length])
+    scrollToTop()
+  }, [index, scrollToTop, setIndex, trackMetadatas.length])
 
   const prevDisabled = index === 0
   const nextDisabled = index === trackMetadatas.length - 1
