@@ -1,5 +1,4 @@
 import { config, discoveryDb, wallets, web3 } from ".";
-import { RelayRequestHeaders, RelayRequestType } from "./types/relay";
 import {
   TransactionReceipt,
   TransactionRequest,
@@ -9,9 +8,8 @@ import { logger } from "./logger";
 import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
-import { FastifyReply } from "fastify";
-import { errorResponseForbidden } from "./error";
 import { ethers } from "ethers";
+import { Request, Response } from "express";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
@@ -19,10 +17,9 @@ export type RelayedTransaction = {
 };
 
 export const relayTransaction = async (
-  headers: RelayRequestHeaders,
-  req: RelayRequestType,
-  rep: FastifyReply
-): Promise<RelayedTransaction> => {
+  req: Request,
+  res: Response
+) => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
@@ -31,8 +28,8 @@ export const relayTransaction = async (
     entityManagerContractRegistryKey,
     aao,
   } = config;
-  const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req;
-  const { reqIp } = headers;
+  const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req.body;
+  const reqIp = "FIX ME";
 
   const { chainId } = await web3.getNetwork();
   const sender = AudiusABIDecoder.recoverSigner({
@@ -42,7 +39,7 @@ export const relayTransaction = async (
   });
   const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
   if (isBlockedFromRelay) {
-    errorResponseForbidden(rep);
+    throw new Error("blocked from relay")
   }
 
   log({ msg: "new relay request", req });
@@ -75,7 +72,7 @@ export const relayTransaction = async (
 
   // query chain until tx is mined
   const receipt = await confirm(web3, submit.hash);
-  return { receipt, transaction };
+  res.send(receipt);
 };
 
 const confirm = async (

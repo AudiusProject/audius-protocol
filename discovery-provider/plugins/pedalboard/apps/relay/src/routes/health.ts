@@ -1,10 +1,11 @@
 import App from "basekit/src/app";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { SharedData } from "..";
+import { Request, Response } from "express";
 
 export const healthCheck = async (
-  req: FastifyRequest,
-  reply: FastifyReply
+  req: Request,
+  res: Response
 ) => {
-  return { status: "up" };
+  res.send({ status: "up" });
 };
