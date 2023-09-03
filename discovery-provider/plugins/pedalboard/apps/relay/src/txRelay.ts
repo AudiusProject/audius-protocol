@@ -16,56 +16,24 @@ export type RelayedTransaction = {
   transaction: TransactionRequest;
 };
 
-export const relayTransaction = async (req: Request, res: Response, next: NextFunction) => {
-  const requestId = uuidv4();
-  const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
-    logger.info(obj, msg, requestId, ...args);
-  const {
-    entityManagerContractAddress,
-    entityManagerContractRegistryKey,
-    aao,
-  } = config;
-  const { encodedABI, contractRegistryKey, gasLimit: reqGasLimit } = req.body;
-  const reqIp = "FIX ME";
+export const relayTransaction = async (_req: Request, res: Response, next: NextFunction) => {
+  // pull info from validated request
+  const { validatedRelayRequest } = res.locals.ctx
+  const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest
 
-  const { chainId } = await web3.getNetwork();
-  const sender = AudiusABIDecoder.recoverSigner({
-    encodedAbi: encodedABI,
-    entityManagerAddress: entityManagerContractAddress,
-    chainId: chainId.toString(),
-  });
-  const isBlockedFromRelay = await detectAbuse(aao, discoveryDb, sender, reqIp);
-  if (isBlockedFromRelay) {
-    throw new Error("blocked from relay");
-  }
-
-  log({ msg: "new relay request", req });
-
-  // validate transaction and select wallet
-  validateSupportedContract(
-    [entityManagerContractRegistryKey],
-    contractRegistryKey
-  );
-  await validateTransactionData(encodedABI);
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
 
   // gather some transaction params
   const nonce = await web3.getTransactionCount(address);
-  const to = entityManagerContractAddress;
+  const to = contractAddress;
   const value = "0x00";
   const data = encodedABI;
-
-  log({ msg: "gathered tx params", nonce });
-
-  const gasLimit = reqGasLimit || 3000000;
 
   // assemble, sign, and send transaction
   const transaction = { nonce, gasLimit, to, value, data };
   await senderWallet.signTransaction(transaction);
   const submit = await senderWallet.sendTransaction(transaction);
-
-  log("signed and sent");
 
   // query chain until tx is mined
   const receipt = await confirm(web3, submit.hash);
