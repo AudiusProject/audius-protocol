@@ -9,14 +9,14 @@ import { v4 as uuidv4 } from "uuid";
 import { detectAbuse } from "./antiAbuse";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { ethers } from "ethers";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
   transaction: TransactionRequest;
 };
 
-export const relayTransaction = async (req: Request, res: Response) => {
+export const relayTransaction = async (req: Request, res: Response, next: NextFunction) => {
   const requestId = uuidv4();
   const log = (obj: unknown, msg?: string | undefined, ...args: any[]) =>
     logger.info(obj, msg, requestId, ...args);
@@ -70,6 +70,7 @@ export const relayTransaction = async (req: Request, res: Response) => {
   // query chain until tx is mined
   const receipt = await confirm(web3, submit.hash);
   res.send(receipt);
+  next()
 };
 
 const confirm = async (

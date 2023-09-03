@@ -2,12 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import { AppError, isAppError } from "../error";
 import { logger } from "../logger";
 import { StatusCodes } from "http-status-codes";
+import { outgoingLog } from "./logging";
 
 export const errorHandler = (
   error: any,
-  _request: Request,
+  request: Request,
   response: Response,
-  _next: NextFunction
+  next: NextFunction
 ) => {
   // if unknown error is thrown somewhere
   if (!isAppError(error)) {
@@ -22,4 +23,6 @@ export const errorHandler = (
   logger.error({ appError }, "AppError occured");
   const { name, message, statusCode } = appError;
   response.status(statusCode).json({ name, message });
+  outgoingLog(request, response);
+  next();
 };

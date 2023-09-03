@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { v4 as uuidv4 } from "uuid";
 import { logger } from "../logger";
 
 export const incomingRequestLogger = (
@@ -6,8 +7,23 @@ export const incomingRequestLogger = (
   response: Response,
   next: NextFunction
 ) => {
-  logger.info({ request }, "incoming request");
+  const startTime = new Date(new Date().getTime());
+  const requestId = uuidv4();
+  const oldCtx = response.locals.ctx;
+  response.locals.ctx = { ...oldCtx, startTime, requestId };
+
+  const { route, method } = request;
+  logger.info({ requestId, route, method }, "incoming request");
   next();
+};
+
+export const outgoingLog = (request: Request, response: Response) => {
+  // in milliseconds
+  const responseTime =
+    new Date().getTime() - response.locals.ctx.startTime.getTime();
+  const { route, method } = request;
+  const { locals: ctx } = response;
+  logger.info({ route, method, ctx, responseTime }, "request completed");
 };
 
 export const outgoingRequestLogger = (
@@ -15,9 +31,6 @@ export const outgoingRequestLogger = (
   response: Response,
   next: NextFunction
 ) => {
-  // in milliseconds
-  const responseTime =
-    new Date().getTime() - response.locals.ctx.startTime.getTime();
-  logger.info({ request, response, responseTime }, "request completed");
+  outgoingLog(request, response);
   next();
 };
