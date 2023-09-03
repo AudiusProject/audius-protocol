@@ -6,10 +6,6 @@
   z-index: 10000;
 }
 
-.root .dropdownInput:has(:global(.ant-select)) {
-  height: 72px;
-}
-
 .dropdownInput :global(.ant-select-selection-item),
 .dropdownInput :global(.ant-select-selection-placeholder) > div {
   display: flex;

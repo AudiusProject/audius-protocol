@@ -4,13 +4,13 @@ import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
+import { ExternalLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'
 
 import styles from './CollectibleGatedDescription.module.css'
 
 const { getHasUnsupportedCollection } = collectiblesSelectors
 const messages = {
-  collectibleGated: 'Collectible Gated',
   collectibleGatedSubtitle:
     'Users who own a digital collectible matching your selection will have access to your track. Collectible gated content does not appear on trending or in user feeds.',
   noCollectibles:
@@ -21,13 +21,15 @@ const messages = {
   learnMore: 'Learn More'
 }
 
-export const CollectibleGatedDescription = ({
-  hasCollectibles,
-  isUpload
-}: {
+type CollectibleGatedDescriptionProps = {
   hasCollectibles: boolean
   isUpload: boolean
-}) => {
+}
+
+export const CollectibleGatedDescription = (
+  props: CollectibleGatedDescriptionProps
+) => {
+  const { hasCollectibles, isUpload } = props
   const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const helpContent = hasUnsupportedCollection ? (
@@ -46,10 +48,12 @@ export const CollectibleGatedDescription = ({
         <HelpCallout content={helpContent} />
       ) : null}
       <Button
+        as={ExternalLink}
+        to={AUDIUS_GATED_CONTENT_BLOG_LINK}
+        strength='strong'
         type={ButtonType.TEXT}
         className={styles.learnMoreButton}
         text={messages.learnMore}
-        onClick={() => window.open(AUDIUS_GATED_CONTENT_BLOG_LINK, '_blank')}
         iconClassName={styles.learnMoreArrow}
         rightIcon={<IconExternalLink />}
       />

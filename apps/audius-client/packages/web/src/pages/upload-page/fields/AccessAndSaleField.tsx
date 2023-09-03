@@ -2,7 +2,6 @@ import { ChangeEvent, useCallback, useMemo } from 'react'
 
 import {
   accountSelectors,
-  collectiblesSelectors,
   FeatureFlags,
   FieldVisibility,
   isPremiumContentCollectibleGated,
@@ -15,7 +14,6 @@ import {
 } from '@audius/common'
 import {
   IconCart,
-  IconCollectible,
   IconHidden,
   IconNote,
   IconSpecialAccess,
@@ -50,14 +48,12 @@ import {
   SpecialAccessType
 } from '../fields/availability/SpecialAccessFields'
 import { UsdcPurchaseFields } from '../fields/availability/UsdcPurchaseFields'
-import { CollectibleGatedDescription } from '../fields/availability/collectible-gated/CollectibleGatedDescription'
-import { CollectibleGatedFields } from '../fields/availability/collectible-gated/CollectibleGatedFields'
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
 import { REMIX_OF } from './RemixSettingsField'
-const { getSupportedUserCollections } = collectiblesSelectors
+import { CollectibleGatedRadioField } from './availability/collectible-gated/CollectibleGatedRadioField'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -78,11 +74,6 @@ const messages = {
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
-  collectibleGated: 'Collectible Gated',
-  collectibleGatedSubtitle:
-    'Users who own a digital collectible matching your selection will have access to your track. Collectible gated content does not appear on trending or in user feeds.',
-  noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
   compatibilityTitle: "Not seeing what you're looking for?",
   compatibilitySubtitle:
     'Unverified Solana NFT Collections are not compatible at this time.',
@@ -450,26 +441,10 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
-  const { ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
-  )
-  const numEthCollectibles = Object.keys(ethCollectionMap).length
-  const numSolCollectibles = Object.keys(solCollectionMap).length
-  const hasCollectibles = numEthCollectibles + numSolCollectibles > 0
-
   const noUsdcPurchase =
     !isUpload &&
     !isPremiumContentUSDCPurchaseGated(initialPremiumConditions) &&
     !isInitiallyUnlisted
-
-  const noCollectibleGate =
-    isRemix ||
-    !hasCollectibles ||
-    (!isUpload &&
-      !isPremiumContentCollectibleGated(initialPremiumConditions) &&
-      !isInitiallyUnlisted)
-  const noCollectibleDropdown =
-    noCollectibleGate || (!isUpload && !isInitiallyUnlisted)
 
   const noSpecialAccess =
     !isUpload &&
@@ -581,21 +556,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           />
         ) : null}
         {isCollectibleGatedEnabled ? (
-          <ModalRadioItem
-            icon={<IconCollectible />}
-            label={messages.collectibleGated}
-            value={TrackAvailabilityType.COLLECTIBLE_GATED}
-            disabled={noCollectibleGate}
-            hintText={noCollectibleGate ? messages.noCollectibles : undefined}
-            description={
-              <CollectibleGatedDescription
-                hasCollectibles={hasCollectibles}
-                isUpload={true}
-              />
-            }
-            checkedContent={
-              <CollectibleGatedFields disabled={noCollectibleDropdown} />
-            }
+          <CollectibleGatedRadioField
+            isRemix={isRemix}
+            isUpload={isUpload}
+            initialPremiumConditions={initialPremiumConditions}
+            isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
         <ModalRadioItem

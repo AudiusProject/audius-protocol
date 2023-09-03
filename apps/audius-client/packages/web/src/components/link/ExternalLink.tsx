@@ -20,7 +20,8 @@ const allowList = [
   'twitter.com',
   'www.twitter.com',
   'x.com',
-  'www.x.com'
+  'www.x.com',
+  'blog.audius.co'
 ]
 
 export const ExternalLink = (props: ExternalLinkProps) => {

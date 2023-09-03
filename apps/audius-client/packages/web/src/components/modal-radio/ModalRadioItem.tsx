@@ -75,7 +75,11 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
           aria-hidden={isCollapsed}
         >
           <div ref={ref} className={cn(layoutStyles.col, layoutStyles.gap4)}>
-            <Text>{description}</Text>
+            {typeof description === 'string' ? (
+              <Text>{description}</Text>
+            ) : (
+              description
+            )}
             {checkedContent}
           </div>
         </div>

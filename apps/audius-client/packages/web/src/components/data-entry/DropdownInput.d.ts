@@ -3,6 +3,10 @@ import { ReactNode } from 'react'
 type Value =
   | string
   | {
+      id: string
+      text: string
+    }
+  | {
       text: string
       el: JSX.Element
       value?: string
