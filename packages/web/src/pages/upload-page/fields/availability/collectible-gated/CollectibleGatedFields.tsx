@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import {
   Chain,
@@ -9,7 +9,7 @@ import {
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
-import DropdownInput from 'components/data-entry/DropdownInput'
+import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
@@ -34,9 +34,8 @@ type CollectibleGatedFieldsProps = {
   disabled: boolean
 }
 
-export const CollectibleGatedFields = ({
-  disabled
-}: CollectibleGatedFieldsProps) => {
+export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
+  const { disabled } = props
   const [, , { setValue: setAvailabilityValue }] = useField({
     name: AVAILABILITY_TYPE
   })
@@ -112,12 +111,11 @@ export const CollectibleGatedFields = ({
   )
     ? premiumConditionsValue.nft_collection?.name ?? ''
     : ''
-  const defaultCollection = menuItems.find(
+  const selectedCollection = menuItems.find(
     (item) => item.text === defaultCollectionName
   )
-  const defaultValue = defaultCollection || defaultCollectionName
-
-  const renderFooter = useCallback(() => {
+  const value = selectedCollection || defaultCollectionName
+  const renderFooter = () => {
     return hasUnsupportedCollection ? (
       <HelpCallout
         className={styles.helpCallout}
@@ -129,20 +127,15 @@ export const CollectibleGatedFields = ({
         }
       />
     ) : null
-  }, [hasUnsupportedCollection])
+  }
 
   return (
     <div className={styles.root}>
       <DropdownInput
-        aria-label={messages.pickACollection}
+        label={messages.pickACollection}
         placeholder={messages.pickACollection}
-        popupContainer={(triggerNode: HTMLElement) =>
-          // hack to escape the collapsible container which has overflow: hidden
-          // maintains scrollability, unlike `mount={'page'}
-          triggerNode.parentNode?.parentNode?.parentNode
-        }
         menu={{ items: menuItems }}
-        defaultValue={defaultValue}
+        value={value}
         onSelect={(value: string) => {
           if (ethCollectionMap[value]) {
             setPremiumConditionsValue({

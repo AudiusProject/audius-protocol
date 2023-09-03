@@ -197,6 +197,7 @@
   background: var(--white);
 }
 .select :global(.ant-select-dropdown) {
+  z-index: var(--layer-popup);
   padding: 8px 0;
   margin-top: 4px;
   text-align: left;

@@ -147,7 +147,7 @@ class DropdownInput extends Component {
             optionFilterProp='children'
             onSelect={this.onSelect}
             filterOption={(input, option) =>
-              option.props.query.toLowerCase().includes(input.toLowerCase())
+              option.props.query?.toLowerCase().includes(input.toLowerCase())
             }
             notFoundContent={''}
             onDropdownVisibleChange={this.onVisibleChange}
