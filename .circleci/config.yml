@@ -109,66 +109,66 @@ jobs:
             git push -u origin release-v${VERSION}
 
 workflows:
-  # setup:
-  #   when:
-  #     not:
-  #       equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-  #   jobs:
-  #     - generate-config
-  #     - init
+  setup:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
+      - generate-config
+      - init
 
-  #     # Trigger relevant workflows for the files that have changed
-  #     - path-filtering/filter:
-  #         base-revision: main
-  #         config-path: ../workspace/.circleci/continue_config.yml
-  #         mapping: |
-  #           packages/web/.* run-web-workflow true
-  #           packages/probers/.* run-web-workflow true
-  #           packages/common/.* run-web-workflow true
-  #           packages/common/.* run-mobile-workflow true
-  #           packages/mobile/.* run-mobile-workflow true
-  #           packages/stems/.* run-stems-workflow true
-  #           packages/stems/.* run-web-workflow true
-  #           packages/embed/.* run-embed-workflow true
-  #           .circleci/.* run-web-workflow true
-  #           .circleci/.* run-mobile-workflow true
-  #           .circleci/.* run-stems-workflow true
-  #           .circleci/.* run-embed-workflow true
-  #           packages/eslint-config-audius/.* run-web-workflow true
-  #           packages/eslint-config-audius/.* run-mobile-workflow true
-  #           packages/eslint-config-audius/.* run-stems-workflow true
-  #         name: trigger-relevant-workflows
-  #         filters:
-  #           branches:
-  #             ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
-  #         requires:
-  #           - generate-config
-  #           - init
-  #         workspace_path: ../workspace
+      # Trigger relevant workflows for the files that have changed
+      - path-filtering/filter:
+          base-revision: main
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            packages/web/.* run-web-workflow true
+            packages/probers/.* run-web-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
+            packages/mobile/.* run-mobile-workflow true
+            packages/stems/.* run-stems-workflow true
+            packages/stems/.* run-web-workflow true
+            packages/embed/.* run-embed-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            .circleci/.* run-stems-workflow true
+            .circleci/.* run-embed-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-stems-workflow true
+          name: trigger-relevant-workflows
+          filters:
+            branches:
+              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
+          requires:
+            - generate-config
+            - init
+          workspace_path: ../workspace
 
-  #     # Trigger all workflows for branches that match regex
-  #     - continuation/continue:
-  #         configuration_path: ../workspace/.circleci/continue_config.yml
-  #         name: trigger-all-workflows
-  #         filters:
-  #           branches:
-  #             only: << pipeline.parameters.run-all-workflows-branch-regex >>
-  #         parameters: '{
-  #           "run-web-workflow": true,
-  #           "run-mobile-workflow": true,
-  #           "run-stems-workflow": true
-  #           }'
-  #         pre-steps:
-  #           - attach_workspace:
-  #               at: ../workspace
-  #         requires:
-  #           - generate-config
-  #           - init
+      # Trigger all workflows for branches that match regex
+      - continuation/continue:
+          configuration_path: ../workspace/.circleci/continue_config.yml
+          name: trigger-all-workflows
+          filters:
+            branches:
+              only: << pipeline.parameters.run-all-workflows-branch-regex >>
+          parameters: '{
+            "run-web-workflow": true,
+            "run-mobile-workflow": true,
+            "run-stems-workflow": true
+            }'
+          pre-steps:
+            - attach_workspace:
+                at: ../workspace
+          requires:
+            - generate-config
+            - init
 
   generate-release:
-    # when:
-    #   and:
-    #     - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-    #     - equal: ['generate-release', << pipeline.schedule.name >>]
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ['generate-release', << pipeline.schedule.name >>]
     jobs:
       - generate-release
