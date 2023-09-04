@@ -100,7 +100,7 @@ jobs:
 
             ${CHANGELOG}"
             npm i --ignore-scripts
-            npm version patch -ws -m "${MESSAGE}"
+            npm version patch -ws --include-workspace-root -m "${MESSAGE}"
       - run:
           name: Create release branch
           command: |

@@ -47,6 +47,9 @@ mobile-prepare-ios:
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
+        name: Symlink react-native
+        command: ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+    - run:
         name: install pods
         command: |
           cd packages/mobile/ios
