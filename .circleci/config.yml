@@ -166,9 +166,9 @@ workflows:
             - init
 
   generate-release:
-    when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['generate-release', << pipeline.schedule.name >>]
+    # when:
+    #   and:
+    #     - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    #     - equal: ['generate-release', << pipeline.schedule.name >>]
     jobs:
       - generate-release
