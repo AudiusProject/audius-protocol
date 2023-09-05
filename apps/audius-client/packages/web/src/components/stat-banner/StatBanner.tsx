@@ -158,18 +158,23 @@ export const StatBanner = (props: StatsBannerProps) => {
 
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
 
+  const shareButton = (
+    <Button
+      type={ButtonType.COMMON}
+      size={ButtonSize.SMALL}
+      className={cn(styles.statButton)}
+      text={messages.share}
+      leftIcon={<IconShare />}
+      onClick={onShare}
+      widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
+    />
+  )
+
   switch (mode) {
     case 'owner':
       buttons = (
         <>
-          <Button
-            className={styles.statButton}
-            size={ButtonSize.SMALL}
-            type={ButtonType.COMMON}
-            text={messages.share}
-            onClick={onShare}
-            widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
-          />
+          {shareButton}
           <Button
             className={cn(styles.buttonTwo, styles.statButton)}
             size={ButtonSize.SMALL}
@@ -228,14 +233,7 @@ export const StatBanner = (props: StatsBannerProps) => {
               ) : null}
             </>
           ) : (
-            <Button
-              type={ButtonType.COMMON}
-              size={ButtonSize.SMALL}
-              className={cn(styles.statButton)}
-              text={messages.share}
-              leftIcon={<IconShare />}
-              onClick={onShare!}
-            />
+            shareButton
           )}
 
           <div className={styles.followContainer}>
