@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
@@ -189,48 +190,32 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
-	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	cuckooHostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
-	cuckooHostWithBlob := ss.raceHostHasBlob(key, cuckooHostsWithBlob)
-	if cuckooHostWithBlob != "" {
-		return cuckooHostWithBlob, nil
-	}
 
-	// TODO: remove this fallback blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
-	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
-	healthyHostsNotCuckoo := diff(healthyHosts, cuckooHostsWithBlob)
-	var blobs []Blob
-	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHostsNotCuckoo).
-		Find(&blobs).Error
-	if err != nil {
-		return "", err
-	}
-	fallbackHealthyHosts := []string{}
-	for _, blob := range blobs {
-		fallbackHealthyHosts = append(fallbackHealthyHosts, blob.Host)
-	}
-	fallbackHostWithBlob := ss.raceHostHasBlob(key, fallbackHealthyHosts)
-	if fallbackHostWithBlob != "" {
-		return fallbackHostWithBlob, nil
-	}
-
-	// try remaining healthy hosts
-	healthyHostsNotCuckooNotFallback := diff(healthyHostsNotCuckoo, fallbackHealthyHosts)
-	healthyHostWithBlob := ss.raceHostHasBlob(key, healthyHostsNotCuckooNotFallback)
-	if healthyHostWithBlob != "" {
-		return healthyHostWithBlob, nil
-	}
-
-	// we've tried all healthy hosts. now try unhealthy hosts as a last resort
-	unhealthyHosts := []string{}
-	for _, peer := range ss.Config.Peers {
-		if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
-			unhealthyHosts = append(unhealthyHosts, peer.Host)
+	// use cache if possible
+	if host, ok := ss.redirectCache.Get(key); ok {
+		// verify host is all good
+		if ss.hostHasBlob(host, key) {
+			// reset expire countdown on each access
+			ss.redirectCache.Set(key, host, imcache.WithDefaultExpiration())
+			return host, nil
+		} else {
+			ss.redirectCache.Remove(key)
 		}
 	}
-	unhealthyHostWithBlob := ss.raceHostHasBlob(key, unhealthyHosts)
-	return unhealthyHostWithBlob, nil
+
+	// just race all hosts
+	hosts := make([]string, 0, len(ss.Config.Peers))
+	for _, p := range ss.Config.Peers {
+		hosts = append(hosts, p.Host)
+	}
+
+	winner := ss.raceHostHasBlob(key, hosts)
+	if winner != "" {
+		ss.redirectCache.Set(key, winner, imcache.WithDefaultExpiration())
+		return winner, nil
+	}
+
+	return "", nil
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {

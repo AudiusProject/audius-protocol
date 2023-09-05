@@ -21,6 +21,7 @@ import (
 
 	_ "embed"
 
+	"github.com/erni27/imcache"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -99,6 +100,7 @@ type MediorumServer struct {
 	peerHealthsMutex sync.RWMutex
 	peerHealths      map[string]*PeerHealth
 	unreachablePeers []string
+	redirectCache    *imcache.Cache[string, string]
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -246,7 +248,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealths: map[string]*PeerHealth{},
+		peerHealths:   map[string]*PeerHealth{},
+		redirectCache: imcache.New[string, string](imcache.WithDefaultExpirationOption[string, string](time.Hour * 24)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
