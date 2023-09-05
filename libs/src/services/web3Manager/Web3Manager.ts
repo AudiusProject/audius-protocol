@@ -243,7 +243,7 @@ export class Web3Manager {
       const response = await retry(
         async (bail) => {
           try {
-            if (this.discoveryProvider !== null) {
+            if (this.useDiscoveryRelay()) {
               // use discovery relay
               const res = await this.discoveryProvider?.relay({
                 contractRegistryKey,
