@@ -33,7 +33,7 @@ const messages = {
   claimErrorMessage:
     'Something has gone wrong, not all your rewards were claimed. Please try again.',
   claimErrorMessageAAO:
-    'Your account is unable to claim rewards at this time. Please try again later or contact @support@audius.co. ',
+    'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableLabel: '$AUDIO available to claim',
   claimedLabel: '$AUDIO claimed so far'
 }
