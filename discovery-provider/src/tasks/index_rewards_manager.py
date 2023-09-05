@@ -215,7 +215,7 @@ def get_valid_instruction(
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client_manager: SolanaClientManager, tx_sig: str
-) -> RewardManagerTransactionInfo:
+) -> Optional[RewardManagerTransactionInfo]:
     """Fetches metadata for rewards transfer transactions and parses data
 
     Fetches the transaction metadata from solana using the tx signature
