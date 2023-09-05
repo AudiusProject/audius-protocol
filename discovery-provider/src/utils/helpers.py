@@ -10,6 +10,7 @@ import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import List, Optional, TypedDict, cast
+import psutil
 
 import base58
 import requests
@@ -159,7 +160,18 @@ def tuple_to_model_dictionary(t, model):
 
 class CustomJsonFormatter(JsonFormatter):
     def format(self, record):
-        record.pid = os.getpid()  # Add worker pid to log
+        if os.getenv("audius_discprov_env") == "stage":
+            cpu_percent = psutil.cpu_percent(interval=None)
+
+            # Get memory usage
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            rss = memory_info.rss / (1024 ** 2)  # Resident Set Size in MB
+
+            # Include CPU and memory usage in log record
+            record.cpu = cpu_percent
+            record.memory = rss
+
         return super().format(record)
 
 
