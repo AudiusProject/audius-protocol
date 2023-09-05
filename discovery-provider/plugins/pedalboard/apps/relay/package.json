@@ -16,7 +16,7 @@
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
-    "@audius/sdk": "^3.0.3-beta.95",
+    "@audius/sdk": "^3.0.8-beta.4",
     "@fastify/type-provider-typebox": "^3.2.0",
     "@sinclair/typebox": "^0.29.4",
     "@types/compute-lcm": "^1.1.0",

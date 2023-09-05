@@ -1,18 +1,6 @@
-import { FastifyError } from "fastify";
 import { decodeAbi } from "./abi";
 import { logger } from "./logger";
 import { ManageEntityParameters } from "./types/entityManager";
-import { RelayRequest } from "./types/relay";
-
-export type ValidatedRelayRequest = {
-  encodedAbi: string;
-}
-
-export const validateRequestParams = (req: RelayRequest): ValidatedRelayRequest => {
-  const { encodedABI } = req;
-  if (encodedABI === null || encodedABI === undefined) throw new Error("encodedABI is required")
-  return { encodedAbi: encodedABI }
-}
 
 /// async in case we need to make a db call
 export const validateTransactionData = async (
@@ -25,4 +13,18 @@ export const validateTransactionData = async (
   // if (failed) throw new Error("validation failed")
   logger.info("transaction data validated");
   return decoded;
+};
+
+// throws if contract not valid
+export const validateSupportedContract = (
+  supportedContracts: string[],
+  requestedContract: string | undefined
+) => {
+  // requestor did not provide a specified contract, expect EntityManager
+  // if not outfitted for EM, the 'validateTransactionData' will fail to decode
+  if (requestedContract === undefined) return;
+  if (!supportedContracts.includes(requestedContract))
+    throw new Error(
+      `requested contract ${requestedContract} not supported by ${supportedContracts}`
+    );
 };

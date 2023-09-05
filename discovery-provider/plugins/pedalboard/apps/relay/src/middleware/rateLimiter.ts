@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { logger } from "../logger";
-import { RelayRequest } from "../types/relay";
+import { RelayRequestType } from "../types/relay";
 import { RelayRateLimiter, ValidLimits } from "./rateLimitConfig";
 import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
@@ -11,16 +11,12 @@ import { config, discoveryDb } from "..";
 const globalRateLimiter = new RelayRateLimiter();
 
 export const relayRateLimiter = async (
-  req: FastifyRequest<{ Body: RelayRequest }>,
+  req: FastifyRequest<{ Body: RelayRequestType }>,
   rep: FastifyReply
 ): Promise<void> => {
   const {
     body: { encodedABI },
   } = req;
-
-  if (encodedABI === undefined || encodedABI === null) {
-    throw new Error("encodedABI required in request")
-  }
 
   const operation = getEntityManagerActionKey(encodedABI);
   const chainId = config.acdcChainId;

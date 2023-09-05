@@ -1,8 +1,8 @@
 import App from "basekit/src/app";
 import {
-  RelayRequest,
   RelayRequestHeaders,
-  RelayResponse,
+  RelayRequestType,
+  RelayResponseType,
 } from "../types/relay";
 import { SharedData } from "..";
 import { relayTransaction } from "../txRelay";
@@ -12,12 +12,17 @@ import { FastifyReply } from "fastify";
 export const relayHandler = async (
   app: App<SharedData>,
   headers: RelayRequestHeaders,
-  req: RelayRequest,
+  req: RelayRequestType,
   rep: FastifyReply
-): Promise<RelayResponse> => {
+): Promise<RelayResponseType> => {
   try {
     const { receipt } = await relayTransaction(app, headers, req, rep);
-    return { receipt };
+    return {
+      receipt: {
+        blockHash: receipt.blockHash,
+        blockNumber: receipt.blockNumber,
+      },
+    };
   } catch (e) {
     // return useful error back to caller from here
     console.error("relay error = ", e);
