@@ -5,22 +5,27 @@ import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { Table, Users } from "storage/src";
 import { config, discoveryDb } from "..";
+import { NextFunction, Request, Response } from "express";
+import { rateLimitError } from "../error";
 
 const globalRateLimiter = new RelayRateLimiter();
 
-export const relayRateLimiter = async (): Promise<void> => {
-  const encodedABI = "FIX ME";
+export const relayRateLimiter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx
+  const { encodedABI } = validatedRelayRequest
+
+  const signer = recoveredSigner.wallet
+  if (signer === undefined || signer === null) {
+    rateLimitError(next, "user record does not have wallet")
+    return
+  }
+
 
   const operation = getEntityManagerActionKey(encodedABI);
   const chainId = config.acdcChainId;
   if (chainId === undefined) {
     throw new Error("chain id not defined");
   }
-  const signer = AudiusABIDecoder.recoverSigner({
-    encodedAbi: encodedABI,
-    chainId,
-    entityManagerAddress: config.entityManagerContractAddress,
-  });
 
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
   if (isBlockedFromRelay) throw new Error("blocked from relay");
@@ -47,6 +52,7 @@ export const relayRateLimiter = async (): Promise<void> => {
     logger.error({ msg: "rate limit internal error", e });
     errorResponseInternal({});
   }
+  next()
 };
 
 const getEntityManagerActionKey = (encodedABI: string): string => {
@@ -57,18 +63,6 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
   if (entityType === undefined)
     throw new Error("entityType not defined in encodedABI");
   return action + entityType;
-};
-
-const errorResponseUnauthorized = (rep: any) => {
-  rep.code(403).send();
-};
-
-const errorResponseRateLimited = (rep: any) => {
-  rep.code(429).send("Too many requests, please try again later");
-};
-
-const errorResponseInternal = (rep: any) => {
-  rep.code(500).send();
 };
 
 const insertReplyHeaders = (rep: any, data: RateLimiterRes) => {

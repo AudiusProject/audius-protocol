@@ -36,3 +36,11 @@ export const internalError = (next: NextFunction, message: string) => {
     message,
   });
 };
+
+export const rateLimitError = (next: NextFunction, message: string) => {
+  customError(next, {
+    name: "RATE_LIMIT_ERROR",
+    statusCode: StatusCodes.UNAUTHORIZED,
+    message,
+  });
+};
