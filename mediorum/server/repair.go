@@ -94,11 +94,6 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 			// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
 			myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
 
-			// TODO(theo): Don't repair Qm keys for now (isMine will still be true). Remove this once all nodes have enough space to store Qm keys
-			if cidutil.IsLegacyCID(cid) {
-				myRank = 999
-			}
-
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
 			if !cleanupMode && !isMine && !isMineHealthy {
@@ -130,7 +125,6 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 						alreadyHave = false
 					}
 				}
-
 			}
 
 			// get blobs that I should have (regardless of health of other nodes)
