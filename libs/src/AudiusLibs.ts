@@ -543,7 +543,12 @@ export class AudiusLibs {
 
       // set discovery provider in web3 for relay
       if (this.web3Config && this.useDiscoveryRelay) {
-        this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
+        const web3Manager = this.web3Manager
+        if (web3Manager === undefined || web3Manager === null) {
+          console.warn("useDiscoveryRelay is set to true but web3Manager is not configured")
+        } else {
+          this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
+        }
       }
     }
 
