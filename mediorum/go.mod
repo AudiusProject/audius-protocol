@@ -4,12 +4,14 @@ go 1.20
 
 require (
 	github.com/disintegration/imaging v1.6.2
+	github.com/erni27/imcache v1.1.0
 	github.com/ethereum/go-ethereum v1.11.4
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/gowebpki/jcs v1.0.0
 	github.com/ipfs/go-cid v0.3.2
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/labstack/echo/v4 v4.10.0
+	github.com/lib/pq v1.10.9
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb
@@ -86,7 +88,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect

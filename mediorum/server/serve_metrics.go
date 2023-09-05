@@ -10,9 +10,10 @@ import (
 )
 
 type Metrics struct {
-	Host        string         `json:"host"`
-	Uploads     int64          `json:"uploads"`
-	OutboxSizes map[string]int `json:"outbox_sizes"`
+	Host              string         `json:"host"`
+	Uploads           int64          `json:"uploads"`
+	OutboxSizes       map[string]int `json:"outbox_sizes"`
+	RedirectCacheSize int            `json:"redirect_cache_size"`
 }
 
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
@@ -20,6 +21,7 @@ func (ss *MediorumServer) getMetrics(c echo.Context) error {
 	m.Host = ss.Config.Self.Host
 	m.Uploads = ss.uploadsCount
 	m.OutboxSizes = ss.crud.GetOutboxSizes()
+	m.RedirectCacheSize = ss.redirectCache.Len()
 
 	return c.JSON(200, m)
 }

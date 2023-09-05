@@ -4,14 +4,16 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"io"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	cuckoo "github.com/seiflotfy/cuckoofilter"
 )
+
+// cuckoo filter is disused in favor of simpler ss.redirectCache
+// this is kept here for older versions which still might fetch peer cuckoo
+// but can be deleted when everyone is updated
 
 var (
 	myCuckooKeyName = "my_cuckoo"
@@ -81,79 +83,6 @@ func (ss *MediorumServer) cuckooLookup(cid string) []string {
 	return hosts
 }
 
-func (ss *MediorumServer) cuckooLookupSubset(cid string, hostSubset []string) []string {
-	hosts := []string{}
-	cidBytes := []byte(cid)
-	cuckooMu.RLock()
-	for _, host := range hostSubset {
-		filter, ok := cuckooMap[host]
-		if ok && filter.Lookup(cidBytes) {
-			hosts = append(hosts, host)
-		}
-	}
-	cuckooMu.RUnlock()
-	return hosts
-}
-
-func (ss *MediorumServer) startCuckooFetcher() error {
-	for {
-		for _, peer := range ss.Config.Peers {
-			if peer.Host == ss.Config.Self.Host {
-				continue
-			}
-
-			err := ss.fetchPeerCuckoo(peer.Host)
-			if err != nil {
-				ss.logger.Warn("failed to fetch peer cuckoo", "peer", peer.Host, "err", err)
-			}
-		}
-		time.Sleep(time.Minute)
-	}
-}
-
-func (ss *MediorumServer) fetchPeerCuckoo(host string) error {
-	client := http.Client{
-		Timeout: time.Minute,
-	}
-
-	cuckooMu.RLock()
-	priorEtag := cuckooEtagMap[host]
-	cuckooMu.RUnlock()
-
-	endpoint := host + "/internal/cuckoo"
-	req, _ := http.NewRequest("GET", endpoint, nil)
-	req.Header.Set("If-None-Match", priorEtag)
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == 304 {
-		return nil
-	}
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("bad status: %s: %s", endpoint, resp.Status)
-	}
-
-	filterBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	filter, err := cuckoo.DecodeScalableFilter(filterBytes)
-	if err != nil {
-		return err
-	}
-
-	cuckooMu.Lock()
-	cuckooMap[host] = filter
-	cuckooEtagMap[host] = resp.Header.Get("ETag")
-	cuckooMu.Unlock()
-
-	return nil
-}
-
 func (ss *MediorumServer) startCuckooBuilder() error {
 	for {
 		time.Sleep(time.Minute)
@@ -161,7 +90,7 @@ func (ss *MediorumServer) startCuckooBuilder() error {
 		err := ss.buildCuckoo()
 		took := time.Since(startTime)
 		ss.logger.Info("built cuckoo", "took", took.String(), "err", err)
-		time.Sleep(time.Hour)
+		time.Sleep(time.Hour * 12)
 	}
 }
 
