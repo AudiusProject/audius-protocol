@@ -249,7 +249,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
 		peerHealths:   map[string]*PeerHealth{},
-		redirectCache: imcache.New[string, string](imcache.WithDefaultExpirationOption[string, string](time.Hour * 24)),
+		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,

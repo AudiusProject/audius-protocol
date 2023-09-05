@@ -195,8 +195,6 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	if host, ok := ss.redirectCache.Get(key); ok {
 		// verify host is all good
 		if ss.hostHasBlob(host, key) {
-			// reset expire countdown on each access
-			ss.redirectCache.Set(key, host, imcache.WithDefaultExpiration())
 			return host, nil
 		} else {
 			ss.redirectCache.Remove(key)
