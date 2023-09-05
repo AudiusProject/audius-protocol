@@ -285,6 +285,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
+	routes.HEAD("/health_check", ss.serveHealthCheck)
 	routes.GET("/ip_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"data": c.RealIP(), // client/requestor IP

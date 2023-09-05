@@ -87,11 +87,14 @@ func schedulePartitionOpsMigration(db *sql.DB, myHost string) {
 	randomTime := time.Minute * time.Duration(rand.Intn(max+1-min)+min)
 	// manually schedule foundation nodes so can disable monitoring
 	// appropriately
-	if myHost == "https://creatornode.audius.co" || myHost == "https://creatornode2.audius.co" {
+	if myHost == "https://creatornode.audius.co" {
 		randomTime = time.Minute * time.Duration(20)
 	}
 	if myHost == "https://creatornode3.audius.co" || myHost == "https://usermetadata.audius.co" {
 		randomTime = time.Minute * time.Duration(110)
+	}
+	if myHost == "https://creatornode2.audius.co" {
+		randomTime = time.Minute * time.Duration(240)
 	}
 	slog.Info("checking if we need to schedule the partition ops migration...")
 	var partitioned bool

@@ -166,7 +166,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return nil
 	}
 
-	if strings.ToLower(c.QueryParam("localOnly")) == "true" {
+	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+	if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
 		return c.String(404, "blob not found")
 	}
 
@@ -234,7 +235,7 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||

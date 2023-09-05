@@ -428,10 +428,7 @@ def get_stream_url_from_content_node(content_node: str, path: str):
     headers = {"Range": "bytes=0-1"}
     try:
         response = requests.get(
-            stream_url + "&skip_play_count=true&localOnly=true",
-            allow_redirects=False,
-            headers=headers,
-            timeout=0.5,
+            stream_url + "&skip_play_count=True", headers=headers, timeout=5
         )
         if response.status_code == 206:
             return stream_url
@@ -531,15 +528,12 @@ class TrackStream(Resource):
             *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
         )
 
-        # change from 5 -> 500 to try all nodes
-        # since Qm CIDs are not migrated to rendezvous location yet
-        # can be made 5 when that is done
-        content_nodes = rendezvous.get_n(500, cid)
+        content_nodes = rendezvous.get_n(9999999, cid)
         for content_node in content_nodes:
             stream_url = get_stream_url_from_content_node(content_node, path)
             if stream_url:
                 redis.set(redis_key, content_node)
-                redis.expire(redis_key, 120)  # 2 min ttl
+                redis.expire(redis_key, 60 * 30)  # 30 min ttl
                 return stream_url
         abort_not_found(track_id, ns)
 
