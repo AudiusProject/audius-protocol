@@ -206,7 +206,9 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	// just race all hosts
 	hosts := make([]string, 0, len(ss.Config.Peers))
 	for _, p := range ss.Config.Peers {
-		hosts = append(hosts, p.Host)
+		if p.Host != ss.Config.Self.Host {
+			hosts = append(hosts, p.Host)
+		}
 	}
 
 	winner := ss.raceHostHasBlob(key, hosts)
@@ -392,14 +394,4 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 	}
 
 	return c.JSON(200, "ok")
-}
-
-func diff[S ~[]E, E comparable](sliceA, sliceB S) S {
-	diff := S{}
-	for _, a := range sliceA {
-		if !slices.Contains(sliceB, a) {
-			diff = append(diff, a)
-		}
-	}
-	return diff
 }

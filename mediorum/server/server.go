@@ -344,7 +344,6 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startTranscoder()
 
 	go ss.startCuckooBuilder()
-	go ss.startCuckooFetcher()
 	createUploadsCache()
 	go ss.buildUploadsCache()
 
