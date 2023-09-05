@@ -4,6 +4,7 @@ import { getCollection as getCachedCollection } from 'store/cache/collections/se
 import { getUser as getCachedUser } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { getCollection as getSmartCollection } from 'store/pages/smart-collection/selectors'
+import { Nullable } from 'utils/typeUtils'
 
 import { ID, UID, Status } from '../../../models'
 
@@ -18,7 +19,10 @@ export const getSmartCollectionVariant = (state: CommonState) =>
   state.pages.collection.smartCollectionVariant
 export const getCollectionPermalink = (state: CommonState) =>
   state.pages.collection.collectionPermalink
-export const getCollection = (state: CommonState, params?: { id: ID }) => {
+export const getCollection = (
+  state: CommonState,
+  params?: { id?: Nullable<ID> }
+) => {
   const smartCollectionVariant = getSmartCollectionVariant(state)
   if (smartCollectionVariant) {
     return getSmartCollection(state, { variant: smartCollectionVariant })

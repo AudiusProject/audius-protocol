@@ -7,7 +7,8 @@ import {
   smartCollectionPageActions,
   collectionPageActions,
   getContext,
-  removeNullable
+  removeNullable,
+  collectionPageLineupActions
 } from '@audius/common'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
@@ -148,7 +149,7 @@ function* fetchMostLoved() {
       track: track.track_id
     }))
 
-  yield call(processAndCacheTracks, tracks)
+  yield* call(processAndCacheTracks, tracks)
 
   return {
     ...MOST_LOVED,
@@ -249,7 +250,7 @@ const fetchMap = {
 }
 
 function* watchFetch() {
-  yield takeEvery(
+  yield* takeEvery(
     fetchSmartCollection.type,
     function* (action: ReturnType<typeof fetchSmartCollection>) {
       yield* waitForRead()
@@ -259,14 +260,22 @@ function* watchFetch() {
       const collection: any = yield* call(fetchMap[variant])
 
       if (collection) {
-        yield put(
+        yield* put(
           fetchSmartCollectionSucceeded({
             variant,
             collection
           })
         )
       }
-      yield put(setSmartCollection(variant))
+      yield* put(setSmartCollection(variant))
+      yield put(
+        collectionPageLineupActions.fetchLineupMetadatas(
+          0,
+          200,
+          false,
+          undefined
+        )
+      )
     }
   )
 }

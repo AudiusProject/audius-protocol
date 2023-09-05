@@ -4,7 +4,6 @@ import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
   removeNullable,
   collectionPageSelectors,
-  collectionPageActions,
   playerSelectors,
   Status,
   Name,
@@ -31,8 +30,6 @@ import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 
 import { CollectionHeader } from './CollectionHeader'
-import { useFetchCollectionLineup } from './useFetchCollectionLineup'
-const { resetAndFetchCollectionTracks } = collectionPageActions
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -158,12 +155,6 @@ export const CollectionScreenDetailsTile = ({
   const dispatch = useDispatch()
 
   const isReachable = useSelector(getIsReachable)
-
-  const fetchLineup = useCallback(() => {
-    dispatch(resetAndFetchCollectionTracks(collectionId))
-  }, [dispatch, collectionId])
-
-  useFetchCollectionLineup(collectionId, fetchLineup)
 
   const trackUids = useSelector(selectTrackUids)
   const collectionTrackCount = useSelector(selectTrackCount)

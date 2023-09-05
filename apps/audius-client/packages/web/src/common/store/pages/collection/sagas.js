@@ -6,14 +6,7 @@ import {
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors
 } from '@audius/common'
-import {
-  call,
-  put,
-  select,
-  take,
-  takeLatest,
-  takeEvery
-} from 'redux-saga/effects'
+import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import {
   retrieveCollections,
@@ -22,8 +15,7 @@ import {
 
 import tracksSagas from './lineups/sagas'
 const { getCollectionUid, getUserUid } = collectionPageSelectors
-const { fetchCollection, fetchCollectionSucceeded, fetchCollectionFailed } =
-  collectionActions
+const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
@@ -80,53 +72,18 @@ function* watchFetchCollection() {
 }
 
 function* watchResetCollection() {
-  yield takeEvery(collectionActions.RESET_COLLECTION, function* (action) {
+  yield takeEvery(collectionActions.RESET_COLLECTION, function* () {
+    const collectionUid = yield select(getCollectionUid)
+    const userUid = yield select(getUserUid)
+
     yield put(tracksActions.reset())
     yield put(
-      cacheActions.unsubscribe(Kind.COLLECTIONS, [
-        { uid: action.collectionUid }
-      ])
+      cacheActions.unsubscribe(Kind.COLLECTIONS, [{ uid: collectionUid }])
     )
-    yield put(cacheActions.unsubscribe(Kind.USERS, [{ uid: action.userUid }]))
+    yield put(cacheActions.unsubscribe(Kind.USERS, [{ uid: userUid }]))
   })
 }
 
-/**
- * Used for mobile CollectionScreen
- */
-function* watchResetAndFetchCollectionTracks() {
-  yield takeEvery(
-    collectionActions.RESET_AND_FETCH_COLLECTION_TRACKS,
-    function* (action) {
-      const collectionUid = yield select(getCollectionUid)
-      const userUid = yield select(getUserUid)
-
-      if (collectionUid && userUid) {
-        // Reset collection so that lineup is not shared between separate instances
-        // of the CollectionScreen
-        yield put(collectionActions.resetCollection(collectionUid, userUid))
-        yield take(tracksActions.reset().type)
-      }
-
-      // Need to refetch the collection after resetting
-      // Will pull from cache if it exists
-      // TODO: fix this for smart collections
-      if (typeof collectionId === 'number') {
-        yield put(fetchCollection(action.collectionId))
-      }
-
-      yield take(fetchCollectionSucceeded)
-
-      yield put(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
-    }
-  )
-}
-
 export default function sagas() {
-  return [
-    ...tracksSagas(),
-    watchFetchCollection,
-    watchResetCollection,
-    watchResetAndFetchCollectionTracks
-  ]
+  return [...tracksSagas(), watchFetchCollection, watchResetCollection]
 }

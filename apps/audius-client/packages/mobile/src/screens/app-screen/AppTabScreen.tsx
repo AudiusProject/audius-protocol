@@ -71,9 +71,10 @@ export type AppTabScreenParamList = {
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
     id?: ID
-    collectionName?: string
+    slug?: string
     searchCollection?: SearchPlaylist
     collectionType?: 'playlist' | 'album'
+    handle?: string
   }
   EditPlaylist: { id: ID }
   Favorited: { id: ID; favoriteType: FavoriteType }

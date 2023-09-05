@@ -38,48 +38,43 @@ type CollectionRouteParams =
  * If the route is a hash id route, title, handle, and type are not returned
  * @param route
  */
-export const parseCollectionRoute = (
-  route: string,
-  playlistByPermalinkEnabled?: boolean
-): CollectionRouteParams => {
-  if (playlistByPermalinkEnabled) {
-    const playlistByPermalinkMatch = matchPath<{
-      handle: string
-      slug: string
-    }>(route, {
-      path: PLAYLIST_BY_PERMALINK_PAGE,
-      exact: true
-    })
+export const parseCollectionRoute = (route: string): CollectionRouteParams => {
+  const playlistByPermalinkMatch = matchPath<{
+    handle: string
+    slug: string
+  }>(route, {
+    path: PLAYLIST_BY_PERMALINK_PAGE,
+    exact: true
+  })
 
-    if (playlistByPermalinkMatch) {
-      const { handle, slug } = playlistByPermalinkMatch.params
-      const permalink = `/${handle}/playlist/${slug}`
-      return {
-        title: null,
-        collectionId: null,
-        permalink,
-        handle: null,
-        collectionType: 'playlist'
-      }
+  if (playlistByPermalinkMatch) {
+    const { handle, slug } = playlistByPermalinkMatch.params
+    const permalink = `/${handle}/playlist/${slug}`
+    return {
+      title: null,
+      collectionId: null,
+      permalink,
+      handle: null,
+      collectionType: 'playlist'
     }
-    const albumByPermalinkMatch = matchPath<{
-      handle: string
-      slug: string
-    }>(route, {
-      path: ALBUM_BY_PERMALINK_PAGE,
-      exact: true
-    })
+  }
+  const albumByPermalinkMatch = matchPath<{
+    handle: string
+    slug: string
+  }>(route, {
+    path: ALBUM_BY_PERMALINK_PAGE,
+    exact: true
+  })
 
-    if (albumByPermalinkMatch) {
-      const { handle, slug } = albumByPermalinkMatch.params
-      const permalink = `/${handle}/album/${slug}`
-      return {
-        title: null,
-        collectionId: null,
-        permalink,
-        handle: null,
-        collectionType: 'album'
-      }
+  if (albumByPermalinkMatch) {
+    const { handle, slug } = albumByPermalinkMatch.params
+    const permalink = `/${handle}/album/${slug}`
+    return {
+      title: null,
+      collectionId: null,
+      permalink,
+      handle: null,
+      collectionType: 'album'
     }
   }
 

@@ -31,7 +31,6 @@ import type {
   SearchPlaylist,
   SearchUser
 } from '@audius/common'
-import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -54,6 +53,7 @@ import { useThemePalette } from 'app/utils/theme'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
+import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { open: openEditPlaylist } = createPlaylistModalUIActions
 const { setFavorite } = favoritesUserListActions
@@ -66,7 +66,7 @@ const {
   undoRepostCollection,
   unsaveCollection
 } = collectionsSocialActions
-const { fetchCollection } = collectionPageActions
+const { resetCollection, fetchCollection } = collectionPageActions
 const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
 const { requestOpen: openPublishConfirmation } =
@@ -91,30 +91,21 @@ export const CollectionScreen = () => {
 
   // params is incorrectly typed and can sometimes be undefined
   const {
-    id: idParam,
+    id = null,
     searchCollection,
-    collectionName,
-    collectionType
+    slug,
+    collectionType,
+    handle
   } = params ?? {}
 
-  const id = useMemo(() => {
-    if (collectionName) {
-      // Use collectionName from params if provided
-      // This is to support deep linking
-      // TODO: update this when collections are updated to use slug url format
-      // https://linear.app/audius/issue/C-1198/update-mobile-deep-linking-to-support-collection-slug-url-format
-      const nameParts = collectionName.split('-')
-      const collectionId = parseInt(nameParts[nameParts.length - 1], 10)
-      return collectionId as number
-    }
-    return idParam as number
-  }, [collectionName, idParam])
+  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
 
   const handleFetchCollection = useCallback(() => {
-    dispatch(fetchCollection(id, undefined, true))
-  }, [dispatch, id])
+    dispatch(resetCollection())
+    dispatch(fetchCollection(id, permalink, true))
+  }, [dispatch, id, permalink])
 
-  useFocusEffect(handleFetchCollection)
+  useFetchCollectionLineup(id, handleFetchCollection)
 
   const cachedCollection = useSelector((state) =>
     getCollection(state, { id })

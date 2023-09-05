@@ -111,7 +111,6 @@ type OwnProps = {
 
   // Smart collection props
   smartCollection?: SmartCollection
-  playlistByPermalinkEnabled?: boolean
 }
 
 type CollectionPageProps = OwnProps &
@@ -152,7 +151,7 @@ class CollectionPage extends Component<
   unlisten!: UnregisterCallback
 
   componentDidMount() {
-    this.fetchCollection(getPathname(this.props.location))
+    this.fetchCollection(getPathname(this.props.location), true)
     this.unlisten = this.props.history.listen((location, action) => {
       if (
         action !== 'REPLACE' &&
@@ -162,7 +161,7 @@ class CollectionPage extends Component<
         // the URL for the same playlist. Reset it.)
         this.resetCollection()
       }
-      this.fetchCollection(getPathname(location))
+      this.fetchCollection(getPathname(location), true)
       this.setState({
         initialOrder: null,
         reordering: null
@@ -182,8 +181,7 @@ class CollectionPage extends Component<
       fetchCollectionSucceeded,
       type,
       playlistUpdates,
-      updatePlaylistLastViewedAt,
-      playlistByPermalinkEnabled
+      updatePlaylistLastViewedAt
     } = this.props
 
     if (
@@ -195,7 +193,7 @@ class CollectionPage extends Component<
     }
 
     if (!prevProps.smartCollection && smartCollection) {
-      this.fetchCollection(pathname)
+      this.fetchCollection(pathname, true)
     }
 
     const { updatingRoute, initialOrder } = this.state
@@ -219,7 +217,7 @@ class CollectionPage extends Component<
       })
     }
 
-    const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
+    const params = parseCollectionRoute(pathname)
 
     if (!params) return
     if (status === Status.ERROR) {
@@ -273,7 +271,7 @@ class CollectionPage extends Component<
 
     const { collection: prevMetadata } = prevProps
     if (metadata) {
-      const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
+      const params = parseCollectionRoute(pathname)
       if (params) {
         const { collectionId, title, collectionType, handle, permalink } =
           params
@@ -362,31 +360,15 @@ class CollectionPage extends Component<
   }
 
   fetchCollection = (pathname: string, forceFetch = false) => {
-    const { playlistByPermalinkEnabled } = this.props
-    const params = parseCollectionRoute(pathname, playlistByPermalinkEnabled)
+    const { fetchCollection } = this.props
+    const params = parseCollectionRoute(pathname)
+    if (!params) return
 
-    if (params?.permalink) {
-      const { permalink, collectionId } = params
-      if (forceFetch || params.permalink) {
-        this.props.fetchCollection(collectionId, permalink)
-        this.props.fetchTracks()
-      }
-    }
+    const { permalink, collectionId } = params
 
-    if (params?.collectionId) {
-      const { collectionId } = params
-      if (forceFetch || collectionId !== this.state.playlistId) {
-        this.setState({ playlistId: collectionId as number })
-        this.props.fetchCollection(collectionId as number)
-        this.props.fetchTracks()
-      }
-    }
-
-    if (
-      this.props.smartCollection &&
-      this.props.smartCollection.playlist_contents
-    ) {
-      this.props.fetchTracks()
+    if (forceFetch || permalink || collectionId !== this.state.playlistId) {
+      this.setState({ playlistId: collectionId as number })
+      fetchCollection(collectionId, permalink, forceFetch)
     }
   }
 
@@ -843,8 +825,12 @@ function makeMapStateToProps() {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    fetchCollection: (id: Nullable<number>, permalink?: string) =>
-      dispatch(collectionActions.fetchCollection(id, permalink)),
+    fetchCollection: (
+      id: Nullable<number>,
+      permalink?: string,
+      fetchLineup?: boolean
+    ) =>
+      dispatch(collectionActions.fetchCollection(id, permalink, fetchLineup)),
     fetchTracks: () =>
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>

@@ -6,7 +6,8 @@ import {
   smartCollectionPageSelectors,
   collectionsSocialActions,
   smartCollectionPageActions,
-  playlistLibraryHelpers
+  playlistLibraryHelpers,
+  collectionPageActions
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
@@ -24,6 +25,7 @@ const { saveSmartCollection, unsaveSmartCollection } = collectionsSocialActions
 const { getCollection } = smartCollectionPageSelectors
 const getPlaylistLibrary = accountSelectors.getPlaylistLibrary
 const { fetchSmartCollection } = smartCollectionPageActions
+const { resetCollection } = collectionPageActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -60,6 +62,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
   const dispatch = useDispatch()
 
   const handleFetchSmartCollection = useCallback(() => {
+    dispatch(resetCollection())
     dispatch(fetchSmartCollection({ variant }))
   }, [dispatch, variant])
 
