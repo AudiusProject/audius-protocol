@@ -22,7 +22,7 @@ def redirect_weights():
     for endpoint in endpoints:
         try:
             response = requests.get(f"{endpoint}/request_count")
-            if response.status_code == 200:
+            if response.status_code == 200 and response.text:
                 loads[endpoint] = int(response.text)
         except requests.exceptions.ConnectionError:
             pass
