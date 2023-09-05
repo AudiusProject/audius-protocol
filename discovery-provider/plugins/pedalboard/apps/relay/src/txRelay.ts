@@ -3,11 +3,6 @@ import {
   TransactionReceipt,
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
-import { validateSupportedContract, validateTransactionData } from "./validate";
-import { logger } from "./logger";
-import { v4 as uuidv4 } from "uuid";
-import { detectAbuse } from "./antiAbuse";
-import { AudiusABIDecoder } from "@audius/sdk";
 import { ethers } from "ethers";
 import { NextFunction, Request, Response } from "express";
 
