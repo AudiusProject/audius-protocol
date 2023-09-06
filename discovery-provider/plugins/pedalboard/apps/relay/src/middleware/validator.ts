@@ -4,6 +4,7 @@ import { validationError } from "../error";
 import { Table, Users } from "storage/src";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { config, discoveryDb } from "..";
+import { logger } from "../logger";
 
 export const validator = async (
   request: Request,
@@ -11,6 +12,8 @@ export const validator = async (
   next: NextFunction
 ) => {
   const body = request.body as RelayRequest;
+
+  logger.info({ request }, "validating request")
 
   // Validation of input fields
   const contractAddress = body.contractAddress || config.entityManagerContractAddress;
