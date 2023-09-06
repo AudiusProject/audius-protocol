@@ -15,9 +15,15 @@ pub mod error;
 pub mod raydium;
 pub mod wormhole;
 
-use crate::constant::SOL_AUDIO_TOKEN_ADDRESS;
-use crate::raydium::{
-    check_swap_programs,
+use crate::constant::{
+    RAYDIUM_AMM_PROGRAM_ADDRESS,
+    AUDIO_USDC_RAYDIUM_AMM_ADDRESS,
+    SERUM_DEX_PROGRAM_ADDRESS,
+    AUDIO_USDC_SERUM_MARKET_ADDRESS,
+    SOL_AUDIO_TOKEN_ADDRESS,
+};
+use crate::error::StakingBridgeErrorCode;
+    use crate::raydium::{
     check_swap_pdas,
     swap
 };
@@ -54,15 +60,6 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        let program_id = &accounts.program_id;
-        let serum_program = &accounts.serum_program;
-
-        check_swap_programs(
-            program_id.to_account_info(),
-            serum_program.to_account_info(),
-            accounts.amm.to_account_info(),
-            accounts.serum_market.to_account_info()
-        )?;
         check_swap_pdas(
             accounts,
             vault_nonce
@@ -184,11 +181,17 @@ pub struct Amounts {
 
 #[derive(Accounts)]
 pub struct RaydiumSwap<'info> {
-    /// CHECK: This is the Raydium Liquidity Pool V4 program id. No check necessary.
-    pub program_id: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the AMM id for the pool. No check necessary.
-    pub amm: UncheckedAccount<'info>,
+    #[account(
+        address = RAYDIUM_AMM_PROGRAM_ADDRESS @ StakingBridgeErrorCode::NotCallingRaydiumAmmProgram
+    )]
+    /// CHECK: This is the Raydium Liquidity Pool V4 program id
+    pub program_id: AccountInfo<'info>,
+    #[account(
+        mut,
+        address = AUDIO_USDC_RAYDIUM_AMM_ADDRESS @ StakingBridgeErrorCode::InvalidAmmProgram
+    )]
+    /// CHECK: This is the AMM id for the pool.
+    pub amm: AccountInfo<'info>,
     #[account()]
     /// CHECK: This is the authority for the pool. No check necessary.
     pub amm_authority: UncheckedAccount<'info>,
@@ -204,12 +207,17 @@ pub struct RaydiumSwap<'info> {
     #[account(mut)]
     /// CHECK: This is the pc token account for the pool. No check necessary.
     pub pool_pc_token_account: UncheckedAccount<'info>,
-    #[account()]
-    /// CHECK: This is the Serum DEX program. No check necessary.
-    pub serum_program: UncheckedAccount<'info>,
-    #[account(mut)]
-    /// CHECK: This is the market address. No check necessary.
-    pub serum_market: UncheckedAccount<'info>,
+    #[account(
+        address = SERUM_DEX_PROGRAM_ADDRESS @ StakingBridgeErrorCode::InvalidSerumDexProgram
+    )]
+    /// CHECK: This is the Serum DEX program.
+    pub serum_program: AccountInfo<'info>,
+    #[account(
+        mut,
+        address = AUDIO_USDC_SERUM_MARKET_ADDRESS @ StakingBridgeErrorCode::InvalidSerumMarketProgram
+    )]
+    /// CHECK: This is the market address
+    pub serum_market: AccountInfo<'info>,
     #[account(mut)]
     /// CHECK: This is the bids account for the serum market. No check necessary.
     pub serum_bids: UncheckedAccount<'info>,

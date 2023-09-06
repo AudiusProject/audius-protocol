@@ -8,46 +8,10 @@ use anchor_lang::solana_program::{
 };
 use anchor_spl::token::spl_token;
 
-use crate::constant::{
-    RAYDIUM_AMM_PROGRAM_ADDRESS,
-    SERUM_DEX_PROGRAM_ADDRESS,
-    AUDIO_USDC_SERUM_MARKET_ADDRESS,
-    AUDIO_USDC_RAYDIUM_AMM_ADDRESS
-};
-use crate::error::StakingBridgeErrorCode;
 use crate::{
     Amounts,
     RaydiumSwap
 };
-
-/**
- * Verify that the programs used for the swap are correct.
- */
-pub fn check_swap_programs(
-    program_id: AccountInfo,
-    serum_program: AccountInfo,
-    amm: AccountInfo,
-    serum_market: AccountInfo
-) -> Result<()> {
-    // 1. Verify that we are calling the Raydium AMM program.
-    if program_id.key() != RAYDIUM_AMM_PROGRAM_ADDRESS {
-        return Err(StakingBridgeErrorCode::NotCallingRaydiumAmmProgram.into());
-    }
-    // 2. Verify that the correct Serum DEX program was passed in.
-    if serum_program.key() != SERUM_DEX_PROGRAM_ADDRESS {
-        return Err(StakingBridgeErrorCode::InvalidSerumDexProgram.into());
-    }
-    // 3. Verify that the correct USDC-Audio amm was passed in.
-    if amm.key() != AUDIO_USDC_RAYDIUM_AMM_ADDRESS {
-        return Err(StakingBridgeErrorCode::InvalidAmmProgram.into());
-    }
-    // 4. Verify that the correct Serum market was passed in.
-    if serum_market.key() != AUDIO_USDC_SERUM_MARKET_ADDRESS {
-        return Err(StakingBridgeErrorCode::InvalidSerumMarketProgram.into());
-    }
-
-    Ok(())
-}
 
 /**
  * Verify that the correct PDAs are passed in.
