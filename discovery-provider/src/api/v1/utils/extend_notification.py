@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Union
+from typing import List, Union, cast
 
 from src.queries.get_notifications import (
     AnnouncementNotification,
@@ -395,7 +395,9 @@ def extend_tier_change(action: NotificationAction):
 
 
 def extend_track_added_to_playlist(action: NotificationAction):
-    data: TrackAddedToPlaylistNotification = action["data"]
+    data: TrackAddedToPlaylistNotification = cast(
+        TrackAddedToPlaylistNotification, action["data"]
+    )
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],

@@ -62,11 +62,11 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             "Invalid Create Grant transaction, user id is required and was not provided"
         )
-    if user_id not in params.existing_records[EntityType.USER]:
+    if user_id not in params.existing_records["User"]:
         raise IndexingValidationError(
             f"Invalid Create Grant transaction, user id {user_id} does not exist"
         )
-    if not params.existing_records[EntityType.USER][user_id].wallet:
+    if not params.existing_records["User"][user_id].wallet:
         raise IndexingValidationError(
             "Programming error while indexing Create Grant transaction, user wallet missing"
         )
@@ -77,17 +77,13 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 "Invalid Create Grant transaction, developer app address is required and was not provided"
             )
-        if (
-            metadata["grantee_address"]
-            not in params.existing_records[EntityType.DEVELOPER_APP]
-        ):
+        if metadata["grantee_address"] not in params.existing_records["DeveloperApp"]:
             raise IndexingValidationError(
                 f"Invalid Create Grant transaction, developer app address {metadata['grantee_address']} does not exist"
             )
         if (
-            metadata["grantee_address"]
-            in params.existing_records[EntityType.DEVELOPER_APP]
-            and params.existing_records[EntityType.DEVELOPER_APP][
+            metadata["grantee_address"] in params.existing_records["DeveloperApp"]
+            and params.existing_records["DeveloperApp"][
                 metadata["grantee_address"]
             ].is_delete
         ):
@@ -95,34 +91,34 @@ def validate_grant_tx(params: ManageEntityParameters, metadata):
                 f"Invalid Grant transaction, developer app address {metadata['grantee_address']} is invalid"
             )
         if (
-            grant_key in params.existing_records[EntityType.GRANT]
-            and not params.existing_records[EntityType.GRANT][grant_key].is_revoked
+            grant_key in params.existing_records["Grant"]
+            and not params.existing_records["Grant"][grant_key].is_revoked
         ):
             raise IndexingValidationError(
                 f"Invalid Create Grant transaction, active grant from {user_id} to {metadata['grantee_address']} already exists"
             )
-        if (
-            params.existing_records[EntityType.USER][user_id].wallet.lower()
-            != params.signer.lower()
-        ):
+
+        wallet = params.existing_records["User"][user_id].wallet
+        if wallet and wallet.lower() != params.signer.lower():
             raise IndexingValidationError(
                 "Invalid Create Grant transaction, user does not match signer"
             )
     elif params.action == Action.DELETE:
-        if grant_key not in params.existing_records[EntityType.GRANT]:
+        if grant_key not in params.existing_records["Grant"]:
             raise IndexingValidationError(
                 f"Invalid Delete Grant transaction, grant from {user_id} to {metadata['grantee_address']} does not exist"
             )
-        existing_grant = params.existing_records[EntityType.GRANT][grant_key]
+        existing_grant = params.existing_records["Grant"][grant_key]
         if existing_grant.is_revoked:
             raise IndexingValidationError(
                 f"Invalid Delete Grant Transaction, grant from {user_id} to {metadata['grantee_address']} is already revoked."
             )
 
         # Signer can be either the user in the grant or the developer app.
+        wallet = params.existing_records["User"][user_id].wallet
         if (
-            params.existing_records[EntityType.USER][user_id].wallet.lower()
-            != params.signer.lower()
+            wallet
+            and wallet.lower() != params.signer.lower()
             and params.signer.lower() != existing_grant.grantee_address.lower()
         ):
             raise IndexingValidationError(
@@ -169,7 +165,7 @@ def create_grant(params: ManageEntityParameters):
     )
 
     validate_grant_record(grant_record)
-    params.add_grant_record(grant_key, grant_record)
+    params.add_record(grant_key, grant_record)
     return grant_record
 
 
@@ -180,9 +176,9 @@ def revoke_grant(params: ManageEntityParameters):
             "Invalid Revoke Grant Transaction, unable to parse metadata"
         )
     grant_key = validate_grant_tx(params, metadata)
-    existing_grant = params.existing_records[EntityType.GRANT][grant_key]
-    if grant_key in params.new_records[EntityType.GRANT]:
-        existing_grant = params.new_records[EntityType.GRANT][grant_key][-1]
+    existing_grant = params.existing_records["Grant"][grant_key]
+    if grant_key in params.new_records["Grant"]:
+        existing_grant = params.new_records["Grant"][grant_key][-1]
 
     revoked_grant = copy_record(
         existing_grant,
@@ -195,5 +191,5 @@ def revoke_grant(params: ManageEntityParameters):
     revoked_grant.is_revoked = True
 
     validate_grant_record(revoked_grant)
-    params.add_grant_record(grant_key, revoked_grant)
+    params.add_record(grant_key, revoked_grant)
     return revoked_grant

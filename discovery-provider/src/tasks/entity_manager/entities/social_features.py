@@ -1,8 +1,9 @@
 import json
-from typing import Union
+from typing import Union, cast
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.exceptions import IndexingValidationError
+from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -93,12 +94,10 @@ def create_social_record(params: ManageEntityParameters):
             )
 
         if create_record:
-            params.add_social_feature_record(
-                params.user_id,
-                params.entity_type,
-                params.entity_id,
-                record_type,
+            params.add_record(
+                get_record_key(params.user_id, params.entity_type, params.entity_id),
                 create_record,
+                record_type=record_type,
             )
 
     # dispatch repost, favorite, follow challenges
@@ -124,15 +123,6 @@ def get_attribute_from_record_metadata(params, attribute):
     return None
 
 
-def get_social_feature_type(params):
-    save_type = params.entity_type.lower()
-    if params.entity_type == EntityType.PLAYLIST:
-        # discern playlists and albums
-        existing_entity = params.existing_records[params.entity_type][params.entity_id]
-        save_type = "album" if existing_entity.is_album else "playlist"
-    return save_type
-
-
 def create_save(params):
     is_save_of_repost = get_attribute_from_record_metadata(params, "is_save_of_repost")
 
@@ -143,7 +133,7 @@ def create_save(params):
         txhash=params.txhash,
         user_id=params.user_id,
         save_item_id=params.entity_id,
-        save_type=get_social_feature_type(params),
+        save_type=params.entity_type.lower(),
         is_current=True,
         is_delete=False,
         is_save_of_repost=bool(is_save_of_repost),
@@ -162,7 +152,7 @@ def create_repost(params):
         txhash=params.txhash,
         user_id=params.user_id,
         repost_item_id=params.entity_id,
-        repost_type=get_social_feature_type(params),
+        repost_type=params.entity_type.lower(),
         is_repost_of_repost=bool(is_repost_of_repost),
         is_current=True,
         is_delete=False,
@@ -226,12 +216,10 @@ def delete_social_record(params):
             )
 
         if deleted_record:
-            params.add_social_feature_record(
-                params.user_id,
-                params.entity_type,
-                params.entity_id,
-                record_type,
+            params.add_record(
+                get_record_key(params.user_id, params.entity_type, params.entity_id),
                 deleted_record,
+                record_type=record_type,
             )
 
     # dispatch repost, favorite, follow challenges
@@ -279,11 +267,12 @@ def validate_social_feature(params: ManageEntityParameters):
             )
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
-        owner_id = (
-            target_entity.playlist_owner_id
-            if params.entity_type == EntityType.PLAYLIST
-            else target_entity.owner_id
-        )
+        if params.entity_type == EntityType.PLAYLIST:
+            assert isinstance(target_entity, Playlist)
+            owner_id = target_entity.playlist_owner_id
+        else:
+            if hasattr(target_entity, "owner_id"):
+                owner_id = target_entity.owner_id
         if params.user_id == owner_id:
             raise IndexingValidationError(
                 f"User {params.user_id} cannot {params.action} themself"
@@ -296,7 +285,7 @@ def validate_duplicate_social_feature(
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
-    existing_record = params.existing_records.get(record_type, {}).get(key)
+    existing_record = cast(dict, params.existing_records.get(record_type, {})).get(key)
 
     if existing_record:
         duplicate_create = (

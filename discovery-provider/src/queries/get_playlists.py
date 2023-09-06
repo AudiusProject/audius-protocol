@@ -3,6 +3,7 @@ from typing import List, TypedDict  # pylint: disable=C0302
 
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.exc import NoResultFound
+
 from src import exceptions
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute

@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 
 import requests
+
 from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_daily_route_metrics,

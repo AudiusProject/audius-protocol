@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timedelta
 
 from sqlalchemy import text
+
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
 

@@ -4,6 +4,7 @@ from typing import Dict, Union
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import null
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
@@ -15,7 +16,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_TRACK_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
     Action,
     EntityType,
@@ -144,7 +145,7 @@ def update_track_price_history(
 
 @helpers.time_method
 def update_track_routes_table(
-    session, track_record, track_metadata, pending_track_routes
+    params, track_record, track_metadata, pending_track_routes
 ):
     """Creates the route for the given track"""
 
@@ -161,25 +162,9 @@ def update_track_routes_table(
 
     # Find the current route for the track
     # Check the pending track route updates first
-    prev_track_route_record = next(
-        (
-            route
-            for route in pending_track_routes
-            if route.is_current and route.track_id == track_record.track_id
-        ),
-        None,
+    prev_track_route_record = params.existing_records[EntityType.TRACK_ROUTE].get(
+        track_record.track_id
     )
-
-    # Then query the DB if necessary
-    if prev_track_route_record is None:
-        prev_track_route_record = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.track_id == track_record.track_id,
-                TrackRoute.is_current == True,
-            )  # noqa: E712
-            .one_or_none()
-        )
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
@@ -189,7 +174,7 @@ def update_track_routes_table(
         prev_track_route_record.is_current = False
 
     new_track_slug, new_collision_id = generate_slug_and_collision_id(
-        session,
+        params.session,
         TrackRoute,
         track_record.track_id,
         track_metadata["title"],
@@ -210,7 +195,7 @@ def update_track_routes_table(
     new_track_route.blockhash = track_record.blockhash
     new_track_route.blocknumber = track_record.blocknumber
     new_track_route.txhash = track_record.txhash
-    session.add(new_track_route)
+    params.add_record(track_record.track_id, new_track_route, EntityType.TRACK_ROUTE)
 
     # Add to pending track routes so we don't add the same route twice
     pending_track_routes.append(new_track_route)
@@ -235,8 +220,9 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
         if key == "premium_conditions":
-            if "premium_conditions" in track_metadata and is_valid_json_field(
-                track_metadata, "premium_conditions"
+            if "premium_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "premium_conditions")
+                or track_metadata.get("premium_conditions") is None
             ):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
 
@@ -291,7 +277,7 @@ def validate_track_tx(params: ManageEntityParameters):
         )
 
     if params.action == Action.CREATE:
-        if track_id in params.existing_records[EntityType.TRACK]:
+        if track_id in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} already exists")
 
         if track_id < TRACK_ID_OFFSET:
@@ -309,15 +295,15 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} attempted to be placed in genre '{track_genre}' which is not in the allow list"
             )
-        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_TRACK_DESCRIPTION:
+        if track_bio is not None and len(track_bio) > CHARACTER_LIMIT_DESCRIPTION:
             raise IndexingValidationError(
-                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_TRACK_DESCRIPTION}"
+                f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
-        if track_id not in params.existing_records[EntityType.TRACK]:
+        if track_id not in params.existing_records["Track"]:
             raise IndexingValidationError(f"Track {track_id} does not exist")
-        existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
+        existing_track: Track = params.existing_records["Track"][track_id]
         if existing_track.owner_id != params.user_id:
             raise IndexingValidationError(
                 f"Existing track {track_id} does not match user"
@@ -333,7 +319,7 @@ def validate_track_tx(params: ManageEntityParameters):
     if params.action != Action.DELETE:
         ai_attribution_user_id = params.metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][
+            ai_attribution_user = params.existing_records["User"][
                 ai_attribution_user_id
             ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
@@ -387,7 +373,7 @@ def create_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, track_record, params.metadata, params.pending_track_routes
+        params, track_record, params.metadata, params.pending_track_routes
     )
 
     update_track_record(params, track_record, params.metadata, handle)
@@ -405,7 +391,7 @@ def create_track(params: ManageEntityParameters):
         params.challenge_bus, params.block_number, track_record
     )
 
-    params.add_track_record(track_id, track_record)
+    params.add_record(track_id, track_record)
 
 
 def update_track(params: ManageEntityParameters):
@@ -413,11 +399,11 @@ def update_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
+    existing_track = params.existing_records["Track"][track_id]
     if (
-        track_id in params.new_records[EntityType.TRACK]
+        track_id in params.new_records["Track"]
     ):  # override with last updated track is in this block
-        existing_track = params.new_records[EntityType.TRACK][track_id][-1]
+        existing_track = params.new_records["Track"][track_id][-1]
 
     track_record = copy_record(
         existing_track,
@@ -428,7 +414,7 @@ def update_track(params: ManageEntityParameters):
     )
 
     update_track_routes_table(
-        params.session, track_record, params.metadata, params.pending_track_routes
+        params, track_record, params.metadata, params.pending_track_routes
     )
     update_track_price_history(
         params.session,
@@ -440,17 +426,17 @@ def update_track(params: ManageEntityParameters):
     update_track_record(params, track_record, params.metadata, handle)
     update_remixes_table(params.session, track_record, params.metadata)
 
-    params.add_track_record(track_id, track_record)
+    params.add_record(track_id, track_record)
 
 
 def delete_track(params: ManageEntityParameters):
     validate_track_tx(params)
 
     track_id = params.entity_id
-    existing_track = params.existing_records[EntityType.TRACK][track_id]
-    if params.entity_id in params.new_records[EntityType.TRACK]:
+    existing_track = params.existing_records["Track"][track_id]
+    if params.entity_id in params.new_records["Track"]:
         # override with last updated playlist is in this block
-        existing_track = params.new_records[EntityType.TRACK][params.entity_id][-1]
+        existing_track = params.new_records["Track"][params.entity_id][-1]
 
     deleted_track = copy_record(
         existing_track,
@@ -464,4 +450,7 @@ def delete_track(params: ManageEntityParameters):
     deleted_track.remix_of = null()
     deleted_track.premium_conditions = null()
 
-    params.add_track_record(track_id, deleted_track)
+    # delete stems record
+    params.session.query(Stem).filter_by(child_track_id=track_id).delete()
+
+    params.add_record(track_id, deleted_track)

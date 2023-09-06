@@ -3,17 +3,23 @@ import urllib.parse
 from typing import List, Tuple
 
 from lxml import etree
-from sqlalchemy import asc, func
+from sqlalchemy import asc
 from sqlalchemy.orm.session import Session
+
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
-from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
 from src.utils.get_all_other_nodes import get_node_endpoint
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
+redis = get_redis()
+
+max_track_count_redis_key = "max_track_count"
+max_playlist_count_redis_key = "max_playlist_count"
+max_user_count_redis_key = "max_user_count"
 
 root_site_maps_routes = [
     "defaults.xml",
@@ -53,6 +59,11 @@ default_routes = [
     "feed",
     "trending",
     "explore",
+    "upload",
+    "favorites",
+    "history",
+    "messages",
+    "dashboard",
     "explore/playlists",
     "explore/underground",
     "explore/top-albums",
@@ -65,10 +76,14 @@ default_routes = [
     "explore/intimate",
     "signup",
     "signin",
+    "audio",
+    "settings",
 ]
 
 # The max number of urls that can be in a single sitemap
-LIMIT = 50_000
+# Technically the limit is 50K, but based on observation, it should be
+# lower to ensure proper SEO indexing.
+LIMIT = 40_000
 
 
 def build_default():
@@ -85,30 +100,63 @@ def build_default():
 
 
 def get_max_track_count(session: Session) -> int:
-    max = (
-        session.query(func.count(Track.track_id))
-        .filter(Track.is_current == True, Track.stem_of == None)
-        .one()
+    """
+    Gets the total number of tracks to include in sitemaps.
+    Should return the same number as the queries to get slugs that populate sitemaps.
+    """
+    cnt = (
+        session.query(User.handle, TrackRoute.slug)
+        .join(Track, TrackRoute.track_id == Track.track_id)
+        .join(User, TrackRoute.owner_id == User.user_id)
+        .filter(
+            Track.is_current == True,
+            Track.stem_of == None,
+            Track.is_available == True,
+            User.is_current == True,
+            TrackRoute.is_current == True,
+        )
+        .count()
     )
-    return max[0]
+    return cnt
 
 
 def get_max_user_count(session: Session) -> int:
-    max = session.query(func.count(AggregateUser.user_id)).one()
-    return max[0]
+    """
+    Gets the total number of users to include in sitemaps.
+    Should return the same number as the queries to get slugs that populate sitemaps.
+    """
+    cnt = (
+        session.query(User.user_id)
+        .filter(
+            User.is_current == True,
+            User.is_deactivated == False,
+            # Filter on handle_lc for performance reasons
+            User.handle_lc != None,
+            User.is_available == True,
+        )
+        .count()
+    )
+    return cnt
 
 
 def get_max_playlist_count(session: Session) -> int:
-    max = (
-        session.query(func.count(Playlist.playlist_id))
+    """
+    Gets the total number of playlists and albums to include in sitemaps.
+    Should return the same number as the queries to get slugs that populate sitemaps.
+    """
+    cnt = (
+        session.query(User.handle, PlaylistRoute.slug, Playlist.is_album)
+        .join(User, User.user_id == PlaylistRoute.owner_id)
+        .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
         .filter(
+            User.is_current == True,
+            PlaylistRoute.is_current == True,
             Playlist.is_current == True,
             Playlist.is_private == False,
-            Playlist.is_delete == False,
         )
-        .one()
+        .count()
     )
-    return max[0]
+    return cnt
 
 
 def get_dynamic_root(max: int, base_route: str, limit: int = LIMIT):
@@ -139,12 +187,14 @@ def get_entity_page(slugs: List[str]):
 
 def get_track_slugs(session: Session, limit: int, offset: int):
     slugs: List[str] = (
-        session.query(User.handle_lc, TrackRoute.slug)
+        # Handle, not handle_lc is the cannonical URL
+        session.query(User.handle, TrackRoute.slug)
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
         .filter(
             Track.is_current == True,
             Track.stem_of == None,
+            Track.is_available == True,
             User.is_current == True,
             TrackRoute.is_current == True,
         )
@@ -159,7 +209,8 @@ def get_track_slugs(session: Session, limit: int, offset: int):
 
 def get_playlist_slugs(session: Session, limit: int, offset: int):
     slugs: List[Tuple[str, str, bool]] = (
-        session.query(User.handle_lc, PlaylistRoute.slug, Playlist.is_album)
+        # Handle, not handle_lc is the cannonical URL
+        session.query(User.handle, PlaylistRoute.slug, Playlist.is_album)
         .join(User, User.user_id == PlaylistRoute.owner_id)
         .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
         .filter(
@@ -180,11 +231,14 @@ def get_playlist_slugs(session: Session, limit: int, offset: int):
 
 def get_user_slugs(session: Session, limit: int, offset: int):
     slugs = (
-        session.query(User.handle_lc)
+        # Handle, not handle_lc is the cannonical URL
+        session.query(User.handle)
         .filter(
             User.is_current == True,
             User.is_deactivated == False,
+            # Filter on handle_lc for performance reasons
             User.handle_lc != None,
+            User.is_available == True,
         )
         .order_by(asc(User.user_id))
         .limit(limit)
@@ -196,17 +250,29 @@ def get_user_slugs(session: Session, limit: int, offset: int):
 
 
 def get_track_root(session: Session, limit: int = LIMIT):
-    max_track_count = get_max_track_count(session)
+    cached_max_track_count = redis.get(max_track_count_redis_key)
+    if cached_max_track_count:
+        max_track_count = int(cached_max_track_count)
+    else:
+        max_track_count = get_max_track_count(session)
     return get_dynamic_root(max_track_count, "track", limit)
 
 
 def get_playlist_root(session: Session, limit: int = LIMIT):
-    max_track_count = get_max_playlist_count(session)
-    return get_dynamic_root(max_track_count, "playlist", limit)
+    cached_max_playlist_count = redis.get(max_playlist_count_redis_key)
+    if cached_max_playlist_count:
+        max_playlist_count = int(cached_max_playlist_count)
+    else:
+        max_playlist_count = get_max_playlist_count(session)
+    return get_dynamic_root(max_playlist_count, "playlist", limit)
 
 
 def get_user_root(session: Session, limit: int = LIMIT):
-    max_user_count = get_max_user_count(session)
+    cached_max_user_count = redis.get(max_user_count_redis_key)
+    if cached_max_user_count:
+        max_user_count = int(cached_max_user_count)
+    else:
+        max_user_count = get_max_user_count(session)
     return get_dynamic_root(max_user_count, "user", limit)
 
 

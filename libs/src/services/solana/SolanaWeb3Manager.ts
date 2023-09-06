@@ -59,8 +59,8 @@ type CreateSenderParams = Omit<
   | 'identityService'
 > & { feePayerOverride: Nullable<string> }
 
-type MintName = 'usdc' | 'audio'
-const DEFAULT_MINT: MintName = 'audio'
+export type MintName = 'usdc' | 'audio'
+export const DEFAULT_MINT: MintName = 'audio'
 
 const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -239,7 +239,10 @@ export class SolanaWeb3Manager {
     mint?: MintName
   } = {}) {
     const userbank = await this.deriveUserBank({ ethAddress, mint })
-    const tokenAccount = await this.getTokenAccountInfo(userbank.toString(), mint)
+    const tokenAccount = await this.getTokenAccountInfo(
+      userbank.toString(),
+      mint
+    )
     return !!tokenAccount
   }
 
@@ -769,5 +772,42 @@ export class SolanaWeb3Manager {
     }
 
     return encodedEthAddress
+  }
+
+  /**
+   * Creates transfer instructions from the current user's user bank to the provided solana address.
+   * Supports both $AUDIO or USDC user banks.
+   */
+  async createTransferInstructionsFromCurrentUser({
+    amount,
+    feePayerKey,
+    senderSolanaAddress,
+    recipientSolanaAddress,
+    mint = DEFAULT_MINT,
+    instructionIndex = 0
+  }: {
+    amount: BN
+    senderSolanaAddress: PublicKey
+    recipientSolanaAddress: string
+    mint: MintName
+    feePayerKey: PublicKey
+    instructionIndex?: number
+  }) {
+    const instructions = await createTransferInstructions({
+      amount,
+      feePayerKey,
+      senderEthAddress: this.web3Manager?.getWalletAddress(),
+      senderEthPrivateKey:
+        this.web3Manager!.getOwnerWalletPrivateKey() as unknown as string,
+      senderSolanaAddress,
+      recipientSolanaAddress,
+      claimableTokenPDA: this.claimableTokenPDAs[mint],
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      mintKey: this.mints[mint],
+      instructionIndex
+    })
+    return instructions
   }
 }

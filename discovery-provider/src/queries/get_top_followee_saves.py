@@ -1,4 +1,5 @@
 from sqlalchemy import desc, func
+
 from src import exceptions
 from src.models.social.follow import Follow
 from src.models.social.save import Save

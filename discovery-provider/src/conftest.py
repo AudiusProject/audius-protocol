@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import fakeredis
 import pytest
+
 import src.utils.db_session
 import src.utils.redis_connection
 import src.utils.web3_provider

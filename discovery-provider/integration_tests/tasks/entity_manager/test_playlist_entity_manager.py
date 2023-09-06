@@ -4,6 +4,9 @@ from datetime import datetime
 from typing import List
 
 import pytest
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
@@ -11,12 +14,10 @@ from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import (
-    CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+    CHARACTER_LIMIT_DESCRIPTION,
     PLAYLIST_ID_OFFSET,
 )
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -370,12 +371,12 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
         update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts_update_routes
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts_update_routes[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts_update_routes[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -400,7 +401,7 @@ def test_index_valid_playlists_updates_routes(app, mocker, tx_receipts_update_ro
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -518,12 +519,12 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
         update_task = UpdateTask(web3, challenge_event_bus)
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -577,12 +578,12 @@ def test_index_valid_playlists(app, mocker, tx_receipts):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 9
+        assert len(all_playlists) == 6
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -684,9 +685,7 @@ def test_index_invalid_playlists(app, mocker):
         "AlbumTracklistUpdate": {
             "playlist_contents": {"track_ids": [{"track": 1, "time": 1}]}
         },
-        "UpdatePlaylistInvalidAlbum": {
-            "is_album": True
-        },
+        "UpdatePlaylistInvalidAlbum": {"is_album": True},
         "CreatePlaylistInvalidTracks": {
             "playlist_contents": {"track_ids": [{"track": 1}]}
         },
@@ -899,12 +898,12 @@ def test_index_invalid_playlists(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -935,16 +934,18 @@ def test_index_invalid_playlists(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 4
+        assert len(all_playlists) == 2
 
         current_playlist: Playlist = (
             session.query(Playlist)
-            .filter(Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET
+            )
             .first()
         )
         assert current_playlist.is_current == True
@@ -954,13 +955,15 @@ def test_index_invalid_playlists(app, mocker):
         current_album: Playlist = (
             session.query(Playlist)
             .filter(
-                Playlist.is_current == True, Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1,
             )
             .first()
         )
         assert current_album.is_current == True
         assert current_album.is_album == True
         assert current_album.playlist_contents == {"track_ids": []}
+
 
 def test_invalid_playlist_description(app, mocker):
     "Tests that playlists cant have a description that's too long"
@@ -972,7 +975,7 @@ def test_invalid_playlist_description(app, mocker):
     metadata = {
         "PlaylistInvalidDescriptionMetadata": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
-            "description": "xtralargeplz" * CHARACTER_LIMIT_PLAYLIST_DESCRIPTION,
+            "description": "xtralargeplz" * CHARACTER_LIMIT_DESCRIPTION,
             "playlist_image_sizes_multihash": "",
             "is_album": False,
         },
@@ -997,12 +1000,12 @@ def test_invalid_playlist_description(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -1027,7 +1030,7 @@ def test_invalid_playlist_description(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         assert total_changes == 0

@@ -2,17 +2,16 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"mediorum/cidutil"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRepair(t *testing.T) {
 	replicationFactor := 5
-	crudrWait := time.Millisecond * 300
 
 	runTestNetworkRepair := func(cleanup bool) {
 		wg := sync.WaitGroup{}
@@ -20,12 +19,24 @@ func TestRepair(t *testing.T) {
 		for _, s := range testNetwork {
 			s := s
 			go func() {
-				err := s.runRepair(cleanup)
+				err := s.runRepair(true, cleanup)
 				assert.NoError(t, err)
 				wg.Done()
 			}()
 		}
 		wg.Wait()
+	}
+
+	findHostsWithBlob := func(cid string) []string {
+		ctx := context.Background()
+		key := cidutil.ShardCID(cid)
+		result := []string{}
+		for _, s := range testNetwork {
+			if ok, _ := s.bucket.Exists(ctx, key); ok {
+				result = append(result, s.Config.Self.Host)
+			}
+		}
+		return result
 	}
 
 	ss := testNetwork[0]
@@ -37,26 +48,24 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
-	time.Sleep(crudrWait)
+	// force sweep (since blob changes SkipBroadcast)
+	for _, s := range testNetwork {
+		s.crud.ForceSweep()
+	}
 
 	// assert it only exists on 1 host
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Len(t, blobs, 1)
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, 1)
 	}
 
 	// tell all servers do repair
 	runTestNetworkRepair(false)
 
-	// wait for crud replication
-	time.Sleep(crudrWait)
-
 	// assert it exists on R hosts
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Len(t, blobs, replicationFactor)
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, replicationFactor)
 	}
 
 	// --------------------------
@@ -67,31 +76,23 @@ func TestRepair(t *testing.T) {
 		ss.replicateFileToHost(server.Config.Self.Host, cid, bytes.NewReader(data))
 	}
 
-	// wait for crud
-	time.Sleep(crudrWait)
-
 	// assert over-replicated
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.True(t, len(blobs) == len(testNetwork))
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, len(testNetwork))
 	}
 
 	// tell all servers do cleanup
 	runTestNetworkRepair(true)
 
-	// wait for crud replication
-	time.Sleep(crudrWait)
-
 	// assert R copies
 	{
-		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
-		assert.Equal(t, replicationFactor, len(blobs))
+		hosts := findHostsWithBlob(cid)
+		assert.Len(t, hosts, replicationFactor)
 	}
 
 	// ----------------------
-	// now make one of the servers "loose" a file
+	// now make one of the servers "lose" a file
 	{
 		byHost := map[string]*MediorumServer{}
 		for _, s := range testNetwork {
@@ -99,7 +100,7 @@ func TestRepair(t *testing.T) {
 		}
 
 		rendezvousOrder := []*MediorumServer{}
-		preferred, _ := ss.rendezvous(cid)
+		preferred, _ := ss.rendezvousAllHosts(cid)
 		for _, h := range preferred {
 			rendezvousOrder = append(rendezvousOrder, byHost[h])
 		}
@@ -110,22 +111,22 @@ func TestRepair(t *testing.T) {
 
 		// normally a standby server wouldn't pull this file
 		standby := rendezvousOrder[replicationFactor+2]
-		err = standby.runRepair(false)
+		err = standby.runRepair(true, false)
 		assert.NoError(t, err)
 		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 
 		// running repair in cleanup mode... standby will observe that #1 doesn't have blob so will pull it
-		err = standby.runRepair(true)
+		err = standby.runRepair(true, true)
 		assert.NoError(t, err)
 		assert.True(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 
 		// leader re-gets lost file when repair runs
-		err = leader.runRepair(false)
+		err = leader.runRepair(true, false)
 		assert.NoError(t, err)
 		assert.True(t, leader.hostHasBlob(leader.Config.Self.Host, cid))
 
 		// standby drops file after leader has it back
-		err = standby.runRepair(true)
+		err = standby.runRepair(true, true)
 		assert.NoError(t, err)
 		assert.False(t, standby.hostHasBlob(standby.Config.Self.Host, cid))
 	}

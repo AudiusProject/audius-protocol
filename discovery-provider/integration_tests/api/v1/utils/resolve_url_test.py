@@ -25,10 +25,13 @@ def test_resolve_playlist_url(app):
     with app.test_request_context():
         db = get_db()
         with db.scoped_session() as session:
-            url = "https://audius.co/urbanbankai/playlist/up-next-atl-august-2020-9801"
+            url = "https://audius.co/urbanbankai/playlist/up-next-atl-august-2020"
             resolved_url = resolve_url(session, url)
 
-            assert resolved_url == "/v1/playlists/ePkW0"
+            assert (
+                resolved_url
+                == "/v1/playlists/by_permalink/urbanbankai/up-next-atl-august-2020"
+            )
 
 
 def test_resolve_non_fully_qualified_url(app):

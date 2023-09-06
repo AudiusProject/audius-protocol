@@ -2,6 +2,8 @@ import logging
 from typing import Any, List, Tuple
 
 from redis import Redis
+from web3 import Web3
+
 from src.app import get_eth_abi_values
 from src.exceptions import IndexingValidationError
 from src.tasks.entity_manager.utils import (
@@ -25,6 +27,9 @@ from src.utils.redis_cache import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+eth_web3 = web3_provider.get_eth_web3()
 
 
 # Fetch content node endpoint info from cache or from mainnet eth.
@@ -106,8 +111,7 @@ def get_endpoint_from_id(redis: Redis, sp_factory_inst, sp_id: int) -> Tuple[Any
 
 # Return instance of ServiceProviderFactory initialized with configs
 def get_sp_factory_inst():
-    eth_web3 = web3_provider.get_eth_web3()
-    eth_registry_address = eth_web3.toChecksumAddress(
+    eth_registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
     eth_registry_instance = eth_web3.eth.contract(
@@ -145,12 +149,12 @@ def parse_sp_ids(sp_ids_str: str) -> List[int]:
 
 def is_valid_user_replica_set_tx(params: ManageEntityParameters) -> None:
     user_id = params.user_id
-    if user_id not in params.existing_records[EntityType.USER]:
+    if user_id not in params.existing_records["User"]:
         # user does not exist
         raise IndexingValidationError(f"User {user_id} does not exist")
     # Validate the signer is the user or in the current replica set of content nodes
-    user = params.existing_records[EntityType.USER][user_id]
-    user_sp_ids = [user.primary_id]
+    user = params.existing_records["User"][user_id]
+    user_sp_ids: List[int] = [user.primary_id] if user.primary_id else []
     if user.secondary_ids:
         user_sp_ids = user_sp_ids + user.secondary_ids
     if user.wallet and user.wallet.lower() != params.signer.lower():
@@ -200,12 +204,12 @@ def update_user_replica_set(params: ManageEntityParameters):
     is_valid_user_replica_set_tx(params)
 
     user_id = params.user_id
-    existing_user = params.existing_records[EntityType.USER][user_id]
+    existing_user = params.existing_records["User"][user_id]
 
     if (
-        user_id in params.new_records[EntityType.USER]
+        user_id in params.new_records["User"]
     ):  # override with last updated user is in this block
-        existing_user = params.new_records[EntityType.USER][user_id][-1]
+        existing_user = params.new_records["User"][user_id][-1]
     updated_user = copy_record(
         existing_user,
         params.block_number,
@@ -227,4 +231,4 @@ def update_user_replica_set(params: ManageEntityParameters):
     )
     updated_user.creator_node_endpoint = creator_node_endpoint_str
 
-    params.add_user_record(user_id, updated_user)
+    params.add_record(user_id, updated_user, record_type=EntityType.USER)

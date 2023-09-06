@@ -47,7 +47,8 @@ export interface SearchAutocompleteRequest {
  */
 export class SearchApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
     async searchRaw(params: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
@@ -97,7 +98,8 @@ export class SearchApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */

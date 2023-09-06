@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple, TypedDict
 
 from sqlalchemy import and_, asc
+
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge

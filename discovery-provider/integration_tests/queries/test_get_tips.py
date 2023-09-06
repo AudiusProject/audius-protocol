@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+
 from integration_tests.utils import populate_mock_db
 from src.queries.get_tips import GetTipsArgs, get_tips
 from src.utils.db_session import get_db

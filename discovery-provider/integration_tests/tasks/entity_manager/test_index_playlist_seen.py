@@ -1,14 +1,16 @@
 from typing import List
 
+from sqlalchemy import desc
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from sqlalchemy import desc
+from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import PlaylistSeen
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 
 def test_index_playlist_view(app, mocker):
@@ -66,12 +68,12 @@ def test_index_playlist_view(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -99,7 +101,7 @@ def test_index_playlist_view(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1000000000,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -145,7 +147,7 @@ def test_index_playlist_view(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -156,16 +158,20 @@ def test_index_playlist_view(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=3,
+            block_number=1,
             block_timestamp=timestamp,
-            block_hash=0,
+            block_hash=hex(0),
         )
-        prev_playlist_seen: List[PlaylistSeen] = (
-            session.query(PlaylistSeen).filter(PlaylistSeen.is_current == False).all()
+        revert_block: List[RevertBlock] = (
+            session.query(RevertBlock).filter(RevertBlock.blocknumber == 1).first()
         )
-        assert len(prev_playlist_seen) == 1
-        prev_playlist_seen[0].is_current == False
-        prev_playlist_seen[0].user_id == 1
-        prev_playlist_seen[0].playlist_id == 1
-        prev_playlist_seen[0].blocknumber == 0
-        prev_playlist_seen[0].seen_at == timestamp
+        assert len(revert_block.prev_records["playlist_seen"]) == 1
+
+        prev_playlist_seen = PlaylistSeen(
+            **revert_block.prev_records["playlist_seen"][0]
+        )
+        prev_playlist_seen.is_current == False
+        prev_playlist_seen.user_id == 1
+        prev_playlist_seen.playlist_id == 1
+        prev_playlist_seen.blocknumber == 1
+        prev_playlist_seen.seen_at == timestamp

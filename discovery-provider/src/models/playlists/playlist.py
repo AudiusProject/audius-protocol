@@ -1,6 +1,16 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
+
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin, validate_field_helper
@@ -11,8 +21,10 @@ from src.models.users.user import User
 class Playlist(Base, RepresentableMixin):
     __tablename__ = "playlists"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(
+        Integer, ForeignKey("blocks.number"), index=True, nullable=False
+    )
     playlist_id = Column(Integer, primary_key=True, nullable=False)
     playlist_owner_id = Column(Integer, nullable=False, index=True)
     is_album = Column(Boolean, nullable=False)
@@ -75,7 +87,7 @@ class Playlist(Base, RepresentableMixin):
     @property
     def permalink(self):
         if self.user and self.user[0].handle and self._slug:
-            collection_type = 'album' if self.is_album else 'playlist'
+            collection_type = "album" if self.is_album else "playlist"
             return f"/{self.user[0].handle}/{collection_type}/{self._slug}"
         return ""
 

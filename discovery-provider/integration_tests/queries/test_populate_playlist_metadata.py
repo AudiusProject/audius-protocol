@@ -28,6 +28,8 @@ def test_populate_playlist_metadata(app):
             {"user_id": 3, "handle": "user3"},
             {"user_id": 4, "handle": "user4"},
         ],
+    }
+    test_social_feature_entities = {
         "reposts": [
             {"repost_item_id": 1, "repost_type": "playlist", "user_id": 2},
             {"repost_item_id": 1, "repost_type": "playlist", "user_id": 3},
@@ -46,6 +48,7 @@ def test_populate_playlist_metadata(app):
     }
 
     populate_mock_db(db, test_entities)
+    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         playlist_ids = [1, 2, 3, 4]

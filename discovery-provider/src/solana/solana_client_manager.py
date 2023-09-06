@@ -3,18 +3,16 @@ import random
 import signal
 import time
 from contextlib import contextmanager
-from typing import Optional, Union
+from typing import Optional
 
-from solana.keypair import Keypair
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
+from solders.rpc.responses import GetSignaturesForAddressResp, GetTransactionResp
+from solders.signature import Signature
+
 from solana.rpc.api import Client, Commitment
 from solana.rpc.types import TokenAccountOpts
 from src.exceptions import SolanaTransactionFetchError
 from src.solana.solana_helpers import SPL_TOKEN_ID_PK
-from src.solana.solana_transaction_types import (
-    ConfirmedSignatureForAddressResponse,
-    ConfirmedTransaction,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -41,19 +39,21 @@ class SolanaClientManager:
 
     def get_sol_tx_info(
         self, tx_sig: str, retries=DEFAULT_MAX_RETRIES, encoding="json"
-    ):
+    ) -> GetTransactionResp:
         """Fetches a solana transaction by signature with retries and a delay."""
 
-        def handle_get_sol_tx_info(client: Client, index: int):
+        def handle_get_sol_tx_info(client: Client, index: int) -> GetTransactionResp:
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
-                    tx_info: ConfirmedTransaction = client.get_transaction(
-                        tx_sig, encoding
+                    tx_info: GetTransactionResp = client.get_transaction(
+                        Signature.from_string(tx_sig),
+                        encoding,
+                        max_supported_transaction_version=0,
                     )
                     _check_error(tx_info, tx_sig)
-                    if tx_info["result"] is not None:
+                    if tx_info.value is not None:
                         return tx_info
                 # We currently only support "legacy" solana transactions. If we encounter
                 # a newer version, raise this specific error so that it can be handled upstream.
@@ -82,22 +82,35 @@ class SolanaClientManager:
 
     def get_signatures_for_address(
         self,
-        account: Union[str, Keypair, PublicKey],
-        before: Optional[str] = None,
-        until: Optional[str] = None,
+        account: str,
+        before: Optional[Signature] = None,
+        until: Optional[Signature] = None,
         limit: Optional[int] = None,
         retries: int = DEFAULT_MAX_RETRIES,
-    ):
-        """Fetches confirmed signatures for transactions given an address."""
+    ) -> GetSignaturesForAddressResp:
+        """
+        Fetches confirmed signatures for transactions given an address.
+
+        Args:
+            account: Public key as string
+            before: (optional) signature string
+            until: (optional) signature string
+            limit: (optional)
+            retries: (default)
+        """
 
         def handle_get_signatures_for_address(client: Client, index: int):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
-                    transactions: ConfirmedSignatureForAddressResponse = (
+                    transactions: GetSignaturesForAddressResp = (
                         client.get_signatures_for_address(
-                            account, before, until, limit, Commitment("finalized")
+                            Pubkey.from_string(account),
+                            before,
+                            until,
+                            limit,
+                            Commitment("finalized"),
                         )
                     )
                     return transactions
@@ -129,7 +142,7 @@ class SolanaClientManager:
             while num_retries > 0:
                 try:
                     response = client.get_slot(Commitment("finalized"))
-                    return response["result"]
+                    return response.value
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_slot, {e}",
@@ -150,9 +163,7 @@ class SolanaClientManager:
             "solana_client_manager.py | get_slot | All requests failed to fetch",
         )
 
-    def get_token_accounts_by_owner(
-        self, owner: PublicKey, retries=DEFAULT_MAX_RETRIES
-    ):
+    def get_token_accounts_by_owner(self, owner: Pubkey, retries=DEFAULT_MAX_RETRIES):
         def _get_token_accounts_by_owner(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
@@ -164,7 +175,7 @@ class SolanaClientManager:
                             program_id=SPL_TOKEN_ID_PK, encoding="jsonParsed"
                         ),
                     )
-                    return response["result"]
+                    return response.value
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_token_accounts_by_owner, {e}",
@@ -185,14 +196,14 @@ class SolanaClientManager:
             "solana_client_manager.py | get_token_accounts_by_owner | All requests failed to fetch",
         )
 
-    def get_account_info(self, account: PublicKey, retries=DEFAULT_MAX_RETRIES):
+    def get_account_info(self, account: Pubkey, retries=DEFAULT_MAX_RETRIES):
         def _get_account_info(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
                     response = client.get_account_info(account)
-                    return response["result"]
+                    return response.value
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_account_info, {e}",
@@ -235,10 +246,17 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 
-def _check_error(tx, tx_sig):
-    if "error" in tx:
+def _check_error(tx: GetTransactionResp, tx_sig):
+    if (
+        tx
+        and tx.value
+        and tx.value.transaction
+        and tx.value.transaction.meta
+        and tx.value.transaction.meta.err
+    ):
+        err = tx.value.transaction.meta.err
         logger.error(
-            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {tx['error']}"
+            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {err}"
         )
         raise SolanaTransactionFetchError()
 

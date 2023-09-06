@@ -3,9 +3,12 @@ from datetime import datetime
 from typing import List
 from unittest import mock
 
-from integration_tests.challenges.index_helpers import UpdateTask
-from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
+from integration_tests.challenges.index_helpers import UpdateTask
+from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
@@ -18,8 +21,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 
 def set_patches(mocker):
@@ -345,12 +346,12 @@ def test_index_valid_user(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -419,13 +420,13 @@ def test_index_valid_user(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 8
+        assert len(all_users) == 5
 
         user_1: User = (
             session.query(User)
@@ -783,12 +784,12 @@ def test_index_invalid_users(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -821,7 +822,7 @@ def test_index_invalid_users(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -881,13 +882,13 @@ def test_index_verify_users(app, mocker):
 
         entity_manager_txs = [
             AttributeDict(
-                {"transactionHash": update_task.web3.toBytes(text=tx_receipt)}
+                {"transactionHash": update_task.web3.to_bytes(text=tx_receipt)}
             )
             for tx_receipt in tx_receipts
         ]
 
         def get_events_side_effect(_, tx_receipt):
-            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+            return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
         mocker.patch(
             "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -910,7 +911,7 @@ def test_index_verify_users(app, mocker):
                 entity_manager_txs,
                 block_number=0,
                 block_timestamp=1585336422,
-                block_hash=0,
+                block_hash=hex(0),
             )
             # validate db records
             all_users: List[User] = (
@@ -959,20 +960,20 @@ def test_invalid_user_bio(app, mocker):
 
         entity_manager_txs = [
             AttributeDict(
-                {"transactionHash": update_task.web3.toBytes(text=tx_receipt)}
+                {"transactionHash": update_task.web3.to_bytes(text=tx_receipt)}
             )
             for tx_receipt in tx_receipts
         ]
 
         def get_events_side_effect(_, tx_receipt):
-            return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+            return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
         mocker.patch(
             "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
             side_effect=get_events_side_effect,
             autospec=True,
         )
-
+        populate_mock_db_blocks(db, 0, 1)
         with db.scoped_session() as session:
             total_changes, _ = entity_manager_update(
                 update_task,
@@ -980,24 +981,26 @@ def test_invalid_user_bio(app, mocker):
                 entity_manager_txs,
                 block_number=0,
                 block_timestamp=1585336422,
-                block_hash=0,
+                block_hash=hex(0),
             )
 
             assert total_changes == 0
 
 
 @mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
-def test_self_referrals(bus_mock: mock.MagicMock, app):
+def test_self_referrals(bus_mock: mock.MagicMock, app, mocker):
     """Test that users can't refer themselves"""
     block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
     with app.app_context():
         db = get_db()
         redis = get_redis()
         bus_mock(redis)
-    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
+    with db.scoped_session(), bus_mock.use_scoped_dispatch_queue():
         user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
         events: UserEventMetadata = {"referrer": 1}
-        update_user_events(session, user, events, bus_mock)
+        params = mocker.Mock()
+        params.existing_records = {}
+        update_user_events(user, events, bus_mock, params)
         mock_call = mock.call.dispatch(
             ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
         )
@@ -1148,12 +1151,12 @@ def test_index_empty_bio(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -1187,15 +1190,15 @@ def test_index_empty_bio(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=1,
+            block_number=0,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
     with db.scoped_session() as session:
         # validate db records
         all_users: List[User] = session.query(User).all()
-        assert len(all_users) == 5
+        assert len(all_users) == 3
 
         user_2: User = (
             session.query(User)

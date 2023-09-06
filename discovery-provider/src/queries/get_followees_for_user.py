@@ -1,4 +1,5 @@
 from sqlalchemy.sql import text
+
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.query_helpers import populate_user_metadata
 from src.utils.db_session import get_db_read_replica

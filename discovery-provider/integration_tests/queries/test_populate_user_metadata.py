@@ -36,7 +36,6 @@ def test_populate_user_metadata(app):
                 "playlist_id": 5,
                 "is_delete": False,
                 "playlist_owner_id": 2,
-                "is_current": False,
             },
             {"playlist_id": 6, "is_album": True, "playlist_owner_id": 3},
             {"playlist_id": 6, "is_private": True, "playlist_owner_id": 3},
@@ -108,7 +107,7 @@ def test_populate_user_metadata(app):
 
         assert users[1]["user_id"] == 2
         assert users[1][response_name_constants.track_count] == 4
-        assert users[1][response_name_constants.playlist_count] == 1
+        assert users[1][response_name_constants.playlist_count] == 2
         assert users[1][response_name_constants.album_count] == 0
         assert users[1][response_name_constants.follower_count] == 1
         assert users[1][response_name_constants.followee_count] == 1

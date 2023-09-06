@@ -1,18 +1,20 @@
 # pylint: disable=too-many-lines
 import enum
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from flask import request
 from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
-from src import exceptions
+
+from src import api_helpers, exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
+from src.models.social.subscription import Subscription
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
@@ -123,6 +125,13 @@ class SortMethod(str, enum.Enum):
     most_listens_by_user = "most_listens_by_user"
 
 
+class PurchaseSortMethod(str, enum.Enum):
+    content_title = "content_title"
+    artist_name = "artist_name"
+    buyer_name = "buyer_name"
+    date = "date"
+
+
 class CollectionLibrarySortMethod(str, enum.Enum):
     added_date = "added_date"
     reposts = "reposts"
@@ -148,7 +157,7 @@ class LibraryFilterType(str, enum.Enum):
 
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
-#   if current_user_id available, populates does_current_user_follow, followee_follows
+#   if current_user_id available, populates does_current_user_follow, followee_follows, does_current_user_subscribe
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
@@ -217,9 +226,10 @@ def populate_user_metadata(
 
     follows_current_user_set = set()
     current_user_followed_user_ids = {}
+    current_user_subscribed_user_ids = {}
     current_user_followee_follow_count_dict = {}
     if current_user_id:
-        # collect all incoming and outgoing follow edges for current user.
+        # collect all incoming and outgoing follow edges for current user
         current_user_follow_rows = (
             session.query(Follow.follower_user_id, Follow.followee_user_id)
             .filter(
@@ -243,6 +253,20 @@ def populate_user_metadata(
                 current_user_followed_user_ids[following_id] = True
             else:
                 follows_current_user_set.add(follower_id)
+
+        # collect all outgoing subscription edges for current user
+        current_user_subscribed_rows = (
+            session.query(Subscription)
+            .filter(
+                Subscription.is_current == True,
+                Subscription.is_delete == False,
+                Subscription.user_id.in_(user_ids),
+                Subscription.subscriber_id == current_user_id,
+            )
+            .all()
+        )
+        for subscription in current_user_subscribed_rows:
+            current_user_subscribed_user_ids[subscription.user_id] = True
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -274,6 +298,21 @@ def populate_user_metadata(
 
     for user in users:
         user_id = user["user_id"]
+
+        # Convert image cid to cids for each image size variant
+        profile_cid = user.get("profile_picture_sizes")
+        if profile_cid:
+            profile_cids = api_helpers.get_image_cids(
+                user, profile_cid, api_helpers.PROFILE_PICTURE_SIZES
+            )
+            user["profile_picture_cids"] = profile_cids
+        cover_cid = user.get("cover_photo_sizes")
+        if cover_cid:
+            cover_cids = api_helpers.get_image_cids(
+                user, cover_cid, api_helpers.PROFILE_COVER_PHOTO_SIZES
+            )
+            user["cover_photo_cids"] = cover_cids
+
         user_balance = balance_dict.get(user_id, {})
         user[response_name_constants.track_count] = count_dict.get(user_id, {}).get(
             response_name_constants.track_count, 0
@@ -310,6 +349,9 @@ def populate_user_metadata(
         user[
             response_name_constants.does_current_user_follow
         ] = current_user_followed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.does_current_user_subscribe
+        ] = current_user_subscribed_user_ids.get(user_id, False)
         user[
             response_name_constants.current_user_followee_follow_count
         ] = current_user_followee_follow_count_dict.get(user_id, 0)
@@ -468,6 +510,14 @@ def populate_track_metadata(
 
     for track in tracks:
         track_id = track["track_id"]
+
+        # Convert cover art cid to cids for each image size variant
+        cover_cid = track.get("cover_art_sizes")
+        if cover_cid:
+            cover_cids = api_helpers.get_image_cids(
+                track["user"], cover_cid, api_helpers.COVER_ART_SIZES
+            )
+            track["cover_art_cids"] = cover_cids
 
         if track_has_aggregates:
             aggregate_track = track.get("aggregate_track")
@@ -839,6 +889,15 @@ def populate_playlist_metadata(
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
+
+        # Convert cover art cid to cids for each image size variant
+        cover_cid = playlist.get("playlist_image_sizes_multihash")
+        if cover_cid:
+            cover_cids = api_helpers.get_image_cids(
+                playlist["user"], cover_cid, api_helpers.COVER_ART_SIZES
+            )
+            playlist["cover_art_cids"] = cover_cids
+
         playlist[response_name_constants.repost_count] = count_dict.get(
             playlist_id, {}
         ).get(response_name_constants.repost_count, 0)
@@ -949,7 +1008,7 @@ def get_karma(
     session: Session,
     ids: Tuple[int],
     strategy: TrendingVersion,
-    time: str = None,
+    time: Optional[str] = None,
     is_playlist: bool = False,
     xf: bool = False,
 ):

@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String
 from sqlalchemy.dialects import postgresql
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

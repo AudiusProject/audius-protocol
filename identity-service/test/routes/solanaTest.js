@@ -5,11 +5,22 @@ const sinon = require('sinon')
 const config = require('../../src/config')
 const { getApp } = require('../lib/app')
 
-const { sendInstruction, createUserBankInstruction, garbageProgramInstructions, garbageCreateSenderInstructions, createSenderInstructions } = require('../lib/instructionMocks')
+const {
+  sendInstruction,
+  createUserBankInstruction,
+  garbageProgramInstructions,
+  garbageCreateSenderInstructions,
+  createSenderInstructions
+} = require('../lib/instructionMocks')
 const relayHelpers = require('../../src/utils/relayHelpers')
+const relayUtils = require('../../src/utils/relayUtils')
 
-const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
-const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
+const solanaClaimableTokenProgramAddress = config.get(
+  'solanaClaimableTokenProgramAddress'
+)
+const solanaRewardsManagerProgramId = config.get(
+  'solanaRewardsManagerProgramId'
+)
 
 describe('test Solana util functions', function () {
   it('isSendInstruction', function () {
@@ -18,20 +29,39 @@ describe('test Solana util functions', function () {
   })
 
   it('isRelayAllowedProgram', function () {
-    assert(relayHelpers.isRelayAllowedProgram([{ programId: solanaClaimableTokenProgramAddress }]))
-    assert(relayHelpers.isRelayAllowedProgram([{ programId: solanaRewardsManagerProgramId }]))
+    assert(
+      relayUtils.isRelayAllowedProgram([
+        { programId: solanaClaimableTokenProgramAddress }
+      ])
+    )
+    assert(
+      relayUtils.isRelayAllowedProgram([
+        { programId: solanaRewardsManagerProgramId }
+      ])
+    )
 
-    assert(!relayHelpers.isRelayAllowedProgram([{ programId: 'wrong' }]))
-    assert(!relayHelpers.isRelayAllowedProgram([{ programId: solanaRewardsManagerProgramId }, { programId: 'wrong' }]))
+    assert(!relayUtils.isRelayAllowedProgram([{ programId: 'wrong' }]))
+    assert(
+      !relayUtils.isRelayAllowedProgram([
+        { programId: solanaRewardsManagerProgramId },
+        { programId: 'wrong' }
+      ])
+    )
 
-    assert(relayHelpers.isRelayAllowedProgram(sendInstruction))
-    assert(relayHelpers.isRelayAllowedProgram(createUserBankInstruction))
-    assert(!relayHelpers.isRelayAllowedProgram(garbageProgramInstructions))
+    assert(relayUtils.isRelayAllowedProgram(sendInstruction))
+    assert(relayUtils.isRelayAllowedProgram(createUserBankInstruction))
+    assert(!relayUtils.isRelayAllowedProgram(garbageProgramInstructions))
   })
 
   it('isRelayAlllowedInstruction', async function () {
-    assert(await relayHelpers.areRelayAllowedInstructions(createSenderInstructions))
-    assert(!(await relayHelpers.areRelayAllowedInstructions(garbageCreateSenderInstructions)))
+    assert(
+      await relayHelpers.areRelayAllowedInstructions(createSenderInstructions)
+    )
+    assert(
+      !(await relayHelpers.areRelayAllowedInstructions(
+        garbageCreateSenderInstructions
+      ))
+    )
   })
 })
 

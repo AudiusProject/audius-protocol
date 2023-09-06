@@ -3,6 +3,7 @@ import time
 from datetime import datetime
 
 from sqlalchemy import bindparam, text
+
 from src.models.notifications.notification import Notification
 from src.queries.get_trending_playlists import (
     _get_trending_playlists_with_session,

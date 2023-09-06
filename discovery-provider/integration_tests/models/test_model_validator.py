@@ -1,6 +1,7 @@
 import logging
 
 from jsonschema import ValidationError
+
 from src.model_validator import ModelValidator
 
 logger = logging.getLogger("model_validator")

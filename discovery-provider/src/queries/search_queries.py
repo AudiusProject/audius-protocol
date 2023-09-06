@@ -2,6 +2,7 @@ import logging  # pylint: disable=C0302
 from enum import Enum
 
 from flask import Blueprint, request
+
 from src import api_helpers, exceptions
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.search_es import search_es_full, search_tags_es

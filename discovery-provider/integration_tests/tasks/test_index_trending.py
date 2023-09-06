@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
-import redis
+from web3.types import BlockData
+
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.tasks.index_trending import (
@@ -12,7 +13,7 @@ from src.tasks.index_trending import (
 )
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from web3.types import BlockData
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 
@@ -67,7 +68,7 @@ def test_get_should_update_trending_hour_updates(app):
     last_trending_date = int(BASE_TIME.timestamp())
     last_block_date = int(datetime(2012, 3, 16, 1, 5).timestamp())
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
@@ -89,7 +90,7 @@ def test_get_should_update_trending_less_than_hour_no_update(app):
     last_trending_date = int(BASE_TIME.timestamp())
     last_block_date = int(datetime(2012, 3, 16, 0, 1).timestamp())
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
@@ -110,7 +111,7 @@ def test_get_should_update_trending_fifteen_minutes(app):
     last_trending_date = int(BASE_TIME.timestamp())
     last_block_date = int(datetime(2012, 3, 16, 0, 16).timestamp())
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
@@ -132,7 +133,7 @@ def test_get_should_update_trending_less_fifteen_minutes_no_update(app):
     last_trending_date = int(BASE_TIME.timestamp())
     last_block_date = int(datetime(2012, 3, 16, 0, 14).timestamp())
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     set_last_trending_datetime(redis_conn, last_trending_date)
     with app.app_context():
         db = get_db()
@@ -188,7 +189,7 @@ def test_index_trending(app, mocker):
     }
     last_trending_date = int(BASE_TIME.timestamp())
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     with app.app_context():
         db = get_db()

@@ -3,6 +3,7 @@ from datetime import datetime
 
 import requests
 from flask import Blueprint, request
+
 from src.api_helpers import success_response
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
@@ -50,6 +51,11 @@ def health_check():
         "reactions_max_last_reaction_drift": request.args.get(
             "reactions_max_last_reaction_drift", type=int
         ),
+        "rewards_manager_max_drift": request.args.get(
+            "rewards_manager_max_drift", type=int
+        ),
+        "user_bank_max_drift": request.args.get("user_bank_max_drift", type=int),
+        "spl_audio_max_drift": request.args.get("spl_audio_max_drift", type=int),
     }
     try:
         comms_health = {"comms": requests.get("http://comms:8925/comms").json()}

@@ -1,8 +1,9 @@
 import os
 import subprocess
 
-from integration_tests.conftest import DB_URL
 from sqlalchemy_utils import create_database, database_exists, drop_database
+
+from integration_tests.conftest import DB_URL
 
 
 def test_migration_idempotency():

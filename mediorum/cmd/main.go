@@ -1,9 +1,14 @@
+// 1
+
 package main
 
 import (
 	"flag"
 	"fmt"
+	"log"
 	"mediorum/cmd/loadtest"
+	"mediorum/cmd/reaper"
+	"mediorum/cmd/segments"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -51,29 +56,36 @@ func initClient() *loadtest.TestClient {
 
 func main() {
 
-	// this has been named `test` as ci passes `test` as an arg to all services
-	loadtestCmd := flag.NewFlagSet("test", flag.ExitOnError)
-	loadtestNum := loadtestCmd.Int("num", 10, "number of uploads")
-
-	metricsCmd := flag.NewFlagSet("metrics", flag.ExitOnError)
-
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'test' or 'metrics' subcommands")
-		os.Exit(1)
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments>`")
 	}
 
-	testClient := initClient()
-
 	switch os.Args[1] {
-
 	case "test":
+		// this has been named `test` as ci passes `test` as an arg to all services
+		loadtestCmd := flag.NewFlagSet("test", flag.ExitOnError)
+		loadtestCmdNum := loadtestCmd.Int("num", 10, "number of uploads")
 		loadtestCmd.Parse(os.Args[2:])
-		loadtest.Run(testClient, *loadtestNum)
+		testClient := initClient()
+		loadtest.Run(testClient, *loadtestCmdNum)
 	case "metrics":
+		metricsCmd := flag.NewFlagSet("metrics", flag.ExitOnError)
 		metricsCmd.Parse(os.Args[2:])
+		testClient := initClient()
 		loadtest.RunM(testClient)
+	case "segments":
+		segmentsCmd := flag.NewFlagSet("segments", flag.ExitOnError)
+		segmentsCmdDelete := segmentsCmd.Bool("delete", false, "Delete files and corresponding database rows if set to true")
+		segmentsCmd.Parse(os.Args[2:])
+
+		c := &segments.MediorumClientConfig{
+			Delete: *segmentsCmdDelete,
+		}
+
+		segments.Run(c)
+	case "reaper":
+		reaper.Run()
 	default:
-		fmt.Println("expected 'test' or 'metrics' subcommands")
-		os.Exit(1)
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments|reaper>`")
 	}
 }

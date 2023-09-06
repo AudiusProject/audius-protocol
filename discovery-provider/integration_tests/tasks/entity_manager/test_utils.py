@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import List
 
 import pytest
-from integration_tests.utils import populate_mock_db
 from sqlalchemy import desc
+from web3.datastructures import AttributeDict
+
+from integration_tests.utils import populate_mock_db
 from src.models.indexing.cid_data import CIDData
 from src.models.users.user import User
 from src.tasks.entity_manager.utils import (
@@ -18,7 +20,6 @@ from src.tasks.entity_manager.utils import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db
-from web3.datastructures import AttributeDict
 
 
 def test_save_cid_metadata(app):

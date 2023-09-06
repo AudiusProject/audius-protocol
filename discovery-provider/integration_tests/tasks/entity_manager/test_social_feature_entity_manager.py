@@ -3,6 +3,9 @@ import logging
 from typing import List
 from unittest import mock
 
+from web3 import Web3
+from web3.datastructures import AttributeDict
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
@@ -17,8 +20,6 @@ from src.models.social.subscription import Subscription
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 
@@ -203,12 +204,12 @@ def test_index_valid_social_features(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -222,11 +223,8 @@ def test_index_valid_social_features(app, mocker):
             {"user_id": 2, "handle": "user-2", "wallet": "user2wallet"},
             {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
         ],
-        "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
-        "tracks": [{"track_id": 1, "owner_id": 11}],
-        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
         "playlists": [{"playlist_id": 1, "playlist_owner_id": 11}],
-        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
+        "tracks": [{"track_id": 1, "owner_id": 11}],
         "developer_apps": [
             {
                 "user_id": 1,
@@ -242,7 +240,14 @@ def test_index_valid_social_features(app, mocker):
         ],
     }
 
+    test_social_feature_entities = {
+        "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
+        "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
+        "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
+    }
+
     populate_mock_db(db, entities)
+    populate_mock_db(db, test_social_feature_entities)
 
     with db.scoped_session() as session:
         # index transactions
@@ -252,12 +257,12 @@ def test_index_valid_social_features(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # Verify follows
         all_follows: List[Follow] = session.query(Follow).all()
-        assert len(all_follows) == 3
+        assert len(all_follows) == 2
 
         user_3_follows: List[Follow] = (
             session.query(Follow)
@@ -279,7 +284,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify subscriptions
         all_subscriptions: List[Subscription] = session.query(Subscription).all()
-        assert len(all_subscriptions) == 5
+        assert len(all_subscriptions) == 4
 
         user_1_subscribers: List[Subscription] = (
             session.query(Subscription)
@@ -331,7 +336,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify saves
         all_saves: List[Save] = session.query(Save).all()
-        assert len(all_saves) == 3
+        assert len(all_saves) == 2
 
         current_saves: List[Save] = (
             session.query(Save).filter(Save.is_current == True).all()
@@ -350,7 +355,7 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 4
+        assert len(all_reposts) == 2
 
         current_reposts: List[Repost] = (
             session.query(Repost).filter(Repost.is_current == True).all()
@@ -499,12 +504,12 @@ def test_index_invalid_social_features(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -533,7 +538,7 @@ def test_index_invalid_social_features(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # Verify follows
@@ -580,6 +585,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
             "description": "",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist updated",
+            "playlist_owner_id": 10,
         }
     }
     update_playlist1_json = json.dumps(test_metadata["QmUpdatePlaylist1"])
@@ -630,12 +636,12 @@ def test_index_entity_update_and_social_feature(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -649,12 +655,15 @@ def test_index_entity_update_and_social_feature(app, mocker):
             for i in range(1, 13)
         ],
         "playlists": [{"playlist_id": 1, "playlist_owner_id": 10}],
+    }
+    social_feature_entities = {
         "reposts": [
             {"repost_item_id": 1, "repost_type": "playlist", "user_id": i}
             for i in range(1, 10)
         ],
     }
     populate_mock_db(db, entities)
+    populate_mock_db(db, social_feature_entities)
 
     with db.scoped_session() as session:
         # index transactions
@@ -664,11 +673,11 @@ def test_index_entity_update_and_social_feature(app, mocker):
             entity_manager_txs,
             block_number=2,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 2
+        assert len(all_playlists) == 1
 
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 11
@@ -720,12 +729,12 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -750,7 +759,7 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
             entity_manager_txs,
             block_number=2,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 1
@@ -824,12 +833,12 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -856,7 +865,7 @@ def test_index_social_feature_for_save_of_repost(app, mocker):
             entity_manager_txs,
             block_number=2,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
         all_saves: List[Save] = session.query(Save).all()
         assert len(all_saves) == 3
@@ -937,12 +946,12 @@ def test_index_social_feature_playlist_type(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -970,7 +979,7 @@ def test_index_social_feature_playlist_type(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # Verify saves
@@ -982,7 +991,7 @@ def test_index_social_feature_playlist_type(app, mocker):
         album_save: List[Save] = (
             session.query(Save).filter(Save.save_item_id == 2).first()
         )
-        assert album_save.save_type == "album"
+        assert album_save.save_type == "playlist"
 
         # Verify repost
         playlist_repost: List[Repost] = (
@@ -993,7 +1002,7 @@ def test_index_social_feature_playlist_type(app, mocker):
         album_repost: List[Repost] = (
             session.query(Repost).filter(Repost.repost_item_id == 2).first()
         )
-        assert album_repost.repost_type == "album"
+        assert album_repost.repost_type == "playlist"
 
         aggregate_playlist: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
@@ -1061,12 +1070,12 @@ def test_index_social_feature_hidden_item(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
     def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -1092,7 +1101,7 @@ def test_index_social_feature_hidden_item(app, mocker):
             entity_manager_txs,
             block_number=2,
             block_timestamp=1585336422,
-            block_hash=0,
+            block_hash=hex(0),
         )
         all_reposts: List[Repost] = session.query(Repost).all()
         all_favorites: List[Save] = session.query(Save).all()

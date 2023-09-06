@@ -66,22 +66,6 @@ func (ds *DelistStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
-	blacklisted := false
-	sql := `SELECT COALESCE(
-	                (SELECT "delisted"
-	                 FROM "track_delist_statuses"
-	                 WHERE "trackCid" = $1
-	                 ORDER BY "createdAt" DESC
-	                 LIMIT 1),
-	            false)`
-	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
-	if err != nil {
-		ss.logger.Error("isCidBlacklisted error", "err", err, "cid", cid)
-	}
-	return blacklisted
-}
-
 func (ss *MediorumServer) serveTrackDelistStatus(c echo.Context) error {
 	ctx := c.Request().Context()
 
@@ -297,4 +281,20 @@ func (ss *MediorumServer) insertDelistStatuses(ctx context.Context, dss []Delist
 		return err
 	}
 	return nil
+}
+
+func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
+	blacklisted := false
+	sql := `SELECT COALESCE(
+	                (SELECT "delisted"
+	                 FROM "track_delist_statuses"
+	                 WHERE "trackCid" = $1
+	                 ORDER BY "createdAt" DESC
+	                 LIMIT 1),
+	            false)`
+	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
+	if err != nil {
+		ss.logger.Error("isCidBlacklisted error", "err", err, "cid", cid)
+	}
+	return blacklisted
 }

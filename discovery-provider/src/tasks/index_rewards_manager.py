@@ -3,12 +3,19 @@ import datetime
 import logging
 import time
 from decimal import Decimal
-from typing import Callable, Dict, List, Optional, TypedDict
+from typing import Callable, Dict, List, Optional, TypedDict, cast
 
 import base58
 from redis import Redis
+from solders.instruction import CompiledInstruction
+from solders.message import Message
+from solders.pubkey import Pubkey
+from solders.transaction import Transaction
+from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
+from src.exceptions import SolanaTransactionFetchError
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -31,12 +38,6 @@ from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
     parse_instruction_data,
-)
-from src.solana.solana_transaction_types import (
-    ResultMeta,
-    TransactionInfoResult,
-    TransactionMessage,
-    TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
@@ -104,7 +105,7 @@ class RewardTransferInstruction(TypedDict):
 class RewardManagerTransactionInfo(TypedDict):
     tx_sig: str
     slot: int
-    timestamp: int
+    timestamp: int | None
     transfer_instruction: Optional[RewardTransferInstruction]
 
 
@@ -172,32 +173,35 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta
-) -> Optional[TransactionMessageInstruction]:
+    tx_message: Message, meta: UiTransactionStatusMeta
+) -> Optional[CompiledInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
     checks accounts keys for rewards manager account
     checks for rewards manager program in instruction
     """
     try:
-        account_keys = tx_message["accountKeys"]
+        account_keys = tx_message.account_keys
         has_transfer_instruction = any(
-            log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
+            log == "Program log: Instruction: Transfer"
+            for log in (meta.log_messages or [])
         )
 
         if not has_transfer_instruction:
             return None
 
-        if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
+        if not any(REWARDS_MANAGER_ACCOUNT == str(key) for key in account_keys):
             logger.error(
                 "index_rewards_manager.py | Rewards manager account missing from account keys"
             )
             return None
 
-        instructions = tx_message["instructions"]
-        rewards_manager_program_index = account_keys.index(REWARDS_MANAGER_PROGRAM)
+        instructions = tx_message.instructions
+        rewards_manager_program_index = account_keys.index(
+            Pubkey.from_string(REWARDS_MANAGER_PROGRAM)
+        )
         for instruction in instructions:
-            if instruction["programIdIndex"] == rewards_manager_program_index:
+            if instruction.program_id_index == rewards_manager_program_index:
                 return instruction
 
         return None
@@ -211,7 +215,7 @@ def get_valid_instruction(
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client_manager: SolanaClientManager, tx_sig: str
-) -> RewardManagerTransactionInfo:
+) -> Optional[RewardManagerTransactionInfo]:
     """Fetches metadata for rewards transfer transactions and parses data
 
     Fetches the transaction metadata from solana using the tx signature
@@ -221,25 +225,31 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     """
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        result: TransactionInfoResult = tx_info["result"]
+        result = tx_info.value
+        if not result:
+            raise Exception("Missing txinfo")
         # Create transaction metadata
         tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
-            "slot": result["slot"],
-            "timestamp": result["blockTime"],
+            "slot": result.slot,
+            "timestamp": result.block_time,
             "transfer_instruction": None,
         }
-        meta = result["meta"]
-        if meta["err"]:
+        meta = result.transaction.meta
+        if not meta:
+            return tx_metadata
+        if meta.err:
             logger.info(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
             return tx_metadata
-        tx_message = result["transaction"]["message"]
+        tx_message = cast(Transaction, result.transaction.transaction).message
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return tx_metadata
-        transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
+        transfer_instruction_data = parse_transfer_instruction_data(
+            str(instruction.data)
+        )
         amount = transfer_instruction_data["amount"]
         eth_recipient = transfer_instruction_data["eth_recipient"]
         id = transfer_instruction_data["id"]
@@ -248,10 +258,12 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             return tx_metadata
 
         challenge_id, specifier = transfer_instruction
-        receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
-        account_keys = tx_message["accountKeys"]
+        receiver_index = instruction.accounts[TRANSFER_RECEIVER_ACCOUNT_INDEX]
+        account_keys = list(map(lambda key: str(key), tx_message.account_keys))
         receiver_user_bank = account_keys[receiver_index]
-        balance_changes = get_solana_tx_token_balance_changes(meta=meta, account_keys=account_keys)
+        balance_changes = get_solana_tx_token_balance_changes(
+            meta=meta, account_keys=account_keys
+        )
         if receiver_user_bank not in balance_changes:
             raise Exception("Reward recipient balance missing!")
         tx_metadata["transfer_instruction"] = {
@@ -263,6 +275,8 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             "postbalance": balance_changes[receiver_user_bank]["post_balance"],
         }
         return tx_metadata
+    except SolanaTransactionFetchError:
+        return None
     except Exception as e:
         logger.error(
             f"index_rewards_manager.py | Error processing {tx_sig}, {e}", exc_info=True
@@ -312,7 +326,7 @@ def process_batch_sol_reward_manager_txs(
         challenge_disbursements = []
         audio_tx_histories = []
         for tx in reward_manager_txs:
-            timestamp = datetime.datetime.utcfromtimestamp(tx["timestamp"])
+            timestamp = datetime.datetime.utcfromtimestamp(float(tx["timestamp"] or 0))
             # Add transaction
             session.add(
                 RewardManagerTransaction(
@@ -467,7 +481,7 @@ def get_transaction_signatures(
             )
             is_initial_fetch = False
 
-            transactions_array = transactions_history["result"]
+            transactions_array = transactions_history.value
             if not transactions_array:
                 intersection_found = True
                 logger.info(
@@ -477,15 +491,15 @@ def get_transaction_signatures(
                 # Current batch of transactions
                 transaction_signature_batch = []
                 for tx_info in transactions_array:
-                    tx_sig = tx_info["signature"]
-                    tx_slot = tx_info["slot"]
+                    tx_sig = str(tx_info.signature)
+                    tx_slot = tx_info.slot
                     logger.debug(
                         f"index_rewards_manager.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
-                    if tx_info["slot"] > latest_processed_slot:
+                    if tx_info.slot > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx_info["slot"] <= latest_processed_slot and (
-                        min_slot is None or tx_info["slot"] > min_slot
+                    elif tx_info.slot <= latest_processed_slot and (
+                        min_slot is None or tx_info.slot > min_slot
                     ):
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
@@ -503,7 +517,7 @@ def get_transaction_signatures(
 
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
-                last_tx_signature = last_tx["signature"]
+                last_tx_signature = last_tx.signature
 
                 # Append batch of processed signatures
                 if transaction_signature_batch:

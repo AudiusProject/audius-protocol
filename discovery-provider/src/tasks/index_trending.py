@@ -6,6 +6,8 @@ from typing import List, Optional, Tuple
 from redis import Redis
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
@@ -36,7 +38,6 @@ from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
 from src.utils.web3_provider import get_web3
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
@@ -184,7 +185,7 @@ def get_top_trending_to_notify(db):
 
 
 def index_trending_notifications(
-    db: SessionManager, timestamp: int, top_trending: List[Track]
+    db: SessionManager, timestamp: int, top_trending: List[dict]
 ):
     # Get the top 5 trending tracks from the new trending calculations
     # Get the most recent trending tracks notifications

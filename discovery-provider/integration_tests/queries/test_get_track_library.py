@@ -4,7 +4,6 @@ from integration_tests.utils import populate_mock_db
 from src.queries.get_track_library import (
     GetTrackLibraryArgs,
     LibraryFilterType,
-    SortDirection,
     SortMethod,
     _get_track_library,
 )
@@ -419,15 +418,15 @@ def test_all_filter(session):
 def test_tracks_query(session):
     # Test it with all query path
     # TODO: [PAY-1643] Enable this test again
-    # args = GetTrackLibraryArgs(
-    #     user_id=1287290,
-    #     current_user_id=1287290,
-    #     limit=10,
-    #     offset=0,
-    #     filter_type=LibraryFilterType.all,
-    #     filter_deleted=False,
-    #     query="some_title",
-    # )
+    args = GetTrackLibraryArgs(
+        user_id=1287290,
+        current_user_id=1287290,
+        limit=10,
+        offset=0,
+        filter_type=LibraryFilterType.all,
+        filter_deleted=False,
+        query="some_title",
+    )
 
     # track_library = _get_track_library(args, session)
     # assert len(track_library) == 1, "should return 1 track"

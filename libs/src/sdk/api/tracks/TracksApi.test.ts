@@ -84,7 +84,7 @@ describe('TracksApi', () => {
       new Configuration(),
       new DiscoveryNodeSelector(),
       new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager(),
+      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       new Logger()
     )

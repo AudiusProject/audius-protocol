@@ -28,7 +28,7 @@ program.command("create-playlist")
         playlist_contents: {
           track_ids: trackIds.map(trackId => ({
             track: Number(trackId),
-            metadata_time: Date.now(),
+            metadata_time: Date.now() / 1000,
           }))
         }
       }

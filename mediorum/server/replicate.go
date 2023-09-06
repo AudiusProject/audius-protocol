@@ -2,23 +2,26 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mediorum/cidutil"
+	"mediorum/crudr"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
-	"os"
+	"net/url"
+	"strings"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
 	logger := ss.logger.With("task", "replicate", "cid", fileName)
 
 	success := []string{}
-	preferred, _ := ss.rendezvous(fileName)
+	preferred, _ := ss.rendezvousHealthyHosts(fileName)
 	for _, peer := range preferred {
 		logger := logger.With("to", peer)
 
@@ -74,7 +77,7 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 			Host:      ss.Config.Self.Host,
 			Key:       fileName,
 			CreatedAt: time.Now().UTC(),
-		})
+		}, crudr.WithSkipBroadcast())
 	}
 
 	return nil
@@ -96,7 +99,7 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
 	if found.Error == nil {
 		logger.Info("deleting blob record")
-		return ss.crud.Delete(existingBlob)
+		return ss.crud.Delete(existingBlob, crudr.WithSkipBroadcast())
 	}
 
 	return nil
@@ -138,7 +141,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}()
 
 	req := signature.SignedPost(
-		peer+"/internal/blobs?cid="+fileName,
+		peer+"/internal/blobs",
 		m.FormDataContentType(),
 		r,
 		ss.Config.privateKey,
@@ -159,13 +162,12 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	return <-errChan
 }
 
-// this is a "quick check" that a host has a blob
-// used for checking host has blob before redirecting to it
+// hostHasBlob is a "quick check" that a host has a blob (used for checking host has blob before redirecting to it).
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
-		Timeout: time.Second,
+		Timeout: 2 * time.Second,
 	}
-	u := apiPath(host, "internal/blobs/info", key)
+	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return false
@@ -179,6 +181,44 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	return has.StatusCode == 200
 }
 
+// raceHostHasBlob tries batches of 5 hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
+func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) string {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(5)
+	hostWithKeyCh := make(chan string, 1)
+
+	for _, host := range hostsWithKey {
+		if host == ss.Config.Self.Host {
+			continue
+		}
+		h := host
+		g.Go(func() error {
+			if ss.hostHasBlob(h, key) {
+				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
+				select {
+				case hostWithKeyCh <- h:
+					cancel()
+				case <-ctx.Done():
+				}
+			}
+			return nil
+		})
+	}
+
+	go func() {
+		g.Wait()
+		close(hostWithKeyCh)
+	}()
+
+	host, ok := <-hostWithKeyCh
+	if ok {
+		return host
+	}
+	return ""
+}
+
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	if host == ss.Config.Self.Host {
 		return errors.New("should not pull blob from self")
@@ -186,7 +226,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	u := apiPath(host, "internal/blobs", cid)
+	u := apiPath(host, "internal/blobs", url.PathEscape(cid))
 
 	req, err := signature.SignedGet(u, ss.Config.privateKey, ss.Config.Self.Host)
 	if err != nil {
@@ -206,32 +246,12 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 	return ss.replicateToMyBucket(cid, resp.Body)
 }
 
-func (ss *MediorumServer) moveFromDiskToMyBucket(diskPath string, key string, checkIsMetadata bool) error {
-	source, err := os.Open(diskPath)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	// ignore this file if it's a metadata file
-	if checkIsMetadata {
-		bytes, err := io.ReadAll(source)
-		if err != nil {
-			return err
-		}
-		var jsonData map[string]interface{}
-		err = json.Unmarshal(bytes, &jsonData)
-		if err == nil {
-			// if unmarshal is successful, it's a JSON/metadata file (not an image or track)
-			return nil
-		}
+// if the node is using local (disk) storage, do not replicate if there is <200GB remaining (i.e. 10% of 2TB)
+func (ss *MediorumServer) shouldReplicate() bool {
+	// don't worry about running out of space on dev or stage
+	if ss.Config.Env != "prod" {
+		return true
 	}
 
-	// write to bucket, record in blobs table that we have it, and delete the original file from disk
-	err = ss.replicateToMyBucket(key, source)
-	if err == nil {
-		return os.Remove(diskPath)
-	} else {
-		return err
-	}
+	return !strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") || ss.mediorumPathFree/uint64(1e9) > 200
 }

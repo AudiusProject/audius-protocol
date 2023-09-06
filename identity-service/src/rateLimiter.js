@@ -275,7 +275,10 @@ const getRelayRateLimiterMiddleware = () => {
       try {
         const key = getEntityManagerActionKey(req.body.encodedABI)
         const signer = recoverSigner(req.body.encodedABI)
-        req.logger.error(`Rate limited sender ${signer} performing ${key}`)
+        req.logger.error(
+          { _signer: signer, isApp: req.isFromApp },
+          `Rate limited sender ${signer} performing ${key}`
+        )
       } catch (error) {
         req.logger.error(`Cannot relay without sender address`)
       }

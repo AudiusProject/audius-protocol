@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import pytz
+
 from src.monitors import monitor_names, monitors
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 

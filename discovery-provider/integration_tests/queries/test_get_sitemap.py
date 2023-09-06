@@ -4,12 +4,18 @@ from unittest import mock
 from integration_tests.utils import populate_mock_db
 from src.queries.get_sitemap import (
     build_default,
+    get_max_playlist_count,
+    get_max_track_count,
+    get_max_user_count,
     get_playlist_page,
     get_playlist_root,
+    get_playlist_slugs,
     get_track_page,
     get_track_root,
+    get_track_slugs,
     get_user_page,
     get_user_root,
+    get_user_slugs,
 )
 from src.utils.db_session import get_db
 
@@ -64,7 +70,7 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             default_sitemap = build_default()
             assert (
                 default_sitemap
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://audius.co/legal/privacy-policy</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/legal/terms-of-use</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/download</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/feed</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/trending</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/playlists</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/underground</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/top-albums</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/remixables</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/feeling-lucky</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/chill</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/upbeat</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/intense</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/provoking</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/intimate</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/signup</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/signin</loc>\n  </url>\n</urlset>\n'
+                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://audius.co/legal/privacy-policy</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/legal/terms-of-use</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/download</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/feed</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/trending</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/upload</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/favorites</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/history</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/messages</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/dashboard</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/playlists</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/underground</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/top-albums</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/remixables</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/feeling-lucky</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/chill</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/upbeat</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/intense</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/provoking</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/explore/intimate</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/signup</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/signin</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/audio</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/settings</loc>\n  </url>\n</urlset>\n'
             )
 
             # Validate that there are 7 track sitemaps  - 10 total track / 3 user per sitemap = 4
@@ -129,3 +135,64 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
                 user_page_3
                 == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://audius.co/user_16</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_17</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_18</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_19</loc>\n  </url>\n</urlset>\n'
             )
+
+
+@mock.patch("src.queries.get_sitemap.get_client_base_url")
+@mock.patch("src.queries.get_sitemap.set_base_url")
+def test_get_sitemaps_correct_counts(mock_set_base_url, mock_get_client_base_url, app):
+    """Tests that counts are correct"""
+    with app.app_context():
+        db = get_db()
+
+        mock_set_base_url.return_value = "https://discoveryprovider.audius.co"
+        mock_get_client_base_url.return_value = "https://audius.co"
+
+        test_entities = {
+            "playlists": [
+                {
+                    "playlist_id": i,
+                    "playlist_owner_id": i,
+                    "playlist_name": f"p_name_{i}",
+                    "is_album": i % 2 == 0,
+                }
+                for i in range(10)
+            ],
+            "playlist_routes": [
+                {
+                    "playlist_id": i,
+                    "owner_id": i,
+                    "slug": f"p_slug_{i}",
+                    "title_slug": f"p_title_slug_{i}",
+                }
+                for i in range(10)
+            ],
+            "tracks": [{"track_id": i, "owner_id": i} for i in range(10)],
+            "track_routes": [
+                {
+                    "track_id": i,
+                    "owner_id": i,
+                    "slug": f"slug_{i}",
+                    "title_slug": f"title_slug_{i}",
+                }
+                for i in range(10)
+            ],
+            "users": [{"user_id": i, "handle": f"user_{i}"} for i in range(20)],
+        }
+
+        populate_mock_db(db, test_entities)
+
+        with db.scoped_session() as session:
+            num_tracks = get_max_track_count(session)
+            # Bogus limit/offset to make sure we collect everything
+            track_slugs = get_track_slugs(session, 100, 0)
+            assert num_tracks == len(track_slugs)
+
+            num_playlists = get_max_playlist_count(session)
+            # Bogus limit/offset to make sure we collect everything
+            playlist_slugs = get_playlist_slugs(session, 100, 0)
+            assert num_playlists == len(playlist_slugs)
+
+            num_users = get_max_user_count(session)
+            # Bogus limit/offset to make sure we collect everything
+            user_slugs = get_user_slugs(session, 100, 0)
+            assert num_users == len(user_slugs)

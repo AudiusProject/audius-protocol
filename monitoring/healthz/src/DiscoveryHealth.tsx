@@ -1,9 +1,10 @@
 import useSWR from 'swr'
 import {
-  EnvironmentSelector,
   useEnvironmentSelection,
 } from './components/EnvironmentSelector'
 import { SP, useServiceProviders } from './useServiceProviders'
+import { RelTime } from './misc'
+import './DiscoveryHealth.css'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -13,6 +14,7 @@ export function DiscoveryHealth() {
   const { data: sps, error } = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content-node'
+  const isDiscovery = nodeType == 'discovery-node'
 
   if (error) return <div>error</div>
   if (!sps) return null
@@ -22,22 +24,29 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
-            <th>Block Diff</th>
+            {isDiscovery && <th>Block Diff</th>}
             <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
             <th>Compose</th>
             <th>Auto Upgrade</th>
-            {isContent && <th>selectedDiscoveryProvider</th>}
-            <th>Storage</th>
+            {isContent && <th>Backend</th>}
+            {isDiscovery && <th>Storage</th>}
+            {isContent && <th>Storage (legacy)</th>}
+            {isContent && <th>Storage (mediorum)</th>}
             <th>DB Size</th>
             <th>Your IP</th>
-            <th>ACDC Health</th>
-            <th>Is Signer</th>
-            <th>Peers</th>
-            <th>Producing</th>
-            <th>ACDC Block</th>
-            <th>ACDC Block Hash</th>
+            {isDiscovery && <th>ACDC Health</th>}
+            {isDiscovery && <th>Is Signer</th>}
+            {isDiscovery && <th>Peers</th>}
+            {isDiscovery && <th>Producing</th>}
+            {isDiscovery && <th>ACDC Block</th>}
+            {isDiscovery && <th>ACDC Block Hash</th>}
+            {isContent && <th>Started</th>}
+            {isContent && <th>Uploads</th>}
+            {isContent && <th>Healthy Peers {'<'}2m</th>}
+            {isContent && <th>Reaper</th>}
+            {isContent && <th>PartitionOps</th>}
             <th>Registered Wallet</th>
           </tr>
         </thead>
@@ -57,9 +66,36 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     sp.endpoint + '/ip_check',
     fetcher
   )
+  const { data: metrics } = useSWR(sp.endpoint + '/internal/metrics', fetcher)
 
   const health = data?.data
   const yourIp = ipCheck?.data
+
+  // can remove when legacy reaper complete on all nodes
+  const { data: reaperData, error: reaperError } = useSWR(sp.endpoint + '/internal/logs/reaper', fetcher);
+  const lastReaperLogLine = reaperData?.[reaperData.length - 2] || null;
+  const reaperDisplayMessage = reaperError
+    ? "error"
+    : lastReaperLogLine?.includes('End')
+      ? "COMPLETE"
+      : lastReaperLogLine?.includes('Start')
+        ? "STARTED"
+        : lastReaperLogLine?.includes('Sleeping')
+          ? "NOOP"
+          : lastReaperLogLine;
+  // end reaper
+
+  // can remove when partition ops complete on all nodes
+  const { data: pOpsData, error: pOpsError } = useSWR(sp.endpoint + '/internal/logs/partition-ops', fetcher);
+  const filteredPOpsData = Array.isArray(pOpsData) ? pOpsData.filter(line => typeof line === 'string' && line.trim() !== "") : [];
+  const lastPOpsLogLine = filteredPOpsData[filteredPOpsData.length - 1] || null;
+  const pOpsDisplayMessage = pOpsError
+    ? "error"
+    : lastPOpsLogLine?.includes('finished')
+      ? "COMPLETE"
+      : lastPOpsLogLine?.includes('start')
+        ? "STARTED" : lastPOpsLogLine;
+  // end partition ops
 
   if (!health || !yourIp)
     return (
@@ -73,6 +109,21 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </tr>
     )
 
+  // calculate healthy peers counts
+  const now = new Date()
+  const twoMinutesAgoDate = new Date(now.getTime() - 2 * 60 * 1000)
+  let healthyPeers2m = 0
+  if (health?.peerHealths) {
+    for (const endpoint of Object.keys(health.peerHealths)) {
+      const peerHealth = health.peerHealths[endpoint]
+      const healthDate = new Date(peerHealth?.lastHealthy)
+      if (!isNaN(healthDate.getTime()) && healthDate > twoMinutesAgoDate) {
+        healthyPeers2m++
+      }
+    }
+  }
+  const unreachablePeers = health.unreachablePeers?.join(', ')
+
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
   const composeSha =
     health['audius-docker-compose'] || health['audiusDockerCompose']
@@ -81,6 +132,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const fsSize =
     bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
+  const mediorumUsed = bytesToGb(health.mediorumPathUsed)
+  const mediorumSize = bytesToGb(health.mediorumPathSize)
+  const mediorumPercent = mediorumUsed / mediorumSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
@@ -111,7 +165,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
-      <td className={isBehind}>{health.block_difference}</td>
+      {!isContent && <td className={isBehind}>{health.block_difference}</td>}
       <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
@@ -135,14 +189,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       <td>{autoUpgradeEnabled && '✓'}</td>
       {isContent && (
-        <td>
-          <a
-            href={`${health.selectedDiscoveryProvider}/health_check`}
-            target="_blank"
-          >
-            {health.selectedDiscoveryProvider}
-          </a>
-        </td>
+        <td>{health.blobStorePrefix}</td>
       )}
       <td>
         <progress value={storagePercent} />
@@ -151,16 +198,49 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {fsUsed} / {fsSize} GB
         </span>
       </td>
+      {isContent && (
+        <td>
+          <progress value={mediorumPercent} />
+          <br></br>
+          <span>
+            {mediorumUsed} / {mediorumSize} GB
+          </span>
+        </td>
+      )}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
-      <td>{health.chain_health?.status}</td>
-      <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>
-      <td>{getPeers(chainDescription)}</td>
-      <td>{getProducing(chainDescription)}</td>
-      <td>{health.chain_health?.block_number}</td>
-      <td>
+      {!isContent && (<td>{health.chain_health?.status}</td>)}
+      {!isContent && <td>{isSigner(data?.signer, health.chain_health?.signers)}</td>}
+      {!isContent && <td>{getPeers(chainDescription)}</td>}
+      {!isContent && <td>{getProducing(chainDescription)}</td>}
+      {!isContent && <td>{health.chain_health?.block_number}</td>}
+      {!isContent && (<td>
         <pre>{health.chain_health?.hash}</pre>
-      </td>
+      </td>)}
+      {isContent && (<td>
+        <RelTime date={health?.startedAt} />
+      </td>)}
+      {isContent && <td>{metrics?.uploads}</td>}
+      {isContent && (
+        <td className="unreachable-peers">
+          {healthyPeers2m}
+          {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
+        </td>
+      )}
+      {isContent &&
+        <td>
+          <a href={sp.endpoint + '/internal/logs/reaper'} target="_blank">
+            {reaperDisplayMessage}
+          </a>
+        </td>
+      }
+      {isContent &&
+        <td>
+          <a href={sp.endpoint + '/internal/logs/partition-ops'} target="_blank">
+            {pOpsDisplayMessage}
+          </a>
+        </td>
+      }
       <td>
         <pre>{sp.delegateOwnerWallet}</pre>
       </td>

@@ -7,6 +7,7 @@ from typing import Dict, Optional, Tuple, TypedDict, cast
 import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
+
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 from src.models.indexing.block import Block
 from src.monitors import monitor_names, monitors
@@ -164,6 +165,13 @@ class GetHealthArgs(TypedDict):
     reactions_max_indexing_drift: Optional[int]
     reactions_max_last_reaction_drift: Optional[int]
 
+    # Number of seconds rewards manager txs are allowed to drift
+    rewards_manager_max_drift: Optional[int]
+    # Number of seconds user bank txs are allowed to drift
+    user_bank_max_drift: Optional[int]
+    # Number of seconds user bank txs are allowed to drift
+    spl_audio_max_drift: Optional[int]
+
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
@@ -178,7 +186,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
+    reactions_max_indexing_drift = args.get("reactions_max_indexing_drift")
+    reactions_max_last_reaction_drift = args.get("reactions_max_last_reaction_drift")
     plays_count_max_drift = args.get("plays_count_max_drift")
+    rewards_manager_max_drift = args.get("rewards_manager_max_drift")
+    user_bank_max_drift = args.get("user_bank_max_drift")
+    spl_audio_max_drift = args.get("spl_audio_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
@@ -231,13 +244,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash = db_block_state["blockhash"]
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    rewards_manager_health_info = get_rewards_manager_health_info(redis)
-    user_bank_health_info = get_user_bank_health_info(redis)
-    spl_audio_info = get_spl_audio_info(redis)
+    rewards_manager_health_info = get_rewards_manager_health_info(redis, rewards_manager_max_drift)
+    user_bank_health_info = get_user_bank_health_info(redis, user_bank_max_drift)
+    spl_audio_info = get_spl_audio_info(redis, spl_audio_max_drift)
     reactions_health_info = get_reactions_health_info(
         redis,
-        args.get("reactions_max_indexing_drift"),
-        args.get("reactions_max_last_reaction_drift"),
+        reactions_max_indexing_drift,
+        reactions_max_last_reaction_drift,
     )
 
     trending_tracks_age_sec = get_elapsed_time_redis(

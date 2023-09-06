@@ -40,7 +40,6 @@ import {
   createUpdatePlaylistMetadataSchema
 } from './types'
 import { retry3 } from '../../utils/retry'
-import { generateMetadataCidV1 } from '../../utils/cid'
 import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
 import { pick } from 'lodash'
@@ -103,15 +102,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
 
     // Write playlist metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
-
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.CREATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -511,7 +508,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             coverArtResponse
           )
 
-        const metadataCid = await generateMetadataCidV1(updatedMetadata)
         const trackId = await this.trackUploadHelper.generateId('track')
         await this.entityManager.manageEntity({
           userId,
@@ -519,7 +515,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           entityId: trackId,
           action: Action.CREATE,
           metadata: JSON.stringify({
-            cid: metadataCid.toString(),
+            cid: '',
             data: snakecaseKeys(updatedMetadata)
           }),
           auth: this.auth,
@@ -547,15 +543,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
 
     // Write playlist metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
-
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.CREATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -620,14 +614,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         : {})
     }
 
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
     return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

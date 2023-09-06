@@ -1,4 +1,5 @@
 from sqlalchemy import and_
+
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.utils import helpers
@@ -26,6 +27,6 @@ def get_track_stream_info(track_id: int):
         )
 
         if not info:
-            return {"creator_nodes": None, "track": None}
+            return {"creator_nodes": None, "track": {}}
 
         return {"creator_nodes": info[0], "track": helpers.model_to_dictionary(info[1])}

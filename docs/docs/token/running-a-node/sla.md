@@ -6,7 +6,7 @@ In staking tokens and operating a service, you agree to adhere to meeting the Se
 
 Audius protocol adheres to semantic versioning. Optional auto-upgrade tooling is provided for discrentionary use to make compliance easy. https://github.com/AudiusProject/audius-docker-compose#upgrading
 
-Ratified in governance vote: TODO
+Ratified in governance vote: https://dashboard.audius.org/#/governance/proposal/128
 
 ### Major & Minor Versions
 

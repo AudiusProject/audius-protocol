@@ -2,9 +2,10 @@ import json
 import logging
 from collections import defaultdict
 from contextlib import contextmanager
-from typing import Any, DefaultDict, Dict, List, Tuple, TypedDict
+from typing import Any, DefaultDict, Dict, List, Optional, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
@@ -85,7 +86,7 @@ class ChallengeEventBus:
         event: ChallengeEvent,
         block_number: int,
         user_id: int,
-        extra: Dict = None,
+        extra: Optional[Dict] = None,
     ):
         """Dispatches an event + block_number + user_id to an in memory queue.
 

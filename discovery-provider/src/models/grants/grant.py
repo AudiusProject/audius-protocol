@@ -1,4 +1,14 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    text,
+)
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
@@ -6,8 +16,8 @@ from src.models.model_utils import RepresentableMixin
 class Grant(Base, RepresentableMixin):
     __tablename__ = "grants"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
-    blocknumber = Column(ForeignKey("blocks.number"))  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
     grantee_address = Column(String, primary_key=True, nullable=False)
     user_id = Column(Integer, primary_key=True, nullable=False)
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))

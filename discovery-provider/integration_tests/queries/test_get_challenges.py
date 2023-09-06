@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import redis
 from sqlalchemy.orm import Session
+
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
@@ -23,6 +23,7 @@ from src.models.users.user import User
 from src.queries.get_challenges import get_challenges
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 DEFAULT_EVENT = ""
@@ -239,7 +240,7 @@ def setup_db(session):
     session.commit()
     session.add_all(disbursements)
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     challenge_types = [
         "boolean_challenge_1",
@@ -413,7 +414,7 @@ def setup_extra_metadata_test(session):
     session.add_all(user_challenges)
     session.commit()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(
         DEFAULT_EVENT, ChallengeManager("numeric_1", NumericCustomUpdater())
@@ -495,7 +496,7 @@ def setup_verified_test(session):
     session.add_all(challenges)
     session.commit()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(DEFAULT_EVENT, referral_challenge_manager)
     bus.register_listener(DEFAULT_EVENT, verified_referral_challenge_manager)
@@ -609,7 +610,7 @@ def setup_listen_streak_challenge(session):
     session.add_all(listen_streak_challenges)
     session.commit()
 
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     bus.register_listener(DEFAULT_EVENT, listen_streak_challenge_manager)
     return bus

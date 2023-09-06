@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import DefaultDict
 
 import sqlalchemy as sa
+
 from src.models.social.play import Play
 from src.models.users.user_listening_history import UserListeningHistory
 from src.tasks.celery_app import celery

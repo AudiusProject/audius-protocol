@@ -6,11 +6,15 @@ import type { AuthService } from './types'
  */
 export class AppAuth implements AuthService {
   private readonly apiKey: string
-  private readonly apiSecret: string
+  private readonly apiSecret: string | null
 
-  constructor(apiKey: string, apiSecret: string) {
+  constructor(apiKey: string, apiSecret?: string | null) {
     this.apiKey = apiKey.replace(/^0x/, '')
-    this.apiSecret = apiSecret.replace(/^0x/, '')
+    if (apiSecret) {
+      this.apiSecret = apiSecret.replace(/^0x/, '')
+    } else {
+      this.apiSecret = null
+    }
   }
 
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
@@ -27,6 +31,11 @@ export class AppAuth implements AuthService {
   }
 
   signTransaction = async (data: MessageData<EIP712TypedData>['data']) => {
+    if (!this.apiSecret) {
+      throw new Error(
+        'AppAuth cannot `signTransaction` because apiSecret was not provided when initializing the SDK.'
+      )
+    }
     return signTypedData(Buffer.from(this.apiSecret, 'hex'), {
       data
     })

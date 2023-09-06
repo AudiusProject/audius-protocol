@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
+
+from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.tasks.index_tastemaker_notifications import index_tastemaker_notifications
 from src.utils.config import shared_config

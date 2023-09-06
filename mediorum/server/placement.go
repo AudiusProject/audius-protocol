@@ -1,23 +1,37 @@
 package server
 
 import (
-	"mediorum/cidutil"
 	"time"
 
 	"github.com/tysonmote/rendezvous"
 	"golang.org/x/exp/slices"
 )
 
-func (ss *MediorumServer) rendezvous(h string) ([]string, bool) {
-	hosts := ss.findHealthyPeers(5 * time.Minute)
+func (ss *MediorumServer) rendezvousAllHosts(key string) ([]string, bool) {
+	allHosts := []string{}
+	for _, peer := range ss.Config.Peers {
+		allHosts = append(allHosts, peer.Host)
+	}
+	return ss.rendezvousHosts(key, allHosts)
+}
+
+func (ss *MediorumServer) rendezvousHealthyHosts(key string) ([]string, bool) {
+	return ss.rendezvousHosts(key, ss.findHealthyPeers(1*time.Hour))
+}
+
+func (ss *MediorumServer) rendezvousHosts(key string, hosts []string) ([]string, bool) {
+	if slices.Index(hosts, ss.Config.Self.Host) == -1 {
+		hosts = append(hosts, ss.Config.Self.Host)
+	}
+
 	hashRing := rendezvous.New(hosts...)
-	orderedHosts := hashRing.GetN(len(hosts), h)
-	isMine := slices.Index(orderedHosts, ss.Config.Self.Host) < ss.Config.ReplicationFactor
+	orderedHosts := hashRing.GetN(len(hosts), key)
+
+	myRank := slices.Index(orderedHosts, ss.Config.Self.Host)
+	isMine := myRank >= 0 && myRank < ss.Config.ReplicationFactor
+
 	if ss.Config.StoreAll {
 		isMine = true
-	} else if cidutil.IsLegacyCID(h) {
-		// TODO(theo): Don't store Qm CIDs for now unless STORE_ALL is true. Remove this once all nodes have enough space to store Qm CIDs
-		isMine = false
 	}
 	return orderedHosts, isMine
 }
