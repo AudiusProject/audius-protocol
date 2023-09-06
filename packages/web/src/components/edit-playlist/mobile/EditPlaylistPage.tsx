@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react'
 
 import {
   ID,
-  CreatePlaylistSource,
   Collection,
   SquareSizes,
   Nullable,
@@ -10,12 +9,11 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions,
-  createPlaylistModalUISelectors,
-  createPlaylistModalUIActions as createPlaylistActions,
   imageBlank as placeholderCoverArt,
   newCollectionMetadata,
   usePremiumContentAccessMap,
-  EditPlaylistValues
+  EditPlaylistValues,
+  cacheCollectionsSelectors
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -31,19 +29,21 @@ import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
+import { getCollectionId } from 'store/application/ui/editPlaylistModal/selectors'
+import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
-const { getMetadata, getTracks } = createPlaylistModalUISelectors
-const { createPlaylist, editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
+const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
+const { getCollection, getCollectionTracksWithUsers } =
+  cacheCollectionsSelectors
 const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
-  createPlaylist: 'Create Playlist',
   editPlaylist: 'Edit Playlist',
   randomPhoto: 'Get Random Artwork',
   placeholderName: 'My Playlist',
@@ -66,7 +66,6 @@ const g = withNullGuard((props: EditPlaylistPageProps) => {
 const EditPlaylistPage = g(
   ({
     close,
-    createPlaylist,
     metadata,
     tracks,
     removeTrack,
@@ -238,14 +237,9 @@ const EditPlaylistPage = g(
         editPlaylist(metadata.playlist_id, editPlaylistData)
 
         close()
-      } else {
-        // Create new playlist
-        createPlaylist(formFields)
-        close()
       }
     }, [
       formFields,
-      createPlaylist,
       close,
       metadata,
       editPlaylist,
@@ -318,9 +312,7 @@ const EditPlaylistPage = g(
         left: (
           <TextElement text='Cancel' type={Type.SECONDARY} onClick={close} />
         ),
-        center: formFields.playlist_id
-          ? messages.editPlaylist
-          : messages.createPlaylist,
+        center: messages.editPlaylist,
         right: (
           <TextElement
             text='Save'
@@ -440,25 +432,17 @@ const EditPlaylistPage = g(
 )
 
 function mapStateToProps(state: AppState) {
+  const collectionId = getCollectionId(state)!
   return {
-    metadata: getMetadata(state),
+    metadata: getCollection(state, { id: collectionId }),
     account: getAccountUser(state),
-    tracks: getTracks(state)
+    tracks: getCollectionTracksWithUsers(state, { id: collectionId })
   }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    close: () => dispatch(createPlaylistActions.close()),
-    createPlaylist: (metadata: Collection) =>
-      dispatch(
-        createPlaylist(
-          metadata,
-          CreatePlaylistSource.CREATE_PAGE,
-          undefined,
-          'toast'
-        )
-      ),
+    close: () => dispatch(close()),
     editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>

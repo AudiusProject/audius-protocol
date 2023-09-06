@@ -15,11 +15,6 @@ export {
   actions as collectibleDetailsUIActions
 } from './collectible-details/slice'
 
-export * as createPlaylistModalUISelectors from './createPlaylistModal/selectors'
-export * as createPlaylistModalUIActions from './createPlaylistModal/actions'
-export { default as createPlaylistModalUIReducer } from './createPlaylistModal/reducer'
-export * from './createPlaylistModal/types'
-
 export * as deletePlaylistConfirmationModalUISelectors from './delete-playlist-confirmation-modal/selectors'
 export {
   default as deletePlaylistConfirmationModalUIReducer,

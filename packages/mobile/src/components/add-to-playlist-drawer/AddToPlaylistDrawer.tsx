@@ -7,17 +7,14 @@ import {
   CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
-  addToPlaylistUISelectors,
-  FeatureFlags
+  addToPlaylistUISelectors
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles, shadow } from 'app/styles'
 
@@ -62,9 +59,6 @@ export const AddToPlaylistDrawer = () => {
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const user = useSelector(getAccountWithOwnPlaylists)
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
 
   const renderImage = useCallback(
     (item) => (props?: ImageProps) =>
@@ -130,7 +124,7 @@ export const AddToPlaylistDrawer = () => {
             const doesPlaylistContainTrack =
               playlistTrackIdMap[item.playlist_id]?.includes(trackId)
 
-            if (isPlaylistUpdatesEnabled && doesPlaylistContainTrack) {
+            if (doesPlaylistContainTrack) {
               dispatch(
                 openDuplicateAddConfirmation({
                   playlistId: item.playlist_id,
@@ -149,7 +143,6 @@ export const AddToPlaylistDrawer = () => {
     [
       addToNewPlaylist,
       dispatch,
-      isPlaylistUpdatesEnabled,
       isTrackUnlisted,
       onClose,
       playlistTrackIdMap,
@@ -172,20 +165,10 @@ export const AddToPlaylistDrawer = () => {
       title={messages.title}
     >
       <View>
-        {!isPlaylistUpdatesEnabled ? (
-          <View style={styles.buttonContainer}>
-            <Button
-              title='Create New Playlist'
-              onPress={addToNewPlaylist}
-              containerStyle={styles.button}
-              type={ButtonType.COMMON}
-            />
-          </View>
-        ) : null}
         <CollectionList
           contentContainerStyle={styles.cardList}
           collection={userPlaylists}
-          showCreatePlaylistTile={isPlaylistUpdatesEnabled}
+          showCreatePlaylistTile
           renderItem={renderCard}
         />
       </View>

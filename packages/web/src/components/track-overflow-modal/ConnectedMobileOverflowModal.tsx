@@ -13,7 +13,6 @@ import {
   tracksSocialActions,
   usersSocialActions,
   addToPlaylistUIActions,
-  createPlaylistModalUIActions,
   deletePlaylistConfirmationModalUIActions,
   OverflowSource,
   mobileOverflowMenuUISelectors,
@@ -26,6 +25,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { open } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -42,7 +42,6 @@ const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
-const { open: openEditPlaylist } = createPlaylistModalUIActions
 const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
 const { followUser, unfollowUser } = usersSocialActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
@@ -336,7 +335,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       dispatch(saveCollection(collectionId, FavoriteSource.OVERFLOW)),
     unsaveCollection: (collectionId: ID) =>
       dispatch(unsaveCollection(collectionId, FavoriteSource.OVERFLOW)),
-    editPlaylist: (playlistId: ID) => dispatch(openEditPlaylist(playlistId)),
+    editPlaylist: (playlistId: ID) =>
+      dispatch(open({ collectionId: playlistId })),
     deletePlaylist: (playlistId: ID) =>
       dispatch(openDeletePlaylist({ playlistId })),
     publishPlaylist: (playlistId: ID) => dispatch(publishPlaylist(playlistId)),

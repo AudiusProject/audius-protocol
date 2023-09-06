@@ -90,8 +90,6 @@ import buyAudioReducer from './ui/buy-audio/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from './ui/collectible-details/slice'
-import createPlaylistModalReducer from './ui/createPlaylistModal/reducer'
-import { CreatePlaylistModalState } from './ui/createPlaylistModal/types'
 import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation-modal/slice'
 import { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
 import duplicateAddConfirmationReducer from './ui/duplicate-add-confirmation-modal/slice'
@@ -187,7 +185,6 @@ export const reducers = () => ({
 
     relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
-    createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
     duplicateAddConfirmationModal: duplicateAddConfirmationReducer,
@@ -312,7 +309,6 @@ export type CommonState = {
     buyAudio: ReturnType<typeof buyAudioReducer>
     addToPlaylist: AddToPlaylistState
     changePassword: ChangePasswordState
-    createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
     duplicateAddConfirmationModal: DuplicateAddConfirmationModalState

@@ -20,9 +20,7 @@ import {
   shareModalUIActions,
   RepostType,
   repostsUserListActions,
-  favoritesUserListActions,
-  createPlaylistModalUIActions,
-  FeatureFlags
+  favoritesUserListActions
 } from '@audius/common'
 import type {
   Collection,
@@ -44,7 +42,6 @@ import type { ImageProps } from 'app/components/image/FastImage'
 import { SuggestedTracks } from 'app/components/suggested-tracks'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -55,7 +52,6 @@ import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
 import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
-const { open: openEditPlaylist } = createPlaylistModalUIActions
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -150,9 +146,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     updated_at
   } = collection
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const { isEnabled: arePlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
-  )
 
   const { neutralLight5 } = useThemePalette()
 
@@ -210,8 +203,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
 
   const handlePressEdit = useCallback(() => {
     navigation?.push('EditPlaylist', { id: playlist_id })
-    dispatch(openEditPlaylist(playlist_id))
-  }, [dispatch, navigation, playlist_id])
+  }, [navigation, playlist_id])
 
   const handlePressPublish = useCallback(() => {
     dispatch(openPublishConfirmation({ playlistId: playlist_id }))
@@ -304,7 +296,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
               user={user}
               isOwner={isOwner}
             />
-            {isOwner && !is_album && arePlaylistUpdatesEnabled ? (
+            {isOwner && !is_album ? (
               <>
                 <Divider style={styles.divider} color={neutralLight5} />
                 <SuggestedTracks collectionId={playlist_id} />

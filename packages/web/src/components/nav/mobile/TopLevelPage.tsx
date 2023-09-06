@@ -1,4 +1,4 @@
-import { createPlaylistModalUISelectors, modalsSelectors } from '@audius/common'
+import { modalsSelectors } from '@audius/common'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -6,12 +6,11 @@ import { Dispatch } from 'redux'
 import AddToPlaylistPage from 'components/add-to-playlist/mobile/AddToPlaylist'
 import EditPlaylistPage from 'components/edit-playlist/mobile/EditPlaylistPage'
 import useScrollLock from 'hooks/useScrollLock'
+import { getIsOpen } from 'store/application/ui/editPlaylistModal/selectors'
 import { AppState } from 'store/types'
 
 import styles from './TopLevelPage.module.css'
 const { getModalVisibility } = modalsSelectors
-const { getIsOpen: getIsCreatePlaylistModalOpen } =
-  createPlaylistModalUISelectors
 
 type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -47,7 +46,7 @@ const TopLevelPage = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    showCreatePlaylist: getIsCreatePlaylistModalOpen(state),
+    showCreatePlaylist: getIsOpen(state),
     showAddToPlaylist: getModalVisibility(state, 'AddToPlaylist')
   }
 }

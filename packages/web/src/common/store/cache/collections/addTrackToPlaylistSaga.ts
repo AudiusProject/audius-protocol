@@ -12,7 +12,6 @@ import {
   Collection,
   Nullable,
   ID,
-  FeatureFlags,
   cacheTracksSelectors,
   updatePlaylistArtwork,
   confirmerActions,
@@ -53,11 +52,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const { playlistId, trackId } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isPlaylistImprovementsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
@@ -76,20 +70,18 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
 
   if (!playlist || !playlistTracks || !track) return
 
-  if (isPlaylistImprovementsEnabled) {
-    playlist = yield* call(
-      updatePlaylistArtwork,
-      playlist,
-      playlistTracks,
-      {
-        added: track
-      },
-      {
-        audiusBackend: audiusBackendInstance,
-        generateImage: generatePlaylistArtwork
-      }
-    )
-  }
+  playlist = yield* call(
+    updatePlaylistArtwork,
+    playlist,
+    playlistTracks,
+    {
+      added: track
+    },
+    {
+      audiusBackend: audiusBackendInstance,
+      generateImage: generatePlaylistArtwork
+    }
+  )
 
   const trackUid = makeUid(
     Kind.TRACKS,

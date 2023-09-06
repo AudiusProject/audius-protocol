@@ -5,7 +5,7 @@ import {
   SquareSizes,
   cacheCollectionsActions,
   collectionPageLineupActions as tracksActions,
-  createPlaylistModalUISelectors
+  cacheCollectionsSelectors
 } from '@audius/common'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -13,14 +13,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ModalScreen } from 'app/components/core'
 import { useCollectionImage } from 'app/components/image/CollectionImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
+import { useRoute } from 'app/hooks/useRoute'
 
 import { EditPlaylistNavigator } from './EditPlaylistNavigator'
 
-const { getMetadata } = createPlaylistModalUISelectors
 const { editPlaylist } = cacheCollectionsActions
+const { getCollection } = cacheCollectionsSelectors
 
 export const EditPlaylistModalScreen = () => {
-  const playlist = useSelector(getMetadata)
+  const { params } = useRoute<'EditPlaylist'>()
+  const playlist = useSelector((state) =>
+    getCollection(state, { id: params.id })
+  )
   const dispatch = useDispatch()
 
   const trackImage = useCollectionImage({

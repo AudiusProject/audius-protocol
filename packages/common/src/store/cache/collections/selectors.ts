@@ -1,6 +1,10 @@
 import { getAllEntries, getEntry } from 'store/cache/selectors'
 import { getTrack, getTracks } from 'store/cache/tracks/selectors'
-import { getUser as getUserById, getUsers } from 'store/cache/users/selectors'
+import {
+  getUser,
+  getUser as getUserById,
+  getUsers
+} from 'store/cache/users/selectors'
 import type { CommonState } from 'store/commonStore'
 import { removeNullable } from 'utils/typeUtils'
 import { Uid } from 'utils/uid'
@@ -85,6 +89,20 @@ export const getCollectionTracks = (
     .filter(removeNullable)
 
   return tracks
+}
+
+export const getCollectionTracksWithUsers = (
+  state: CommonState,
+  { id }: { id?: ID }
+) => {
+  const tracks = getCollectionTracks(state, { id })
+  return tracks
+    ?.map((track) => {
+      const user = getUser(state, { id: track.owner_id })
+      if (!user) return null
+      return { ...track, user }
+    })
+    .filter(removeNullable)
 }
 
 const getCollectionTracksMap = (state: CommonState, { id }: { id?: ID }) => {

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   Name,
   CreatePlaylistSource,
-  createPlaylistModalUIActions as createPlaylistActions
+  cacheCollectionsActions
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -12,6 +12,8 @@ import { useRecord, make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
 
 import styles from './NewPlaylistButton.module.css'
+
+const { createPlaylist } = cacheCollectionsActions
 
 const messages = {
   createPlaylist: 'Create a New Playlist'
@@ -54,7 +56,13 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    open: () => dispatch(createPlaylistActions.open(undefined, true))
+    open: () =>
+      dispatch(
+        createPlaylist(
+          { playlist_name: 'New Playlist' },
+          CreatePlaylistSource.FAVORITES_PAGE
+        )
+      )
   }
 }
 

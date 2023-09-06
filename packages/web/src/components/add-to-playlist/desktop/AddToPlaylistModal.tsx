@@ -9,7 +9,6 @@ import {
   collectionPageSelectors,
   addToPlaylistUISelectors,
   duplicateAddConfirmationModalUIActions,
-  FeatureFlags,
   toastActions
 } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
@@ -22,7 +21,6 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { collectionPage } from 'utils/route'
 
@@ -58,9 +56,6 @@ const AddToPlaylistModal = () => {
     getAccountWithOwnPlaylists(state)
   )
   const [searchValue, setSearchValue] = useState('')
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
 
   const filteredPlaylists = useMemo(() => {
     return (account?.playlists ?? []).filter(
@@ -90,7 +85,7 @@ const AddToPlaylistModal = () => {
     const doesPlaylistContainTrack =
       playlistTrackIdMap[playlist.playlist_id]?.includes(trackId)
 
-    if (isPlaylistUpdatesEnabled && doesPlaylistContainTrack) {
+    if (doesPlaylistContainTrack) {
       dispatch(
         openDuplicateAddConfirmation({
           playlistId: playlist.playlist_id,

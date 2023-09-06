@@ -1,19 +1,14 @@
 import { MutableRefObject, useCallback } from 'react'
 
 import {
-  CreatePlaylistSource,
   FavoriteSource,
-  Name,
   accountSelectors,
-  collectionsSocialActions,
-  createPlaylistModalUIActions
+  collectionsSocialActions
 } from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
-import { make, useRecord } from 'common/store/analytics/actions'
-import * as signOnActions from 'common/store/pages/signon/actions'
 import { Droppable } from 'components/dragndrop'
 import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
@@ -27,7 +22,7 @@ import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
 
-const { getPlaylistLibrary, getHasAccount } = accountSelectors
+const { getPlaylistLibrary } = accountSelectors
 const { saveCollection } = collectionsSocialActions
 
 const messages = {
@@ -48,8 +43,6 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const library = useSelector(getPlaylistLibrary)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
-  const isSignedIn = useSelector(getHasAccount)
-  const record = useRecord()
 
   useAddAudioNftPlaylistToLibrary()
   useSanitizePlaylistLibrary()
@@ -60,18 +53,6 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
     },
     [dispatch]
   )
-
-  const handleCreatePlaylist = useCallback(() => {
-    if (isSignedIn) {
-      dispatch(createPlaylistModalUIActions.open())
-      record(
-        make(Name.PLAYLIST_OPEN_CREATE, { source: CreatePlaylistSource.NAV })
-      )
-    } else {
-      dispatch(signOnActions.openSignOn(/** signIn */ false))
-      dispatch(signOnActions.showRequiresAccountModal())
-    }
-  }, [isSignedIn, dispatch, record])
 
   return (
     <Droppable
@@ -89,7 +70,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
         <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
       </GroupHeader>
       {!library || isEmpty(library?.contents) ? (
-        <EmptyLibraryNavLink onClick={handleCreatePlaylist} />
+        <EmptyLibraryNavLink />
       ) : (
         library.contents.map((content) => (
           <PlaylistLibraryNavItem

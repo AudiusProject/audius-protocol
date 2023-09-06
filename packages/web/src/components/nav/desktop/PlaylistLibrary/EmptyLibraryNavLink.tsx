@@ -1,14 +1,30 @@
-import { LeftNavLink, LeftNavLinkProps } from '../LeftNavLink'
+import { useCallback } from 'react'
+
+import { CreatePlaylistSource, cacheCollectionsActions } from '@audius/common'
+import { useDispatch } from 'react-redux'
+
+import { LeftNavLink } from '../LeftNavLink'
+const { createPlaylist } = cacheCollectionsActions
 
 const messages = {
-  empty: 'Create your first playlist!'
+  empty: 'Create your first playlist!',
+  newPlaylistName: 'New Playlist'
 }
 
-type EmptyLibraryNavLinkProps = LeftNavLinkProps
+export const EmptyLibraryNavLink = () => {
+  const dispatch = useDispatch()
 
-export const EmptyLibraryNavLink = (props: EmptyLibraryNavLinkProps) => {
+  const handleCreatePlaylist = useCallback(() => {
+    dispatch(
+      createPlaylist(
+        { playlist_name: messages.newPlaylistName },
+        CreatePlaylistSource.NAV
+      )
+    )
+  }, [dispatch])
+
   return (
-    <LeftNavLink disabled {...props}>
+    <LeftNavLink disabled onClick={handleCreatePlaylist}>
       {messages.empty}
     </LeftNavLink>
   )

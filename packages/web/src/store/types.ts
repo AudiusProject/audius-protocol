@@ -9,7 +9,6 @@ import {
   ReachabilityState,
   remoteConfigReducer as RemoteConfigReducer,
   stemsUploadReducer as StemsUploadReducer,
-  CreatePlaylistModalState,
   RepostsPageState,
   NotificationUsersPageState,
   FollowingPageState,
@@ -68,7 +67,6 @@ export type AppState = CommonState & {
       averageColor: ReturnType<typeof averageColor>
       changePassword: ChangePasswordState
       cookieBanner: CookieBannerState
-      createPlaylistModal: CreatePlaylistModalState
       editPlaylistModal: EditPlaylistModalState
       editFolderModal: EditFolderModalState
       editTrackModal: EditTrackModalState

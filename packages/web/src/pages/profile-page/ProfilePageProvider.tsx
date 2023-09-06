@@ -29,7 +29,6 @@ import {
   followingUserListActions,
   followersUserListActions,
   usersSocialActions as socialActions,
-  createPlaylistModalUIActions as createPlaylistModalActions,
   newUserMetadata,
   playerSelectors,
   queueSelectors,
@@ -37,7 +36,9 @@ import {
   chatActions,
   chatSelectors,
   ChatPermissionAction,
-  inboxUnavailableModalActions
+  inboxUnavailableModalActions,
+  cacheCollectionsActions,
+  CreatePlaylistSource
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -71,6 +72,7 @@ const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchHasTracks } = accountActions
+const { createPlaylist } = cacheCollectionsActions
 
 const {
   makeGetProfile,
@@ -770,7 +772,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       pauseUserFeedTrack,
       account,
       goToRoute,
-      openCreatePlaylistModal,
+      createPlaylist,
       currentQueueItem,
       setNotificationSubscription,
       setFollowingUserId,
@@ -979,7 +981,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedCoverPhoto,
       updatedProfilePicture,
 
-      openCreatePlaylistModal,
+      createPlaylist,
 
       updateProfile: this.props.updateProfile,
       isBlocked: this.props.profile.profile
@@ -1146,8 +1148,13 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
         )
       ),
 
-    openCreatePlaylistModal: () =>
-      dispatch(createPlaylistModalActions.open(undefined, true)),
+    createPlaylist: () =>
+      dispatch(
+        createPlaylist(
+          { playlist_name: 'Create Playlist' },
+          CreatePlaylistSource.PROFILE_PAGE
+        )
+      ),
     setNotificationSubscription: (
       userId: ID,
       isSubscribed: boolean,

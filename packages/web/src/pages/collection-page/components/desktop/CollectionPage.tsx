@@ -10,8 +10,7 @@ import {
   CollectionTrack,
   CollectionPageTrackRecord,
   CollectionsPageType,
-  DogEarType,
-  FeatureFlags
+  DogEarType
 } from '@audius/common'
 
 import {
@@ -24,7 +23,6 @@ import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -121,9 +119,6 @@ const CollectionPage = ({
   onClickFavorites
 }: CollectionPageProps) => {
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const { isEnabled: arePlaylistUpdatesEnabled } = useFlag(
-    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
-  )
   const [dataSource, playingIndex] =
     tracks.status === Status.SUCCESS
       ? getFilteredData(tracks.entries)
@@ -278,7 +273,7 @@ const CollectionPage = ({
           </div>
         )}
       </Tile>
-      {isOwner && !isAlbum && !isNftPlaylist && arePlaylistUpdatesEnabled ? (
+      {isOwner && !isAlbum && !isNftPlaylist ? (
         <>
           <Divider variant='default' className={styles.tileDivider} />
           <SuggestedTracks collectionId={playlistId} />

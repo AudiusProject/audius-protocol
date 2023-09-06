@@ -2,7 +2,6 @@ import { useLayoutEffect, useState } from 'react'
 
 import type { Collection, SmartCollectionVariant } from '@audius/common'
 import {
-  FeatureFlags,
   useThrottledCallback,
   accountSelectors,
   reachabilitySelectors,
@@ -17,7 +16,6 @@ import { getCollectionDownloadStatus } from 'app/components/offline-downloads/Co
 import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { setVisibility } from 'app/store/drawers/slice'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -34,7 +32,6 @@ const messages = {
   album: 'Album',
   playlist: 'Playlist',
   hiddenPlaylist: 'Hidden Playlist',
-  publishing: 'Publishing...',
   queued: 'Download Queued',
   downloading: 'Downloading'
 }
@@ -78,9 +75,6 @@ type CollectionHeaderProps = {
 
 export const CollectionHeader = (props: CollectionHeaderProps) => {
   const { collectionId } = props
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
   const collection = useSelector((state) =>
     getCollection(
       state,
@@ -93,9 +87,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   const getHeaderText = () => {
     if (!collection) return messages.playlist
     if (collection.variant === Variant.SMART) return messages.playlist
-    const { _is_publishing, is_album, is_private } = collection
+    const { is_album, is_private } = collection
 
-    if (!isPlaylistUpdatesEnabled && _is_publishing) return messages.publishing
     if (is_album) return messages.album
     if (is_private) return messages.hiddenPlaylist
     return messages.playlist

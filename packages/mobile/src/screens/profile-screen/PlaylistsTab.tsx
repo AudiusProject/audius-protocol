@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 
 import {
   CreatePlaylistSource,
-  FeatureFlags,
   profilePageActions,
   profilePageSelectors,
   Status
@@ -11,7 +10,6 @@ import { useIsFocused } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { spacing } from 'app/styles/spacing'
 
 import { EmptyProfileTile } from './EmptyProfileTile'
@@ -33,9 +31,6 @@ export const PlaylistsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
   const dispatch = useDispatch()
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
 
   const shouldFetchPlaylists =
     isFocused &&
@@ -58,7 +53,7 @@ export const PlaylistsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={playlist_count}
-      showCreatePlaylistTile={isPlaylistUpdatesEnabled && isOwner}
+      showCreatePlaylistTile={isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
     />
   )

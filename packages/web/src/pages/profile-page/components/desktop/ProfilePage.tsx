@@ -134,7 +134,7 @@ export type ProfilePageProps = {
     tracks: number,
     isPrivate?: boolean
   ) => string
-  openCreatePlaylistModal: () => void
+  createPlaylist: () => void
   updateProfile: (metadata: any) => void
   updateProfilePicture: (
     selectedFiles: any,
@@ -177,7 +177,7 @@ const ProfilePage = ({
   formatCardSecondaryText,
   loadMoreUserFeed,
   loadMoreArtistTracks,
-  openCreatePlaylistModal,
+  createPlaylist,
   updateProfile,
 
   onFollow,
@@ -594,7 +594,7 @@ const ProfilePage = ({
       <UploadChip
         type='playlist'
         variant='card'
-        onClick={openCreatePlaylistModal}
+        onClick={createPlaylist}
         isFirst={playlistCards.length === 0}
       />
     )

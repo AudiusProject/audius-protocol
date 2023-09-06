@@ -1,5 +1,5 @@
 import type { CommonState, ID } from '@audius/common'
-import { FeatureFlags, cacheCollectionsSelectors } from '@audius/common'
+import { cacheCollectionsSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -10,7 +10,6 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -82,9 +81,6 @@ export const DetailsTileActionButtons = ({
 }: DetailsTileActionButtonsProps) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
@@ -154,7 +150,7 @@ export const DetailsTileActionButtons = ({
     />
   )
 
-  const isPlaylistOwner = isPlaylistUpdatesEnabled && isPlaylist && isOwner
+  const isPlaylistOwner = isPlaylist && isOwner
 
   return (
     <View style={styles.root}>

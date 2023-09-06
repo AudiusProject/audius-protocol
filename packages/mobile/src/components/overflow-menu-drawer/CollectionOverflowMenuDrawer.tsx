@@ -2,16 +2,13 @@ import { useContext } from 'react'
 
 import type { ID, OverflowActionCallbacks } from '@audius/common'
 import {
-  FeatureFlags,
   publishPlaylistConfirmationModalUIActions,
   FavoriteSource,
   RepostSource,
   ShareSource,
-  cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
-  createPlaylistModalUIActions,
   deletePlaylistConfirmationModalUIActions,
   OverflowAction,
   mobileOverflowMenuUISelectors
@@ -19,7 +16,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -27,7 +23,6 @@ import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/se
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
-const { open: openEditPlaylist } = createPlaylistModalUIActions
 const {
   repostCollection,
   undoRepostCollection,
@@ -36,7 +31,6 @@ const {
   shareCollection
 } = collectionsSocialActions
 const { getUser } = cacheUsersSelectors
-const { publishPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 const { requestOpen: openPublishConfirmation } =
   publishPlaylistConfirmationModalUIActions
@@ -47,9 +41,6 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
-  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
-    FeatureFlags.PLAYLIST_UPDATES_POST_QA
-  )
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const { id: modalId } = useSelector(getMobileOverflowModal)
@@ -107,15 +98,12 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     },
     [OverflowAction.EDIT_PLAYLIST]: () => {
       navigation?.push('EditPlaylist', { id })
-      dispatch(openEditPlaylist(id))
     },
     [OverflowAction.DELETE_PLAYLIST]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
     [OverflowAction.PUBLISH_PLAYLIST]: () => {
       if (is_album) return () => {}
-      return isPlaylistUpdatesEnabled
-        ? dispatch(openPublishConfirmation({ playlistId: Number(id) }))
-        : dispatch(publishPlaylist(Number(id)))
+      return dispatch(openPublishConfirmation({ playlistId: Number(id) }))
     }
   }
 
