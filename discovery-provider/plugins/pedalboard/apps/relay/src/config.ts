@@ -19,8 +19,6 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  console.log('env.audius_discprov_env isss ', process.env.audius_discprov_env)
-  console.log('process.env.environemnt isss ', process.env.ENVIRONMENT)
   const environment = process.env.audius_discprov_env || "dev";
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
@@ -43,7 +41,6 @@ export const readConfig = (): Config => {
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
-  console.log('env.audius_discprov_env isss ', env.audius_discprov_env)
   return {
     environment: env.audius_discprov_env,
     rpcEndpoint: env.audius_web3_localhost,
