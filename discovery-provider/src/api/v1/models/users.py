@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from .common import ns, StringEnumToLower
+from .common import StringEnumToLower, ns
 from .playlist_library import playlist_library
 
 # DEPRECATED

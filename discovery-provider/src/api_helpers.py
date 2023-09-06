@@ -1,6 +1,10 @@
+import asyncio
 import datetime
 import json
 import logging
+import re
+
+import requests
 
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
@@ -14,8 +18,10 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
+from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
 from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
+from src.utils.rendezvous import RendezvousHash
 
 redis_conn = get_redis()
 web3_connection = web3_provider.get_web3()
@@ -134,3 +140,104 @@ def recover_wallet(data, signature):
     )
 
     return recovered_wallet
+
+
+def init_rendezvous(user, cid):
+    if not cid:
+        return ""
+    healthy_nodes = get_all_healthy_content_nodes_cached(redis_conn)
+    if not healthy_nodes:
+        logger.error(
+            f"No healthy Content Nodes found for fetching cid for {user.user_id}: {cid}"
+        )
+        return ""
+
+    return RendezvousHash(
+        *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+    )
+
+
+def get_primary_endpoint(user, cid):
+    rendezvous = init_rendezvous(user, cid)
+    if not rendezvous:
+        return ""
+    return rendezvous.get(cid)
+
+
+def get_n_primary_endpoints(user, cid, n):
+    rendezvous = init_rendezvous(user, cid)
+    if not rendezvous:
+        return ""
+    return rendezvous.get_n(n, cid)
+
+
+PROFILE_PICTURE_SIZES = ["150x150", "480x480", "1000x1000"]
+PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
+COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
+
+
+async def fetch_url(url):
+    loop = asyncio.get_event_loop()
+    future = loop.run_in_executor(None, requests.get, url)
+    response = await future
+    return response
+
+
+async def race_requests(urls, timeout):
+    tasks = [asyncio.create_task(fetch_url(url)) for url in urls]
+    done, pending = await asyncio.wait(
+        tasks, return_when=asyncio.ALL_COMPLETED, timeout=timeout
+    )
+    for task in done:
+        response = task.result()
+        if response.status_code == 200:
+            return response
+    raise Exception(f"No 200 responses for urls {urls}")
+
+
+# Get cids corresponding to each transcoded variant for the given upload_id.
+# Cache upload_id -> cids mappings.
+def get_image_cids(user, upload_id, variants):
+    if not upload_id:
+        return {}
+    try:
+        image_cids = {}
+        if upload_id.startswith("Qm"):
+            # Legacy path - no need to query content nodes for image variant cids
+            image_cids = {variant: f"{upload_id}/{variant}.jpg" for variant in variants}
+        else:
+            redis_key = f"image_cids:{upload_id}"
+            image_cids = redis_conn.hgetall(redis_key)
+            if image_cids:
+                image_cids = {
+                    variant.decode("utf-8"): cid.decode("utf-8")
+                    for variant, cid in image_cids.items()
+                }
+            else:
+                # Query content for the transcoded cids corresponding to this upload id and
+                # cache upload_id -> { variant: cid, ... }
+                endpoints = get_n_primary_endpoints(user, upload_id, 3)
+                urls = list(
+                    map(lambda endpoint: f"{endpoint}/uploads/{upload_id}", endpoints)
+                )
+
+                # Race requests in a new event loop
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                resp = new_loop.run_until_complete(race_requests(urls, 1))
+                new_loop.close()
+
+                resp.raise_for_status()
+                image_cids = resp.json().get("results", {})
+                if not image_cids:
+                    return image_cids
+
+                image_cids = {
+                    variant.strip(".jpg"): cid for variant, cid in image_cids.items()
+                }
+                redis_conn.hset(redis_key, mapping=image_cids)
+                redis_conn.expire(redis_key, 86400)  # 24 hour ttl
+        return image_cids
+    except Exception as e:
+        logger.error(f"Exception fetching image cids for id: {upload_id}: {e}")
+        return {}
