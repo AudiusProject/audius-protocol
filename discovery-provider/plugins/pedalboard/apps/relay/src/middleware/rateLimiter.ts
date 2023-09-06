@@ -10,16 +10,19 @@ import { rateLimitError } from "../error";
 
 const globalRateLimiter = new RelayRateLimiter();
 
-export const relayRateLimiter = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx
-  const { encodedABI } = validatedRelayRequest
+export const relayRateLimiter = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx;
+  const { encodedABI } = validatedRelayRequest;
 
-  const signer = recoveredSigner.wallet
+  const signer = recoveredSigner.wallet;
   if (signer === undefined || signer === null) {
-    rateLimitError(next, "user record does not have wallet")
-    return
+    rateLimitError(next, "user record does not have wallet");
+    return;
   }
-
 
   const operation = getEntityManagerActionKey(encodedABI);
   const chainId = config.acdcChainId;
@@ -50,7 +53,7 @@ export const relayRateLimiter = async (req: Request, res: Response, next: NextFu
     }
     logger.error({ msg: "rate limit internal error", e });
   }
-  next()
+  next();
 };
 
 const getEntityManagerActionKey = (encodedABI: string): string => {

@@ -44,3 +44,11 @@ export const rateLimitError = (next: NextFunction, message: string) => {
     message,
   });
 };
+
+export const antiAbuseError = (next: NextFunction, message: string) => {
+  customError(next, {
+    name: "ANTI_ABUSE_ERROR",
+    statusCode: StatusCodes.UNAUTHORIZED,
+    message
+  })
+}

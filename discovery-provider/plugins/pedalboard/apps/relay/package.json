@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "dev": "ts-node-dev --respawn ./src/index.ts",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

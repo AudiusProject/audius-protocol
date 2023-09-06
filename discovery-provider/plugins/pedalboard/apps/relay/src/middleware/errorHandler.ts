@@ -22,7 +22,12 @@ export const errorHandler = (
   const appError = error as AppError;
   logger.error({ appError }, "AppError occured");
   const { name, message, statusCode } = appError;
-  response.status(statusCode).json({ name, message });
+  let errorMessage = undefined
+  if (statusCode < StatusCodes.INTERNAL_SERVER_ERROR) {
+    // shield internal error messages from client
+    errorMessage = message 
+  }
+  response.status(statusCode).json({ name, errorMessage });
   outgoingLog(request, response);
   next();
 };

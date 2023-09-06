@@ -7,16 +7,19 @@ import {
   outgoingRequestLogger,
 } from "./middleware/logging";
 import { validator } from "./middleware/validator";
-import cors from 'cors'
+import cors from "cors";
 import bodyParser from "body-parser";
+import { antiAbuseMiddleware } from "./middleware/antiAbuse";
 
 export const app = express();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
-app.use(bodyParser.text())
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+app.use(bodyParser.text());
 app.use(cors());
 
 /** Reads */
@@ -32,6 +35,7 @@ app.post(
   "/relay",
   incomingRequestLogger,
   validator,
+  antiAbuseMiddleware,
   relayTransaction,
   outgoingRequestLogger
 );

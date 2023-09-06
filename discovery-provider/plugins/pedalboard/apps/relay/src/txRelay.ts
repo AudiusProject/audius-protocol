@@ -11,10 +11,14 @@ export type RelayedTransaction = {
   transaction: TransactionRequest;
 };
 
-export const relayTransaction = async (_req: Request, res: Response, next: NextFunction) => {
+export const relayTransaction = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // pull info from validated request
-  const { validatedRelayRequest } = res.locals.ctx
-  const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest
+  const { validatedRelayRequest } = res.locals.ctx;
+  const { encodedABI, gasLimit, contractAddress } = validatedRelayRequest;
 
   const senderWallet = wallets.selectNextWallet();
   const address = await senderWallet.getAddress();
@@ -33,7 +37,7 @@ export const relayTransaction = async (_req: Request, res: Response, next: NextF
   // query chain until tx is mined
   const receipt = await confirm(web3, submit.hash);
   res.send(receipt);
-  next()
+  next();
 };
 
 const confirm = async (

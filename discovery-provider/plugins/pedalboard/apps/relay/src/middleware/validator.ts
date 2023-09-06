@@ -13,10 +13,11 @@ export const validator = async (
 ) => {
   const body = JSON.parse(request.body) as RelayRequest;
 
-  logger.info({ body }, "validating request")
+  logger.info({ body }, "validating request");
 
   // Validation of input fields
-  const contractAddress = body.contractAddress || config.entityManagerContractAddress;
+  const contractAddress =
+    body.contractAddress || config.entityManagerContractAddress;
 
   if (
     body.contractRegistryKey === null ||
