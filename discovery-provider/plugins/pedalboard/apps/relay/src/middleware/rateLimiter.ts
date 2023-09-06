@@ -5,16 +5,16 @@ import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { Table, Users } from "storage/src";
 import { config, discoveryDb } from "..";
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request, Response, response } from "express";
 import { rateLimitError } from "../error";
 
 const globalRateLimiter = new RelayRateLimiter();
 
-export const relayRateLimiter = async (
+export const rateLimiterMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   const { validatedRelayRequest, recoveredSigner } = res.locals.ctx;
   const { encodedABI } = validatedRelayRequest;
 
@@ -24,17 +24,22 @@ export const relayRateLimiter = async (
     return;
   }
 
-  const operation = getEntityManagerActionKey(encodedABI);
-  const chainId = config.acdcChainId;
-  if (chainId === undefined) {
-    throw new Error("chain id not defined");
+  // if not EM transaction, return
+  if (res.locals.ctx.validatedRelayRequest.contractRegistryKey !== "EntityManager") {
+    next()
+    return
   }
 
+  const operation = getEntityManagerActionKey(encodedABI);
+
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
-  if (isBlockedFromRelay) throw new Error("blocked from relay");
+  if (isBlockedFromRelay) {
+    rateLimitError(next, "blocked from relay")
+    return
+  }
 
   const limit = await determineLimit(
-    discoveryDb,
+    recoveredSigner,
     config.rateLimitAllowList,
     signer
   );
@@ -46,12 +51,13 @@ export const relayRateLimiter = async (
       signer,
       limit,
     });
-    insertReplyHeaders({}, res);
+    insertReplyHeaders(response, res);
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders({}, e as RateLimiterRes);
+      insertReplyHeaders(response, e as RateLimiterRes);
+      rateLimitError(next, "rate limit hit")
+      return
     }
-    logger.error({ msg: "rate limit internal error", e });
   }
   next();
 };
@@ -66,25 +72,21 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
   return action + entityType;
 };
 
-const insertReplyHeaders = (rep: any, data: RateLimiterRes) => {
+const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
   const { msBeforeNext, remainingPoints, consumedPoints } = data;
-  rep.header("Retry-After", msBeforeNext / 1000);
-  rep.header("X-RateLimit-Remaining", remainingPoints);
-  rep.header("X-RateLimit-Reset", new Date(Date.now() + msBeforeNext));
-  rep.header("X-RateLimit-Consumed", consumedPoints);
+  res.header("Retry-After", (msBeforeNext / 1000).toString());
+  res.header("X-RateLimit-Remaining", remainingPoints.toString());
+  res.header("X-RateLimit-Reset", (new Date(Date.now() + msBeforeNext).toString()));
+  res.header("X-RateLimit-Consumed", consumedPoints.toString());
 };
 
 const determineLimit = async (
-  discoveryDb: Knex,
+  user: Users,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
   const isAllowed = allowList.includes(signer);
   if (isAllowed) return "allowlist";
-  const user = await discoveryDb<Users>(Table.Users)
-    .where("wallet", "=", signer)
-    .andWhere("is_current", "=", true)
-    .first();
   logger.info({ user, signer });
   if (user !== undefined) return "owner";
   return "app";

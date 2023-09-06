@@ -10,6 +10,7 @@ import { validator } from "./middleware/validator";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { antiAbuseMiddleware } from "./middleware/antiAbuse";
+import { rateLimiterMiddleware } from "./middleware/rateLimiter";
 
 export const app = express();
 
@@ -35,6 +36,7 @@ app.post(
   "/relay",
   incomingRequestLogger,
   validator,
+  rateLimiterMiddleware,
   antiAbuseMiddleware,
   relayTransaction,
   outgoingRequestLogger
