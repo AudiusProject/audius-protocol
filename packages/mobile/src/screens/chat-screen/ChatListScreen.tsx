@@ -81,7 +81,7 @@ const ChatsEmpty = ({ onPress }: { onPress: () => void }) => {
       <Text style={styles.startConversationTitle} fontSize='xxl' weight='bold'>
         {messages.startConversation}
       </Text>
-      <Text style={styles.connect} fontSize='medium'>
+      <Text style={styles.connect} fontSize='medium' allowNewline>
         {messages.connect}
       </Text>
       <Button

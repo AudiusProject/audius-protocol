@@ -2,12 +2,13 @@ import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common'
 import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { Text } from 'app/components/core'
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { TrackImage } from 'app/components/image/TrackImage'
-import { UserImage } from 'app/components/image/UserImage'
+import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { addItem } from 'app/store/search/searchSlice'
@@ -58,11 +59,7 @@ const UserSearchResult = (props: UserSearchResultProps) => {
 
   return (
     <SearchResultItem onPress={handlePress}>
-      <UserImage
-        user={user}
-        style={styles.userImage}
-        size={SquareSizes.SIZE_150_BY_150}
-      />
+      <ProfilePicture profile={user} style={styles.userImage} />
       <UserBadges
         style={styles.badgeContainer}
         nameStyle={styles.name}
@@ -98,7 +95,7 @@ const TrackSearchResult = (props: TrackSearchResultProps) => {
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
-        <Text numberOfLines={1} style={styles.name}>
+        <Text numberOfLines={1} variant='body'>
           {track.title}
         </Text>
         <UserBadges
@@ -136,7 +133,7 @@ const PlaylistSearchResult = (props: PlaylistSearchResultProps) => {
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
-        <Text numberOfLines={1} style={styles.name}>
+        <Text numberOfLines={1} variant='body'>
           {playlist.playlist_name}
         </Text>
         <UserBadges
@@ -174,7 +171,7 @@ const AlbumSearchResult = (props: AlbumSearchResultProps) => {
         style={styles.squareImage}
       />
       <View style={styles.nameContainer}>
-        <Text numberOfLines={1} style={styles.name}>
+        <Text numberOfLines={1} variant='body'>
           {album.playlist_name}
         </Text>
         <UserBadges

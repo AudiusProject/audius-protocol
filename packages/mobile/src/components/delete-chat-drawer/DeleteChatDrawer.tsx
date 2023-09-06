@@ -91,7 +91,9 @@ export const DeleteChatDrawer = () => {
           <IconTrash fill={neutralLight2} />
           <Text style={styles.title}>{messages.title}</Text>
         </View>
-        <Text style={styles.confirm}>{messages.description}</Text>
+        <Text style={styles.confirm} allowNewline>
+          {messages.description}
+        </Text>
         <Button
           title={messages.deleteButton}
           onPress={handleConfirmPress}

@@ -6,14 +6,12 @@ import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconVolume from 'app/assets/images/iconVolume.svg'
-import Text from 'app/components/text'
+import { Text, FadeInView } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
-
-import { FadeInView } from '../core'
 
 import { LineupTileArt } from './LineupTileArt'
 import { useStyles as useTrackTileStyles } from './styles'
@@ -24,15 +22,6 @@ const { getPlaying } = playerSelectors
 const useStyles = makeStyles(({ palette }) => ({
   metadata: {
     flexDirection: 'row'
-  },
-  titlesActive: {
-    color: palette.primary
-  },
-  titlesPressed: {
-    textDecorationLine: 'underline'
-  },
-  titleText: {
-    fontSize: 16
   },
   playingIndicator: {
     marginLeft: 8
@@ -104,7 +93,7 @@ export const LineupTileMetadata = ({
         <TouchableOpacity style={trackTileStyles.title} onPress={onPressTitle}>
           <>
             <Text
-              style={[styles.titleText, isActive && styles.titlesActive]}
+              color={isActive ? 'primary' : 'neutral'}
               weight='bold'
               numberOfLines={1}
             >
@@ -119,21 +108,19 @@ export const LineupTileMetadata = ({
           style={trackTileStyles.artist}
           onPress={handleArtistPress}
         >
-          <>
-            <Text
-              style={[styles.titleText, isActive && styles.titlesActive]}
-              weight='medium'
-              numberOfLines={1}
-            >
-              {artistName}
-            </Text>
-            <UserBadges
-              user={user}
-              badgeSize={12}
-              style={styles.badge}
-              hideName
-            />
-          </>
+          <Text
+            color={isActive ? 'primary' : 'neutral'}
+            weight='medium'
+            numberOfLines={1}
+          >
+            {artistName}
+          </Text>
+          <UserBadges
+            user={user}
+            badgeSize={12}
+            style={styles.badge}
+            hideName
+          />
         </TouchableOpacity>
       </FadeInView>
       {coSign && (
