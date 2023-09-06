@@ -3,7 +3,7 @@ import os
 
 from elasticsearch import Elasticsearch, logger, logging
 
-from src.api.v1 import helpers
+from src import api_helpers
 from src.utils.spl_audio import to_wei
 
 logger.setLevel(logging.WARNING)
@@ -53,14 +53,14 @@ def populate_user_metadata_es(user, current_user):
     # Convert image cid to cids for each image size variant
     profile_cid = user.get("profile_picture_sizes")
     if profile_cid:
-        profile_cids = helpers.get_image_cids(
-            user, profile_cid, helpers.PROFILE_PICTURE_SIZES
+        profile_cids = api_helpers.get_image_cids(
+            user, profile_cid, api_helpers.PROFILE_PICTURE_SIZES
         )
         user["profile_picture_cids"] = profile_cids
     cover_cid = user.get("cover_photo_sizes")
     if cover_cid:
-        cover_cids = helpers.get_image_cids(
-            user, cover_cid, helpers.PROFILE_COVER_PHOTO_SIZES
+        cover_cids = api_helpers.get_image_cids(
+            user, cover_cid, api_helpers.PROFILE_COVER_PHOTO_SIZES
         )
         user["cover_photo_cids"] = cover_cids
 
@@ -89,8 +89,8 @@ def populate_track_or_playlist_metadata_es(item, current_user):
         "playlist_image_sizes_multihash"
     )
     if cover_cid:
-        cover_cids = helpers.get_image_cids(
-            item["user"], cover_cid, helpers.COVER_ART_SIZES
+        cover_cids = api_helpers.get_image_cids(
+            item["user"], cover_cid, api_helpers.COVER_ART_SIZES
         )
         item["cover_art_cids"] = cover_cids
 
