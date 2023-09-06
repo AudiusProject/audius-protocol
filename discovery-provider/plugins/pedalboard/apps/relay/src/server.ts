@@ -8,11 +8,15 @@ import {
 } from "./middleware/logging";
 import { validator } from "./middleware/validator";
 import cors from 'cors'
+import bodyParser from "body-parser";
 
 export const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(bodyParser.text())
 app.use(cors());
 
 /** Reads */

@@ -11,9 +11,9 @@ export const validator = async (
   response: Response,
   next: NextFunction
 ) => {
-  const body = request.body as RelayRequest;
+  const body = JSON.parse(request.body) as RelayRequest;
 
-  logger.info({ request }, "validating request")
+  logger.info({ body }, "validating request")
 
   // Validation of input fields
   const contractAddress = body.contractAddress || config.entityManagerContractAddress;
