@@ -428,8 +428,13 @@ def get_stream_url_from_content_node(content_node: str, path: str):
     headers = {"Range": "bytes=0-1"}
     try:
         response = requests.get(
-            stream_url + "&skip_play_count=True", headers=headers, timeout=5
+            stream_url + "&skip_play_count=True",
+            headers=headers,
+            timeout=5,
+            allow_redirects=False,
         )
+        if response.status_code == 302:
+            return response.headers["Location"]
         if response.status_code == 206:
             return stream_url
     except:
