@@ -167,7 +167,7 @@ pub struct CreateStakingBridgeBalanceAtas<'info> {
         associated_token::authority = staking_bridge_pda,
     )]
     pub audio_token_account: Account<'info, TokenAccount>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
     pub audio_mint: Account<'info, Mint>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -248,7 +248,7 @@ pub struct RaydiumSwap<'info> {
     pub user_source_owner: AccountInfo<'info>,
     #[account(address = mint::USDC)]
     pub usdc_mint: Account<'info, Mint>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
     pub audio_mint: Account<'info, Mint>,
     pub spl_token_program: Program<'info, Token>,
 }
@@ -309,7 +309,7 @@ pub struct PostWormholeMessage<'info> {
         associated_token::authority = from_owner,
     )]
     pub from: Account<'info, TokenAccount>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
+    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
     pub audio_mint: Account<'info, Mint>,
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,

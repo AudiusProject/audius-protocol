@@ -19,10 +19,6 @@ use utils::{
 
 #[test]
 fn test_swap_programs() {
-    let raydium_key = &RAYDIUM_AMM_PROGRAM_ADDRESS.parse::<Pubkey>().unwrap();
-    let serum_key = &SERUM_DEX_PROGRAM_ADDRESS.parse::<Pubkey>().unwrap();
-    let amm_key = &AUDIO_USDC_RAYDIUM_AMM_ADDRESS.parse::<Pubkey>().unwrap();
-    let market_key = &AUDIO_USDC_SERUM_MARKET_ADDRESS.parse::<Pubkey>().unwrap();
     let other_key = &Pubkey::new_unique();
 
     let (raydium_lamports, raydium_data) = (&mut 0, &mut vec![]);
@@ -31,25 +27,25 @@ fn test_swap_programs() {
     let (market_lamports, market_data) = (&mut 0, &mut vec![]);
     let (bad_lamports, bad_data) = (&mut 0, &mut vec![]);
     let raydium_program = &make_readonly_account_info(
-        raydium_key,
+        &RAYDIUM_AMM_PROGRAM_ADDRESS,
         raydium_lamports,
         raydium_data,
         other_key
     );
     let serum_program = &make_readonly_account_info(
-        serum_key,
+        &SERUM_DEX_PROGRAM_ADDRESS,
         serum_lamports,
         serum_data,
         other_key
     );
     let amm_program = &make_readonly_account_info(
-        amm_key,
+        &AUDIO_USDC_RAYDIUM_AMM_ADDRESS,
         amm_lamports,
         amm_data,
         other_key
     );
     let market_program = &make_readonly_account_info(
-        market_key,
+        &AUDIO_USDC_SERUM_MARKET_ADDRESS,
         market_lamports,
         market_data,
         other_key

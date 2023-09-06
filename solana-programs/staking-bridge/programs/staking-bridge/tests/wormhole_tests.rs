@@ -17,8 +17,8 @@ use utils::{
 
 #[test]
 fn test_wormhole_programs() {
-    let token_bridge_key = &WORMHOLE_TOKEN_BRIDGE_ID.parse::<Pubkey>().unwrap();
-    let core_bridge_key = &WORMHOLE_CORE_BRIDGE_ID.parse::<Pubkey>().unwrap();
+    let token_bridge_key = &WORMHOLE_TOKEN_BRIDGE_ID;
+    let core_bridge_key = &WORMHOLE_CORE_BRIDGE_ID;
     let other_key = &Pubkey::new_unique();
 
     let (token_bridge_lamports, token_bridge_data) = (&mut 0, &mut vec![]);

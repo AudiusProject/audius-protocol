@@ -32,11 +32,11 @@ pub fn check_wormhole_programs(
     bridge_id: AccountInfo,
 ) -> Result<()> {
     // 1. Verify that we are calling the Wormhole Token Bridge program.
-    if program_id.key().to_string() != WORMHOLE_TOKEN_BRIDGE_ID.to_string() {
+    if program_id.key() != WORMHOLE_TOKEN_BRIDGE_ID {
         return Err(StakingBridgeErrorCode::NotCallingWormholeTokenBridgeProgram.into());
     }
     // 2. Verify that we are using the Wormhole Core Bridge program.
-    if bridge_id.key().to_string() != WORMHOLE_CORE_BRIDGE_ID.to_string() {
+    if bridge_id.key() != WORMHOLE_CORE_BRIDGE_ID {
         return Err(StakingBridgeErrorCode::InvalidWormholeCoreBridgeProgram.into());
     }
     Ok(())

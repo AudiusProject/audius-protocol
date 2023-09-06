@@ -30,19 +30,19 @@ pub fn check_swap_programs(
     serum_market: AccountInfo
 ) -> Result<()> {
     // 1. Verify that we are calling the Raydium AMM program.
-    if program_id.key().to_string() != RAYDIUM_AMM_PROGRAM_ADDRESS.to_string() {
+    if program_id.key() != RAYDIUM_AMM_PROGRAM_ADDRESS {
         return Err(StakingBridgeErrorCode::NotCallingRaydiumAmmProgram.into());
     }
     // 2. Verify that the correct Serum DEX program was passed in.
-    if serum_program.key().to_string() != SERUM_DEX_PROGRAM_ADDRESS.to_string() {
+    if serum_program.key() != SERUM_DEX_PROGRAM_ADDRESS {
         return Err(StakingBridgeErrorCode::InvalidSerumDexProgram.into());
     }
     // 3. Verify that the correct USDC-Audio amm was passed in.
-    if amm.key().to_string() != AUDIO_USDC_RAYDIUM_AMM_ADDRESS.to_string() {
+    if amm.key() != AUDIO_USDC_RAYDIUM_AMM_ADDRESS {
         return Err(StakingBridgeErrorCode::InvalidAmmProgram.into());
     }
     // 4. Verify that the correct Serum market was passed in.
-    if serum_market.key().to_string() != AUDIO_USDC_SERUM_MARKET_ADDRESS.to_string() {
+    if serum_market.key() != AUDIO_USDC_SERUM_MARKET_ADDRESS {
         return Err(StakingBridgeErrorCode::InvalidSerumMarketProgram.into());
     }
 
