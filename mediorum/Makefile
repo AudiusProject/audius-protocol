@@ -23,22 +23,11 @@ build::
 	docker push audius/mediorum:latest
 	docker push audius/mediorum:${GIT_HASH}
 
-build.radix::
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/mediorum-radix:latest -t audius/mediorum-radix:${GIT_HASH}
-	docker push audius/mediorum-radix:latest
-	docker push audius/mediorum-radix:${GIT_HASH}
-
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-cmd-linux-amd64 cmd/main.go
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:theo
-	docker push audius/mediorum:theo
-
-build.fast.radix::
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-cmd-linux-amd64 cmd/main.go
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum-radix:latest
-	docker push audius/mediorum-radix:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
+	docker push audius/mediorum:latest
 
 psql::
 	docker compose up -d --wait
