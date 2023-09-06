@@ -94,7 +94,7 @@ security_txt! {
     // Required fields
     name: "Audius Payment Router",
     project_url: "https://audius.co",
-    contacts: "email:engineering@audius.co",
+    contacts: "email:security@audius.co",
     policy: "",
 
     // Optional Fields
