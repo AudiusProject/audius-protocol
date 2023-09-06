@@ -1,8 +1,8 @@
 import axios from "axios";
-import { AntiAbuseConfig } from "./config/config";
 import { logger } from "./logger";
 import { Table, Users } from "storage/src";
 import { Knex } from "knex";
+import { AntiAbuseConfig } from "./config/antiAbuseConfig";
 
 type AbuseRule = {
   rule: number;

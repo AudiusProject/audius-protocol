@@ -47,10 +47,8 @@ export const relayRateLimiter = async (req: Request, res: Response, next: NextFu
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders({}, e as RateLimiterRes);
-      errorResponseRateLimited({});
     }
     logger.error({ msg: "rate limit internal error", e });
-    errorResponseInternal({});
   }
   next()
 };
