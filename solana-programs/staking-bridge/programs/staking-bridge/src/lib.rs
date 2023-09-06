@@ -70,27 +70,13 @@ pub mod staking_bridge {
         ctx: Context<PostWormholeMessage>,
         nonce: u32,
         amount: u64,
-        config_bump: u8,
         wrapped_mint_bump: u8,
-        wrapped_meta_bump: u8,
-        authority_signer_bump: u8,
-        bridge_config_bump: u8,
-        emitter_bump: u8,
-        sequence_bump: u8,
-        fee_collector_bump: u8,
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
         check_wormhole_pdas(
             accounts,
-            config_bump,
             wrapped_mint_bump,
-            wrapped_meta_bump,
-            authority_signer_bump,
-            bridge_config_bump,
-            emitter_bump,
-            sequence_bump,
-            fee_collector_bump,
         )?;
         approve_wormhole_transfer(
             accounts,
