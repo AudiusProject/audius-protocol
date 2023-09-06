@@ -90,31 +90,29 @@ const FeedPageContent = ({
   )
 
   return (
-    <>
-      <Page
-        title={feedTitle}
-        description={feedDescription}
-        size='large'
-        header={header}
-      >
-        <Lineup
-          emptyElement={
-            <EmptyFeed
-              hasAccount={hasAccount}
-              fetchFollowUsers={fetchSuggestedFollowUsers}
-              followUsers={followUsers}
-              suggestedFollows={suggestedFollows}
-              onClick={hasAccount ? goToTrending : goToSignUp}
-            />
-          }
-          endOfLineup={<EndOfLineup key='endOfLineup' />}
-          key='feed'
-          isFeed
-          {...feedLineupProps}
-          {...mainLineupProps}
-        />
-      </Page>
-    </>
+    <Page
+      title={feedTitle}
+      description={feedDescription}
+      size='large'
+      header={header}
+    >
+      <Lineup
+        emptyElement={
+          <EmptyFeed
+            hasAccount={hasAccount}
+            fetchFollowUsers={fetchSuggestedFollowUsers}
+            followUsers={followUsers}
+            suggestedFollows={suggestedFollows}
+            onClick={hasAccount ? goToTrending : goToSignUp}
+          />
+        }
+        endOfLineup={<EndOfLineup key='endOfLineup' />}
+        key='feed'
+        isFeed
+        {...feedLineupProps}
+        {...mainLineupProps}
+      />
+    </Page>
   )
 }
 

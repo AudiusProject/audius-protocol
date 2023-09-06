@@ -46,9 +46,8 @@ function* getTracks({
   const apiClient = yield* getContext('apiClient')
   const filter = filterMap[filterEnum]
 
-  // NOTE: The `/feed` does not paginate, so the feed is requested from 0 to N
   const params: GetSocialFeedArgs = {
-    offset: 0,
+    offset,
     limit: offset + limit,
     filter,
     with_users: true,
