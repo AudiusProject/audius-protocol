@@ -27,7 +27,7 @@ use crate::constant::{
 use crate::error::StakingBridgeErrorCode;
 use crate::raydium::swap;
 use crate::wormhole::{
-    check_wormhole_pdas,
+    check_wrapped_mint_pda,
     approve_wormhole_transfer,
     execute_wormhole_transfer
 };
@@ -74,7 +74,7 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_wormhole_pdas(
+        check_wrapped_mint_pda(
             accounts,
             wrapped_mint_bump,
         )?;
@@ -165,19 +165,19 @@ pub struct RaydiumSwap<'info> {
     /// CHECK: This is the AMM id for the pool.
     pub amm: AccountInfo<'info>,
     #[account()]
-    /// CHECK: This is the authority for the pool. No check necessary.
+    /// CHECK: This is the authority for the pool. Passed through to Raydium and checked there.
     pub amm_authority: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the open orders account for the pool. No check necessary.
+    /// CHECK: This is the open orders account for the pool. Passed through to Raydium and checked there.
     pub amm_open_orders: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the target orders account for the pool. No check necessary.
+    /// CHECK: This is the target orders account for the pool. Passed through to Raydium and checked there.
     pub amm_target_orders: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the coin token account for the pool. No check necessary.
+    /// CHECK: This is the coin token account for the pool. Passed through to Raydium and checked there.
     pub pool_coin_token_account: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the pc token account for the pool. No check necessary.
+    /// CHECK: This is the pc token account for the pool. Passed through to Raydium and checked there.
     pub pool_pc_token_account: UncheckedAccount<'info>,
     #[account(
         address = SERUM_DEX_PROGRAM_ADDRESS @ StakingBridgeErrorCode::InvalidSerumDexProgram
@@ -191,22 +191,22 @@ pub struct RaydiumSwap<'info> {
     /// CHECK: This is the market address
     pub serum_market: AccountInfo<'info>,
     #[account(mut)]
-    /// CHECK: This is the bids account for the serum market. No check necessary.
+    /// CHECK: This is the bids account for the serum market. Passed through to Raydium and checked there.
     pub serum_bids: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the asks account for the serum market. No check necessary.
+    /// CHECK: This is the asks account for the serum market. Passed through to Raydium and checked there.
     pub serum_asks: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the event queue for the serum market. No check necessary.
+    /// CHECK: This is the event queue for the serum market. Passed through to Raydium and checked there.
     pub serum_event_queue: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the coin vault for the serum market. No check necessary.
+    /// CHECK: This is the coin vault for the serum market. Passed through to Raydium and checked there.
     pub serum_coin_vault_account: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the pc vault for the serum market. No check necessary.
+    /// CHECK: This is the pc vault for the serum market. Passed through to Raydium and checked there.
     pub serum_pc_vault_account: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: This is the vault signer for the serum market. No check necessary.
+    /// CHECK: This is the vault signer for the serum market. Passed through to Raydium and checked there.
     pub serum_vault_signer: UncheckedAccount<'info>,
     #[account(
         mut,
@@ -257,28 +257,28 @@ pub struct PostWormholeMessage<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account()]
-    /// CHECK: This is the config PDA owned by the Token Bridge
+    /// CHECK: This is the config PDA owned by the Token Bridge. Passed through to Wormhole and checked there.
     pub config: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the wrapped mint PDA, which also depends on the origin token chain and origin token address, owned by the Token Bridge
+    /// CHECK: This is the wrapped mint PDA, which also depends on the origin token chain and origin token address, owned by the Token Bridge. Checked in 'check_wrapped_mint_pda'.
     pub wrapped_mint: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: This is the wrapped meta PDA, which also depends on the wrapped mint, owned by the Token Bridge
+    /// CHECK: This is the wrapped meta PDA, which also depends on the wrapped mint, owned by the Token Bridge. Passed through to Wormhole and checked there.
     pub wrapped_meta: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: This is the authority signer PDA owned by the Token Bridge
+    /// CHECK: This is the authority signer PDA owned by the Token Bridge. Passed through to Wormhole and checked there.
     pub authority_signer: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the bridge PDA owned by the Core Bridge
+    /// CHECK: This is the bridge PDA owned by the Core Bridge. Passed through to Wormhole and checked there.
     pub bridge_config: UncheckedAccount<'info>,
     #[account()]
-    /// CHECK: This is the emitter PDA owned by the Token Bridge
+    /// CHECK: This is the emitter PDA owned by the Token Bridge. Passed through to Wormhole and checked there.
     pub emitter: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the sequence PDA, which also depends on the emitter, owned by the Core Bridge
+    /// CHECK: This is the sequence PDA, which also depends on the emitter, owned by the Core Bridge. Passed through to Wormhole and checked there.
     pub sequence: UncheckedAccount<'info>,
     #[account(mut)]
-    /// CHECK: This is the fee collector PDA owned by the Core Bridge
+    /// CHECK: This is the fee collector PDA owned by the Core Bridge. Passed through to Wormhole and checked there.
     pub fee_collector: UncheckedAccount<'info>,
     #[account(mut)]
     pub message: Signer<'info>,

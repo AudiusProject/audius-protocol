@@ -20,7 +20,7 @@ use crate::{
     PostWormholeMessageData
 };
 
-pub fn check_wormhole_pdas(
+pub fn check_wrapped_mint_pda(
   accounts: &mut PostWormholeMessage,
   wrapped_mint_bump: u8,
 ) -> Result<()> {
