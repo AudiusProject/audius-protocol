@@ -223,9 +223,8 @@ func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 		IdToHost:     map[uint8]string{},
 		Combinations: map[uint16][]uint8{},
 	}
-	count := 0
 	var lastKey string
-	for key, val, ok := iter.Next(); ok && count < pageSize; key, val, ok = iter.Next() {
+	for key, val, ok := iter.Next(); ok && len(resp.Leaves) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
 
 		// only share our own leaves - not leaves that are tracking other hosts
@@ -243,8 +242,6 @@ func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 				resp.IdToHost[hostID] = r.idToHost[hostID]
 			}
 		}
-
-		count++
 	}
 
 	resp.LastKey = lastKey
@@ -279,8 +276,7 @@ func (r *Radix) ServeTreePaginated(c echo.Context) error {
 	resp := ServeTreeResp{
 		CIDs: make(map[string]ServeTreeCIDResp, pageSize),
 	}
-	count := 0
-	for key, val, ok := iter.Next(); ok && count < pageSize; key, val, ok = iter.Next() {
+	for key, val, ok := iter.Next(); ok && len(resp.CIDs) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
 
 		host := r.myHost
@@ -313,8 +309,258 @@ func (r *Radix) ServeTreePaginated(c echo.Context) error {
 			ReportedByHost: host,
 			HostsWithCID:   hostsWithCID,
 		}
+	}
 
-		count++
+	return c.JSON(http.StatusOK, resp)
+}
+
+type ServeReplicationCountsResp struct {
+	NumHostsStoringNumCIDs    map[string]map[int]int
+	NumHostsStoringNumCIDsAgg map[int]int
+}
+
+// ServeReplicationCounts returns a mapping of number to the number of CIDs that are replicated by that many hosts.
+func (r *Radix) ServeReplicationCounts(c echo.Context) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	iter := r.tree.Root().Iterator()
+
+	resp := ServeReplicationCountsResp{
+		NumHostsStoringNumCIDs:    make(map[string]map[int]int, len(r.otherHostSuffixes)+1),
+		NumHostsStoringNumCIDsAgg: map[int]int{},
+	}
+	resp.NumHostsStoringNumCIDs[r.myHost] = make(map[int]int)
+	for otherHost := range r.otherHostSuffixes {
+		resp.NumHostsStoringNumCIDs[otherHost] = make(map[int]int)
+	}
+
+	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
+		keyStr := string(key)
+
+		if strings.Contains(keyStr, "_") {
+			// this is a leaf that's tracking another host's view
+			continue
+		}
+
+		// count num unique hosts that have this CID, as confirmed by us (myHost)
+		hostsWithCID := r.combinations[val]
+		resp.NumHostsStoringNumCIDs[r.myHost][len(hostsWithCID)]++
+
+		// count num unique hosts that have this CID, as confirmed by all other hosts
+		for otherHost, suffix := range r.otherHostSuffixes {
+			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
+				hostsWithCIDInOtherHostView := r.combinations[idx]
+				resp.NumHostsStoringNumCIDs[otherHost][len(hostsWithCIDInOtherHostView)]++
+
+				// aggregate unique hosts storing CID
+				for _, hostID := range hostsWithCIDInOtherHostView {
+					if !slices.Contains(hostsWithCID, hostID) {
+						hostsWithCID = append(hostsWithCID, hostID)
+					}
+				}
+			}
+		}
+
+		// count aggregated unique hosts that have this CID in the view of all hosts
+		resp.NumHostsStoringNumCIDsAgg[len(hostsWithCID)]++
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+type ServeReplicationCIDs struct {
+	ReplicationFactor int
+	CIDs              []string
+}
+
+// ServeReplicationCIDsPaginated return the CIDs that are replicated by the given number of hosts.
+func (r *Radix) ServeReplicationCIDsPaginated(c echo.Context) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	greaterThanCid := c.QueryParam("greaterThanCid")
+	pageSize, err := strconv.Atoi(c.QueryParam("pageSize"))
+	if err != nil || pageSize > maxPageSize {
+		pageSize = maxPageSize
+	}
+	replicationFactor, err := strconv.Atoi(c.Param("replicationFactor"))
+	if err != nil {
+		replicationFactor = 3
+	}
+
+	iter := r.tree.Root().Iterator()
+	if greaterThanCid != "" {
+		iter.SeekLowerBound([]byte(compressCID(greaterThanCid)))
+		iter.Next() // skip the greaterThanCid itself
+	}
+
+	resp := ServeReplicationCIDs{
+		ReplicationFactor: replicationFactor,
+		CIDs:              make([]string, 0, pageSize),
+	}
+
+	for key, val, ok := iter.Next(); ok && len(resp.CIDs) < pageSize; key, val, ok = iter.Next() {
+		keyStr := string(key)
+
+		if strings.Contains(keyStr, "_") {
+			// this is a leaf that's tracking another host's view
+			continue
+		}
+
+		// aggregate unique hosts storing CID confirmed by this host (our view) and other host views
+		hostsWithCID := r.combinations[val]
+		for _, suffix := range r.otherHostSuffixes {
+			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
+				hostsWithCIDInOtherHostView := r.combinations[idx]
+
+				// aggregate unique hosts storing CID
+				for _, hostID := range hostsWithCIDInOtherHostView {
+					if !slices.Contains(hostsWithCID, hostID) {
+						hostsWithCID = append(hostsWithCID, hostID)
+					}
+				}
+			}
+		}
+
+		if replicationFactor == len(hostsWithCID) {
+			resp.CIDs = append(resp.CIDs, decompressKey(decompressKey(keyStr)))
+		}
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+type ServeNumCIDsOnOnlyHostsResp struct {
+	Hosts              []string
+	NumCIDsOnlyOnHosts int
+}
+
+// ServeNumCIDsOnOnlyHosts returns the number of CIDs that are only on the given hosts.
+func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	onlyOnHostsStr := c.Param("hosts")
+	onlyOnHosts := strings.Split(onlyOnHostsStr, ",")
+	if len(onlyOnHosts) == 0 {
+		return c.JSON(http.StatusBadRequest, "no hosts specified")
+	}
+	for _, host := range onlyOnHosts {
+		if _, ok := r.otherHostSuffixes[host]; !ok && host != r.myHost {
+			return c.JSON(http.StatusBadRequest, fmt.Sprintf("host %s not found", host))
+		}
+	}
+
+	iter := r.tree.Root().Iterator()
+
+	resp := ServeNumCIDsOnOnlyHostsResp{
+		Hosts: onlyOnHosts,
+	}
+
+	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
+		keyStr := string(key)
+
+		if strings.Contains(keyStr, "_") {
+			// this is a leaf that's tracking another host's view
+			continue
+		}
+
+		// find all hosts that have this CID
+		hostsWithCID := r.combinations[val]
+		for _, suffix := range r.otherHostSuffixes {
+			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
+				hostsWithCIDInOtherHostView := r.combinations[idx]
+				for _, hostID := range hostsWithCIDInOtherHostView {
+					if !slices.Contains(hostsWithCID, hostID) {
+						hostsWithCID = append(hostsWithCID, hostID)
+					}
+				}
+			}
+		}
+
+		if len(hostsWithCID) != len(onlyOnHosts) {
+			continue
+		}
+		for _, host := range onlyOnHosts {
+			if !slices.Contains(hostsWithCID, r.getIdForHost(host)) {
+				continue
+			}
+		}
+		resp.NumCIDsOnlyOnHosts++
+	}
+
+	return c.JSON(http.StatusOK, resp)
+}
+
+type ServeCIDsOnOnlyHostsResp struct {
+	Hosts           []string
+	CIDsOnlyOnHosts []string
+}
+
+// ServeCIDsOnOnlyHostsPaginated returns the CIDs that are only on the given hosts.
+func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	onlyOnHostsStr := c.QueryParam("hosts")
+	onlyOnHosts := strings.Split(onlyOnHostsStr, ",")
+	if len(onlyOnHosts) == 0 {
+		return c.JSON(http.StatusBadRequest, "no hosts specified")
+	}
+	for _, host := range onlyOnHosts {
+		if _, ok := r.otherHostSuffixes[host]; !ok && host != r.myHost {
+			return c.JSON(http.StatusBadRequest, fmt.Sprintf("host %s not found", host))
+		}
+	}
+
+	greaterThanCid := c.QueryParam("greaterThanCid")
+	pageSize, err := strconv.Atoi(c.QueryParam("pageSize"))
+	if err != nil || pageSize > maxPageSize {
+		pageSize = maxPageSize
+	}
+
+	iter := r.tree.Root().Iterator()
+	if greaterThanCid != "" {
+		iter.SeekLowerBound([]byte(compressCID(greaterThanCid)))
+		iter.Next() // skip the greaterThanCid itself
+	}
+
+	resp := ServeCIDsOnOnlyHostsResp{
+		Hosts:           onlyOnHosts,
+		CIDsOnlyOnHosts: make([]string, 0, pageSize),
+	}
+
+	for key, val, ok := iter.Next(); ok && len(resp.CIDsOnlyOnHosts) < pageSize; key, val, ok = iter.Next() {
+		keyStr := string(key)
+
+		if strings.Contains(keyStr, "_") {
+			// this is a leaf that's tracking another host's view
+			continue
+		}
+
+		// find all hosts that have this CID
+		hostsWithCID := r.combinations[val]
+		for _, suffix := range r.otherHostSuffixes {
+			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
+				hostsWithCIDInOtherHostView := r.combinations[idx]
+				for _, hostID := range hostsWithCIDInOtherHostView {
+					if !slices.Contains(hostsWithCID, hostID) {
+						hostsWithCID = append(hostsWithCID, hostID)
+					}
+				}
+			}
+		}
+
+		if len(hostsWithCID) != len(onlyOnHosts) {
+			continue
+		}
+		for _, host := range onlyOnHosts {
+			if !slices.Contains(hostsWithCID, r.getIdForHost(host)) {
+				continue
+			}
+		}
+		resp.CIDsOnlyOnHosts = append(resp.CIDsOnlyOnHosts, decompressKey(keyStr))
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -353,9 +599,6 @@ func (r *Radix) addLeavesFromOtherHost(otherHost string, leaves *map[string]uint
 
 	otherHosts := maps.Keys(r.otherHostSuffixes)
 	for key, leafValOnOtherHost := range *leaves {
-		// add suffix to each key so we know it came from otherHost
-		key = key + r.otherHostSuffixes[otherHost]
-
 		// re-map the other host's IDs to our own
 		idsOnOtherHost := (*combinations)[leafValOnOtherHost]
 		hostIDs := make([]uint8, 0, len(idsOnOtherHost))
@@ -370,7 +613,15 @@ func (r *Radix) addLeavesFromOtherHost(otherHost string, leaves *map[string]uint
 		// re-map host ID combination to our own
 		leafVal := r.getOrMakeCombinationsIdx(hostIDs)
 
-		r.tree, _, _ = r.tree.Insert([]byte(key), leafVal)
+		// add suffix to each key so we know it came from otherHost
+		otherHostKey := key + r.otherHostSuffixes[otherHost]
+		r.tree, _, _ = r.tree.Insert([]byte(otherHostKey), leafVal)
+
+		// we want to be aware of this key, too
+		if _, ok := r.tree.Get([]byte(key)); !ok {
+			r.NumCIDsTotal++
+			r.tree, _, _ = r.tree.Insert([]byte(key), 0)
+		}
 	}
 }
 

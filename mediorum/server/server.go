@@ -333,7 +333,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	if config.RadixListenPort != "" {
 		radixURL, _ := url.Parse("http://radix:" + config.RadixListenPort)
 		radixProxy := httputil.NewSingleHostReverseProxy(radixURL)
-		echoServer.Any("/radix*", echo.WrapHandler(radixProxy))
+		echoServer.Any("/radi*", echo.WrapHandler(radixProxy))
 	}
 
 	return ss, nil

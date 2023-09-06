@@ -77,9 +77,13 @@ func New(config RadixConfig) (*RadixServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS()) // TODO: can this be removed?
 
-	routes.GET("/info", rs.serveRadixInfo)
-	routes.GET("/info/:cid", rs.radix.ServeCIDInfo)
+	routes.GET("/", rs.serveRadixInfo)
+	routes.GET("/cid/:cid", rs.radix.ServeCIDInfo)
 	routes.GET("/cids", rs.radix.ServeTreePaginated)
+	routes.GET("/cids/onlyOn/count", rs.radix.ServeNumCIDsOnOnlyHosts)
+	routes.GET("/cids/onlyOn", rs.radix.ServeCIDsOnOnlyHostsPaginated)
+	routes.GET("/replication", rs.radix.ServeReplicationCounts)
+	routes.GET("/replication/factor/:replicationFactor", rs.radix.ServeReplicationCIDsPaginated)
 
 	// TODO: add auth middleware to these internal routes
 	routes.POST("/internal/setHostHasCID", rs.handleSetHostHasCID)
