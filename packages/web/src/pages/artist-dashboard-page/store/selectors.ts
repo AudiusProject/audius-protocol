@@ -9,15 +9,13 @@ export const getDashboardTracksStatus = (state: AppState) =>
   state.dashboard.tracksStatus
 export const getDashboardStatus = (state: AppState) => state.dashboard.status
 export const getDashboardTracks = (state: AppState) => state.dashboard.tracks
-export const getUnlistedDashboardTracks = (state: AppState) =>
-  state.dashboard.unlistedTracks
 export const getDashboardListenData = (state: AppState) =>
   state.dashboard.listenData
 
 export const makeGetDashboard = () => {
   return createSelector(
-    [getAccountUser, getDashboardTracks, getUnlistedDashboardTracks],
-    (account, tracks, unlistedTracks) => {
+    [getAccountUser, getDashboardTracks],
+    (account, tracks) => {
       const stats = {
         tracks: account ? account.track_count : 0,
         playlists: account ? account.playlist_count : 0,
@@ -33,7 +31,6 @@ export const makeGetDashboard = () => {
       return {
         account,
         tracks,
-        unlistedTracks,
         stats
       }
     }

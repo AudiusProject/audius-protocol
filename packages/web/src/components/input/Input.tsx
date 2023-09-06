@@ -21,6 +21,7 @@ type InputProps = {
   placeholder?: string
   value?: string
   prefix?: ReactNode
+  suffix?: ReactNode
   variant?: InputVariant
   size?: InputSize
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
@@ -32,6 +33,7 @@ export const Input = ({
   className = '',
   inputClassName = '',
   prefix = null,
+  suffix = null,
   variant = 'default',
   size = 'default',
   ...inputProps
@@ -64,6 +66,11 @@ export const Input = ({
         className={cn(styles.input, inputClassName)}
         {...inputProps}
       />
+      {suffix ? (
+        <label className={styles.inputSuffix} onClick={handleLabelClick}>
+          {suffix}
+        </label>
+      ) : null}
     </div>
   )
 }

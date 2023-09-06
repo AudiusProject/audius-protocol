@@ -33,15 +33,11 @@ import {
 } from './components/TracksTableContainer'
 import { USDCCard } from './components/USDCCard'
 import {
-  fetchDashboard,
-  fetchDashboardListenData,
-  resetDashboard
-} from './store/actions'
-import {
   getDashboardListenData,
   getDashboardStatus,
   makeGetDashboard
 } from './store/selectors'
+import { fetch, reset, fetchListenData } from './store/slice'
 const { getTheme } = themeSelectors
 
 const TotalPlaysChart = lazyWithPreload(
@@ -81,9 +77,7 @@ export const ArtistDashboardPage = () => {
   const dispatch = useDispatch()
   const isUSDCEnabled = getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
   const [selectedTrack, setSelectedTrack] = useState(-1)
-  const { account, tracks, unlistedTracks, stats } = useSelector(
-    makeGetDashboard()
-  )
+  const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const isMatrix = useSelector(getTheme) === Theme.MATRIX
@@ -93,10 +87,10 @@ export const ArtistDashboardPage = () => {
   const header = <Header primary='Dashboard' />
 
   useEffect(() => {
-    dispatch(fetchDashboard(0, tablePageSize))
+    dispatch(fetch({ offset: 0, limit: tablePageSize }))
     TotalPlaysChart.preload()
     return () => {
-      dispatch(resetDashboard())
+      dispatch(reset({}))
     }
   }, [dispatch])
 
@@ -130,19 +124,20 @@ export const ArtistDashboardPage = () => {
         end = start.clone().add(1, 'year')
       }
       dispatch(
-        fetchDashboardListenData(
-          tracks.map((t) => t.track_id),
-          start.toISOString(),
-          end.toISOString()
-        )
+        fetchListenData({
+          trackIds: tracks.map((t) => t.track_id),
+          start: start.toISOString(),
+          end: end.toISOString(),
+          period: 'month'
+        })
       )
     },
     [dispatch, tracks]
   )
 
-  const renderCreatorContent = useCallback(() => {
+  const renderArtistContent = useCallback(() => {
     const trackCount = account?.track_count || 0
-    if (!account || !(trackCount > 0)) return null
+    if (!account || !(trackCount > 0) || !listenData) return null
 
     const statTiles: ReactNode[] = []
     each(stats, (stat, title) =>
@@ -157,8 +152,7 @@ export const ArtistDashboardPage = () => {
       name: track.title
     }))
 
-    const listedDataSource = formatMetadata(tracks)
-    const unlistedDataSource = formatMetadata(unlistedTracks)
+    const dataSource = formatMetadata(tracks)
     return (
       <>
         <div className={styles.sectionContainer}>
@@ -180,8 +174,7 @@ export const ArtistDashboardPage = () => {
         <div className={styles.tracksTableWrapper}>
           <TracksTableContainer
             onClickRow={onClickRow}
-            listedDataSource={listedDataSource}
-            unlistedDataSource={unlistedDataSource}
+            dataSource={dataSource}
             account={account}
           />
         </div>
@@ -195,8 +188,7 @@ export const ArtistDashboardPage = () => {
     onSetYearOption,
     selectedTrack,
     stats,
-    tracks,
-    unlistedTracks
+    tracks
   ])
 
   return (
@@ -229,7 +221,7 @@ export const ArtistDashboardPage = () => {
               onViewProfile={() => goToRoute(profilePage(account.handle))}
             />
           )}
-          {renderCreatorContent()}
+          {renderArtistContent()}
         </>
       )}
     </Page>

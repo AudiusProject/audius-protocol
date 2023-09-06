@@ -13,37 +13,33 @@
   margin: var(--unit-3) 0px;
 }
 
-.tabBodyWrapper {
-  align-items: flex-start;
-  transition: all 0.5s ease-in-out;
-  margin: 0px;
-  flex-grow: 1;
-  min-width: 0px;
-}
-
-.tabBody {
-  transition: height 0.1s ease-out;
-  overflow: hidden;
-}
-
-.tabBorderProvider {
-  position: relative;
+.header {
   width: 100%;
-  background-color: var(--neutral-light-10);
-  border-bottom: 1px solid var(--neutral-light-8);
-}
-
-.tabContainer {
-  width: 100%;
+  padding: var(--unit-6);
   display: flex;
-  padding-top: var(--unit-12);
-  margin-left: var(--unit-2);
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--unit-2);
 }
 
-.filterInputContainer {
-  position: absolute;
-  top: var(--unit-5);
-  right: var(--unit-6);
+.pills {
+  display: flex;
+  gap: var(--unit-2);
+}
+
+.filterInput {
+  width: 160px;
+  height: var(--unit-6);
+  border-radius: var(--unit-1);
+  border-color: var(--neutral-light-8);
+  background: var(--neutral-light-10);
+}
+
+.close {
+  cursor: pointer;
+  height: var(--unit-6);
+  width: var(--unit-6);
 }
 
 .trackName {

@@ -57,3 +57,15 @@
 .input::placeholder {
   color: var(--neutral-light-4);
 }
+
+.inputSuffix {
+  position: relative;
+  padding-right: 6px;
+}
+.inputSuffix svg {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+.inputSuffix svg g path {
+  fill: var(--neutral-light-4);
+}

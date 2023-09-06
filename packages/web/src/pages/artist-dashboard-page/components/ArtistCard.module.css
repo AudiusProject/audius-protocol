@@ -7,9 +7,11 @@
   background: var(--white);
   overflow: hidden;
   box-shadow: var(--table-shadow) 0px var(--unit-4) var(--unit-5) 0px;
+  cursor: pointer;
 }
 
 .coverPhotoWrapper {
+  height: 100px;
   border-bottom: 2px solid var(--border-default);
 }
 

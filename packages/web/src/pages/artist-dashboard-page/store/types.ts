@@ -1,12 +1,11 @@
-import { Status, Collection, Track } from '@audius/common'
+import { Status, Collection, Track, Nullable } from '@audius/common'
 
 export default interface ArtistDashboardState {
   status: Status
   tracksStatus: Status
   tracks: Track[]
-  unlistedTracks: Track[]
-  collections: Collection
-  listenData: {
+  collections: Collection[]
+  listenData: Nullable<{
     all: {
       labels: string[]
       values: number[]
@@ -15,5 +14,5 @@ export default interface ArtistDashboardState {
       labels: string[]
       values: number[]
     }
-  }
+  }>
 }
