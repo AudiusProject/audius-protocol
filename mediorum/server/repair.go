@@ -38,6 +38,10 @@ func (ss *MediorumServer) startRepairer() {
 			} else {
 				logger.Info("repair OK", "took", took)
 			}
+			if cleanupMode {
+				ss.lastRepairCleanupComplete = time.Now()
+				ss.lastRepairCleanupDuration = took
+			}
 		} else {
 			logger.Warn("disk has <200GB remaining and is not in cleanup mode. skipping repair")
 		}
@@ -106,16 +110,18 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 			}
 
 			key := cidutil.ShardCID(cid)
-			alreadyHave := true
+			var alreadyHave bool
 			attrs, err := ss.bucket.Attributes(ctx, key)
-			if err != nil {
-				if gcerrors.Code(err) == gcerrors.NotFound {
-					alreadyHave = false
-					attrs = &blob.Attributes{}
-				} else {
-					logger.Error("exist check failed", "err", err)
-					continue
-				}
+			if err == nil {
+				alreadyHave = true
+				ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
+			} else if gcerrors.Code(err) == gcerrors.NotFound {
+				ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
+				alreadyHave = false
+				attrs = &blob.Attributes{}
+			} else {
+				logger.Error("exist check failed", "err", err)
+				continue
 			}
 
 			// in cleanup mode do some extra checks:
@@ -144,14 +150,18 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 					err := ss.pullFileFromHost(host, cid)
 					if err != nil {
 						logger.Error("pull failed (blob I should have)", "err", err, "host", host)
+						ss.radixSetHostNotHasCID(host, cid)
 					} else {
 						logger.Info("pull OK (blob I should have)", "host", host)
 						success = true
 						break
 					}
 				}
-				if !success {
+				if success {
+					ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
+				} else {
 					logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+					ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
 				}
 			}
 
@@ -165,6 +175,7 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 				// loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 				for _, host := range preferredHealthyHosts {
 					if ss.hostHasBlob(host, cid) {
+						ss.radixSetHostHasCID(host, cid)
 						depth++
 					}
 					if host == ss.Config.Self.Host {
@@ -181,6 +192,7 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 						logger.Error("delete failed", "err", err)
 					} else {
 						logger.Info("delete OK")
+						ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
 					}
 				}
 			}
@@ -194,6 +206,7 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 				// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {
+						ss.radixSetHostHasCID(host, cid)
 						if host == ss.Config.Self.Host {
 							continue
 						}
@@ -201,6 +214,8 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 						if len(hasIt) == ss.Config.ReplicationFactor {
 							break
 						}
+					} else {
+						ss.radixSetHostNotHasCID(host, cid)
 					}
 				}
 

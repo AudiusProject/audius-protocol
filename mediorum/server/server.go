@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -57,6 +58,7 @@ type MediorumConfig struct {
 	PostgresDSN          string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
+	RadixListenPort      string
 	TrustedNotifierID    int
 	SPID                 int
 	SPOwnerWallet        string
@@ -99,6 +101,9 @@ type MediorumServer struct {
 	peerHealthsMutex sync.RWMutex
 	peerHealths      map[string]*PeerHealth
 	unreachablePeers []string
+
+	lastRepairCleanupComplete time.Time
+	lastRepairCleanupDuration time.Duration
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -323,6 +328,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+
+	// send all /radix routes to the radix container
+	if config.RadixListenPort != "" {
+		radixURL, _ := url.Parse("http://radix:" + config.RadixListenPort)
+		radixProxy := httputil.NewSingleHostReverseProxy(radixURL)
+		echoServer.Any("/radix*", echo.WrapHandler(radixProxy))
+	}
 
 	return ss, nil
 
