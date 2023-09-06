@@ -13,12 +13,7 @@ export const validator = async (
   const body = request.body as RelayRequest;
 
   // Validation of input fields
-
-  if (body.contractAddress === undefined || body.contractAddress === null) {
-    validationError(next, "contractAddress is a required field");
-    return;
-  }
-  const contractAddress = body.contractAddress;
+  const contractAddress = body.contractAddress || config.entityManagerContractAddress;
 
   if (
     body.contractRegistryKey === null ||
