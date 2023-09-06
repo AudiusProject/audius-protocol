@@ -6,23 +6,3 @@ export const logger = pino({
   base: undefined,
   timestamp: stdTimeFunctions.isoTime,
 });
-
-export const logRequest = () => {
-  logger.info(
-    {
-      req: {},
-    },
-    "incoming request"
-  );
-};
-
-export const logResponse = () => {
-  logger.info(
-    {
-      res: {},
-      req: {},
-      responseTime: "",
-    },
-    "request completed"
-  );
-};
