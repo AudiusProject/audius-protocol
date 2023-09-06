@@ -10,79 +10,137 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slog"
 
 	"mediorum/server/signature"
 )
 
-// Constants
 const (
-	DelistStatusPollingInterval = 20 * time.Second
-	HTTPTimeout                 = 5 * time.Minute
-	DelistBatchSize             = 5000
-	TimeFormat                  = "2006-01-02 15:04:05.999999-07"
+	DelistStatusPollingInterval              = 20 * time.Second
+	HTTPTimeout                              = 5 * time.Minute
+	DelistBatchSize                          = 5000
+	TimeFormat                               = "2006-01-02 15:04:05.999999-07"
+	Tracks                      DelistEntity = "tracks"
+	Users                       DelistEntity = "users"
 )
 
 type (
-	TrackDelistStatus struct {
+	DelistEntity string
+
+	DelistStatus struct {
 		CreatedAt time.Time `json:"-"`
-		TrackID   int       `json:"trackId"`
-		OwnerID   int       `json:"ownerId"`
-		TrackCID  string    `json:"trackCid"`
 		Delisted  bool      `json:"delisted"`
 		Reason    string    `json:"reason"`
+
+		// fields specific to TrackDelistStatus
+		TrackID  int    `json:"trackId,omitempty"`
+		TrackCID string `json:"trackCid,omitempty"`
+		OwnerID  int    `json:"ownerId,omitempty"`
+
+		// field specific to UserDelistStatus
+		UserID int `json:"userId,omitempty"`
 	}
 
-	UserDelistStatus struct {
-		CreatedAt time.Time `json:"createdAt"`
-		UserID    int       `json:"userId"`
-		Delisted  bool      `json:"delisted"`
-		Reason    string    `json:"reason"`
-	}
+	aliasDelistStatus DelistStatus
 
-	// Types to avoid infinite recursion when calling json.Unmarshal
-	aliasTrackDelistStatus TrackDelistStatus
-	aliasUserDelistStatus  UserDelistStatus
-
-	// Types to unmarshal timestamps in the format returned by the trusted notifier
-	jsonTrackDelistStatus struct {
-		*aliasTrackDelistStatus
-		CreatedAt string `json:"createdAt"`
-	}
-	jsonUserDelistStatus struct {
-		*aliasUserDelistStatus
+	jsonDelistStatus struct {
+		*aliasDelistStatus
 		CreatedAt string `json:"createdAt"`
 	}
 )
 
-func (t *TrackDelistStatus) UnmarshalJSON(data []byte) error {
-	temp := &jsonTrackDelistStatus{
-		aliasTrackDelistStatus: (*aliasTrackDelistStatus)(t),
+func (ds *DelistStatus) UnmarshalJSON(data []byte) error {
+	temp := &jsonDelistStatus{
+		aliasDelistStatus: (*aliasDelistStatus)(ds),
 	}
 	if err := json.Unmarshal(data, &temp); err != nil {
 		return err
 	}
 	var err error
-	t.CreatedAt, err = time.Parse(TimeFormat, temp.CreatedAt)
+	ds.CreatedAt, err = time.Parse(TimeFormat, temp.CreatedAt)
 	if err != nil {
-		return err
+		ds.CreatedAt = time.Now()
 	}
 	return nil
 }
 
-func (u *UserDelistStatus) UnmarshalJSON(data []byte) error {
-	temp := &jsonUserDelistStatus{
-		aliasUserDelistStatus: (*aliasUserDelistStatus)(u),
-	}
-	if err := json.Unmarshal(data, &temp); err != nil {
-		return err
-	}
-	var err error
-	u.CreatedAt, err = time.Parse(TimeFormat, temp.CreatedAt)
+func (ss *MediorumServer) serveTrackDelistStatus(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	sql := `SELECT *
+		FROM "track_delist_statuses"
+		WHERE "trackCid" = $1
+		ORDER BY "createdAt" DESC
+		LIMIT 1`
+	row := ss.pgPool.QueryRow(ctx, sql, c.Param("trackCid"))
+	var createdAt time.Time
+	var trackId, ownerId int
+	var trackCid string
+	var delisted bool
+	var reason string
+
+	err := row.Scan(&createdAt, &trackId, &ownerId, &trackCid, &delisted, &reason)
 	if err != nil {
-		return err
+		if err == pgx.ErrNoRows {
+			return c.String(http.StatusNotFound, "No records found. This means there's no delist status and the track is not delisted.")
+		} else {
+			return c.String(500, fmt.Sprintf("Failed to get delist status: %v", err))
+		}
 	}
-	return nil
+	return c.JSON(200, map[string]interface{}{"createdAt": createdAt, "delisted": delisted, "reason": reason, "trackId": trackId, "ownerId": ownerId, "trackCid": trackCid})
+}
+
+func (ss *MediorumServer) serveUserDelistStatus(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	sql := `SELECT *
+		FROM "user_delist_statuses"
+		WHERE "userId" = $1
+		ORDER BY "createdAt" DESC
+		LIMIT 1`
+	row := ss.pgPool.QueryRow(ctx, sql, c.Param("userId"))
+	var createdAt time.Time
+	var userId int
+	var delisted bool
+	var reason string
+
+	err := row.Scan(&createdAt, &userId, &delisted, &reason)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.String(http.StatusNotFound, "No records found. This means there's no delist status and the user is not delisted.")
+		} else {
+			return c.String(500, fmt.Sprintf("Failed to get delist status: %v", err))
+		}
+	}
+	return c.JSON(200, map[string]interface{}{"createdAt": createdAt, "delisted": delisted, "reason": reason, "userId": userId})
+}
+
+func (ss *MediorumServer) serveInsertDelistStatus(c echo.Context) error {
+	ctx := c.Request().Context()
+	var ds DelistStatus
+
+	err := c.Bind(ds)
+	if err != nil {
+		return c.String(400, fmt.Sprintf("Invalid body: %v", err))
+	}
+
+	if ds.TrackCID != "" && ds.TrackID != 0 && ds.OwnerID != 0 {
+		_, err = ss.pgPool.Exec(ctx, `INSERT INTO track_delist_statuses ("createdAt", "trackId", "ownerId", "trackCid", delisted, reason) VALUES ($1, $2, $3, $4, $5, $6)`,
+			time.Now(), ds.TrackID, ds.OwnerID, ds.TrackCID, ds.Delisted, "MANUAL")
+	} else if ds.UserID != 0 {
+		_, err = ss.pgPool.Exec(ctx, `INSERT INTO user_delist_statuses ("createdAt", "userId", delisted, reason) VALUES ($1, $2, $3, $4)`,
+			time.Now(), ds.UserID, ds.Delisted, "MANUAL")
+	} else {
+		return c.String(http.StatusBadRequest, "Invalid entity type")
+	}
+
+	if err != nil {
+		return c.String(500, fmt.Sprintf("Failed to create delist status: %v", err))
+	}
+
+	return c.JSON(http.StatusCreated, ds)
 }
 
 func (ss *MediorumServer) startPollingDelistStatuses() {
@@ -95,7 +153,7 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	for {
 		<-ticker.C
 
-		for _, entity := range []string{"tracks", "users"} {
+		for _, entity := range []DelistEntity{Tracks, Users} {
 			startedAt := time.Now()
 			err := ss.pollDelistStatuses(entity, ss.trustedNotifier.Endpoint, ss.trustedNotifier.Wallet)
 			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", entity)
@@ -108,7 +166,7 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	}
 }
 
-func (ss *MediorumServer) pollDelistStatuses(entity, endpoint, wallet string) error {
+func (ss *MediorumServer) pollDelistStatuses(entity DelistEntity, endpoint, wallet string) error {
 	ctx := context.Background()
 
 	var cursorBefore time.Time
@@ -133,38 +191,55 @@ func (ss *MediorumServer) pollDelistStatuses(entity, endpoint, wallet string) er
 		return errors.New(resp.Status)
 	}
 
-	if entity == "users" {
-		return ss.processUserDelistStatuses(resp.Body, ctx, endpoint)
-	}
-	return ss.processTrackDelistStatuses(resp.Body, ctx, endpoint)
+	return ss.processDelistStatuses(resp.Body, ctx, endpoint, entity)
 }
 
-func (ss *MediorumServer) processTrackDelistStatuses(body io.ReadCloser, ctx context.Context, endpoint string) error {
-	type TrackDelistStatusesResponse struct {
-		Result struct {
-			Tracks []TrackDelistStatus `json:"tracks"`
-		} `json:"result"`
-		Timestamp string `json:"timestamp"`
-		Signature string `json:"signature"`
+func (ss *MediorumServer) processDelistStatuses(body io.ReadCloser, ctx context.Context, endpoint string, entity DelistEntity) error {
+	type DelistStatusesResponse struct {
+		Result    json.RawMessage `json:"result"`
+		Timestamp string          `json:"timestamp"`
+		Signature string          `json:"signature"`
 	}
+
+	// TODO: We should be actually verifying the signature here
 
 	respBody, err := io.ReadAll(body)
 	if err != nil {
 		return err
 	}
 
-	var delistStatusesResponse TrackDelistStatusesResponse
+	var delistStatusesResponse DelistStatusesResponse
 	if err = json.Unmarshal(respBody, &delistStatusesResponse); err != nil {
 		return err
 	}
 
-	// Insert fetched rows in local table and update cursor for remote db with the createdAt timestamp of the latest track we have
-	if len(delistStatusesResponse.Result.Tracks) > 0 {
-		if err = ss.insertTrackDelistStatuses(ctx, delistStatusesResponse.Result.Tracks); err != nil {
+	var delistStatuses struct {
+		Entities []DelistStatus `json:""`
+	}
+	delistStatuses.Entities = []DelistStatus{}
+
+	// unmarshal based on entity type (tracks or users)
+	if entity == "tracks" {
+		err = json.Unmarshal(delistStatusesResponse.Result, &struct {
+			Entities *[]DelistStatus `json:"tracks"`
+		}{Entities: &delistStatuses.Entities})
+	} else if entity == "users" {
+		err = json.Unmarshal(delistStatusesResponse.Result, &struct {
+			Entities *[]DelistStatus `json:"users"`
+		}{Entities: &delistStatuses.Entities})
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// insert fetched rows in local table and update cursor for remote db with the createdAt timestamp of the latest entity we have
+	if len(delistStatuses.Entities) > 0 {
+		if err = ss.insertDelistStatuses(ctx, delistStatuses.Entities, entity); err != nil {
 			return err
 		}
 
-		cursorAfter := delistStatusesResponse.Result.Tracks[len(delistStatusesResponse.Result.Tracks)-1].CreatedAt
+		cursorAfter := delistStatuses.Entities[len(delistStatuses.Entities)-1].CreatedAt
 		_, err = ss.pgPool.Exec(
 			ctx,
 			`
@@ -175,85 +250,26 @@ func (ss *MediorumServer) processTrackDelistStatuses(body io.ReadCloser, ctx con
 			DO UPDATE SET
 				created_at = EXCLUDED.created_at
 			`,
-			cursorAfter, endpoint, "tracks",
+			cursorAfter, endpoint, entity,
 		)
 	}
 	return err
 }
 
-func (ss *MediorumServer) insertTrackDelistStatuses(ctx context.Context, tracks []TrackDelistStatus) error {
+func (ss *MediorumServer) insertDelistStatuses(ctx context.Context, dss []DelistStatus, entity DelistEntity) error {
 	tx, err := ss.pgPool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, track := range tracks {
-		_, err = tx.Exec(ctx, `INSERT INTO track_delist_statuses ("createdAt", "trackId", "ownerId", "trackCid", "delisted", "reason") VALUES ($1, $2, $3, $4, $5, $6)`,
-			track.CreatedAt, track.TrackID, track.OwnerID, track.TrackCID, track.Delisted, track.Reason)
-		if err != nil {
-			tx.Rollback(ctx)
-			return err
+	for _, ds := range dss {
+		if entity == "tracks" {
+			_, err = tx.Exec(ctx, `INSERT INTO track_delist_statuses ("createdAt", "trackId", "ownerId", "trackCid", "delisted", "reason") VALUES ($1, $2, $3, $4, $5, $6)`,
+				ds.CreatedAt, ds.TrackID, ds.OwnerID, ds.TrackCID, ds.Delisted, ds.Reason)
+		} else if entity == "users" {
+			_, err = tx.Exec(ctx, `INSERT INTO user_delist_statuses ("createdAt", "userId", "delisted", "reason") VALUES ($1, $2, $3, $4)`,
+				ds.CreatedAt, ds.UserID, ds.Delisted, ds.Reason)
 		}
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		tx.Rollback(ctx)
-		return err
-	}
-	return nil
-}
-
-func (ss *MediorumServer) processUserDelistStatuses(body io.ReadCloser, ctx context.Context, endpoint string) error {
-	type UserDelistStatusesResponse struct {
-		Result struct {
-			Users []UserDelistStatus `json:"users"`
-		} `json:"result"`
-		Timestamp string `json:"timestamp"`
-		Signature string `json:"signature"`
-	}
-
-	respBody, err := io.ReadAll(body)
-	if err != nil {
-		return err
-	}
-
-	var delistStatusesResponse UserDelistStatusesResponse
-	if err = json.Unmarshal(respBody, &delistStatusesResponse); err != nil {
-		return err
-	}
-
-	// Insert fetched rows in local table and update cursor for remote db with the createdAt timestamp of the latest user we have
-	if len(delistStatusesResponse.Result.Users) > 0 {
-		if err = ss.insertUserDelistStatuses(ctx, delistStatusesResponse.Result.Users); err != nil {
-			return err
-		}
-
-		cursorAfter := delistStatusesResponse.Result.Users[len(delistStatusesResponse.Result.Users)-1].CreatedAt
-		_, err = ss.pgPool.Exec(
-			ctx,
-			`
-			INSERT INTO delist_status_cursor
-			(created_at, host, entity)
-			VALUES ($1, $2, $3)
-			ON CONFLICT (host, entity)
-			DO UPDATE SET
-				created_at = EXCLUDED.created_at
-			`,
-			cursorAfter, endpoint, "users",
-		)
-	}
-	return err
-}
-
-func (ss *MediorumServer) insertUserDelistStatuses(ctx context.Context, users []UserDelistStatus) error {
-	tx, err := ss.pgPool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, user := range users {
-		_, err = tx.Exec(ctx, `INSERT INTO user_delist_statuses ("createdAt", "userId", "delisted", "reason") VALUES ($1, $2, $3, $4)`,
-			user.CreatedAt, user.UserID, user.Delisted, user.Reason)
 		if err != nil {
 			tx.Rollback(ctx)
 			return err
