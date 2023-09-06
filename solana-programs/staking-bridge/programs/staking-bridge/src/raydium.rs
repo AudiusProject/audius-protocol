@@ -14,66 +14,6 @@ use crate::{
 };
 
 /**
- * Verify that the correct PDAs are passed in.
- */
-pub fn check_swap_pdas(
-    accounts: &mut RaydiumSwap,
-    vault_nonce: u64
-) -> Result<()> {
-    let program_id = &accounts.program_id;
-    let amm = &accounts.amm;
-    let amm_authority = &accounts.amm_authority;
-    let amm_open_orders = &accounts.amm_open_orders;
-    let amm_target_orders = &accounts.amm_target_orders;
-    let serum_program = &accounts.serum_program;
-    let serum_market = &accounts.serum_market;
-    let serum_vault_signer = &accounts.serum_vault_signer;
-
-    let (amm_pda, _amm_pda_bump) = Pubkey::find_program_address(
-        &[program_id.key().as_ref(), serum_market.key().as_ref(), b"amm_associated_seed".as_ref()],
-        program_id.key
-    );
-    if *amm.key != amm_pda {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (amm_authority_pda, _amm_authority_pda_bump) = Pubkey::find_program_address(
-        &[&[97, 109, 109, 32, 97, 117, 116, 104, 111, 114, 105, 116, 121]],
-        program_id.key
-    );
-    if *amm_authority.key != amm_authority_pda {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (amm_open_orders_pda, _amm_open_orders_pda_bump) = Pubkey::find_program_address(
-        &[program_id.key().as_ref(), serum_market.key().as_ref(), b"open_order_associated_seed".as_ref()],
-        program_id.key
-    );
-    if *amm_open_orders.key != amm_open_orders_pda {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (amm_target_orders_pda, _amm_target_orders_pda_bump) = Pubkey::find_program_address(
-        &[program_id.key().as_ref(), serum_market.key().as_ref(), b"target_associated_seed".as_ref()],
-        program_id.key
-    );
-    if *amm_target_orders.key != amm_target_orders_pda {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let serum_vault_signer_pda = Pubkey::create_program_address(
-        &[serum_market.key().as_ref(), vault_nonce.to_le_bytes().as_ref()],
-        serum_program.key
-    );
-    let vault_signer = serum_vault_signer_pda.unwrap().key();
-    if *serum_vault_signer.key != vault_signer.key() {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    Ok(())
-}
-
-/**
  * Build and invoke the instruction to swap USDC for AUDIO on Raydium.
  */
 pub fn swap(

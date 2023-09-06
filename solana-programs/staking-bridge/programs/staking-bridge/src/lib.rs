@@ -25,10 +25,7 @@ use crate::constant::{
     WORMHOLE_CORE_BRIDGE_ID
 };
 use crate::error::StakingBridgeErrorCode;
-    use crate::raydium::{
-    check_swap_pdas,
-    swap
-};
+use crate::raydium::swap;
 use crate::wormhole::{
     check_wormhole_pdas,
     approve_wormhole_transfer,
@@ -57,14 +54,9 @@ pub mod staking_bridge {
         ctx: Context<RaydiumSwap>,
         amount_in: u64,
         minimum_amount_out: u64,
-        vault_nonce: u64,
         staking_bridge_pda_bump: u8
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        check_swap_pdas(
-            accounts,
-            vault_nonce
-        )?;
         swap(
             accounts,
             amount_in,
