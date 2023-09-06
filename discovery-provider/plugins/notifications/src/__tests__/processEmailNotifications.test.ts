@@ -53,8 +53,8 @@ describe('Email Notifications', () => {
     ])
     const discoveryDBUrl = replaceDBName(process.env.DN_DB_URL, testName)
     const identityDBUrl = replaceDBName(process.env.IDENTITY_DB_URL, testName)
-    discoveryDB = await getDB(discoveryDBUrl)
-    identityDB = await getDB(identityDBUrl)
+    discoveryDB = getDB(discoveryDBUrl)
+    identityDB = getDB(identityDBUrl)
   })
 
   afterEach(async () => {

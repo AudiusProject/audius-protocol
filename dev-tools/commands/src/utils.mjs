@@ -4,6 +4,7 @@ import {
   libs as AudiusLibs,
   developmentConfig,
   DiscoveryNodeSelector,
+  EntityManager
 } from "@audius/sdk";
 import { PublicKey } from "@solana/web3.js";
 
@@ -73,18 +74,27 @@ export const initializeAudiusLibs = async (handle) => {
 
 let audiusSdk;
 export const initializeAudiusSdk = async () => {
+  const discoveryNodeSelector = new DiscoveryNodeSelector({
+    healthCheckThresholds: {
+      minVersion: developmentConfig.minVersion,
+      maxBlockDiff: developmentConfig.maxBlockDiff,
+      maxSlotDiffPlays: developmentConfig.maxSlotDiffPlays,
+    },
+    bootstrapServices: developmentConfig.discoveryNodes,
+  })
+  const entityManager = new EntityManager({
+    discoveryNodeSelector,
+    web3ProviderUrl: developmentConfig.web3ProviderUrl,
+    contractAddress: developmentConfig.entityManagerContractAddress,
+    identityServiceUrl: developmentConfig.identityServiceUrl,
+    useDiscoveryRelay: true,
+  })
   if (!audiusSdk) {
     audiusSdk = AudiusSdk({
       appName: "audius-cmd",
       services: {
-        discoveryNodeSelector: new DiscoveryNodeSelector({
-          healthCheckThresholds: {
-            minVersion: developmentConfig.minVersion,
-            maxBlockDiff: developmentConfig.maxBlockDiff,
-            maxSlotDiffPlays: developmentConfig.maxSlotDiffPlays,
-          },
-          bootstrapServices: developmentConfig.discoveryNodes,
-        }),
+        discoveryNodeSelector,
+        entityManager
       },
     });
   }

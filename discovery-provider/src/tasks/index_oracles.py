@@ -2,10 +2,10 @@ import logging
 from typing import List
 
 from src.tasks.celery_app import celery
+from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import load_eth_abi_values
 from src.utils.prometheus_metric import save_duration_metric
-from web3 import HTTPProvider, Web3
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +15,8 @@ eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 
 
-eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))  # type: ignore
-eth_registry_address = eth_web3.toChecksumAddress(
+eth_web3 = web3_provider.get_eth_web3()
+eth_registry_address = eth_web3.to_checksum_address(
     shared_config["eth_contracts"]["registry"]
 )
 eth_registry_instance = eth_web3.eth.contract(

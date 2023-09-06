@@ -2,11 +2,12 @@ import logging  # pylint: disable=C0302
 from unittest.mock import patch
 
 from sqlalchemy import desc
+from web3.datastructures import AttributeDict
+
 from src.models.indexing.cid_data import CIDData
 from src.tasks.backfill_cid_data import backfill_cid_data
 from src.utils import redis_connection
 from src.utils.db_session import get_db
-from web3.datastructures import AttributeDict
 
 logger = logging.getLogger(__name__)
 

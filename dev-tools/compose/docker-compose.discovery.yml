@@ -9,7 +9,7 @@ services:
         git_sha: "${GIT_COMMIT}"
     environment:
       AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@db:5432/audius_discovery"
+      DN_DB_URL: "postgresql://postgres:postgres@db:5432/discovery_provider_1"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@db:5432/identity_service"
     volumes:
       - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
@@ -33,14 +33,13 @@ services:
       context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
     command: discovery
+    restart: unless-stopped
     environment:
-      audius_db_url: "postgresql://postgres:postgres@db:5432/audius_discovery"
+      audius_delegate_private_key: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7"
+      audius_db_url: "postgresql://postgres:postgres@db:5432/discovery_provider_1"
     depends_on:
-      discovery-provider:
+      db:
         condition: service_healthy
-    profiles:
-      - notifications
-      - comms
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0

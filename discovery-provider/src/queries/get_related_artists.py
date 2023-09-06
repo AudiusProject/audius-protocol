@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import desc
+
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.related_artist import RelatedArtist
 from src.models.users.user import User

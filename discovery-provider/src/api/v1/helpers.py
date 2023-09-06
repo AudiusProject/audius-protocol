@@ -1,9 +1,9 @@
 import logging
-import re
 from datetime import datetime
 from typing import Dict, Union, cast
 
 from flask_restx import reqparse
+
 from src import api_helpers
 from src.api.v1.models.common import full_response
 from src.models.rewards.challenge import ChallengeType
@@ -18,10 +18,8 @@ from src.queries.query_helpers import (
 )
 from src.queries.reactions import ReactionResponse
 from src.utils.auth_middleware import MESSAGE_HEADER, SIGNATURE_HEADER
-from src.utils.get_all_other_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
-from src.utils.rendezvous import RendezvousHash
 from src.utils.spl_audio import to_wei_string
 
 redis = get_redis()
@@ -32,34 +30,23 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
-def get_primary_endpoint(user, cid):
-    if not cid:
-        return ""
-    healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-    if not healthy_nodes:
-        logger.error(
-            f"No healthy Content Nodes found for fetching cid for {user.user_id}: {cid}"
-        )
-        return ""
-
-    rendezvous = RendezvousHash(
-        *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-    )
-    return rendezvous.get(cid)
-
-
 def add_track_artwork(track):
     if "user" not in track:
         return track
     cid = track["cover_art_sizes"]
-    endpoint = get_primary_endpoint(track["user"], cid)
-    if not endpoint:
-        return track
-    artwork = {
-        "150x150": make_image(endpoint, cid, 150, 150),
-        "480x480": make_image(endpoint, cid, 480, 480),
-        "1000x1000": make_image(endpoint, cid, 1000, 1000),
-    }
+    cover_cids = api_helpers.get_image_cids(
+        track["user"], cid, api_helpers.COVER_ART_SIZES
+    )
+    track["cover_art_cids"] = cover_cids
+    endpoint = api_helpers.get_primary_endpoint(track["user"], cid)
+    artwork = get_image_urls(track["user"], cover_cids)
+    if endpoint and not artwork:
+        # Fallback to legacy image url format with dumb endpoint
+        artwork = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+        }
     track["artwork"] = artwork
     return track
 
@@ -67,15 +54,21 @@ def add_track_artwork(track):
 def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
+
     cid = playlist["playlist_image_sizes_multihash"]
-    endpoint = get_primary_endpoint(playlist["user"], cid)
-    if not endpoint:
-        return playlist
-    artwork = {
-        "150x150": make_image(endpoint, cid, 150, 150),
-        "480x480": make_image(endpoint, cid, 480, 480),
-        "1000x1000": make_image(endpoint, cid, 1000, 1000),
-    }
+    cover_cids = api_helpers.get_image_cids(
+        playlist["user"], cid, api_helpers.COVER_ART_SIZES
+    )
+    playlist["cover_art_cids"] = cover_cids
+    endpoint = api_helpers.get_primary_endpoint(playlist["user"], cid)
+    artwork = get_image_urls(playlist["user"], cover_cids)
+    if endpoint and not artwork:
+        # Fallback to legacy image url format with dumb endpoint
+        artwork = {
+            "150x150": make_image(endpoint, cid, 150, 150),
+            "480x480": make_image(endpoint, cid, 480, 480),
+            "1000x1000": make_image(endpoint, cid, 1000, 1000),
+        }
     playlist["artwork"] = artwork
     return playlist
 
@@ -101,26 +94,62 @@ def add_user_artwork(user):
     user["profile_picture_legacy"] = user.get("profile_picture")
 
     profile_cid = user.get("profile_picture_sizes")
-    profile_endpoint = get_primary_endpoint(user, profile_cid)
-    cover_cid = user.get("cover_photo_sizes")
-    cover_endpoint = get_primary_endpoint(user, cover_cid)
-    if profile_endpoint and profile_cid:
-        profile = {
-            "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
-            "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
-            "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
-        }
+    profile_endpoint = api_helpers.get_primary_endpoint(user, profile_cid)
+    if profile_cid:
+        profile_cids = api_helpers.get_image_cids(
+            user, profile_cid, api_helpers.PROFILE_PICTURE_SIZES
+        )
+        user["profile_picture_cids"] = profile_cids
+        profile = get_image_urls(user, profile_cids)
+        if profile_endpoint and not profile:
+            # Fallback to legacy image url format with dumb endpoint
+            profile = {
+                "150x150": make_image(profile_endpoint, profile_cid, 150, 150),
+                "480x480": make_image(profile_endpoint, profile_cid, 480, 480),
+                "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
+            }
         user["profile_picture"] = profile
-    if cover_endpoint and cover_cid:
-        cover = {
-            "640x": make_image(cover_endpoint, cover_cid, 640),
-            "2000x": make_image(cover_endpoint, cover_cid, 2000),
-        }
+    cover_cid = user.get("cover_photo_sizes")
+    cover_endpoint = api_helpers.get_primary_endpoint(user, cover_cid)
+    if cover_cid:
+        cover_cids = api_helpers.get_image_cids(
+            user, cover_cid, api_helpers.PROFILE_COVER_PHOTO_SIZES
+        )
+        user["cover_photo_cids"] = cover_cids
+        cover = get_image_urls(user, cover_cids)
+        if cover_endpoint and not cover:
+            # Fallback to legacy image url format with dumb endpoint
+            cover = {
+                "640x": make_image(cover_endpoint, cover_cid, 640),
+                "2000x": make_image(cover_endpoint, cover_cid, 2000),
+            }
         user["cover_photo"] = cover
+
     return user
 
 
 # Helpers
+
+
+# Map each image cid to a url with its preferred node. This reduces
+# redirects from initially attempting to query the wrong node.
+def get_image_urls(user, image_cids):
+    if not image_cids:
+        return {}
+
+    image_urls = {}
+    for variant, cid in image_cids.items():
+        if variant == "original":
+            continue
+        primary_endpoint = api_helpers.get_primary_endpoint(user, cid)
+        if not primary_endpoint:
+            raise Exception(
+                "Could not get primary endpoint for user {user.user_id}, cid {cid}"
+            )
+        image_urls[variant] = f"{primary_endpoint}/content/{cid}"
+    return image_urls
+
+
 def extend_search(resp):
     if "users" in resp:
         resp["users"] = list(map(extend_user, resp["users"]))
@@ -390,8 +419,17 @@ def extend_transaction_details(transaction_details):
     new_transaction_details["transaction_date"] = transaction_details[
         "transaction_created_at"
     ]
-    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
+    if "metadata" in new_transaction_details:
+        new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
     return new_transaction_details
+
+
+def extend_purchase(purchase):
+    new_purchase = purchase.copy()
+    new_purchase["buyer_user_id"] = encode_int_id(purchase["buyer_user_id"])
+    new_purchase["seller_user_id"] = encode_int_id(purchase["seller_user_id"])
+    new_purchase["content_id"] = encode_int_id(purchase["content_id"])
+    return new_purchase
 
 
 def abort_bad_path_param(param, namespace):
@@ -404,6 +442,14 @@ def abort_bad_request_param(param, namespace):
 
 def abort_not_found(identifier, namespace):
     namespace.abort(404, f"Oh no! Resource for ID {identifier} not found.")
+
+
+def abort_unauthorized(namespace):
+    namespace.abort(401, "Oh no! User is not authorized.")
+
+
+def abort_forbidden(namespace):
+    namespace.abort(403, "Oh no! User does not have access to that resource.")
 
 
 def decode_with_abort(identifier: str, namespace) -> int:

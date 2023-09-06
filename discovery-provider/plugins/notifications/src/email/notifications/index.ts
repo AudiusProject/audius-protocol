@@ -110,6 +110,9 @@ WITH latest_user_seen AS (
     seen_at
   FROM
     notification_seen
+  WHERE
+    user_id = ANY(:user_ids) AND
+    (seen_at IS NULL OR seen_at <= :start_offset)
   ORDER BY
     user_id,
     seen_at desc

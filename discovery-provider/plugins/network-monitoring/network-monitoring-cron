@@ -1,2 +1,0 @@
-# must be ended with a new line "LF" (Unix) and not "CRLF" (Windows)
-@daily /network-monitoring/new_job.sh >> /var/log/cron.log 2>&1

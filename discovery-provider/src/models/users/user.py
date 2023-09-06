@@ -11,6 +11,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
+
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import (
@@ -23,7 +24,10 @@ from src.models.model_utils import (
 class User(Base, RepresentableMixin):
     __tablename__ = "users"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(
+        Integer, ForeignKey("blocks.number"), index=True, nullable=False
+    )
     user_id = Column(Integer, primary_key=True, nullable=False)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     handle = Column(String)
@@ -36,7 +40,6 @@ class User(Base, RepresentableMixin):
     is_storage_v2 = Column(Boolean, nullable=False, server_default=text("false"))
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
     artist_pick_track_id = Column(Integer)
     created_at = Column(

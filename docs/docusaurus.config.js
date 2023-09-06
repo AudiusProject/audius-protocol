@@ -1,6 +1,5 @@
-const lightCodeTheme = require("prism-react-renderer/themes/github");
+const lightCodeTheme = require("prism-react-renderer/themes/dracula");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
-const path = require("path");
 
 // With JSDoc @type annotations, IDEs can provide config autocompletion
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
@@ -33,51 +32,30 @@ const path = require("path");
         }),
       ],
     ],
-    plugins: [
-      [
-        "docusaurus-plugin-typedoc",
-        // Plugin / TypeDoc options
-        {
-          plugin: ["typedoc-plugin-audius-theme", "typedoc-plugin-zod"],
-          out: "./developers/sdk",
-          entryPoints: ["./node_modules/@audius/sdk/src/sdk/index.ts"],
-          tsconfig: "./node_modules/@audius/sdk/tsconfig.docs.json",
-          excludeInternal: true,
-          cleanOutputDir: false,
-          disableSources: true,
-          hideMembersSymbol: true,
-          watch: process.env.TYPEDOC_WATCH,
-          sidebar: {
-            readmeLabel: "Getting Started",
-          },
-        },
-      ],
-      path.resolve(__dirname, "plugins", "mergeDocs"),
-    ],
-    i18n: {
-      defaultLocale: "en",
-      locales: [
-        "en",
-        "es",
-        "fr",
-        // "zh"
-      ],
-      // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
-      localeConfigs: {
-        en: {
-          label: "English",
-        },
-        es: {
-          label: "Español",
-        },
-        // zh: {
-        //   label: "中文",
-        // },
-        fr: {
-          label: "Français",
-        },
-      },
-    },
+    // i18n: {
+    //   defaultLocale: "en",
+    //   locales: [
+    //     "en",
+    //     "es",
+    //     "fr",
+    //     // "zh"
+    //   ],
+    //   // localesNotBuilding: ["ko", "pt", "vi", "zh", "ja"],
+    //   localeConfigs: {
+    //     en: {
+    //       label: "English",
+    //     },
+    //     es: {
+    //       label: "Español",
+    //     },
+    //     // zh: {
+    //     //   label: "中文",
+    //     // },
+    //     fr: {
+    //       label: "Français",
+    //     },
+    //   },
+    // },
     themeConfig:
       /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
       ({
@@ -86,6 +64,7 @@ const path = require("path");
           logo: {
             alt: "Audius Docs Logo",
             src: "img/logo.png",
+            srcDark: "img/logo-white.png",
           },
           items: [
             {
@@ -107,10 +86,6 @@ const path = require("path");
               label: "Developers",
               to: "/category/developers",
               position: "left",
-            },
-            {
-              type: "localeDropdown",
-              position: "right",
             },
             {
               href: "https://discord.com/invite/audius",

@@ -2,21 +2,31 @@ import { AudiusLibs } from "@audius/sdk";
 import HDWalletProvider from "@truffle/hdwallet-provider";
 import Web3 from "web3";
 
-// TODO: promote this into a packages
+const publicKey = process.env.audius_delegate_owner_wallet;
+const privateKey = process.env.audius_delegate_private_key;
+const providerEndpoint = process.env.audius_web3_eth_provider_url;
+
 export const initAudiusLibs = async (): Promise<AudiusLibs> => {
+  if (!privateKey) {
+    throw new Error("Missing privateKey");
+  }
+  if (!providerEndpoint) {
+    throw new Error("Missing providerEndpoint");
+  }
+
   const localKeyProvider = new HDWalletProvider({
-    privateKeys: [process.env.OWNER_PRIVATE_KEY],
-    providerOrUrl: process.env.ETH_PROVIDER_ENDPOINT,
+    privateKeys: [privateKey],
+    providerOrUrl: providerEndpoint,
   });
   const providers = [new Web3(localKeyProvider)];
 
   const audiusLibs = new AudiusLibs({
     // @ts-ignore
     ethWeb3Config: AudiusLibs.configEthWeb3(
-      process.env.ETH_TOKEN_ADDRESS,
-      process.env.ETH_REGISTRY_ADDRESS,
+      process.env.audius_eth_token_address,
+      process.env.audius_eth_contracts_registry,
       providers,
-      process.env.OWNER_WALLET
+      publicKey
     ),
     isServer: true,
     enableUserReplicaSetManagerContract: true,

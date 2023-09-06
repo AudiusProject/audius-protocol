@@ -1,4 +1,5 @@
 import pytest
+
 from src.tasks.entity_manager.entities.user import validate_user_handle
 
 

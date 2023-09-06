@@ -3,6 +3,7 @@ from typing import List, Optional, TypedDict
 
 from sqlalchemy import and_, asc, case, desc, func, or_
 from sqlalchemy.sql.functions import coalesce
+
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute

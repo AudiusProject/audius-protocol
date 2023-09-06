@@ -1,6 +1,7 @@
 import logging
 
 import requests
+
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_discovery_nodes_cached
 from src.utils.prometheus_metric import save_duration_metric

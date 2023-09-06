@@ -1,4 +1,5 @@
 from sqlalchemy import func
+
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.queries.query_helpers import (

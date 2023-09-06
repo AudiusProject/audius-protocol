@@ -17,10 +17,6 @@ export type EntityManagerConfigInternal = {
    */
   identityServiceUrl: string
   /**
-   * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
-   */
-  discoveryNodeSelector: DiscoveryNodeSelectorService
-  /**
    * Whether to use discovery for relay instead of identity
    */
   useDiscoveryRelay: boolean
@@ -29,7 +25,12 @@ export type EntityManagerConfigInternal = {
    */
   logger: LoggerService
 }
-export type EntityManagerConfig = Partial<EntityManagerConfigInternal>
+export type EntityManagerConfig = Partial<EntityManagerConfigInternal> & {
+  /**
+   * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
+   */
+  discoveryNodeSelector: DiscoveryNodeSelectorService
+}
 
 export type EntityManagerService = {
   manageEntity: (

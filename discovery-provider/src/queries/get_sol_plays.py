@@ -4,6 +4,7 @@ from typing import List, Optional, TypedDict
 
 from redis import Redis
 from sqlalchemy import desc, func
+
 from src import exceptions
 from src.models.social.play import Play
 from src.queries.sol_play_helpers import get_sum_aggregate_plays, get_track_play_counts

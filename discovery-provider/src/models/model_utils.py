@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.sql import null
+
 from src.model_validator import ModelValidator
 from src.models.base import Base, logger
 

@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 from src.queries.query_helpers import get_pagination_vars, populate_user_metadata
 from src.utils.db_session import get_db_read_replica
 

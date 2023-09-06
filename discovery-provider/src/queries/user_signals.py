@@ -1,6 +1,7 @@
 import logging
 
 from flask import Blueprint, request
+
 from src.api_helpers import error_response, success_response
 from src.queries.get_user_signals import get_user_signals
 from src.utils.redis_cache import cache, internal_api_cache_prefix

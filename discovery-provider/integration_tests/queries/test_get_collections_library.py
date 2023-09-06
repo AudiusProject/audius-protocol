@@ -45,6 +45,14 @@ def populate_entries(db):
                 "playlist_name": "xyz",
             },
         ],
+        "users": [
+            {"user_id": 1},
+            {"user_id": 2, "name": "testhandle123"},
+            {"user_id": 3},
+            {"user_id": 4},
+        ],
+    }
+    test_social_feature_entities = {
         "reposts": [
             {
                 "repost_item_id": 3,
@@ -61,14 +69,9 @@ def populate_entries(db):
                 "created_at": datetime(2019, 6, 16),
             }
         ],
-        "users": [
-            {"user_id": 1},
-            {"user_id": 2, "name": "testhandle123"},
-            {"user_id": 3},
-            {"user_id": 4},
-        ],
     }
     populate_mock_db(db, test_entities)
+    populate_mock_db(db, test_social_feature_entities)
 
 
 def with_collection_library_setup(test_fn):

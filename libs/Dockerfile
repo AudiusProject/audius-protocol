@@ -1,14 +1,12 @@
-FROM node:14.16 as builder
+FROM node:18.17 as builder
 RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
 COPY patches/* ./patches/
-# Required to run package-patch: https://github.com/ds300/patch-package/issues/185
-RUN npm config set unsafe-perm true
 RUN --mount=type=cache,target=/root/.npm npm install --loglevel verbose
 
-FROM node:14.16-alpine
+FROM node:18.17-alpine
 
 WORKDIR /usr/src/app
 COPY --from=builder /app/node_modules ./node_modules

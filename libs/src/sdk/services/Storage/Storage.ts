@@ -35,7 +35,7 @@ export class Storage implements StorageService {
 
   constructor(config: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
-    this.storageNodeSelector = this.config.storageNodeSelector
+    this.storageNodeSelector = config.storageNodeSelector
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
@@ -134,9 +134,11 @@ export class Storage implements StorageService {
       url: `${contentNodeEndpoint}/uploads`,
       maxContentLength: Infinity,
       data: formData,
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-      },
+      headers: formData.getBoundary
+        ? {
+            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+          }
+        : undefined,
       onUploadProgress: (progressEvent) =>
         onProgress?.(progressEvent.loaded, progressEvent.total)
     })

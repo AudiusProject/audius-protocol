@@ -11,7 +11,7 @@ import urllib.request
 import click
 import dotenv
 import eth_account
-import solana.keypair
+import solders.keypair
 
 LOCALHOSTS = """
 127.0.0.1       ingress \
@@ -21,7 +21,8 @@ audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-cr
 audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
-audius-protocol-poa-ganache-1
+audius-protocol-poa-ganache-1 \
+audius-protocol-pedalboard
 """
 
 
@@ -99,9 +100,9 @@ def generate_env(
         env["ELASTICSEARCH_CONDITION"] = "service_started"
 
     for name, secret_key in config.get("solana-accounts", {}).items():
-        keypair = solana.keypair.Keypair.from_secret_key(bytes(secret_key))
-        env[f"{name}_SECRET_KEY"] = json.dumps(list(keypair.secret_key))
-        env[f"{name}_PUBLIC_KEY"] = keypair.public_key.to_base58().decode()
+        keypair = solders.keypair.Keypair.from_bytes(bytes(secret_key))
+        env[f"{name}_SECRET_KEY"] = json.dumps(list(bytes(keypair)))
+        env[f"{name}_PUBLIC_KEY"] = str(keypair.pubkey())
 
     eth_relayer_wallets = []
     poa_relayer_wallets = []

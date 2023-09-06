@@ -26,7 +26,8 @@ export interface BulkGetReactionsRequest {
  */
 export class ReactionsApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets reactions by reacted_to_id and type
      */
     async bulkGetReactionsRaw(params: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {

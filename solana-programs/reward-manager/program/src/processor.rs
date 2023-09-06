@@ -8,7 +8,7 @@ use crate::{
     },
     state::{
         RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
-        DELETE_SENDER_MESSAGE_PREFIX,
+        DELETE_SENDER_MESSAGE_PREFIX, UNINITIALIZED_VERSION
     },
     utils::*,
 };
@@ -20,7 +20,9 @@ use solana_program::{
     msg,
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack},
+    program::{invoke, invoke_signed},
     pubkey::Pubkey,
+    system_instruction,
     rent::Rent,
     sysvar::Sysvar,
 };
@@ -32,7 +34,7 @@ pub const TRANSFER_SEED_PREFIX: &str = "T_";
 /// Verify transfer program account seed
 pub const VERIFY_TRANSFER_SEED_PREFIX: &str = "V_";
 /// Transfer account space
-pub const TRANSFER_ACC_SPACE: usize = 0;
+pub const TRANSFER_ACC_SPACE: usize = 1;
 
 /// Program state handler.
 pub struct Processor;
@@ -149,21 +151,43 @@ impl Processor {
         assert_account_key(authority_info, &reward_manager_authority)?;
         assert_account_key(sender_info, &derived_sender_address)?;
 
+        // Create the account
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
             &sender_seed.as_slice(),
             &[bump_seed],
         ];
 
-        // Create the account
         let rent = Rent::from_account_info(rent_info)?;
-        create_account(
-            program_id,
-            funder_account_info.clone(),
-            sender_info.clone(),
-            SenderAccount::LEN,
+
+        // Calculate if additional lamports are required to store sender info
+        // just in case someone is trying to deny its creation.
+        let sender_acct_lamports = sender_info.lamports();
+        let required_lamports = rent
+            .minimum_balance(SenderAccount::LEN)
+            .saturating_sub(sender_acct_lamports);
+
+        // Transfer required lamports from payer to sender account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(funder_account_info.key, sender_info.key, required_lamports),
+                &[
+                    funder_account_info.clone(),
+                    sender_info.clone()
+                ],
+            )?;
+        }
+
+        invoke_signed(
+            &system_instruction::allocate(sender_info.key, SenderAccount::LEN as u64),
+            &[sender_info.clone()],
             &[signers_seeds],
-            &rent,
+        )?;
+
+        invoke_signed(
+            &system_instruction::assign(sender_info.key, program_id),
+            &[sender_info.clone()],
+            &[signers_seeds],
         )?;
 
         let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
@@ -291,13 +315,35 @@ impl Processor {
         ];
 
         let rent = Rent::from_account_info(rent_info)?;
-        create_account(
-            program_id,
-            funder_info.clone(),
-            new_sender_info.clone(),
-            SenderAccount::LEN,
+
+        // Calculate if additional lamports are required to store sender info
+        // just in case someone is trying to deny its creation.
+        let sender_acct_lamports = new_sender_info.lamports();
+        let required_lamports = rent
+            .minimum_balance(SenderAccount::LEN)
+            .saturating_sub(sender_acct_lamports);
+
+        // Transfer required lamports from payer to sender account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(funder_info.key, new_sender_info.key, required_lamports),
+                &[
+                    funder_info.clone(),
+                    new_sender_info.clone()
+                ],
+            )?;
+        }
+
+        invoke_signed(
+            &system_instruction::allocate(new_sender_info.key, SenderAccount::LEN as u64),
+            &[new_sender_info.clone()],
             &[signers_seeds],
-            &rent,
+        )?;
+
+        invoke_signed(
+            &system_instruction::assign(new_sender_info.key, program_id),
+            &[new_sender_info.clone()],
+            &[signers_seeds],
         )?;
 
         let sender_account = SenderAccount::new(*reward_manager_info.key, eth_address, operator);
@@ -344,20 +390,44 @@ impl Processor {
 
         // If the verified messages account doesn't exist, create it. Otherwise,
         // ensure that we own it before proceeding.
-        if verified_messages_info.data_len() == 0 && verified_messages_info.lamports() == 0 {
-            let signers_seeds = &[
-                &reward_manager_authority.to_bytes()[..32],
-                &verified_messages_account_seed.as_slice(),
-                &[bump_seed],
-            ];
-            let rent = Rent::from_account_info(rent_info)?;
-            create_account(
-                program_id,
-                funder_info.clone(),
-                verified_messages_info.clone(),
-                VerifiedMessages::LEN,
+        let signers_seeds = &[
+            &reward_manager_authority.to_bytes()[..32],
+            &verified_messages_account_seed.as_slice(),
+            &[bump_seed],
+        ];
+        let rent = Rent::from_account_info(rent_info)?;
+
+        // Calculate if additional lamports are required to store verified_messages_info
+        // just in case someone is trying to deny its creation.
+        let verified_messages_acct_lamports = verified_messages_info.lamports();
+        let required_lamports = rent
+            .minimum_balance(VerifiedMessages::LEN)
+            .saturating_sub(verified_messages_acct_lamports);
+
+        // Transfer required lamports from payer to verified messages account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(funder_info.key, verified_messages_info.key, required_lamports),
+                &[
+                    funder_info.clone(),
+                    verified_messages_info.clone()
+                ],
+            )?;
+        }
+
+        // If the verified messages account is empty / doesn't exist yet, create it.
+        let verified_messages_acct_is_empty = verified_messages_info.try_data_is_empty().unwrap_or(true);
+        if verified_messages_acct_is_empty {
+            invoke_signed(
+                &system_instruction::allocate(verified_messages_info.key, VerifiedMessages::LEN as u64),
+                &[verified_messages_info.clone()],
                 &[signers_seeds],
-                &rent,
+            )?;
+
+            invoke_signed(
+                &system_instruction::assign(verified_messages_info.key, program_id),
+                &[verified_messages_info.clone()],
+                &[signers_seeds],
             )?;
         } else {
             assert_owned_by(verified_messages_info, program_id)?;
@@ -420,7 +490,8 @@ impl Processor {
 
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
 
-        let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+        let mut verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+        assert_initialized(&verified_messages)?;
 
         // Assert the rewards_token_recipient_info is indeed the UserBank
         // derived from the transfer_data.eth_recipient
@@ -431,7 +502,8 @@ impl Processor {
         )?;
 
         // Ensure the transfer account doesn't yet exist
-        if transfer_account_info.lamports() != 0 {
+        let transfer_acct_is_empty = transfer_account_info.try_data_is_empty().unwrap_or(true);
+        if !transfer_acct_is_empty {
             return Err(AudiusProgramError::AlreadySent.into());
         }
 
@@ -491,24 +563,51 @@ impl Processor {
             transfer_data.id.as_ref(),
         ]
         .concat();
-        let (reward_manager_authority, _, bump_seed) = find_derived_pair(
+        let (reward_manager_authority, derived_transfer_account, bump_seed) = find_derived_pair(
             program_id,
             reward_manager_info.key,
             transfer_account_seed.as_ref(),
         );
+
+        assert_account_key(transfer_account_info, &derived_transfer_account)?;
 
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
             &transfer_account_seed.as_slice(),
             &[bump_seed],
         ];
-        create_account(
-            program_id,
-            payer_info.clone(),
-            transfer_account_info.clone(),
-            0,
+
+        // Calculate if additional lamports are required to store transfer_account_info
+        // just in case someone is trying to deny its creation.
+        let transfer_acct_lamports = transfer_account_info.lamports();
+
+        let required_lamports = rent
+            .minimum_balance(TRANSFER_ACC_SPACE)
+            .saturating_sub(transfer_acct_lamports);
+
+        // Transfer required lamports from payer to transfer account if necessary.
+        if required_lamports > 0 {
+            invoke(
+                &system_instruction::transfer(payer_info.key, transfer_account_info.key, required_lamports),
+                &[
+                    payer_info.clone(),
+                    transfer_account_info.clone()
+                ],
+            )?;
+        }
+
+        // Allocate 1 byte to use transfer_account_info to prevent repeat invocations.
+        // This is checked at the beginning of the function in borrow_data.
+        invoke_signed(
+            &system_instruction::allocate(transfer_account_info.key, TRANSFER_ACC_SPACE as u64),
+            &[transfer_account_info.clone()],
             &[signers_seeds],
-            rent,
+        )?;
+
+        invoke_signed(
+            &system_instruction::assign(transfer_account_info.key, program_id),
+            &[transfer_account_info.clone()],
+            &[signers_seeds],
         )?;
 
         // Delete verified messages account by zeroing its rent
@@ -516,6 +615,8 @@ impl Processor {
         let payer_lamports = payer_info.lamports();
 
         **verified_messages_info.lamports.borrow_mut() = 0u64;
+        verified_messages.version = UNINITIALIZED_VERSION;
+        VerifiedMessages::pack(verified_messages, *verified_messages_info.data.borrow_mut())?;
         **payer_info.lamports.borrow_mut() = payer_lamports
             .checked_add(verified_messages_lamports)
             .ok_or(AudiusProgramError::MathOverflow)?;

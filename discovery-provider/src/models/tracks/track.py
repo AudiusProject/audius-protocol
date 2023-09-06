@@ -12,6 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship, validates
+
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import (
@@ -26,7 +27,10 @@ from src.models.users.user import User
 class Track(Base, RepresentableMixin):
     __tablename__ = "tracks"
 
-    blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
+    blockhash = Column(Text, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(
+        Integer, ForeignKey("blocks.number"), index=True, nullable=False
+    )
     track_id = Column(Integer, primary_key=True, nullable=False)
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
@@ -48,7 +52,6 @@ class Track(Base, RepresentableMixin):
     release_date = Column(String)
     file_type = Column(String)
     metadata_multihash = Column(String)
-    blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
     track_segments = Column(JSONB(), nullable=False)
     created_at = Column(DateTime, nullable=False, index=True)
     description = Column(String)

@@ -543,7 +543,8 @@ export class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks
+        this.creatorNodeConfig.monitoringCallbacks,
+        this.creatorNodeConfig.storageNodeSelector
       )
       await this.creatorNode.init()
     }

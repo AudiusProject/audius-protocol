@@ -4,6 +4,7 @@ import logging
 from typing import Any, List  # pylint: disable=C0302
 
 from flask.globals import request
+
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
 

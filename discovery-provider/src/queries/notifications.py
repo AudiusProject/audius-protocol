@@ -6,6 +6,7 @@ from flask import Blueprint, request
 from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+
 from src import api_helpers
 from src.models.indexing.block import Block
 from src.models.notifications.milestone import Milestone, MilestoneName
@@ -794,7 +795,7 @@ def notifications():
             )
             # Previous private entry indicates transition to public, triggering a notification
             prev_entry = prev_entry_query.first()
-            if prev_entry.is_private == True:
+            if prev_entry and prev_entry.is_private == True:
                 publish_playlist_notif = {
                     const.notification_type: const.notification_type_create,
                     const.notification_blocknumber: entry.blocknumber,

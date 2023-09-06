@@ -12,7 +12,8 @@
     "comms",
     "notifications",
     "chain",
-    "mediorum"
+    "mediorum",
+    "relay"
   ]
   exclude_containers = [
     # System containers
@@ -45,6 +46,15 @@
     del(.otelSpanID)
     del(.otelTraceID)
   '''
+
+[transforms.throttle]
+  type = "throttle"
+  inputs = ["parse"]
+  # throttle ~3mm logs per node per 24 hour period (2000 * 60 * 24)
+  # 3mm is at the upper range of average node log volume at this current time
+  key_field = "node"   
+  threshold = 2000
+  window_secs = 60
 
 # Enable for debugging purposes
 # [sinks.out]

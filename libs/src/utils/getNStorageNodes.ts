@@ -29,7 +29,7 @@ export const getNStorageNodes = async (
     if (wallet?.length) {
       const endpoints = allNodes.map((n) => n.endpoint.toLowerCase())
       const hash = new RendezvousHash(...endpoints)
-      sortedEndpoints = hash.getN(numNodes, wallet.toLowerCase())
+      sortedEndpoints = hash.getN(endpoints.length, wallet.toLowerCase())
     } else {
       sortedEndpoints = allNodes.map((n) => n.endpoint)
     }
@@ -47,6 +47,10 @@ export const getNStorageNodes = async (
         if (healthCheckResults[j]) {
           healthyEndpoints.push(batch[j]!)
         }
+      }
+
+      if (healthyEndpoints.length >= numNodes) {
+        return healthyEndpoints.slice(0, numNodes)
       }
     }
 

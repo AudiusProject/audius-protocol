@@ -1,13 +1,14 @@
 from datetime import datetime
 
+from web3.datastructures import AttributeDict
+from web3.exceptions import BlockNotFound
+from web3.types import BlockData
+
 from integration_tests.utils import populate_mock_db_blocks
 from src.models.indexing.block import Block
 from src.tasks.index_nethermind import get_latest_database_block, is_block_on_chain
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
-from web3.datastructures import AttributeDict
-from web3.exceptions import BlockNotFound
-from web3.types import BlockData
 
 REDIS_URL = shared_config["redis"]["url"]
 

@@ -1,8 +1,10 @@
 import enum
 from typing import Optional, TypedDict
 
-from sqlalchemy import asc, desc, or_, text
-from sqlalchemy.orm import aliased, contains_eager
+from sqlalchemy import asc, desc, or_
+from sqlalchemy.orm import contains_eager
+from sqlalchemy.sql.functions import max
+
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import Repost, RepostType
@@ -38,7 +40,11 @@ class GetCollectionLibraryArgs(TypedDict):
     # The offset for the listen history
     offset: int
 
+    # One of: all, favorite, repost, purchase
     filter_type: LibraryFilterType
+
+    # Include deleted collections
+    filter_deleted: Optional[bool]
 
     # Optional filter for the returned results
     query: Optional[str]
@@ -56,6 +62,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     collection_type = args["collection_type"]
     filter_type = args["filter_type"]
 
+    filter_deleted = args.get("filter_deleted", False)
     query = args.get("query")
     sort_method = args.get("sort_method", CollectionLibrarySortMethod.added_date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -67,96 +74,100 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     sort_fn = desc if sort_direction == SortDirection.desc else asc
 
     own_playlists_base = session.query(
-        Playlist, Playlist.created_at.label("item_created_at")
+        Playlist.playlist_id.label("item_id"),
+        Playlist.created_at.label("item_created_at"),
     ).filter(
         Playlist.is_current == True,
         Playlist.is_album == (collection_type == CollectionType.album),
         Playlist.playlist_owner_id == user_id,
     )
+    if filter_deleted:
+        own_playlists_base = own_playlists_base.filter(Playlist.is_delete == False)
 
-    favorites_base = (
-        session.query(Playlist, Save.created_at.label("item_created_at"))
-        .join(Save, Save.save_item_id == Playlist.playlist_id)
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_private == False,
-            Playlist.is_album == (collection_type == CollectionType.album),
-            Save.user_id == user_id,
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == SaveType[collection_type],
-        )
+    favorites_base = session.query(
+        Save.save_item_id.label("item_id"), Save.created_at.label("item_created_at")
+    ).filter(
+        Save.user_id == user_id,
+        Save.is_current == True,
+        Save.is_delete == False,
+        Save.save_type == SaveType[collection_type],
     )
 
-    reposts_base = (
-        session.query(Playlist, Repost.created_at.label("item_created_at"))
-        .join(Repost, Repost.repost_item_id == Playlist.playlist_id)
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_private == False,
-            Playlist.is_album == (collection_type == CollectionType.album),
-            Repost.user_id == user_id,
-            Repost.is_current == True,
-            Repost.is_delete == False,
-            Repost.repost_type == RepostType[collection_type],
+    reposts_base = session.query(
+        Repost.repost_item_id.label("item_id"),
+        Repost.created_at.label("item_created_at"),
+    ).filter(
+        Repost.user_id == user_id,
+        Repost.is_current == True,
+        Repost.is_delete == False,
+        Repost.repost_type == RepostType[collection_type],
+    )
+
+    # Union everything for the "all" query
+    union_subquery = favorites_base.union_all(
+        reposts_base, own_playlists_base
+    ).subquery(name="union_subquery")
+    # Remove dupes
+    all_base = (
+        session.query(
+            union_subquery.c.item_id,
+            max(union_subquery.c.item_created_at).label("item_created_at"),
         )
+        .select_from(union_subquery)
+        .group_by(union_subquery.c.item_id)
     )
 
     # Favorites are unioned with own playlists by design
-    favorites_subquery = (
-        favorites_base.union_all(own_playlists_base)
-        .distinct(Playlist.playlist_id)
-        .order_by(Playlist.playlist_id)
-    ).subquery()
+    favorites_base = favorites_base.union_all(own_playlists_base)
 
-    reposts_subquery = (reposts_base).subquery()
-
-    all_subquery = (
-        favorites_base.union_all(reposts_base, own_playlists_base)
-        .distinct(Playlist.playlist_id)
-        .order_by(Playlist.playlist_id)
-    ).subquery()
-
-    base_query = {
-        LibraryFilterType.all: all_subquery,
-        LibraryFilterType.favorite: favorites_subquery,
-        LibraryFilterType.repost: reposts_subquery,
+    subquery = {
+        LibraryFilterType.all: all_base.subquery("library"),
+        LibraryFilterType.favorite: favorites_base.subquery(name="favorites_and_own"),
+        LibraryFilterType.repost: reposts_base.subquery(name="reposts"),
     }[filter_type]
 
-    PlaylistAlias = aliased(Playlist, base_query)
-
-    base_query = session.query(
-        PlaylistAlias, base_query.c.item_created_at.label("item_created_at")
+    base_query = (
+        session.query(Playlist, subquery.c.item_created_at)
+        .select_from(subquery)
+        .join(Playlist, Playlist.playlist_id == subquery.c.item_id)
+        .filter(
+            Playlist.is_current == True,
+            or_(Playlist.is_private == False, Playlist.playlist_owner_id == user_id),
+            Playlist.is_album == (collection_type == CollectionType.album),
+        )
     )
+
+    if filter_deleted:
+        base_query = base_query.filter(Playlist.is_delete == False)
 
     if query:
         # Need to disable lazy join for this to work
         base_query = (
-            base_query.join(User, PlaylistAlias.playlist_owner_id == User.user_id)
+            base_query.join(Playlist.user.of_type(User))
+            .options(contains_eager(Playlist.user))
             .filter(
                 or_(
-                    PlaylistAlias.playlist_name.ilike(f"%{query.lower()}%"),
+                    Playlist.playlist_name.ilike(f"%{query.lower()}%"),
                     User.name.ilike(f"%{query.lower()}%"),
                 )
             )
-            .options(contains_eager(PlaylistAlias.user))
         )
 
     # Set sort methods
     if sort_method == CollectionLibrarySortMethod.added_date:
         base_query = base_query.order_by(
-            sort_fn(text("item_created_at")), desc(PlaylistAlias.playlist_id)
+            sort_fn(subquery.c.item_created_at), desc(Playlist.playlist_id)
         )
     elif sort_method == CollectionLibrarySortMethod.reposts:
         base_query = base_query.join(
             AggregatePlaylist,
-            AggregatePlaylist.playlist_id == PlaylistAlias.playlist_id,
+            AggregatePlaylist.playlist_id == Playlist.playlist_id,
         ).order_by(sort_fn(AggregatePlaylist.repost_count))
 
     elif sort_method == CollectionLibrarySortMethod.saves:
         base_query = base_query.join(
             AggregatePlaylist,
-            AggregatePlaylist.playlist_id == PlaylistAlias.playlist_id,
+            AggregatePlaylist.playlist_id == Playlist.playlist_id,
         ).order_by(sort_fn(AggregatePlaylist.save_count))
 
     query_results = add_query_pagination(base_query, limit, offset).all()

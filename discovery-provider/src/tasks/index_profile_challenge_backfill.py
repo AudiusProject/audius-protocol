@@ -4,6 +4,7 @@ from typing import Optional
 
 from redis import Redis
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.indexing.block import Block

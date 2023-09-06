@@ -1,4 +1,5 @@
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String, Table
+
 from src.models.base import Base
 
 # Materialized view

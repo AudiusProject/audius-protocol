@@ -8,7 +8,6 @@ import time
 from collections import defaultdict
 from typing import Any, Dict
 
-import redis
 from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
@@ -16,6 +15,9 @@ from flask_cors import CORS
 from opentelemetry.instrumentation.flask import FlaskInstrumentor  # type: ignore
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
+from web3 import Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import playlist_stream_bp
@@ -43,12 +45,10 @@ from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.eth_contracts_helpers import fetch_trusted_notifier_info
 from src.utils.eth_manager import EthManager
-from src.utils.multi_provider import MultiProvider
+from src.utils.redis_connection import get_redis
 from src.utils.redis_constants import final_poa_block_redis_key
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from web3 import HTTPProvider, Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -82,7 +82,7 @@ def init_contracts():
     entity_manager_address = None
     entity_manager_inst = None
     if shared_config["contracts"]["entity_manager_address"]:
-        entity_manager_address = web3.toChecksumAddress(
+        entity_manager_address = Web3.to_checksum_address(
             shared_config["contracts"]["entity_manager_address"]
         )
         entity_manager_inst = web3.eth.contract(
@@ -109,13 +109,12 @@ def create_celery(test_config=None):
     global trusted_notifier_manager
     global solana_client_manager
 
-    web3endpoint = web3_provider.get_web3()
-    web3 = Web3(HTTPProvider(web3endpoint))
+    web3 = web3_provider.get_web3()
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
     # We use multiprovider to allow for multiple web3 providers and additional resiliency.
     # However, we do not use multiprovider in data web3 because of the effect of disparate block status reads.
-    eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+    eth_web3 = web3_provider.get_eth_web3()
     eth_abi_values = helpers.load_eth_abi_values()
 
     # Initialize trusted notifier manager info
@@ -323,6 +322,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
+            "src.tasks.cache_entity_counts",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -421,6 +421,10 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_current_nodes",
                 "schedule": timedelta(minutes=1),
             },
+            "cache_entity_counts": {
+                "task": "cache_entity_counts",
+                "schedule": timedelta(minutes=10),
+            },
             "update_aggregates": {
                 "task": "update_aggregates",
                 "schedule": timedelta(minutes=10),
@@ -436,7 +440,7 @@ def configure_celery(celery, test_config=None):
     )
 
     # Initialize Redis connection
-    redis_inst = redis.Redis.from_url(url=redis_url)
+    redis_inst = get_redis()
 
     # backfill cid data if url is provided
     env = os.getenv("audius_discprov_env")
@@ -453,7 +457,7 @@ def configure_celery(celery, test_config=None):
     )
     logger.info("Database instance initialized!")
 
-    registry_address = web3.toChecksumAddress(
+    registry_address = Web3.to_checksum_address(
         shared_config["eth_contracts"]["registry"]
     )
     eth_manager = EthManager(eth_web3, eth_abi_values, registry_address)

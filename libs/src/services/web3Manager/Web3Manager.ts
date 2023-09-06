@@ -18,6 +18,7 @@ import type { HttpProvider, TransactionReceipt, EventLog } from 'web3-core'
 import type { EIP712TypedData } from 'eth-sig-util'
 import type { DecodedLog } from 'abi-decoder'
 import type { AudiusLibs } from '../../AudiusLibs'
+import type { DiscoveryProvider } from '../discoveryProvider'
 
 const DEFAULT_GAS_LIMIT = 2000000
 
@@ -40,18 +41,21 @@ export class Web3Manager {
   ownerWallet?: EthereumWallet
   // Need to maintain the user's provided handle for anti-abuse measures on relay
   userSuppliedHandle?: string
+  discoveryProvider: Nullable<DiscoveryProvider>
+
 
   constructor({
     web3Config,
     identityService,
     hedgehog,
-    isServer = false
+    isServer = false,
   }: Web3ManagerConfig) {
     this.web3Config = web3Config
     this.isServer = isServer
 
     // Unset if externalWeb3 = true
     this.identityService = identityService
+    this.discoveryProvider = null
     this.hedgehog = hedgehog
     this.AudiusABIDecoder = AudiusABIDecoder
   }
@@ -114,6 +118,14 @@ export class Web3Manager {
 
   setWeb3(web3: Web3Type) {
     this.web3 = web3
+  }
+
+  setDiscoveryProvider(discoveryProvider: DiscoveryProvider) {
+    this.discoveryProvider = discoveryProvider
+  }
+
+  useDiscoveryRelay() {
+    return !(this.discoveryProvider === null)
   }
 
   getWalletAddress() {
@@ -231,16 +243,34 @@ export class Web3Manager {
       const response = await retry(
         async (bail) => {
           try {
-            return await this.identityService?.relay(
-              contractRegistryKey,
-              contractAddress,
-              this.ownerWallet!.getAddressString(),
-              encodedABI,
-              gasLimit,
-              this.userSuppliedHandle,
-              nethermindContractAddress,
-              nethermindEncodedAbi
-            )
+            if (this.useDiscoveryRelay()) {
+              // use discovery relay
+              const res = await this.discoveryProvider?.relay({
+                contractRegistryKey,
+                contractAddress,
+                senderAddress: this.ownerWallet!.getAddressString(),
+                encodedABI,
+                gasLimit,
+                handle: this.userSuppliedHandle,
+                nethermindContractAddress,
+                nethermindEncodedAbi
+              })
+              if (res === null || res === undefined) {
+                throw new Error("discovery relay returned empty response")
+              }
+              return res
+            } else {
+              return await this.identityService?.relay(
+                contractRegistryKey,
+                contractAddress,
+                this.ownerWallet!.getAddressString(),
+                encodedABI,
+                gasLimit,
+                this.userSuppliedHandle,
+                nethermindContractAddress,
+                nethermindEncodedAbi
+              )
+            }
           } catch (e: any) {
             // If forbidden, don't retry
             if (e.response.status === 403) {

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-import redis
 from sqlalchemy.orm.session import Session
+
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.models.indexing.block import Block
@@ -10,6 +10,7 @@ from src.models.social.play import Play
 from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
@@ -77,7 +78,7 @@ def make_scope_and_process(bus, session):
 
 
 def test_listen_streak_challenge(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     # Register events with the bus
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
@@ -135,7 +136,7 @@ def test_listen_streak_challenge(app):
 
 
 def test_multiple_listens(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     # Register events with the bus
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
@@ -174,7 +175,7 @@ def test_multiple_listens(app):
 
 
 def test_anon_listen(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
     bus = ChallengeEventBus(redis_conn)
     # Register events with the bus
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)

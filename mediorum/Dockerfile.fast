@@ -3,6 +3,7 @@ FROM alpine
 RUN apk add curl ffmpeg
 
 COPY build/mediorum-linux-amd64 /bin/mediorum
+COPY build/mediorum-cmd-linux-amd64 /bin/mediorum-cmd
 
 VOLUME ["/mediorum_data"]
 EXPOSE 1991

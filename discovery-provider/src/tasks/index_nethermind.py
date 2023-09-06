@@ -1,17 +1,23 @@
 # pylint: disable=C0302
 import concurrent.futures
+import copy
 import os
 from datetime import datetime
-from operator import itemgetter, or_
+from typing import Dict, List, Sequence, Tuple, TypedDict, cast
 
 from hexbytes import HexBytes
+from redis import Redis
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+from web3.exceptions import BlockNotFound
+from web3.types import BlockData, HexStr, TxReceipt
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.grants.developer_app import DeveloperApp
 from src.models.grants.grant import Grant
 from src.models.indexing.block import Block
-from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.indexing.revert_block import RevertBlock
 from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -35,9 +41,6 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.structured_logger import StructuredLogger, log_duration
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from web3.exceptions import BlockNotFound
 
 ENTITY_MANAGER = CONTRACT_TYPES.ENTITY_MANAGER.value
 
@@ -65,22 +68,42 @@ default_config_start_hash = "0x0"
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
 
+model_mapping = {
+    Save.__tablename__: Save,
+    Repost.__tablename__: Repost,
+    Follow.__tablename__: Follow,
+    Subscription.__tablename__: Subscription,
+    Playlist.__tablename__: Playlist,
+    Track.__tablename__: Track,
+    User.__tablename__: User,
+    AssociatedWallet.__tablename__: AssociatedWallet,
+    UserEvent.__tablename__: UserEvent,
+    NotificationSeen.__tablename__: NotificationSeen,
+    PlaylistSeen.__tablename__: PlaylistSeen,
+    DeveloperApp.__tablename__: DeveloperApp,
+    Grant.__tablename__: Grant,
+}
 
-def fetch_tx_receipt(tx_hash: HexBytes):
+
+class TxReceiptAndHash(TypedDict):
+    tx_receipt: TxReceipt
+    tx_hash: str
+
+
+def fetch_tx_receipt(tx_hash: HexBytes) -> TxReceiptAndHash:
     receipt = web3.eth.get_transaction_receipt(tx_hash)
-    response = {}
-    response["tx_receipt"] = receipt
-    response["tx_hash"] = tx_hash.hex()
-    return response
+    return {"tx_receipt": receipt, "tx_hash": tx_hash.hex()}
 
 
 @log_duration(logger)
-def fetch_tx_receipts(block):
-    block_transactions = block.transactions
-    block_tx_with_receipts = {}
+def fetch_tx_receipts(block: BlockData):
+    # We fetch HexBytes rather than full TxData
+    block_transactions = cast(Sequence[HexBytes], block["transactions"])
+    block_tx_with_receipts: dict[str, TxReceipt] = {}
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future_to_tx_receipt = {
-            executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
+            executor.submit(fetch_tx_receipt, tx): tx
+            for tx in (block_transactions or [])
         }
         for future in concurrent.futures.as_completed(future_to_tx_receipt):
             tx = future_to_tx_receipt[future]
@@ -90,7 +113,7 @@ def fetch_tx_receipts(block):
                 block_tx_with_receipts[tx_hash] = tx_receipt_info["tx_receipt"]
             except Exception as exc:
                 logger.error(
-                    f"index_nethermind.py | fetch_tx_receipts {tx} generated {exc}"
+                    f"index_nethermind.py | fetch_tx_receipts {tx.hex()} generated {exc}"
                 )
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
@@ -107,7 +130,7 @@ def fetch_tx_receipts(block):
 def get_entity_manager_events_tx(index_nethermind, event_type, tx_receipt):
     return getattr(
         index_nethermind.entity_manager_contract.events, event_type
-    )().processReceipt(tx_receipt)
+    )().process_receipt(tx_receipt)
 
 
 def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
@@ -132,12 +155,12 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(
-    session: Session, next_block: AttributeDict, current_block: Block
+    session: Session, next_block: BlockData, current_block: Block
 ):
     block_model = Block(
-        blockhash=web3.toHex(next_block.hash),
-        parenthash=web3.toHex(next_block.parentHash),
-        number=next_block.number,
+        blockhash=web3.to_hex(next_block["hash"]),
+        parenthash=web3.to_hex(next_block["parentHash"]),
+        number=next_block["number"],
         is_current=True,
     )
 
@@ -145,19 +168,19 @@ def add_indexed_block_to_db(
     session.add(block_model)
 
 
-def add_indexed_block_to_redis(block, redis):
-    redis.set(most_recent_indexed_block_redis_key, block.number)
-    redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
+def add_indexed_block_to_redis(block: BlockData, redis: Redis):
+    redis.set(most_recent_indexed_block_redis_key, block["number"])
+    redis.set(most_recent_indexed_block_hash_redis_key, block["hash"].hex())
 
 
 def process_state_changes(
-    session,
-    tx_type_to_grouped_lists_map,
-    block,
+    session: Session,
+    tx_type_to_grouped_lists_map: dict[str, List[TxReceipt]],
+    block: BlockData,
 ):
-    block_number, block_hash, block_timestamp = itemgetter(
-        "number", "hash", "timestamp"
-    )(block)
+    block_number = block["number"]
+    block_hash = block["hash"].hex()
+    block_timestamp = block["timestamp"]
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
@@ -184,18 +207,7 @@ def process_state_changes(
 @log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
-        user_id = user_events_to_revert.user_id
-        previous_user_events_entry = (
-            session.query(UserEvent)
-            .filter(UserEvent.user_id == user_id)
-            .filter(UserEvent.blocknumber < revert_block_number)
-            .order_by(UserEvent.blocknumber.desc())
-            .first()
-        )
-        if previous_user_events_entry:
-            session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
-                UserEvent.blocknumber == previous_user_events_entry.blocknumber
-            ).update({"is_current": True})
+
         logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
 
@@ -220,7 +232,7 @@ def is_block_on_chain(web3: Web3, block: Block):
     Determines if the provided block is valid on chain by fetching its hash.
     """
     try:
-        block_from_chain = web3.eth.get_block(block.blockhash)
+        block_from_chain = web3.eth.get_block(HexStr(block.blockhash))
         return block_from_chain
     except BlockNotFound:
         return False
@@ -228,13 +240,17 @@ def is_block_on_chain(web3: Web3, block: Block):
 
 
 def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
+    if latest_database_block.number is None:
+        logger.info(f"Block number invalid {latest_database_block}, returning early")
+        return False
+
     # Get next block to index
     next_block_number = latest_database_block.number - (final_poa_block or 0) + 1
     try:
-        next_block = web3.eth.get_block(next_block_number)
-        next_block = AttributeDict(
-            next_block, number=next_block.number + final_poa_block
-        )
+        next_block_immutable = web3.eth.get_block(next_block_number)
+        # Copy the immutable attribute dict to a mutable dict
+        next_block: BlockData = cast(BlockData, dict(next_block_immutable))
+        next_block["number"] = next_block["number"] + final_poa_block
         return next_block
     except BlockNotFound:
         logger.info(f"Block not found {next_block_number}, returning early")
@@ -242,7 +258,9 @@ def get_next_block(web3: Web3, latest_database_block: Block, final_poa_block=0):
         return False
 
 
-def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_block=0):
+def get_relevant_blocks(
+    web3: Web3, latest_database_block: Block, final_poa_block=0
+) -> Tuple[BlockData | bool, BlockData | bool]:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         is_block_on_chain_future = executor.submit(
             is_block_on_chain, web3, latest_database_block
@@ -256,7 +274,7 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
         if (
             next_block
-            and web3.toHex(next_block.parentHash) != latest_database_block.blockhash
+            and web3.to_hex(next_block["parentHash"]) != latest_database_block.blockhash
             and latest_database_block.number != 0
         ):
             block_on_chain = False
@@ -266,15 +284,14 @@ def get_relevant_blocks(web3: Web3, latest_database_block: Block, final_poa_bloc
 
 @log_duration(logger)
 def index_next_block(
-    session: Session, latest_database_block: Block, next_block: AttributeDict
+    session: Session, latest_database_block: Block, next_block: BlockData
 ):
     """
     Given the latest block in the database, index forward one block.
     """
     redis = index_nethermind.redis
     shared_config = index_nethermind.shared_config
-
-    next_block_number = next_block.number
+    next_block_number = next_block["number"]
     logger.set_context("block", next_block_number)
 
     indexing_transaction_index_sort_order_start_block = (
@@ -284,7 +301,7 @@ def index_next_block(
 
     challenge_bus: ChallengeEventBus = index_nethermind.challenge_event_bus
     with challenge_bus.use_scoped_dispatch_queue():
-        txs_grouped_by_type = {
+        txs_grouped_by_type: dict[str, List[TxReceipt]] = {
             ENTITY_MANAGER: [],
         }
         try:
@@ -305,7 +322,7 @@ def index_next_block(
 
             # Parse tx events in each block
             for tx in sorted_txs:
-                tx_hash = tx.transactionHash.hex()
+                tx_hash = tx["transactionHash"].hex()
                 tx_receipt = tx_receipt_dict[tx_hash]
                 contract_type = get_contract_type_for_tx(
                     txs_grouped_by_type, tx, tx_receipt
@@ -333,10 +350,15 @@ def index_next_block(
         except NotAllTransactionsFetched as e:
             raise e
         try:
-            if next_block.number % 100 == 0:
+            # Only dispatch trending challenge computation on a similar block, modulo 100
+            # so things are consistent. Note that if a discovery node is behind, this will be
+            # inconsistent.
+            # TODO: Consider better alternatives for consistency with behind nodes. Maybe this
+            # should not be calculated.
+            if next_block["number"] % 100 == 0:
                 # Check the last block's timestamp for updating the trending challenge
                 [should_update, date] = should_trending_challenge_update(
-                    session, next_block.timestamp
+                    session, next_block["timestamp"]
                 )
                 if should_update:
                     celery.send_task(
@@ -350,10 +372,10 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
-            if next_block.number % 100 == 0:
+            if next_block["number"] % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
-                    kwargs={"current_block_timestamp": next_block.timestamp},
+                    kwargs={"current_block_timestamp": next_block["timestamp"]},
                 )
         except Exception as e:
             # Do not throw error, as this should not stop indexing
@@ -369,7 +391,7 @@ def get_block(web3: Web3, blocknumber: int, final_poa_block=0):
     try:
         adjusted_blocknumber = blocknumber - (final_poa_block or 0)
         block = web3.eth.get_block(adjusted_blocknumber)
-        block = AttributeDict(block)
+        block = copy.deepcopy(block)
         return block
     except BlockNotFound:
         logger.info(f"Block not found {adjusted_blocknumber}")
@@ -382,7 +404,7 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
         .filter(Block.blockhash == revert_block_parent_hash)
         .first()
     )
-    if not parent_number_results:
+    if not parent_number_results or parent_number_results[0] is None:
         return
     parent_number = parent_number_results[0]
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -398,21 +420,19 @@ def revert_delist_cursors(session: Session, revert_block_parent_hash: str):
 
 
 @log_duration(logger)
-def revert_block(session: Session, revert_block: Block):
+def revert_block(session: Session, block_to_revert: Block):
     start_time = datetime.now()
 
-    rebuild_playlist_index = False
-    rebuild_track_index = False
-    rebuild_user_index = False
-
     # Cache relevant information about current block
-    revert_hash = revert_block.blockhash
-    revert_block_number = revert_block.number
-    parent_hash = revert_block.parenthash
+    revert_hash = block_to_revert.blockhash
+    revert_block_number = block_to_revert.number
+    parent_hash = block_to_revert.parenthash
+    if not parent_hash:
+        return
     logger.set_context("block", revert_block_number)
 
     # Special case for default start block value of 0x0 / 0x0...0
-    if revert_block.parenthash == default_padded_start_hash:
+    if block_to_revert.parenthash == default_padded_start_hash:
         parent_hash = default_config_start_hash
 
     # Update newly current block row and outdated row (indicated by current block's parent hash)
@@ -427,12 +447,6 @@ def revert_block(session: Session, revert_block: Block):
     revert_delist_cursors(session, parent_hash)
 
     # aggregate all transactions in current block
-    revert_save_entries = (
-        session.query(Save).filter(Save.blocknumber == revert_block_number).all()
-    )
-    revert_repost_entries = (
-        session.query(Repost).filter(Repost.blocknumber == revert_block_number).all()
-    )
     revert_follow_entries = (
         session.query(Follow).filter(Follow.blocknumber == revert_block_number).all()
     )
@@ -451,11 +465,6 @@ def revert_block(session: Session, revert_block: Block):
     )
     revert_user_entries = (
         session.query(User).filter(User.blocknumber == revert_block_number).all()
-    )
-    revert_ursm_content_node_entries = (
-        session.query(UrsmContentNode)
-        .filter(UrsmContentNode.blocknumber == revert_block_number)
-        .all()
     )
     revert_associated_wallets = (
         session.query(AssociatedWallet)
@@ -501,193 +510,43 @@ def revert_block(session: Session, revert_block: Block):
     )
 
     # Revert all of above transactions
-    for save_to_revert in revert_save_entries:
-        save_item_id = save_to_revert.save_item_id
-        save_user_id = save_to_revert.user_id
-        save_type = save_to_revert.save_type
-        previous_save_entry = (
-            session.query(Save)
-            .filter(Save.user_id == save_user_id)
-            .filter(Save.save_item_id == save_item_id)
-            .filter(Save.save_type == save_type)
-            .order_by(Save.blocknumber.desc())
-            .first()
-        )
-        if previous_save_entry:
-            previous_save_entry.is_current = True
-        logger.info(f"Reverting save: {save_to_revert}")
-        # Remove outdated save item entry
-        session.delete(save_to_revert)
-
-    for repost_to_revert in revert_repost_entries:
-        repost_user_id = repost_to_revert.user_id
-        repost_item_id = repost_to_revert.repost_item_id
-        repost_type = repost_to_revert.repost_type
-        previous_repost_entry = (
-            session.query(Repost)
-            .filter(Repost.user_id == repost_user_id)
-            .filter(Repost.repost_item_id == repost_item_id)
-            .filter(Repost.repost_type == repost_type)
-            .order_by(Repost.blocknumber.desc())
-            .first()
-        )
-        # Update prev repost row (is_delete) to is_current == True
-        if previous_repost_entry:
-            previous_repost_entry.is_current = True
-        # Remove outdated repost entry
-        logger.info(f"Reverting repost: {repost_to_revert}")
-        session.delete(repost_to_revert)
-
     for follow_to_revert in revert_follow_entries:
-        previous_follow_entry = (
-            session.query(Follow)
-            .filter(Follow.follower_user_id == follow_to_revert.follower_user_id)
-            .filter(Follow.followee_user_id == follow_to_revert.followee_user_id)
-            .order_by(Follow.blocknumber.desc())
-            .first()
-        )
-        # update prev follow row (is_delete) to is_current = true
-        if previous_follow_entry:
-            previous_follow_entry.is_current = True
         # remove outdated follow entry
         logger.info(f"Reverting follow: {follow_to_revert}")
         session.delete(follow_to_revert)
 
     for subscription_to_revert in revert_subscription_entries:
-        previous_subscription_entry = (
-            session.query(Subscription)
-            .filter(Subscription.subscriber_id == subscription_to_revert.subscriber_id)
-            .filter(Subscription.user_id == subscription_to_revert.user_id)
-            .filter(Subscription.blocknumber < revert_block_number)
-            .order_by(Subscription.blocknumber.desc())
-            .first()
-        )
-        if previous_subscription_entry:
-            previous_subscription_entry.is_current = True
+
         logger.info(f"Reverting subscription: {subscription_to_revert}")
         session.delete(subscription_to_revert)
 
     for playlist_to_revert in revert_playlist_entries:
-        playlist_id = playlist_to_revert.playlist_id
-        previous_playlist_entry = (
-            session.query(Playlist)
-            .filter(Playlist.playlist_id == playlist_id)
-            .filter(Playlist.blocknumber < revert_block_number)
-            .order_by(Playlist.blocknumber.desc())
-            .first()
-        )
-        if previous_playlist_entry:
-            previous_playlist_entry.is_current = True
         logger.info(f"Reverting playlist: {playlist_to_revert}")
         # Remove outdated playlist entry
         session.delete(playlist_to_revert)
 
     for track_to_revert in revert_track_entries:
-        track_id = track_to_revert.track_id
-        previous_track_entry = (
-            session.query(Track)
-            .filter(Track.track_id == track_id)
-            .filter(Track.blocknumber < revert_block_number)
-            .order_by(Track.blocknumber.desc())
-            .first()
-        )
-        if previous_track_entry:
-            # First element in descending order is new current track item
-            previous_track_entry.is_current = True
         # Remove track entries
         logger.info(f"Reverting track: {track_to_revert}")
         session.delete(track_to_revert)
 
-    for ursm_content_node_to_revert in revert_ursm_content_node_entries:
-        cnode_sp_id = ursm_content_node_to_revert.cnode_sp_id
-        previous_ursm_content_node_entry = (
-            session.query(UrsmContentNode)
-            .filter(UrsmContentNode.cnode_sp_id == cnode_sp_id)
-            .filter(UrsmContentNode.blocknumber < revert_block_number)
-            .order_by(UrsmContentNode.blocknumber.desc())
-            .first()
-        )
-        if previous_ursm_content_node_entry:
-            previous_ursm_content_node_entry.is_current = True
-        # Remove previous ursm Content Node entires
-        logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
-        session.delete(ursm_content_node_to_revert)
-
     # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
     for user_to_revert in revert_user_entries:
-        user_id = user_to_revert.user_id
-        previous_user_entry = (
-            session.query(User)
-            .filter(
-                User.user_id == user_id,
-                User.blocknumber < revert_block_number,
-                # Or both possibilities to allow use of composite index
-                # on user, block, is_current
-                or_(User.is_current == True, User.is_current == False),
-            )
-            .order_by(User.blocknumber.desc())
-            .first()
-        )
-        if previous_user_entry:
-            # Update previous user row, setting is_current to true
-            previous_user_entry.is_current = True
+
         # Remove outdated user entries
         logger.info(f"Reverting user: {user_to_revert}")
         session.delete(user_to_revert)
 
     for associated_wallets_to_revert in revert_associated_wallets:
-        user_id = associated_wallets_to_revert.user_id
-        previous_associated_wallet_entry = (
-            session.query(AssociatedWallet)
-            .filter(AssociatedWallet.user_id == user_id)
-            .filter(AssociatedWallet.blocknumber < revert_block_number)
-            .order_by(AssociatedWallet.blocknumber.desc())
-            .first()
-        )
-        if previous_associated_wallet_entry:
-            session.query(AssociatedWallet).filter(
-                AssociatedWallet.user_id == user_id
-            ).filter(
-                AssociatedWallet.blocknumber
-                == previous_associated_wallet_entry.blocknumber
-            ).update(
-                {"is_current": True}
-            )
-        # Remove outdated associated wallets
-        logger.info(f"Reverting associated Wallet: {user_id}")
         session.delete(associated_wallets_to_revert)
 
     revert_user_events(session, revert_user_events_entries, revert_block_number)
 
     for track_route_to_revert in revert_track_routes:
-        track_id = track_route_to_revert.track_id
-        previous_track_route_entry = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.track_id == track_id,
-                TrackRoute.blocknumber < revert_block_number,
-            )
-            .order_by(TrackRoute.blocknumber.desc(), TrackRoute.slug.asc())
-            .first()
-        )
-        if previous_track_route_entry:
-            previous_track_route_entry.is_current = True
         logger.info(f"Reverting track route {track_route_to_revert}")
         session.delete(track_route_to_revert)
 
     for playlist_route_to_revert in revert_playlist_routes:
-        playlist_id = playlist_route_to_revert.playlist_id
-        previous_playlist_route_entry = (
-            session.query(PlaylistRoute)
-            .filter(
-                PlaylistRoute.playlist_id == playlist_id,
-                PlaylistRoute.blocknumber < revert_block_number,
-            )
-            .order_by(PlaylistRoute.blocknumber.desc(), PlaylistRoute.slug.asc())
-            .first()
-        )
-        if previous_playlist_route_entry:
-            previous_playlist_route_entry.is_current = True
         logger.info(f"Reverting playlist route {playlist_route_to_revert}")
         session.delete(playlist_route_to_revert)
 
@@ -696,58 +555,47 @@ def revert_block(session: Session, revert_block: Block):
         # NOTE: There is no need mark previous as is_current for notification seen
 
     for playlist_seen_to_revert in revert_playlist_seen:
-        previous_playlist_seen_entry = (
-            session.query(PlaylistSeen)
-            .filter(
-                PlaylistSeen.playlist_id == playlist_seen_to_revert.playlist_id,
-                PlaylistSeen.user_id == playlist_seen_to_revert.user_id,
-                PlaylistSeen.blocknumber < revert_block_number,
-            )
-            .order_by(PlaylistSeen.blocknumber.desc())
-            .first()
-        )
-        if previous_playlist_seen_entry:
-            previous_playlist_seen_entry.is_current = True
         logger.info(f"Reverting playlist seen {playlist_seen_to_revert}")
         session.delete(playlist_seen_to_revert)
 
     for developer_app_to_revert in revert_developer_apps:
-        previous_developer_app_entry = (
-            session.query(DeveloperApp)
-            .filter(
-                DeveloperApp.address == developer_app_to_revert.address,
-                DeveloperApp.blocknumber < revert_block_number,
-            )
-            .order_by(DeveloperApp.blocknumber.desc())
-            .first()
-        )
-        if previous_developer_app_entry:
-            previous_developer_app_entry.is_current = True
         logger.info(f"Reverting developer app {developer_app_to_revert}")
         session.delete(developer_app_to_revert)
 
     for grant_to_revert in revert_grants:
-        previous_grant_entry = (
-            session.query(Grant)
-            .filter(
-                Grant.grantee_address == grant_to_revert.grantee_address,
-                Grant.user_id == grant_to_revert.user_id,
-                Grant.blocknumber < revert_block_number,
-            )
-            .order_by(Grant.blocknumber.desc())
-            .first()
-        )
-        if previous_grant_entry:
-            previous_grant_entry.is_current = True
+
         logger.info(f"Reverting grant {grant_to_revert}")
         session.delete(grant_to_revert)
 
-    # Remove outdated block entry
-    session.query(Block).filter(Block.blockhash == revert_hash).delete()
+    revert_block_record = (
+        session.query(RevertBlock)
+        .filter(RevertBlock.blocknumber == revert_block_number)
+        .first()
+    )
 
-    rebuild_playlist_index = rebuild_playlist_index or bool(revert_playlist_entries)
-    rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
-    rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
+    # delete block record and cascade delete from tables ^
+    session.query(Block).filter(Block.blockhash == revert_hash).delete()
+    if not revert_block_record:
+        logger.info("No reverts to apply")
+        return
+
+    revert_records = []
+    prev_records: Dict[str, List[Dict]] = dict(revert_block_record.prev_records)
+    # apply reverts
+    for record_type in prev_records:
+        for json_record in prev_records[record_type]:
+            if record_type not in model_mapping:
+                # skip playlist/track routes reverts
+                continue
+            Model = model_mapping[record_type]
+            # filter out unnecessary keys
+            filtered_json_record = {
+                k: v for k, v in json_record.items() if k in Model.__table__.columns  # type: ignore
+            }
+            revert_records.append(Model(**filtered_json_record))
+    # Remove outdated block entry
+    session.add_all(revert_records)
+
     logger.info(
         f"Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
     )

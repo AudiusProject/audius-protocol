@@ -104,6 +104,11 @@ track = ns.model(
     },
 )
 
+cover_art = ns.model(
+    "cover_art",
+    {"150x150": fields.String, "480x480": fields.String, "1000x1000": fields.String},
+)
+
 track_full = ns.clone(
     "track_full",
     track,
@@ -111,6 +116,7 @@ track_full = ns.clone(
         "blocknumber": fields.Integer(required=True),
         "create_date": fields.String,
         "cover_art_sizes": fields.String,
+        "cover_art_cids": fields.Nested(cover_art, allow_null=True),
         "created_at": fields.String,
         "credits_splits": fields.String,
         "download": fields.Nested(download),

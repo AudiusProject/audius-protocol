@@ -28,4 +28,5 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: relay
+        git_sha: "${GIT_COMMIT}"
     restart: always

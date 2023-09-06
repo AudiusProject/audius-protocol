@@ -1,4 +1,5 @@
 import pytest
+
 from src.utils.rendezvous import RendezvousHash
 
 

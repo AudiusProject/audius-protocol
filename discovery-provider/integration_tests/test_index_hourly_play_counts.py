@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from sqlalchemy import desc
+
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.social.hourly_play_counts import HourlyPlayCount
 from src.tasks.index_hourly_play_counts import (

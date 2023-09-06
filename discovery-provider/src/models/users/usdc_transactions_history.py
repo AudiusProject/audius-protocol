@@ -1,7 +1,7 @@
 import enum
 
 from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String, text
-from sqlalchemy.dialects.postgresql import JSONB
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

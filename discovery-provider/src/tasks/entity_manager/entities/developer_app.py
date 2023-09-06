@@ -3,6 +3,7 @@ import time
 from typing import Optional, TypedDict, Union, cast
 
 from eth_account.messages import defunct_hash_message
+
 from src.exceptions import IndexingValidationError
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.utils import (
@@ -38,7 +39,7 @@ class DeleteDeveloperAppMetadata(TypedDict):
 def get_app_address_from_signature(app_signature):
     web3 = web3_provider.get_eth_web3()
     message_hash = defunct_hash_message(text=app_signature["message"])
-    app_address = web3.eth.account.recoverHash(
+    app_address = web3.eth.account._recover_hash(
         message_hash, signature=app_signature["signature"]
     )
     return app_address.lower()
@@ -118,18 +119,17 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user id is required and was not provided"
         )
-    if user_id not in params.existing_records[EntityType.USER]:
+    if user_id not in params.existing_records["User"]:
         raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user id {user_id} does not exist"
         )
-    if not params.existing_records[EntityType.USER][user_id].wallet:
+    if not params.existing_records["User"][user_id].wallet:
         raise IndexingValidationError(
             f"Programming error while indexing {params.action} Developer App Transaction, user wallet missing"
         )
-    if (
-        params.existing_records[EntityType.USER][user_id].wallet.lower()
-        != params.signer.lower()
-    ):
+
+    wallet = params.existing_records["User"][user_id].wallet
+    if wallet and wallet.lower() != params.signer.lower():
         raise IndexingValidationError(
             f"Invalid {params.action} Developer App Transaction, user does not match signer"
         )
@@ -139,13 +139,11 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
                 f"Invalid {params.action} Developer App Transaction, address is required and was not provided"
             )
 
-        if address not in params.existing_records[EntityType.DEVELOPER_APP]:
+        if address not in params.existing_records["DeveloperApp"]:
             raise IndexingValidationError(
                 f"Invalid Delete Developer App Transaction, developer app with address {metadata['address']} does not exist"
             )
-        existing_developer_app = params.existing_records[EntityType.DEVELOPER_APP][
-            address
-        ]
+        existing_developer_app = params.existing_records["DeveloperApp"][address]
         if user_id != existing_developer_app.user_id:
             raise IndexingValidationError(
                 f"Invalid Delete Developer App Transaction, user id {user_id} does not match given developer app address"
@@ -185,7 +183,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
             raise IndexingValidationError(
                 "Invalid Create Developer App Transaction, name must be under 51 characters"
             )
-        if address in params.existing_records[EntityType.DEVELOPER_APP]:
+        if address in params.existing_records["DeveloperApp"]:
             raise IndexingValidationError(
                 f"Invalid Create Developer App Transaction, address {address} already exists"
             )
@@ -214,7 +212,7 @@ def validate_developer_app_tx(params: ManageEntityParameters, metadata):
         )
 
         num_new_apps_from_user = 0
-        for addressKey, apps in params.new_records[EntityType.DEVELOPER_APP].items():
+        for addressKey, apps in params.new_records["DeveloperApp"].items():
             if addressKey.lower() != address.lower() and apps[-1].user_id == user_id:
                 num_new_apps_from_user += 1
 
@@ -260,7 +258,7 @@ def create_developer_app(params: ManageEntityParameters):
     )
 
     validate_developer_app_record(developer_app_record)
-    params.add_developer_app_record(address, developer_app_record)
+    params.add_record(address, developer_app_record)
     return developer_app_record
 
 
@@ -271,11 +269,9 @@ def delete_developer_app(params: ManageEntityParameters):
             "Invalid Revoke Developer App Transaction, unable to parse metadata"
         )
     address = validate_developer_app_tx(params, metadata)
-    existing_developer_app = params.existing_records[EntityType.DEVELOPER_APP][address]
-    if address in params.new_records[EntityType.DEVELOPER_APP]:
-        existing_developer_app = params.new_records[EntityType.DEVELOPER_APP][address][
-            -1
-        ]
+    existing_developer_app = params.existing_records["DeveloperApp"][address]
+    if address in params.new_records["DeveloperApp"]:
+        existing_developer_app = params.new_records["DeveloperApp"][address][-1]
 
     revoked_developer_app = copy_record(
         existing_developer_app,
@@ -288,7 +284,7 @@ def delete_developer_app(params: ManageEntityParameters):
     revoked_developer_app.is_delete = True
 
     validate_developer_app_record(revoked_developer_app)
-    params.add_developer_app_record(address, revoked_developer_app)
+    params.add_record(address, revoked_developer_app)
     return revoked_developer_app
 
 

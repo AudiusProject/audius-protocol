@@ -2,54 +2,126 @@ package server
 
 import (
 	"context"
+	"errors"
 	"syscall"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
+	"gorm.io/gorm"
 )
 
-func (ss *MediorumServer) monitorCidCursors() {
-	ticker := time.NewTicker(10 * time.Second)
-	for range ticker.C {
-		cidCursors := []cidCursor{}
-		ctx := context.Background()
-		if err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
-			ss.cachedCidCursors = cidCursors
-
-			if ss.isSeedingLegacy && getPercentNodesSeededLegacy(cidCursors, ss.logger) > 50 {
-				ss.isSeedingLegacy = false
-				ss.logger.Info("seeding legacy complete")
-			}
-		}
-	}
+type diskStatus struct {
+	StoragePathSizeGB uint64    `json:"storagePathSizeGB"`
+	StoragePathUsedGB uint64    `json:"storagePathUsedGB"`
+	DatabaseSizeGB    uint64    `json:"databaseSizeGB"`
+	Clock             time.Time `json:"clock"`
 }
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
-	ss.updateDiskAndDbStatus()
-	ticker := time.NewTicker(2 * time.Minute)
+	// retry a few times to get initial status on startup
+	for i := 0; i < 3; i++ {
+		ss.updateDiskAndDbStatus()
+		time.Sleep(time.Minute)
+	}
+	ticker := time.NewTicker(5 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
 	}
 }
 
+func (ss *MediorumServer) monitorPeerReachability() {
+	ticker := time.NewTicker(1 * time.Minute)
+	for range ticker.C {
+		// find unreachable nodes in the last 2 minutes
+		var unreachablePeers []string
+		for _, peer := range ss.Config.Peers {
+			if peer.Host == ss.Config.Self.Host {
+				continue
+			}
+			if peerHealth, ok := ss.peerHealths[peer.Host]; ok {
+				if peerHealth.LastReachable.Before(time.Now().Add(-2 * time.Minute)) {
+					unreachablePeers = append(unreachablePeers, peer.Host)
+				}
+			} else {
+				unreachablePeers = append(unreachablePeers, peer.Host)
+			}
+		}
+
+		// check if each unreachable node was also unreachable last time we checked (so we ignore temporary downtime from restarts/updates)
+		for _, unreachable := range unreachablePeers {
+			if slices.Contains(ss.unreachablePeers, unreachable) {
+				// we can't reach this peer. self-mark unhealthy if >50% of other nodes can
+				if ss.canMajorityReachHost(unreachable) {
+					// TODO: self-mark unhealthy after nodes upgrade to expose reachable peers
+					break
+				}
+			}
+		}
+
+		ss.peerHealthsMutex.Lock()
+		ss.unreachablePeers = unreachablePeers
+		ss.peerHealthsMutex.Unlock()
+	}
+}
+
+func (ss *MediorumServer) canMajorityReachHost(host string) bool {
+	ss.peerHealthsMutex.RLock()
+	defer ss.peerHealthsMutex.RUnlock()
+
+	twoMinAgo := time.Now().Add(-2 * time.Minute)
+	numCanReach, numTotal := 0, 0
+	for _, peer := range ss.peerHealths {
+		if peer.LastReachable.After(twoMinAgo) {
+			numTotal++
+			if lastReachable, ok := peer.ReachablePeers[host]; ok && lastReachable.After(twoMinAgo) {
+				numCanReach++
+			}
+		}
+	}
+	return numTotal < 5 || numCanReach > numTotal/2
+}
+
 func (ss *MediorumServer) updateDiskAndDbStatus() {
-	total, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
+	legacyTotal, legacyFree, err := getDiskStatus("/file_storage")
 	if err == nil {
-		ss.storagePathUsed = total - free
-		ss.storagePathSize = total
+		ss.storagePathUsed = legacyTotal - legacyFree
+		ss.storagePathSize = legacyTotal
 	} else {
-		slog.Error("Error getting disk status", "err", err)
+		slog.Error("Error getting legacy disk status", "err", err)
 	}
 
-	dbSize, err := getDatabaseSize(ss.pgPool)
+	mediorumTotal, mediorumFree, err := getDiskStatus(ss.Config.Dir)
 	if err == nil {
-		ss.databaseSize = dbSize
+		ss.mediorumPathFree = mediorumFree
+		ss.mediorumPathUsed = mediorumTotal - mediorumFree
+		ss.mediorumPathSize = mediorumTotal
 	} else {
-		ss.databaseSize = 0
-		slog.Error("Error getting database size", "err", err)
+		slog.Error("Error getting mediorum disk status", "err", err)
 	}
+
+	dbSize, errStr := getDatabaseSize(ss.pgPool)
+	ss.databaseSize = dbSize
+	ss.dbSizeErr = errStr
+
+	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
+	ss.uploadsCount = uploadsCount
+	ss.uploadsCountErr = errStr
+
+	status := diskStatus{
+		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
+		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
+		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
+		Clock:             nearest5MinSinceEpoch(),
+	}
+	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
+}
+
+func nearest5MinSinceEpoch() time.Time {
+	secondsSinceEpoch := time.Now().Unix()
+	rounded := (secondsSinceEpoch + 150) / 300 * 300
+	return time.Unix(rounded, 0)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
@@ -64,32 +136,32 @@ func getDiskStatus(path string) (total uint64, free uint64, err error) {
 	return
 }
 
-func getDatabaseSize(p *pgxpool.Pool) (uint64, error) {
-	var size uint64
-	err := p.QueryRow(context.Background(), `SELECT pg_database_size(current_database())`).Scan(&size)
+func getDatabaseSize(p *pgxpool.Pool) (size uint64, errStr string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	if err != nil {
-		return 0, err
-	}
-
-	return size, nil
-}
-
-func getPercentNodesSeededLegacy(cidCursors []cidCursor, logger *slog.Logger) float64 {
-	// we're still seeding from each node until its cursor is after 2023-06-01
-	cutoff, err := time.Parse(time.RFC3339, "2023-06-01T00:00:00Z")
-	if err != nil {
-		logger.Error("error parsing seeding cutoff", "err", err)
-		return 0
-	}
-
-	nCaughtUp := 0
-	nPeers := len(cidCursors)
-	for _, cursor := range cidCursors {
-		if cursor.UpdatedAt.After(cutoff) {
-			nCaughtUp++
+	if err := p.QueryRow(ctx, `SELECT pg_database_size(current_database())`).Scan(&size); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errStr = "timeout getting database size within 10s: " + err.Error()
+		} else {
+			errStr = "error getting database size: " + err.Error()
 		}
 	}
 
-	return (float64(nCaughtUp) / float64(nPeers)) * 100
+	return
+}
+
+func getUploadsCount(db *gorm.DB) (count int64, errStr string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	if err := db.WithContext(ctx).Model(&Upload{}).Count(&count).Error; err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errStr = "timeout getting uploads count within 60s: " + err.Error()
+		} else {
+			errStr = "error getting uploads count: " + err.Error()
+		}
+	}
+
+	return
 }

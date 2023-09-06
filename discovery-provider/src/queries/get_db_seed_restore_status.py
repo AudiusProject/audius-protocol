@@ -1,4 +1,5 @@
 import sqlalchemy
+
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 

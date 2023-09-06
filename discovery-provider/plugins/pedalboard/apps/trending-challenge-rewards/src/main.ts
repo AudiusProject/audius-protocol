@@ -12,7 +12,7 @@ export const main = async () => {
   }
   const data = dataRes.unwrap();
 
-  await new App<SharedData>(data)
+  await new App<SharedData>({ appData: data })
     .cron(condition, disburseTrendingRewards)
     .cron(condition, announceTopFiveTrending)
     .task(establishSlackConnection)

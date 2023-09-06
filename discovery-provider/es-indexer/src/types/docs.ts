@@ -36,6 +36,7 @@ export type UserDoc = UserRow & {
   track_count: number
   following_ids: number[]
   following_count: number
+  subscribed_ids: number[]
 }
 
 export type TrackDoc = TrackRow & {

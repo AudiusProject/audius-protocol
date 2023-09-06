@@ -2,9 +2,9 @@ import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from typing import Any, Optional, TypedDict
 
-import redis
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
+
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
@@ -33,7 +33,6 @@ from src.queries.query_helpers import (
 )
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import (
@@ -41,9 +40,9 @@ from src.utils.redis_cache import (
     get_trending_cache_key,
     use_redis_cache,
 )
+from src.utils.redis_connection import get_redis
 
-redis_url = shared_config["redis"]["url"]
-redis_conn = redis.Redis.from_url(url=redis_url)
+redis_conn = get_redis()
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, Index, Integer, String
+
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 

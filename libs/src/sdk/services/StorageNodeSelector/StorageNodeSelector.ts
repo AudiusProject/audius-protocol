@@ -32,12 +32,13 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       config,
       defaultStorageNodeSelectorConfig
     )
-    this.auth = this.config.auth
+    this.discoveryNodeSelector = config.discoveryNodeSelector
+    this.auth = config.auth
+
     this.logger = this.config.logger.createPrefixedLogger(
       '[storage-node-selector]'
     )
     this.nodes = this.config.bootstrapNodes ?? []
-    this.discoveryNodeSelector = this.config.discoveryNodeSelector
 
     this.discoveryNodeSelector?.addEventListener(
       'change',

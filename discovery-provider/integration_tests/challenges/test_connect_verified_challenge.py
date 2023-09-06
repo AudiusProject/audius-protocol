@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import redis
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.models.indexing.block import Block
@@ -9,6 +8,7 @@ from src.models.rewards.challenge import Challenge
 from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_connect_verified_challenge(app):
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     with app.app_context():
         db = get_db()

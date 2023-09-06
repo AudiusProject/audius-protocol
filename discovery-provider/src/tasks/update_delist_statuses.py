@@ -4,6 +4,7 @@ from urllib.parse import quote
 
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import text
+
 from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.tracks.track import Track
 from src.models.users.user import User
@@ -19,6 +20,7 @@ UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 DELIST_BATCH_SIZE = 5000
 DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
+ALTERNATE_DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S+00"
 
 
 def query_users_by_user_ids(session: Session, user_ids: Set[int]) -> List[User]:
@@ -59,9 +61,16 @@ def update_user_is_available_statuses(
     for user in users:
         user_id = user["userId"]
         delisted = user["delisted"]
-        delist_timestamp = datetime.strptime(
-            user["createdAt"], DATETIME_FORMAT_STRING
-        ).timestamp()
+
+        try:
+            delist_timestamp = datetime.strptime(
+                user["createdAt"], DATETIME_FORMAT_STRING
+            ).timestamp()
+        except ValueError:
+            delist_timestamp = datetime.strptime(
+                user["createdAt"], ALTERNATE_DATETIME_FORMAT_STRING
+            ).timestamp()
+
         user_delist_map[user_id] = {
             "delisted": delisted,
             "delist_timestamp": delist_timestamp,
@@ -101,18 +110,20 @@ def update_user_is_available_statuses(
         logger.info(
             f"update_delist_statuses.py | ignoring delists for missing user ids: {missing_user_ids}, current_block_timestamp: {current_block_timestamp}"
         )
-    for user in users_to_update:
-        delisted = user_delist_map[user.user_id]["delisted"]
+
+    for user_to_update in users_to_update:
+        delisted = user_delist_map[user_to_update.user_id]["delisted"]
         if delisted:
             # Deactivate active users that have been delisted
-            if user.is_available:
-                user.is_available = False
-                user.is_deactivated = True
+            if user_to_update.is_available:
+                user_to_update.is_available = False
+                user_to_update.is_deactivated = True
         else:
             # Re-activate deactivated users that have been un-delisted
-            if not user.is_available:
-                user.is_available = True
-                user.is_deactivated = False
+            if not user_to_update.is_available:
+                user_to_update.is_available = True
+                user_to_update.is_deactivated = False
+
     users_updated = list(
         map(
             lambda user: {"user_id": user.user_id, "blocknumber": user.blocknumber},
@@ -132,9 +143,16 @@ def update_track_is_available_statuses(
     for track in tracks:
         track_id = track["trackId"]
         delisted = track["delisted"]
-        delist_timestamp = datetime.strptime(
-            track["createdAt"], DATETIME_FORMAT_STRING
-        ).timestamp()
+
+        try:
+            delist_timestamp = datetime.strptime(
+                track["createdAt"], DATETIME_FORMAT_STRING
+            ).timestamp()
+        except ValueError:
+            delist_timestamp = datetime.strptime(
+                track["createdAt"], ALTERNATE_DATETIME_FORMAT_STRING
+            ).timestamp()
+
         track_delist_map[track_id] = {
             "delisted": delisted,
             "delist_timestamp": delist_timestamp,
@@ -175,18 +193,18 @@ def update_track_is_available_statuses(
             f"update_delist_statuses.py | ignoring delists for missing track ids: {missing_track_ids}, current_block_timestamp: {current_block_timestamp}"
         )
 
-    for track in tracks_to_update:
-        delisted = track_delist_map[track.track_id]["delisted"]
+    for track_to_update in tracks_to_update:
+        delisted = track_delist_map[track_to_update.track_id]["delisted"]
         if delisted:
             # Deactivate active tracks that have been delisted
-            if track.is_available:
-                track.is_available = False
-                track.is_delete = True
+            if track_to_update.is_available:
+                track_to_update.is_available = False
+                track_to_update.is_delete = True
         else:
             # Re-activate deactivated tracks that have been un-delisted
-            if not track.is_available:
-                track.is_available = True
-                track.is_delete = False
+            if not track_to_update.is_available:
+                track_to_update.is_available = True
+                track_to_update.is_delete = False
     tracks_updated = list(
         map(
             lambda track: {

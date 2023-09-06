@@ -6,15 +6,18 @@ import logging
 import pathlib
 import struct
 from collections import defaultdict
-from typing import Dict, List, Set
+from typing import Dict, List, Set, cast
 
 import base58
 from eth_typing import ChecksumAddress
-from solana.publickey import PublicKey
+from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
+from web3 import Web3
+
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
+    PremiumContentAccessBatchArgs,
     premium_content_access_checker,
 )
 from src.premium_content.signature import get_premium_content_signature_for_user
@@ -23,7 +26,6 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import METADATA_PROGRAM_ID_PK
 from src.utils import db_session, web3_provider
 from src.utils.config import shared_config
-from web3 import Web3
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +102,9 @@ def _get_tracks(track_ids: List[int], session: Session):
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     return list(
         filter(
-            lambda track: track.is_premium  # type: ignore
-            and track.premium_conditions != None  # type: ignore
-            and "nft_collection" in track.premium_conditions,  # type: ignore
+            lambda track: track.is_premium
+            and track.premium_conditions != None
+            and "nft_collection" in track.premium_conditions,
             _get_tracks(track_ids, session),
         )
     )
@@ -119,7 +121,7 @@ def _get_eth_nft_gated_track_signatures(
     track_cid_to_id_map = {}
 
     user_eth_wallets = list(
-        map(Web3.toChecksumAddress, eth_associated_wallets + [user_wallet])
+        map(Web3.to_checksum_address, eth_associated_wallets + [user_wallet])
     )
 
     erc721_gated_tracks = list(
@@ -135,7 +137,7 @@ def _get_eth_nft_gated_track_signatures(
     # that share the same nft collection gate.
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
-        contract_address = Web3.toChecksumAddress(
+        contract_address = Web3.to_checksum_address(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc721_collection_track_map[contract_address].append(track.track_cid)
@@ -158,7 +160,7 @@ def _get_eth_nft_gated_track_signatures(
     erc1155_collection_track_map = defaultdict(list)
     contract_address_token_id_map: Dict[str, Set[int]] = defaultdict(set)
     for track in erc1155_gated_tracks:
-        contract_address = Web3.toChecksumAddress(
+        contract_address = Web3.to_checksum_address(
             track.premium_conditions["nft_collection"]["address"]  # type: ignore
         )
         erc1155_collection_track_map[contract_address].append(track.track_cid)
@@ -289,11 +291,11 @@ def _unpack_metadata_account_for_metaplex_nft(data):
 
 
 def _get_metadata_account(mint_address: str):
-    return PublicKey.find_program_address(
+    return Pubkey.find_program_address(
         [
             b"metadata",
             bytes(METADATA_PROGRAM_ID_PK),
-            bytes(PublicKey(mint_address)),  # type: ignore
+            bytes(Pubkey.from_string(mint_address)),
         ],
         METADATA_PROGRAM_ID_PK,
     )[0]
@@ -427,7 +429,7 @@ def _get_sol_nft_gated_track_signatures(
                         ] = get_premium_content_signature_for_user(
                             {
                                 "track_id": track_id,
-                                "track_cid": track_cid,
+                                "track_cid": cast(str, track_cid),
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
@@ -512,7 +514,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
         tracks = _get_tracks(track_ids, session)
         tracks_map = {track.track_id: track for track in tracks}
 
-        args = list(
+        args: List[PremiumContentAccessBatchArgs] = list(
             map(
                 lambda track_id: {
                     "user_id": user_id,

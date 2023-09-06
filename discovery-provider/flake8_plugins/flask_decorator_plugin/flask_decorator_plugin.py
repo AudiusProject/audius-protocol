@@ -2,6 +2,7 @@ import ast
 from typing import Any, Generator, List, Tuple, Type
 
 from flake8.options.manager import OptionManager
+
 from flake8_plugins.flask_decorator_plugin.visitor import Visitor
 
 code_message_map = {

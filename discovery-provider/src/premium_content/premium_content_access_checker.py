@@ -3,6 +3,8 @@ import logging
 from typing import Dict, List, TypedDict, Union, cast
 
 from sqlalchemy.orm.session import Session
+from typing_extensions import Protocol
+
 from src.models.tracks.track import Track
 from src.premium_content.helpers import (
     does_user_follow_artist,
@@ -10,13 +12,11 @@ from src.premium_content.helpers import (
     does_user_support_artist,
     has_user_purchased_content,
 )
-from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.premium_content.premium_content_types import (
     PremiumContentConditions,
     PremiumContentType,
 )
 from src.utils import helpers
-from typing_extensions import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
     "tip_user_id": does_user_support_artist,
-    USDC_PURCHASE_KEY: has_user_purchased_content,
+    "usdc_purchase": has_user_purchased_content,
 }
 
 

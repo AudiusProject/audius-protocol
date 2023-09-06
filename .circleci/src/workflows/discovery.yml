@@ -26,16 +26,23 @@ jobs:
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
 
+  - lint-discovery-provider:
+      name: lint-discovery-provider
+
   - test:
       name: test-discovery-provider
       context: GCP
       instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
+      requires:
+        - lint-discovery-provider
   - test:
       name: test-discovery-provider-notifications
       context: GCP
       instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
+      requires:
+        - lint-discovery-provider
 
   # Release
   - deploy-prod-discovery-provider-trigger:
@@ -78,20 +85,4 @@ jobs:
         stage-discovery-3
         stage-discovery-5
       service: discovery-provider
-      freeze: $FREEZE_BUILD
-
-  - deploy:
-      name: deploy-stage-discovery-provider-notifications
-      requires:
-        - test-discovery-provider-notifications
-        - push-discovery-provider-notifications
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: >-
-        stage-discovery-2
-      service: discovery-provider-notifications
       freeze: $FREEZE_BUILD

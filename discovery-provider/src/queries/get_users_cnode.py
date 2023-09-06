@@ -2,6 +2,7 @@ import logging  # pylint: disable=C0302
 from enum import Enum
 
 import sqlalchemy
+
 from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)

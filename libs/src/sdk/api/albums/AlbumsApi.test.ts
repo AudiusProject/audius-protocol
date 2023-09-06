@@ -110,7 +110,7 @@ describe('AlbumsApi', () => {
     albums = new AlbumsApi(
       new Configuration(),
       new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager(),
+      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
       logger
     )

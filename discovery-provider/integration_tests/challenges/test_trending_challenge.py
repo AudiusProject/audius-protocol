@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta
 
-import redis
-from integration_tests.utils import populate_mock_db
 from sqlalchemy.sql.expression import or_
+
+from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.trending_challenge import (
     should_trending_challenge_update,
@@ -19,6 +19,7 @@ from src.trending_strategies.trending_strategy_factory import TrendingStrategyFa
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
@@ -46,7 +47,7 @@ def test_trending_challenge_should_update(app):
         assert not should_update
 
         # wrong time, right day
-        timestamp = 1629489600
+        timestamp = 1629496800
         should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
@@ -82,7 +83,7 @@ def test_trending_challenge_should_update(app):
 def test_trending_challenge_job(app):
     with app.app_context():
         db = get_db()
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    redis_conn = get_redis()
 
     test_entities = {
         "tracks": [
@@ -326,4 +327,4 @@ def test_trending_challenge_job(app):
             .filter(TrendingResult.type == str(TrendingType.PLAYLISTS))
             .all()
         )
-        assert len(trending_playlists) == 4
+        assert len(trending_playlists) == 2

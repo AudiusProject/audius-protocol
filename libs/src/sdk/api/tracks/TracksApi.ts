@@ -31,7 +31,6 @@ import {
   EntityType,
   AdvancedOptions
 } from '../../services/EntityManager/types'
-import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseParams } from '../../utils/parseParams'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import { encodeHashId } from '../../utils/hashId'
@@ -137,7 +136,6 @@ export class TracksApi extends GeneratedTracksApi {
       )
 
     // Write metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.trackUploadHelper.generateId('track')
     const response = await this.entityManager.manageEntity({
       userId,
@@ -145,7 +143,7 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,
@@ -231,14 +229,13 @@ export class TracksApi extends GeneratedTracksApi {
     }
 
     // Write metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
     return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

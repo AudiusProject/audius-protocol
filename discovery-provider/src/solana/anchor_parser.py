@@ -5,7 +5,7 @@ from typing import Any, Container, Dict, List, Optional, TypedDict
 
 import base58
 from anchorpy import Idl, InstructionCoder
-from solana.transaction import TransactionInstruction
+from solders.instruction import Instruction
 
 
 class ParsedTxInstr(TypedDict):
@@ -21,12 +21,12 @@ class AnchorParser:
         self.instruction_account_name_dict = self._get_instruction_account_name_dict(
             data
         )
-        self.idl = Idl.from_json(data)
+        self.idl = Idl.from_json(json.dumps(data))
         self.instruction_coder = InstructionCoder(self.idl)
 
     def parse_instruction(
         self,
-        instruction: TransactionInstruction,
+        instruction: Instruction,
     ) -> ParsedTxInstr:
         encoded_ix_data = base58.b58encode(instruction.data)
         idl_instruction_name = self._get_instruction_name(encoded_ix_data)
@@ -77,11 +77,9 @@ class AnchorParser:
             return decoded_data
 
     # Maps account indices for ix context to pubkeys
-    def _get_instruction_context_accounts(
-        self, instruction: TransactionInstruction
-    ) -> List[str]:
+    def _get_instruction_context_accounts(self, instruction: Instruction) -> List[str]:
         self.instruction_coder.ix_layout
-        return [str(account_meta.pubkey) for account_meta in instruction.keys]
+        return [str(account_meta.pubkey) for account_meta in instruction.accounts]
 
     def _get_instruction_name(self, encoded_ix_data: bytes) -> str:
         # Default to empty string for empty instruction names (program deployments)

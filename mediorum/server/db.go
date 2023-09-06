@@ -6,6 +6,7 @@ import (
 	"mediorum/ddl"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
@@ -62,7 +63,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
+func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Blob{}, &Upload{})
@@ -74,10 +75,33 @@ func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
 	crud.RegisterModels(&Blob{}, &Upload{})
 
 	sqlDb, _ := crud.DB.DB()
+	gormDB := crud.DB
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, bucket)
+	ddl.Migrate(sqlDb, gormDB, bucket, myHost)
 
 	slog.Info("db: migrate done")
 
+}
+
+// delete blobs ops from other hosts that are > one week old
+func dbPruneOldOps(db *gorm.DB, myHost string) {
+
+	tooOld, err := ulid.New(uint64(time.Now().AddDate(0, 0, -7).UnixMilli()), nil)
+	if err != nil {
+		panic(err)
+	}
+
+	res := db.Exec(`
+		delete from ops
+		where "table" = 'blobs'
+		and "host" <> $1
+		and "ulid" < $2
+	`, myHost, tooOld.String())
+
+	if res.Error != nil {
+		slog.Error("dbPruneOldOps failed", "err", res.Error)
+	} else {
+		slog.Info("dbPruneOldOps OK", "row_count", res.RowsAffected)
+	}
 }

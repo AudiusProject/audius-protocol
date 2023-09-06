@@ -74,7 +74,10 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
       const axiosRequestObj: AxiosRequestConfig = {
         url: requestUrl,
         method: 'get',
-        timeout: 1000
+        timeout: 1000,
+        params: {
+          'allow_unregistered': 'true'
+        }
       }
       const resp = await axios(axiosRequestObj)
       const endpointServiceType = resp.data.data.service

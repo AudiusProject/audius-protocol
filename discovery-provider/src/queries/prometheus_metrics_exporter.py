@@ -10,6 +10,7 @@ from prometheus_client import (
     multiprocess,
     values,
 )
+
 from src.utils.prometheus_metric import PrometheusMetric
 
 logger = logging.getLogger(__name__)

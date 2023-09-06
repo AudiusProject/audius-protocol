@@ -1,6 +1,7 @@
 import logging
 
 import sqlalchemy
+
 from src import exceptions
 from src.utils import db_session, redis_connection
 

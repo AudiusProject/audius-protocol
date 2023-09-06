@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import pytest
+
 from integration_tests.utils import populate_mock_db
 from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import GetPlaylistsArgs, get_playlists

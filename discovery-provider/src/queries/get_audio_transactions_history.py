@@ -4,6 +4,7 @@ from typing import List, TypedDict
 from sqlalchemy import asc, desc
 from sqlalchemy.orm import Query
 from sqlalchemy.orm.session import Session
+
 from src.models.users.audio_transactions_history import AudioTransactionsHistory
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount

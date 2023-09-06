@@ -1,6 +1,7 @@
 import logging  # pylint: disable=C0302
 
 from sqlalchemy import func
+
 from src.models.tracks.tag_track_user_matview import t_tag_track_user
 from src.models.users.user import User
 from src.queries import response_name_constants

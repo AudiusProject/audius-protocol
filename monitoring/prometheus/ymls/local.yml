@@ -82,21 +82,6 @@
           service: 'audius'
           component: 'content-node'
 
-  #####################################################
-  # monitor local (remote-dev) network-monitoring job
-  #####################################################
-
-  - job_name: 'local-network-monitoring'
-    scheme: 'http'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['host.docker.internal:9091']
-        labels:
-          host: 'host.docker.internal'
-          environment: 'remote-dev'
-          service: 'audius'
-          component: 'network-monitoring'
-
   #########################################################
   # monitor third-party exporters produced by the community
   #########################################################

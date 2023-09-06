@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
@@ -23,7 +24,7 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	locations := []Blob{}
 	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
-	preferred, _ := ss.rendezvous(cid)
+	preferred, _ := ss.rendezvousAllHosts(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"locations": locations,
@@ -45,7 +46,7 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 	}
 
 	// since this is called before redirecting, make sure this node can actually serve the blob (it needs to check db for delisted status)
-	dbHealthy := ss.databaseSize > 0
+	dbHealthy := ss.databaseSize > 0 && ss.dbSizeErr == "" && ss.uploadsCountErr == ""
 	if !dbHealthy {
 		return c.String(500, "database connection issue")
 	}
@@ -138,17 +139,19 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return nil
 	}
 
+	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+	if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
+		return c.String(404, "blob not found")
+	}
+
 	// redirect to it
 	host, err := ss.findNodeToServeBlob(cid)
 	if err == nil && host != "" {
 		dest := ss.replaceHost(c, host)
+		query := dest.Query()
+		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
+		dest.RawQuery = query.Encode()
 		return c.Redirect(302, dest.String())
-	}
-
-	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
-	if cidutil.IsLegacyCID(cid) {
-		logger.Debug("serving legacy cid")
-		return ss.serveLegacyCid(c)
 	}
 
 	if err != nil {
@@ -159,19 +162,29 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 }
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
-	var blobs []Blob
-	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, healthyHosts).
-		Find(&blobs).Error
-	if err != nil {
-		return "", err
+
+	// use cache if possible
+	if host, ok := ss.redirectCache.Get(key); ok {
+		// verify host is all good
+		if ss.hostHasBlob(host, key) {
+			return host, nil
+		} else {
+			ss.redirectCache.Remove(key)
+		}
 	}
 
-	for _, blob := range blobs {
-		if ss.hostHasBlob(blob.Host, key) {
-			return blob.Host, nil
+	// just race all hosts
+	hosts := make([]string, 0, len(ss.Config.Peers))
+	for _, p := range ss.Config.Peers {
+		if p.Host != ss.Config.Self.Host {
+			hosts = append(hosts, p.Host)
 		}
+	}
+
+	winner := ss.raceHostHasBlob(key, hosts)
+	if winner != "" {
+		ss.redirectCache.Set(key, winner, imcache.WithDefaultExpiration())
+		return winner, nil
 	}
 
 	return "", nil
@@ -179,7 +192,7 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
@@ -314,6 +327,10 @@ func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
+	if !ss.shouldReplicate() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new blobs")
+	}
+
 	form, err := c.MultipartForm()
 	if err != nil {
 		return err

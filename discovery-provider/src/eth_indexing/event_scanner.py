@@ -1,22 +1,24 @@
 import datetime
 import logging
 import time
-from typing import Any, Iterable, Tuple, Type, TypedDict, Union
+from typing import List, Tuple, Type, Union
 
 from eth_abi.codec import ABICodec
-from src.models.indexing.eth_block import EthBlock
-from src.models.users.associated_wallet import AssociatedWallet
-from src.models.users.user import User
-from src.queries.get_balances import enqueue_immediate_balance_refresh
 from web3 import Web3
 from web3._utils.events import get_event_data
 
 # Currently this method is not exposed over official web3 API,
 # but we need it to construct eth_get_logs parameters
 from web3._utils.filters import construct_event_filter_params
-from web3.contract import Contract, ContractEvent
+from web3.contract import Contract
+from web3.contract.base_contract import BaseContractEvent
 from web3.exceptions import BlockNotFound
-from web3.types import BlockIdentifier
+from web3.types import BlockIdentifier, EventData
+
+from src.models.indexing.eth_block import EthBlock
+from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.user import User
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +45,6 @@ ETH_BLOCK_TAIL_OFFSET = 1
 MIN_SCAN_START_BLOCK = 11103292
 
 
-class TransferEvent(TypedDict):
-    logIndex: int
-    transactionHash: Any
-    blockNumber: int
-    args: Any
-
-
 class EventScanner:
     """Scan blockchain for events and try not to abuse JSON-RPC API too much.
 
@@ -67,7 +62,7 @@ class EventScanner:
         redis,
         web3: Web3,
         contract: Type[Contract],
-        event_type: Type[ContractEvent],
+        event_type: Type[BaseContractEvent],
         filters: dict,
     ):
         """
@@ -145,7 +140,7 @@ class EventScanner:
         return self.last_scanned_block
 
     def process_event(
-        self, block_timestamp: datetime.datetime, event: TransferEvent
+        self, block_timestamp: datetime.datetime, event: EventData
     ) -> str:
         """Record a ERC-20 transfer in our database."""
         # Events are keyed by their transaction hash and log index
@@ -153,12 +148,19 @@ class EventScanner:
         # and each one of those gets their own log index
 
         log_index = event["logIndex"]  # Log index within the block
-        # transaction_index = event.transactionIndex  # Transaction index within the block
-        txhash = event["transactionHash"].hex()  # Transaction hash
-        block_number = event["blockNumber"]
+        if log_index is None:
+            raise Exception(f"logIndex not found on event {log_index}")
+        txhash = event["transactionHash"]  # Transaction hash
+        if not txhash:
+            raise Exception(f"transactionHash not found on event {txhash.decode()}")
+        args = event["args"]
+        if not args:
+            raise Exception(f"args not found on event {event}")
+
+        txhash_hex = txhash.hex()
+        block_number = event.get("blockNumber")
 
         # Convert ERC-20 Transfer event to our internal format
-        args = event["args"]
         transfer = {
             "from": args["from"],
             "to": args["to"],
@@ -199,7 +201,7 @@ class EventScanner:
                 enqueue_immediate_balance_refresh(self.redis, user_ids)
 
         # Return a pointer that allows us to look up this event later if needed
-        return f"{block_number}-{txhash}-{log_index}"
+        return f"{block_number}-{txhash_hex}-{log_index}"
 
     def scan_chunk(self, start_block, end_block) -> Tuple[int, list]:
         """Read and process events between to block numbers.
@@ -238,22 +240,22 @@ class EventScanner:
         )
 
         for evt in events:
-            idx = evt[
+            idx = evt.get(
                 "logIndex"
-            ]  # Integer of the log index position in the block, null when its pending
+            )  # Integer of the log index position in the block, null when its pending
 
             # We cannot avoid minor chain reorganisations, but
             # at least we must avoid blocks that are not mined yet
             assert idx is not None, "Somehow tried to scan a pending block"
 
-            block_number = evt["blockNumber"]
+            block_number = evt.get("blockNumber")
 
             # Get UTC time when this event happened (block mined timestamp)
             # from our in-memory cache
             block_timestamp = get_block_mined_timestamp(block_number)
 
             logger.debug(
-                f'event_scanner.py | Processing event {evt["event"]}, block:{evt["blockNumber"]}'
+                f"event_scanner.py | Processing event {evt.get('event')}, block:{evt.get('blockNumber')}"
             )
             processed = self.process_event(block_timestamp, evt)
             all_processed.append(processed)
@@ -348,13 +350,13 @@ class EventScanner:
         return all_processed, total_chunks_scanned
 
 
-def _retry_web3_call(  # type: ignore
+def _retry_web3_call(
     func,
     start_block,
     end_block,
     retries=MAX_REQUEST_RETRIES,
     delay=REQUEST_RETRY_SECONDS,
-) -> Tuple[int, list]:  # type: ignore
+) -> Tuple[int, List[EventData]]:
     """A custom retry loop to throttle down block range.
 
     If our JSON-RPC server cannot serve all incoming `eth_get_logs` in a single request,
@@ -371,7 +373,8 @@ def _retry_web3_call(  # type: ignore
     """
     for i in range(retries):
         try:
-            return end_block, func(start_block, end_block)
+            res = func(start_block, end_block)
+            break
         except Exception as e:
             # Assume this is HTTPConnectionPool(host='localhost', port=8545): Read timed out. (read timeout=10)
             # from Go Ethereum. This translates to the error "context was cancelled" on the server side:
@@ -392,7 +395,8 @@ def _retry_web3_call(  # type: ignore
                 time.sleep(delay)
                 continue
             logger.warning("event_scanner.py | Out of retries")
-            raise
+            raise e
+    return end_block, res
 
 
 def _fetch_events_for_all_contracts(
@@ -401,7 +405,7 @@ def _fetch_events_for_all_contracts(
     argument_filters: dict,
     from_block: BlockIdentifier,
     to_block: BlockIdentifier,
-) -> Iterable:
+) -> List[EventData]:
     """Get events using eth_get_logs API.
 
     This method is detached from any contract instance.
@@ -449,7 +453,7 @@ def _fetch_events_for_all_contracts(
     logs = web3.eth.get_logs(event_filter_params)
 
     # Convert raw binary data to Python proxy objects as described by ABI
-    all_events = []
+    all_events: List[EventData] = []
     for log in logs:
         # Convert raw JSON-RPC log result to human readable event by using ABI data
         # More information how processLog works here

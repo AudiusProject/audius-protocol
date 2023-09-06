@@ -13,32 +13,38 @@ RUN apk add --no-cache libc6-compat
 RUN apk update
 
 WORKDIR /app
-RUN yarn global add turbo
+RUN npm install turbo --global
 
 COPY . .
 RUN turbo prune "--scope=${APP_NAME}" --docker
 
-# I should be able to just use base and copy exactly what I need here
-# Copying files doesn't work as expected though so just composing the build
-# for now
-FROM builder AS installer
+# INSTALL & BUILD
+FROM base AS installer
 
 WORKDIR /app
 
+RUN npm install turbo --global
 RUN apk add --no-cache libc6-compat git
 RUN apk update
 RUN apk add --no-cache python3 py3-pip make g++
 
 # First install dependencies (as they change less often)
-RUN yarn install
-
-# # Build the project and its dependencies
-# COPY --from=builder /app/out/full/ .
-# COPY turbo.json turbo.json
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
 
 RUN echo "installing deps for ${APP_NAME}"
+RUN npm install
+
+# Build the app
+# Copy the rest of the code and run
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN echo "building ${APP_NAME}"
 RUN turbo run build "--filter=${APP_NAME}"...
 
+# RUN
 FROM base AS runner
 WORKDIR /app
 
@@ -46,4 +52,4 @@ COPY --from=installer /app .
 
 WORKDIR /app/apps/${APP_NAME}
 
-CMD yarn run start
+CMD npm run start

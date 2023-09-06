@@ -1,6 +1,7 @@
 import logging
 
 from flask_restx import Namespace, Resource
+
 from src.api.v1.helpers import success_response
 from src.queries.get_cid_type_data import get_cid_type_data
 from src.utils.redis_cache import cache

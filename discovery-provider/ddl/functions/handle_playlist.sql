@@ -3,14 +3,29 @@ declare
   track_owner_id int := 0;
   track_item json;
   subscriber_user_ids integer[];
-  old_row playlists%rowtype := null;
+  old_row RECORD;
   delta int := 0;
 begin
 
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
-  select * into old_row from playlists where playlist_id = new.playlist_id and is_current = false order by blocknumber desc limit 1;
+  with expanded as (
+      select
+          jsonb_array_elements(prev_records->'playlists') as playlist
+      from
+          revert_blocks
+      where blocknumber = new.blocknumber
+  )
+  select
+      (playlist->>'is_private')::boolean as is_private,
+      (playlist->>'is_delete')::boolean as is_delete
+  into old_row
+  from
+      expanded
+  where
+      (playlist->>'playlist_id')::int = new.playlist_id
+  limit 1;
 
   delta := 0;
   if (new.is_delete = true and new.is_current = true) and (old_row.is_delete = false and old_row.is_private = false) then
@@ -23,18 +38,18 @@ begin
 
   if delta != 0 then
     if new.is_album then
-      update aggregate_user 
+      update aggregate_user
       set album_count = album_count + delta
       where user_id = new.playlist_owner_id;
     else
-      update aggregate_user 
+      update aggregate_user
       set playlist_count = playlist_count + delta
       where user_id = new.playlist_owner_id;
     end if;
   end if;
   -- Create playlist notification
   begin
-    if new.is_private = FALSE AND 
+    if new.is_private = FALSE AND
     new.is_delete = FALSE AND
     (
       new.created_at = new.updated_at OR
@@ -42,10 +57,10 @@ begin
     )
     then
       select array(
-        select subscriber_id 
-          from subscriptions 
-          where is_current and 
-          not is_delete and 
+        select subscriber_id
+          from subscriptions
+          where is_current and
+          not is_delete and
           user_id=new.playlist_owner_id
       ) into subscriber_user_ids;
       if array_length(subscriber_user_ids, 1)	> 0 then
@@ -115,5 +130,3 @@ do $$ begin
 exception
   when others then null;
 end $$;
-
-

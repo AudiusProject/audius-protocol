@@ -1,4 +1,5 @@
 from sqlalchemy import BigInteger, Column, Integer, Numeric, String, Table
+
 from src.models.base import Base
 
 """

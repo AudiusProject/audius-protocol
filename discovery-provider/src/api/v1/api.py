@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask.helpers import url_for
 from flask_restx import Api
+
 from src.api.v1.challenges import ns as challenges_ns
 from src.api.v1.cid_data import full_ns as cid_data_full_ns
 from src.api.v1.developer_apps import ns as developer_apps_ns

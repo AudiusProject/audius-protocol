@@ -3,6 +3,7 @@ import logging
 from typing import Optional, TypedDict
 
 from sqlalchemy import desc
+
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist

@@ -1,6 +1,7 @@
 import logging
 
 from eth_account.messages import defunct_hash_message
+
 from src.models.users.user import User
 from src.utils import web3_provider
 from src.utils.db_session import get_db_read_replica
@@ -15,7 +16,7 @@ def get_authed_user(data: str, signature: str):
     with db.scoped_session() as session:
         # Use acdc RPC to avoid calling external eth RPC
         message_hash = defunct_hash_message(text=data)
-        user_wallet = web3.eth.account.recoverHash(message_hash, signature=signature)
+        user_wallet = web3.eth.account._recover_hash(message_hash, signature=signature)
         result = (
             session.query(User.user_id)
             .filter(User.wallet == user_wallet.lower())

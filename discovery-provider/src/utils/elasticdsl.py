@@ -2,6 +2,8 @@ import copy
 import os
 
 from elasticsearch import Elasticsearch, logger, logging
+
+from src import api_helpers
 from src.utils.spl_audio import to_wei
 
 logger.setLevel(logging.WARNING)
@@ -48,6 +50,20 @@ def populate_user_metadata_es(user, current_user):
         + to_wei(user.get("waudio", "0") or 0)
     )
 
+    # Convert image cid to cids for each image size variant
+    profile_cid = user.get("profile_picture_sizes")
+    if profile_cid:
+        profile_cids = api_helpers.get_image_cids(
+            user, profile_cid, api_helpers.PROFILE_PICTURE_SIZES
+        )
+        user["profile_picture_cids"] = profile_cids
+    cover_cid = user.get("cover_photo_sizes")
+    if cover_cid:
+        cover_cids = api_helpers.get_image_cids(
+            user, cover_cid, api_helpers.PROFILE_COVER_PHOTO_SIZES
+        )
+        user["cover_photo_cids"] = cover_cids
+
     # Mutual box on profile page will fetch the data to compute this number
     # using the /v1/full/users/xyz/related?user_id=abc endpoint
     # Avoid extra round trips by not computing it here
@@ -58,6 +74,9 @@ def populate_user_metadata_es(user, current_user):
         current_user_following = current_user.get("following_ids", [])
         user["does_current_user_follow"] = user["user_id"] in current_user_following
         user["does_follow_current_user"] = current_user["user_id"] in user_following
+
+        current_user_subscribed = current_user.get("subscribed_ids", [])
+        user["does_current_user_subscribe"] = user["user_id"] in current_user_subscribed
     else:
         user["does_current_user_follow"] = False
         user["does_follow_current_user"] = False
@@ -65,6 +84,16 @@ def populate_user_metadata_es(user, current_user):
 
 
 def populate_track_or_playlist_metadata_es(item, current_user):
+    # Convert cover art cid to cids for each image size variant
+    cover_cid = item.get("cover_art_sizes") or item.get(
+        "playlist_image_sizes_multihash"
+    )
+    if cover_cid:
+        cover_cids = api_helpers.get_image_cids(
+            item["user"], cover_cid, api_helpers.COVER_ART_SIZES
+        )
+        item["cover_art_cids"] = cover_cids
+
     if current_user:
         my_id = current_user["user_id"]
         item["has_current_user_reposted"] = my_id in item["reposted_by"]
@@ -79,6 +108,7 @@ omit_keys = [
     # user index
     "following_ids",
     "follower_ids",
+    "subscribed_ids",
     "tracks",
     # track index
     "reposted_by",

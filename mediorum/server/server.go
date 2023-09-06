@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log"
+	"mediorum/cidutil"
 	"mediorum/crudr"
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
@@ -20,6 +21,7 @@ import (
 
 	_ "embed"
 
+	"github.com/erni27/imcache"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -54,7 +56,6 @@ type MediorumConfig struct {
 	BlobStoreDSN         string `json:"-"`
 	MoveFromBlobStoreDSN string `json:"-"`
 	PostgresDSN          string `json:"-"`
-	LegacyFSRoot         string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
 	TrustedNotifierID    int
@@ -75,25 +76,40 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	storagePathUsed uint64
-	storagePathSize uint64
-	databaseSize    uint64
-	isSeeding       bool
-	isSeedingLegacy bool
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	storagePathUsed  uint64
+	storagePathSize  uint64
+	mediorumPathUsed uint64
+	mediorumPathSize uint64
+	mediorumPathFree uint64
 
-	peerHealthMutex  sync.RWMutex
-	peerHealth       map[string]time.Time
-	cachedCidCursors []cidCursor
+	databaseSize uint64
+	dbSizeErr    string
+
+	uploadsCount    int64
+	uploadsCountErr string
+
+	isSeeding bool
+
+	peerHealthsMutex sync.RWMutex
+	peerHealths      map[string]*PeerHealth
+	unreachablePeers []string
+	redirectCache    *imcache.Cache[string, string]
 
 	StartedAt time.Time
 	Config    MediorumConfig
+}
+
+type PeerHealth struct {
+	LastReachable  time.Time            `json:"lastReachable"`
+	LastHealthy    time.Time            `json:"lastHealthy"`
+	ReachablePeers map[string]time.Time `json:"reachablePeers"`
 }
 
 var (
@@ -194,7 +210,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud, bucket)
+	dbPruneOldOps(db, config.Self.Host)
+	dbMigrate(crud, bucket, config.Self.Host)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -230,9 +247,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
-		isSeedingLegacy: config.Env == "stage" || config.Env == "prod",
 
-		peerHealth: map[string]time.Time{},
+		peerHealths:   map[string]*PeerHealth{},
+		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -251,11 +268,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
-	routes.GET("/uploads", ss.getUploads, ss.requireHealthy)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
-	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
+	// workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
 	routes.OPTIONS("/uploads", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
@@ -272,55 +288,40 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
+	routes.HEAD("/health_check", ss.serveHealthCheck)
 	routes.GET("/ip_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"data": c.RealIP(), // client/requestor IP
 		})
 	})
 
+	routes.GET("/delist_status/track/:trackCid", ss.serveTrackDelistStatus)
+	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
+	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
+
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
-
-	// TODO: remove after all nodes upgrade to v0.3.98
-	routes.GET("/status", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	// responds to polling requests in peer_health
-	// should do no real work
-	internalApi.GET("/ok", func(c echo.Context) error {
-		return c.String(200, "OK")
-	}, ss.requireHealthy)
-
-	internalApi.GET("/beam/files", ss.servePgBeam)
-
-	internalApi.GET("/cuckoo", ss.serveCuckoo)
-	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
-	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	// old info routes (but we need them because some migrated ":cid" keys are really like "Qm.../150x150.jpg" which would mess up the path param)
-	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
-	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
+	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
-	// new info routes
-	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation)
-	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo)
+	// TODO: remove
+	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
 	// internal: blobs between peers
-	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
-
-	// Qm CID migration
-	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
-	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
+	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
+	internalApi.GET("/logs/reaper", ss.getReaperLog)
 
 	return ss, nil
 
@@ -338,8 +339,8 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	go ss.startCuckooBuilder()
-	go ss.startCuckooFetcher()
+	createUploadsCache()
+	go ss.buildUploadsCache()
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
@@ -350,8 +351,6 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startRepairer()
 
 		ss.crud.StartClients()
-
-		go ss.startCidBeamClient()
 
 		go ss.startPollingDelistStatuses()
 
@@ -367,9 +366,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.monitorDiskAndDbStatus()
 
-	go ss.monitorCidCursors()
-
-	go ss.startQmCidMigration()
+	go ss.monitorPeerReachability()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

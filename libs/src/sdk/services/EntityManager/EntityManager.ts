@@ -24,6 +24,7 @@ import {
   ManageEntityOptions
 } from './types'
 import type { LoggerService } from '../Logger'
+import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -31,12 +32,15 @@ export class EntityManager implements EntityManagerService {
    */
   private readonly config: EntityManagerConfigInternal
 
+  private readonly discoveryNodeSelector: DiscoveryNodeSelectorService
+
   private readonly contract: Contract
   private readonly web3: Web3Type
   private readonly logger: LoggerService
 
-  constructor(config?: EntityManagerConfig) {
+  constructor(config: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
+    this.discoveryNodeSelector = config.discoveryNodeSelector
     this.web3 = new Web3(
       new Web3.providers.HttpProvider(this.config.web3ProviderUrl, {
         timeout: 10000
@@ -150,8 +154,7 @@ export class EntityManager implements EntityManagerService {
     confirmationPollingInterval?: number
   }) {
     const confirmBlock = async () => {
-      const endpoint =
-        await this.config.discoveryNodeSelector.getSelectedEndpoint()
+      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
       const {
         data: { block_passed }
       } = await (
@@ -196,7 +199,7 @@ export class EntityManager implements EntityManagerService {
       return this.config.identityServiceUrl
     }
     const discoveryEndpoint =
-      await this.config.discoveryNodeSelector.getSelectedEndpoint()
+      await this.discoveryNodeSelector.getSelectedEndpoint()
     if (discoveryEndpoint === null) {
       return this.config.identityServiceUrl
     }

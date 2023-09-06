@@ -13,8 +13,8 @@ import (
 
 type MockedDelistResponse struct {
 	Result struct {
-		Tracks []jsonTrackDelistStatus `json:"tracks"`
-		Users  []jsonUserDelistStatus  `json:"users"`
+		Tracks []jsonDelistStatus `json:"tracks"`
+		Users  []jsonDelistStatus `json:"users"`
 	} `json:"result"`
 	Timestamp string `json:"timestamp"`
 	Signature string `json:"signature"`
@@ -28,13 +28,13 @@ func TestPollDelistStatuses(t *testing.T) {
 
 	mockResponse := MockedDelistResponse{
 		Result: struct {
-			Tracks []jsonTrackDelistStatus `json:"tracks"`
-			Users  []jsonUserDelistStatus  `json:"users"`
+			Tracks []jsonDelistStatus `json:"tracks"`
+			Users  []jsonDelistStatus `json:"users"`
 		}{
-			Tracks: []jsonTrackDelistStatus{
+			Tracks: []jsonDelistStatus{
 				{
 					CreatedAt: time.Now().Format(TimeFormat),
-					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						TrackID:  1,
 						OwnerID:  100,
 						TrackCID: "trackCid1",
@@ -44,7 +44,7 @@ func TestPollDelistStatuses(t *testing.T) {
 				},
 				{
 					CreatedAt: time.Now().Format(TimeFormat),
-					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						TrackID:  2,
 						OwnerID:  100,
 						TrackCID: "trackCid2",
@@ -54,7 +54,7 @@ func TestPollDelistStatuses(t *testing.T) {
 				},
 				{
 					CreatedAt: time.Now().Add(time.Hour + time.Minute).Format(TimeFormat),
-					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						TrackID:  1,
 						OwnerID:  100,
 						TrackCID: "trackCid1",
@@ -64,7 +64,7 @@ func TestPollDelistStatuses(t *testing.T) {
 				},
 				{
 					CreatedAt: time.Now().Format(TimeFormat),
-					aliasTrackDelistStatus: &aliasTrackDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						TrackID:  3,
 						OwnerID:  200,
 						TrackCID: "trackCid3",
@@ -73,10 +73,10 @@ func TestPollDelistStatuses(t *testing.T) {
 					},
 				},
 			},
-			Users: []jsonUserDelistStatus{
+			Users: []jsonDelistStatus{
 				{
 					CreatedAt: time.Now().Format(TimeFormat),
-					aliasUserDelistStatus: &aliasUserDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						UserID:   100,
 						Delisted: true,
 						Reason:   "STRIKE_THRESHOLD",
@@ -84,7 +84,7 @@ func TestPollDelistStatuses(t *testing.T) {
 				},
 				{
 					CreatedAt: time.Now().Add(time.Hour + time.Minute).Format(TimeFormat),
-					aliasUserDelistStatus: &aliasUserDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						UserID:   100,
 						Delisted: false,
 						Reason:   "COPYRIGHT_SCHOOL",
@@ -92,7 +92,7 @@ func TestPollDelistStatuses(t *testing.T) {
 				},
 				{
 					CreatedAt: time.Now().Format(TimeFormat),
-					aliasUserDelistStatus: &aliasUserDelistStatus{
+					aliasDelistStatus: &aliasDelistStatus{
 						UserID:   300,
 						Delisted: true,
 						Reason:   "STRIKE_THRESHOLD",

@@ -1,14 +1,16 @@
 from typing import List
 
 from freezegun import freeze_time
+from web3 import Web3
+from web3.datastructures import AttributeDict
+from web3.types import TxReceipt
+
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.models.grants.developer_app import DeveloperApp
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
-from web3 import Web3
-from web3.datastructures import AttributeDict
 
 first_set_new_apps_data = [
     {
@@ -147,12 +149,12 @@ def test_index_app(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+    def get_events_side_effect(_, tx_receipt: TxReceipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
     mocker.patch(
         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
@@ -183,7 +185,7 @@ def test_index_app(app, mocker):
             entity_manager_txs,
             block_number=0,
             block_timestamp=1000000000,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
@@ -377,7 +379,7 @@ def test_index_app(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -390,7 +392,7 @@ def test_index_app(app, mocker):
             entity_manager_txs,
             block_number=1,
             block_timestamp=timestamp,
-            block_hash=0,
+            block_hash=hex(0),
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -447,7 +449,7 @@ def test_index_app(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -458,9 +460,9 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=0,
+            block_number=2,
             block_timestamp=timestamp,
-            block_hash=0,
+            block_hash=hex(0),
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
@@ -528,7 +530,7 @@ def test_index_app(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -539,13 +541,13 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=1,
+            block_number=3,
             block_timestamp=timestamp,
-            block_hash=0,
+            block_hash=hex(0),
         )
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 9
+        assert len(all_apps) == 5
 
         for expected_app in first_set_new_apps_data:
             found_matches = [
@@ -553,31 +555,20 @@ def test_index_app(app, mocker):
                 for item in all_apps
                 if item.address == expected_app["address"].lower()
             ]
-            assert len(found_matches) == 2
-            old = [item for item in found_matches if item.is_current == False]
-            assert len(old) == 1
+            assert len(found_matches) == 1
             updated = [item for item in found_matches if item.is_current == True]
             assert len(updated) == 1
-            old = old[0]
             updated = updated[0]
-            assert (
-                old.user_id == expected_app["user_id"]
-                and updated.user_id == expected_app["user_id"]
-            )
-            assert (
-                old.name == expected_app["name"]
-                and updated.name == expected_app["name"]
-            )
-            assert old.description == (
+            assert updated.user_id == expected_app["user_id"]
+            assert updated.name == expected_app["name"]
+            assert updated.description == (
                 expected_app.get("description", None) or None
-            ) and updated.description == (expected_app.get("description", None) or None)
-            assert old.is_personal_access == expected_app.get(
-                "is_personal_access", False
-            ) and updated.is_personal_access == expected_app.get(
+            )
+            assert updated.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )
-            assert old.is_delete == False and updated.is_delete == True
-            assert old.blocknumber == 0 and updated.blocknumber == 1
+            assert updated.is_delete == True
+            assert updated.blocknumber == 3
 
     # Test valid create again
     tx_receipts = {
@@ -598,7 +589,7 @@ def test_index_app(app, mocker):
     }
 
     entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
         for tx_receipt in tx_receipts
     ]
 
@@ -608,14 +599,14 @@ def test_index_app(app, mocker):
             update_task,
             session,
             entity_manager_txs,
-            block_number=2,
+            block_number=4,
             block_timestamp=1000000003,
-            block_hash=0,
+            block_hash=hex(0),
         )
 
         # validate db records
         all_apps: List[DeveloperApp] = session.query(DeveloperApp).all()
-        assert len(all_apps) == 10
+        assert len(all_apps) == 6
         for expected_app in second_set_new_apps_data:
             found_matches = [
                 item
@@ -632,4 +623,4 @@ def test_index_app(app, mocker):
             assert res.is_personal_access == expected_app.get(
                 "is_personal_access", False
             )
-            assert res.blocknumber == 2
+            assert res.blocknumber == 4

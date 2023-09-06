@@ -1,82 +1,154 @@
-import fetch from "node-fetch";
 import semver from "semver";
 import { SlashProposalParams } from "../proposal";
-import { Node, audit } from "../audit";
+import { Node } from "../audit";
+import * as knex from "knex";
+import { VERSION_DATA_TABLE_NAME, VersionData } from "../db";
 
-const SLASH_AMOUNT_WEI = 3000 * 1_000_000_000_000_000_000;
+const SLASH_AMOUNT = 3000;
+const SLASH_AMOUNT_WEI = SLASH_AMOUNT * 1_000_000_000_000_000_000;
+const TIME_RANGE_MS = 24 * 60 * 60 * 1000;
 
 type AuditResponse = {
   failedAudit: boolean;
-  data: {
-    nodeEndpoint: string;
-    nodeVersion: string;
-    requiredVersion: string;
-    owner: string;
-  } | null;
+  data: VersionData;
 };
 
-const checkVersion = async (node: Node): Promise<AuditResponse> => {
-  const res = await fetch(`${node.endpoint}/version`);
-  const json = await res.json();
-  const nodeVersion = json.data.version;
+const getVersionData = async (
+  node: Node,
+  minVersions: { "discovery-node": string; "content-node": string }
+): Promise<VersionData> => {
+  try {
+    // @ts-ignore: fetch defined in node 18
+    const res = await fetch(`${node.endpoint}/health_check`);
+    const json: {
+      data: { version: string; service: "discovery-node" | "content-node" };
+    } = (await res.json()) as any;
+    const nodeVersion = json.data.version;
+    const nodeServiceType = json.data.service;
 
-  const requiredVersion = "1.2.3";
+    const minVersion = minVersions[nodeServiceType];
 
-  const nodeMajorVersion = semver.major(nodeVersion);
-  const nodeMinorVersion = semver.minor(nodeVersion);
+    const nodeMajorVersion = semver.major(nodeVersion);
+    const nodeMinorVersion = semver.minor(nodeVersion);
 
-  const requiredMajorVersion = semver.major(requiredVersion);
-  const requiredMinorVersion = semver.minor(requiredVersion);
+    const minMajorVersion = semver.major(minVersion);
+    const minMinorVersion = semver.minor(minVersion);
 
-  const isMajorVersionBehind = nodeMajorVersion < requiredMajorVersion;
-  const isMinorVersionBehind =
-    nodeMajorVersion === requiredMajorVersion &&
-    nodeMinorVersion < requiredMinorVersion;
-  if (isMajorVersionBehind || isMinorVersionBehind) {
+    const isMajorVersionBehind = nodeMajorVersion < minMajorVersion;
+    const isMinorVersionBehind =
+      nodeMajorVersion === minMajorVersion &&
+      nodeMinorVersion < minMinorVersion;
+
+    const ok = !isMajorVersionBehind && !isMinorVersionBehind;
+
     return {
-      failedAudit: true,
-      data: {
-        nodeEndpoint: node.endpoint,
-        nodeVersion,
-        requiredVersion,
-        owner: node.owner,
-      },
+      nodeEndpoint: node.endpoint,
+      nodeVersion,
+      minVersion,
+      owner: node.owner,
+      ok,
+    };
+  } catch (e) {
+    console.log(`Caught error ${e} making request to ${node.endpoint}`);
+    return {
+      nodeEndpoint: node.endpoint,
+      nodeVersion: "",
+      minVersion: "",
+      owner: node.owner,
+      ok: false,
     };
   }
-
-  return {
-    failedAudit: false,
-    data: null,
-  };
 };
 
-const createProposal = (auditResponse: AuditResponse): SlashProposalParams => {
-  const { nodeEndpoint, owner, nodeVersion, requiredVersion } =
-    auditResponse.data!;
+const writeVersionData = async (db: knex.Knex, versionData: VersionData[]) => {
+  await db(VERSION_DATA_TABLE_NAME).insert(versionData);
+};
+
+/**
+ * Formats an audit response into params to create a proposal.
+ * Note that the auditor currently does duplication prevention based on the `title`
+ * string. Do not modify unless you modify the deduplication logic.
+ * @param auditResponse
+ * @returns
+ */
+const formatProposal = (auditResponse: AuditResponse): SlashProposalParams => {
+  const { nodeEndpoint, owner, nodeVersion, minVersion } = auditResponse.data!;
   return {
     amountWei: SLASH_AMOUNT_WEI,
-    title: `[Version SLA Audit] Proposal to slash ${owner}`,
+    title: `[SLA] Slash ${SLASH_AMOUNT} $AUDIO from ${owner}`,
     description: `
-We are recommending to the community a slash of ${SLASH_AMOUNT_WEI}wei $AUDIO to ${owner}
+This proposal presents recommendation to the community to slash ${SLASH_AMOUNT} $AUDIO from\n
+${owner}\n
 for failure to comply with latest chain versions.
 
-Endpoint: ${nodeEndpoint}
-Node version: ${nodeVersion}
-Required version: ${requiredVersion}
+SLA: https://docs.audius.org/token/running-a-node/sla#1-minimum-version-guarantee\n
+Endpoint: ${nodeEndpoint}\n
+Node version: ${nodeVersion}\n
+Minimum required version: ${minVersion}\n
 `,
     owner,
   };
 };
 
-export const auditVersions = async (nodes: Node[]) => {
-  const auditResponses = await Promise.all(
-    nodes.map(async (node) => checkVersion(node))
+const audit = async (
+  db: knex.Knex,
+  versionData: VersionData
+): Promise<AuditResponse> => {
+  const now = new Date();
+  const before = new Date(now.getTime() - TIME_RANGE_MS);
+
+  // Find out if this node was ever ok during the entire range we care about.
+  // If so, we ca
+  const ok = await db(VERSION_DATA_TABLE_NAME)
+    .select("ok")
+    .where("nodeEndpoint", versionData.nodeEndpoint)
+    .andWhere("timestamp", ">=", before)
+    .andWhere("timestamp", "<=", now)
+    .andWhere("ok", true)
+    .first();
+
+  // Ensure that we have data at least dating back 24 hours ago
+  const hasEnoughData = await db(VERSION_DATA_TABLE_NAME)
+    .select("*")
+    .where("nodeEndpoint", versionData.nodeEndpoint)
+    .andWhere("timestamp", "<=", before)
+    .first();
+
+  const failedAudit = hasEnoughData && !ok;
+  return {
+    failedAudit,
+    data: versionData,
+  };
+};
+
+export const auditVersions = async (
+  db: knex.Knex,
+  nodes: Node[],
+  minVersions: { "discovery-node": string; "content-node": string }
+) => {
+  const versionData = await Promise.all(
+    nodes.map(async (node) => getVersionData(node, minVersions))
   );
+  await writeVersionData(db, versionData);
+
+  const auditResponses = await Promise.all(
+    versionData.map(async (data) => audit(db, data))
+  );
+
+  for (const audit of auditResponses) {
+    const status = audit.failedAudit ? "[FAILED]" : "[PASS]";
+    console.log(
+      `${status} ${audit.data?.nodeEndpoint} has version ${audit.data?.nodeVersion}, min version: ${audit.data?.minVersion}`
+    );
+  }
+
   const failedAudits = auditResponses.filter(
     (auditResponse) => auditResponse.failedAudit
   );
+
   const proposals = failedAudits.map((failedAudit) =>
-    createProposal(failedAudit)
+    formatProposal(failedAudit)
   );
+
   return proposals;
 };

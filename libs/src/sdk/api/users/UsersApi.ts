@@ -6,7 +6,6 @@ import {
   EntityType,
   AdvancedOptions
 } from '../../services/EntityManager/types'
-import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -84,15 +83,13 @@ export class UsersApi extends GeneratedUsersApi {
     }
 
     // Write metadata to chain
-    const metadataCid = await generateMetadataCidV1(updatedMetadata)
-
     return await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: userId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
-        cid: metadataCid.toString(),
+        cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
       auth: this.auth,

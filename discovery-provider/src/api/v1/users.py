@@ -1,19 +1,22 @@
 import base64
 import json
-from typing import Optional, Union
+from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
+
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
     abort_not_found,
+    add_auth_headers_to_parser,
     current_user_parser,
     decode_with_abort,
     extend_activity,
     extend_challenge_response,
     extend_favorite,
+    extend_purchase,
     extend_supporter,
     extend_supporting,
     extend_track,
@@ -46,8 +49,8 @@ from src.api.v1.helpers import (
 from src.api.v1.models.activities import (
     activity_model,
     activity_model_full,
-    collection_activity_model_full,
-    track_activity_model_full,
+    library_collection_activity_model_full,
+    library_track_activity_model_full,
 )
 from src.api.v1.models.common import favorite
 from src.api.v1.models.developer_apps import authorized_app, developer_app
@@ -64,6 +67,7 @@ from src.api.v1.models.users import (
     connected_wallets,
     decoded_user_token,
     encoded_user_id,
+    purchase,
     user_model,
     user_model_full,
     user_replica_set,
@@ -107,6 +111,12 @@ from src.queries.get_track_library import (
 )
 from src.queries.get_tracks import GetTrackArgs, get_tracks
 from src.queries.get_unclaimed_id import get_unclaimed_id
+from src.queries.get_usdc_purchases import (
+    GetUSDCPurchasesArgs,
+    GetUSDCPurchasesCountArgs,
+    get_usdc_purchases,
+    get_usdc_purchases_count,
+)
 from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
@@ -116,7 +126,11 @@ from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
-from src.queries.query_helpers import CollectionLibrarySortMethod
+from src.queries.query_helpers import (
+    CollectionLibrarySortMethod,
+    PurchaseSortMethod,
+    SortDirection,
+)
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
@@ -741,13 +755,13 @@ favorites_response = make_response(
 track_library_full_response = make_full_response(
     "track_library_response_full",
     full_ns,
-    fields.List(fields.Nested(track_activity_model_full)),
+    fields.List(fields.Nested(library_track_activity_model_full)),
 )
 
 collection_library_full_response = make_full_response(
     "collection_library_response_full",
     full_ns,
-    fields.List(fields.Nested(collection_activity_model_full)),
+    fields.List(fields.Nested(library_collection_activity_model_full)),
 )
 
 
@@ -845,6 +859,7 @@ def get_user_collections(
         filter_type=filter_type,
         sort_direction=sort_direction,
         sort_method=sort_method,
+        filter_deleted=True,
     )
     library_collections = get_collection_library(get_collection_args)
     collections = list(map(extend_activity, library_collections))
@@ -2080,3 +2095,143 @@ class AuthorizedApps(Resource):
         authorized_apps = get_developer_apps_with_grant_for_user(decoded_id)
         authorized_apps = list(map(format_authorized_app, authorized_apps))
         return success_response(authorized_apps)
+
+
+purchases_and_sales_parser = pagination_with_current_user_parser.copy()
+purchases_and_sales_parser.add_argument(
+    "sort_method",
+    required=False,
+    type=str,
+    choices=PurchaseSortMethod._member_names_,
+    description="The sort direction",
+)
+purchases_and_sales_parser.add_argument(
+    "sort_direction",
+    required=False,
+    description="The sort direction",
+    type=str,
+    choices=SortDirection._member_names_,
+)
+add_auth_headers_to_parser(purchases_and_sales_parser)
+
+
+purchases_and_sales_count_parser = current_user_parser.copy()
+add_auth_headers_to_parser(purchases_and_sales_count_parser)
+
+
+purchases_response = make_full_response(
+    "purchases_response", full_ns, fields.List(fields.Nested(purchase))
+)
+
+
+purchases_count_response = make_full_response(
+    "purchases_count_response", full_ns, fields.Integer()
+)
+
+
+@full_ns.route("/<string:id>/purchases")
+class FullPurchases(Resource):
+    @full_ns.doc(
+        id="Get Purchases",
+        description="Gets the purchases the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_parser)
+    @full_ns.marshal_with(purchases_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        sort_method = args.get("sort_method", PurchaseSortMethod.date)
+        sort_direction = args.get("sort_direction", None)
+        args = GetUSDCPurchasesArgs(
+            buyer_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
+        purchases = get_usdc_purchases(args)
+        return success_response(list(map(extend_purchase, purchases)))
+
+
+@full_ns.route("/<string:id>/purchases/count")
+class FullPurchasesCount(Resource):
+    @full_ns.doc(
+        id="Get Purchases Count",
+        description="Gets the count of purchases the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_count_parser)
+    @full_ns.marshal_with(purchases_count_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_count_parser.parse_args()
+        args = GetUSDCPurchasesCountArgs(
+            buyer_user_id=decoded_id,
+        )
+        count = get_usdc_purchases_count(args)
+        return success_response(count)
+
+
+@full_ns.route("/<string:id>/sales")
+class FullSales(Resource):
+    @full_ns.doc(
+        id="Get Sales",
+        description="Gets the sales the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_parser)
+    @full_ns.marshal_with(purchases_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        sort_method = args.get("sort_method", PurchaseSortMethod.date)
+        sort_direction = args.get("sort_direction", None)
+        args = GetUSDCPurchasesArgs(
+            seller_user_id=decoded_id,
+            limit=limit,
+            offset=offset,
+            sort_method=sort_method,
+            sort_direction=sort_direction,
+        )
+        purchases = get_usdc_purchases(args)
+        return success_response(list(map(extend_purchase, purchases)))
+
+
+@full_ns.route("/<string:id>/sales/count")
+class FullSalesCount(Resource):
+    @full_ns.doc(
+        id="Get Sales Count",
+        description="Gets the count of sales the user has made",
+        params={"id": "A User ID"},
+    )
+    @full_ns.expect(purchases_and_sales_count_parser)
+    @full_ns.marshal_with(purchases_count_response)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = purchases_and_sales_count_parser.parse_args()
+        args = GetUSDCPurchasesCountArgs(
+            seller_user_id=decoded_id,
+        )
+        count = get_usdc_purchases_count(args)
+        return success_response(count)
