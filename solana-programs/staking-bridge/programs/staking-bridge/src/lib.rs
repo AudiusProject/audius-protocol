@@ -16,11 +16,11 @@ pub mod raydium;
 pub mod wormhole;
 
 use crate::constant::{
-    RAYDIUM_AMM_PROGRAM_ADDRESS,
-    AUDIO_USDC_RAYDIUM_AMM_ADDRESS,
-    SERUM_DEX_PROGRAM_ADDRESS,
-    AUDIO_USDC_SERUM_MARKET_ADDRESS,
-    SOL_AUDIO_TOKEN_ADDRESS,
+    RAYDIUM_AMM_PROGRAM,
+    AUDIO_USDC_RAYDIUM_AMM,
+    SERUM_DEX_PROGRAM,
+    AUDIO_USDC_SERUM_MARKET,
+    SOL_AUDIO_TOKEN,
     WORMHOLE_TOKEN_BRIDGE_ID,
     WORMHOLE_CORE_BRIDGE_ID
 };
@@ -136,7 +136,7 @@ pub struct CreateStakingBridgeBalanceAtas<'info> {
         associated_token::authority = staking_bridge_pda,
     )]
     pub audio_token_account: Account<'info, TokenAccount>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
+    #[account(address = SOL_AUDIO_TOKEN)]
     pub audio_mint: Account<'info, Mint>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -154,13 +154,13 @@ pub struct Amounts {
 #[derive(Accounts)]
 pub struct RaydiumSwap<'info> {
     #[account(
-        address = RAYDIUM_AMM_PROGRAM_ADDRESS @ StakingBridgeErrorCode::NotCallingRaydiumAmmProgram
+        address = RAYDIUM_AMM_PROGRAM @ StakingBridgeErrorCode::NotCallingRaydiumAmmProgram
     )]
     /// CHECK: This is the Raydium Liquidity Pool V4 program id
     pub program_id: AccountInfo<'info>,
     #[account(
         mut,
-        address = AUDIO_USDC_RAYDIUM_AMM_ADDRESS @ StakingBridgeErrorCode::InvalidAmmProgram
+        address = AUDIO_USDC_RAYDIUM_AMM @ StakingBridgeErrorCode::InvalidAmmProgram
     )]
     /// CHECK: This is the AMM id for the pool.
     pub amm: AccountInfo<'info>,
@@ -180,13 +180,13 @@ pub struct RaydiumSwap<'info> {
     /// CHECK: This is the pc token account for the pool. Passed through to Raydium and checked there.
     pub pool_pc_token_account: UncheckedAccount<'info>,
     #[account(
-        address = SERUM_DEX_PROGRAM_ADDRESS @ StakingBridgeErrorCode::InvalidSerumDexProgram
+        address = SERUM_DEX_PROGRAM @ StakingBridgeErrorCode::InvalidSerumDexProgram
     )]
     /// CHECK: This is the Serum DEX program.
     pub serum_program: AccountInfo<'info>,
     #[account(
         mut,
-        address = AUDIO_USDC_SERUM_MARKET_ADDRESS @ StakingBridgeErrorCode::InvalidSerumMarketProgram
+        address = AUDIO_USDC_SERUM_MARKET @ StakingBridgeErrorCode::InvalidSerumMarketProgram
     )]
     /// CHECK: This is the market address
     pub serum_market: AccountInfo<'info>,
@@ -228,7 +228,7 @@ pub struct RaydiumSwap<'info> {
     pub user_source_owner: AccountInfo<'info>,
     #[account(address = mint::USDC)]
     pub usdc_mint: Account<'info, Mint>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
+    #[account(address = SOL_AUDIO_TOKEN)]
     pub audio_mint: Account<'info, Mint>,
     pub spl_token_program: Program<'info, Token>,
 }
@@ -295,7 +295,7 @@ pub struct PostWormholeMessage<'info> {
         associated_token::authority = from_owner,
     )]
     pub from: Account<'info, TokenAccount>,
-    #[account(address = SOL_AUDIO_TOKEN_ADDRESS)]
+    #[account(address = SOL_AUDIO_TOKEN)]
     pub audio_mint: Account<'info, Mint>,
     pub clock: Sysvar<'info, Clock>,
     pub rent: Sysvar<'info, Rent>,
