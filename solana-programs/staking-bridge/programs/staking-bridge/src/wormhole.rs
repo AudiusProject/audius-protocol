@@ -13,34 +13,12 @@ use anchor_spl::token::spl_token;
 use crate::constant::{
     ETH_CHAIN_ID,
     ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES,
-    ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES,
-    WORMHOLE_CORE_BRIDGE_ID,
-    WORMHOLE_TOKEN_BRIDGE_ID
+    ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES
 };
-use crate::error::StakingBridgeErrorCode;
 use crate::{
     PostWormholeMessage,
     PostWormholeMessageData
 };
-
-/**
- * 1. Verify that we are calling the Wormhole Token Bridge program.
- * 2. Verify that we are using the Wormhole Core Bridge program.
- */
-pub fn check_wormhole_programs(
-    program_id: AccountInfo,
-    bridge_id: AccountInfo,
-) -> Result<()> {
-    // 1. Verify that we are calling the Wormhole Token Bridge program.
-    if program_id.key() != WORMHOLE_TOKEN_BRIDGE_ID {
-        return Err(StakingBridgeErrorCode::NotCallingWormholeTokenBridgeProgram.into());
-    }
-    // 2. Verify that we are using the Wormhole Core Bridge program.
-    if bridge_id.key() != WORMHOLE_CORE_BRIDGE_ID {
-        return Err(StakingBridgeErrorCode::InvalidWormholeCoreBridgeProgram.into());
-    }
-    Ok(())
-}
 
 pub fn check_wormhole_pdas(
   accounts: &mut PostWormholeMessage,

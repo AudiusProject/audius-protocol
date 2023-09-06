@@ -21,6 +21,8 @@ use crate::constant::{
     SERUM_DEX_PROGRAM_ADDRESS,
     AUDIO_USDC_SERUM_MARKET_ADDRESS,
     SOL_AUDIO_TOKEN_ADDRESS,
+    WORMHOLE_TOKEN_BRIDGE_ID,
+    WORMHOLE_CORE_BRIDGE_ID
 };
 use crate::error::StakingBridgeErrorCode;
     use crate::raydium::{
@@ -28,7 +30,6 @@ use crate::error::StakingBridgeErrorCode;
     swap
 };
 use crate::wormhole::{
-    check_wormhole_programs,
     check_wormhole_pdas,
     approve_wormhole_transfer,
     execute_wormhole_transfer
@@ -88,13 +89,6 @@ pub mod staking_bridge {
         staking_bridge_pda_bump: u8,
     ) -> Result<()> {
         let accounts = ctx.accounts;
-        let program_id = &accounts.program_id;
-        let bridge_id = &accounts.bridge_id;
-
-        check_wormhole_programs(
-            program_id.to_account_info(),
-            bridge_id.to_account_info()
-        )?;
         check_wormhole_pdas(
             accounts,
             config_bump,
@@ -272,10 +266,16 @@ pub struct PostWormholeMessageData {
 
 #[derive(Accounts)]
 pub struct PostWormholeMessage<'info> {
+    #[account(
+        address = WORMHOLE_TOKEN_BRIDGE_ID @ StakingBridgeErrorCode::NotCallingWormholeTokenBridgeProgram
+    )]
     /// CHECK: This is the Token Bridge program id
-    pub program_id: UncheckedAccount<'info>,
+    pub program_id: AccountInfo<'info>,
+    #[account(
+        address = WORMHOLE_CORE_BRIDGE_ID @ StakingBridgeErrorCode::InvalidWormholeCoreBridgeProgram
+    )]
     /// CHECK: This is the Core Bridge program id
-    pub bridge_id: UncheckedAccount<'info>,
+    pub bridge_id: AccountInfo<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     #[account()]
