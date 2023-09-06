@@ -76,18 +76,13 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(
-    payment_router_pda_bump: u8,
-    _amounts: Vec<u64>,
-    _total_amount: u64
-)]
 pub struct Route<'info> {
     #[account(mut)]
     /// CHECK: This is the token account owned by the PDA.
     pub sender: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"payment_router".as_ref()],
-        bump = payment_router_pda_bump
+        bump
     )]
     /// CHECK: This is the PDA initialized in the CreatePaymentRouterBalancePDA instruction.
     pub sender_owner: Account<'info, Empty>,

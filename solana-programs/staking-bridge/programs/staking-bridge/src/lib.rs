@@ -38,10 +38,7 @@ pub mod staking_bridge {
         Ok(())
     }
 
-    pub fn create_staking_bridge_balance_atas(
-        _ctx: Context<CreateStakingBridgeBalanceAtas>,
-        _staking_bridge_pda_bump: u8
-    ) -> Result<()> {
+    pub fn create_staking_bridge_balance_atas(_ctx: Context<CreateStakingBridgeBalanceAtas>) -> Result<()> {
         Ok(())
     }
 
@@ -147,14 +144,13 @@ pub struct CreateStakingBridgeBalancePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(staking_bridge_pda_bump: u8)]
 pub struct CreateStakingBridgeBalanceAtas<'info> {
     #[account(
         seeds = [b"staking_bridge".as_ref()],
-        bump = staking_bridge_pda_bump,
+        bump
     )]
     /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
-    pub staking_bridge_pda: UncheckedAccount<'info>,
+    pub staking_bridge_pda: AccountInfo<'info>,
     #[account(
         init,
         payer = payer,
@@ -187,12 +183,6 @@ pub struct Amounts {
 }
 
 #[derive(Accounts)]
-#[instruction(
-  _amount_in: u64,
-  _minimum_amount_out: u64,
-  _vault_nonce: u64,
-  staking_bridge_pda_bump: u8
-)]
 pub struct RaydiumSwap<'info> {
     /// CHECK: This is the Raydium Liquidity Pool V4 program id. No check necessary.
     pub program_id: UncheckedAccount<'info>,
@@ -252,10 +242,10 @@ pub struct RaydiumSwap<'info> {
     pub user_destination_token_account: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"staking_bridge".as_ref()],
-        bump = staking_bridge_pda_bump
+        bump
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
-    pub user_source_owner: UncheckedAccount<'info>,
+    pub user_source_owner: AccountInfo<'info>,
     #[account(address = mint::USDC)]
     pub usdc_mint: Account<'info, Mint>,
     #[account(address = SOL_AUDIO_TOKEN_ADDRESS.parse::<Pubkey>().unwrap())]
@@ -273,19 +263,6 @@ pub struct PostWormholeMessageData {
 }
 
 #[derive(Accounts)]
-#[instruction(
-    _nonce: u32,
-    _amount: u64,
-    _config_bump: u8,
-    _wrapped_mint_bump: u8,
-    _wrapped_meta_bump: u8,
-    _authority_signer_bump: u8,
-    _bridge_config_bump: u8,
-    _emitter_bump: u8,
-    _sequence_bump: u8,
-    _fee_collector_bump: u8,
-    staking_bridge_pda_bump: u8
-)]
 pub struct PostWormholeMessage<'info> {
     /// CHECK: This is the Token Bridge program id
     pub program_id: UncheckedAccount<'info>,
@@ -322,10 +299,10 @@ pub struct PostWormholeMessage<'info> {
     #[account(
         mut,
         seeds = [b"staking_bridge".as_ref()],
-        bump = staking_bridge_pda_bump
+        bump
     )]
     /// CHECK: This is the PDA initialized in the CreateStakingBridgeBalancePda instruction.
-    pub from_owner: UncheckedAccount<'info>,
+    pub from_owner: AccountInfo<'info>,
     #[account(
         mut,
         associated_token::mint = audio_mint,
