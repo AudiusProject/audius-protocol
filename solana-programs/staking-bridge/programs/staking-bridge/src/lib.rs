@@ -119,7 +119,7 @@ pub struct CreateStakingBridgeBalanceAtas<'info> {
         bump
     )]
     /// CHECK: This is the PDA owned by this program. This account holds both SOL USDC and SOL AUDIO. It is used to swap between the two tokens. This PDA is also used to transfer SOL AUDIO to ETH AUDIO via the wormhole.
-    pub staking_bridge_pda: AccountInfo<'info>,
+    pub staking_bridge_pda: Account<'info, Empty>,
     #[account(
         init,
         payer = payer,
