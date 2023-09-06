@@ -47,6 +47,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   header: {
     flexDirection: 'row'
   },
+  description: {
+    flexShrink: 1
+  },
   dismissButton: {
     marginRight: spacing(2)
   },
@@ -147,7 +150,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
           fill={styles.dismissIcon.fill}
           onPress={onClose}
         />
-        <View pointerEvents='none'>
+        <View pointerEvents='none' style={styles.description}>
           <Text variant='body1'>
             {messages.description} {name}
           </Text>
