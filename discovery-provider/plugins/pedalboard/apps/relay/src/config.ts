@@ -19,10 +19,9 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  // needs to be UPPERCASE because audius-docker-compose
   console.log('env.audius_discprov_env isss ', process.env.audius_discprov_env)
   console.log('process.env.environemnt isss ', process.env.ENVIRONMENT)
-  const environment = process.env.ENVIRONMENT || "dev";
+  const environment = process.env.audius_discprov_env || "dev";
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
