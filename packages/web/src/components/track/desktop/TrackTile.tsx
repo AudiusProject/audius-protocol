@@ -85,7 +85,7 @@ const renderLockedOrPlaysContent = ({
   }
 
   const hidePlays = fieldVisibility
-    ? fieldVisibility.play_count === false
+    ? !isOwner && fieldVisibility.play_count === false
     : false
 
   return (

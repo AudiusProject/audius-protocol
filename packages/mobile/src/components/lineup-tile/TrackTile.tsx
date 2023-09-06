@@ -206,8 +206,8 @@ export const TrackTileComponent = ({
     }
   }, [track_id, dispatch, has_current_user_reposted])
 
-  const hideShare = field_visibility?.share === false
-  const hidePlays = field_visibility?.play_count === false
+  const hideShare = !isOwner && field_visibility?.share === false
+  const hidePlays = !isOwner && field_visibility?.play_count === false
 
   return (
     <LineupTile
