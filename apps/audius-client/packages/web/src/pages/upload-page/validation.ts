@@ -101,14 +101,14 @@ export const TrackMetadataSchema = SdkTrackMetadataSchema.merge(
   z.object({
     artwork: z
       .object({
-        url: z.string()
+        url: z.string().optional()
       })
       .nullable()
   })
 )
 
 export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
-  (form) => form.artwork !== null,
+  (form) => form.artwork?.url != null,
   {
     message: messages.artworkRequiredError,
     path: ['artwork']

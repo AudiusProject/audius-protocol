@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import { getErrorMessage } from '@audius/common'
-import { useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 import { HelperText } from 'components/data-entry/HelperText'
 import UploadArtwork, {
   UploadArtworkProps
 } from 'components/upload/UploadArtwork'
+import { TrackEditFormValues } from 'pages/upload-page/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ArtworkField.module.css'
@@ -17,6 +18,7 @@ type ArtworkFieldProps = Partial<UploadArtworkProps> & {
 
 export const ArtworkField = (props: ArtworkFieldProps) => {
   const { name, ...other } = props
+  const { submitCount } = useFormikContext<TrackEditFormValues>()
   const [field, { touched, error }, { setValue }] = useField(name)
   const { value, ...otherField } = field
   const [imageProcessingError, setImageProcessingError] = useState(false)
@@ -36,7 +38,7 @@ export const ArtworkField = (props: ArtworkFieldProps) => {
     }
   }
 
-  const hasError = Boolean(touched && error)
+  const hasError = Boolean((touched || submitCount > 0) && error)
 
   return (
     <div>

@@ -29,14 +29,11 @@ import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
-import { TrackMetadataSchema } from '../validation'
+import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
 
 const messages = {
-  titleError: 'Your track must have a name.',
-  artworkError: 'Artwork is required.',
-  genreError: 'Genre is required.',
   multiTrackCount: (index: number, total: number) =>
     `TRACK ${index} of ${total}`,
   prev: 'Prev',
@@ -55,7 +52,7 @@ type EditTrackFormProps = {
 }
 
 const EditFormValidationSchema = z.object({
-  trackMetadatas: z.array(TrackMetadataSchema)
+  trackMetadatas: z.array(TrackMetadataFormSchema)
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {

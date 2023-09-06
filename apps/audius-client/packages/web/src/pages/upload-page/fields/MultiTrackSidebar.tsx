@@ -31,7 +31,7 @@ const messages = {
 }
 
 export const MultiTrackSidebar = () => {
-  const { errors } = useFormikContext<TrackEditFormValues>()
+  const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
   return (
     <div className={styles.root}>
       <div className={cn(layoutStyles.col)}>
@@ -50,7 +50,7 @@ export const MultiTrackSidebar = () => {
               fullWidth
             />
           </div>
-          {!isEmpty(errors) ? (
+          {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>
               <Icon
                 className={styles.iconError}
@@ -87,7 +87,8 @@ type TrackRowProps = {
 const TrackRow = (props: TrackRowProps) => {
   const { index } = props
   const scrollToTop = useContext(UploadFormScrollContext)
-  const { values, setValues, errors } = useFormikContext<TrackEditFormValues>()
+  const { values, setValues, errors, submitCount } =
+    useFormikContext<TrackEditFormValues>()
   const [{ value: title }] = useIndexedField<SingleTrackEditValues['title']>(
     'trackMetadatas',
     index,
@@ -132,7 +133,7 @@ const TrackRow = (props: TrackRowProps) => {
   )
 
   const isTitleMissing = isEmpty(title)
-  const hasError = !isEmpty(errors.trackMetadatas?.[index])
+  const hasError = !isEmpty(errors.trackMetadatas?.[index]) && submitCount > 0
 
   return (
     <div className={styles.trackRoot} onClick={() => handleClickTrack(index)}>

@@ -26,11 +26,17 @@ export const TrackMetadataFields = () => {
           className={cn(
             styles.metadataFields,
             layoutStyles.col,
-            layoutStyles.gapAuto
+            layoutStyles.gap4
           )}
         >
           <TrackNameField name={getTrackFieldName(index, 'title')} />
-          <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
+          <div
+            className={cn(
+              styles.dropdownRow,
+              layoutStyles.row,
+              layoutStyles.gap2
+            )}
+          >
             <SelectGenreField name={getTrackFieldName(index, 'genre')} />
             <SelectMoodField name={getTrackFieldName(index, 'mood')} />
           </div>
