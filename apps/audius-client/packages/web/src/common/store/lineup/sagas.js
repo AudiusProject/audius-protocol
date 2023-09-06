@@ -373,7 +373,7 @@ function* play(lineupActions, lineupSelector, prefix, action) {
           const queueable = yield call(getToQueue, lineup.prefix, e)
           // If the entry is the one we're playing, set isPreview to incoming
           // value
-          if (queueable.uid === action.uid) {
+          if (queueable?.uid === action.uid) {
             queueable.isPreview = isPreview
           }
           return queueable
