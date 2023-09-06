@@ -14,6 +14,9 @@ use crate::router::{
     execute_transfers
 };
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_security_txt::security_txt;
+
 declare_id!("6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp");
 
 #[program]
@@ -84,4 +87,18 @@ pub struct Route<'info> {
     /// CHECK: This is the PDA initialized in the CreatePaymentRouterBalancePDA instruction.
     pub sender_owner: AccountInfo<'info>,
     pub spl_token: Program<'info, Token>,
+}
+
+#[cfg(not(feature = "no-entrypoint"))]
+security_txt! {
+    // Required fields
+    name: "Audius Payment Router",
+    project_url: "https://audius.co",
+    contacts: "email:engineering@audius.co",
+    policy: "",
+
+    // Optional Fields
+    preferred_languages: "en",
+    source_code: "https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs/payment-router",
+    auditors: "Neodyme"
 }

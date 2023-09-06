@@ -32,6 +32,9 @@ use crate::wormhole::{
     execute_wormhole_transfer
 };
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_security_txt::security_txt;
+
 declare_id!("HEDM7Zg7wNVSCWpV4TF7zp6rgj44C43CXnLtpY68V7bV");
 
 #[program]
@@ -298,4 +301,18 @@ pub struct PostWormholeMessage<'info> {
     pub rent: Sysvar<'info, Rent>,
     pub spl_token: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+}
+
+#[cfg(not(feature = "no-entrypoint"))]
+security_txt! {
+    // Required fields
+    name: "Audius Staking Bridge",
+    project_url: "https://audius.co",
+    contacts: "email:engineering@audius.co",
+    policy: "",
+
+    // Optional Fields
+    preferred_languages: "en",
+    source_code: "https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs/staking-bridge",
+    auditors: "Neodyme"
 }
