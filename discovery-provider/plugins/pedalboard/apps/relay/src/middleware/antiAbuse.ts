@@ -1,8 +1,10 @@
 import axios from "axios";
-import { AntiAbuseConfig } from "./config";
-import { logger } from "./logger";
-import { Table, Users } from "storage/src";
-import { Knex } from "knex";
+import { Users } from "storage/src";
+import { AntiAbuseConfig } from "../config/antiAbuseConfig";
+import { logger } from "../logger";
+import { NextFunction, Request, Response } from "express";
+import { config } from "..";
+import { antiAbuseError, internalError } from "../error";
 
 type AbuseRule = {
   rule: number;
@@ -17,52 +19,58 @@ type AbuseStatus = {
   appliedRules: number[] | null;
 };
 
-/// @return true = abuse detected, false = allowed to relay
+export const antiAbuseMiddleware = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  const aaoConfig = config.aao;
+  const { ip, recoveredSigner: user } = response.locals.ctx;
+  await detectAbuse(aaoConfig, user, ip, false, next);
+};
+
 export const detectAbuse = async (
   aaoConfig: AntiAbuseConfig,
-  discoveryDb: Knex,
-  senderAddress: string,
+  user: Users,
   reqIp: string,
-  abbreviated: boolean = false
-): Promise<boolean> => {
+  abbreviated: boolean,
+  next: NextFunction
+) => {
   // if aao turned off, never detect abuse
-  if (!aaoConfig.useAao) return false;
+  if (!aaoConfig.useAao || !user.handle) {
+    next()
+    return;
+  }
+  let rules: AbuseRule[]
   try {
-    const user = await discoveryDb<Users>(Table.Users)
-      .where("wallet", "=", senderAddress)
-      .andWhere("is_current", "=", true)
-      .first();
-    if (user === undefined)
-      throw new Error(
-        `user for sender ${senderAddress} is undefined or has no is_current row`
-      );
-    if (user.handle === null)
-      throw new Error(
-        `user with sender address ${senderAddress} has no handle`
-      );
-    const rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false);
-    const {
+      rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false);
+  } catch (e) {
+    logger.warn({ e }, "error returned from antiabuse oracle")
+    // block requests on issues with aao
+    internalError(next, "AAO unreachable")
+    return
+  }
+  const {
+    appliedRules,
+    blockedFromRelay,
+    blockedFromNotifications,
+    blockedFromEmails,
+  } = determineAbuseRules(aaoConfig, rules);
+  logger.info(
+    `detectAbuse: got info for user id ${user.user_id} handle ${
+      user.handle
+    }: ${JSON.stringify({
       appliedRules,
       blockedFromRelay,
       blockedFromNotifications,
       blockedFromEmails,
-    } = determineAbuseRules(aaoConfig, rules);
-    logger.info(
-      `detectAbuse: got info for user id ${user.user_id} handle ${
-        user.handle
-      }: ${JSON.stringify({
-        appliedRules,
-        blockedFromRelay,
-        blockedFromNotifications,
-        blockedFromEmails,
-      })}`
-    );
-    return blockedFromRelay;
-  } catch (e: any) {
-    logger.warn(`detectAbuse: aao request failed ${e.message}`);
-    // on issues with AAO block all writes
-    return true;
+    })}`
+  );
+  if (blockedFromRelay) {
+    antiAbuseError(next, "blocked from relay")
+    return
   }
+  next();
 };
 
 // makes HTTP request to AAO

@@ -1,68 +1,46 @@
-import App from "basekit/src/app";
-import Fastify from "fastify";
-import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { healthCheck } from "./routes/health";
-import { relayHandler } from "./routes/relay";
+import express from "express";
+import { relayTransaction } from "./txRelay";
+import { errorHandler } from "./middleware/errorHandler";
 import {
-  RelayRequest,
-  RelayRequestType,
-  RelayResponse,
-  RelayResponseType,
-} from "./types/relay";
-import { SharedData } from ".";
-import { relayRateLimiter } from "./middleware/rateLimiter";
-import { logRequest, logResponse } from "./logger";
+  incomingRequestLogger,
+  outgoingRequestLogger,
+} from "./middleware/logging";
+import { validator } from "./middleware/validator";
+import cors from "cors";
+import bodyParser from "body-parser";
+import { antiAbuseMiddleware } from "./middleware/antiAbuse";
+import { rateLimiterMiddleware } from "./middleware/rateLimiter";
 
-export const webServer = async (app: App<SharedData>) => {
-  const fastify = Fastify({
-    logger: true,
-    disableRequestLogging: true,
-  }).withTypeProvider<TypeBoxTypeProvider>();
+export const app = express();
 
-  fastify.get(
-    "/relay/health",
-    healthCheckConfig,
-    async (req, rep) => await healthCheck(app, req, rep)
-  );
-  fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
-    "/relay",
-    relayPostConfig,
-    async (req, rep) =>
-      await relayHandler(
-        app,
-        { reqIp: req.socket.remoteAddress! },
-        req.body,
-        rep
-      )
-  );
+app.use(bodyParser.json());
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+app.use(bodyParser.text());
+app.use(cors());
 
-  try {
-    const {
-      config: { serverHost, serverPort },
-    } = app.viewAppData();
-    await fastify.listen({ port: serverPort, host: serverHost });
-  } catch (err) {
-    fastify.log.error(`fastify server crashed ${err}`);
-  }
-};
+/** Reads */
+app.get(
+  "/relay/health",
+  incomingRequestLogger,
+  healthCheck,
+  outgoingRequestLogger
+);
 
-const loggingConfig = {
-  onRequest: [logRequest],
-  onResponse: [logResponse]
-}
+/** Writes */
+app.post(
+  "/relay",
+  incomingRequestLogger,
+  validator,
+  rateLimiterMiddleware,
+  antiAbuseMiddleware,
+  relayTransaction,
+  outgoingRequestLogger
+);
 
-const healthCheckConfig = {
-  ...loggingConfig
-}
-
-const relayPostConfig = {
-  schema: {
-    body: RelayRequest,
-    response: {
-      200: RelayResponse,
-    },
-  },
-  // middlewares
-  ...loggingConfig,
-  preHandler: [relayRateLimiter],
-};
+/** Register top level middlewares */
+app.use(errorHandler);
