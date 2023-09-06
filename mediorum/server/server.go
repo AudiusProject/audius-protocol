@@ -295,17 +295,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		})
 	})
 
-	// TODO: remove deprecated routes
-	routes.GET("/deprecated/:cid", ss.getBlobDeprecated, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.GET("/deprecated/:jobID/:variant", ss.getBlobByJobIDAndVariantDeprecated, ss.requireHealthy)
-
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
-
-	internalApi.GET("/cuckoo", ss.serveCuckoo)
-	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
-	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup, cidutil.UnescapeCidParam)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
@@ -343,7 +335,6 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	go ss.startCuckooBuilder()
 	createUploadsCache()
 	go ss.buildUploadsCache()
 

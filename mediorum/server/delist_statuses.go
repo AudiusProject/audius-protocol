@@ -232,11 +232,11 @@ func (ss *MediorumServer) processUserDelistStatuses(body io.ReadCloser, ctx cont
 		_, err = ss.pgPool.Exec(
 			ctx,
 			`
-			INSERT INTO delist_status_cursor 
-			(created_at, host, entity) 
+			INSERT INTO delist_status_cursor
+			(created_at, host, entity)
 			VALUES ($1, $2, $3)
-			ON CONFLICT (host, entity) 
-			DO UPDATE SET 
+			ON CONFLICT (host, entity)
+			DO UPDATE SET
 				created_at = EXCLUDED.created_at
 			`,
 			cursorAfter, endpoint, "users",
@@ -265,4 +265,20 @@ func (ss *MediorumServer) insertUserDelistStatuses(ctx context.Context, users []
 		return err
 	}
 	return nil
+}
+
+func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
+	blacklisted := false
+	sql := `SELECT COALESCE(
+	                (SELECT "delisted"
+	                 FROM "track_delist_statuses"
+	                 WHERE "trackCid" = $1
+	                 ORDER BY "createdAt" DESC
+	                 LIMIT 1),
+	            false)`
+	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
+	if err != nil {
+		ss.logger.Error("isCidBlacklisted error", "err", err, "cid", cid)
+	}
+	return blacklisted
 }

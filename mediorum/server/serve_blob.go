@@ -69,34 +69,6 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
-func (ss *MediorumServer) getBlobDeprecated(c echo.Context) error {
-	cid := c.Param("cid")
-
-	// the only keys we store with ".jpg" suffixes are of the format "<cid>/<size>.jpg", so remove the ".jpg" if it's just like "<cid>.jpg"
-	// this is to support clients that forget to leave off the .jpg for this legacy format
-	if strings.HasSuffix(cid, ".jpg") && !strings.Contains(cid, "/") {
-		cid = cid[:len(cid)-4]
-
-		// find and replace cid parameter for future calls
-		names := c.ParamNames()
-		values := c.ParamValues()
-		for i, name := range names {
-			if name == "cid" {
-				values[i] = cid
-			}
-		}
-
-		// set parameters back to the context
-		c.SetParamNames(names...)
-		c.SetParamValues(values...)
-	}
-
-	if cidutil.IsLegacyCID(cid) {
-		return ss.serveLegacyCid(c)
-	}
-	return c.String(404, "blob not found")
-}
-
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")

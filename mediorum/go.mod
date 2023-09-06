@@ -14,7 +14,6 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb
 	github.com/spf13/cast v1.5.0
 	github.com/storyicon/sigverify v1.1.0
 	github.com/stretchr/testify v1.8.2
@@ -64,7 +63,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	github.com/dgryski/go-metro v0.0.0-20211217172704-adc40b04c140 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
