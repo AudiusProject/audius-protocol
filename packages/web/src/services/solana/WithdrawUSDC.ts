@@ -21,8 +21,9 @@ import {
 // Allowable slippage amount for USDC jupiter swaps in %.
 const USDC_SLIPPAGE = 3
 
-const getWithdrawUSDCFees = async (account: PublicKey) => {
-  // TODO: factor in existing sol balance
+export const getFundDestinationTokenAccountFees = async (
+  account: PublicKey
+) => {
   // TODO: might have to pay rent for root sol account, see BuyAudio.ts
   const rent = await getAssociatedTokenAccountRent()
   const fee = await getTransferTransactionFee(account)
@@ -35,15 +36,15 @@ const getWithdrawUSDCFees = async (account: PublicKey) => {
  */
 export const getSwapUSDCUserBankInstructions = async ({
   destinationAddress,
+  amount,
   feePayer
 }: {
   destinationAddress: string
+  amount: number
   feePayer: PublicKey
 }): Promise<TransactionInstruction[]> => {
   const libs = await getLibs()
 
-  // Destination associated token account does not exist - create and fund it
-  const feeAmount = await getWithdrawUSDCFees(new PublicKey(destinationAddress))
   const solanaRootAccount = await getRootSolanaAccount()
   const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
     mint: 'usdc'
@@ -54,7 +55,7 @@ export const getSwapUSDCUserBankInstructions = async ({
   const quoteRoute = await JupiterSingleton.getQuote({
     inputTokenSymbol: 'USDC',
     outputTokenSymbol: 'SOL',
-    inputAmount: feeAmount,
+    inputAmount: amount,
     slippage: USDC_SLIPPAGE,
     swapMode: 'ExactOut' as SwapMode,
     onlyDirectRoutes: true
