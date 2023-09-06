@@ -12,6 +12,7 @@ from json.encoder import JSONEncoder
 from typing import List, Optional, TypedDict, cast
 
 import base58
+import psutil
 import requests
 from flask import g, request
 from hashids import Hashids
