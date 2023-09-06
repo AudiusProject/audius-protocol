@@ -1,24 +1,23 @@
-.repostInfo {
-  min-width: 0;
+.root {
   max-width: 60%;
   margin-right: 16px;
   display: flex;
   align-items: center;
 }
 
-.repostInfo.large {
+.large {
   font-size: var(--font-xs);
   font-weight: var(--font-demi-bold);
 }
 
-.repostInfo.medium,
-.repostInfo.small {
+.medium,
+.small {
   font-size: var(--font-2xs);
   font-weight: var(--font-demi-bold);
   letter-spacing: 0.25px;
 }
 
-.repostProfileImages {
+.profileImages {
   display: flex;
   margin-right: 4px;
 }
@@ -41,42 +40,17 @@
   fill: var(--primary);
 }
 
-.repostText {
+.text {
   color: var(--neutral-light-4);
   min-width: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
 }
 
-.repostText span {
+.text span {
   margin-left: 4px;
   margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.repostText .iconRepost {
-  width: 14px;
-  min-width: 14px;
-  height: 18px;
-}
-
-.repostSkeleton {
-  position: absolute;
-  border-radius: 4px;
-  overflow: hidden;
-  width: 30%;
-}
-
-.repostSkeleton > div > :global(.ant-skeleton-title) {
-  margin: 0;
-}
-
-.repostSkeletonSmall > div > :global(.ant-skeleton-title) {
-  height: 8px;
-}
-
-.iconRepost g path {
-  fill: var(--neutral-light-4);
 }

@@ -1,5 +1,3 @@
-import { memo } from 'react'
-
 import { User, formatCount, pluralize } from '@audius/common'
 
 import styles from './StatsText.module.css'
@@ -67,37 +65,34 @@ export const formatLongString = (
   return { longString, endString }
 }
 
-type OwnProps = {
+type RepostTextProps = {
   users: User[]
   count: number
   contentTitle: string
   flavor: Flavor
+  size: 'small' | 'medium' | 'large'
 }
 
-type RepostTextProps = OwnProps
-const StatsText = memo(
-  ({ users, count, contentTitle, flavor }: RepostTextProps) => {
-    if (count === 0) {
-      return (
-        <div className={styles.first}>
-          {formatEmptyState(flavor, contentTitle)}
-        </div>
-      )
-    }
+export const StatsText = (props: RepostTextProps) => {
+  const { users, count, contentTitle, flavor, size } = props
+  if (size === 'small') {
+    return <span>{formatCount(count)}</span>
+  }
 
-    const { longString, endString } = formatLongString(flavor, count, users)
-
+  if (count === 0) {
     return (
-      <>
-        <span key='long' className={styles.long}>
-          {longString}
-        </span>
-        <span key='end' className={styles.end}>
-          {endString}
-        </span>
-      </>
+      <span className={styles.first}>
+        {formatEmptyState(flavor, contentTitle)}
+      </span>
     )
   }
-)
 
-export default StatsText
+  const { longString, endString } = formatLongString(flavor, count, users)
+
+  return (
+    <>
+      {longString ? <span className={styles.long}>{longString}</span> : null}
+      {endString ? <span className={styles.end}>{endString}</span> : null}
+    </>
+  )
+}

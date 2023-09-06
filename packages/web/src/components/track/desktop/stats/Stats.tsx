@@ -1,10 +1,9 @@
-import { memo, useMemo, MouseEvent } from 'react'
+import { memo, useMemo, MouseEvent, useCallback } from 'react'
 
 import {
   ID,
   Favorite,
   Repost,
-  formatCount,
   createShallowSelector,
   cacheUsersSelectors,
   CommonState
@@ -14,13 +13,15 @@ import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import { Icon } from 'components/Icon'
 
 import ProfileImage from './ProfileImage'
 import styles from './Stats.module.css'
-import StatsText, { Flavor } from './StatsText'
+import { StatsText, Flavor } from './StatsText'
 const { getUsers } = cacheUsersSelectors
 
-const MAX_REPOST_IMAGES = 3
+const MAX_IMAGES = 3
+
 const makeFolloweeActionsUsers = () =>
   createShallowSelector(
     [getUsers, (_state: CommonState, userIds: ID[]) => userIds],
@@ -33,7 +34,7 @@ const makeFolloweeActionsUsers = () =>
 type StatsProps = {
   count: number
   followeeActions: Repost[] | Favorite[]
-  size: string
+  size: 'small' | 'medium' | 'large'
   showSkeleton?: boolean
   contentTitle: string
   onClick?: () => void
@@ -41,8 +42,8 @@ type StatsProps = {
   hideImage?: boolean
 }
 
-const Stats = memo(
-  ({
+const Stats = memo((props: StatsProps) => {
+  const {
     count,
     followeeActions = [],
     size,
@@ -51,69 +52,63 @@ const Stats = memo(
     onClick,
     flavor,
     hideImage
-  }: StatsProps) => {
-    const onClickWrapper = (e: MouseEvent) => {
+  } = props
+
+  const handleClick = useCallback(
+    (e: MouseEvent) => {
       if (!onClick || !count) return
       e.stopPropagation()
       onClick()
-    }
+    },
+    [count, onClick]
+  )
 
-    const repostInfoStyle = cn(styles.repostInfo, {
-      [styles.small]: size === 'small',
-      [styles.large]: size === 'large'
-    })
-
-    const getFolloweeActionsUsers = useMemo(makeFolloweeActionsUsers, [])
-    const followeeActionUsers = useSelector((state: CommonState) =>
-      getFolloweeActionsUsers(
-        state,
-        (followeeActions as Array<Repost | Favorite>).map(
-          (a: Repost | Favorite) => a.user_id
-        )
+  const getFolloweeActionsUsers = useMemo(makeFolloweeActionsUsers, [])
+  const followeeActionUsers = useSelector((state: CommonState) =>
+    getFolloweeActionsUsers(
+      state,
+      (followeeActions as Array<Repost | Favorite>).map(
+        (a: Repost | Favorite) => a.user_id
       )
     )
+  )
 
-    const slice = followeeActionUsers.slice(0, MAX_REPOST_IMAGES)
+  const profileImages = followeeActionUsers
+    .slice(0, MAX_IMAGES)
+    .map((item) => <ProfileImage key={item.user_id} userId={item.user_id} />)
 
-    // @ts-ignore
-    const items = slice.map((item) => (
-      <ProfileImage key={item.user_id} userId={item.user_id} />
-    ))
-
-    return (
-      <>
-        <div
-          className={cn(repostInfoStyle, {
-            [styles.hide]: showSkeleton,
-            [styles.show]: !showSkeleton,
-            [styles.showNonEmpty]: !showSkeleton && count
-          })}
-          onClick={onClickWrapper}
-        >
-          {size === 'large' && flavor === Flavor.REPOST && !hideImage ? (
-            <div className={styles.repostProfileImages}>{items}</div>
-          ) : null}
-          <div className={styles.repostText}>
-            {flavor === Flavor.REPOST ? (
-              <IconRepost className={styles.iconRepost} />
-            ) : (
-              <IconFavorite className={styles.iconRepost} />
-            )}
-            {size === 'large' || size === 'medium' ? (
-              <StatsText
-                flavor={flavor}
-                count={count}
-                contentTitle={contentTitle}
-                users={followeeActionUsers}
-              />
-            ) : (
-              <span>{formatCount(count)}</span>
-            )}
-          </div>
-        </div>
-      </>
-    )
-  }
-)
+  return (
+    <div
+      className={cn(styles.root, {
+        [styles.small]: size === 'small',
+        [styles.large]: size === 'large',
+        [styles.hide]: showSkeleton,
+        [styles.show]: !showSkeleton,
+        [styles.showNonEmpty]: !showSkeleton && count
+      })}
+      onClick={handleClick}
+    >
+      {size === 'large' &&
+      flavor === Flavor.REPOST &&
+      !hideImage &&
+      profileImages.length > 0 ? (
+        <div className={styles.profileImages}>{profileImages}</div>
+      ) : null}
+      <span className={styles.text}>
+        <Icon
+          icon={flavor === Flavor.REPOST ? IconRepost : IconFavorite}
+          size='xSmall'
+        />
+        <StatsText
+          flavor={flavor}
+          count={count}
+          contentTitle={contentTitle}
+          users={followeeActionUsers}
+          size={size}
+        />
+      </span>
+    </div>
+  )
+})
 
 export default Stats
