@@ -288,13 +288,19 @@ func (r *Radix) ServeTreePaginated(c echo.Context) error {
 			// this is a leaf that's tracking another host's view
 			split := strings.Split(keyStr, "_")
 			keyStr = split[0]
-			idStr := split[1]
+			suffix := "_" + split[1]
 
-			hostID, err := strconv.Atoi(idStr)
-			if err != nil {
-				continue // this should never happen
+			for otherHost, otherSuffix := range r.otherHostSuffixes {
+				if otherSuffix == suffix {
+					host = otherHost
+					break
+				}
 			}
-			host = r.idToHost[uint8(hostID)]
+
+			if host == r.myHost {
+				// we couldn't find the host that this leaf is tracking - this should never happen
+				continue
+			}
 		}
 
 		hostIDsWithCID := r.combinations[val]
@@ -332,16 +338,12 @@ func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int) {
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 			return
 		}
-		if result.IdToHost == nil || result.Combinations == nil {
-			return // this should never happen - the other host should always tell us their mappings
+		if result.LastKey == "" || result.IdToHost == nil || result.Combinations == nil {
+			return
 		}
 
 		// add leaves from this page
 		r.addLeavesFromOtherHost(otherHost, &result.Leaves, &result.IdToHost, &result.Combinations)
-
-		if result.LastKey == "" {
-			return
-		}
 	}
 }
 

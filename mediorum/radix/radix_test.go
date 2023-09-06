@@ -79,7 +79,7 @@ func TestShareViews(t *testing.T) {
 			servers[i] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				e := echo.New()
 				c := e.NewContext(req, w)
-				radixes[localI].ServeTreePaginated(c)
+				radixes[localI].ServeTreePaginatedInternal(c)
 			}))
 		}
 
