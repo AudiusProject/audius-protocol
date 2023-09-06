@@ -7,7 +7,6 @@ export function formatEthAddress(address: string) {
 
 export function getPostMessageData(args: { uiAmount: number, solTokenDecimals: number, lastValidBlockHeight: number }) {
   return {
-    nonce: new anchor.BN(args.lastValidBlockHeight),
     amount: new anchor.BN(args.uiAmount * 10 ** args.solTokenDecimals)
   }
 }

@@ -252,7 +252,6 @@ describe('staking-bridge', () => {
     const { lastValidBlockHeight } = await connection.getLatestBlockhash()
     const nonce = lastValidBlockHeight
     const {
-      // nonce,
       amount,
     } = getPostMessageData({
       uiAmount,
