@@ -18,14 +18,16 @@ where "key" ilike 'qm%'
 on conflict do nothing
 ;
 
--- do this later when confident all good:
+-- todo: do this later when confident all good:
 -- drop table blobs;
 
 -- remove all the noisy blob history
 delete from ops where "table" = 'blobs';
 
+
 -- reset ops cursors...
 -- now that ops is "gossip" style this will ensure historical Uploads are created if missing
-truncate cursors;
+-- todo: do this next deploy after blobs ops have been cut down... so that we just revisit uploads
+-- truncate cursors;
 
 commit;
