@@ -1,7 +1,6 @@
 import { reachabilityActions, reachabilitySelectors } from '@audius/common'
-import { delay, race, put, all, take, select, call } from 'typed-redux-saga'
-
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+import { delay, race, put, all, take, select, call } from 'typed-redux-saga'
 
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions
@@ -76,7 +75,7 @@ function* updateReachability(isReachable: boolean) {
 }
 
 // Note: We don't have an equivalent saga in native mobile because the reachability state is updated via the event listener
-// registered in packages/mobile/utils/connectivity.ts
+// registered in apps/mobile/utils/connectivity.ts
 function* reachabilityPollingDaemon() {
   // Web/Desktop: poll for connectivity
   if (!isMobileWeb()) {

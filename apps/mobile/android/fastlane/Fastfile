@@ -106,10 +106,10 @@ platform :android do
         incrementVersionCode(package_name: packageName, track: options[:track])
 
         # generating the release apk & bundle
-        sh("cd ../../../../ && echo \"yes\" | sdkmanager \"platforms;android-30\" && cd packages/mobile/android && ./gradlew #{buildType}")
+        sh("cd ../../../../ && echo \"yes\" | sdkmanager \"platforms;android-30\" && cd apps/mobile/android && ./gradlew #{buildType}")
         
         sh("cd ../../../../ && sudo pip install awscli")
-        sh("cd ../../../../ && aws s3 sync packages/mobile/android/app/build/outputs s3://#{remoteDirectory}/android --delete")
+        sh("cd ../../../../ && aws s3 sync apps/mobile/android/app/build/outputs s3://#{remoteDirectory}/android --delete")
         upload_to_play_store(
           track: options[:track],
           package_name: packageName,

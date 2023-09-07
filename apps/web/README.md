@@ -57,7 +57,7 @@ npm run dev
 
 This will link @audius/sdk, and also run it it dev mode, which will transpiles changes and triggers a hot-reload in web.
 
-- In terminal for `audius-client/packages/web`
+- In terminal for `audius-client/apps/web`
 ```bash
 npm link @audius/sdk
 ```

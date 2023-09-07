@@ -1,3 +1,3 @@
-// TODO: Migrate utils from packages/web/common/store/cache/collections/utils to here
+// TODO: Migrate utils from apps/web/common/store/cache/collections/utils to here
 
 export * from './reformatCollection'

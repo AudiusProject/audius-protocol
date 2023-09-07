@@ -22,5 +22,9 @@
     },
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "editor.find.addExtraSpaceOnTop": false
+  "editor.find.addExtraSpaceOnTop": false,
+  "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  }
 }

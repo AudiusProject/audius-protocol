@@ -3,18 +3,19 @@
   "private": true,
   "version": "1.5.40",
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
     "preinstall": "./scripts/preinstall.sh",
     "postinstall": "./scripts/postinstall.sh",
-    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches",
+    "patch-package": "patch-package --patch-dir=apps/mobile/patches && patch-package --patch-dir=apps/web/patches",
     "build": "npm run build -w @audius/stems -w @audius/common",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint": "npm run lint -ws --if-present",
     "lint:fix": "npm run lint:fix -ws --if-present",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
-    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
+    "clean:modules": "rm -rf node_modules && rm -rf apps/*/node_modules packages/*/node_modules",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",
@@ -37,8 +38,8 @@
     "STEMS======================================": "",
     "stems": "npm run start -w @audius/stems",
     "SDK========================================": "",
-    "sdk:update": "npm exec -- npm-check-updates @audius/sdk -u --target @beta && rm -rf packages/*/node_modules/@audius/sdk && npm i",
-    "sdk:update-hotfix": "npm exec -- npm-check-updates @audius/sdk -u --target @hotfix && rm -rf packages/*/node_modules/@audius/sdk && npm i",
+    "sdk:update": "npm exec -- npm-check-updates @audius/sdk -u --target @beta && rm -rf apps/*/node_modules/@audius/sdk && npm i",
+    "sdk:update-hotfix": "npm exec -- npm-check-updates @audius/sdk -u --target @hotfix && rm -rf apps/*/node_modules/@audius/sdk && npm i",
     "sdk:link": "./scripts/link-sdk.sh",
     "verify": "npm run verify -ws --if-present"
   },

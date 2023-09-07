@@ -21,12 +21,17 @@ Audius is a decentralized, community-owned music-sharing protocol
 
 For further details on operating an Audius service, getting started with the Token and the API, see [docs.audius.org](https://docs.audius.org/).
 
+## Apps
+
+| Name                                                      | Description                            |
+| --------------------------------------------------------- | -------------------------------------- |
+| [`web`](./apps/web)                                   | The Audius web and desktop application |
+| [`mobile`](./apps/mobile)                             | The Audius mobile application          |
+
 ## Packages
 
 | Name                                                      | Description                            |
 | --------------------------------------------------------- | -------------------------------------- |
-| [`web`](./packages/web)                                   | The Audius web and desktop application |
-| [`mobile`](./packages/mobile)                             | The Audius mobile application          |
 | [`stems`](./packages/stems)                               | The Audius client component library    |
 | [`common`](./packages/common)                             | Shared code between web and mobile     |
 | [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration              |

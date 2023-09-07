@@ -39,7 +39,7 @@ and paste the seed phase in. There is no associated password, so press enter aga
 
 ### Preparing the version
 Update the version name + code to the latest release in
-[build.gradle](/packages/mobile/android/app/build.gradle)
+[build.gradle](/apps/mobile/android/app/build.gradle)
 
 For the version, see:
 https://play.google.com/console/u/0/developers/7193943409852709836/app/4973839560150647536/tracks/production?tab=releases
