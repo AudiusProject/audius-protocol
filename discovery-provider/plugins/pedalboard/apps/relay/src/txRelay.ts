@@ -48,8 +48,8 @@ const confirm = async (
   let tries = 0;
   while (tries !== retries) {
     const receipt = await web3.getTransactionReceipt(txHash);
-    if (receipt !== null && receipt.status) return receipt;
-    await delay(250);
+    if (receipt !== null) return receipt;
+    await delay(500);
     tries += 1;
   }
   throw new Error(`transaction ${txHash} could not be confirmed`);
