@@ -452,6 +452,11 @@ def revert_block(session: Session, block_to_revert: Block):
         .filter(RevertBlock.blocknumber == revert_block_number)
         .first()
     )
+
+    revert_user_entries = (
+        session.query(User).filter(User.blocknumber == revert_block_number).all()
+    )
+
     revert_track_routes = (
         session.query(TrackRoute)
         .filter(TrackRoute.blocknumber == revert_block_number)
@@ -494,6 +499,12 @@ def revert_block(session: Session, block_to_revert: Block):
             previous_playlist_route_entry.is_current = True
         logger.info(f"Reverting playlist route {playlist_route_to_revert}")
         session.delete(playlist_route_to_revert)
+
+    for user_to_revert in revert_user_entries:
+
+        # Remove outdated user entries
+        logger.info(f"Reverting user: {user_to_revert}")
+        session.delete(user_to_revert)
 
     # delete block record and cascade delete from tables ^
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
