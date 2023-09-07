@@ -1,5 +1,5 @@
 mobile-init:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -52,7 +52,7 @@ mobile-init:
           - apps/mobile/.env.prod
 
 mobile-comment-native-code-change:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:14.20
   steps:
@@ -62,7 +62,7 @@ mobile-comment-native-code-change:
         comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @nicoback2 @sliptype'
 
 mobile-build-staging-ios:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -85,7 +85,7 @@ mobile-build-staging-ios:
         env: '.env.stage'
 
 mobile-build-upload-staging-ios:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -104,7 +104,7 @@ mobile-build-upload-staging-ios:
         env: '.env.stage'
 
 mobile-build-production-ios:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -126,7 +126,7 @@ mobile-build-production-ios:
         env: '.env.prod'
 
 mobile-build-upload-production-ios-if-full-release:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -149,7 +149,7 @@ mobile-build-upload-production-ios-if-full-release:
         env: '.env.prod'
 
 mobile-deploy-codepush-production-ios-if-ota-release:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -171,7 +171,7 @@ mobile-deploy-codepush-production-ios-if-ota-release:
         env: '.env.prod'
 
 mobile-build-upload-releasecandidate-ios:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -193,7 +193,7 @@ mobile-build-upload-releasecandidate-ios:
         env: '.env.prod'
 
 mobile-build-upload-staging-releasecandidate-ios:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so app can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -215,7 +215,7 @@ mobile-build-upload-staging-releasecandidate-ios:
         env: '.env.prod'
 
 mobile-build-staging-android:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/android:2023.08-node
@@ -230,7 +230,7 @@ mobile-build-staging-android:
         remote-directory: 'audius-mobile-staging'
 
 mobile-build-upload-staging-android:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/android:2023.08-node
@@ -243,7 +243,7 @@ mobile-build-upload-staging-android:
         track: 'internal'
 
 mobile-build-upload-staging-releasecandidate-android:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: large
   docker:
     - image: cimg/android:2023.08-node
@@ -256,7 +256,7 @@ mobile-build-upload-staging-releasecandidate-android:
         track: 'internal'
 
 mobile-build-upload-releasecandidate-android:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: large
   docker:
     - image: cimg/android:2023.08-node
@@ -269,7 +269,7 @@ mobile-build-upload-releasecandidate-android:
         track: 'internal'
 
 mobile-build-production-android:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/android:2023.08-node
@@ -284,7 +284,7 @@ mobile-build-production-android:
         remote-directory: 'audius-mobile'
 
 mobile-build-upload-production-android-if-full-release:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/android:2023.08-node
@@ -298,7 +298,7 @@ mobile-build-upload-production-android-if-full-release:
         track: 'alpha'
 
 mobile-deploy-codepush-production-android-if-ota-release:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: large
   docker:
     - image: cimg/android:2023.08-node
@@ -311,7 +311,7 @@ mobile-deploy-codepush-production-android-if-ota-release:
         track: 'alpha'
 
 mobile-deploy-saga-dapp-store:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/android:2023.08-node

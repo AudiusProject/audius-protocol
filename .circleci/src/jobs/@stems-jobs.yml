@@ -1,5 +1,5 @@
 stems-init:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:

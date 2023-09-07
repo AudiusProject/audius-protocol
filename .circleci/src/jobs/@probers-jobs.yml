@@ -1,5 +1,5 @@
 probers-test-stage:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:latest-browsers
   steps:

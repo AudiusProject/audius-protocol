@@ -1,5 +1,5 @@
 web-init:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -50,7 +50,7 @@ web-init:
           - apps/common/dist
 
 web-build-demo:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
@@ -74,7 +74,7 @@ web-build-demo:
           - apps/web/build-demo
 
 web-build-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
@@ -85,7 +85,7 @@ web-build-staging:
         build-name: build-staging
 
 web-test-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   resource_class: large
   executor: cypress/default
   steps:
@@ -106,7 +106,7 @@ web-test-staging:
         path: /home/circleci/audius-client/apps/probers/cypress/screenshots
 
 web-build-production:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
@@ -117,7 +117,7 @@ web-build-production:
         build-name: build-production
 
 web-deploy-demo:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -132,7 +132,7 @@ web-deploy-demo:
         comment: Preview this change https://demo.audius.co/${CIRCLE_BRANCH}
 
 web-deploy-staging-s3:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -151,7 +151,7 @@ web-deploy-staging-s3:
           aws s3 cp apps/web/build-staging.tar.gz s3://staging.audius.co/build-staging.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
 
 web-deploy-staging-cloudflare:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -162,7 +162,7 @@ web-deploy-staging-cloudflare:
     - web-deploy-sourcemaps-s3
 
 web-deploy-release-candidate:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -173,7 +173,7 @@ web-deploy-release-candidate:
     - web-deploy-sourcemaps-s3
 
 web-deploy-staging-release-candidate:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -184,7 +184,7 @@ web-deploy-staging-release-candidate:
     - web-deploy-sourcemaps-s3
 
 web-deploy-production-s3:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -210,7 +210,7 @@ web-deploy-production-s3:
         command: aws cloudfront create-invalidation --distribution-id E1ZJ9Z971FJQJ8 --paths "/*"
 
 web-deploy-production-cloudflare:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -221,7 +221,7 @@ web-deploy-production-cloudflare:
     - web-deploy-sourcemaps-s3
 
 web-deploy-sentry-sourcemaps:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -250,7 +250,7 @@ web-deploy-sentry-sourcemaps:
           node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client finalize ${CIRCLE_SHA1}
 
 web-dist-mac-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so dmg can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -264,7 +264,7 @@ web-dist-mac-staging:
         install-license: true
 
 web-dist-win-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: electronuserland/builder:16-wine-mono-05.22
   steps:
@@ -272,7 +272,7 @@ web-dist-win-staging:
         build-type: win-publish
 
 web-dist-linux-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: electronuserland/builder
   steps:
@@ -280,7 +280,7 @@ web-dist-linux-staging:
         build-type: linux-publish
 
 web-dist-mac-production:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   # run on macos so dmg can be created and signed.
   resource_class: macos.x86.medium.gen2
   macos:
@@ -294,7 +294,7 @@ web-dist-mac-production:
         install-license: true
 
 web-dist-win-production:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: electronuserland/builder:16-wine-mono-05.22
   steps:
@@ -302,7 +302,7 @@ web-dist-win-production:
         build-type: win-publish-production
 
 web-dist-linux-production:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: electronuserland/builder
   steps:

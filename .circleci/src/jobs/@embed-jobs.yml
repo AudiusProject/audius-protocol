@@ -1,5 +1,5 @@
 embed-init:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -25,7 +25,7 @@ embed-init:
           - apps/stems/dist
 
 embed-build-staging:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
@@ -35,7 +35,7 @@ embed-build-staging:
         build-type: stage
 
 embed-build-production:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   resource_class: xlarge
@@ -45,7 +45,7 @@ embed-build-production:
         build-type: prod
 
 embed-deploy-staging-cloudflare:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:
@@ -54,7 +54,7 @@ embed-deploy-staging-cloudflare:
         environment: staging
 
 embed-deploy-production-cloudflare:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/python:3.7.12-node
   steps:

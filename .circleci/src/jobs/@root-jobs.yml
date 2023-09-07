@@ -1,6 +1,6 @@
 # Publish npm packages
 root-publish-npm-packages:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/node:18.17
   steps:
@@ -16,7 +16,7 @@ root-publish-npm-packages:
 
 # Publish github release for the current tag
 root-publish-github-release:
-  working_directory: ~/audius-client
+  working_directory: ~/audius-protocol
   docker:
     - image: cibuilds/github:0.10
   steps:
