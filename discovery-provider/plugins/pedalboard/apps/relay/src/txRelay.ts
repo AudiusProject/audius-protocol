@@ -8,7 +8,6 @@ import { NextFunction, Request, Response } from "express";
 
 export type RelayedTransaction = {
   receipt: TransactionReceipt;
-  transaction: TransactionRequest;
 };
 
 export const relayTransaction = async (
@@ -36,7 +35,8 @@ export const relayTransaction = async (
 
   // query chain until tx is mined
   const receipt = await confirm(web3, submit.hash);
-  res.send(receipt);
+  const response: RelayedTransaction = { receipt }
+  res.send(response);
   next();
 };
 
@@ -48,8 +48,8 @@ const confirm = async (
   let tries = 0;
   while (tries !== retries) {
     const receipt = await web3.getTransactionReceipt(txHash);
-    if (receipt !== null) return receipt;
-    await delay(500);
+    if (receipt !== null && receipt.status) return receipt;
+    await delay(250);
     tries += 1;
   }
   throw new Error(`transaction ${txHash} could not be confirmed`);
