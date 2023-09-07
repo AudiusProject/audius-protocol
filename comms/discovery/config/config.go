@@ -18,6 +18,7 @@ type DiscoveryConfig struct {
 	MyWallet           string
 	MyPrivateKey       *ecdsa.PrivateKey `json:"-"`
 	IsStaging          bool
+	IsDev              bool
 	IsRegisteredWallet bool
 
 	mu    sync.RWMutex
@@ -42,6 +43,7 @@ func Parse() *DiscoveryConfig {
 
 	c.MyHost = misc.TrimTrailingSlash(os.Getenv("audius_discprov_url"))
 	c.IsStaging = os.Getenv("AUDIUS_IS_STAGING") == "true"
+	c.IsDev = os.Getenv("comms_dev_mode") == "true"
 
 	pk, err := parsePrivateKey(os.Getenv("audius_delegate_private_key"))
 	if err != nil {

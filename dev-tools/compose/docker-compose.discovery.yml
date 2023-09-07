@@ -35,6 +35,7 @@ services:
     command: discovery
     restart: unless-stopped
     environment:
+      comms_dev_mode: true
       audius_delegate_private_key: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7"
       audius_db_url: "postgresql://postgres:postgres@db:5432/discovery_provider_1"
     depends_on:
