@@ -2,7 +2,7 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
-import { Name } from 'models/Analytics'
+import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
@@ -23,6 +23,7 @@ import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
+import { saveTrack } from 'store/social/tracks/actions'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -216,6 +217,11 @@ function* doStartPurchaseContentFlow({
 
     // confirm purchase
     yield* pollForPurchaseConfirmation({ contentId, contentType })
+
+    // auto-favorite the purchased item
+    if (contentType === ContentType.TRACK) {
+      yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+    }
 
     // finish
     yield* put(purchaseConfirmed())
