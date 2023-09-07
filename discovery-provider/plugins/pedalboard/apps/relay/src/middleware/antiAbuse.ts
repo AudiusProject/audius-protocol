@@ -57,7 +57,7 @@ export const detectAbuse = async (
     blockedFromEmails,
   } = determineAbuseRules(aaoConfig, rules);
   logger.info(
-    `detectAbuse: got info for user id ${user.user_id} handle ${
+    `detectAbuse: got info for handle ${
       user.handle
     }: ${JSON.stringify({
       appliedRules,
