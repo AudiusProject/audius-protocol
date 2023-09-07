@@ -8,7 +8,7 @@ import { animated, useSpring } from 'react-spring'
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
@@ -53,9 +53,8 @@ const PlayingTrackInfo = ({
 }: PlayingTrackInfoProps) => {
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
-  const image = useUserProfilePicture(
-    artistUserId,
-    profilePictureSizes,
+  const profileImage = useProfilePicture(
+    artistUserId ?? null,
     SquareSizes.SIZE_150_BY_150
   )
 
@@ -78,7 +77,7 @@ const PlayingTrackInfo = ({
     <div className={styles.info}>
       <div className={styles.profilePictureWrapper}>
         <DynamicImage
-          image={image}
+          image={profileImage}
           onClick={onClickArtistName}
           className={cn(styles.profilePicture, {
             [styles.isDefault]: !!trackId

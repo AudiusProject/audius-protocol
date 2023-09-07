@@ -25,6 +25,10 @@
   align-items: center;
 }
 
+.profilePicture {
+  background-color: var(--default-profile-picture-background);
+}
+
 .profilePictureWrapper {
   width: 80px;
   height: 80px;

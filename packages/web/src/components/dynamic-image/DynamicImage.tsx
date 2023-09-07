@@ -55,6 +55,7 @@ const fadeIn = (
 ) => {
   if (ref.current) {
     ref.current.style.zIndex = '2'
+    ref.current.style.removeProperty('background-color')
 
     if (image === placeholder) {
       ref.current.style.backgroundColor = 'unset'
@@ -70,6 +71,7 @@ const fadeIn = (
     } else if (!image.startsWith('data:image/png')) {
       ref.current.style.backgroundColor = 'unset'
     }
+
     // Allow gradient values for 'image' in addition to URIs
     ref.current.style.backgroundImage = image.includes('linear-gradient(')
       ? `${image}`
