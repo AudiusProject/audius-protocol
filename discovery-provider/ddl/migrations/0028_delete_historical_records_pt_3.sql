@@ -12,6 +12,8 @@ BEGIN
    FOREACH _table_name IN ARRAY _table_names
    LOOP
       RAISE NOTICE 'Dropping foreign key constraint to table %', _table_name;
+      EXECUTE format('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE', 
+                     quote_ident(_table_name));
 
       EXECUTE format('ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s', 
                      quote_ident(_table_name), 
@@ -80,8 +82,7 @@ SELECT delete_rows(ARRAY[
     'playlist_seen', 
     'subscriptions', 
     'tracks', 
-    'user_events'
-]
+    'user_events']
 );
 
 SELECT add_fk_constraints(ARRAY[
