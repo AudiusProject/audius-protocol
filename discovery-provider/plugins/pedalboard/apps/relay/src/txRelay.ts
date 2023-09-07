@@ -1,9 +1,10 @@
-import { config, discoveryDb, wallets, web3 } from ".";
+import { wallets, web3 } from ".";
+import { internalError } from "./error";
+import { confirm } from "./web3"
 import {
   TransactionReceipt,
   TransactionRequest,
 } from "@ethersproject/abstract-provider";
-import { ethers } from "ethers";
 import { NextFunction, Request, Response } from "express";
 
 export type RelayedTransaction = {
@@ -35,26 +36,12 @@ export const relayTransaction = async (
   const submit = await senderWallet.sendTransaction(transaction);
 
   // query chain until tx is mined
-  const receipt = await confirm(web3, submit.hash);
-  res.send(receipt);
-  next();
-};
-
-const confirm = async (
-  web3: ethers.providers.JsonRpcProvider,
-  txHash: string,
-  retries = 12
-): Promise<TransactionReceipt> => {
-  let tries = 0;
-  while (tries !== retries) {
-    const receipt = await web3.getTransactionReceipt(txHash);
-    if (receipt !== null) return receipt;
-    await delay(500);
-    tries += 1;
+  try {
+    const receipt = await confirm(submit.hash);
+    res.send({ receipt });
+  } catch (e) {
+    internalError(next, e as string)
+    return
   }
-  throw new Error(`transaction ${txHash} could not be confirmed`);
-};
-
-const delay = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  next();
 };
