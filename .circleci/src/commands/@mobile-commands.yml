@@ -49,8 +49,8 @@ mobile-prepare-ios:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/app/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/app/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/.bin/react-native $PWD/apps/mobile/node_modules/.bin/react-native
+          ln -s $PWD/node_modules/react-native $PWD/apps/mobile/node_modules/react-native
     - run:
         name: install pods
         command: |
@@ -175,6 +175,10 @@ mobile-build-android:
         command: |
           cd apps/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
+    - run:
+        name: Symlink react-native
+        command: |
+          ln -s $PWD/node_modules/react-native $PWD/apps/mobile/node_modules/react-native
     - run:
         name: generating the release apk & bundle
         command: |
