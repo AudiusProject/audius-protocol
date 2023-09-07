@@ -16,6 +16,7 @@
     "lint:fix": "npm run lint:fix -ws --if-present",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
     "clean:modules": "rm -rf node_modules && rm -rf apps/*/node_modules packages/*/node_modules",
+    "check-secrets": "sh ./scripts/check_secrets.sh",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w audius-client",
     "web:stage": "npm run start:stage -w audius-client",

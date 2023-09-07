@@ -1,0 +1,9 @@
+{
+  "steps": [
+    {
+      "name": "check secrets",
+      "command": "npm run check-secrets"
+    }
+  ]
+}
+
