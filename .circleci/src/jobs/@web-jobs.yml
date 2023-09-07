@@ -46,8 +46,8 @@ web-init:
           - apps/probers/node_modules
           - apps/stems/node_modules
           - apps/stems/dist
-          - apps/common/node_modules
-          - apps/common/dist
+          - packages/common/node_modules
+          - packages/common/dist
 
 web-build-demo:
   working_directory: ~/audius-protocol
