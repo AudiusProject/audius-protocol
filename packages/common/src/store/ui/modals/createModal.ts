@@ -30,6 +30,9 @@ export const createModal = <T>({
       open: (_, action: PayloadAction<T>) => {
         return { ...action.payload, isOpen: true }
       },
+      set: (state, action: PayloadAction<T>) => {
+        return { ...state, ...action.payload }
+      },
       close: (state) => {
         state.isOpen = 'closing'
       },
@@ -59,7 +62,7 @@ export const createModal = <T>({
     state: T & BaseModalState
   ) => PayloadAction<T & BaseModalState>
 
-  const { close, closed } = slice.actions
+  const { close, closed, set } = slice.actions
   /**
    * A hook that returns the state of the modal,
    * an open callback that opens the modal,
@@ -88,9 +91,17 @@ export const createModal = <T>({
       dispatch(closed())
     }, [dispatch])
 
+    const setData = useCallback(
+      (state?: Partial<T>) => {
+        dispatch(set({ ...state }))
+      },
+      [dispatch]
+    )
+
     return {
       isOpen: isOpen === true,
       data,
+      setData,
       onOpen,
       onClose,
       onClosed

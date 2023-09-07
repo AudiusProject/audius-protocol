@@ -2,7 +2,8 @@ import {
   useUSDCBalance,
   formatUSDCWeiToNumber,
   formatCurrencyBalance,
-  BNUSDC
+  BNUSDC,
+  useWithdrawUSDCModal
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -11,11 +12,16 @@ import {
   IconCheck
 } from '@audius/stems'
 import BN from 'bn.js'
+import { useField } from 'formik'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
+import {
+  ADDRESS,
+  AMOUNT
+} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
@@ -38,17 +44,19 @@ const openExplorer = (signature: string) => {
 
 export const TransferSuccessful = () => {
   const { data: balance } = useUSDCBalance()
+  const { data: modalData } = useWithdrawUSDCModal()
   const balanceNumber = formatUSDCWeiToNumber((balance ?? new BN(0)) as BNUSDC)
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
-  const wallet = '72pepj'
-  const amount = '200'
-  const signature =
-    '1qKTUXAdN5Li9DJt78g9qsazvo8SPXooea6GsjGQKFZvt98YCPFCBsujfxPWLmAcsSvQGnuMScSt6Mngu6hxPYu'
+
+  const [{ value: amountValue }] = useField(AMOUNT)
+  const [{ value: addressValue }] = useField(ADDRESS)
+
+  const { signature } = modalData
 
   return (
     <div className={styles.root}>
       <Divider style={{ margin: 0 }} />
-      <TextRow left={messages.amountWithdrawn} right={`-$${amount}`} />
+      <TextRow left={messages.amountWithdrawn} right={`-$${amountValue}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.newBalance}>
         <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
@@ -57,11 +65,11 @@ export const TransferSuccessful = () => {
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />
         <Text variant='body' size='medium' strength='default'>
-          {wallet}
+          {addressValue}
         </Text>
         <HarmonyPlainButton
           style={{ padding: 0 }}
-          onClick={() => openExplorer(signature)}
+          onClick={() => openExplorer(signature ?? '')}
           iconRight={IconExternalLink}
           variant={HarmonyPlainButtonType.SUBDUED}
           size={HarmonyPlainButtonSize.DEFAULT}

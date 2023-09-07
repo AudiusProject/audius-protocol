@@ -1,3 +1,6 @@
+import { useCallback } from 'react'
+
+import { WithdrawUSDCModalPages, useWithdrawUSDCModal } from '@audius/common'
 import {
   HarmonyButton,
   HarmonyButtonSize,
@@ -5,10 +8,16 @@ import {
   IconQuestionCircle,
   Switch
 } from '@audius/stems'
+import { useField, useFormikContext } from 'formik'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
+import {
+  ADDRESS,
+  AMOUNT,
+  CONFIRM
+} from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -29,18 +38,31 @@ const messages = {
 }
 
 export const ConfirmTransferDetails = () => {
-  const wallet = '72pepj'
-  const amount = '200'
+  const { submitForm } = useFormikContext()
+  const { setData } = useWithdrawUSDCModal()
+  const [{ value: amountValue }] = useField(AMOUNT)
+  const [{ value: addressValue }] = useField(ADDRESS)
+  const [confirmField, { error: confirmError }] = useField(CONFIRM)
+
+  const handleGoBack = useCallback(() => {
+    setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
+  }, [setData])
+
+  const handleContinue = useCallback(() => {
+    setData({ page: WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS })
+    submitForm()
+  }, [setData, submitForm])
+
   return (
     <div className={styles.root}>
       <div className={styles.amount}>
-        <TextRow left={messages.amountToWithdraw} right={`-$${amount}`} />
+        <TextRow left={messages.amountToWithdraw} right={`-$${amountValue}`} />
       </div>
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />
         <Text variant='body' size='medium' strength='default'>
-          {wallet}
+          {addressValue}
         </Text>
       </div>
       <div className={styles.details}>
@@ -51,7 +73,7 @@ export const ConfirmTransferDetails = () => {
           {messages.byProceeding}
         </Text>
         <div className={styles.acknowledge}>
-          <Switch checked={true} onChange={() => {}} />
+          <Switch {...confirmField} />
           <Text variant='body' size='small' strength='default'>
             {messages.haveCarefully}
           </Text>
@@ -63,11 +85,14 @@ export const ConfirmTransferDetails = () => {
           variant={HarmonyButtonType.SECONDARY}
           size={HarmonyButtonSize.DEFAULT}
           text={messages.goBack}
+          onClick={handleGoBack}
         />
         <HarmonyButton
           variant={HarmonyButtonType.SECONDARY}
           size={HarmonyButtonSize.DEFAULT}
           text={messages.confirm}
+          onClick={handleContinue}
+          disabled={confirmError}
         />
       </div>
       <Hint

@@ -9,6 +9,8 @@ export enum WithdrawUSDCModalPages {
 
 export type WithdrawUSDCModalState = {
   page: WithdrawUSDCModalPages
+  // Completed transaction signature
+  signature?: string
 }
 
 const withdrawUSDCModal = createModal<WithdrawUSDCModalState>({
