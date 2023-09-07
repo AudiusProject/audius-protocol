@@ -25,8 +25,7 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  // needs to be UPPERCASE because audius-docker-compose
-  const environment = process.env.ENVIRONMENT || "dev";
+  const environment = process.env.audius_discprov_env || "dev";
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
@@ -48,7 +47,6 @@ export const readConfig = (): Config => {
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
-
   return {
     environment: env.audius_discprov_env,
     rpcEndpoint: env.audius_web3_localhost,
