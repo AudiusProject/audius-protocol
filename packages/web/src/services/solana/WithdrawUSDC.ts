@@ -35,11 +35,9 @@ export const getFundDestinationTokenAccountFees = async (
  * SOL, which is deposited into the user's root solana account.
  */
 export const getSwapUSDCUserBankInstructions = async ({
-  destinationAddress,
   amount,
   feePayer
 }: {
-  destinationAddress: string
   amount: number
   feePayer: PublicKey
 }): Promise<TransactionInstruction[]> => {
@@ -66,6 +64,8 @@ export const getSwapUSDCUserBankInstructions = async ({
     outputTokenSymbol: 'SOL',
     inputAmount: usdcNeededAmount.uiAmount,
     slippage: USDC_SLIPPAGE,
+    swapMode: 'ExactIn' as SwapMode,
+    forceFetch: true,
     onlyDirectRoutes: true
   })
   const exchangeInfo = await JupiterSingleton.exchange({

@@ -181,12 +181,13 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
         if (feeAmount > existingBalance - rootSolanaAccountRent) {
           // Swap USDC for SOL to fund the destination associated token account
           console.debug(
-            `Withdraw USDC - not enough SOL to fund destination account, attempting to swap USDC for SOL. Fee amount: ${feeAmount}, existing balance: ${existingBalance}, rent for root solana account: ${rootSolanaAccountRent}`
+            `Withdraw USDC - not enough SOL to fund destination account, attempting to swap USDC for SOL. Fee amount: ${feeAmount}, existing balance: ${existingBalance}, rent for root solana account: ${rootSolanaAccountRent}, amount needed: ${
+              feeAmount - (existingBalance - rootSolanaAccountRent)
+            }`
           )
           const swapInstructions = yield* call(
             getSwapUSDCUserBankInstructions,
             {
-              destinationAddress,
               amount: feeAmount - existingBalance,
               feePayer: feePayerPubkey
             }
