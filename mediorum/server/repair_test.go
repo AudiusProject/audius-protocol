@@ -48,6 +48,12 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
+	// create a dummy upload for it?
+	ss.crud.Create(Upload{
+		ID:          "testing",
+		OrigFileCID: cid,
+	})
+
 	// force sweep (since blob changes SkipBroadcast)
 	for _, s := range testNetwork {
 		s.crud.ForceSweep()
@@ -92,7 +98,7 @@ func TestRepair(t *testing.T) {
 	}
 
 	// ----------------------
-	// now make one of the servers "loose" a file
+	// now make one of the servers "lose" a file
 	{
 		byHost := map[string]*MediorumServer{}
 		for _, s := range testNetwork {
@@ -100,7 +106,7 @@ func TestRepair(t *testing.T) {
 		}
 
 		rendezvousOrder := []*MediorumServer{}
-		preferred, _ := ss.rendezvous(cid)
+		preferred, _ := ss.rendezvousAllHosts(cid)
 		for _, h := range preferred {
 			rendezvousOrder = append(rendezvousOrder, byHost[h])
 		}

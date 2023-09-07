@@ -6,6 +6,9 @@ begin;
 -- terminate all active queries to avoid
 SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
 
+LOCK TABLE reposts IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE saves IN ACCESS EXCLUSIVE MODE;
+
 CREATE OR REPLACE FUNCTION log_message(message_text text)
 RETURNS void AS
 $$

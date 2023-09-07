@@ -6,7 +6,7 @@ import (
 )
 
 type Op struct {
-	ULID   string          `json:"ulid" gorm:"column:ulid;primaryKey"`
+	ULID   string          `json:"ulid" gorm:"column:ulid"`
 	Host   string          `json:"host"`
 	Action string          `json:"action"` // create, update, delete
 	Table  string          `json:"table"`

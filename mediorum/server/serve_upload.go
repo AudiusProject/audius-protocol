@@ -8,6 +8,7 @@ import (
 	"mediorum/cidutil"
 	"mime"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,6 +16,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
+	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -151,6 +154,10 @@ type UpdateUploadBody struct {
 }
 
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
+	if !ss.diskHasSpace() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
+	}
+
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
@@ -208,6 +215,10 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
+	if !ss.diskHasSpace() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
+	}
+
 	// Parse X-User-Wallet header
 	userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
 	userWallet := sql.NullString{Valid: false}
@@ -313,15 +324,6 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-// TODO: remove after confirming files didn't start go missing
-func (ss *MediorumServer) getBlobByJobIDAndVariantDeprecated(c echo.Context) error {
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-	c.SetParamNames("dirCid", "fileName")
-	c.SetParamValues(jobID, variant)
-	return ss.serveLegacyDirCid(c)
-}
-
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -387,18 +389,26 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 				// since cultur3stake nodes can't talk to each other
 				// they might not get Upload crudr updates from each other
-				// so if one cultur3stake does transocde... sibiling might not get the updates
+				// so if one cultur3stake does transcode... sibiling might not get the updates
 				// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
 				// TODO: crudr should gossip
-				if c.QueryParam("localOnly") != "true" {
+				if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); !localOnly {
 					healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-					for _, host := range healthyHosts {
-						if host == ss.Config.Self.Host {
-							continue
+					dest := ss.raceIsUrl2xx(*c.Request().URL, healthyHosts)
+					if dest != "" {
+						return c.Redirect(302, dest)
+					}
+
+					// try redirecting to unhealthy host as a last resort
+					unhealthyHosts := []string{}
+					for _, peer := range ss.Config.Peers {
+						if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
+							unhealthyHosts = append(unhealthyHosts, peer.Host)
 						}
-						if dest, is200 := ss.diskCheckUrl(*c.Request().URL, host); is200 {
-							return c.Redirect(302, dest)
-						}
+					}
+					dest = ss.raceIsUrl2xx(*c.Request().URL, unhealthyHosts)
+					if dest != "" {
+						return c.Redirect(302, dest)
 					}
 				}
 
@@ -415,4 +425,85 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
 	}
+}
+
+// raceIsUrl200 tries batches of 5 hosts concurrently to find the first healthy host that returns a 200 instead of sequentially waiting for a 2s timeout from each host.
+func (ss *MediorumServer) raceIsUrl2xx(url url.URL, hostsToRace []string) string {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	g, _ := errgroup.WithContext(ctx)
+	g.SetLimit(5)
+	destWith2xx := make(chan string, 1)
+
+	for _, host := range hostsToRace {
+		if host == ss.Config.Self.Host {
+			continue
+		}
+		h := host
+		g.Go(func() error {
+			if dest, is2xx := ss.isUrl2xx(url, h); is2xx {
+				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
+				select {
+				case destWith2xx <- dest:
+					cancel()
+				case <-ctx.Done():
+				}
+			}
+			return nil
+		})
+	}
+
+	go func() {
+		g.Wait()
+		close(destWith2xx)
+	}()
+
+	dest, ok := <-destWith2xx
+	if ok {
+		return dest
+	}
+	return ""
+}
+
+// isUrl200 checks if dest returns 2xx for hostString when not following redirects.
+func (ss *MediorumServer) isUrl2xx(dest url.URL, hostString string) (string, bool) {
+	noRedirectClient := &http.Client{
+		// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+		Timeout: 2 * time.Second,
+	}
+
+	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
+
+	hostUrl, err := url.Parse(hostString)
+	if err != nil {
+		return "", false
+	}
+
+	dest.Host = hostUrl.Host
+	dest.Scheme = hostUrl.Scheme
+	query := dest.Query()
+	query.Add("localOnly", "true")
+	dest.RawQuery = query.Encode()
+
+	req, err := http.NewRequest("GET", dest.String(), nil)
+	if err != nil {
+		logger.Error("invalid url", "err", err)
+		return "", false
+	}
+	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
+
+	resp, err := noRedirectClient.Do(req)
+	if err != nil {
+		logger.Error("request failed", "err", err)
+		return "", false
+	}
+	resp.Body.Close()
+	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
+		return dest.String(), true
+	}
+
+	return "", false
 }

@@ -1,6 +1,12 @@
 import dotenv from "dotenv";
-import { logger } from "./logger";
+import { logger } from "../logger";
 import { bool, cleanEnv, num, str } from "envalid";
+import {
+  AntiAbuseConfig,
+  allowListPublicKeys,
+  blockListPublicKeys,
+  newAntiAbuseConfig,
+} from "./antiAbuseConfig";
 
 export type Config = {
   environment: string;
@@ -19,12 +25,11 @@ export type Config = {
 
 // reads .env file based on environment
 const readDotEnv = () => {
-  // needs to be UPPERCASE because audius-docker-compose
-  const environment = process.env.ENVIRONMENT || "dev";
+  const environment = process.env.audius_discprov_env || "dev";
   const dotenvConfig = (filename: string) =>
     dotenv.config({ path: `${filename}.env` });
   logger.info(`running on ${environment} network`);
-  dotenvConfig(environment)
+  dotenvConfig(environment);
 };
 
 export const readConfig = (): Config => {
@@ -42,7 +47,6 @@ export const readConfig = (): Config => {
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
-
   return {
     environment: env.audius_discprov_env,
     rpcEndpoint: env.audius_web3_localhost,
@@ -56,39 +60,4 @@ export const readConfig = (): Config => {
     rateLimitAllowList: allowListPublicKeys(),
     rateLimitBlockList: blockListPublicKeys(),
   };
-};
-
-export type AntiAbuseConfig = {
-  antiAbuseOracleUrl: string;
-  allowRules: Set<number>;
-  blockRelayAbuseErrorCodes: Set<number>;
-  blockNotificationsErrorCodes: Set<number>;
-  blockEmailsErrorCodes: Set<number>;
-  useAao: boolean;
-};
-
-export const newAntiAbuseConfig = (
-  url: string,
-  useAao: boolean
-): AntiAbuseConfig => {
-  return {
-    antiAbuseOracleUrl: url,
-    allowRules: new Set([14, 17]),
-    blockRelayAbuseErrorCodes: new Set([0, 8, 10, 13, 15, 18]),
-    blockNotificationsErrorCodes: new Set([7, 9]),
-    blockEmailsErrorCodes: new Set([0, 1, 2, 3, 4, 8, 10, 13, 15]),
-    useAao,
-  };
-};
-
-const allowListPublicKeys = (): string[] => {
-  const allowlistPublicKeyFromRelay = process.env.allowlistPublicKeyFromRelay;
-  if (allowlistPublicKeyFromRelay === undefined) return [];
-  return allowlistPublicKeyFromRelay.split(",");
-};
-
-const blockListPublicKeys = (): string[] => {
-  const blocklistPublicKeyFromRelay = process.env.blocklistPublicKeyFromRelay;
-  if (blocklistPublicKeyFromRelay === undefined) return [];
-  return blocklistPublicKeyFromRelay.split(",");
 };

@@ -45,6 +45,8 @@ export function DiscoveryHealth() {
             {isContent && <th>Started</th>}
             {isContent && <th>Uploads</th>}
             {isContent && <th>Healthy Peers {'<'}2m</th>}
+            {isContent && <th>Reaper</th>}
+            {isContent && <th>PartitionOps</th>}
             <th>Registered Wallet</th>
           </tr>
         </thead>
@@ -68,6 +70,32 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   const health = data?.data
   const yourIp = ipCheck?.data
+
+  // can remove when legacy reaper complete on all nodes
+  const { data: reaperData, error: reaperError } = useSWR(sp.endpoint + '/internal/logs/reaper', fetcher);
+  const lastReaperLogLine = reaperData?.[reaperData.length - 2] || null;
+  const reaperDisplayMessage = reaperError
+    ? "error"
+    : lastReaperLogLine?.includes('End')
+      ? "COMPLETE"
+      : lastReaperLogLine?.includes('Start')
+        ? "STARTED"
+        : lastReaperLogLine?.includes('Sleeping')
+          ? "NOOP"
+          : lastReaperLogLine;
+  // end reaper
+
+  // can remove when partition ops complete on all nodes
+  const { data: pOpsData, error: pOpsError } = useSWR(sp.endpoint + '/internal/logs/partition-ops', fetcher);
+  const filteredPOpsData = Array.isArray(pOpsData) ? pOpsData.filter(line => typeof line === 'string' && line.trim() !== "") : [];
+  const lastPOpsLogLine = filteredPOpsData[filteredPOpsData.length - 1] || null;
+  const pOpsDisplayMessage = pOpsError
+    ? "error"
+    : lastPOpsLogLine?.includes('finished')
+      ? "COMPLETE"
+      : lastPOpsLogLine?.includes('start')
+        ? "STARTED" : lastPOpsLogLine;
+  // end partition ops
 
   if (!health || !yourIp)
     return (
@@ -199,6 +227,20 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
         </td>
       )}
+      {isContent &&
+        <td>
+          <a href={sp.endpoint + '/internal/logs/reaper'} target="_blank">
+            {reaperDisplayMessage}
+          </a>
+        </td>
+      }
+      {isContent &&
+        <td>
+          <a href={sp.endpoint + '/internal/logs/partition-ops'} target="_blank">
+            {pOpsDisplayMessage}
+          </a>
+        </td>
+      }
       <td>
         <pre>{sp.delegateOwnerWallet}</pre>
       </td>

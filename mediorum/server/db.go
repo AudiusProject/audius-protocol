@@ -13,12 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type Blob struct {
-	Key       string    `json:"key" gorm:"primaryKey;not null;default:null"`
-	Host      string    `json:"host" gorm:"primaryKey;not null;default:null"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
@@ -63,21 +57,22 @@ func dbMustDial(dbPath string) *gorm.DB {
 	return db
 }
 
-func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket) {
+func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Blob{}, &Upload{})
+	err := crud.DB.AutoMigrate(&Upload{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Blob{}, &Upload{})
+	crud.RegisterModels(&Upload{})
 
 	sqlDb, _ := crud.DB.DB()
+	gormDB := crud.DB
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, bucket)
+	ddl.Migrate(sqlDb, gormDB, bucket, myHost)
 
 	slog.Info("db: migrate done")
 

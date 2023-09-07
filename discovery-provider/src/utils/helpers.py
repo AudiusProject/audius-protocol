@@ -12,6 +12,7 @@ from json.encoder import JSONEncoder
 from typing import List, Optional, TypedDict, cast
 
 import base58
+import psutil
 import requests
 from flask import g, request
 from hashids import Hashids
@@ -157,6 +158,23 @@ def tuple_to_model_dictionary(t, model):
     return dict(zip(keys, t))
 
 
+class CustomJsonFormatter(JsonFormatter):
+    def format(self, record):
+        if os.getenv("audius_discprov_env") == "stage":
+            cpu_percent = psutil.cpu_percent(interval=None)
+
+            # Get memory usage
+            process = psutil.Process()
+            memory_info = process.memory_info()
+            rss = memory_info.rss / (1024**2)  # Resident Set Size in MB
+
+            # Include CPU and memory usage in log record
+            record.cpu = cpu_percent
+            record.memory = rss
+
+        return super().format(record)
+
+
 log_format = {
     "level": "levelname",
     "msg": "message",
@@ -164,7 +182,7 @@ log_format = {
     "service": os.getenv("audius_service", "default"),
 }
 
-formatter = JsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
+formatter = CustomJsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
 
 
 def reset_logging():
