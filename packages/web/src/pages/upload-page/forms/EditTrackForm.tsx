@@ -29,6 +29,7 @@ import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
+import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
@@ -114,6 +115,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const trackIdx = values.trackMetadatasIndex
+  const { playingPreviewIndex, togglePreview } =
+    useContext(UploadPreviewContext)
+  const isPreviewPlaying = playingPreviewIndex === trackIdx
 
   return (
     <Form>
@@ -136,7 +141,12 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               <AccessAndSaleField isUpload />
               <AttributionField />
             </div>
-            <PreviewButton playing={false} onClick={() => {}} />
+            <PreviewButton
+              playing={isPreviewPlaying}
+              onClick={() => {
+                togglePreview(values.tracks[trackIdx].preview, trackIdx)
+              }}
+            />
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>

@@ -20,6 +20,7 @@ import { Text } from 'components/typography'
 import { UploadFormScrollContext } from '../UploadPageNew'
 import { useIndexedField } from '../hooks'
 import { SingleTrackEditValues, TrackEditFormValues } from '../types'
+import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 import styles from './MultiTrackSidebar.module.css'
 
@@ -89,6 +90,7 @@ const TrackRow = (props: TrackRowProps) => {
   const scrollToTop = useContext(UploadFormScrollContext)
   const { values, setValues, errors, submitCount } =
     useFormikContext<TrackEditFormValues>()
+  const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
   const [{ value: title }] = useIndexedField<SingleTrackEditValues['title']>(
     'trackMetadatas',
     index,
@@ -114,6 +116,8 @@ const TrackRow = (props: TrackRowProps) => {
 
   const handleRemoveTrack = useCallback(
     (e: MouseEvent<HTMLDivElement>, index: number) => {
+      if (index === playingPreviewIndex) stopPreview()
+
       e.stopPropagation()
       const newTrackMetadatas = [...values.trackMetadatas]
       const newTracks = [...values.tracks]
@@ -129,7 +133,14 @@ const TrackRow = (props: TrackRowProps) => {
       })
       scrollToTop()
     },
-    [scrollToTop, selectedIndex, setValues, values]
+    [
+      playingPreviewIndex,
+      scrollToTop,
+      selectedIndex,
+      setValues,
+      stopPreview,
+      values
+    ]
   )
 
   const isTitleMissing = isEmpty(title)

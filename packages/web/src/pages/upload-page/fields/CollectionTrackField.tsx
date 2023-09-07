@@ -1,9 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
 import {
   HarmonyPlainButton,
   HarmonyPlainButtonType,
   IconDrag,
+  IconPause,
   IconPlay,
   IconTrash
 } from '@audius/stems'
@@ -19,6 +20,7 @@ import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { TrackNameField } from '../fields/TrackNameField'
 import { CollectionTrackForUpload } from '../types'
+import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 
 import styles from './CollectionTrackField.module.css'
 
@@ -36,6 +38,8 @@ type CollectionTrackFieldProps = {
 
 export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   const { disableDelete = false, index, remove } = props
+  const { playingPreviewIndex, togglePreview, stopPreview } =
+    useContext(UploadPreviewContext)
   const [{ value: track }] = useField<CollectionTrackForUpload>(
     `tracks.${index}`
   )
@@ -47,6 +51,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   const [{ value }] = useField('trackDetails')
 
   const { override } = track
+  const isPreviewPlaying = playingPreviewIndex === index
 
   useEffect(() => {
     if (override) {
@@ -58,8 +63,9 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   }, [override])
 
   const handleRemove = useCallback(() => {
+    if (isPreviewPlaying) stopPreview()
     remove(index)
-  }, [remove, index])
+  }, [isPreviewPlaying, stopPreview, remove, index])
 
   return (
     <Tile className={styles.root} key={track.metadata.track_id} elevation='mid'>
@@ -67,9 +73,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         <span className={styles.iconDrag}>
           <Icon icon={IconDrag} size='large' />
         </span>
-        <Text size='small' className={styles.trackindex}>
-          {index + 1}
-        </Text>
+        <Text size='small'>{index + 1}</Text>
         <TrackNameField name={`tracks.${index}.metadata.title`} />
       </div>
       {override ? (
@@ -90,7 +94,10 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
           <HarmonyPlainButton
             variant={HarmonyPlainButtonType.SUBDUED}
             text={messages.preview}
-            iconLeft={IconPlay}
+            iconLeft={isPreviewPlaying ? IconPause : IconPlay}
+            onClick={() => {
+              togglePreview(track.preview, index)
+            }}
           />
           <HarmonyPlainButton
             variant={HarmonyPlainButtonType.SUBDUED}
