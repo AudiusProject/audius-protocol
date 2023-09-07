@@ -199,8 +199,10 @@ mobile-release-android:
       type: string
   steps:
     - run:
-        name: Symlink react-native binary
-        command: ln -s $PWD/node_modules/.bin/react-native $PWD/apps/mobile/node_modules/.bin/react-native
+        name: Symlink react-native
+        command: |
+          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
     - run:
         name: release android
         command: |
