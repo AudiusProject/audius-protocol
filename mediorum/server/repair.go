@@ -94,12 +94,6 @@ func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 			// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
 			myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
 
-			// fast path if we're not in cleanup mode:
-			// only worry about blobs that we _should_ have
-			if !cleanupMode && !isMine && !isMineHealthy {
-				continue
-			}
-
 			key := cidutil.ShardCID(cid)
 			alreadyHave := true
 			attrs, err := ss.bucket.Attributes(ctx, key)
