@@ -20,7 +20,11 @@ type diskStatus struct {
 }
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
-	ss.updateDiskAndDbStatus()
+	// retry a few times to get initial status on startup
+	for i := 0; i < 3; i++ {
+		ss.updateDiskAndDbStatus()
+		time.Sleep(time.Minute)
+	}
 	ticker := time.NewTicker(5 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
@@ -133,12 +137,12 @@ func getDiskStatus(path string) (total uint64, free uint64, err error) {
 }
 
 func getDatabaseSize(p *pgxpool.Pool) (size uint64, errStr string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := p.QueryRow(ctx, `SELECT pg_database_size(current_database())`).Scan(&size); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
-			errStr = "timeout getting database size within 1s: " + err.Error()
+			errStr = "timeout getting database size within 10s: " + err.Error()
 		} else {
 			errStr = "error getting database size: " + err.Error()
 		}

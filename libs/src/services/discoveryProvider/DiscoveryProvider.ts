@@ -1086,7 +1086,7 @@ export class DiscoveryProvider {
       method: 'post',
       data
     }
-    return await this._makeRequest(req, true, 3, true)
+    return await this._makeRequest(req, true, 0, true)
   }
 
   /**
