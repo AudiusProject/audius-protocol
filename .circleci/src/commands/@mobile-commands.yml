@@ -49,8 +49,8 @@ mobile-prepare-ios:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/.bin/react-native $PWD/app/mobile/node_modules/.bin/react-native
+          ln -s $PWD/node_modules/react-native $PWD/app/mobile/node_modules/react-native
     - run:
         name: install pods
         command: |
