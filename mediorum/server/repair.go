@@ -56,22 +56,33 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	// scroll uploads and repair CIDs
 	// (later this can clean up "derivative" images if we make image resizing dynamic)
 	for uploadCursor := ""; ; {
+		// abort if disk is filling up
+		if !ss.diskHasSpace() {
+			break
+		}
+
 		var uploads []Upload
-		ss.crud.DB.Where("id > ?", uploadCursor).Limit(5000).Find(&uploads)
+		ss.crud.DB.Where("id > ?", uploadCursor).Order("id").Limit(5000).Find(&uploads)
 		if len(uploads) == 0 {
 			break
 		}
 		for _, u := range uploads {
 			uploadCursor = u.ID
 			ss.repairCid(u.OrigFileCID, cleanupMode)
-			for key := range u.TranscodeResults {
-				ss.repairCid(key, cleanupMode)
+			for _, cid := range u.TranscodeResults {
+				ss.repairCid(cid, cleanupMode)
 			}
 		}
+
 	}
 
 	// scroll older qm_cids table and repair
 	for cidCursor := ""; ; {
+		// abort if disk is filling up
+		if !ss.diskHasSpace() {
+			break
+		}
+
 		var cidBatch []string
 		err := pgxscan.Select(ctx, ss.pgPool, &cidBatch,
 			`select key
