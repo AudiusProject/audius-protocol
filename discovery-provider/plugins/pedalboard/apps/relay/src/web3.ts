@@ -1,6 +1,10 @@
 import { ethers } from "ethers";
 import { Config } from "./config/config";
 import { logger } from "./logger";
+import Web3 from "web3";
+
+// temp use web3 to confirm so it matches libs 
+export let web3js: Web3
 
 export type Web3Result = {
   web3: ethers.providers.JsonRpcProvider;
@@ -15,6 +19,7 @@ export const connectWeb3 = async (config: Config): Promise<Web3Result> => {
     try {
       const web3 = new ethers.providers.JsonRpcProvider(rpcEndpoint);
       const { chainId } = await web3.getNetwork();
+      web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpoint))
       return { web3, chainId: chainId.toString() };
     } catch (e) {
       attempts -= 1;
@@ -27,5 +32,25 @@ export const connectWeb3 = async (config: Config): Promise<Web3Result> => {
   console.warn(`falling back to ${rpcEndpointFallback}`);
   const web3 = new ethers.providers.JsonRpcProvider(rpcEndpointFallback);
   const { chainId } = await web3.getNetwork();
+  web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpoint))
   return { web3, chainId: chainId.toString() };
+};
+
+export const confirm = async (
+  txHash: string,
+  retries = 12
+): Promise<any> => { // returns any because tx receipt is not exported
+  let tries = 0;
+  while (tries !== retries) {
+    const receipt = await web3js.eth.getTransactionReceipt(txHash);
+    logger.info({ receipt })
+    if (receipt !== null && receipt.status) return receipt;
+    await delay(500);
+    tries += 1;
+  }
+  throw new Error(`transaction ${txHash} could not be confirmed`);
+};
+
+const delay = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };

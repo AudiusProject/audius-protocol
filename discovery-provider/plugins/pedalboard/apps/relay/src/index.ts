@@ -1,16 +1,10 @@
-import { Config, readConfig } from "./config/config";
-import { ethers, providers } from "ethers";
+import { readConfig } from "./config/config";
+import { providers } from "ethers";
 import { WalletManager } from "./walletManager";
 import { logger } from "./logger";
 import { initializeDiscoveryDb } from "basekit/src";
 import { connectWeb3 } from "./web3";
 import { app } from "./server";
-
-export type SharedData = {
-  config: Config;
-  web3: ethers.providers.JsonRpcProvider;
-  wallets: WalletManager;
-};
 
 export const config = readConfig();
 

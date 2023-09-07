@@ -11,7 +11,12 @@ export const validator = async (
   response: Response,
   next: NextFunction
 ) => {
-  const body = JSON.parse(request.body) as RelayRequest;
+  let body: RelayRequest
+  if (request.is('json')) {
+    body = request.body
+  } else {
+    body = JSON.parse(request.body)
+  }
 
   logger.info({ body }, "validating request");
 
