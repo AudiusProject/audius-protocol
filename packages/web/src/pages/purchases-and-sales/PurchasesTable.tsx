@@ -172,7 +172,7 @@ export const PurchasesTable = ({
       onSort={onSort}
       fetchMore={fetchMore}
       isVirtualized={isVirtualized}
-      totalRowCount={totalRowCount}
+      totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
     />

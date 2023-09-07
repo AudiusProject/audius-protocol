@@ -28,7 +28,8 @@ import {
   IconMessage,
   SegmentedControl,
   IconDesktop,
-  IconRobot
+  IconRobot,
+  IconCart
 } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
@@ -46,7 +47,7 @@ import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
 import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { useSelector } from 'utils/reducer'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+import { PRIVACY_POLICY, PURCHASES_PAGE, TERMS_OF_SERVICE } from 'utils/route'
 
 import packageInfo from '../../../../../package.json'
 
@@ -90,6 +91,7 @@ const messages = {
   changePasswordCardTitle: 'Change Password',
   verificationCardTitle: 'Verification',
   desktopAppCardTitle: 'Download the Desktop App',
+  purchasesCardTitle: 'Your Purchases',
 
   aiGeneratedCardDescription:
     'Opt in to allow AI models to be trained on your likeness, and to let users credit you in their AI generated works.',
@@ -105,6 +107,7 @@ const messages = {
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   desktopAppCardDescription:
     'For the best experience, we reccomend downloading the Audius Desktop App.',
+  purchasesCardDescription: 'Review your purchased content',
 
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
@@ -112,7 +115,8 @@ const messages = {
   notificationsButtonText: 'Configure Notifications',
   accountRecoveryButtonText: 'Resend Email',
   changePasswordButtonText: 'Change Password',
-  desktopAppButtonText: 'Get The App'
+  desktopAppButtonText: 'Get The App',
+  purchasesButtonText: 'View Purchase History'
 }
 
 export type SettingsPageProps = {
@@ -254,6 +258,11 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
 
+  const handleViewPurchasesClicked = useCallback(
+    () => goToRoute(PURCHASES_PAGE),
+    [goToRoute]
+  )
+
   const appearanceOptions = useMemo(() => {
     const options = [
       {
@@ -276,6 +285,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
   }, [showMatrix])
 
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+  const { isEnabled: isUSDCEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
   const allowAiAttribution = useSelector(getAllowAiAttribution)
   const { isEnabled: isAiAttributionEnabled } = useFlag(
     FeatureFlags.AI_ATTRIBUTION
@@ -287,9 +297,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const isDownloadDesktopEnabled = !isMobile() && !isElectron()
 
   const hasOddCardCount = Boolean(
-    [isChatEnabled, isAiAttributionEnabled, areDeveloperAppsEnabled].filter(
-      removeNullable
-    ).length % 2
+    [
+      isChatEnabled,
+      isUSDCEnabled,
+      isAiAttributionEnabled,
+      areDeveloperAppsEnabled
+    ].filter(removeNullable).length % 2
   )
 
   const header = <Header primary={messages.pageTitle} />
@@ -346,6 +359,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
             text={messages.notificationsButtonText}
           />
         </SettingsCard>
+        {isUSDCEnabled ? (
+          <SettingsCard
+            icon={<IconCart />}
+            title={messages.purchasesCardTitle}
+            description={messages.purchasesCardDescription}
+          >
+            <Button
+              onClick={handleViewPurchasesClicked}
+              className={styles.cardButton}
+              textClassName={styles.settingButtonText}
+              type={ButtonType.COMMON_ALT}
+              text={messages.purchasesButtonText}
+            />
+          </SettingsCard>
+        ) : null}
         <SettingsCard
           icon={<IconMail />}
           title={messages.accountRecoveryCardTitle}

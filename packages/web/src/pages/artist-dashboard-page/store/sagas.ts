@@ -11,6 +11,7 @@ import {
 } from '@audius/common'
 import { each } from 'lodash'
 import moment from 'moment'
+import { EventChannel } from 'redux-saga'
 import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
@@ -167,11 +168,11 @@ function* pollForBalance() {
   const pollingFreq = remoteConfigInstance.getRemoteVar(
     IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS
   )
-  const chan = yield* call(doEvery, pollingFreq || 1000, function* () {
+  const chan = (yield* call(doEvery, pollingFreq || 1000, function* () {
     yield* put(getBalance())
-  })
+  })) as unknown as EventChannel<any>
   yield* take(dashboardActions.reset.type)
-  ;(yield* chan).close()
+  chan.close()
 }
 
 function* watchFetchDashboardTracks() {

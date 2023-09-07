@@ -100,7 +100,9 @@ const RenderPurchasesPage = () => {
     { userId, sortMethod, sortDirection },
     { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
   )
-  const { status: countStatus, data: count } = useGetPurchasesCount({ userId })
+  const { status: countStatus, data: count } = useGetPurchasesCount({
+    userId
+  })
 
   const status = combineStatuses([dataStatus, countStatus])
 
