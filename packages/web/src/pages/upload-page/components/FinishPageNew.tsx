@@ -4,7 +4,7 @@ import {
   accountSelectors,
   CommonState,
   imageBlank as placeholderArt,
-  Progress,
+  ProgressState,
   ProgressStatus,
   uploadSelectors
 } from '@audius/common'
@@ -17,7 +17,6 @@ import {
   ProgressBar
 } from '@audius/stems'
 import { push } from 'connected-react-router'
-import { floor } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -32,13 +31,14 @@ import styles from './FinishPage.module.css'
 import { ShareBannerNew } from './ShareBannerNew'
 
 const { getAccountUser } = accountSelectors
-const { getUploadPercentage } = uploadSelectors
+const { getCombinedUploadPercentage } = uploadSelectors
 
 const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
-  visitProfile: 'Visit Your Profile'
+  visitProfile: 'Visit Your Profile',
+  finishingUpload: 'Finializing Upload'
 }
 
 const ProgressIndicator = (props: { status?: ProgressStatus }) => {
@@ -61,7 +61,7 @@ type UploadTrackItemProps = {
   index: number
   displayIndex?: boolean
   track: TrackForUpload
-  trackProgress?: Progress
+  trackProgress?: ProgressState
   hasError: boolean
 }
 
@@ -76,9 +76,11 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
         status={
           hasError
             ? ProgressStatus.ERROR
-            : trackProgress?.loaded === trackProgress?.total
+            : trackProgress?.audio?.loaded &&
+              trackProgress?.audio?.total &&
+              trackProgress.audio.loaded >= trackProgress.audio.total
             ? ProgressStatus.COMPLETE
-            : trackProgress?.status
+            : trackProgress?.audio?.status
         }
       />
       {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
@@ -102,7 +104,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const accountUser = useSelector(getAccountUser)
   const upload = useSelector((state: CommonState) => state.upload)
   const user = useSelector(getAccountUser)
-  const fullUploadPercent = useSelector(getUploadPercentage)
+  const fullUploadPercent = useSelector(getCombinedUploadPercentage)
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
@@ -110,7 +112,11 @@ export const FinishPageNew = (props: FinishPageProps) => {
     return (
       upload.success &&
       upload.uploadProgress.reduce((acc, progress) => {
-        return acc && progress.status === ProgressStatus.COMPLETE
+        return (
+          acc &&
+          progress.art.status === ProgressStatus.COMPLETE &&
+          progress.audio.status === ProgressStatus.COMPLETE
+        )
       }, true)
     )
   }, [upload])
@@ -139,8 +145,8 @@ export const FinishPageNew = (props: FinishPageProps) => {
             <div className={styles.headerProgressInfo}>
               <Text variant='label' size='small'>
                 {fullUploadPercent === 100 && !uploadComplete
-                  ? '99%'
-                  : `${floor(fullUploadPercent)}%`}
+                  ? messages.finishingUpload
+                  : `${fullUploadPercent}%`}
               </Text>
               <ProgressIndicator
                 status={

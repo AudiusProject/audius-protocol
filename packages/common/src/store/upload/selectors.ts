@@ -1,3 +1,5 @@
+import { round } from 'lodash'
+
 import { CommonState } from '../commonStore'
 
 export const getStems = (state: CommonState) => state.upload.stems
@@ -8,40 +10,57 @@ export const getTracks = (state: CommonState) => state.upload.tracks
 export const getIsUploading = (state: CommonState) => state.upload.uploading
 export const getShouldReset = (state: CommonState) => state.upload.shouldReset
 
+// Should sum to 1
 const UPLOAD_WEIGHT = 0.8
 const TRANSCODE_WEIGHT = 1 - UPLOAD_WEIGHT
 
-export const getUploadPercentage = (state: CommonState) => {
+// Should sum to 1
+const ART_WEIGHT = 0.1
+const AUDIO_WEIGHT = 0.9
+
+const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)
-  if (uploadProgress === null) return 0
+  if (uploadProgress == null) return 0
 
-  // Upload progress
-  const allLoaded = uploadProgress.reduce(
-    (acc, progress) => acc + (progress.loaded ?? 0),
+  const filteredProgress = uploadProgress.filter((progress) => key in progress)
+  if (filteredProgress.length === 0) return 0
+
+  const loaded = filteredProgress.reduce(
+    (acc, progress) => acc + (progress[key].loaded ?? 0),
     0
   )
-
-  const allTotal = uploadProgress.reduce(
-    (acc, progress) => acc + (progress.total ?? 0),
+  const total = filteredProgress.reduce(
+    (acc, progress) => acc + (progress[key].total ?? 0),
     0
   )
-  const overallUpload = allTotal > 0 ? allLoaded / allTotal : 0
+  const fileUploadProgress = total > 0 ? loaded / total : 0
 
-  // Transcode progress
-  const transcodeProgress = uploadProgress.filter(
-    (progress) => progress.transcode !== undefined
-  )
-  const overallTranscode = transcodeProgress.length
-    ? transcodeProgress.reduce(
-        (acc, progress) => acc + (progress.transcode ?? 0),
-        0
-      ) / transcodeProgress.length
-    : 0
+  const transcodeProgress =
+    filteredProgress.reduce(
+      (acc, progress) => acc + (progress[key].transcode ?? 0),
+      0
+    ) / filteredProgress.length
 
   const overallProgress =
-    100 * (UPLOAD_WEIGHT * overallUpload + TRANSCODE_WEIGHT * overallTranscode)
-  console.log(uploadProgress)
-  console.log({ overallUpload, overallTranscode, overallProgress })
+    key === 'art'
+      ? fileUploadProgress
+      : UPLOAD_WEIGHT * fileUploadProgress +
+        TRANSCODE_WEIGHT * transcodeProgress
 
+  console.log({
+    key,
+    upload: `${round(fileUploadProgress * 100)}%`,
+    transcode: `${round(transcodeProgress * 100)}%`,
+    overall: `${round(overallProgress * 100)}%`
+  })
   return overallProgress
+}
+
+export const getCombinedUploadPercentage = (state: CommonState) => {
+  const artProgress = getKeyUploadProgress(state, 'art')
+  const audioProgress = getKeyUploadProgress(state, 'audio')
+  const percent = round(
+    100 * (ART_WEIGHT * artProgress + AUDIO_WEIGHT * audioProgress)
+  )
+  return percent
 }

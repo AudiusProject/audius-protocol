@@ -37,9 +37,18 @@ const initialState: UploadState = {
 }
 
 const initialUploadState = {
-  status: ProgressStatus.UPLOADING,
-  loaded: 0,
-  total: 0
+  art: {
+    status: ProgressStatus.UPLOADING,
+    loaded: 0,
+    total: 0,
+    transcode: 0
+  },
+  audio: {
+    status: ProgressStatus.UPLOADING,
+    loaded: 0,
+    total: 0,
+    transcode: 0
+  }
 }
 
 const actionsMap = {
@@ -101,19 +110,20 @@ const actionsMap = {
     action: ReturnType<typeof updateProgress>
   ) {
     const newState = { ...state }
+    const key = action.key
     newState.uploadProgress = [...(state.uploadProgress ?? [])]
-    newState.uploadProgress[action.index].status = action.progress.status
+    newState.uploadProgress[action.index][key].status = action.progress.status
     if (action.progress.loaded && action.progress.total) {
-      newState.uploadProgress[action.index].loaded = Math.max(
+      newState.uploadProgress[action.index][key].loaded = Math.max(
         action.progress.loaded,
-        newState.uploadProgress[action.index].loaded ?? 0
+        newState.uploadProgress[action.index][key].loaded ?? 0
       )
-      newState.uploadProgress[action.index].total = action.progress.total
+      newState.uploadProgress[action.index][key].total = action.progress.total
     }
     if (action.progress.transcode) {
-      newState.uploadProgress[action.index].transcode = Math.max(
+      newState.uploadProgress[action.index][key].transcode = Math.max(
         action.progress.transcode,
-        newState.uploadProgress[action.index].transcode ?? 0
+        newState.uploadProgress[action.index][key].transcode ?? 0
       )
     }
     return newState

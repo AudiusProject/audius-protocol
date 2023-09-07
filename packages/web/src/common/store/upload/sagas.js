@@ -155,18 +155,20 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     // the loaded value may actually retreat. We don't want to show
     // this to the user, so only feed increasing vals of loaded into
     // progressChan
-    let maxLoaded = 0
+    const maxLoaded = { art: 0, audio: 0 }
 
     return (progress) => {
-      const { upload, transcode } = progress
+      const key =
+        'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
+      if (!key) return
+      const { upload, transcode } = progress[key]
       const loaded = upload?.loaded
       const total = upload?.total
-      console.log(`uploadProgress`, upload, transcode)
-      maxLoaded = loaded ? Math.max(maxLoaded, loaded) : undefined
+      maxLoaded[key] = loaded ? Math.max(maxLoaded[key], loaded) : undefined
       try {
         progressChan.put(
-          uploadActions.updateProgress(index, {
-            loaded: maxLoaded,
+          uploadActions.updateProgress(index, key, {
+            loaded: maxLoaded[key],
             total,
             transcode: transcode?.decimal,
             status:
@@ -253,7 +255,13 @@ function* uploadWorker(requestChan, respChan, progressChan) {
       if (updateProgress) {
         yield put(
           progressChan,
-          uploadActions.updateProgress(index, {
+          uploadActions.updateProgress(index, 'art', {
+            status: ProgressStatus.COMPLETE
+          })
+        )
+        yield put(
+          progressChan,
+          uploadActions.updateProgress(index, 'audio', {
             status: ProgressStatus.COMPLETE
           })
         )
@@ -453,7 +461,16 @@ export function* handleUploads({
       const trackFile = tracks[i].track.file
       yield put(
         progressChan,
-        uploadActions.updateProgress(i, {
+        uploadActions.updateProgress(i, 'art', {
+          loaded: 0,
+          total: trackFile.size,
+          status: ProgressStatus.UPLOADING
+        })
+      )
+      yield put(
+        progressChan,
+
+        uploadActions.updateProgress(i, 'audio', {
           loaded: 0,
           total: trackFile.size,
           status: ProgressStatus.UPLOADING
@@ -635,14 +652,22 @@ export function* handleUploads({
         // Update all the progress
         if (!isStem) {
           yield all(
-            range(tracks.length).map((i) =>
-              put(
-                progressChan,
-                uploadActions.updateProgress(i, {
-                  status: ProgressStatus.COMPLETE
-                })
-              )
-            )
+            range(tracks.length).flatMap((i) => {
+              return [
+                put(
+                  progressChan,
+                  uploadActions.updateProgress(i, 'art', {
+                    status: ProgressStatus.COMPLETE
+                  })
+                ),
+                put(
+                  progressChan,
+                  uploadActions.updateProgress(i, 'audio', {
+                    status: ProgressStatus.COMPLETE
+                  })
+                )
+              ]
+            })
           )
         }
         returnVal = { trackIds }
@@ -920,13 +945,14 @@ function* uploadSingleTrack(track) {
   yield put(recordEvent)
 
   const onProgress = (progress) => {
-    const { upload, transcode } = progress
+    const key = 'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
+    if (!key) return
+    const { upload, transcode } = progress[key]
     const loaded = upload?.loaded
     const total = upload?.total
-    console.log(`uploadProgress`, upload, transcode)
 
     progressChan.put(
-      uploadActions.updateProgress(0, {
+      uploadActions.updateProgress(0, key, {
         loaded,
         total,
         transcode: transcode?.decimal,
@@ -1031,7 +1057,14 @@ function* uploadSingleTrack(track) {
 
   // Finish up the upload
   progressChan.put(
-    uploadActions.updateProgress(0, { status: ProgressStatus.COMPLETE })
+    uploadActions.updateProgress(0, 'art', {
+      status: ProgressStatus.COMPLETE
+    })
+  )
+  progressChan.put(
+    uploadActions.updateProgress(0, 'audio', {
+      status: ProgressStatus.COMPLETE
+    })
   )
   yield put(
     uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [

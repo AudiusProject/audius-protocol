@@ -52,13 +52,18 @@ export type Progress = {
   transcode?: number
 }
 
+export type ProgressState = {
+  art: Progress
+  audio: Progress
+}
+
 export interface UploadState {
   openMultiTrackNotification: boolean
   tracks: Nullable<UploadTrack[]>
   metadata: Nullable<ExtendedCollectionMetadata>
   uploadType: Nullable<UploadType>
   uploading: boolean
-  uploadProgress: Nullable<Progress[]>
+  uploadProgress: Nullable<ProgressState[]>
   success: boolean
   error: boolean
   shouldReset: boolean
