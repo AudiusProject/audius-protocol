@@ -368,6 +368,7 @@ def index_purchase(
         transaction_created_at=timestamp,
         change=Decimal(balance_changes[sender_account]["change"]),
         balance=Decimal(balance_changes[sender_account]["post_balance"]),
+        tx_metadata=str(receiver_user_id),
     )
     logger.debug(
         f"index_user_bank.py | Creating usdc_tx_history send tx for purchase {usdc_tx_sent}"
@@ -382,6 +383,7 @@ def index_purchase(
         transaction_created_at=timestamp,
         change=Decimal(balance_changes[receiver_account]["change"]),
         balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+        tx_metadata=str(sender_user_id),
     )
     session.add(usdc_tx_received)
     logger.debug(
@@ -430,6 +432,7 @@ def validate_and_index_purchase(
             transaction_created_at=timestamp,
             change=Decimal(balance_changes[sender_account]["change"]),
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
+            tx_metadata=receiver_account,
         )
         logger.debug(f"index_user_bank.py | Creating transfer sent tx {usdc_tx_sent}")
         session.add(usdc_tx_sent)
@@ -442,6 +445,7 @@ def validate_and_index_purchase(
             transaction_created_at=timestamp,
             change=Decimal(balance_changes[receiver_account]["change"]),
             balance=Decimal(balance_changes[receiver_account]["post_balance"]),
+            tx_metadata=sender_account,
         )
         session.add(usdc_tx_received)
         logger.debug(
@@ -603,9 +607,8 @@ def process_transfer_instruction(
             transaction_created_at=timestamp,
             change=Decimal(balance_changes[sender_account]["change"]),
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
+            tx_metadata=str(receiver_account),
         )
-        if isinstance(transfer_sent, AudioTransactionsHistory):
-            transfer_sent.tx_metadata = receiver_account
         logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
     # If there are two userbanks to update, it was a transfer from user to user
     else:
