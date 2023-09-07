@@ -5,7 +5,10 @@ import type {
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
-import { formatPrice, notificationsSelectors } from '@audius/common'
+import {
+  formatUSDCWeiToUSDString,
+  notificationsSelectors
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -63,7 +66,7 @@ export const USDCPurchaseSellerNotification = (
       <NotificationText>
         {messages.congrats} <UserNameLink user={buyerUser} />{' '}
         {messages.justBoughtYourTrack} <EntityLink entity={track} /> for $
-        {formatPrice(amount)}
+        {formatUSDCWeiToUSDString(amount)}
         {messages.exclamation}
       </NotificationText>
     </NotificationTile>

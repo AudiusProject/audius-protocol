@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Entity,
-  formatPrice,
+  formatUSDCWeiToUSDString,
   notificationsSelectors,
   Nullable,
   TrackEntity,
@@ -65,7 +65,7 @@ export const USDCPurchaseSellerNotification = (
         <UserNameLink user={buyerUser} notification={notification} />{' '}
         {messages.justBoughtYourTrack}{' '}
         <EntityLink entity={track} entityType={Entity.Track} /> for $
-        {formatPrice(amount)}
+        {formatUSDCWeiToUSDString(amount)}
         {messages.exclamation}
       </NotificationBody>
     </NotificationTile>

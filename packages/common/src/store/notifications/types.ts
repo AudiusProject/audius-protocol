@@ -7,7 +7,7 @@ import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import { Track } from 'models/Track'
 import { User } from 'models/User'
-import { StringWei } from 'models/Wallet'
+import { StringUSDC, StringWei } from 'models/Wallet'
 import { Nullable } from 'utils'
 
 export enum NotificationType {
@@ -247,7 +247,7 @@ export type DiscoveryUSDCPurchaseNotificationAction = {
   content_id: string
   seller_user_id: string
   buyer_user_id: string
-  amount: number
+  amount: StringUSDC
 }
 
 export type TrendingRange = 'week' | 'month' | 'year'
@@ -891,7 +891,7 @@ export type USDCPurchaseSellerNotification = BaseNotification & {
   entityId: ID
   userIds: ID[]
   entityType: string
-  amount: number
+  amount: StringUSDC
 }
 
 export type USDCPurchaseBuyerNotification = BaseNotification & {

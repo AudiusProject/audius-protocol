@@ -41,6 +41,7 @@ import {
   PlaylistTrackId,
   ProfilePictureSizes,
   SquareSizes,
+  StringUSDC,
   StringWei,
   Track,
   TrackMetadata,
@@ -2183,7 +2184,7 @@ export const audiusBackend = ({
     } else if (notification.type === 'usdc_purchase_seller') {
       let entityId = 0
       let entityType = Entity.Track
-      let amount = 0
+      let amount = '' as StringUSDC
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
