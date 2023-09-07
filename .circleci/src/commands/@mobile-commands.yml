@@ -228,18 +228,9 @@ mobile-release-saga-dapp-store:
           echo 'export PATH=$PATH:$JAVA_HOME/bin' >> ~/.bashrc
           source ~/.bashrc
     - run:
-        name: Install nvm
-        command: |
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-          echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
-          echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --install' >> $BASH_ENV
-          source $BASH_ENV
-    - run:
         name: Install dependencies
         command: |
-          cd apps/mobile/dapp-store
-          nvm install
-          nvm use
+          cd packages/mobile/dapp-store
           corepack enable
           corepack prepare pnpm@`npm info pnpm --json | jq -r .version` --activate
           pnpm install
