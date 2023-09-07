@@ -1,6 +1,7 @@
 import { reachabilityActions, reachabilitySelectors } from '@audius/common'
-import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { delay, race, put, all, take, select, call } from 'typed-redux-saga'
+
+import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions

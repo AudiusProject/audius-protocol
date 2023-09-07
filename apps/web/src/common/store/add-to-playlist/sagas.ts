@@ -6,6 +6,7 @@ import {
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { requiresAccount } from 'common/utils/requiresAccount'
+
 const { setVisibility } = modalsActions
 const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 
