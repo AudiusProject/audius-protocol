@@ -162,6 +162,7 @@ export class Account extends Base {
       )
       await this.creatorNode.setEndpoint(randomNodes[0]!)
 
+      console.log('in signUpV2 lineee 165')
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
