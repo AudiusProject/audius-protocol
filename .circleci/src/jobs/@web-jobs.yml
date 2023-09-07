@@ -44,8 +44,8 @@ web-init:
           - node_modules
           - apps/web/node_modules
           - apps/probers/node_modules
-          - apps/stems/node_modules
-          - apps/stems/dist
+          - packages/stems/node_modules
+          - packages/stems/dist
           - packages/common/node_modules
           - packages/common/dist
 
