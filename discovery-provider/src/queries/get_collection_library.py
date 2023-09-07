@@ -40,7 +40,11 @@ class GetCollectionLibraryArgs(TypedDict):
     # The offset for the listen history
     offset: int
 
+    # One of: all, favorite, repost, purchase
     filter_type: LibraryFilterType
+
+    # Include deleted collections
+    filter_deleted: Optional[bool]
 
     # Optional filter for the returned results
     query: Optional[str]
@@ -58,6 +62,7 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
     collection_type = args["collection_type"]
     filter_type = args["filter_type"]
 
+    filter_deleted = args.get("filter_deleted", False)
     query = args.get("query")
     sort_method = args.get("sort_method", CollectionLibrarySortMethod.added_date)
     sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -76,6 +81,8 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         Playlist.is_album == (collection_type == CollectionType.album),
         Playlist.playlist_owner_id == user_id,
     )
+    if filter_deleted:
+        own_playlists_base = own_playlists_base.filter(Playlist.is_delete == False)
 
     favorites_base = session.query(
         Save.save_item_id.label("item_id"), Save.created_at.label("item_created_at")
@@ -129,6 +136,9 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
             Playlist.is_album == (collection_type == CollectionType.album),
         )
     )
+
+    if filter_deleted:
+        base_query = base_query.filter(Playlist.is_delete == False)
 
     if query:
         # Need to disable lazy join for this to work

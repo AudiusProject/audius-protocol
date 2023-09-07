@@ -89,8 +89,6 @@ func (ss *MediorumServer) cuckooLookupSubset(cid string, hostSubset []string) []
 		filter, ok := cuckooMap[host]
 		if ok && filter.Lookup(cidBytes) {
 			hosts = append(hosts, host)
-		} else if !ok {
-			ss.logger.Warn("cuckoo lookup subset: host not found", "host", host)
 		}
 	}
 	cuckooMu.RUnlock()

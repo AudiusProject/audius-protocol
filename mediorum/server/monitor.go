@@ -6,22 +6,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 )
 
-func (ss *MediorumServer) monitorCidCursors() {
-	ticker := time.NewTicker(10 * time.Second)
-	for range ticker.C {
-		cidCursors := []cidCursor{}
-		ctx := context.Background()
-		if err := pgxscan.Select(ctx, ss.pgPool, &cidCursors, `select * from cid_cursor order by host`); err == nil {
-			ss.cachedCidCursors = cidCursors
-		}
-	}
+type diskStatus struct {
+	StoragePathSizeGB uint64    `json:"storagePathSizeGB"`
+	StoragePathUsedGB uint64    `json:"storagePathUsedGB"`
+	DatabaseSizeGB    uint64    `json:"databaseSizeGB"`
+	Clock             time.Time `json:"clock"`
 }
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
@@ -85,12 +80,21 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
-	total, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
+	legacyTotal, legacyFree, err := getDiskStatus("/file_storage")
 	if err == nil {
-		ss.storagePathUsed = total - free
-		ss.storagePathSize = total
+		ss.storagePathUsed = legacyTotal - legacyFree
+		ss.storagePathSize = legacyTotal
 	} else {
-		slog.Error("Error getting disk status", "err", err)
+		slog.Error("Error getting legacy disk status", "err", err)
+	}
+
+	mediorumTotal, mediorumFree, err := getDiskStatus(ss.Config.Dir)
+	if err == nil {
+		ss.mediorumPathFree = mediorumFree
+		ss.mediorumPathUsed = mediorumTotal - mediorumFree
+		ss.mediorumPathSize = mediorumTotal
+	} else {
+		slog.Error("Error getting mediorum disk status", "err", err)
 	}
 
 	dbSize, errStr := getDatabaseSize(ss.pgPool)
@@ -100,6 +104,20 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
 	ss.uploadsCount = uploadsCount
 	ss.uploadsCountErr = errStr
+
+	status := diskStatus{
+		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
+		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
+		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
+		Clock:             nearest5MinSinceEpoch(),
+	}
+	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
+}
+
+func nearest5MinSinceEpoch() time.Time {
+	secondsSinceEpoch := time.Now().Unix()
+	rounded := (secondsSinceEpoch + 150) / 300 * 300
+	return time.Unix(rounded, 0)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {

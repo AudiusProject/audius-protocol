@@ -23,7 +23,7 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	locations := []Blob{}
 	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
-	preferred, _ := ss.rendezvous(cid)
+	preferred, _ := ss.rendezvousAllHosts(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"locations": locations,
@@ -166,6 +166,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return nil
 	}
 
+	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
+	if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); localOnly {
+		return c.String(404, "blob not found")
+	}
+
 	// redirect to it
 	host, err := ss.findNodeToServeBlob(cid)
 	if err == nil && host != "" {
@@ -174,11 +179,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
 		dest.RawQuery = query.Encode()
 		return c.Redirect(302, dest.String())
-	}
-
-	// TODO: remove this legacy fallback once we've migrated all Qm keys to CDK buckets
-	if cidutil.IsLegacyCID(cid) {
-		return ss.serveLegacyCid(c)
 	}
 
 	if err != nil {
@@ -190,17 +190,18 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 
 func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-	hostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
-	hostWithBlob := ss.raceHostHasBlob(key, hostsWithBlob)
-	if hostWithBlob != "" {
-		return hostWithBlob, nil
+	cuckooHostsWithBlob := ss.cuckooLookupSubset(key, healthyHosts)
+	cuckooHostWithBlob := ss.raceHostHasBlob(key, cuckooHostsWithBlob)
+	if cuckooHostWithBlob != "" {
+		return cuckooHostWithBlob, nil
 	}
 
 	// TODO: remove this fallback blobs table way of finding files once all nodes are sharing the v2 cuckoo filters with each other.
 	// before removing, probably also try all nodes in rendezvous order with localOnly=true in case the cuckoo filter isn't accurate or there's a new upload that hasn't propagated to the cuckoo filters yet
+	healthyHostsNotCuckoo := diff(healthyHosts, cuckooHostsWithBlob)
 	var blobs []Blob
 	err := ss.crud.DB.
-		Where("key = ? and host in ?", key, diff(healthyHosts, hostsWithBlob)).
+		Where("key = ? and host in ?", key, healthyHostsNotCuckoo).
 		Find(&blobs).Error
 	if err != nil {
 		return "", err
@@ -214,7 +215,14 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 		return fallbackHostWithBlob, nil
 	}
 
-	// try unhealthy hosts as a last resort
+	// try remaining healthy hosts
+	healthyHostsNotCuckooNotFallback := diff(healthyHostsNotCuckoo, fallbackHealthyHosts)
+	healthyHostWithBlob := ss.raceHostHasBlob(key, healthyHostsNotCuckooNotFallback)
+	if healthyHostWithBlob != "" {
+		return healthyHostWithBlob, nil
+	}
+
+	// we've tried all healthy hosts. now try unhealthy hosts as a last resort
 	unhealthyHosts := []string{}
 	for _, peer := range ss.Config.Peers {
 		if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
@@ -227,7 +235,7 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
-	skipPlayCount := strings.ToLower(c.QueryParam("skip_play_count")) == "true"
+	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
 	if skipPlayCount ||
 		os.Getenv("identityService") == "" ||
@@ -362,6 +370,10 @@ func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
+	if !ss.shouldReplicate() {
+		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new blobs")
+	}
+
 	form, err := c.MultipartForm()
 	if err != nil {
 		return err

@@ -11,14 +11,17 @@ import {
 } from "./types/relay";
 import { SharedData } from ".";
 import { relayRateLimiter } from "./middleware/rateLimiter";
+import { logRequest, logResponse } from "./logger";
 
 export const webServer = async (app: App<SharedData>) => {
   const fastify = Fastify({
     logger: true,
+    disableRequestLogging: true,
   }).withTypeProvider<TypeBoxTypeProvider>();
 
   fastify.get(
     "/relay/health",
+    healthCheckConfig,
     async (req, rep) => await healthCheck(app, req, rep)
   );
   fastify.post<{ Body: RelayRequestType; Reply: RelayResponseType }>(
@@ -43,6 +46,15 @@ export const webServer = async (app: App<SharedData>) => {
   }
 };
 
+const loggingConfig = {
+  onRequest: [logRequest],
+  onResponse: [logResponse]
+}
+
+const healthCheckConfig = {
+  ...loggingConfig
+}
+
 const relayPostConfig = {
   schema: {
     body: RelayRequest,
@@ -51,5 +63,6 @@ const relayPostConfig = {
     },
   },
   // middlewares
+  ...loggingConfig,
   preHandler: [relayRateLimiter],
 };

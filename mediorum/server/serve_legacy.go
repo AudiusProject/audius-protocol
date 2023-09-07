@@ -41,12 +41,6 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		logger.Error("error querying cid storage path", "err", err)
 	}
 
-	ss.legacyServesMu.Lock()
-	if !slices.Contains(ss.attemptedLegacyServes, cid) && len(ss.attemptedLegacyServes) < 100000 {
-		ss.attemptedLegacyServes = append(ss.attemptedLegacyServes, cid)
-	}
-	ss.legacyServesMu.Unlock()
-
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", cid)
 	if diskPath == "" {
 		return ss.redirectToCid(c, cid)
@@ -86,11 +80,6 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		logger.Error("error serving cid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, cid)
 	}
-	ss.legacyServesMu.Lock()
-	if !slices.Contains(ss.successfulLegacyServes, cid) && len(ss.successfulLegacyServes) < 100000 {
-		ss.successfulLegacyServes = append(ss.successfulLegacyServes, cid)
-	}
-	ss.legacyServesMu.Unlock()
 
 	// v1 file listen
 	if isAudioFile {
@@ -113,13 +102,6 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		logger.Error("error querying dirCid storage path", "err", err)
 	}
 
-	key := dirCid + "/" + fileName
-	ss.legacyServesMu.Lock()
-	if !slices.Contains(ss.attemptedLegacyServes, key) && len(ss.attemptedLegacyServes) < 100000 {
-		ss.attemptedLegacyServes = append(ss.attemptedLegacyServes, key)
-	}
-	ss.legacyServesMu.Unlock()
-
 	// dirCid is actually the CID, and fileName is a size like "150x150.jpg"
 	diskPath := getDiskPathOnlyIfFileExists(storagePath, "", dirCid)
 	if diskPath == "" {
@@ -140,11 +122,6 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 		logger.Error("error serving dirCid", "err", err, "storagePath", diskPath)
 		return ss.redirectToCid(c, dirCid)
 	}
-	ss.legacyServesMu.Lock()
-	if !slices.Contains(ss.successfulLegacyServes, key) && len(ss.successfulLegacyServes) < 100000 {
-		ss.successfulLegacyServes = append(ss.successfulLegacyServes, key)
-	}
-	ss.legacyServesMu.Unlock()
 
 	return nil
 }

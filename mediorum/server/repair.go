@@ -3,22 +3,24 @@ package server
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"mediorum/cidutil"
-	"strings"
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"gocloud.dev/blob"
+	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) startRepairer() {
 
-	// wait 10m after boot to start repair
-	// we can add some jitter here to try to ensure nodes are spaced out
-	time.Sleep(time.Minute * 10)
+	// wait 10m after boot to start repair (plus up to 10 more minutes to space out nodes)
+	time.Sleep(time.Minute*10 + time.Minute*time.Duration(rand.Intn(10)))
 
 	for i := 1; ; i++ {
-		// 10% percent of time... clean up over-replicated
+		replicateMode := ss.shouldReplicate()
+		// 10% percent of time... clean up over-replicated and pull under-replicated
 		cleanupMode := false
 		if i%10 == 0 {
 			cleanupMode = true
@@ -26,10 +28,10 @@ func (ss *MediorumServer) startRepairer() {
 
 		logger := ss.logger.With("task", "repair", "run", i, "cleanupMode", cleanupMode)
 		took := time.Duration(0)
-		if ss.shouldRunRepair() {
+		if replicateMode || cleanupMode {
 			repairStart := time.Now()
 			logger.Info("repair starting")
-			err := ss.runRepair(cleanupMode)
+			err := ss.runRepair(replicateMode, cleanupMode)
 			took = time.Since(repairStart)
 			if err != nil {
 				logger.Error("repair failed", "err", err, "took", took)
@@ -37,7 +39,7 @@ func (ss *MediorumServer) startRepairer() {
 				logger.Info("repair OK", "took", took)
 			}
 		} else {
-			logger.Warn("disk has <200GB remaining. skipping repair")
+			logger.Warn("disk has <200GB remaining and is not in cleanup mode. skipping repair")
 		}
 
 		// sleep for as long as the job took
@@ -51,25 +53,10 @@ func (ss *MediorumServer) startRepairer() {
 	}
 }
 
-// If the node is using local storage, do not run repair if there is <200GB remaining (i.e. 10% of 2TB)
-func (ss *MediorumServer) shouldRunRepair() bool {
-	if strings.HasPrefix(ss.Config.BlobStoreDSN, "file://") {
-		_, free, err := getDiskStatus(ss.Config.LegacyFSRoot)
-		if err == nil {
-			if free/uint64(1e9) < 200 {
-				return false
-			}
-		} else {
-			ss.logger.With("task", "repair").Error("getDiskStatus failed", "err", err)
-		}
-	}
-	return true
-}
-
-func (ss *MediorumServer) runRepair(cleanupMode bool) error {
+func (ss *MediorumServer) runRepair(replicateMode, cleanupMode bool) error {
 	ctx := context.Background()
 
-	logger := ss.logger.With("task", "repair", "cleanupMode", cleanupMode)
+	logger := ss.logger.With("task", "repair", "replicateMode", replicateMode, "cleanupMode", cleanupMode)
 
 	// check that network is valid (should have more peers than replication factor)
 	if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
@@ -101,8 +88,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			logger := logger.With("cid", cid)
 
-			preferredHosts, isMine := ss.rendezvous(cid)
-			myRank := slices.Index(preferredHosts, ss.Config.Self.Host)
+			preferredHosts, isMine := ss.rendezvousAllHosts(cid)
+			preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
+
+			// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
+			myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
 
 			// TODO(theo): Don't repair Qm keys for now (isMine will still be true). Remove this once all nodes have enough space to store Qm keys
 			if cidutil.IsLegacyCID(cid) {
@@ -111,15 +101,21 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			// fast path if we're not in cleanup mode:
 			// only worry about blobs that we _should_ have
-			if !cleanupMode && !isMine {
+			if !cleanupMode && !isMine && !isMineHealthy {
 				continue
 			}
 
 			key := cidutil.ShardCID(cid)
-			alreadyHave, err := ss.bucket.Exists(ctx, key)
+			alreadyHave := true
+			attrs, err := ss.bucket.Attributes(ctx, key)
 			if err != nil {
-				logger.Error("exist check failed", "err", err)
-				continue
+				if gcerrors.Code(err) == gcerrors.NotFound {
+					alreadyHave = false
+					attrs = &blob.Attributes{}
+				} else {
+					logger.Error("exist check failed", "err", err)
+					continue
+				}
 			}
 
 			// in cleanup mode do some extra checks:
@@ -137,9 +133,10 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			}
 
-			// get blobs that I should have
-			if isMine && !alreadyHave {
+			// get blobs that I should have (regardless of health of other nodes)
+			if replicateMode && isMine && !alreadyHave {
 				success := false
+				// loop preferredHosts (not preferredHealthyHosts) because pullFileFromHost can still give us a file even if we thought the host was unhealthy
 				for _, host := range preferredHosts {
 					if host == ss.Config.Self.Host {
 						continue
@@ -159,11 +156,14 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			}
 
 			// delete over-replicated blobs:
-			// check all the nodes ahead of me in the preferred order to ensure they have it
-			// if R nodes in front of me have it, I can safely delete
-			if cleanupMode && !isMine && alreadyHave {
+			// check all healthy nodes ahead of me in the preferred order to ensure they have it.
+			// if R+1 healthy nodes in front of me have it, I can safely delete.
+			// don't delete if we replicated the blob within the past 24 hours
+			wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
+			if cleanupMode && (!isMine || !isMineHealthy) && alreadyHave && !wasReplicatedToday {
 				depth := 0
-				for _, host := range preferredHosts {
+				// loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
+				for _, host := range preferredHealthyHosts {
 					if ss.hostHasBlob(host, cid) {
 						depth++
 					}
@@ -172,8 +172,10 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 					}
 				}
 
-				if depth > ss.Config.ReplicationFactor {
-					logger.Info("deleting", "depth", depth, "hosts", preferredHosts)
+				// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
+				wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
+				if depth > ss.Config.ReplicationFactor+1 || depth == ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
+					logger.Info("deleting", "depth", depth, "hosts", preferredHosts, "healthyHosts", preferredHealthyHosts)
 					err = ss.dropFromMyBucket(cid)
 					if err != nil {
 						logger.Error("delete failed", "err", err)
@@ -185,10 +187,11 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 
 			// replicate under-replicated blobs:
 			// even tho this blob isn't "mine"
-			// in cleanup mode the top N*2 nodes will check to see if it's under-replicated
+			// in cleanup mode the top N*2 healthy nodes will check to see if it's under-replicated
 			// and pull file if under-replicated
-			if cleanupMode && !isMine && !alreadyHave && myRank < ss.Config.ReplicationFactor*2 {
+			if replicateMode && cleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 {
 				hasIt := []string{}
+				// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
 				for _, host := range preferredHosts {
 					if ss.hostHasBlob(host, cid) {
 						if host == ss.Config.Self.Host {

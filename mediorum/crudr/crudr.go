@@ -48,6 +48,7 @@ type Crudr struct {
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
+	// TODO: change to partitioned schema after all nodes have migrated
 	opDDL := `
 	create table if not exists ops (
 		ulid text primary key,
@@ -90,6 +91,13 @@ func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db
 func (c *Crudr) StartClients() {
 	for _, p := range c.peerClients {
 		p.Start()
+	}
+}
+
+// used for testing
+func (c *Crudr) ForceSweep() {
+	for _, p := range c.peerClients {
+		p.doSweep()
 	}
 }
 
@@ -259,7 +267,7 @@ func (c *Crudr) ApplyOp(op *Op) error {
 	}
 
 	// broadcast if this host is origin...
-	if op.Host == c.host {
+	if op.Host == c.host && !op.SkipBroadcast {
 		msg, _ := json.Marshal(op)
 		c.broadcast(msg)
 	}

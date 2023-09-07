@@ -55,7 +55,6 @@ type MediorumConfig struct {
 	BlobStoreDSN         string `json:"-"`
 	MoveFromBlobStoreDSN string `json:"-"`
 	PostgresDSN          string `json:"-"`
-	LegacyFSRoot         string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
 	TrustedNotifierID    int
@@ -76,15 +75,18 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo            *echo.Echo
-	bucket          *blob.Bucket
-	logger          *slog.Logger
-	crud            *crudr.Crudr
-	pgPool          *pgxpool.Pool
-	quit            chan os.Signal
-	trustedNotifier *ethcontracts.NotifierInfo
-	storagePathUsed uint64
-	storagePathSize uint64
+	echo             *echo.Echo
+	bucket           *blob.Bucket
+	logger           *slog.Logger
+	crud             *crudr.Crudr
+	pgPool           *pgxpool.Pool
+	quit             chan os.Signal
+	trustedNotifier  *ethcontracts.NotifierInfo
+	storagePathUsed  uint64
+	storagePathSize  uint64
+	mediorumPathUsed uint64
+	mediorumPathSize uint64
+	mediorumPathFree uint64
 
 	databaseSize uint64
 	dbSizeErr    string
@@ -92,16 +94,11 @@ type MediorumServer struct {
 	uploadsCount    int64
 	uploadsCountErr string
 
-	attemptedLegacyServes  []string
-	successfulLegacyServes []string
-	legacyServesMu         sync.RWMutex
-
 	isSeeding bool
 
 	peerHealthsMutex sync.RWMutex
 	peerHealths      map[string]*PeerHealth
 	unreachablePeers []string
-	cachedCidCursors []cidCursor
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -211,7 +208,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbMigrate(crud, bucket)
+	dbPruneOldOps(db, config.Self.Host)
+	dbMigrate(crud, bucket, config.Self.Host)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -287,6 +285,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
+	routes.HEAD("/health_check", ss.serveHealthCheck)
 	routes.GET("/ip_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"data": c.RealIP(), // client/requestor IP
@@ -322,11 +321,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
-	internalApi.GET("/metrics/segments", ss.getSegmentLog)
-
-	// Qm CID migration
-	internalApi.GET("/qm/unmigrated/count/:multihash", ss.serveCountUnmigrated)
-	internalApi.GET("/qm/unmigrated/:multihash", ss.serveUnmigrated)
+	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
+	internalApi.GET("/logs/reaper", ss.getReaperLog)
 
 	return ss, nil
 
@@ -373,11 +369,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.monitorDiskAndDbStatus()
 
-	go ss.monitorCidCursors()
-
 	go ss.monitorPeerReachability()
-
-	go ss.startQmCidMigration()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

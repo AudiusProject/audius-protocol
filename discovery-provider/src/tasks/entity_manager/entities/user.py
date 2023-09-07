@@ -454,28 +454,13 @@ def update_user_associated_wallets(
             # to be an empty dict. This has the effect of generating new rows for the
             # already associated wallets and marking them as deleted.
             associated_wallets = {}
-
-        prev_user_associated_wallets_response = (
-            session.query(AssociatedWallet.wallet)
-            .filter_by(
-                user_id=user_record.user_id,
-                is_current=True,
-                is_delete=False,
-                chain=chain,
-            )
-            .all()
-        )
-
-        previous_wallets = [
-            wallet for [wallet] in prev_user_associated_wallets_response
-        ]
-        added_associated_wallets = set()
-
-        session.query(AssociatedWallet).filter_by(
-            user_id=user_record.user_id, chain=chain
-        ).update({"is_current": False})
+        previous_wallets = []
+        for _, wallet in params.existing_records[EntityType.ASSOCIATED_WALLET].items():
+            if wallet.chain == chain and wallet.user_id == user_record.user_id:
+                previous_wallets.append(wallet)
 
         # Verify the wallet signatures and create the user id to wallet associations
+        added_wallets = []
         for associated_wallet, wallet_metadata in associated_wallets.items():
             if "signature" not in wallet_metadata or not isinstance(
                 wallet_metadata["signature"], str
@@ -491,54 +476,24 @@ def update_user_associated_wallets(
 
             if is_valid_signature:
                 # Check that the wallet doesn't already exist
-                wallet_exists = (
-                    session.query(AssociatedWallet)
-                    .filter_by(
-                        wallet=associated_wallet,
-                        is_current=True,
-                        is_delete=False,
-                        chain=chain,
-                    )
-                    .count()
-                    > 0
-                )
-                if not wallet_exists:
-                    added_associated_wallets.add(associated_wallet)
-                    associated_wallet_entry = AssociatedWallet(
-                        user_id=user_record.user_id,
-                        wallet=associated_wallet,
-                        chain=chain,
-                        is_current=True,
-                        is_delete=False,
-                        blocknumber=user_record.blocknumber,
-                        blockhash=user_record.blockhash,
-                    )
-                    params.add_record(
-                        (associated_wallet_entry.user_id, chain),
-                        associated_wallet_entry,
-                        EntityType.ASSOCIATED_WALLET,
-                    )
-
-        # Mark the previously associated wallets as deleted
-        for previously_associated_wallet in previous_wallets:
-            if previously_associated_wallet not in added_associated_wallets:
                 associated_wallet_entry = AssociatedWallet(
                     user_id=user_record.user_id,
-                    wallet=previously_associated_wallet,
+                    wallet=associated_wallet,
                     chain=chain,
                     is_current=True,
-                    is_delete=True,
+                    is_delete=False,
                     blocknumber=user_record.blocknumber,
                     blockhash=user_record.blockhash,
                 )
-                params.add_record(
-                    (associated_wallet_entry.user_id, chain),
-                    associated_wallet_entry,
-                    EntityType.ASSOCIATED_WALLET,
-                )
+                added_wallets.append(associated_wallet_entry)
+        is_updated_wallets = set([prev_wallet.wallet for prev_wallet in previous_wallets]) != set([wallet.wallet for wallet in added_wallets])
 
-        is_updated_wallets = set(previous_wallets) != added_associated_wallets
         if is_updated_wallets:
+            for wallet in added_wallets:
+                session.add(wallet)
+            for previous_wallet in previous_wallets:
+                session.delete(previous_wallet)
+
             enqueue_immediate_balance_refresh(redis, [user_record.user_id])
     except Exception as e:
         logger.error(

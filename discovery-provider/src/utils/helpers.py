@@ -157,6 +157,12 @@ def tuple_to_model_dictionary(t, model):
     return dict(zip(keys, t))
 
 
+class CustomJsonFormatter(JsonFormatter):
+    def format(self, record):
+        record.pid = os.getpid()  # Add worker pid to log
+        return super().format(record)
+
+
 log_format = {
     "level": "levelname",
     "msg": "message",
@@ -164,7 +170,7 @@ log_format = {
     "service": os.getenv("audius_service", "default"),
 }
 
-formatter = JsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
+formatter = CustomJsonFormatter(log_format, ensure_ascii=False, mix_extra=True)
 
 
 def reset_logging():
