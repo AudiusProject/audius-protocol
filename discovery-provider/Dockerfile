@@ -24,8 +24,8 @@ RUN apk update && \
         linux-headers \
         nodejs \
         npm \
-        python3=3.11.4-r0 \
-        python3-dev=3.11.4-r0 \
+        python3=3.11.5-r0 \
+        python3-dev=3.11.5-r0 \
         py3-numpy \
         py3-pip \
         py3-scipy \
