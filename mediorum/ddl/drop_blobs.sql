@@ -1,9 +1,12 @@
 begin;
 
+-- ensure there is a blobs table
+-- (so this can work on an empty db)
 create table if not exists blobs (
   "key" text primary key
 );
 
+-- our unique list of Qm CIDs
 create table if not exists qm_cids (
   "key" text primary key
 );
@@ -15,8 +18,14 @@ where "key" ilike 'qm%'
 on conflict do nothing
 ;
 
-drop table blobs;
+-- do this later when confident all good:
+-- drop table blobs;
 
+-- remove all the noisy blob history
 delete from ops where "table" = 'blobs';
+
+-- reset ops cursors...
+-- now that ops is "gossip" style this will ensure historical Uploads are created if missing
+truncate cursors;
 
 commit;
