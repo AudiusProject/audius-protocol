@@ -63,7 +63,7 @@ export const validator = async (
       handle
     );
   } catch (e) {
-    logger.error({ e }, "thrown in retrieve user")
+    logger.error({ e }, "could not gather user from db, continuing with senderAddress and handle")
   }
 
   // inject remaining fields into ctx for downstream middleware
