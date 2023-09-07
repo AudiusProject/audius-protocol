@@ -30,3 +30,7 @@ export const onTokenInputBlur = (e: FocusEvent<HTMLInputElement>) => {
     .padEnd(PRECISION, '0')
   return `${whole.length > 0 ? whole : '0'}.${paddedDecimal}`
 }
+
+export const toHumanReadable = (value: number) => {
+  return (value / 100).toFixed(PRECISION)
+}

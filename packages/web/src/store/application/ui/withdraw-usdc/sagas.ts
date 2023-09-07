@@ -1,6 +1,5 @@
 import {
   withdrawUSDCActions,
-  withdrawUSDCSelectors,
   solanaSelectors,
   ErrorLevel,
   SolanaWalletAddress,
@@ -47,10 +46,9 @@ const {
   setDestinationAddress,
   setDestinationAddressFailed,
   setDestinationAddressSucceeded,
-  withdrawUSDCFailed
+  withdrawUSDCFailed,
+  withdrawUSDCSucceeded
 } = withdrawUSDCActions
-const { getWithdrawDestinationAddress, getWithdrawAmount } =
-  withdrawUSDCSelectors
 const { getFeePayer } = solanaSelectors
 
 function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
@@ -109,15 +107,18 @@ function* doSetDestinationAddress({
   }
 }
 
-function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
+/**
+ * Handles all logic for withdrawing USDC to a given destination. Expects amount in dollars.
+ */
+function* doWithdrawUSDC({
+  payload: { amount, destinationAddress, onSuccess }
+}: ReturnType<typeof beginWithdrawUSDC>) {
   try {
     const libs = yield* call(getLibs)
     if (!libs.solanaWeb3Manager) {
       throw new Error('Failed to get solana web3 manager')
     }
     // Assume destinationAddress and amount have already been validated
-    const destinationAddress = yield* select(getWithdrawDestinationAddress)
-    const amount = yield* select(getWithdrawAmount)
     if (!destinationAddress || !amount) {
       throw new Error('Please enter a valid destination address and amount')
     }
@@ -256,9 +257,10 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
       )
       destinationTokenAccount = destinationTokenAccountPubkey.toString()
     }
-    const amountWei = new BN(amount).mul(
-      new BN(TOKEN_LISTING_MAP.USDC.decimals)
-    )
+    // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
+    const amountWei = new BN(amount)
+      .mul(new BN(10 ** TOKEN_LISTING_MAP.USDC.decimals))
+      .div(new BN(100))
     const usdcUserBank = yield* call(getUSDCUserBank)
     const transferInstructions = yield* call(
       [
@@ -288,6 +290,8 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
       'Withdraw USDC - successfully transferred USDC - tx hash',
       transferSignature
     )
+    yield* call(onSuccess, transferSignature)
+    yield* put(withdrawUSDCSucceeded())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')

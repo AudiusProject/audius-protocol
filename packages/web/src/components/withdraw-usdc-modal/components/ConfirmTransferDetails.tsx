@@ -18,6 +18,7 @@ import {
   AMOUNT,
   CONFIRM
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { toHumanReadable } from 'utils/tokenInput'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -56,7 +57,10 @@ export const ConfirmTransferDetails = () => {
   return (
     <div className={styles.root}>
       <div className={styles.amount}>
-        <TextRow left={messages.amountToWithdraw} right={`-$${amountValue}`} />
+        <TextRow
+          left={messages.amountToWithdraw}
+          right={`-$${toHumanReadable(amountValue)}`}
+        />
       </div>
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>

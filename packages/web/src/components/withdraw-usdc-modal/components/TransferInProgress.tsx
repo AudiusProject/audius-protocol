@@ -14,6 +14,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { toHumanReadable } from 'utils/tokenInput'
 
 import { TextRow } from './TextRow'
 import styles from './TransferInProgress.module.css'
@@ -40,7 +41,10 @@ export const TransferInProgress = () => {
           left={messages.currentBalance}
           right={`$${balanceFormatted}`}
         />
-        <TextRow left={messages.amountToWithdraw} right={`-$${amountValue}`} />
+        <TextRow
+          left={messages.amountToWithdraw}
+          right={`-$${toHumanReadable(amountValue)}`}
+        />
       </div>
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>

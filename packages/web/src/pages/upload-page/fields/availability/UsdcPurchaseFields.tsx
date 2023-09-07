@@ -12,9 +12,9 @@ import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 import {
-  PRECISION,
   onTokenInputBlur,
-  onTokenInputChange
+  onTokenInputChange,
+  toHumanReadable
 } from 'utils/tokenInput'
 
 import { PREVIEW, PRICE } from '../AccessAndSaleField'
@@ -94,7 +94,7 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
   const [{ value }, , { setValue: setPrice }] = useField<number>(PRICE)
   const [humanizedValue, setHumanizedValue] = useState(
-    value ? (value / 100).toFixed(PRECISION) : null
+    value ? toHumanReadable(value) : null
   )
 
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(

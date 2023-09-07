@@ -62,7 +62,14 @@ const slice = createSlice({
     setAmountFailed: (state, action: PayloadAction<{ error: Error }>) => {
       state.amountError = action.payload.error
     },
-    beginWithdrawUSDC: (state) => {
+    beginWithdrawUSDC: (
+      state,
+      _action: PayloadAction<{
+        amount: number
+        destinationAddress: string
+        onSuccess: (transaction: string) => void
+      }>
+    ) => {
       state.withdrawStatus = Status.LOADING
     },
     withdrawUSDCSucceeded: (state) => {

@@ -1,11 +1,15 @@
+import { useCallback } from 'react'
+
 import {
   SolanaWalletAddress,
   useUSDCBalance,
   useWithdrawUSDCModal,
-  WithdrawUSDCModalPages
+  WithdrawUSDCModalPages,
+  withdrawUSDCActions
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import { Formik } from 'formik'
+import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -19,6 +23,8 @@ import { ConfirmTransferDetails } from './components/ConfirmTransferDetails'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
+
+const { beginWithdrawUSDC } = withdrawUSDCActions
 
 const messages = {
   title: 'Withdraw Funds',
@@ -49,9 +55,33 @@ const WithdrawUSDCFormSchema = (userBalance: number) => {
 }
 
 export const WithdrawUSDCModal = () => {
-  const { isOpen, onClose, onClosed, data } = useWithdrawUSDCModal()
+  const dispatch = useDispatch()
+  const { isOpen, onClose, onClosed, data, setData } = useWithdrawUSDCModal()
   const { page } = data
   const { data: balance } = useUSDCBalance()
+
+  const onSuccess = useCallback(
+    (signature: string) => {
+      setData({
+        page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL,
+        signature
+      })
+    },
+    [setData]
+  )
+
+  const handleSubmit = useCallback(
+    ({ amount, address }: { amount: number; address: string }) => {
+      dispatch(
+        beginWithdrawUSDC({
+          amount,
+          destinationAddress: address,
+          onSuccess
+        })
+      )
+    },
+    [dispatch, onSuccess]
+  )
 
   let formPage
   switch (page) {
@@ -90,15 +120,15 @@ export const WithdrawUSDCModal = () => {
       </ModalHeader>
       <ModalContent>
         <Formik
-          initialValues={{ [AMOUNT]: balance, [ADDRESS]: '', [CONFIRM]: false }}
+          initialValues={{
+            [AMOUNT]: balance?.toNumber() ?? 0,
+            [ADDRESS]: '',
+            [CONFIRM]: false
+          }}
           validationSchema={toFormikValidationSchema(
             WithdrawUSDCFormSchema(balance?.toNumber() ?? 0)
           )}
-          // TODO -- call sagas to withdraw
-          // Saga in turn should update modal state to advance page
-          onSubmit={(values) => {
-            console.info(values)
-          }}
+          onSubmit={handleSubmit}
         >
           {formPage}
         </Formik>

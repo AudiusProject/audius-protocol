@@ -22,6 +22,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { toHumanReadable } from 'utils/tokenInput'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
@@ -56,7 +57,10 @@ export const TransferSuccessful = () => {
   return (
     <div className={styles.root}>
       <Divider style={{ margin: 0 }} />
-      <TextRow left={messages.amountWithdrawn} right={`-$${amountValue}`} />
+      <TextRow
+        left={messages.amountWithdrawn}
+        right={`-$${toHumanReadable(amountValue)}`}
+      />
       <Divider style={{ margin: 0 }} />
       <div className={styles.newBalance}>
         <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
