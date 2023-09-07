@@ -3,7 +3,7 @@ const path = require('path')
 const { getDefaultConfig } = require('metro-config')
 
 const clientPath = path.resolve(__dirname, '../web')
-const commonPath = path.resolve(__dirname, '../common')
+const commonPath = path.resolve(__dirname, '../../packages/common')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
 
 const resolveModule = (module) =>
