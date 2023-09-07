@@ -11,7 +11,7 @@ export const validator = async (
   response: Response,
   next: NextFunction
 ) => {
-  const body = JSON.parse(request.body) as RelayRequest;
+  const body = request.body as RelayRequest;
 
   logger.info({ body }, "validating request");
 
