@@ -3,6 +3,10 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -16,6 +20,8 @@ type diskStatus struct {
 	StoragePathSizeGB uint64    `json:"storagePathSizeGB"`
 	StoragePathUsedGB uint64    `json:"storagePathUsedGB"`
 	DatabaseSizeGB    uint64    `json:"databaseSizeGB"`
+	LegacyDirUsed     uint64    `json:"legacyDirUsed"`
+	MediorumDirUsed   uint64    `json:"megacyDirUsed"`
 	Clock             time.Time `json:"clock"`
 }
 
@@ -84,6 +90,8 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
+
+	// getDiskStatus returns the space occupied on the disk as a whole
 	legacyTotal, legacyFree, err := getDiskStatus("/file_storage")
 	if err == nil {
 		ss.storagePathUsed = legacyTotal - legacyFree
@@ -101,6 +109,21 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		slog.Error("Error getting mediorum disk status", "err", err)
 	}
 
+	// what is the specific size of leagacy vs v2 content directories
+	bytesLegacy, err := getStorageUsed("/file_storage")
+	if err != nil {
+		slog.Error("Error getting /file_storage bytes used", "err", err)
+	} else {
+		ss.legacyDirUsed = bytesLegacy
+	}
+
+	bytesMediorum, err := getStorageUsed("/tmp/mediorum")
+	if err != nil {
+		slog.Error("Error getting /tmp/mediorum bytes used", "err", err)
+	} else {
+		ss.mediorumDirUsed = bytesMediorum
+	}
+
 	dbSize, errStr := getDatabaseSize(ss.pgPool)
 	ss.databaseSize = dbSize
 	ss.dbSizeErr = errStr
@@ -113,6 +136,8 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
 		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
 		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
+		LegacyDirUsed:     ss.legacyDirUsed / (1 << 30),
+		MediorumDirUsed:   ss.mediorumDirUsed / (1 << 30),
 		Clock:             nearest5MinSinceEpoch(),
 	}
 	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
@@ -122,6 +147,27 @@ func nearest5MinSinceEpoch() time.Time {
 	secondsSinceEpoch := time.Now().Unix()
 	rounded := (secondsSinceEpoch + 150) / 300 * 300
 	return time.Unix(rounded, 0)
+}
+
+func getStorageUsed(path string) (uint64, error) {
+	cmd := exec.Command("du", "-b", "-d0", path)
+
+	output, err := cmd.Output()
+	if err != nil {
+		return 0, err
+	}
+
+	parts := strings.Fields(string(output))
+	if len(parts) == 0 {
+		return 0, fmt.Errorf("unexpected output: %s", output)
+	}
+
+	bytesUsed, err := strconv.ParseUint(parts[0], 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("error parsing byte value: %v", err)
+	}
+
+	return bytesUsed, nil
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
