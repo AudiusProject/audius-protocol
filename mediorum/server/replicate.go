@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"mediorum/cidutil"
-	"mediorum/crudr"
 	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
@@ -64,22 +63,6 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 		}
 	}
 
-	// record that we "have" this key
-	var exists bool
-	ss.crud.DB.Raw(
-		"SELECT EXISTS(SELECT 1 FROM blobs WHERE host = ? AND key = ? LIMIT 1)",
-		ss.Config.Self.Host,
-		fileName,
-	).Scan(&exists)
-	if !exists {
-		logger.Info("creating blob record")
-		return ss.crud.Create(&Blob{
-			Host:      ss.Config.Self.Host,
-			Key:       fileName,
-			CreatedAt: time.Now().UTC(),
-		}, crudr.WithSkipBroadcast())
-	}
-
 	return nil
 }
 
@@ -92,14 +75,6 @@ func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
 	err := ss.bucket.Delete(ctx, key)
 	if err != nil {
 		logger.Error("failed to delete", "err", err)
-	}
-
-	// if blob record exists... delete it
-	var existingBlob *Blob
-	found := ss.crud.DB.Where("host = ? AND key = ?", ss.Config.Self.Host, fileName).First(&existingBlob)
-	if found.Error == nil {
-		logger.Info("deleting blob record")
-		return ss.crud.Delete(existingBlob, crudr.WithSkipBroadcast())
 	}
 
 	return nil
@@ -247,7 +222,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 }
 
 // if the node is using local (disk) storage, do not replicate if there is <200GB remaining (i.e. 10% of 2TB)
-func (ss *MediorumServer) shouldReplicate() bool {
+func (ss *MediorumServer) diskHasSpace() bool {
 	// don't worry about running out of space on dev or stage
 	if ss.Config.Env != "prod" {
 		return true
