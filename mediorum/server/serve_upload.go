@@ -154,7 +154,7 @@ type UpdateUploadBody struct {
 }
 
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 
@@ -215,7 +215,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 
@@ -322,15 +322,6 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	}
 
 	return c.JSON(200, uploads)
-}
-
-// TODO: remove after confirming files didn't start go missing
-func (ss *MediorumServer) getBlobByJobIDAndVariantDeprecated(c echo.Context) error {
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-	c.SetParamNames("dirCid", "fileName")
-	c.SetParamValues(jobID, variant)
-	return ss.serveLegacyDirCid(c)
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {

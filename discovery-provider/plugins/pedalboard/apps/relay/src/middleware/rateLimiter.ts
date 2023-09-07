@@ -1,39 +1,45 @@
-import { FastifyReply, FastifyRequest } from "fastify";
 import { logger } from "../logger";
-import { RelayRequestType } from "../types/relay";
-import { RelayRateLimiter, ValidLimits } from "./rateLimitConfig";
+import { RelayRateLimiter, ValidLimits } from "../config/rateLimitConfig";
 import { Knex } from "knex";
 import { AudiusABIDecoder } from "@audius/sdk";
 import { RateLimiterRes } from "rate-limiter-flexible";
 import { Table, Users } from "storage/src";
 import { config, discoveryDb } from "..";
+import { NextFunction, Request, Response, response } from "express";
+import { rateLimitError } from "../error";
 
 const globalRateLimiter = new RelayRateLimiter();
 
-export const relayRateLimiter = async (
-  req: FastifyRequest<{ Body: RelayRequestType }>,
-  rep: FastifyReply
-): Promise<void> => {
-  const {
-    body: { encodedABI },
-  } = req;
+export const rateLimiterMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { validatedRelayRequest, recoveredSigner } = res.locals.ctx;
+  const { encodedABI } = validatedRelayRequest;
+
+  const signer = recoveredSigner.wallet;
+  if (signer === undefined || signer === null) {
+    rateLimitError(next, "user record does not have wallet");
+    return;
+  }
+
+  // if not EM transaction, return
+  if (res.locals.ctx.validatedRelayRequest.contractRegistryKey !== "EntityManager") {
+    next()
+    return
+  }
 
   const operation = getEntityManagerActionKey(encodedABI);
-  const chainId = config.acdcChainId;
-  if (chainId === undefined) {
-    throw new Error("chain id not defined");
-  }
-  const signer = AudiusABIDecoder.recoverSigner({
-    encodedAbi: encodedABI,
-    chainId,
-    entityManagerAddress: config.entityManagerContractAddress,
-  });
 
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
-  if (isBlockedFromRelay) errorResponseUnauthorized(rep);
+  if (isBlockedFromRelay) {
+    rateLimitError(next, "blocked from relay")
+    return
+  }
 
   const limit = await determineLimit(
-    discoveryDb,
+    recoveredSigner,
     config.rateLimitAllowList,
     signer
   );
@@ -45,15 +51,15 @@ export const relayRateLimiter = async (
       signer,
       limit,
     });
-    insertReplyHeaders(rep, res);
+    insertReplyHeaders(response, res);
   } catch (e) {
     if (e instanceof RateLimiterRes) {
-      insertReplyHeaders(rep, e as RateLimiterRes);
-      errorResponseRateLimited(rep);
+      insertReplyHeaders(response, e as RateLimiterRes);
+      rateLimitError(next, "rate limit hit")
+      return
     }
-    logger.error({ msg: "rate limit internal error", e });
-    errorResponseInternal(rep);
   }
+  next();
 };
 
 const getEntityManagerActionKey = (encodedABI: string): string => {
@@ -66,37 +72,21 @@ const getEntityManagerActionKey = (encodedABI: string): string => {
   return action + entityType;
 };
 
-const errorResponseUnauthorized = (rep: FastifyReply) => {
-  rep.code(403).send();
-};
-
-const errorResponseRateLimited = (rep: FastifyReply) => {
-  rep.code(429).send("Too many requests, please try again later");
-};
-
-const errorResponseInternal = (rep: FastifyReply) => {
-  rep.code(500).send();
-};
-
-const insertReplyHeaders = (rep: FastifyReply, data: RateLimiterRes) => {
+const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
   const { msBeforeNext, remainingPoints, consumedPoints } = data;
-  rep.header("Retry-After", msBeforeNext / 1000);
-  rep.header("X-RateLimit-Remaining", remainingPoints);
-  rep.header("X-RateLimit-Reset", new Date(Date.now() + msBeforeNext));
-  rep.header("X-RateLimit-Consumed", consumedPoints);
+  res.header("Retry-After", (msBeforeNext / 1000).toString());
+  res.header("X-RateLimit-Remaining", remainingPoints.toString());
+  res.header("X-RateLimit-Reset", (new Date(Date.now() + msBeforeNext).toString()));
+  res.header("X-RateLimit-Consumed", consumedPoints.toString());
 };
 
 const determineLimit = async (
-  discoveryDb: Knex,
+  user: Users,
   allowList: string[],
   signer: string
 ): Promise<ValidLimits> => {
   const isAllowed = allowList.includes(signer);
   if (isAllowed) return "allowlist";
-  const user = await discoveryDb<Users>(Table.Users)
-    .where("wallet", "=", signer)
-    .andWhere("is_current", "=", true)
-    .first();
   logger.info({ user, signer });
   if (user !== undefined) return "owner";
   return "app";

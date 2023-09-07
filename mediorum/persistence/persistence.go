@@ -84,27 +84,30 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	// AZBLOB: https://github.com/google/go-cloud/blob/master/blob/azureblob/example_test.go#L71
 	switch prefix {
 	case FILE:
+		// remove options from the uri so it's just the path
+		path := strings.Split(uri, "?")[0]
+
 		// no credentials needed for the file storage driver
 		// but we do make sure the directory exists
 		if found {
-			if err := os.MkdirAll(uri, os.ModePerm); err != nil {
+			if err := os.MkdirAll(path, os.ModePerm); err != nil {
 				log.Println("failed to create local persistent storage dir: ", err)
 				return err
 			}
 		}
 
 		// clean up .tmp files left behind by fileblob driver
-		err := filepath.WalkDir(uri, func(path string, d os.DirEntry, err error) error {
+		// see https://github.com/google/go-cloud/issues/3286 for original issue
+		// and https://github.com/google/go-cloud/issues/3294 for why it's not truly fixed
+		err := filepath.WalkDir(path, func(path string, d os.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
 
 			if !d.IsDir() && strings.HasSuffix(d.Name(), ".tmp") {
-				if err := os.Remove(path); err != nil {
-					return err
-				}
+				err = os.Remove(path)
 			}
-			return nil
+			return err
 		})
 		if err != nil {
 			log.Println("failed to clean up temp files: " + err.Error())

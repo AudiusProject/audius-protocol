@@ -1,30 +1,26 @@
-import { Static, Type } from "@sinclair/typebox";
+import { TransactionReceipt } from "@ethersproject/abstract-provider";
 
-export const RelayRequest = Type.Object({
-  senderAddress: Type.String(),
-  encodedABI: Type.String(),
-  gasLimit: Type.Optional(Type.Integer()),
-  contractRegistryKey: Type.Optional(Type.String()),
-});
+/** Raw request type that matches what libs can possibly send. */
+export type RelayRequest = {
+  contractRegistryKey?: string | null;
+  contractAddress?: string | null;
+  senderAddress?: string | null;
+  encodedABI?: string | null;
+  gasLimit?: number | null;
+  handle?: string | null;
+};
 
-export type RelayRequestType = Static<typeof RelayRequest>;
+/** Post validation type that's injected into ctx after validation middleware. */
+export type ValidatedRelayRequest = {
+  contractRegistryKey: string;
+  contractAddress: string;
+  senderAddress?: string;
+  encodedABI: string;
+  gasLimit: number;
+  handle?: string;
+};
 
-export const RelayReceipt = Type.Object({
-  // need to find a way to enforce actual TransactionReceipt here
-  blockHash: Type.String(),
-  blockNumber: Type.Integer(),
-});
-
-export type RelayReceiptType = Static<typeof RelayReceipt>;
-
-export const RelayResponse = Type.Object({
-  receipt: RelayReceipt,
-});
-
-export type RelayResponseType = Static<typeof RelayResponse>;
-
-export type RelayRequestHeaders = {
-  encodedDataMessage?: string | string[];
-  signature?: string | string[];
-  reqIp: string;
+/** Type sent back on a successful relay. */
+export type RelayResponse = {
+  receipt: TransactionReceipt;
 };
