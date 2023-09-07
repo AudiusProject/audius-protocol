@@ -22,12 +22,9 @@ import (
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
-	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
 	preferred, _ := ss.rendezvousAllHosts(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
-		"locations": locations,
 		"preferred": preferred,
 	})
 }

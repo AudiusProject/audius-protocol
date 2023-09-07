@@ -48,6 +48,12 @@ func TestRepair(t *testing.T) {
 	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
+	// create a dummy upload for it?
+	ss.crud.Create(Upload{
+		ID:          "testing",
+		OrigFileCID: cid,
+	})
+
 	// force sweep (since blob changes SkipBroadcast)
 	for _, s := range testNetwork {
 		s.crud.ForceSweep()
