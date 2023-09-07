@@ -244,6 +244,7 @@ export class Web3Manager {
         async (bail) => {
           try {
             if (this.useDiscoveryRelay()) {
+              console.log('using discovery relay lineee 247')
               // use discovery relay
               const res = await this.discoveryProvider?.relay({
                 contractRegistryKey,
@@ -255,6 +256,7 @@ export class Web3Manager {
                 nethermindContractAddress,
                 nethermindEncodedAbi
               })
+              console.log('res on lineee 259 is ', res)
               if (res === null || res === undefined) {
                 throw new Error("discovery relay returned empty response")
               }

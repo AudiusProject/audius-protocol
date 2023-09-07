@@ -171,6 +171,8 @@ export class Account extends Base {
           profilePictureFile,
           coverPhotoFile
         })
+      console.log('in signUpV2 lineee 174')
+      console.log('new metadata isss ', newMetadata)
 
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
