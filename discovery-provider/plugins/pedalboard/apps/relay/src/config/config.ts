@@ -13,6 +13,7 @@ export type Config = {
   rpcEndpoint: string;
   rpcEndpointFallback: string;
   acdcChainId?: string;
+  finalPoaBlock: number;
   discoveryDbConnectionString: string;
   entityManagerContractAddress: string;
   entityManagerContractRegistryKey: string;
@@ -44,6 +45,7 @@ export const readConfig = (): Config => {
     audius_db_url: str(),
     audius_aao_endpoint: str(),
     audius_use_aao: bool(),
+    audius_final_poa_block: num(),
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
@@ -52,6 +54,7 @@ export const readConfig = (): Config => {
     rpcEndpoint: env.audius_web3_localhost,
     rpcEndpointFallback: env.audius_web3_host,
     discoveryDbConnectionString: env.audius_db_url,
+    finalPoaBlock: env.audius_final_poa_block,
     entityManagerContractAddress: env.audius_contracts_entity_manager_address,
     entityManagerContractRegistryKey: "EntityManager",
     serverHost: env.relay_server_host,
