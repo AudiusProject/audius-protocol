@@ -157,13 +157,18 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     // progressChan
     let maxLoaded = 0
 
-    return (loaded, total) => {
-      maxLoaded = Math.max(maxLoaded, loaded)
+    return (progress) => {
+      const { upload, transcode } = progress
+      const loaded = upload?.loaded
+      const total = upload?.total
+      console.log(`uploadProgress`, upload, transcode)
+      maxLoaded = loaded ? Math.max(maxLoaded, loaded) : undefined
       try {
         progressChan.put(
           uploadActions.updateProgress(index, {
             loaded: maxLoaded,
             total,
+            transcode: transcode?.decimal,
             status:
               loaded !== total
                 ? ProgressStatus.UPLOADING
@@ -197,7 +202,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (loaded, total) => {}
+        updateProgress ? makeOnProgress(index) : (progress) => {}
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -914,6 +919,25 @@ function* uploadSingleTrack(track) {
   })
   yield put(recordEvent)
 
+  const onProgress = (progress) => {
+    const { upload, transcode } = progress
+    const loaded = upload?.loaded
+    const total = upload?.total
+    console.log(`uploadProgress`, upload, transcode)
+
+    progressChan.put(
+      uploadActions.updateProgress(0, {
+        loaded,
+        total,
+        transcode: transcode?.decimal,
+        status:
+          loaded !== total
+            ? ProgressStatus.UPLOADING
+            : ProgressStatus.PROCESSING
+      })
+    )
+  }
+
   yield put(
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
@@ -923,18 +947,7 @@ function* uploadSingleTrack(track) {
           track.file,
           track.metadata.artwork.file,
           track.metadata,
-          (loaded, total) => {
-            progressChan.put(
-              uploadActions.updateProgress(0, {
-                loaded,
-                total,
-                status:
-                  loaded !== total
-                    ? ProgressStatus.UPLOADING
-                    : ProgressStatus.PROCESSING
-              })
-            )
-          }
+          onProgress
         )
 
         if (error) {

@@ -47,8 +47,9 @@ export enum ProgressStatus {
 
 export type Progress = {
   status: ProgressStatus
-  loaded: number
-  total: number
+  loaded?: number
+  total?: number
+  transcode?: number
 }
 
 export interface UploadState {

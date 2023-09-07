@@ -102,9 +102,19 @@ const actionsMap = {
   ) {
     const newState = { ...state }
     newState.uploadProgress = [...(state.uploadProgress ?? [])]
-    newState.uploadProgress[action.index] = {
-      ...newState.uploadProgress[action.index],
-      ...action.progress
+    newState.uploadProgress[action.index].status = action.progress.status
+    if (action.progress.loaded && action.progress.total) {
+      newState.uploadProgress[action.index].loaded = Math.max(
+        action.progress.loaded,
+        newState.uploadProgress[action.index].loaded ?? 0
+      )
+      newState.uploadProgress[action.index].total = action.progress.total
+    }
+    if (action.progress.transcode) {
+      newState.uploadProgress[action.index].transcode = Math.max(
+        action.progress.transcode,
+        newState.uploadProgress[action.index].transcode ?? 0
+      )
     }
     return newState
   },

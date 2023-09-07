@@ -17,7 +17,7 @@ import {
   ProgressBar
 } from '@audius/stems'
 import { push } from 'connected-react-router'
-import { round } from 'lodash'
+import { floor } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -38,8 +38,7 @@ const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
-  visitProfile: 'Visit Your Profile',
-  finishingUpload: 'Finializing Upload'
+  visitProfile: 'Visit Your Profile'
 }
 
 const ProgressIndicator = (props: { status?: ProgressStatus }) => {
@@ -140,8 +139,8 @@ export const FinishPageNew = (props: FinishPageProps) => {
             <div className={styles.headerProgressInfo}>
               <Text variant='label' size='small'>
                 {fullUploadPercent === 100 && !uploadComplete
-                  ? messages.finishingUpload
-                  : `${round(fullUploadPercent)}%`}
+                  ? '99%'
+                  : `${floor(fullUploadPercent)}%`}
               </Text>
               <ProgressIndicator
                 status={
