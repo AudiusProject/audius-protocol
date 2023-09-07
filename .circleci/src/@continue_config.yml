@@ -3,6 +3,10 @@ version: 2.1
 orbs:
   gh: circleci/github-cli@2.2.0
   slack: circleci/slack@4.12.0
+  aws-cli: circleci/aws-cli@3.1.5
+  ruby: circleci/ruby@1.2.0
+  cypress: cypress-io/cypress@3.1.3
+  browser-tools: circleci/browser-tools@1.4.4
 
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb in config.yml
@@ -41,3 +45,30 @@ parameters:
   run-release-workflow:
     type: boolean
     default: false
+
+  run-web-workflow:
+    type: boolean
+    default: false
+  run-mobile-workflow:
+    type: boolean
+    default: false
+  run-stems-workflow:
+    type: boolean
+    default: false
+  run-embed-workflow:
+    type: boolean
+    default: false
+
+# Can enable recurring probers against stage at some point
+# workflows:
+#   version: 2.1
+#   hourly:
+#     triggers:
+#       - schedule:
+#           cron: '17 * * * *'
+#           filters:
+#             branches:
+#               only:
+#                 - main
+#     jobs:
+#       - probers-test-stage

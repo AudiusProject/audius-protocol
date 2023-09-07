@@ -54,7 +54,7 @@ web-build:
       default: 'prod-source-maps'
       type: string
     build-directory:
-      default: 'packages/web/build-production'
+      default: 'apps/web/build-production'
       type: string
     build-name:
       default: 'build-production'
@@ -70,13 +70,13 @@ web-build:
           - run:
               name: apply stage apple-app-site-association
               command: |
-                cd packages/web/public/.well-known
+                cd apps/web/public/.well-known
                 cp apple-app-site-association-stage apple-app-site-association
     - run:
         name: build
         no_output_timeout: 30m
         command: |
-          cd packages/web
+          cd apps/web
           CI=false npm run build:<< parameters.build-type >>
           cp package.json << parameters.build-name >>
     - persist_to_workspace:
@@ -118,14 +118,14 @@ web-distribute:
     - run:
         name: distribute
         command: |
-          cd packages/web
+          cd apps/web
           npm run dist:<< parameters.build-type >>
 
 web-install-wrangler:
   steps:
     - run:
         name: install wrangler
-        command: 'cd packages/web && npm install @cloudflare/wrangler'
+        command: 'cd apps/web && npm install @cloudflare/wrangler'
 
 web-deploy-cloudflare:
   parameters:
@@ -146,25 +146,25 @@ web-deploy-cloudflare:
     - run:
         name: Move sourcemaps
         command: |
-          cd packages/web
+          cd apps/web
           mkdir -p sourcemaps/static/js
           mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
     - run:
         name: Set up workers site
         command: |
-          cd packages/web/scripts/workers-site
+          cd apps/web/scripts/workers-site
           npm i
           cd ../../
           mv build-<< parameters.build-type >> build
     - run:
         name: Copy robots.txt
         command: |
-          cd packages/web
+          cd apps/web
           cp ./robots.txt build
     - run:
         name: Deploy to Cloudflare
         command: |
-          cd packages/web
+          cd apps/web
           echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env << parameters.environment >>
           npx wrangler publish --env << parameters.environment >>
 
@@ -175,4 +175,4 @@ web-deploy-sourcemaps-s3:
         at: ./
     - run:
         name: Deploy to S3
-        command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800
+        command: aws s3 sync apps/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800

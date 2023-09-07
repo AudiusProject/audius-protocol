@@ -10,9 +10,24 @@ orbs:
   path-filtering: circleci/path-filtering@0.1.1
 
 parameters:
+  # Run all workflows for branches that match this regex
+  run-all-workflows-branch-regex:
+    type: string
+    default: /(^main)|(^release.*)$/
   workflow:
     type: string
     default: "main"
+
+commands:
+  create_concatenated_patch_file:
+    description: 'Concatenate all patch-files. File is used as checksum source for part of caching key.'
+    parameters:
+      filename:
+        type: string
+    steps:
+      - run:
+          name: Combine patch-files to single file
+          command: ls -d -- apps/*/patches/*.patch | xargs cat > << parameters.filename >>
 
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
@@ -33,6 +48,42 @@ jobs:
           root: ./
           paths:
             - .circleci/continue_config.yml
+
+  init:
+    working_directory: ~/audius-protocol
+    docker:
+      - image: cimg/node:18.17
+    steps:
+      - checkout
+
+      - create_concatenated_patch_file:
+          filename: combined-patch-file.txt
+
+      - restore_cache:
+          keys:
+            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+      - run:
+          name: Install dependencies
+          command: |
+            npm ci
+
+      - save_cache:
+          key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          paths:
+            - ./node_modules
+            - ./apps/web/node_modules
+            - ./apps/mobile/node_modules
+            - ./apps/probers/node_modules
+            - ./apps/embed/node_modules
+            - ./packages/stems/node_modules
+            - ./packages/common/node_modules
+
+      - save_cache:
+          key: cache-{{ .Revision }}
+          paths:
+            - ./packages/stems/dist
+            - ./packages/common/dist
 
   generate-release:
     working_directory: ~/audius-protocol
@@ -72,6 +123,34 @@ jobs:
 
             git push --set-upstream origin main "release-v$NEW_VERSION"
 
+  generate-client-release:
+    working_directory: ~/audius-protocol
+    docker:
+      - image: cimg/node:18.17
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - 'a4:99:2e:fa:80:31:dc:23:25:7b:a5:70:3f:08:5f:fa'
+      - run:
+          name: Bump version
+          command: |
+            git config --global user.email "audius-infra@audius.co"
+            git config --global user.name "audius-infra"
+            PREV_VERSION=$(jq -r .version ./package.json)
+            CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short v${PREV_VERSION}..HEAD)
+            MESSAGE="%s
+
+            ${CHANGELOG}"
+            npm i --ignore-scripts
+            npm version patch -ws --include-workspace-root -m "${MESSAGE}"
+      - run:
+          name: Create release branch
+          command: |
+            VERSION=$(jq -r .version ./package.json)
+            git checkout -b release-client-v${VERSION}
+            git push -u origin release-client-v${VERSION}
+
 workflows:
   setup:
     when:
@@ -79,13 +158,12 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
+      - init
       - path-filtering/filter:
           name: trigger-relevant-workflows
           filters:
             branches:
-              ignore:
-                - main
-                - /^release.*$/
+              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -104,12 +182,57 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            .circleci/.* run-stems-workflow true
+            .circleci/.* run-embed-workflow true
             .* run-release-workflow false
             .* run-gcp-workflow true
             .* run-integration-workflow true
+            apps/web/.* run-web-workflow true
+            apps/mobile/.* run-mobile-workflow true
+            apps/probers/.* run-web-workflow true
+            apps/embed/.* run-embed-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
+            packages/stems/.* run-stems-workflow true
+            packages/stems/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-stems-workflow true
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
+
+      # Trigger all workflows for branches that match regex
+      - continuation/continue:
+          configuration_path: ../workspace/.circleci/continue_config.yml
+          name: trigger-all-workflows
+          filters:
+            branches:
+              only: << pipeline.parameters.run-all-workflows-branch-regex >>
+          parameters: '{
+            "run-web-workflow": true,
+            "run-mobile-workflow": true,
+            "run-stems-workflow": true,
+            "run-embed-workflow": true,
+            "run-gcp-workflow": "true",
+            "run-integration-workflow": "true",
+            "run-discovery-workflow": "true",
+            "run-creator-workflow": "true",
+            "run-identity-workflow": "true",
+            "run-eth-contracts-workflow": "true",
+            "run-contracts-workflow": "true",
+            "run-release-workflow": "false",
+            "run-sdk-workflow": "true",
+            }'
+          pre-steps:
+            - attach_workspace:
+                at: ../workspace
+          requires:
+            - generate-config
+            - init
 
       - path-filtering/filter:
           name: trigger-main-workflows
@@ -128,6 +251,10 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow false
             libs/.* run-sdk-workflow true
+            .* run-web-workflow true
+            .* run-mobile-workflow true
+            .* run-stems-workflow true
+            .* run-probers-workflow true
           requires:
             - generate-config
           workspace_path: ../workspace
@@ -136,7 +263,7 @@ workflows:
           name: trigger-release-workflows
           filters:
             branches:
-              only: /^release.*$/
+              only: /^release-v.*$/
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -153,6 +280,22 @@ workflows:
             - generate-config
           workspace_path: ../workspace
 
+      - path-filtering/filter:
+          name: trigger-release-client-workflows
+          filters:
+            branches:
+              only: /^release-client.*$/
+          base-revision: main
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            .* run-web-workflow true
+            .* run-mobile-workflow true
+            .* run-stems-workflow true
+            .* run-probers-workflow false
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
   release-create-branch:
     when:
       and:
@@ -160,3 +303,12 @@ workflows:
         - equal: ["release-create-branch", << pipeline.schedule.name >>]
     jobs:
       - generate-release
+
+  release-client-create-branch:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["release-client-create-branch", << pipeline.schedule.name >>]
+    jobs:
+      - generate-client-release
+  

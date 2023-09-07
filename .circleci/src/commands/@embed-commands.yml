@@ -1,7 +1,7 @@
 embed-build:
   parameters:
     build-directory:
-      default: 'packages/embed/build-production'
+      default: 'apps/embed/build-production'
       type: string
     build-type:
       default: 'prod'
@@ -14,7 +14,7 @@ embed-build:
         name: build
         no_output_timeout: 60m
         command: |
-          cd packages/embed
+          cd apps/embed
           npm run build:<< parameters.build-type >>
     - persist_to_workspace:
         root: ./
@@ -26,7 +26,7 @@ embed-install-wrangler:
   steps:
     - run:
         name: install wrangler
-        command: 'cd packages/embed && npm install @cloudflare/wrangler'
+        command: 'cd apps/embed && npm install @cloudflare/wrangler'
 
 
 embed-deploy-cloudflare:
@@ -45,12 +45,12 @@ embed-deploy-cloudflare:
     - run:
         name: Set up workers site
         command: |
-          cd packages/embed/workers-site
+          cd apps/embed/workers-site
           npm i
           cd ../
           mv build-<< parameters.build-type >> build
     - run:
         name: Deploy to Cloudflare
         command: |
-          cd packages/embed
+          cd apps/embed
           npx wrangler publish --env << parameters.environment >>
