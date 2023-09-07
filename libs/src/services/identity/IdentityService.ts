@@ -398,9 +398,11 @@ export class IdentityService {
     gasLimit: number,
     handle: string | null = null,
     nethermindContractAddress: string | null | undefined,
-    nethermindEncodedAbi: string | undefined
+    nethermindEncodedAbi: string | undefined,
+    baseURL: string | undefined,
   ): Promise<{ receipt: TransactionReceipt }> {
     return await this._makeRequest({
+      baseURL,
       url: '/relay',
       method: 'post',
       data: {
@@ -601,7 +603,8 @@ export class IdentityService {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
-    axiosRequestObj.baseURL = this.identityServiceEndpoint
+    // ability to override for discovery relay
+    axiosRequestObj.baseURL = axiosRequestObj.baseURL || this.identityServiceEndpoint
 
     const requestId = uuid()
     axiosRequestObj.headers = {

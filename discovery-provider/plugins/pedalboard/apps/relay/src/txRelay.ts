@@ -1,4 +1,4 @@
-import { wallets, web3 } from ".";
+import { config, wallets, web3 } from ".";
 import {
   TransactionReceipt,
   TransactionRequest,
@@ -38,6 +38,7 @@ export const relayTransaction = async (
   // query chain until tx is mined
   try {
     const receipt = await confirm(submit.hash);
+    receipt.blockNumber += config.finalPoaBlock
     res.send({ receipt })
   } catch (e) {
     internalError(next, `could not confirm transaction ${e}`)
