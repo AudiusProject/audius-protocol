@@ -18,7 +18,7 @@ const { wait } = Utils
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes
-const POLL_STATUS_INTERVAL = 3000 // 3s
+const POLL_STATUS_INTERVAL = 1000 // 1s
 
 type PlaylistTrackId = { time: number; track: number }
 
@@ -38,9 +38,16 @@ export type PlaylistMetadata = {
 }
 
 export type ProgressCB = (progress: {
-  upload?: { loaded: number; total: number }
-  transcode?: { decimal: number }
-  resize?: undefined
+  art?: {
+    upload?: { loaded: number; total: number }
+    transcode?: { decimal: number }
+    resize?: undefined
+  }
+  audio?: {
+    upload?: { loaded: number; total: number }
+    transcode?: { decimal: number }
+    resize?: undefined
+  }
 }) => void
 
 export type CreatorNodeConfig = {
@@ -273,9 +280,7 @@ export class CreatorNode {
     // Poll for re-transcoding to complete
     return await this.pollProcessingStatusV2(
       uploadId,
-      response.data.template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS,
+      response.data.template,
       onProgress
     )
   }
@@ -295,16 +300,18 @@ export class CreatorNode {
       url: '/uploads',
       data: formData,
       headers,
-      onUploadProgress: (progressEvent) =>
-        onProgress({
+      onUploadProgress: (progressEvent) => {
+        const progress = {
           upload: { loaded: progressEvent.loaded, total: progressEvent.total }
-        })
+        }
+        onProgress(
+          template === 'audio' ? { audio: progress } : { art: progress }
+        )
+      }
     })
     return await this.pollProcessingStatusV2(
       response.data[0].id,
-      template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS,
+      template,
       onProgress
     )
   }
@@ -317,16 +324,22 @@ export class CreatorNode {
    */
   async pollProcessingStatusV2(
     id: string,
-    maxPollingMs: number,
+    template: string,
     onProgress?: ProgressCB
   ) {
     const start = Date.now()
+    const maxPollingMs =
+      template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
     while (Date.now() - start < maxPollingMs) {
       try {
         const resp = await this.getProcessingStatusV2(id)
-        if (resp.transcode_progress) {
+        if (template === 'audio' && resp.transcode_progress) {
           onProgress?.({
-            transcode: { decimal: resp.transcode_progress }
+            audio: {
+              transcode: { decimal: resp.transcode_progress }
+            }
           })
         }
         if (resp?.status === 'done') return resp
