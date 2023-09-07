@@ -21,9 +21,9 @@ export const outgoingLog = (request: Request, response: Response) => {
   // in milliseconds
   const responseTime =
     new Date().getTime() - response.locals.ctx.startTime.getTime();
-  const { route, method } = request;
+  const { route, method, statusCode } = request;
   const { locals: ctx } = response;
-  logger.info({ route, method, ctx, responseTime }, "request completed");
+  logger.info({ route, method, statusCode, ctx, responseTime }, "request completed");
 };
 
 export const outgoingRequestLogger = (
