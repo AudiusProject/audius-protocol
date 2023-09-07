@@ -12,7 +12,7 @@ dev2::
 
 test:: pg.bounce
 	rm -rf /tmp/mediorum_test
-	go test -v ./server -count=1 -timeout 60s
+	go test ./... -count=1 -timeout 60s
 
 
 tools::

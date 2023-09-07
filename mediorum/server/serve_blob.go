@@ -324,7 +324,7 @@ func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new blobs")
 	}
 

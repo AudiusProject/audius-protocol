@@ -222,7 +222,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 }
 
 // if the node is using local (disk) storage, do not replicate if there is <200GB remaining (i.e. 10% of 2TB)
-func (ss *MediorumServer) shouldReplicate() bool {
+func (ss *MediorumServer) diskHasSpace() bool {
 	// don't worry about running out of space on dev or stage
 	if ss.Config.Env != "prod" {
 		return true
