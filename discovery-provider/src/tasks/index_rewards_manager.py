@@ -15,6 +15,7 @@ from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 
+from src.exceptions import SolanaTransactionFetchError
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -214,7 +215,7 @@ def get_valid_instruction(
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client_manager: SolanaClientManager, tx_sig: str
-) -> RewardManagerTransactionInfo:
+) -> Optional[RewardManagerTransactionInfo]:
     """Fetches metadata for rewards transfer transactions and parses data
 
     Fetches the transaction metadata from solana using the tx signature
@@ -274,6 +275,8 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             "postbalance": balance_changes[receiver_user_bank]["post_balance"],
         }
         return tx_metadata
+    except SolanaTransactionFetchError:
+        return None
     except Exception as e:
         logger.error(
             f"index_rewards_manager.py | Error processing {tx_sig}, {e}", exc_info=True

@@ -1,11 +1,10 @@
-import App from "basekit/src/app";
-import { webServer } from "./server";
-import { Config, readConfig } from "./config";
-import { ethers } from "ethers";
-import { WalletManager, regenerateWallets } from "./walletManager";
+import { Config, readConfig } from "./config/config";
+import { ethers, providers } from "ethers";
+import { WalletManager } from "./walletManager";
 import { logger } from "./logger";
 import { initializeDiscoveryDb } from "basekit/src";
 import { connectWeb3 } from "./web3";
+import { app } from "./server";
 
 export type SharedData = {
   config: Config;
@@ -16,35 +15,28 @@ export type SharedData = {
 export const config = readConfig();
 
 if (!config.aao.useAao) {
-  logger.warn("anti abuse not configured and won't be enforced")
+  logger.warn("anti abuse not configured and won't be enforced");
 }
 
 export const discoveryDb = initializeDiscoveryDb(
   config.discoveryDbConnectionString
 );
 
+export let web3: providers.JsonRpcProvider;
+export let wallets: WalletManager;
+
 const main = async () => {
-  const { web3, chainId } = await connectWeb3(config);
-  config.acdcChainId = chainId.toString();
+  // async config
+  const connectedWeb3 = await connectWeb3(config);
+  web3 = connectedWeb3.web3;
+  config.acdcChainId = connectedWeb3.chainId.toString();
+  wallets = new WalletManager(web3);
 
-  const wallets = new WalletManager(web3);
-
-  const appData = {
-    config,
-    web3,
-    wallets,
-  };
-
-  const app = new App<SharedData>({ appData, discoveryDb })
-    .tick({ minutes: 5 }, async (app) => {
-      /** TODO: update and cache health check */
-    })
-    .tick({ seconds: 10 }, async (app) => {
-      /** TODO: check health of local node */
-    })
-    .tick({ hours: 6 }, regenerateWallets)
-    .task(webServer);
-  await app.run();
+  // start webserver after async config
+  const { serverHost, serverPort } = config;
+  app.listen(serverPort, serverHost, () =>
+    logger.info({ serverHost, serverPort }, "server initialized")
+  );
 };
 
 main().catch(logger.error.bind(logger));

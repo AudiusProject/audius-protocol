@@ -22,6 +22,7 @@ import (
 
 	_ "embed"
 
+	"github.com/erni27/imcache"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -101,6 +102,7 @@ type MediorumServer struct {
 	peerHealthsMutex sync.RWMutex
 	peerHealths      map[string]*PeerHealth
 	unreachablePeers []string
+	redirectCache    *imcache.Cache[string, string]
 
 	lastRepairCleanupComplete time.Time
 	lastRepairCleanupDuration time.Duration
@@ -144,7 +146,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	if config.BlobStoreDSN == "" {
-		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
+		config.BlobStoreDSN = "file://" + config.Dir + "/blobs?no_tmp_dir=true"
 	}
 
 	if pk, err := ethcontracts.ParsePrivateKeyHex(config.PrivateKey); err != nil {
@@ -161,32 +163,36 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 	}
 
+	logger := slog.With("self", config.Self.Host)
+
 	// ensure dir
-	os.MkdirAll(config.Dir, os.ModePerm)
+	if err := os.MkdirAll(config.Dir, os.ModePerm); err != nil {
+		logger.Error("failed to create local persistent storage dir", "err", err)
+	}
 
 	// bucket
 	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
+		logger.Error("failed to open persistent storage bucket", "err", err)
 		return nil, err
 	}
-
-	logger := slog.With("self", config.Self.Host)
 
 	// bucket to move all files from
 	if config.MoveFromBlobStoreDSN != "" {
 		if config.MoveFromBlobStoreDSN == config.BlobStoreDSN {
-			log.Fatal("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+			logger.Error("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+			return nil, err
 		}
 		bucketToMoveFrom, err := persistence.Open(config.MoveFromBlobStoreDSN)
 		if err != nil {
-			log.Fatalf("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			logger.Error("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data)", "err", err)
 			return nil, err
 		}
 
 		logger.Info(fmt.Sprintf("Moving all files from %s to %s. This may take a few hours...", config.MoveFromBlobStoreDSN, config.BlobStoreDSN))
 		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
 		if err != nil {
-			log.Fatalf("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			logger.Error("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data)", "err", err)
 			return nil, err
 		}
 
@@ -251,7 +257,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealths: map[string]*PeerHealth{},
+		peerHealths:   map[string]*PeerHealth{},
+		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -297,17 +304,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		})
 	})
 
-	// TODO: remove deprecated routes
-	routes.GET("/deprecated/:cid", ss.getBlobDeprecated, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.GET("/deprecated/:jobID/:variant", ss.getBlobByJobIDAndVariantDeprecated, ss.requireHealthy)
+	routes.GET("/delist_status/track/:trackCid", ss.serveTrackDelistStatus)
+	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
+	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
-
-	internalApi.GET("/cuckoo", ss.serveCuckoo)
-	internalApi.GET("/cuckoo/size", ss.serveCuckooSize)
-	internalApi.GET("/cuckoo/:cid", ss.serveCuckooLookup, cidutil.UnescapeCidParam)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
@@ -352,8 +355,6 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	go ss.startCuckooBuilder()
-	go ss.startCuckooFetcher()
 	createUploadsCache()
 	go ss.buildUploadsCache()
 

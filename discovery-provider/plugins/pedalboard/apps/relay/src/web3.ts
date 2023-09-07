@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Config } from "./config";
+import { Config } from "./config/config";
 import { logger } from "./logger";
 
 export type Web3Result = {

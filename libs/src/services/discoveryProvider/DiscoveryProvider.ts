@@ -22,6 +22,7 @@ import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
 import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 import fetch from 'cross-fetch'
+import type { TransactionReceipt } from 'web3-core'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -91,6 +92,17 @@ type DiscoveryNodeChallenge = {
   handle: string
   wallet: string
   completed_blocknumber: number
+}
+
+export type DiscoveryRelayBody = {
+  contractRegistryKey?: string | null;
+  contractAddress?: string | null;
+  senderAddress?: string | null;
+  encodedABI?: string | null;
+  gasLimit?: number | null;
+  handle?: string | null;
+  nethermindContractAddress?: string | null;
+  nethermindEncodedAbi?: string | null;
 }
 
 /**
@@ -1066,6 +1078,15 @@ export class DiscoveryProvider {
       false,
       blockNumber
     )
+  }
+
+  async relay(data: DiscoveryRelayBody): Promise<{ receipt: TransactionReceipt } | null | undefined> {
+    const req = {
+      endpoint: 'relay',
+      method: 'post',
+      data
+    }
+    return await this._makeRequest(req, true, 0, true)
   }
 
   /**

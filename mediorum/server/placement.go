@@ -1,7 +1,6 @@
 package server
 
 import (
-	"mediorum/cidutil"
 	"time"
 
 	"github.com/tysonmote/rendezvous"
@@ -33,9 +32,6 @@ func (ss *MediorumServer) rendezvousHosts(key string, hosts []string) ([]string,
 
 	if ss.Config.StoreAll {
 		isMine = true
-	} else if cidutil.IsLegacyCID(key) {
-		// TODO(theo): Don't store Qm CIDs for now unless STORE_ALL is true. Remove this once all nodes have enough space to store Qm CIDs
-		isMine = false
 	}
 	return orderedHosts, isMine
 }
