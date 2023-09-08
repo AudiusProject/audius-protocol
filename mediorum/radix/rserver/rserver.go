@@ -77,7 +77,7 @@ func New(config RadixConfig) (*RadixServer, error) {
 	routes := echoServer.Group(apiBasePath)
 	routes.Use(middleware.CORS()) // TODO: can this be removed?
 
-	routes.GET("/", rs.serveRadixInfo)
+	routes.GET("/info", rs.serveRadixInfo)
 	routes.GET("/cid/:cid", rs.radix.ServeCIDInfo)
 	routes.GET("/cids", rs.radix.ServeTreePaginated)
 	routes.GET("/cids/onlyOn/count", rs.radix.ServeNumCIDsOnOnlyHosts)
@@ -152,18 +152,18 @@ func (rs *RadixServer) handleSetHostNotHasCID(c echo.Context) error {
 }
 
 func (rs *RadixServer) gossipTreeUpdates() {
-	rs.fetchCIDsFromNetwork()
-	ticker := time.NewTicker(30 * time.Minute)
+	rs.fetchCIDsFromNetwork(true)
+	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
-		rs.fetchCIDsFromNetwork()
+		rs.fetchCIDsFromNetwork(false)
 	}
 }
 
 // TODO: this is how mediorum gossips. really it should do like a n/2 instead of every node repeating CIDs that other nodes are already up-to-date about
-func (rs *RadixServer) fetchCIDsFromNetwork() {
+func (rs *RadixServer) fetchCIDsFromNetwork(resetCursor bool) {
 	for _, peer := range rs.Config.Peers {
 		if peer.Host != rs.Config.Self.Host {
-			rs.radix.InsertOtherHostsView(peer.Host, 100000)
+			rs.radix.InsertOtherHostsView(peer.Host, 100000, resetCursor)
 		}
 	}
 }

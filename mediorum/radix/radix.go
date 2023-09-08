@@ -160,6 +160,12 @@ func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 		pageSize = maxPageSize
 	}
 
+	// reset cursor if requested (the other server requests this when it's starting up so it can get the whole tree)
+	resetCursor, _ := strconv.ParseBool(c.QueryParam("resetCursor"))
+	if resetCursor {
+		r.cursors[host] = iradix.New[uint16]()
+	}
+
 	iter := r.tree.Root().Iterator()
 	if greaterThanKey != "" {
 		iter.SeekLowerBound([]byte(greaterThanKey))
@@ -206,7 +212,7 @@ type ServeTreeResp struct {
 	LastCID    string
 }
 
-// ServeTreePaginated returns a paginated list of tree leaves in human-readable format.
+// ServeTreePaginated returns a paginated list of tree leaves in human-readable format
 func (r *Radix) ServeTreePaginated(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -228,6 +234,12 @@ func (r *Radix) ServeTreePaginated(c echo.Context) error {
 	}
 	for key, val, ok := iter.Next(); ok && len(resp.CIDToHosts) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
+
+		// don't expose tombstone keys because this is user-facing
+		if strings.HasSuffix(keyStr, tombstoneSuffix) {
+			continue
+		}
+
 		cid := decompressKey(keyStr)
 		hostIDsWithCID := r.combinations[val]
 		hostsWithCID := make([]string, 0, len(hostIDsWithCID))
@@ -257,7 +269,12 @@ func (r *Radix) ServeReplicationCounts(c echo.Context) error {
 		ReplicationFactorToNumCIDs: map[int]int{},
 	}
 
-	for _, val, ok := iter.Next(); ok; _, val, ok = iter.Next() {
+	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
+		// don't count tombstone keys because they don't represent CIDs that exist
+		if strings.HasSuffix(string(key), tombstoneSuffix) {
+			continue
+		}
+
 		hostsWithCID := r.combinations[val]
 		resp.ReplicationFactorToNumCIDs[len(hostsWithCID)]++
 	}
@@ -271,7 +288,7 @@ type ServeReplicationCIDs struct {
 	LastCID           string
 }
 
-// ServeReplicationCIDsPaginated return the CIDs that are replicated by the given number of hosts
+// ServeReplicationCIDsPaginated returns the CIDs that are replicated by the given number of hosts
 func (r *Radix) ServeReplicationCIDsPaginated(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -299,6 +316,12 @@ func (r *Radix) ServeReplicationCIDsPaginated(c echo.Context) error {
 
 	for key, val, ok := iter.Next(); ok && len(resp.CIDs) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
+
+		// ignore tombstone keys
+		if strings.HasSuffix(keyStr, tombstoneSuffix) {
+			continue
+		}
+
 		cid := decompressKey(keyStr)
 		hostsWithCID := r.combinations[val]
 		if replicationFactor == len(hostsWithCID) {
@@ -320,7 +343,7 @@ func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	onlyOnHostsStr := c.Param("hosts")
+	onlyOnHostsStr := c.QueryParam("hosts")
 	onlyOnHosts := strings.Split(onlyOnHostsStr, ",")
 	if len(onlyOnHosts) == 0 {
 		return c.JSON(http.StatusBadRequest, "no hosts specified")
@@ -337,7 +360,12 @@ func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 		Hosts: onlyOnHosts,
 	}
 
-	for _, val, ok := iter.Next(); ok; _, val, ok = iter.Next() {
+	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
+		// ignore tombstone keys
+		if strings.HasSuffix(string(key), tombstoneSuffix) {
+			continue
+		}
+
 		hostsWithCID := r.combinations[val]
 		if len(hostsWithCID) != len(onlyOnHosts) {
 			continue
@@ -359,7 +387,7 @@ type ServeCIDsOnOnlyHostsResp struct {
 	LastCID         string
 }
 
-// ServeCIDsOnOnlyHostsPaginated returns the CIDs that are only on the given hosts.
+// ServeCIDsOnOnlyHostsPaginated returns the CIDs that are only on the given hosts
 func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -394,6 +422,12 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 
 	for key, val, ok := iter.Next(); ok && len(resp.CIDsOnlyOnHosts) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
+
+		// ignore tombstone keys
+		if strings.HasSuffix(keyStr, tombstoneSuffix) {
+			continue
+		}
+
 		cid := decompressKey(keyStr)
 		hostsWithCID := r.combinations[val]
 
@@ -413,15 +447,17 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-// InsertOtherHostsView inserts leaves for every CID that otherHost reports having.
-func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int) {
+// InsertOtherHostsView requests leaves from otherHost and inserts them into our own tree (otherHost maintains a cursor so they don't re-send the whole tree to us)
+func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int, resetCursor bool) {
 	var result ServeTreeInternalResp
 	baseURL := fmt.Sprintf("%s/radix/internal/leaves?pageSize=%d&host=%s", otherHost, pageSize, r.myHost)
 	for {
 		// build paginated URL
-		var nextURL string
+		nextURL := baseURL
 		if result.LastKey == "" {
-			nextURL = baseURL
+			if resetCursor {
+				nextURL += "&resetCursor=true"
+			}
 		} else {
 			nextURL = baseURL + "&greaterThanKey=" + result.LastKey
 		}
