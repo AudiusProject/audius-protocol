@@ -2,7 +2,7 @@ import {
   BNUSDC,
   WithdrawUSDCModalPages,
   formatCurrencyBalance,
-  formatUSDCWeiToNumber,
+  formatUSDCWeiToCeilingDollarNumber,
   useWithdrawUSDCModal
 } from '@audius/common'
 import {
@@ -39,7 +39,9 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const goToRoute = useGoToRoute()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
 
-  const balanceNumber = formatUSDCWeiToNumber((balance ?? new BN(0)) as BNUSDC)
+  const balanceNumber = formatUSDCWeiToCeilingDollarNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
   const menuItems: PopupMenuItem[] = [

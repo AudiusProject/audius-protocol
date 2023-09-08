@@ -1,5 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit'
+import BN from 'bn.js'
 
+import { BNUSDC } from 'models/Wallet'
 import { CommonState } from 'store/commonStore'
 import { Nullable } from 'utils/typeUtils'
 import { stringWeiToBN, zeroBNWei } from 'utils/wallet'
@@ -35,3 +37,6 @@ export const getLocalBalanceDidChange = (state: CommonState): boolean =>
 
 export const getFreezeUntilTime = (state: CommonState): Nullable<number> =>
   state.wallet.freezeBalanceUntil
+
+export const getUSDCBalance = (state: CommonState): Nullable<BNUSDC> =>
+  state.wallet.usdcBalance ? (new BN(state.wallet.usdcBalance) as BNUSDC) : null

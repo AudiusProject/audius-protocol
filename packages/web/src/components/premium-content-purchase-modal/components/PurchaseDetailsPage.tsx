@@ -11,7 +11,8 @@ import {
   PurchaseContentStage,
   Track,
   UserTrackMetadata,
-  Name
+  Name,
+  Nullable
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -75,7 +76,7 @@ const ContentPurchaseError = () => {
 }
 
 export type PurchaseDetailsPageProps = {
-  currentBalance?: BNUSDC
+  currentBalance: Nullable<BNUSDC>
   track: UserTrackMetadata
   onViewTrackClicked: () => void
 }

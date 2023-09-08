@@ -1,9 +1,9 @@
 import {
   useUSDCBalance,
-  formatUSDCWeiToNumber,
   formatCurrencyBalance,
   BNUSDC,
-  useWithdrawUSDCModal
+  useWithdrawUSDCModal,
+  formatUSDCWeiToFloorCentsNumber
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -46,7 +46,8 @@ const openExplorer = (signature: string) => {
 export const TransferSuccessful = () => {
   const { data: balance } = useUSDCBalance()
   const { data: modalData } = useWithdrawUSDCModal()
-  const balanceNumber = formatUSDCWeiToNumber((balance ?? new BN(0)) as BNUSDC)
+  const balanceNumber =
+    formatUSDCWeiToFloorCentsNumber((balance ?? new BN(0)) as BNUSDC) / 100
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
   const [{ value: amountValue }] = useField(AMOUNT)

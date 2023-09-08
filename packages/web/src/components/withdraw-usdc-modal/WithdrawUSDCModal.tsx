@@ -5,9 +5,12 @@ import {
   useUSDCBalance,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  withdrawUSDCActions
+  withdrawUSDCActions,
+  BNUSDC,
+  formatUSDCWeiToFloorCentsNumber
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
+import BN from 'bn.js'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
@@ -59,6 +62,9 @@ export const WithdrawUSDCModal = () => {
   const { isOpen, onClose, onClosed, data, setData } = useWithdrawUSDCModal()
   const { page } = data
   const { data: balance } = useUSDCBalance()
+  const balanceNumberCents = formatUSDCWeiToFloorCentsNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
 
   const onSuccess = useCallback(
     (signature: string) => {
@@ -121,7 +127,7 @@ export const WithdrawUSDCModal = () => {
       <ModalContent>
         <Formik
           initialValues={{
-            [AMOUNT]: balance?.toNumber() ?? 0,
+            [AMOUNT]: balanceNumberCents,
             [ADDRESS]: '',
             [CONFIRM]: false
           }}
